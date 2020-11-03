@@ -1,0 +1,58 @@
+/* ---   Styles for RDT    --- */
+/* --- Written by: Stevan Gavrilovic --- */
+
+
+QComboBox {
+    min-width: 6em;
+    font-size: 12px;
+    padding-left: 10px;
+    margin-top: 2px;
+}
+
+
+/*----------------------------------------------------------------------------*/
+/* QTableWidget                                                               */
+/*----------------------------------------------------------------------------*/
+
+QTableWidget {
+
+background: rgb(255, 255, 255);
+border: 1px solid white;
+gridline-color: white;
+
+selection-background-color: rgb(69, 187, 217);
+}
+
+QHeaderView::section {
+    background-color: #64B5F6;
+    color: black;
+    font: bold 14px;
+    padding-left: 4px;
+    border: 1px solid white;
+}
+
+/*----------------------------------------------------------------------------*/
+/* QTreeView                                                                  */
+/*----------------------------------------------------------------------------*/
+
+QTreeView{
+    background: rgb(255, 255, 255);
+
+    /* set the font properties*/
+    font-size:17px;
+    color: black;
+}
+
+
+QTreeView::item:hover {
+    background: rgb(69, 187, 217);
+}
+
+QTreeView::item:selected:active{
+    background: rgb(63, 147, 168);
+}
+
+QTreeView::item:selected:!active {
+    background: rgb(63, 147, 168);
+}
+

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>styles/menuBar.qss</file>
+        <file>styles/stylesheetRDT.qss</file>
+    </qresource>
+</RCC>

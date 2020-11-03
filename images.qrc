@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/directivityParameters.png</file>
+        <file>icons/NHERI-EEUQ-Icon.icns</file>
+        <file>icons/NHERI-EEUQ-Icon.ico</file>
+        <file>icons/NHERI-EEUQ-Icon.png</file>
+        <file>resources/docs/textAboutEEUQ.html</file>
+    </qresource>
+</RCC>
