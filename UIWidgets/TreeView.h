@@ -18,7 +18,7 @@ public:
 
     bool removeItemFromTree(const QString& itemName);
 
-    TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
+    TreeItem* addItemToTree(const QString itemText, const QString layerID, TreeItem* parent = nullptr);
 
     TreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
 

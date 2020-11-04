@@ -16,7 +16,7 @@ class TreeItem : public QObject
     Q_OBJECT
 
 public:
-    explicit TreeItem(const QVector<QVariant> &data, TreeItem *parentItem = nullptr);
+    explicit TreeItem(const QVector<QVariant> &data, const QString& ID = QString(), TreeItem *parentItem = nullptr);
     ~TreeItem();
 
     void appendChild(TreeItem *child);
@@ -50,6 +50,8 @@ public:
 
     QString getName() const;
 
+    QString getItemID() const;
+
 public slots:
 
     void changeOpacity();
@@ -58,7 +60,7 @@ public slots:
 
 signals:
 
-void opacityChanged(const QString& layerName, const double opacity);
+void opacityChanged(const QString& layerID, const double opacity);
 
 private:
     QVector<TreeItem*> vecChildItems;
@@ -67,6 +69,7 @@ private:
     int currentState;
 
     QString itemName;
+    QString itemID;
 
     QDialog* opacityDialog;
 };

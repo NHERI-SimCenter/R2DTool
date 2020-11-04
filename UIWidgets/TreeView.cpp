@@ -37,9 +37,9 @@ TreeView::TreeView(QWidget *parent, VisualizationWidget* visWidget) : QTreeView(
 
 }
 
-TreeItem* TreeView::addItemToTree(const QString itemText, TreeItem* parent)
+TreeItem* TreeView::addItemToTree(const QString itemText, const QString layerID, TreeItem* parent)
 {
-    auto newLayer = layersModel->addItemToTree(itemText, parent);
+    auto newLayer = layersModel->addItemToTree(itemText, layerID, parent);
 
     connect(newLayer, &TreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
 

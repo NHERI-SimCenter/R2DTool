@@ -314,6 +314,7 @@ void VisualizationWidget::convexHullPointSelector(QMouseEvent& e)
     this->plotConvexHull();
 }
 
+
 TreeView *VisualizationWidget::getLayersTree() const
 {
     return layersTree;
@@ -358,8 +359,11 @@ void VisualizationWidget::loadBuildingData(void)
     auto buildingLayer = new GroupLayer(QList<Layer*>{});
     buildingLayer->setName("Buildings");
 
+    auto layerID = this->createUniqueID();
+    buildingLayer->setLayerId(layerID);
+
     // Create the root item in the trees
-    auto buildingsItem = layersTree->addItemToTree("Buildings");
+    auto buildingsItem = layersTree->addItemToTree("Buildings", layerID);
 
     auto nRows = buildingTableWidget->rowCount();
 
@@ -397,7 +401,11 @@ void VisualizationWidget::loadBuildingData(void)
 
         tablesMap.insert(std::make_pair(it,featureCollectionTable));
 
-        layersTree->addItemToTree(QString::fromStdString(it),buildingsItem);
+        auto layerID = this->createUniqueID();
+
+        newBuildingLayer->setLayerId(layerID);
+
+        layersTree->addItemToTree(QString::fromStdString(it), layerID, buildingsItem);
     }
 
 
@@ -482,8 +490,11 @@ void VisualizationWidget::loadPipelineData(void)
     auto pipelineLayer = new GroupLayer(QList<Layer*>{});
     pipelineLayer->setName("Pipelines");
 
+    auto layerID = this->createUniqueID();
+    pipelineLayer->setLayerId(layerID);
+
     // Create the root item in the trees
-    auto pipelinesItem = layersTree->addItemToTree("Pipelines");
+    auto pipelinesItem = layersTree->addItemToTree("Pipelines",layerID);
 
     auto nRows = pipelineTableWidget->rowCount();
 
@@ -522,7 +533,11 @@ void VisualizationWidget::loadPipelineData(void)
 
         tablesMap.insert(std::make_pair(it,featureCollectionTable));
 
-        layersTree->addItemToTree(QString::fromStdString(it),pipelinesItem);
+        auto layerID = this->createUniqueID();
+
+        newpipelineLayer->setLayerId(layerID);
+
+        layersTree->addItemToTree(QString::fromStdString(it), layerID ,pipelinesItem);
     }
 
     for(int i = 0; i<nRows; ++i)
@@ -713,7 +728,7 @@ void VisualizationWidget::featureSelectionQueryCompleted(QUuid taskID, Esri::Arc
 
 void VisualizationWidget::handleLayerSelection(TreeItem* item)
 {
-    auto itemName = item->data(0).toString();
+    auto itemID = item->getItemID();
 
     auto isChecked = item->getState() == 1 || item->getState() == 2 ? true : false;
 
@@ -726,24 +741,24 @@ void VisualizationWidget::handleLayerSelection(TreeItem* item)
         for(int i = 0; i<layers->size(); ++i)
         {
             auto layer = layers->at(i);
-            auto layerName = layer->name();
+            auto layerID = layer->layerId();
 
-            if(layerName == itemName)
+            if(itemID.compare(layerID) == 0)
             {
                 layer->setVisible(isChecked);
                 return true;
             }
 
-            // Check the sublayers
-            auto subLayersCont = layer->subLayerContents();
-            for(auto&& it : subLayersCont)
-            {
-                if(it->name() == itemName)
-                {
-                    it->setVisible(isChecked);
-                    return true;
-                }
-            }
+            // Check the sublayers - to do get layer pointer from sublayer contents
+//            auto subLayersCont = layer->subLayerContents();
+//            for(auto&& it : subLayersCont)
+//            {
+//                if(it->name() == itemID)
+//                {
+//                    it->setVisible(isChecked);
+//                    return true;
+//                }
+//            }
 
             if(auto isGroupLayer = dynamic_cast<GroupLayer*>(layer))
             {
@@ -752,7 +767,7 @@ void VisualizationWidget::handleLayerSelection(TreeItem* item)
 
                 if(found)
                 {
-                    isGroupLayer->setVisible(true);
+//                    isGroupLayer->setVisible(true);
                     return true;
                 }
             }
@@ -764,24 +779,27 @@ void VisualizationWidget::handleLayerSelection(TreeItem* item)
     auto res = layerIterator(layersList);
 
     if(res == false)
-        qDebug()<<"Warning, layer "<<itemName<<" not found in map layers in "<<__PRETTY_FUNCTION__;
+        qDebug()<<"Warning, layer "<<item->getName()<<" not found in map layers in "<<__PRETTY_FUNCTION__;
 
 }
 
 
-void VisualizationWidget::handleOpacityChange(const QString& layerName, const double opacity)
+void VisualizationWidget::handleOpacityChange(const QString& layerID, const double opacity)
 {
-    auto layer = this->findLayer(layerName);
+    if(layerID.isEmpty())
+        return;
+
+    auto layer = this->findLayer(layerID);
 
     if(layer)
         layer->setOpacity(opacity);
-//    else
-//        qDebug()<<"Warning, could not find the layer "<<layerName;
+    //    else
+    //        qDebug()<<"Warning, could not find the layer "<<layerName;
 
 }
 
 
-Esri::ArcGISRuntime::Layer* VisualizationWidget::findLayer(const QString& name)
+Esri::ArcGISRuntime::Layer* VisualizationWidget::findLayer(const QString& layerID)
 {
     auto layers = mapGIS->operationalLayers();
 
@@ -791,7 +809,7 @@ Esri::ArcGISRuntime::Layer* VisualizationWidget::findLayer(const QString& name)
         {
             auto layer = layers->at(i);
 
-            if(name.compare(layer->name()) == 0)
+            if(name.compare(layer->layerId()) == 0)
                 return layer;
 
             // Check for sublayers
@@ -805,12 +823,12 @@ Esri::ArcGISRuntime::Layer* VisualizationWidget::findLayer(const QString& name)
 
         }
 
-       return nullptr;
+        return nullptr;
     };
 
 
 
-    return layerIterator(layers,name);
+    return layerIterator(layers,layerID);
 }
 
 
@@ -1249,9 +1267,11 @@ RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePat
     });
 
     layer->setName(layerName);
+    auto layerID = this->createUniqueID();
+    layer->setLayerId(layerID);
 
     // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName,parentItem);
+    layersTree->addItemToTree(layerName,layerID,parentItem);
 
     return layer;
 }
@@ -1280,8 +1300,11 @@ FeatureLayer* VisualizationWidget::createAndAddShapefileLayer(const QString& fil
 
     layer->setName(layerName);
 
+    auto layerID = this->createUniqueID();
+    layer->setLayerId(layerID);
+
     // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName,parentItem);
+    layersTree->addItemToTree(layerName, layerID, parentItem);
 
     return layer;
 }
@@ -1292,7 +1315,8 @@ ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QStri
     ArcGISMapImageLayer* layer  = new ArcGISMapImageLayer(QUrl(url), this);
 
     // Add the layers to the layer tree
-    auto layerTreeItem = layersTree->addItemToTree(layerName,parentItem);
+    auto layerID = this->createUniqueID();
+    auto layerTreeItem = layersTree->addItemToTree(layerName, layerID, parentItem);
 
     connect(layer, &ArcGISMapImageLayer::doneLoading, this, [this, layer, layerTreeItem](Error loadError)
     {
@@ -1310,7 +1334,7 @@ ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QStri
         {
             auto subLayerName = it->name();
 
-            layersTree->addItemToTree(subLayerName,layerTreeItem);
+            layersTree->addItemToTree(subLayerName, QString(), layerTreeItem);
         }
 
 
@@ -1319,6 +1343,7 @@ ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QStri
     });
 
     layer->setName(layerName);
+    layer->setLayerId(layerID);
 
 
     return layer;
@@ -1336,6 +1361,8 @@ void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, 
         return;
     });
 
+    auto layerID = this->createUniqueID();
+
     connect(m_geodatabase, &Geodatabase::doneLoading, this, [=](Error error)
     {
         if (error.isEmpty())
@@ -1346,6 +1373,7 @@ void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, 
             FeatureLayer* featureLayer = new FeatureLayer(featureTable, this);
 
             featureLayer->setName(layerName);
+            featureLayer->setLayerId(layerID);
 
             // add the feature layer to the map
             mapGIS->operationalLayers()->append(featureLayer);
@@ -1355,8 +1383,9 @@ void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, 
     // load the geodatabase
     m_geodatabase->load();
 
+
     // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName,parentItem);
+    layersTree->addItemToTree(layerName, layerID, parentItem);
 }
 
 
@@ -1380,7 +1409,10 @@ KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, co
 
     kmlLayer->setOpacity(opacity);
 
+    auto layerID = this->createUniqueID();
+
     kmlLayer->setName(layerName);
+    kmlLayer->setLayerId(layerID);
 
     // When the layer is done loading, zoom to extents of the data
     connect(kmlLayer, &KmlLayer::doneLoading, this, [this, kmlLayer](Error loadError)
@@ -1396,7 +1428,7 @@ KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, co
     });
 
     // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName,parentItem);
+    layersTree->addItemToTree(layerName, layerID, parentItem);
 
     return kmlLayer;
 }
@@ -1416,11 +1448,14 @@ FeatureCollectionLayer* VisualizationWidget::createAndAddXMLShakeMapLayer(const 
         return nullptr;
     }
 
-
     XMLlayer->setName(layerName);
 
+    auto layerID = this->createUniqueID();
+
+    XMLlayer->setLayerId(layerID);
+
     // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName,parentItem);
+    layersTree->addItemToTree(layerName, layerID, parentItem);
 
     return XMLlayer;
 }
@@ -1484,9 +1519,6 @@ void VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* layer, TreeI
     mapGIS->operationalLayers()->append(layer);
 
 
-    // Add the layers to the layer tree
-    auto layerTreeItem = layersTree->addItemToTree(layer->name(), parent);
-
 
     //        connect(layer, &Layer::doneLoading, this, [this, layer, layerTreeItem](Error loadError)
     //        {
@@ -1524,6 +1556,12 @@ void VisualizationWidget::removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer)
 }
 
 
+QString VisualizationWidget::createUniqueID(void)
+{
+    auto id = QUuid::createUuid();
+
+    return id.toString();
+}
 
 //     connect to the mouse clicked signal on the MapQuickView
 //     This code snippet adds a point to where the mouse click is

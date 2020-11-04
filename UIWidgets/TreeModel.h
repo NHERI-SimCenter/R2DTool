@@ -32,7 +32,7 @@ public:
     TreeItem *getRootItem() const;
 
     // If parent item is not provided, the item will get added to the root of the tree
-    TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
+    TreeItem* addItemToTree(const QString itemText, const QString itemID, TreeItem* parent = nullptr);
 
     bool removeItemFromTree(const QString& itemName);
 

@@ -86,7 +86,7 @@ public:
     // Create a layer from a map server URL
     Esri::ArcGISRuntime::ArcGISMapImageLayer* createAndAddMapServerLayer(const QString& url, const QString& layerName, TreeItem* parentItem);
 
-    Esri::ArcGISRuntime::Layer* findLayer(const QString& name);
+    Esri::ArcGISRuntime::Layer* findLayer(const QString& layerID);
 
     // Get the visualization widget
     QWidget *getVisWidget();
@@ -117,7 +117,7 @@ public slots:
     void loadPipelineData(void);
     void changeLayerOrder(const int from, const int to);
     void handleLayerSelection(TreeItem* item);
-    void handleOpacityChange(const QString& layerName, const double opacity);
+    void handleOpacityChange(const QString& layerID, const double opacity);
 
 private slots:
     void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);
@@ -169,6 +169,8 @@ private:
     // The GIS widget
     QWidget* visWidget;
     void createVisualizationWidget(void);
+
+    QString createUniqueID(void);
 
 };
 

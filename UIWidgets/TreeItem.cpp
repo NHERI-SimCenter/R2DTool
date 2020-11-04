@@ -59,7 +59,7 @@
 #include <QGridLayout>
 #include <QLabel>
 
-TreeItem::TreeItem(const QVector<QVariant> &data, TreeItem *parent) : QObject(), itemData(data), parentItem(parent)
+TreeItem::TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parent) : QObject(), itemData(data), parentItem(parent), itemID(ID)
 {
     opacityDialog = nullptr;
     itemName = data.at(0).toString();
@@ -294,9 +294,17 @@ void TreeItem::changeOpacity()
 
 void TreeItem::handleChangeOpacity(int value)
 {
+    if(itemID.isEmpty())
+        return;
+
     auto opacity = static_cast<double>(value+1)/100.0;
 
-    emit opacityChanged(itemName, opacity);
+    emit opacityChanged(itemID, opacity);
+}
+
+QString TreeItem::getItemID() const
+{
+    return itemID;
 }
 
 QString TreeItem::getName() const

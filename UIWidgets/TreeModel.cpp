@@ -269,7 +269,7 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
 }
 
 
-TreeItem* TreeModel::addItemToTree(const QString itemText, TreeItem* parent)
+TreeItem* TreeModel::addItemToTree(const QString itemText, const QString layerID, TreeItem* parent)
 {
     if(parent == nullptr)
         parent = rootItem;
@@ -279,7 +279,7 @@ TreeItem* TreeModel::addItemToTree(const QString itemText, TreeItem* parent)
 
     QVector<QVariant> childText = {itemText};
 
-    auto childItem = new TreeItem(childText, parent);
+    auto childItem = new TreeItem(childText, layerID, parent);
 
     parent->appendChild(childItem);
 
@@ -354,9 +354,10 @@ TreeItem* TreeModel::getTreeItem(const QString& itemName, const QString& parentN
         if(name.compare(thisItemName) == 0 )
         {
             auto thisItemParentName = thisItemParent->getName();
-            if(thisItemParent == nullptr || parentName.compare(thisItemParentName) == 0)
+            if(thisItemParent == rootItem || parentName.compare(thisItemParentName) == 0)
                 return item;
         }
+
 
         // Now check the children of this item
         QVector<TreeItem *> children = item->getChildItems();
