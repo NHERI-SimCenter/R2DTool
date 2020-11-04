@@ -43,14 +43,13 @@ TreeItem* TreeView::addItemToTree(const QString itemText, TreeItem* parent)
 
     connect(newLayer, &TreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
 
-
     return newLayer;
 }
 
 
-TreeItem* TreeView::getTreeItem(const QString& itemName) const
+TreeItem* TreeView::getTreeItem(const QString& itemName, const QString& parentName) const
 {
-    return layersModel->getTreeItem(itemName);
+    return layersModel->getTreeItem(itemName, parentName);
 }
 
 
@@ -61,7 +60,9 @@ void TreeView::showPopup(const QPoint &position)
 
     auto itemName = itemIndex.data(0).toString();
 
-    TreeItem *item = layersModel->getTreeItem(itemName);
+    auto parentName = itemIndex.parent().data(0).toString();
+
+    TreeItem *item = layersModel->getTreeItem(itemName,parentName);
 
     if (!item)
         return;

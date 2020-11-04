@@ -86,6 +86,8 @@ public:
     // Create a layer from a map server URL
     Esri::ArcGISRuntime::ArcGISMapImageLayer* createAndAddMapServerLayer(const QString& url, const QString& layerName, TreeItem* parentItem);
 
+    Esri::ArcGISRuntime::Layer* findLayer(const QString& name);
+
     // Get the visualization widget
     QWidget *getVisWidget();
 

@@ -274,7 +274,7 @@ TreeItem* TreeModel::addItemToTree(const QString itemText, TreeItem* parent)
     if(parent == nullptr)
         parent = rootItem;
 
-    if(auto exists = this->getTreeItem(itemText))
+    if(auto exists = this->getTreeItem(itemText, parent))
         return exists;
 
     QVector<QVariant> childText = {itemText};
@@ -329,16 +329,33 @@ bool TreeModel::removeItemFromTree(const QString& itemName)
     return res;
 }
 
-
-TreeItem* TreeModel::getTreeItem(const QString& itemName) const
+TreeItem* TreeModel::getTreeItem(const QString& itemName, const TreeItem* parent) const
 {
-    std::function<TreeItem* (TreeItem*, const QString&)> nestedItemFinder = [&](TreeItem* item, const QString& name) -> TreeItem*
+    QString parentName;
+
+    if(parent != nullptr)
     {
+        parentName = parent->getName();
+    }
+
+    return this->getTreeItem(itemName,parentName);
+}
+
+
+TreeItem* TreeModel::getTreeItem(const QString& itemName, const QString& parentName) const
+{
+
+    std::function<TreeItem* (TreeItem*, const QString&, const QString&)> nestedItemFinder = [&](TreeItem* item, const QString& name, const QString& parentName) -> TreeItem*
+    {
+        auto thisItemParent = item->getParentItem();
+
         // Check if this is the item
         auto thisItemName = item->data(0).toString();
-        if(name.compare(thisItemName) == 0)
+        if(name.compare(thisItemName) == 0 )
         {
-            return item;
+            auto thisItemParentName = thisItemParent->getName();
+            if(thisItemParent == nullptr || parentName.compare(thisItemParentName) == 0)
+                return item;
         }
 
         // Now check the children of this item
@@ -347,16 +364,8 @@ TreeItem* TreeModel::getTreeItem(const QString& itemName) const
         {
             auto child = children.at(i);
 
-            auto childName = child->data(0).toString();
-
-            // Check if this child is the item
-            if(name.compare(childName) == 0)
-            {
-                return child;
-            }
-
             // Check the childrens children
-            if(auto foundChild = nestedItemFinder(child,name))
+            if(auto foundChild = nestedItemFinder(child,name, parentName))
                 return foundChild;
         }
 
@@ -364,7 +373,7 @@ TreeItem* TreeModel::getTreeItem(const QString& itemName) const
         return nullptr;
     };
 
-    return nestedItemFinder(rootItem, itemName);
+    return nestedItemFinder(rootItem, itemName, parentName);
 }
 
 

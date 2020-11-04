@@ -298,3 +298,8 @@ void TreeItem::handleChangeOpacity(int value)
 
     emit opacityChanged(itemName, opacity);
 }
+
+QString TreeItem::getName() const
+{
+    return itemName;
+}

@@ -48,6 +48,8 @@ public:
 
     TreeItem *findChild(QString name);
 
+    QString getName() const;
+
 public slots:
 
     void changeOpacity();

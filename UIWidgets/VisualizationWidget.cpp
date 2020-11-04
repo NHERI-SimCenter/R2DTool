@@ -771,20 +771,46 @@ void VisualizationWidget::handleLayerSelection(TreeItem* item)
 
 void VisualizationWidget::handleOpacityChange(const QString& layerName, const double opacity)
 {
+    auto layer = this->findLayer(layerName);
+
+    if(layer)
+        layer->setOpacity(opacity);
+//    else
+//        qDebug()<<"Warning, could not find the layer "<<layerName;
+
+}
+
+
+Esri::ArcGISRuntime::Layer* VisualizationWidget::findLayer(const QString& name)
+{
     auto layers = mapGIS->operationalLayers();
 
-    for(int i = 0; i<layers->size(); ++i)
+    std::function<Layer*(LayerListModel* layers, const QString& name)> layerIterator = [&](LayerListModel* layers, const QString& name) ->Layer*
     {
-        auto layer = layers->at(i);
-
-        if(layerName.compare(layer->name()) == 0)
+        for(int i = 0; i<layers->size(); ++i)
         {
-            layer->setOpacity(opacity);
-            return;
-        }
-    }
+            auto layer = layers->at(i);
 
-    qDebug()<<"Warning, could not find the layer "<<layerName;
+            if(name.compare(layer->name()) == 0)
+                return layer;
+
+            // Check for sublayers
+            if(auto isGroupLayer = dynamic_cast<GroupLayer*>(layer))
+            {
+                auto subLayers = isGroupLayer->layers();
+
+                if(auto foundLayer = layerIterator(subLayers, name))
+                    return foundLayer;
+            }
+
+        }
+
+       return nullptr;
+    };
+
+
+
+    return layerIterator(layers,name);
 }
 
 

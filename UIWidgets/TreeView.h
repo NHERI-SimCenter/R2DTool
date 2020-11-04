@@ -20,7 +20,7 @@ public:
 
     TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
 
-    TreeItem* getTreeItem(const QString& itemName) const;
+    TreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
 
 public slots:
     // Shows the "right-click" menu

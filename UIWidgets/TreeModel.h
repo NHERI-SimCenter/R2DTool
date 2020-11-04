@@ -36,7 +36,8 @@ public:
 
     bool removeItemFromTree(const QString& itemName);
 
-    TreeItem *getTreeItem(const QString& itemName) const;
+    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
+    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
 
     Qt::DropActions supportedDropActions() const override;
 
