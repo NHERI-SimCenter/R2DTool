@@ -6,11 +6,9 @@
 #include <QDataStream>
 #include <QDebug>
 
-TreeModel::TreeModel(QObject *parent)
-    : QAbstractItemModel(parent)
+TreeModel::TreeModel(QObject *parent) : QAbstractItemModel(parent)
 {    
     rootItem = new TreeItem({tr("Layers")});
-
 }
 
 
@@ -32,6 +30,25 @@ int TreeModel::columnCount(const QModelIndex &parent) const
 Qt::DropActions TreeModel::supportedDropActions() const
 {
     return Qt::MoveAction;
+}
+
+
+QMimeData* TreeModel::mimeData(const QModelIndexList &indexes) const
+{
+    QMimeData *mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    foreach (const QModelIndex &index, indexes) {
+        if (index.isValid()) {
+            QString text = data(index, Qt::DisplayRole).toString();
+            stream << text;
+        }
+    }
+
+    mimeData->setData("application/data", encodedData);
+    return mimeData;
 }
 
 
@@ -151,7 +168,7 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
     //    if (!index.isValid())
     //        return Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled ;
 
-    Qt::ItemFlags flags = Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
+    Qt::ItemFlags flags = Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsUserCheckable;
 
     if (index.column() == 0)
         flags |= Qt::ItemIsUserCheckable;
@@ -329,6 +346,7 @@ bool TreeModel::removeItemFromTree(const QString& itemName)
     return res;
 }
 
+
 TreeItem* TreeModel::getTreeItem(const QString& itemName, const TreeItem* parent) const
 {
     QString parentName;
@@ -375,25 +393,6 @@ TreeItem* TreeModel::getTreeItem(const QString& itemName, const QString& parentN
     };
 
     return nestedItemFinder(rootItem, itemName, parentName);
-}
-
-
-QMimeData* TreeModel::mimeData(const QModelIndexList &indexes) const
-{
-    QMimeData *mimeData = new QMimeData();
-    QByteArray encodedData;
-
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
-
-    foreach (const QModelIndex &index, indexes) {
-        if (index.isValid()) {
-            QString text = data(index, Qt::DisplayRole).toString();
-            stream << text;
-        }
-    }
-
-    mimeData->setData("application/data", encodedData);
-    return mimeData;
 }
 
 

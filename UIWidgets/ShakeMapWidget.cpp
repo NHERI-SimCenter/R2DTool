@@ -24,14 +24,15 @@
 
 using namespace Esri::ArcGISRuntime;
 
-ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget) : SimCenterAppWidget(nullptr), theVisualizationWidget(visWidget)
+ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     progressBar = nullptr;
     directoryInputWidget = nullptr;
     progressBarWidget = nullptr;
-    loadShakeMapStackedWidget = nullptr;
+    shakeMapStackedWidget = nullptr;
     progressLabel = nullptr;
     pathToShakeMapDirectory = "NULL";
+
 
     //    this->loadComponentData();
 }
@@ -54,7 +55,7 @@ void ShakeMapWidget::showShakeMapLayers(bool state)
         for(auto&& it : shakeMapContainer)
         {
             auto eventName = it->eventLayer->name();
-//            it->eventKMZLayer->name();
+            //            it->eventKMZLayer->name();
             layersTreeView->removeItemFromTree(eventName);
         }
 
@@ -85,75 +86,80 @@ void ShakeMapWidget::showShakeMapLayers(bool state)
             layersTreeView->addItemToTree(layerName, layerID, eventItem);
         }
     }
+}
 
 
+QStackedWidget* ShakeMapWidget::getShakeMapWidget(void)
+{
+    if (shakeMapStackedWidget)
+        return shakeMapStackedWidget.get();
+
+    shakeMapStackedWidget = std::make_unique<QStackedWidget>();
+
+    directoryInputWidget = new QWidget(this);
+    auto inputLayout = new QHBoxLayout(directoryInputWidget);
+    directoryInputWidget->setLayout(inputLayout);
+
+    progressBarWidget = new QWidget(this);
+    auto progressBarLayout = new QVBoxLayout(progressBarWidget);
+    progressBarWidget->setLayout(progressBarLayout);
+
+    auto progressText = new QLabel("Loading ShakeMap data. This may take a while.",progressBarWidget);
+    progressLabel =  new QLabel(" ",this);
+    progressBar = new QProgressBar(progressBarWidget);
+
+    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    progressBarLayout->addItem(vspacer);
+    progressBarLayout->addWidget(progressText,1, Qt::AlignCenter);
+    progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
+    progressBarLayout->addWidget(progressBar);
+    progressBarLayout->addItem(vspacer);
+    progressBarLayout->addStretch(1);
+
+    shakeMapStackedWidget->addWidget(directoryInputWidget);
+    shakeMapStackedWidget->addWidget(progressBarWidget);
+
+    shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
+
+    QLabel* selectComponentsText = new QLabel();
+    selectComponentsText->setText("Select a folder containing ShakeMap files");
+
+    shakeMapDirectoryLineEdit = new QLineEdit();
+    shakeMapDirectoryLineEdit->setMaximumWidth(750);
+    shakeMapDirectoryLineEdit->setMinimumWidth(400);
+    shakeMapDirectoryLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    QPushButton *browseFileButton = new QPushButton();
+    browseFileButton->setText(tr("Browse"));
+    browseFileButton->setMaximumWidth(150);
+
+    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseShakeMapDirectoryDialog()));
+
+    inputLayout->addStretch(0);
+    inputLayout->addWidget(selectComponentsText);
+    inputLayout->addWidget(shakeMapDirectoryLineEdit);
+    inputLayout->addWidget(browseFileButton);
+    inputLayout->addStretch(0);
+
+    shakeMapStackedWidget->setWindowTitle("Select folder containing ShakeMap files");
+    shakeMapStackedWidget->setMinimumWidth(400);
+    shakeMapStackedWidget->setMinimumHeight(150);
+
+    return shakeMapStackedWidget.get();
 }
 
 
 void ShakeMapWidget::showLoadShakeMapDialog(void)
 {
 
-    if (!loadShakeMapStackedWidget)
+    if (!shakeMapStackedWidget)
     {
-        loadShakeMapStackedWidget = std::make_unique<QStackedWidget>();
-
-        directoryInputWidget = new QWidget(this);
-        auto inputLayout = new QGridLayout(directoryInputWidget);
-        directoryInputWidget->setLayout(inputLayout);
-
-        progressBarWidget = new QWidget(this);
-        auto progressBarLayout = new QVBoxLayout(progressBarWidget);
-        progressBarWidget->setLayout(progressBarLayout);
-
-        auto progressText = new QLabel("Loading ShakeMap data. This may take a while.",progressBarWidget);
-        progressLabel =  new QLabel(" ",this);
-        progressBar = new QProgressBar(progressBarWidget);
-
-        auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-        progressBarLayout->addItem(vspacer);
-        progressBarLayout->addWidget(progressText,1, Qt::AlignCenter);
-        progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
-        progressBarLayout->addWidget(progressBar);
-        progressBarLayout->addItem(vspacer);
-        progressBarLayout->addStretch(1);
-
-        loadShakeMapStackedWidget->addWidget(directoryInputWidget);
-        loadShakeMapStackedWidget->addWidget(progressBarWidget);
-
-        loadShakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
-
-        QLabel* selectComponentsText = new QLabel();
-        selectComponentsText->setText("Select a folder with ShakeMap files");
-
-        shakeMapDirectoryLineEdit = new QLineEdit();
-        shakeMapDirectoryLineEdit->setMaximumWidth(750);
-        shakeMapDirectoryLineEdit->setMinimumWidth(400);
-        shakeMapDirectoryLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        QPushButton *browseFileButton = new QPushButton();
-        browseFileButton->setText(tr("Browse"));
-        browseFileButton->setMaximumWidth(150);
-
-        //        QPushButton *loadFileButton = new QPushButton();
-        //        loadFileButton->setText(tr("Load File"));
-        //        loadFileButton->setMaximumWidth(150);
-
-        connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseShakeMapDirectoryDialog()));
-        //        connect(loadFileButton,SIGNAL(clicked()),this,SLOT(loadComponentData()));
-
-        inputLayout->addWidget(selectComponentsText, 0, 0);
-        inputLayout->addWidget(shakeMapDirectoryLineEdit, 0, 1);
-        inputLayout->addWidget(browseFileButton, 0, 2);
-
-        loadShakeMapStackedWidget->setWindowTitle("Select folder containing ShakeMap");
-
-        loadShakeMapStackedWidget->setMinimumWidth(400);
-        loadShakeMapStackedWidget->setMinimumHeight(150);
+        this->getShakeMapWidget();
     }
 
-    loadShakeMapStackedWidget->show();
-    loadShakeMapStackedWidget->raise();
-    loadShakeMapStackedWidget->activateWindow();
+    shakeMapStackedWidget->show();
+    shakeMapStackedWidget->raise();
+    shakeMapStackedWidget->activateWindow();
 }
 
 
@@ -220,7 +226,7 @@ void ShakeMapWidget::loadShakeMapData(void)
 
     eventLayer->setName(eventName);
 
-    loadShakeMapStackedWidget->setCurrentWidget(progressBarWidget);
+    shakeMapStackedWidget->setCurrentWidget(progressBarWidget);
 
     progressBarWidget->setVisible(true);
 
@@ -317,9 +323,13 @@ void ShakeMapWidget::loadShakeMapData(void)
     theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
 
     // Reset the widget back to the input pane and close
-    loadShakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
+    shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
     directoryInputWidget->setVisible(true);
-    loadShakeMapStackedWidget->close();
+
+    if(shakeMapStackedWidget->isModal())
+        shakeMapStackedWidget->close();
+
+    emit loadingComplete(true);
 
     return;
 }

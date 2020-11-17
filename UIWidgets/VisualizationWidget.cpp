@@ -62,9 +62,7 @@ using namespace Esri::ArcGISRuntime;
 VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {
     visWidget = nullptr;
-
     this->setContentsMargins(0,0,0,0);
-    this->setAcceptDrops(true);
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
@@ -123,6 +121,15 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Connect to MapQuickView::identifyLayerCompleted signal
     connect(mapViewWidget, &MapGraphicsView::identifyLayersCompleted, this, &VisualizationWidget::identifyLayersCompleted);
 
+    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
+    QString layerName = "Buildings Foot Print";
+    QString layerID = this->createUniqueID();
+    TreeItem* buildingsItem = layersTree->addItemToTree(layerName,layerID);
+    auto buildingsLayer = this->createAndAddKMLLayer(filePath, layerName, buildingsItem);
+    buildingsLayer->setLayerId(layerID);
+    buildingsLayer->setName("SF");
+    this->addLayerToMap(buildingsLayer,buildingsItem);
+
 }
 
 
@@ -135,8 +142,6 @@ VisualizationWidget::~VisualizationWidget()
 void VisualizationWidget::createVisualizationWidget(void)
 {
     visWidget = new QWidget(this);
-
-    visWidget->setAcceptDrops(true);
     visWidget->setContentsMargins(0,0,0,0);
 
     QGridLayout* layout = new QGridLayout(visWidget);

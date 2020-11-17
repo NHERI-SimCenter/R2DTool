@@ -43,12 +43,12 @@ INCLUDEPATH += $$PWD/Utils \
 
 SOURCES +=  main.cpp \
             CSVReaderWriter.cpp \
-    UIWidgets/CustomGraphicsScene.cpp \
-    UIWidgets/CustomGraphicsView.cpp \
-    UIWidgets/GridNode.cpp \
-    UIWidgets/MapViewSubWidget.cpp \
-    UIWidgets/NodeHandle.cpp \
-    UIWidgets/RectangleGrid.cpp \
+            UIWidgets/CustomGraphicsScene.cpp \
+            UIWidgets/CustomGraphicsView.cpp \
+            UIWidgets/GridNode.cpp \
+            UIWidgets/MapViewSubWidget.cpp \
+            UIWidgets/NodeHandle.cpp \
+            UIWidgets/RectangleGrid.cpp \
             WorkflowAppRDT.cpp \
             RunWidget.cpp \
             XMLAdaptor.cpp \
@@ -57,6 +57,8 @@ SOURCES +=  main.cpp \
             UIWidgets/PopUpWidget.cpp \
             UIWidgets/TreeItem.cpp \
             UIWidgets/TreeModel.cpp \
+            UIWidgets/TreeView.cpp \
+            UIWidgets/TreeViewStyle.cpp \
             UIWidgets/VisualizationWidget.cpp \
             UIWidgets/ComponentInputWidget.cpp \
             UIWidgets/DecisionVariableWidget.cpp \
@@ -65,18 +67,20 @@ SOURCES +=  main.cpp \
             UIWidgets/AssetsWidget.cpp \
             UIWidgets/EngDemandParamWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
+            UIWidgets/ShakeMapWidget.cpp \
+            UIWidgets/UserInputGMWidget.cpp \
 #            UIWidgets/IntensityMeasureWidget.cpp \
             UIWidgets/DamageMeasureWidget.cpp \
 
 
 HEADERS +=  WorkflowAppRDT.h\
             RunWidget.h \
-    UIWidgets/CustomGraphicsScene.h \
-    UIWidgets/CustomGraphicsView.h \
-    UIWidgets/GridNode.h \
-    UIWidgets/MapViewSubWidget.h \
-    UIWidgets/NodeHandle.h \
-    UIWidgets/RectangleGrid.h \
+            UIWidgets/CustomGraphicsScene.h \
+            UIWidgets/CustomGraphicsView.h \
+            UIWidgets/GridNode.h \
+            UIWidgets/MapViewSubWidget.h \
+            UIWidgets/NodeHandle.h \
+            UIWidgets/RectangleGrid.h \
             XMLAdaptor.h \
             shakeMapClient.h \
             CSVReaderWriter.h \
@@ -84,6 +88,8 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/PopUpWidget.h \
             UIWidgets/TreeItem.h \
             UIWidgets/TreeModel.h \
+            UIWidgets/TreeView.h \
+            UIWidgets/TreeViewStyle.h \
             UIWidgets/DecisionVariableWidget.h \
             UIWidgets/HazardsWidget.h \
             UIWidgets/ResultsWidget.h \
@@ -92,6 +98,8 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/ComponentInputWidget.h \
             UIWidgets/EngDemandParamWidget.h \
             UIWidgets/GeneralInformationWidget.h \
+            UIWidgets/ShakeMapWidget.h \
+            UIWidgets/UserInputGMWidget.h \
 #            UIWidgets/IntensityMeasureWidget.h \
             UIWidgets/DamageMeasureWidget.h \
 

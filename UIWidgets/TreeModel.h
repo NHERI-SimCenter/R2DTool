@@ -49,6 +49,7 @@ public:
 
     bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
 
+
 signals:
 
     void itemValueChanged(TreeItem* item);

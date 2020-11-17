@@ -102,7 +102,9 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
     pipelineWidget->testFileLoad(pathToPipelineInfoFile);
 
-    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/AnchorageExample/AnchorageBuildings.csv";
+//    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/AnchorageExample/AnchorageBuildings.csv";
+
+    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventoryCopy.csv";
     buildingWidget->testFileLoad(pathToBuildingInfoFile);
 
     this->setLayout(mainLayout);

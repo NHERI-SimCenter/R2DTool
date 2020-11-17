@@ -53,15 +53,40 @@ void GridNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->drawEllipse(nodeGeometry);
 }
 
+
 void GridNode::setXPos(const std::function<double(void)> &value)
 {
     xPos = value;
 }
 
+
 void GridNode::setYPos(const std::function<double(void)> &value)
 {
     yPos = value;
 }
+
+
+double GridNode::getXPos(void)
+{
+    auto x = xPos();
+
+    return x;
+}
+
+
+double GridNode::getYPos(void)
+{
+    auto y = yPos();
+
+    return y;
+}
+
+
+QPointF GridNode::getPoint(void)
+{
+    return this->pos();
+}
+
 
 void GridNode::updateGeometry(void)
 {

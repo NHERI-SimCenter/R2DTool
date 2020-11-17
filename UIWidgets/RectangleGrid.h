@@ -5,9 +5,10 @@
 #include <QObject>
 
 class NodeHandle;
+class GridNode;
 class SiteConfig;
 class VisualizationWidget;
-class RuptureWidget;
+//class RuptureWidget;
 
 class RectangleGrid : public QObject, public QGraphicsItem
 {
@@ -26,13 +27,12 @@ public:
 
     void setBottomLeftNode(NodeHandle *value);
     void setBottomLeftNode(const double latitude, const double longitude);
-
     void setBottomRightNode(NodeHandle *value);
-
     void setTopRightNode(NodeHandle *value);
     void setTopRightNode(const double latitude, const double longitude);
+    void setTopLeftNode(NodeHandle *value);   
 
-    void setTopLeftNode(NodeHandle *value);
+    void setCenterNode(const double latitude, const double longitude);
 
     NodeHandle *getBottomLeftNode() const;
     NodeHandle *getBottomRightNode() const;
@@ -42,7 +42,18 @@ public:
 
     void setGMSiteConfig(SiteConfig *value);
     void setVisualizationWidget(VisualizationWidget *value);
-    void setRuptureWidget(RuptureWidget *value);
+//    void setRuptureWidget(RuptureWidget *value);
+
+    size_t getNumDivisionsHoriz() const;
+    void setNumDivisionsHoriz(const size_t &value);
+
+    size_t getNumDivisionsVertical() const;
+    void setNumDivisionsVertical(const size_t &value);
+
+    void clearGrid();
+    void createGrid();
+
+    QVector<GridNode *> getGridNodeVec() const;
 
 private slots:
     void handleBottomLeftCornerChanged(const QPointF& pos);
@@ -50,6 +61,9 @@ private slots:
     void handleTopLeftCornerChanged(const QPointF& pos);
     void handleTopRightCornerChanged(const QPointF& pos);
     void handleCenterNodeChanged(const QPointF& pos);
+    void handleLatLonChanged(void);
+    void handleGridDivisionsChanged(void);
+//    void handleRuptureLocationChanged(void);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
@@ -65,6 +79,7 @@ private:
     QColor color;
     QRect rectangleGeometry;
     bool changingDimensions;
+    bool updateConnectedWidgets;
 
     size_t numDivisionsHoriz;
     size_t numDivisionsVertical;
@@ -77,9 +92,14 @@ private:
 
     SiteConfig* GMSiteConfig;
     VisualizationWidget* theVisWidget;
-    RuptureWidget* theRuptureWidget;
+//    RuptureWidget* theRuptureWidget;
 
-    void createGrid();
+    QVector<GridNode*> gridNodeVec;
+
+    double latMin;
+    double lonMin;
+    double latMax;
+    double lonMax;
 
 };
 

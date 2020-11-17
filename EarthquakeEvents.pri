@@ -13,13 +13,17 @@ SOURCES +=  $$PATH_TO_GMUTILS/UI/GMWidget.cpp \
             $$PATH_TO_GMUTILS/UI/Location.cpp \
             $$PATH_TO_GMUTILS/UI/Site.cpp \
             $$PATH_TO_GMUTILS/UI/PointSourceRupture.cpp \
+            $$PATH_TO_GMUTILS/UI/EarthquakeRuptureForecast.cpp \
             $$PATH_TO_GMUTILS/UI/RuptureLocation.cpp \
             $$PATH_TO_GMUTILS/UI/GMPE.cpp \
             $$PATH_TO_GMUTILS/UI/IntensityMeasure.cpp \
             $$PATH_TO_GMUTILS/UI/SiteWidget.cpp \
             $$PATH_TO_GMUTILS/UI/RuptureWidget.cpp \
+            $$PATH_TO_GMUTILS/UI/EarthquakeRuptureForecastWidget.cpp \
+            $$PATH_TO_GMUTILS/UI/PointSourceRuptureWidget.cpp \
             $$PATH_TO_GMUTILS/UI/GMPEWidget.cpp \
             $$PATH_TO_GMUTILS/UI/IntensityMeasureWidget.cpp \
+            $$PATH_TO_GMUTILS/UI/SpatialCorrelationWidget.cpp \
             $$PATH_TO_GMUTILS/UI/RecordSelectionConfig.cpp \
             $$PATH_TO_GMUTILS/UI/RecordSelectionWidget.cpp \
             $$PATH_TO_GMUTILS/UI/ScenarioProcessor.cpp \
@@ -45,13 +49,17 @@ HEADERS +=  $$PATH_TO_GMUTILS/UI/GMWidget.h \
             $$PATH_TO_GMUTILS/UI/Location.h \
             $$PATH_TO_GMUTILS/UI/Site.h \
             $$PATH_TO_GMUTILS/UI/PointSourceRupture.h \
+            $$PATH_TO_GMUTILS/UI/EarthquakeRuptureForecast.h \
             $$PATH_TO_GMUTILS/UI/RuptureLocation.h \
+            $$PATH_TO_GMUTILS/UI/EarthquakeRuptureForecastWidget.h \
+            $$PATH_TO_GMUTILS/UI/PointSourceRuptureWidget.h \
             $$PATH_TO_GMUTILS/UI/GMPE.h \
             $$PATH_TO_GMUTILS/UI/IntensityMeasure.h \
             $$PATH_TO_GMUTILS/UI/SiteWidget.h \
             $$PATH_TO_GMUTILS/UI/RuptureWidget.h \
             $$PATH_TO_GMUTILS/UI/GMPEWidget.h \
             $$PATH_TO_GMUTILS/UI/IntensityMeasureWidget.h \
+            $$PATH_TO_GMUTILS/UI/SpatialCorrelationWidget.h \
             $$PATH_TO_GMUTILS/UI/JsonSerializable.h \
             $$PATH_TO_GMUTILS/UI/RecordSelectionConfig.h \
             $$PATH_TO_GMUTILS/UI/RecordSelectionWidget.h \

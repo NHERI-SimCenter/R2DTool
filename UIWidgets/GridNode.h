@@ -20,6 +20,11 @@ public:
     void setXPos(const std::function<double(void)> &value);
     void setYPos(const std::function<double(void)> &value);
 
+    double getXPos(void);
+    double getYPos(void);
+
+    QPointF getPoint(void);
+
 public slots:
     void updateGeometry(void);
 

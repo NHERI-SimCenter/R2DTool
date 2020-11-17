@@ -62,7 +62,6 @@ int CSVReaderWriter::saveCSVFile(const QVector<QStringList>& data, const QString
     };
 
 
-
     for(auto&& row : data)
     {
         for(int i = 0; i<numCol; ++i)

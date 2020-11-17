@@ -104,6 +104,8 @@ public:
 
     TreeView *getLayersTree() const;
 
+    QString createUniqueID(void);
+
 signals:
     // Convex hull
     void taskSelectionChanged();
@@ -169,8 +171,6 @@ private:
     // The GIS widget
     QWidget* visWidget;
     void createVisualizationWidget(void);
-
-    QString createUniqueID(void);
 
 };
 

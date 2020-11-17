@@ -12,6 +12,18 @@
 TreeView::TreeView(QWidget *parent, VisualizationWidget* visWidget) : QTreeView(parent), theVisualizationWidget(visWidget)
 {
     layersModel = new TreeModel(this);
+    this->setModel(layersModel);
+
+    this->setMaximumWidth(300);
+    this->setWordWrap(true);
+
+    this->setAcceptDrops(true);
+    this->setDragEnabled(true);
+    this->setDragDropOverwriteMode(false);
+    this->setDefaultDropAction(Qt::MoveAction);
+    this->setDragDropMode(QTreeView::InternalMove);
+    this->setStyle(new TreeViewStyle(style()));
+    this->setFocusPolicy(Qt::NoFocus);
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -22,20 +34,8 @@ TreeView::TreeView(QWidget *parent, VisualizationWidget* visWidget) : QTreeView(
 
     connect(this, &QWidget::customContextMenuRequested, this, &TreeView::showPopup);
 
-    this->setModel(layersModel);
-    this->setMaximumWidth(300);
-    this->setWordWrap(true);
-    this->viewport()->setAcceptDrops(true);
-    this->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
-    this->setAcceptDrops(true);
-    this->setDragEnabled(true);
-    this->setDragDropOverwriteMode(false);
-    this->setDefaultDropAction(Qt::MoveAction);
-    this->setDragDropMode(QTreeView::InternalMove);
-    this->setFocusPolicy(Qt::NoFocus);
-    this->setStyle(new TreeViewStyle(style()));
-
 }
+
 
 TreeItem* TreeView::addItemToTree(const QString itemText, const QString layerID, TreeItem* parent)
 {

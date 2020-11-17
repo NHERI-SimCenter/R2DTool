@@ -67,10 +67,12 @@ class ShakeMapWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    ShakeMapWidget(VisualizationWidget* visWidget);
+    ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~ShakeMapWidget();
 
     void showShakeMapLayers(bool state);
+
+    QStackedWidget* getShakeMapWidget(void);
 
 public slots:
 
@@ -81,9 +83,13 @@ private slots:
     void loadShakeMapData(void);
     void chooseShakeMapDirectoryDialog(void);
 
+signals:
+
+    void loadingComplete(const bool value);
+
 private:
 
-    std::unique_ptr<QStackedWidget> loadShakeMapStackedWidget;
+    std::unique_ptr<QStackedWidget> shakeMapStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
     QLineEdit *shakeMapDirectoryLineEdit;

@@ -27,9 +27,15 @@ RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
     setZValue(-1);
 
     changingDimensions = false;
+    updateConnectedWidgets = true;
 
-    numDivisionsHoriz = 20;
-    numDivisionsVertical = 20;
+    latMin = 0.0;
+    lonMin = 0.0;
+    latMax = 0.0;
+    lonMax = 0.0;
+
+    numDivisionsHoriz = 10;
+    numDivisionsVertical = 10;
 
     color.setRgb(0,0,255,30);
 
@@ -58,7 +64,6 @@ RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
     connect(centerNode,&NodeHandle::positionChanged,this,&RectangleGrid::handleCenterNodeChanged);
 
     this->updateGeometry();
-    this->createGrid();
 }
 
 
@@ -106,41 +111,63 @@ void RectangleGrid::updateGeometry(void)
     topLeftNode->setPos(rectangleGeometry.topLeft());
     centerNode->setPos(centerPnt);
 
-    if(GMSiteConfig)
+    if(GMSiteConfig && updateConnectedWidgets)
     {
-        auto latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt);
-        auto latMax = theVisWidget->getLatFromScreenPoint(topRightPnt);
+        latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt);
+        latMax = theVisWidget->getLatFromScreenPoint(topRightPnt);
 
-        auto longMin = theVisWidget->getLongFromScreenPoint(bottomLeftPnt);
-        auto longMax = theVisWidget->getLongFromScreenPoint(topRightPnt);
+        lonMin = theVisWidget->getLongFromScreenPoint(bottomLeftPnt);
+        lonMax = theVisWidget->getLongFromScreenPoint(topRightPnt);
 
         GMSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
-        GMSiteConfig->siteGrid().longitude().set(longMin, longMax, numDivisionsVertical);
+        GMSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
 
-        auto centerPointLat = theVisWidget->getLatFromScreenPoint(centerPnt);
-        auto centerPointLong = theVisWidget->getLongFromScreenPoint(centerPnt);
+//        auto centerPointLat = theVisWidget->getLatFromScreenPoint(centerPnt);
+//        auto centerPointLong = theVisWidget->getLongFromScreenPoint(centerPnt);
 
-        theRuptureWidget->setLocation(centerPointLat,centerPointLong);
+//        theRuptureWidget->setLocation(centerPointLat,centerPointLong);
     }
 
     emit geometryChanged();
 }
 
-
-void RectangleGrid::setRuptureWidget(RuptureWidget *value)
+QVector<GridNode *> RectangleGrid::getGridNodeVec() const
 {
-    theRuptureWidget = value;
-
-    connect(&theRuptureWidget->getRuptureSource().location(), &RuptureLocation::latitudeChanged, [this]()
-    {
-
-    });
-
-    connect(&theRuptureWidget->getRuptureSource().location(), &RuptureLocation::longitudeChanged, [this]()
-    {
-
-    });
+    return gridNodeVec;
 }
+
+
+size_t RectangleGrid::getNumDivisionsVertical() const
+{
+    return numDivisionsVertical;
+}
+
+
+void RectangleGrid::setNumDivisionsVertical(const size_t &value)
+{
+    numDivisionsVertical = value;
+}
+
+
+size_t RectangleGrid::getNumDivisionsHoriz() const
+{
+    return numDivisionsHoriz;
+}
+
+
+void RectangleGrid::setNumDivisionsHoriz(const size_t &value)
+{
+    numDivisionsHoriz = value;
+}
+
+
+//void RectangleGrid::setRuptureWidget(RuptureWidget *value)
+//{
+//    theRuptureWidget = value;
+    
+//    connect(&theRuptureWidget->getRuptureSource().location(), &RuptureLocation::latitudeChanged, this, &RectangleGrid::handleRuptureLocationChanged);
+//    connect(&theRuptureWidget->getRuptureSource().location(), &RuptureLocation::longitudeChanged, this, &RectangleGrid::handleRuptureLocationChanged);
+//}
 
 
 void RectangleGrid::setVisualizationWidget(VisualizationWidget *value)
@@ -153,68 +180,17 @@ void RectangleGrid::setGMSiteConfig(SiteConfig *value)
 {
     GMSiteConfig = value;
 
-    //Connecting changes in input to edit mode
-    //Connecting grid latitude
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::minChanged, [this]()
-    {
-        auto latMin = GMSiteConfig->siteGrid().latitude().min();
-        auto latMax = GMSiteConfig->siteGrid().latitude().max();
+    // Connect grid latitude
+    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
 
-        auto lonMin = GMSiteConfig->siteGrid().longitude().min();
-        auto lonMax = GMSiteConfig->siteGrid().longitude().max();
+    // Connect grid longitude
+    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
 
-        this->setBottomLeftNode(latMin,lonMin);
-        this->setTopRightNode(latMax,lonMax);
-    });
-
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::maxChanged, [this]()
-    {
-        auto latMin = GMSiteConfig->siteGrid().latitude().min();
-        auto latMax = GMSiteConfig->siteGrid().latitude().max();
-
-        auto lonMin = GMSiteConfig->siteGrid().longitude().min();
-        auto lonMax = GMSiteConfig->siteGrid().longitude().max();
-
-        this->setBottomLeftNode(latMin,lonMin);
-        this->setTopRightNode(latMax,lonMax);
-    });
-
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::divisionsChanged, [this]()
-    {
-
-    });
-
-    //Connecting grid longitude
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::minChanged, [this]()
-    {
-        auto latMin = GMSiteConfig->siteGrid().latitude().min();
-        auto latMax = GMSiteConfig->siteGrid().latitude().max();
-
-        auto lonMin = GMSiteConfig->siteGrid().longitude().min();
-        auto lonMax = GMSiteConfig->siteGrid().longitude().max();
-
-        this->setBottomLeftNode(latMin,lonMin);
-        this->setTopRightNode(latMax,lonMax);
-    });
-
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::maxChanged, [this]()
-    {
-        auto latMin = GMSiteConfig->siteGrid().latitude().min();
-        auto latMax = GMSiteConfig->siteGrid().latitude().max();
-
-        auto lonMin = GMSiteConfig->siteGrid().longitude().min();
-        auto lonMax = GMSiteConfig->siteGrid().longitude().max();
-
-        this->setBottomLeftNode(latMin,lonMin);
-        this->setTopRightNode(latMax,lonMax);
-    });
-
-    //Connecting input changes to mode
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::divisionsChanged, [this]()
-    {
-
-    });
-
+    // Connect the grid discretization
+    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
+    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
 }
 
 
@@ -307,7 +283,17 @@ void RectangleGrid::setTopRightNode(NodeHandle *value)
 
 void RectangleGrid::setTopRightNode(const double latitude, const double longitude)
 {
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude);
 
+    this->handleTopRightCornerChanged(scrnPnt);
+}
+
+
+void RectangleGrid::setCenterNode(const double latitude, const double longitude)
+{
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude);
+
+    this->handleCenterNodeChanged(scrnPnt);
 }
 
 
@@ -392,10 +378,19 @@ void RectangleGrid::handleCenterNodeChanged(const QPointF& pos)
 }
 
 
+void RectangleGrid::clearGrid()
+{
+    qDeleteAll(gridNodeVec);
+    gridNodeVec.clear();
+}
+
+
 void RectangleGrid::createGrid()
 {
     auto ni = numDivisionsHoriz;
     auto nj = numDivisionsVertical;
+
+    gridNodeVec.reserve(ni*nj);
 
     for (size_t i=0; i<=ni; ++i)
     {
@@ -440,8 +435,68 @@ void RectangleGrid::createGrid()
             newGridNode->setXPos(xCoordinatelambda);
             newGridNode->setYPos(yCoordinatelambda);
 
+            gridNodeVec.push_back(newGridNode);
+
             connect(this,&RectangleGrid::geometryChanged,newGridNode,&GridNode::updateGeometry);
         }
     }
 }
+
+
+void RectangleGrid::handleGridDivisionsChanged(void)
+{
+    auto numDivH = static_cast<size_t>(GMSiteConfig->siteGrid().longitude().divisions());
+    auto numDivV = static_cast<size_t>(GMSiteConfig->siteGrid().latitude().divisions());
+
+    if(numDivV == this->numDivisionsVertical && numDivH == this->numDivisionsHoriz)
+        return;
+
+    this->numDivisionsVertical = numDivV;
+    this->numDivisionsHoriz = numDivH;
+
+    this->clearGrid();
+    this->createGrid();
+}
+
+
+void RectangleGrid::handleLatLonChanged(void)
+{
+    if(changingDimensions == true)
+        return;
+
+    auto lat_Min = GMSiteConfig->siteGrid().latitude().min();
+    auto lat_Max = GMSiteConfig->siteGrid().latitude().max();
+
+    auto lon_Min = GMSiteConfig->siteGrid().longitude().min();
+    auto lon_Max = GMSiteConfig->siteGrid().longitude().max();
+
+    if(lat_Min != latMin || lon_Min != lonMin)
+    {
+        updateConnectedWidgets = false;
+        latMin = lat_Min;
+        lonMin = lon_Min;
+        this->setBottomLeftNode(lat_Min,lon_Min);
+        updateConnectedWidgets = true;
+    }
+
+    if(lat_Max != latMax || lon_Max != lonMax)
+    {
+        updateConnectedWidgets = false;
+        latMax = lat_Max;
+        lonMax = lon_Max;
+        this->setTopRightNode(lat_Max,lon_Max);
+        updateConnectedWidgets = true;
+    }
+}
+
+
+//void RectangleGrid::handleRuptureLocationChanged(void)
+//{
+//    updateConnectedWidgets = false;
+//    auto lat = theRuptureWidget->getRuptureSource().location().latitude();
+//    auto lon = theRuptureWidget->getRuptureSource().location().longitude();
+//    this->setCenterNode(lat,lon);
+//    updateConnectedWidgets = true;
+
+//}
 

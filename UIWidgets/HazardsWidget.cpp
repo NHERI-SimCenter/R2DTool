@@ -74,7 +74,7 @@ HazardsWidget::HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, Ra
 
     theComponentSelection->setMaxWidth(120);
 
-    earthquakesWidget = std::make_unique<EarthquakeInputWidget>(this, theVisualizationWidget, theRandomVariablesContainer);
+    earthquakesWidget = std::make_unique<EarthquakeInputWidget>(parent, theVisualizationWidget, theRandomVariablesContainer);
 
     QWidget* earthquakeBox = earthquakesWidget->getEarthquakesWidget();
     QGroupBox* windBox = this->getWindBox();

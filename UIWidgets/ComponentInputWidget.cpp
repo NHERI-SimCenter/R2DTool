@@ -217,7 +217,8 @@ void ComponentInputWidget::createComponentsBox(void)
     // Create the table that will show the Component information
     componentTableWidget = new QTableWidget();
     componentTableWidget->verticalHeader()->setVisible(false);
-    componentTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    componentTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    componentTableWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     componentTableWidget->hide();
 
     // Add a vertical spacer at the bottom to push everything up
@@ -238,7 +239,7 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addItem(smallVSpacer,5,0,1,5);
     gridLayout->addWidget(componentInfoText,6,0,1,5,Qt::AlignCenter);
     gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5);
-    gridLayout->addItem(vspacer, 8, 0);
+//    gridLayout->addItem(vspacer, 8, 0);
 }
 
 

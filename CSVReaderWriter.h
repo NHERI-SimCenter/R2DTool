@@ -15,7 +15,6 @@ public:
     CSVReaderWriter();
 
     // Saves data in the format of a CSV file
-
     int saveCSVFile(const QVector<QStringList>& data, const QString& pathToFile, QString& err);
 
     // Parses a CSV file and returns the file as a vector of string lists

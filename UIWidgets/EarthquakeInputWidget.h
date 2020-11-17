@@ -10,6 +10,8 @@ class QGroupBox;
 class QStackedWidget;
 class RandomVariablesContainer;
 class GMWidget;
+class ShakeMapWidget;
+class UserInputGMWidget;
 class VisualizationWidget;
 
 class EarthquakeInputWidget : public  SimCenterAppWidget
@@ -22,23 +24,25 @@ public:
 
     QWidget* getEarthquakesWidget(void);
 
-
 private slots:
+
     void handleEQTypeSelection(const QString& selection);
+
+    void shakeMapLoadingFinished(const bool value);
 
 private:
 
     void createEarthquakesWidget(void);
 
     QWidget* theEQWidget;
-
     QStackedWidget* theRootStackedWidget;
 
     RandomVariablesContainer* theRandomVariablesContainer;
 
     VisualizationWidget* theVisualizationWidget;
-
-    GMWidget* EQSSWidget;
+    GMWidget* theEQSSWidget;
+    ShakeMapWidget* theShakeMapWidget;
+    UserInputGMWidget* theUserInputGMWidget;
 };
 
 #endif // EARTHQUAKEINPUTWIDGET_H

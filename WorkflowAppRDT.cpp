@@ -175,6 +175,11 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     theComponentSelection->setMaxWidth(120);
 
+    theAssetsWidget->setObjectName("Assets");
+    theHazardsWidget->setObjectName("Hazards");
+    theResults->setObjectName("Results");
+    theVisualizationWidget->setObjectName("Visualization");
+
     theComponentSelection->addComponent(QString("Assets"), theAssetsWidget);
     theComponentSelection->addComponent(QString("Hazards"), theHazardsWidget);
     //    theComponentSelection->addComponent(QString("UQ"),  theUQ_Selection);
@@ -187,7 +192,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theComponentSelection->addComponent(QString("Results"), theResults);
     theComponentSelection->addComponent(QString("Visualization"), theVisualizationWidget);
 
-//        theComponentSelection->displayComponent("Visualization");
+//    theComponentSelection->displayComponent("Visualization");
     theComponentSelection->displayComponent("Hazards");
 
     // access a web page which will increment the usage count for this tool
@@ -223,6 +228,14 @@ AssetsWidget *WorkflowAppRDT::getTheAssetsWidget() const
 VisualizationWidget *WorkflowAppRDT::getTheVisualizationWidget() const
 {
     return theVisualizationWidget;
+}
+
+
+void WorkflowAppRDT::setActiveWidget(SimCenterAppWidget* widget)
+{
+    auto widgetName = widget->objectName();
+
+    this->theComponentSelection->displayComponent(widgetName);
 }
 
 
