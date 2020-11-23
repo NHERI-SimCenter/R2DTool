@@ -6,13 +6,16 @@
 
 #include "SimCenterAppWidget.h"
 
-class QGroupBox;
-class QStackedWidget;
 class RandomVariablesContainer;
 class GMWidget;
 class ShakeMapWidget;
 class UserInputGMWidget;
 class VisualizationWidget;
+
+class QGroupBox;
+class QStackedWidget;
+class QCheckBox;
+class QComboBox;
 
 class EarthquakeInputWidget : public  SimCenterAppWidget
 {
@@ -23,6 +26,9 @@ public:
     ~EarthquakeInputWidget();
 
     QWidget* getEarthquakesWidget(void);
+
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
 
 private slots:
 
@@ -36,6 +42,8 @@ private:
 
     QWidget* theEQWidget;
     QStackedWidget* theRootStackedWidget;
+    QCheckBox* includeHazardCheckBox;
+    QComboBox* earthquakeSelectionCombo;
 
     RandomVariablesContainer* theRandomVariablesContainer;
 

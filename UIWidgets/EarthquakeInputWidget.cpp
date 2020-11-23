@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QStackedWidget>
+#include <QCheckBox>
 
 EarthquakeInputWidget::EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
@@ -18,6 +19,8 @@ EarthquakeInputWidget::EarthquakeInputWidget(QWidget *parent, VisualizationWidge
     theShakeMapWidget = nullptr;
     theEQSSWidget = nullptr;
     theUserInputGMWidget = nullptr;
+    earthquakeSelectionCombo = nullptr;
+    includeHazardCheckBox = nullptr;
 }
 
 
@@ -36,20 +39,64 @@ QWidget* EarthquakeInputWidget::getEarthquakesWidget(void)
 }
 
 
+bool EarthquakeInputWidget::outputToJSON(QJsonObject &jsonObj)
+{
+
+    if(includeHazardCheckBox->isChecked() == false)
+        return false;
+
+    jsonObj.insert("EventClassification", "Earthquake");
+    jsonObj.insert("Application", "SimCenterEvent");
+
+    QJsonObject appDataObj;
+
+    auto currentSelection = earthquakeSelectionCombo->currentText();
+
+    if(currentSelection.compare("Earthquake Scenario Simulation") == 0)
+    {
+        theEQSSWidget->outputToJSON(appDataObj);
+    }
+    else if(currentSelection.compare("ShakeMap Input") == 0)
+    {
+        theShakeMapWidget->outputToJSON(appDataObj);
+    }
+    else if(currentSelection.compare("User Specified Ground Motions") == 0)
+    {
+        theUserInputGMWidget->outputToJSON(appDataObj);
+    }
+    else
+    {
+        qDebug()<<"Warning, could not recognize the earthquake combobox selection of"<<earthquakeSelectionCombo->currentText();
+    }
+
+    jsonObj.insert("ApplicationData",appDataObj);
+
+    return true;
+}
+
+
+bool EarthquakeInputWidget::inputFromJSON(QJsonObject &jsonObject){
+
+
+    return true;
+}
+
 
 void EarthquakeInputWidget::createEarthquakesWidget(void)
 {
     theEQWidget = new QWidget(this);
 
-    QGridLayout* gridLayout = new QGridLayout();
-    theEQWidget->setLayout(gridLayout);
+    QGridLayout* gridLayout = new QGridLayout(theEQWidget);
 
     auto smallVSpacer = new QSpacerItem(0,10);
 
-    QLabel* selectionText = new QLabel();
+    QLabel* selectionText = new QLabel(theEQWidget);
     selectionText->setText("Earthquake Hazard Type:");
 
-    auto earthquakeSelectionCombo = new QComboBox();
+    includeHazardCheckBox = new QCheckBox("Include earthquake hazard in analysis",theEQWidget);
+    includeHazardCheckBox->setChecked(true);
+
+    earthquakeSelectionCombo = new QComboBox();
     earthquakeSelectionCombo->addItem("Earthquake Scenario Simulation");
     earthquakeSelectionCombo->addItem("ShakeMap Input");
     earthquakeSelectionCombo->addItem("User Specified Ground Motions");
@@ -66,7 +113,8 @@ void EarthquakeInputWidget::createEarthquakesWidget(void)
     gridLayout->addItem(smallVSpacer,0,0);
     gridLayout->addWidget(selectionText,1,0);
     gridLayout->addWidget(earthquakeSelectionCombo,1,1);
-    gridLayout->addItem(hspacer,1,2);
+    gridLayout->addWidget(includeHazardCheckBox,1,2);
+    gridLayout->addItem(hspacer,1,3);
     gridLayout->addWidget(theRootStackedWidget,2,0,1,3);
     gridLayout->addItem(vspacer, 3, 0,1,3);
 

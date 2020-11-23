@@ -22,6 +22,8 @@ public slots:
 
     void resizeParent(QRectF rect);
 
+    void removeGridFromScene(void);
+
 protected:
 
     // Custom zoom implementation to get around a bug in the wheel event causing zoom to occur only in one direction
@@ -40,7 +42,6 @@ protected:
     void dropEvent(QDropEvent *event) override;
 
     void addGridToScene(void);
-    void removeGridFromScene(void);
 
 private:
 

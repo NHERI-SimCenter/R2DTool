@@ -38,13 +38,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Latest revision: 09.30.2020
 
 #include "GeneralInformationWidget.h"
+#include "SimCenterPreferences.h"
 #include "sectiontitle.h"
+#include "RegionalMappingWidget.h"
 
+#include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QJsonArray>
 #include <QPushButton>
-#include <QRadioButton>
+#include <QCheckBox>
 #include <QJsonObject>
 #include <QComboBox>
 #include <QDebug>
@@ -55,7 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 GeneralInformationWidget* GeneralInformationWidget::getInstance()
 {
-    if (theInstance == 0)
+    if (theInstance == nullptr)
         theInstance = new GeneralInformationWidget();
 
     return theInstance;
@@ -67,8 +70,8 @@ GeneralInformationWidget *GeneralInformationWidget::theInstance = nullptr;
 
 GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterWidget(parent)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setMargin(0);
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+//    mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
@@ -98,8 +101,31 @@ GeneralInformationWidget::~GeneralInformationWidget()
 }
 
 
-bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj){
+bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
+{
+    auto runDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
+    auto appDir = SimCenterPreferences::getInstance()->getAppDir();
 
+    jsonObj.insert("Name", "rWHALE_");
+    jsonObj.insert("Author", nameEdit->text());
+    jsonObj.insert("WorkflowType", "Parametric Study");
+    jsonObj.insert("runDir", runDir);
+    jsonObj.insert("localAppDir", appDir);
+
+    QJsonObject unitsObj;
+    unitsObj.insert("force", unitsForceCombo->currentText());
+    unitsObj.insert("length", unitsLengthCombo->currentText());
+    unitsObj.insert("time", unitsTimeCombo->currentText());
+    unitsObj.insert("temperature", unitsTemperatureCombo->currentText());
+
+    QJsonObject outputsObj;
+    outputsObj.insert("EDP", EDPCheckBox->isChecked());
+    outputsObj.insert("DM", DMCheckBox->isChecked());
+    outputsObj.insert("DV", DVCheckBox->isChecked());
+    outputsObj.insert("every_realization", realizationCheckBox->isChecked());
+
+    jsonObj.insert("units",unitsObj);
+    jsonObj.insert("outputs",outputsObj);
 
     return true;
 }
@@ -114,101 +140,105 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
 
 void GeneralInformationWidget::clear(void)
 {
-    analysisLineEdit->clear();
+
 }
 
 
 QGridLayout* GeneralInformationWidget::getInfoLayout(void)
 {
-    auto analysisLabel = new QLabel("Analysis ID:");
-    analysisLineEdit = new QLineEdit();
-    analysisLineEdit->setText("Analysis_1");
-    analysisLineEdit->setMaximumWidth(250);
+    // Analysis information
+    nameEdit = new QLineEdit(this);
+    QGroupBox* analysisGroupBox = new QGroupBox("Analysis Name", this);
+    analysisGroupBox->setContentsMargins(0,5,0,0);
+    QFormLayout* analysisLayout = new QFormLayout(analysisGroupBox);
+    analysisLayout->addRow(tr("Name"), nameEdit);
+    analysisLayout->setAlignment(Qt::AlignLeft);
+    analysisLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    analysisLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
 
-    auto unitSystemLabel = new QLabel("Unit System:");
-    unitsCombo = new QComboBox();
-    unitsCombo->addItem("SI (km)");
-    unitsCombo->setCurrentIndex(0);
-    unitsCombo->setMaximumWidth(260);
+    unitsForceCombo = new QComboBox(this);
+    unitsForceCombo->addItem("Newtons", ForceUnit::N);
+    unitsForceCombo->addItem("Kilonewtons", ForceUnit::kN);
+    unitsForceCombo->addItem("Pounds", ForceUnit::lb);
+    unitsForceCombo->addItem("Kips", ForceUnit::kips);
+    unitsForceCombo->setCurrentIndex(3);
 
-    QPushButton *loadFileButton = new QPushButton();
-    loadFileButton->setText(tr("Browse"));
-    loadFileButton->setMaximumWidth(150);
-    auto workingDirectoryLabel = new QLabel("Working Directory:");
-    workingDirectoryLineEdit = new QLineEdit();
-    workingDirectoryLineEdit->setMaximumWidth(400);
+    unitsLengthCombo = new QComboBox(this);
+    unitsLengthCombo->addItem("Meters", LengthUnit::m);
+    unitsLengthCombo->addItem("Centimeters", LengthUnit::cm);
+    unitsLengthCombo->addItem("Millimeters", LengthUnit::mm);
+    unitsLengthCombo->addItem("Inches", LengthUnit::in);
+    unitsLengthCombo->addItem("Feet", LengthUnit::ft);
+    unitsLengthCombo->setCurrentIndex(3);
 
-    auto UQLabel = new QLabel("Uncertainty Quantification (UQ)");
-    UQLabel->setStyleSheet("font-weight: bold; color: black");
+    unitsTemperatureCombo = new QComboBox(this);
+    unitsTemperatureCombo->addItem("Celsius", TemperatureUnit::C);
+    unitsTemperatureCombo->addItem("Fahrenheit", TemperatureUnit::F);
+    unitsTemperatureCombo->addItem("Kelvin", TemperatureUnit::K);
 
-    auto dataGenLabel = new QLabel("Method for Data Generation");
-    dataGenCombo = new QComboBox();
-    dataGenCombo->addItem("Latin Hypercube Sampling");
-    dataGenCombo->setCurrentIndex(0);
-    dataGenCombo->setMaximumWidth(250);
+    unitsTimeCombo = new QComboBox();
+    unitsTimeCombo->addItem("Seconds", TimeUnit::sec);
+    unitsTimeCombo->addItem("Minutes", TimeUnit::min);
+    unitsTimeCombo->addItem("Hours", TimeUnit::hr);
 
-    auto numSamplesLabel = new QLabel("Number of Samples:");
-    numSamplesLineEdit = new QLineEdit();
-    numSamplesLineEdit->setText("100");
-    numSamplesLineEdit->setMaximumWidth(100);
+    // Units
+    QGroupBox* unitsGroupBox = new QGroupBox("Units", this);
+    unitsGroupBox->setContentsMargins(0,5,0,0);
+    QFormLayout* unitsFormLayout = new QFormLayout(unitsGroupBox);
+    unitsFormLayout->addRow(tr("Force"), unitsForceCombo);
+    unitsFormLayout->addRow(tr("Length"), unitsLengthCombo);
+    unitsFormLayout->addRow(tr("Temperature"), unitsTemperatureCombo);
+    unitsFormLayout->addRow(tr("Time"), unitsTimeCombo);
+    unitsFormLayout->setAlignment(Qt::AlignLeft);
+    unitsFormLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    unitsFormLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
 
-    auto seedLabel = new QLabel("Seed:");
-    seedLineEdit = new QLineEdit();
-    seedLineEdit->setText("1");
-    seedLineEdit->setMaximumWidth(100);
+    // Outputs
+    EDPCheckBox = new QCheckBox("Engineering demand parameters (EDP)",this);
+    DMCheckBox = new QCheckBox("Damage measures (DM)",this);
+    DVCheckBox = new QCheckBox("Decision variables (DV)",this);
+    realizationCheckBox = new QCheckBox("Output EDP, DM, and DV every sampling realization",this);
 
+    EDPCheckBox->setChecked(true);
+    DMCheckBox->setChecked(true);
+    DVCheckBox->setChecked(true);
+    realizationCheckBox->setChecked(false);
 
-    UQLabel->hide();
-    dataGenLabel->hide();
-    dataGenCombo->hide();
-    numSamplesLabel->hide();
-    numSamplesLineEdit->hide();
-    seedLabel->hide();
-    seedLineEdit->hide();
+    QGroupBox* outputGroupBox = new QGroupBox("Output Settings", this);
+    outputGroupBox->setContentsMargins(0,5,0,0);
+    QVBoxLayout* outputLayout = new QVBoxLayout(outputGroupBox);
+    outputLayout->addWidget(EDPCheckBox);
+    outputLayout->addWidget(DMCheckBox);
+    outputLayout->addWidget(DVCheckBox);
+    outputLayout->addWidget(realizationCheckBox);
 
-    auto assessmentSetupLabel = new QLabel("Assessment Setup");
-    assessmentSetupLabel->setStyleSheet("font-weight: bold; color: black");
+    QGroupBox* regionalMappingGroupBox = new QGroupBox("Regional Mapping", this);
+    regionalMappingGroupBox->setContentsMargins(0,5,0,0);
 
-    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)");
-    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)");
-    button1->setChecked(true);
+    theRegionalMappingWidget = new RegionalMappingWidget(this);
 
-    auto warningLabel = new QLabel();
-    warningLabel->setText("Warning: Only choose this option if you have read the user manual and are familiar with the program");
-    warningLabel->setStyleSheet("color: red");
+    regionalMappingGroupBox->setLayout(theRegionalMappingWidget->layout());
 
-    // Layout the UI components in a grid
+//    regionalMappingGroupBox->addWidget(theRegionalMappingWidget);
+
+    QSpacerItem *spacer = new QSpacerItem(0,20);
+
+    // Layout the UI components
     QGridLayout* layout = new QGridLayout();
-
-    layout->addWidget(analysisLabel, 0, 0);
-    layout->addWidget(analysisLineEdit, 0, 1);
-
-    layout->addWidget(unitSystemLabel, 1, 0);
-    layout->addWidget(unitsCombo, 1, 1);
-
-    layout->addWidget(workingDirectoryLabel, 2, 0);
-    layout->addWidget(workingDirectoryLineEdit, 2, 1);
-    layout->addWidget(loadFileButton, 2, 2);
-
-    layout->addWidget(UQLabel, 3, 0);
-
-    layout->addWidget(dataGenLabel, 4, 0);
-    layout->addWidget(dataGenCombo, 4, 1);
-
-    layout->addWidget(numSamplesLabel, 5, 0);
-    layout->addWidget(numSamplesLineEdit, 5, 1);
-
-    layout->addWidget(seedLabel, 6, 0);
-    layout->addWidget(seedLineEdit, 6, 1);
-
-    layout->addWidget(assessmentSetupLabel, 7, 0);
-
-    layout->addWidget(button1, 8, 0, 1, 3);
-    layout->addWidget(button2, 9, 0, 1, 3);
-
-    layout->addWidget(warningLabel, 10, 0, 1, 3);
+    layout->addWidget(analysisGroupBox,0,0);
+    layout->addItem(spacer,1,0);
+    layout->addWidget(unitsGroupBox,2,0);
+    layout->addItem(spacer,3,0);
+    layout->addWidget(outputGroupBox,4,0);
+    layout->addItem(spacer,5,0);
+    layout->addWidget(regionalMappingGroupBox,6,0);
 
     return layout;
+}
+
+RegionalMappingWidget *GeneralInformationWidget::getTheRegionalMappingWidget() const
+{
+    return theRegionalMappingWidget;
 }
 
 

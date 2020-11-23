@@ -38,11 +38,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Latest revision: 10.08.2020
 
 #include "AssetsWidget.h"
+#include "AssetsModelWidget.h"
 #include "HazardsWidget.h"
 #include "VisualizationWidget.h"
-
-// Test
-#include "shakeMapClient.h"
 
 #include "WorkflowAppRDT.h"
 #include "LocalApplication.h"
@@ -53,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RunLocalWidget.h"
 #include "RemoteService.h"
 #include "SimCenterComponentSelection.h"
+#include "RegionalMappingWidget.h"
 #include "GeneralInformationWidget.h"
 #include "RandomVariablesContainer.h"
 #include "InputWidgetSampling.h"
@@ -90,33 +89,42 @@ int getNumParallelTasks()
     return theApp->getMaxNumParallelTasks();
 }
 
+WorkflowAppRDT* WorkflowAppRDT::getInstance()
+{
+    return theInstance;
+}
+
+WorkflowAppRDT *WorkflowAppRDT::theInstance = nullptr;
+
+
 WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     : WorkflowAppWidget(theService, parent)
 {
     // set static pointer for global procedure
     theApp = this;
 
+    theInstance = this;
+
     //
     // create the various widgets
     //
 
-    client = new shakeMapClient();
-
     theRVs = new RandomVariablesContainer();
     theVisualizationWidget = new VisualizationWidget(this);
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
+    theModelingWidget = new AssetsModelWidget(this);
     theHazardsWidget = new HazardsWidget(this, theVisualizationWidget, theRVs);
+    theGeneralInformationWidget = GeneralInformationWidget::getInstance();
 
-    //    theGI = GeneralInformationWidget::getInstance();
     //    theSIM = new SIM_Selection(theRVs);
     //    theEventSelection = new EarthquakeEventSelection(theRVs, theGI);
     //    theAnalysisSelection = new FEM_Selection(theRVs);
-    theUQ_Selection = new UQ_EngineSelection(theRVs);
+    theUQWidget = new UQ_EngineSelection(theRVs);
     //    theEDP_Selection = new EDP_EarthquakeSelection(theRVs);
-    theResults = theUQ_Selection->getResults();
+    theUQResultsWidget = theUQWidget->getResults();
 
-    localApp = new LocalApplication("femUQ.py");
-    remoteApp = new RemoteApplication("femUQ.py", theService);
+    localApp = new LocalApplication("RDT_workflow.py");
+    remoteApp = new RemoteApplication("RDT_workflow.py", theService);
 
     theJobManager = new RemoteJobManager(theService);
 
@@ -149,51 +157,47 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     connect(localApp,SIGNAL(processResults(QString, QString, QString)), this, SLOT(processResults(QString, QString, QString)));
 
     connect(remoteApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
-
     connect(theJobManager,SIGNAL(processResults(QString , QString, QString)), this, SLOT(processResults(QString, QString, QString)));
     connect(theJobManager,SIGNAL(loadFile(QString)), this, SLOT(loadFile(QString)));
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
 
-
-    //
-    // create layout to hold component selectio
-    //
-
-
+    // create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
     this->setContentsMargins(0,5,0,5);
     horizontalLayout->setMargin(0);
 
-    //
     // create the component selection & add the components to it
-    //
 
     theComponentSelection = new SimCenterComponentSelection();
     horizontalLayout->addWidget(theComponentSelection);
 
-    theComponentSelection->setMaxWidth(120);
+    theComponentSelection->setWidth(120);
 
+    theGeneralInformationWidget->setObjectName("GeneralInformation");
     theAssetsWidget->setObjectName("Assets");
+    theModelingWidget->setObjectName("AssetModels");
     theHazardsWidget->setObjectName("Hazards");
-    theResults->setObjectName("Results");
+    theUQWidget->setObjectName("UncertaintyQuantification");
+    theUQResultsWidget->setObjectName("Results");
     theVisualizationWidget->setObjectName("Visualization");
 
-    theComponentSelection->addComponent(QString("Assets"), theAssetsWidget);
-    theComponentSelection->addComponent(QString("Hazards"), theHazardsWidget);
-    //    theComponentSelection->addComponent(QString("UQ"),  theUQ_Selection);
-    //    theComponentSelection->addComponent(QString("GI"),  theGI);
-    //    theComponentSelection->addComponent(QString("SIM"), theSIM);
-    //    theComponentSelection->addComponent(QString("EVT"), theEventSelection);
-    //    theComponentSelection->addComponent(QString("FEM"), theAnalysisSelection);
-    //    theComponentSelection->addComponent(QString("EDP"), theEDP_Selection);
-    //    theComponentSelection->addComponent(QString("RV"),  theRVs);
-    theComponentSelection->addComponent(QString("Results"), theResults);
-    theComponentSelection->addComponent(QString("Visualization"), theVisualizationWidget);
+    theComponentSelection->addComponent(tr("Visualization"), theVisualizationWidget);
+    theComponentSelection->addComponent(tr("General\nInformation"), theGeneralInformationWidget);
+    theComponentSelection->addComponent(tr("Assets"), theAssetsWidget);
+    theComponentSelection->addComponent(tr("Modeling"), theModelingWidget);
+    theComponentSelection->addComponent(tr("Hazards"), theHazardsWidget);
+    theComponentSelection->addComponent(tr("Uncertainty\nQuantification"), theUQWidget);
+    theComponentSelection->addComponent(tr("Results"), theUQResultsWidget);
+
+    // theComponentSelection->addComponent(QString("EVT"), theEventSelection);
+    // theComponentSelection->addComponent(QString("FEM"), theAnalysisSelection);
+    // theComponentSelection->addComponent(QString("EDP"), theEDP_Selection);
+    // theComponentSelection->addComponent(QString("RV"),  theRVs);
 
 //    theComponentSelection->displayComponent("Visualization");
-    theComponentSelection->displayComponent("Hazards");
+    theComponentSelection->displayComponent("General\nInformation");
 
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
@@ -215,17 +219,22 @@ void WorkflowAppRDT::replyFinished(QNetworkReply *pReply)
     return;
 }
 
-HazardsWidget *WorkflowAppRDT::getTheHazardsWidget() const
+GeneralInformationWidget *WorkflowAppRDT::getGeneralInformationWidget() const
+{
+    return theGeneralInformationWidget;
+}
+
+HazardsWidget *WorkflowAppRDT::getHazardsWidget() const
 {
     return theHazardsWidget;
 }
 
-AssetsWidget *WorkflowAppRDT::getTheAssetsWidget() const
+AssetsWidget *WorkflowAppRDT::getAssetsWidget() const
 {
     return theAssetsWidget;
 }
 
-VisualizationWidget *WorkflowAppRDT::getTheVisualizationWidget() const
+VisualizationWidget *WorkflowAppRDT::getVisualizationWidget() const
 {
     return theVisualizationWidget;
 }
@@ -239,57 +248,22 @@ void WorkflowAppRDT::setActiveWidget(SimCenterAppWidget* widget)
 }
 
 
-bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop) {
-
-    //
-    // get each of the main widgets to output themselves
-    //
-
+bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
+{
     QJsonObject apps;
 
-    QJsonObject jsonObjGenInfo;
-    //    theGI->outputToJSON(jsonObjGenInfo);
-    jsonObjectTop["GeneralInformation"] = jsonObjGenInfo;
+    // get each of the main widgets to output themselves   
+    theGeneralInformationWidget->outputToJSON(jsonObjectTop);
 
-    QJsonObject jsonObjStructural;
-    //    theSIM->outputToJSON(jsonObjStructural);
+    theModelingWidget->outputToJSON(apps);
 
-    jsonObjectTop["StructuralInformation"] = jsonObjStructural;
-    QJsonObject appsSIM;
-    //    theSIM->outputAppDataToJSON(appsSIM);
+    theHazardsWidget->outputToJSON(apps);
 
-    apps["Modeling"]=appsSIM;
-
-    //    theRVs->outputToJSON(jsonObjectTop);
-
-    QJsonObject jsonObjectEDP;
-    //    theEDP_Selection->outputToJSON(jsonObjectEDP);
-    jsonObjectTop["EDP"] = jsonObjectEDP;
-
-    QJsonObject appsEDP;
-    //    theEDP_Selection->outputAppDataToJSON(appsEDP);
-    apps["EDP"]=appsEDP;
-
-    /*
-    QJsonObject jsonObjectUQ;
-    theUQ_Selection->outputToJSON(jsonObjectUQ);
-    jsonObjectTop["UQ_Method"] = jsonObjectUQ;
-    */
-
-
-    //    theUQ_Selection->outputAppDataToJSON(apps);
-    //    theUQ_Selection->outputToJSON(jsonObjectTop);
-
-    //    theAnalysisSelection->outputAppDataToJSON(apps);
-    //    theAnalysisSelection->outputToJSON(jsonObjectTop);
-
-    // NOTE: Events treated differently, due to array nature of objects
-    //    theEventSelection->outputToJSON(jsonObjectTop);
-    //    theEventSelection->outputAppDataToJSON(apps);
+    theGeneralInformationWidget->getTheRegionalMappingWidget()->outputToJSON(apps);
 
     theRunWidget->outputToJSON(jsonObjectTop);
 
-    jsonObjectTop["Applications"]=apps;
+    jsonObjectTop.insert("Applications",apps);
 
     //theRunLocalWidget->outputToJSON(jsonObjectTop);
 
@@ -304,8 +278,8 @@ void WorkflowAppRDT::processResults(QString dakotaOut, QString dakotaTab, QStrin
     // get results widget fr currently selected UQ option
     //
 
-    theResults=theUQ_Selection->getResults();
-    if (theResults == NULL) {
+    theUQResultsWidget=theUQWidget->getResults();
+    if (theUQResultsWidget == NULL) {
         this->errorMessage("FATAL - UQ option selected not returning results widget");
         return;
     }
@@ -314,14 +288,14 @@ void WorkflowAppRDT::processResults(QString dakotaOut, QString dakotaTab, QStrin
     // connect signals for results widget
     //
 
-    connect(theResults,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theResults,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
+    connect(theUQResultsWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
+    connect(theUQResultsWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
 
     //
     // swap current results with existing one in selection & disconnect signals
     //
 
-    QWidget *oldResults = theComponentSelection->swapComponent(QString("RES"), theResults);
+    QWidget *oldResults = theComponentSelection->swapComponent(QString("RES"), theUQResultsWidget);
     if (oldResults != NULL) {
         disconnect(oldResults,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
         disconnect(oldResults,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
@@ -332,7 +306,7 @@ void WorkflowAppRDT::processResults(QString dakotaOut, QString dakotaTab, QStrin
     // proess results
     //
 
-    theResults->processResults(dakotaOut, dakotaTab);
+    theUQResultsWidget->processResults(dakotaOut, dakotaTab);
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
 }
@@ -386,7 +360,7 @@ bool WorkflowAppRDT::inputFromJSON(QJsonObject &jsonObject)
             return false;
         }
 
-        if (theUQ_Selection->inputAppDataFromJSON(theApplicationObject) == false)
+        if (theUQWidget->inputAppDataFromJSON(theApplicationObject) == false)
             emit errorMessage("EE_UQ: failed to read UQ application");
 
         //        if (theAnalysisSelection->inputAppDataFromJSON(theApplicationObject) == false)
@@ -433,7 +407,7 @@ bool WorkflowAppRDT::inputFromJSON(QJsonObject &jsonObject)
     }
 
 
-    if (theUQ_Selection->inputFromJSON(jsonObject) == false)
+    if (theUQWidget->inputFromJSON(jsonObject) == false)
         emit errorMessage("EE_UQ: failed to read UQ Method data");
 
     //    if (theAnalysisSelection->inputFromJSON(jsonObject) == false)
@@ -529,7 +503,7 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     //    theSIM->copyFiles(templateDirectory);
     //    theEventSelection->copyFiles(templateDirectory);
     //    theAnalysisSelection->copyFiles(templateDirectory);
-    theUQ_Selection->copyFiles(templateDirectory);
+    theUQWidget->copyFiles(templateDirectory);
     //    theEDP_Selection->copyFiles(templateDirectory);
 
     //
@@ -596,5 +570,5 @@ void WorkflowAppRDT::loadFile(const QString fileName){
 
 
 int WorkflowAppRDT::getMaxNumParallelTasks() {
-    return theUQ_Selection->getNumParallelTasks();
+    return theUQWidget->getNumParallelTasks();
 }

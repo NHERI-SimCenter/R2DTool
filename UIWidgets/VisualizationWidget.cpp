@@ -121,14 +121,27 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Connect to MapQuickView::identifyLayerCompleted signal
     connect(mapViewWidget, &MapGraphicsView::identifyLayersCompleted, this, &VisualizationWidget::identifyLayersCompleted);
 
-    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
-    QString layerName = "Buildings Foot Print";
-    QString layerID = this->createUniqueID();
-    TreeItem* buildingsItem = layersTree->addItemToTree(layerName,layerID);
-    auto buildingsLayer = this->createAndAddKMLLayer(filePath, layerName, buildingsItem);
-    buildingsLayer->setLayerId(layerID);
-    buildingsLayer->setName("SF");
-    this->addLayerToMap(buildingsLayer,buildingsItem);
+    // Test
+    //    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
+    //    QString layerName = "Buildings Foot Print";
+    //    QString layerID = this->createUniqueID();
+    //    TreeItem* buildingsItem = layersTree->addItemToTree(layerName,layerID);
+    //    auto buildingsLayer = this->createAndAddKMLLayer(filePath, layerName, buildingsItem);
+    //    buildingsLayer->setLayerId(layerID);
+    //    buildingsLayer->setName("SF");
+    //    this->addLayerToMap(buildingsLayer,buildingsItem);
+
+
+    //    QString layerName = "Bathymetry";
+    //    QString layerID = this->createUniqueID();
+    //    TreeItem* treeItem = layersTree->addItemToTree(layerName,layerID);
+
+    //    QString filePath = "/Users/steve/Downloads/GEBCO_2020_18_Nov_2020_f103650dc2c4/gebco_2020_n30.0_s15.0_w-179.0_e-152.0.tif";
+    //    auto rastLayer = this->createAndAddRasterLayer(filePath, layerName, treeItem) ;
+    //    rastLayer->setLayerId(layerID);
+    //    rastLayer->setName(layerName);
+    //    this->addLayerToMap(rastLayer,treeItem);
+
 
 }
 
@@ -755,15 +768,15 @@ void VisualizationWidget::handleLayerSelection(TreeItem* item)
             }
 
             // Check the sublayers - to do get layer pointer from sublayer contents
-//            auto subLayersCont = layer->subLayerContents();
-//            for(auto&& it : subLayersCont)
-//            {
-//                if(it->name() == itemID)
-//                {
-//                    it->setVisible(isChecked);
-//                    return true;
-//                }
-//            }
+            //            auto subLayersCont = layer->subLayerContents();
+            //            for(auto&& it : subLayersCont)
+            //            {
+            //                if(it->name() == itemID)
+            //                {
+            //                    it->setVisible(isChecked);
+            //                    return true;
+            //                }
+            //            }
 
             if(auto isGroupLayer = dynamic_cast<GroupLayer*>(layer))
             {
@@ -772,7 +785,7 @@ void VisualizationWidget::handleLayerSelection(TreeItem* item)
 
                 if(found)
                 {
-//                    isGroupLayer->setVisible(true);
+                    //                    isGroupLayer->setVisible(true);
                     return true;
                 }
             }
@@ -1256,6 +1269,9 @@ RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePat
 
     // Create the raster and its layer layer
     Raster* raster = new Raster(filePath, this);
+
+    raster->load();
+
     RasterLayer* layer = new RasterLayer(raster, this);
 
     // When the layer is done loading, zoom to extents of the data
@@ -1263,7 +1279,7 @@ RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePat
     {
         if (!loadError.isEmpty())
         {
-            auto msg = loadError.message() + loadError.additionalMessage();
+            auto msg = loadError.message();
             this->userMessageDialog(msg);
             return;
         }

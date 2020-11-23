@@ -46,8 +46,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class AssetsWidget;
 class HazardsWidget;
 class VisualizationWidget;
-class shakeMapClient;
-
+class GeneralInformationWidget;
+class AssetsModelWidget;
 class Application;
 class InputWidgetUQ;
 class QNetworkAccessManager;
@@ -69,6 +69,9 @@ class WorkflowAppRDT : public WorkflowAppWidget
 public:
     explicit WorkflowAppRDT(RemoteService *theService, QWidget *parent = 0);
     ~WorkflowAppRDT();
+    static WorkflowAppRDT *theInstance;
+
+    static WorkflowAppRDT *getInstance(void);
 
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
@@ -80,11 +83,10 @@ public:
     void onExitButtonClicked();
     int getMaxNumParallelTasks();
     
-    VisualizationWidget *getTheVisualizationWidget() const;
-
-    AssetsWidget *getTheAssetsWidget() const;
-
-    HazardsWidget *getTheHazardsWidget() const;
+    VisualizationWidget *getVisualizationWidget() const;
+    AssetsWidget *getAssetsWidget() const;
+    HazardsWidget *getHazardsWidget() const;
+    GeneralInformationWidget *getGeneralInformationWidget() const;
 
     void setActiveWidget(SimCenterAppWidget* widget);
 
@@ -101,21 +103,20 @@ public slots:
 
 private:
 
-    // sidebar container selection
+    // Sidebar container selection
     SimCenterComponentSelection *theComponentSelection;
 
     // Widgets that go in sidebar
     AssetsWidget* theAssetsWidget;
     HazardsWidget* theHazardsWidget;
     VisualizationWidget* theVisualizationWidget;
+    GeneralInformationWidget* theGeneralInformationWidget;
+    AssetsModelWidget* theModelingWidget;
+    RandomVariablesContainer* theRVs;
+    UQ_EngineSelection* theUQWidget;
+    UQ_Results* theUQResultsWidget;
 
-    shakeMapClient* client;
-
-    RandomVariablesContainer *theRVs;
-    UQ_EngineSelection *theUQ_Selection;
-    UQ_Results *theResults;
-
-    // objects for running the workflow and obtaining results
+    // Objects for running the workflow and obtaining results
     RunWidget *theRunWidget;
     Application *localApp;
     Application *remoteApp;

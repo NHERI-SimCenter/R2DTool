@@ -61,12 +61,16 @@ SOURCES +=  main.cpp \
             UIWidgets/TreeViewStyle.cpp \
             UIWidgets/VisualizationWidget.cpp \
             UIWidgets/ComponentInputWidget.cpp \
+            UIWidgets/BuildingModelingWidget.cpp \
+            UIWidgets/CSVtoBIMModelingWidget.cpp \
             UIWidgets/DecisionVariableWidget.cpp \
             UIWidgets/HazardsWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/AssetsWidget.cpp \
+            UIWidgets/AssetsModelWidget.cpp \
             UIWidgets/EngDemandParamWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
+            UIWidgets/RegionalMappingWidget.cpp \
             UIWidgets/ShakeMapWidget.cpp \
             UIWidgets/UserInputGMWidget.cpp \
 #            UIWidgets/IntensityMeasureWidget.cpp \
@@ -94,10 +98,14 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/HazardsWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/AssetsWidget.h \
+            UIWidgets/AssetsModelWidget.h \
             UIWidgets/VisualizationWidget.h \
             UIWidgets/ComponentInputWidget.h \
+            UIWidgets/BuildingModelingWidget.h \
+            UIWidgets/CSVtoBIMModelingWidget.h \
             UIWidgets/EngDemandParamWidget.h \
             UIWidgets/GeneralInformationWidget.h \
+            UIWidgets/RegionalMappingWidget.h \
             UIWidgets/ShakeMapWidget.h \
             UIWidgets/UserInputGMWidget.h \
 #            UIWidgets/IntensityMeasureWidget.h \

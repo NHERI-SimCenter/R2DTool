@@ -1,6 +1,8 @@
 #ifndef CustomGraphicsView_H
 #define CustomGraphicsView_H
 
+// Test
+
 #include "MapGraphicsView.h"
 
 class CustomGraphicsScene;

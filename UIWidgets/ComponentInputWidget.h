@@ -43,6 +43,7 @@ public:
 
     void testFileLoad(QString& path);
 
+    QString getPathToComponentFile(void) const;
 
 signals:
     void componentDataLoaded();
@@ -58,8 +59,8 @@ private slots:
 
 private:
     QString pathToComponentInfoFile;
-    QLineEdit *componentFileLineEdit;
-    QLineEdit *selectComponentsLineEdit;
+    QLineEdit* componentFileLineEdit;
+    QLineEdit* selectComponentsLineEdit;
     QTableWidget* componentTableWidget;
     QLabel* componentInfoText;
     QGroupBox* componentGroupBox;

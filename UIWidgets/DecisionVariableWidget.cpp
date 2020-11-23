@@ -77,7 +77,7 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
     auto theComponentSelection = new SimCenterComponentSelection();
     mainLayout->addWidget(theComponentSelection);
 
-    theComponentSelection->setMaxWidth(120);
+    theComponentSelection->setWidth(120);
 
     QGroupBox* numRepairsBox = this->getNumRepairsWidget();
     QGroupBox* numBreaksBox = this->getNumBreaksWidget();
@@ -91,7 +91,7 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
     theComponentSelection->addComponent("DV 4",DM4Box);
 
     theComponentSelection->displayComponent("Annual Number\nof Repairs");
-    theComponentSelection->setMaxWidth(150);
+    theComponentSelection->setWidth(150);
 
     this->setLayout(mainLayout);
 }

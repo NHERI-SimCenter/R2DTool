@@ -81,10 +81,10 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
 
-    auto theComponentSelection = new SimCenterComponentSelection();
+    auto theComponentSelection = new SimCenterComponentSelection(this);
     mainLayout->addWidget(theComponentSelection);
 
-    theComponentSelection->setMaxWidth(120);
+    theComponentSelection->setWidth(120);
 
     buildingWidget = std::make_unique<ComponentInputWidget>(this, "Buildings");
     pipelineWidget = std::make_unique<ComponentInputWidget>(this, "Pipelines");
@@ -144,6 +144,18 @@ bool AssetsWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 bool AssetsWidget::copyFiles(QString &destDir)
 {
     return false;
+}
+
+
+ComponentInputWidget* AssetsWidget::getBuildingWidget() const
+{
+    return buildingWidget.get();
+}
+
+
+ComponentInputWidget* AssetsWidget::getPipelineWidget() const
+{
+    return pipelineWidget.get();
 }
 
 

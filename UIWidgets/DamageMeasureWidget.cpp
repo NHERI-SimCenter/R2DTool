@@ -76,7 +76,7 @@ DamageMeasureWidget::DamageMeasureWidget(QWidget *parent): SimCenterAppWidget(pa
     auto theComponentSelection = new SimCenterComponentSelection();
     mainLayout->addWidget(theComponentSelection);
 
-    theComponentSelection->setMaxWidth(120);
+    theComponentSelection->setWidth(120);
 
     QGroupBox* pipeStrainBox = this->getPipeStrainWidget();
     QGroupBox* DM1Box = this->getDM1Widget();

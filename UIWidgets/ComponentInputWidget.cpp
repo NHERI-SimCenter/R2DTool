@@ -403,6 +403,13 @@ int ComponentInputWidget::numberComponentsSelected(void)
     return selectedComponentIDs.size();
 }
 
+
+QString ComponentInputWidget::getPathToComponentFile(void) const
+{
+    return pathToComponentInfoFile;
+}
+
+
 void ComponentInputWidget::testFileLoad(QString& path)
 {
     pathToComponentInfoFile = path;

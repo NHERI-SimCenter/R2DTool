@@ -1,5 +1,5 @@
-#ifndef GENERALINFORMATIONWIDGET_H
-#define GENERALINFORMATIONWIDGET_H
+#ifndef RegionalMappingWidget_H
+#define RegionalMappingWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -42,42 +42,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterWidget.h>
 
 class QLineEdit;
-class QGridLayout;
-class QComboBox;
-class QCheckBox;
 
-class RegionalMappingWidget;
-
-class GeneralInformationWidget : public SimCenterWidget
+class RegionalMappingWidget : public SimCenterWidget
 {
     Q_OBJECT
 
-private:
-    explicit GeneralInformationWidget(QWidget *parent = 0);
-    ~GeneralInformationWidget();
-    static GeneralInformationWidget *theInstance;
-
 public:
-    static GeneralInformationWidget *getInstance(void);
+    explicit RegionalMappingWidget(QWidget *parent = nullptr);
+    ~RegionalMappingWidget();
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
-
-    bool outputToJSON(QJsonArray &arrayObject);
-    bool inputFromJSON(QJsonArray &arrayObject);
-
-    void clear(void);
-
-    enum LengthUnit{m, cm, mm, in, ft};
-    Q_ENUM(LengthUnit)
-    enum ForceUnit{N, kN, lb, kips};
-    Q_ENUM(ForceUnit)
-    enum TimeUnit{sec, min, hr};
-    Q_ENUM(TimeUnit)
-    enum TemperatureUnit{C, F, K};
-    Q_ENUM(TemperatureUnit)
-
-    RegionalMappingWidget *getTheRegionalMappingWidget() const;
 
 public slots:
 
@@ -85,25 +60,11 @@ signals:
 
 private:
 
-    QGridLayout* getInfoLayout(void);
+    QLineEdit* samplesLineEdit;
+    QLineEdit* neighborsLineEdit;
+    QLineEdit* filenameLineEdit;
 
-    QLineEdit* nameEdit;
-
-    QComboBox* unitsForceCombo;
-    QComboBox* unitsLengthCombo;
-    QComboBox* unitsTemperatureCombo;
-    QComboBox* unitsTimeCombo;
-
-    QCheckBox* EDPCheckBox;
-    QCheckBox* DMCheckBox;
-    QCheckBox* DVCheckBox;
-    QCheckBox* realizationCheckBox;
-
-    RegionalMappingWidget* theRegionalMappingWidget;
-
-    template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
-    template<typename UnitEnum> UnitEnum unitStringToEnum(QString unitString);
 };
 
 
-#endif // GENERALINFORMATIONWIDGET_H
+#endif // RegionalMappingWidget_H

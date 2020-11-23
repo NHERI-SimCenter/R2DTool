@@ -1,8 +1,7 @@
 #include "MapViewSubWidget.h"
 #include "NodeHandle.h"
 
-//#include "Point.h"
-//#include "Map.h"
+#include "Map.h"
 
 #include <QScrollBar>
 #include <QCoreApplication>
@@ -62,12 +61,17 @@ void MapViewSubWidget::addGridToScene(void)
     auto sceneWidth = sceneRect.width();
     auto sceneHeight = sceneRect.height();
 
-    grid->setWidth(0.5*sceneWidth);
-    grid->setHeight(0.5*sceneHeight);
+    // Set the initial grid size if it has not already been set
+    if(grid->getBottomLeftNode()->pos().isNull() || grid->getTopRightNode()->pos().isNull() || grid->getTopLeftNode()->pos().isNull() || grid->getBottomRightNode()->pos().isNull() )
+    {
+        grid->setWidth(0.5*sceneWidth);
+        grid->setHeight(0.5*sceneHeight);
+        grid->setPos(centerScene.toPoint());
 
-    grid->setPos(centerScene.toPoint());
+        scene->addItem(grid.get());
+    }
 
-    scene->addItem(grid.get());
+    grid->show();
 }
 
 
@@ -79,7 +83,7 @@ RectangleGrid* MapViewSubWidget::getGrid(void)
 
 void MapViewSubWidget::removeGridFromScene(void)
 {
-    mainViewWidget->scene()->removeItem(grid.get());
+    grid->hide();
 }
 
 

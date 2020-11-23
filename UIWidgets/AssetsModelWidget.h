@@ -1,5 +1,5 @@
-﻿#ifndef AssetsWidget_H
-#define AssetsWidget_H
+#ifndef AssetsModelWidget_H
+#define AssetsModelWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -41,16 +41,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
-class ComponentInputWidget;
-class VisualizationWidget;
+class BuildingModelingWidget;
 
-class AssetsWidget : public  SimCenterAppWidget
+class AssetsModelWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit AssetsWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~AssetsWidget();
+    explicit AssetsModelWidget(QWidget *parent);
+    ~AssetsModelWidget();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
@@ -60,13 +59,10 @@ public:
 
     void clear(void);
 
-    ComponentInputWidget* getBuildingWidget() const;
-    ComponentInputWidget* getPipelineWidget() const;
-
 private:
-    std::unique_ptr<ComponentInputWidget> buildingWidget;
-    std::unique_ptr<ComponentInputWidget> pipelineWidget;
-    VisualizationWidget* visualizationWidget;
+
+    std::unique_ptr<BuildingModelingWidget> buildingWidget;
+
 };
 
-#endif // AssetsWidget_H
+#endif // AssetsModelWidget_H

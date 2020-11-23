@@ -70,7 +70,7 @@ EngDemandParamWidget::EngDemandParamWidget(QWidget *parent) : SimCenterAppWidget
     auto theComponentSelection = new SimCenterComponentSelection();
     mainLayout->addWidget(theComponentSelection);
 
-    theComponentSelection->setMaxWidth(120);
+    theComponentSelection->setWidth(120);
 
     QGroupBox* liquefactionBox = this->getLiquefactionBox();
     QGroupBox* latSpreadBox = this->getLateralSpreadingBox();
