@@ -56,19 +56,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QMetaEnum>
 
-GeneralInformationWidget* GeneralInformationWidget::getInstance()
-{
-    if (theInstance == nullptr)
-        theInstance = new GeneralInformationWidget();
 
-    return theInstance;
-}
-
-
-GeneralInformationWidget *GeneralInformationWidget::theInstance = nullptr;
-
-
-GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterWidget(parent)
+GeneralInformationWidget::GeneralInformationWidget(QWidget *parent, RegionalMappingWidget* regionMapWidget) : SimCenterWidget(parent), theRegionalMappingWidget(regionMapWidget)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 //    mainLayout->setMargin(0);
@@ -135,12 +124,6 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
 
 
     return true;
-}
-
-
-void GeneralInformationWidget::clear(void)
-{
-
 }
 
 
@@ -215,8 +198,6 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     QGroupBox* regionalMappingGroupBox = new QGroupBox("Regional Mapping", this);
     regionalMappingGroupBox->setContentsMargins(0,5,0,0);
 
-    theRegionalMappingWidget = new RegionalMappingWidget(this);
-
     regionalMappingGroupBox->setLayout(theRegionalMappingWidget->layout());
 
 //    regionalMappingGroupBox->addWidget(theRegionalMappingWidget);
@@ -235,11 +216,5 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
 
     return layout;
 }
-
-RegionalMappingWidget *GeneralInformationWidget::getTheRegionalMappingWidget() const
-{
-    return theRegionalMappingWidget;
-}
-
 
 

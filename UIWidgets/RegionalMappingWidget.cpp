@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Latest revision: 09.30.2020
 
 #include "RegionalMappingWidget.h"
+#include "SimCenterPreferences.h"
 
 #include <QGridLayout>
 #include <QGroupBox>
@@ -47,9 +48,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QIntValidator>
+#include <QDir>
 
-
-RegionalMappingWidget::RegionalMappingWidget(QWidget *parent) : SimCenterWidget(parent)
+RegionalMappingWidget::RegionalMappingWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     QGridLayout* regionalMapLayout = new QGridLayout(this);
 
@@ -59,7 +60,7 @@ RegionalMappingWidget::RegionalMappingWidget(QWidget *parent) : SimCenterWidget(
 
     QLabel* samplesLabel = new QLabel("Number of samples",this);
     QLabel* neighborsLabel = new QLabel("Number of neighbors",this);\
-    QLabel* eventGridLabel = new QLabel("Filename of event grid",this);
+//    QLabel* eventGridLabel = new QLabel("Filename of event grid",this);
 
     QIntValidator *validator = new QIntValidator(this);
     validator->setBottom(1);
@@ -72,8 +73,8 @@ RegionalMappingWidget::RegionalMappingWidget(QWidget *parent) : SimCenterWidget(
     samplesLineEdit->setValidator(validator);
     neighborsLineEdit->setValidator(validator);
 
-    filenameLineEdit = new QLineEdit(this);
-    filenameLineEdit->setText("EventGrid");
+//    filenameLineEdit = new QLineEdit(this);
+//    filenameLineEdit->setText("EventGrid");
 
     regionalMapLayout->addWidget(appLabel,0, 0);
     regionalMapLayout->addWidget(appSelectCombo, 0, 1);
@@ -81,8 +82,8 @@ RegionalMappingWidget::RegionalMappingWidget(QWidget *parent) : SimCenterWidget(
     regionalMapLayout->addWidget(samplesLineEdit, 1, 1);
     regionalMapLayout->addWidget(neighborsLabel, 2, 0);
     regionalMapLayout->addWidget(neighborsLineEdit, 2, 1);
-    regionalMapLayout->addWidget(eventGridLabel, 3, 0);
-    regionalMapLayout->addWidget(filenameLineEdit, 3, 1);
+//    regionalMapLayout->addWidget(eventGridLabel, 3, 0);
+//    regionalMapLayout->addWidget(filenameLineEdit, 3, 1);
 }
 
 
@@ -103,7 +104,7 @@ bool RegionalMappingWidget::outputToJSON(QJsonObject &jsonObj)
 
     nearestNeigborObj.insert("samples",samplesLineEdit->text().toInt());
     nearestNeigborObj.insert("neighbors",neighborsLineEdit->text().toInt());
-    nearestNeigborObj.insert("filenameEVENTgrid",filenameLineEdit->text());
+    nearestNeigborObj.insert("filenameEVENTgrid",eventGridPath);
 
     regionalMapObj.insert("ApplicationData",nearestNeigborObj);
 
@@ -117,6 +118,12 @@ bool RegionalMappingWidget::inputFromJSON(QJsonObject &jsonObject){
 
 
     return true;
+}
+
+
+void RegionalMappingWidget::handleFileNameChanged(const QString &value)
+{
+    eventGridPath = value + "/EventGrid.csv";
 }
 
 

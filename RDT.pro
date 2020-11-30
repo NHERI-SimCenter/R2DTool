@@ -1,5 +1,4 @@
-QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel 3dcore 3drender 3dextras charts xml \
-    quick
+QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel 3dcore 3drender 3dextras charts xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -9,12 +8,11 @@ TEMPLATE = app
 VERSION=1.0.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-# C++14 support
+# C++17 support
 CONFIG += c++17
 
-# Specify the paths to the Simcenter common directory and to groundmotion utilities
+# Specify the paths to the Simcenter common directory
 PATH_TO_COMMON=../../SimCenterCommon
-PATH_TO_GMUTILS=../../GroundMotionUtilitiesCustom
 
 # Application Icons
 win32 {
@@ -33,26 +31,27 @@ include($$PWD/arcgisruntime.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
 include($$PATH_TO_COMMON/RandomVariables/RandomVariables.pri)
 include(RDTCommon.pri)
-include(EarthquakeEvents.pri)
 
 # RDT files
 INCLUDEPATH += $$PWD/Utils \
                $$PWD/styles \
                $$PWD/UIWidgets \
+               $$PWD/EVENTS/UI \
+               $$PWD/TOOLS \
 
 
 SOURCES +=  main.cpp \
-            CSVReaderWriter.cpp \
+            WorkflowAppRDT.cpp \
+            RunWidget.cpp \
+            TOOLS/XMLAdaptor.cpp \
+            TOOLS/shakeMapClient.cpp \
+            TOOLS/CSVReaderWriter.cpp \
             UIWidgets/CustomGraphicsScene.cpp \
             UIWidgets/CustomGraphicsView.cpp \
             UIWidgets/GridNode.cpp \
             UIWidgets/MapViewSubWidget.cpp \
             UIWidgets/NodeHandle.cpp \
-            UIWidgets/RectangleGrid.cpp \
-            WorkflowAppRDT.cpp \
-            RunWidget.cpp \
-            XMLAdaptor.cpp \
-            shakeMapClient.cpp \
+            UIWidgets/RectangleGrid.cpp \         
             UIWidgets/EarthquakeInputWidget.cpp \
             UIWidgets/PopUpWidget.cpp \
             UIWidgets/TreeItem.cpp \
@@ -62,32 +61,62 @@ SOURCES +=  main.cpp \
             UIWidgets/VisualizationWidget.cpp \
             UIWidgets/ComponentInputWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
+            UIWidgets/BuildingModelGeneratorWidget.cpp \
+            UIWidgets/StructuralModelingWidget.cpp \
+            UIWidgets/BuildingSimulationWidget.cpp \
             UIWidgets/CSVtoBIMModelingWidget.cpp \
             UIWidgets/DecisionVariableWidget.cpp \
             UIWidgets/HazardsWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/AssetsWidget.cpp \
             UIWidgets/AssetsModelWidget.cpp \
-            UIWidgets/EngDemandParamWidget.cpp \
+            UIWidgets/DamageMeasureWidget.cpp \
+            UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/RegionalMappingWidget.cpp \
             UIWidgets/ShakeMapWidget.cpp \
             UIWidgets/UserInputGMWidget.cpp \
-#            UIWidgets/IntensityMeasureWidget.cpp \
-            UIWidgets/DamageMeasureWidget.cpp \
+            UIWidgets/OpenSeesPyBuildingModel.cpp \
+            EVENTS/UI/GMWidget.cpp \
+            EVENTS/UI/Location.cpp \
+            EVENTS/UI/Site.cpp \
+            EVENTS/UI/PointSourceRupture.cpp \
+            EVENTS/UI/EarthquakeRuptureForecast.cpp \
+            EVENTS/UI/RuptureLocation.cpp \
+            EVENTS/UI/GMPE.cpp \
+            EVENTS/UI/IntensityMeasure.cpp \
+            EVENTS/UI/SiteWidget.cpp \
+            EVENTS/UI/RuptureWidget.cpp \
+            EVENTS/UI/EarthquakeRuptureForecastWidget.cpp \
+            EVENTS/UI/PointSourceRuptureWidget.cpp \
+            EVENTS/UI/GMPEWidget.cpp \
+            EVENTS/UI/IntensityMeasureWidget.cpp \
+            EVENTS/UI/SpatialCorrelationWidget.cpp \
+            EVENTS/UI/RecordSelectionConfig.cpp \
+            EVENTS/UI/RecordSelectionWidget.cpp \
+            EVENTS/UI/HBoxFormLayout.cpp \
+            EVENTS/UI/SiteGrid.cpp \
+            EVENTS/UI/GridDivision.cpp \
+            EVENTS/UI/SiteConfig.cpp \
+            EVENTS/UI/SiteConfigWidget.cpp \
+            EVENTS/UI/SiteGridWidget.cpp \
+            EVENTS/UI/LocationsListModel.cpp \
+            EVENTS/UI/GmAppConfig.cpp \
+            EVENTS/UI/GmAppConfigWidget.cpp \
+            EVENTS/UI/GmCommon.cpp \
 
 
 HEADERS +=  WorkflowAppRDT.h\
             RunWidget.h \
+            TOOLS/XMLAdaptor.h \
+            TOOLS/shakeMapClient.h \
+            TOOLS/CSVReaderWriter.h \
             UIWidgets/CustomGraphicsScene.h \
             UIWidgets/CustomGraphicsView.h \
             UIWidgets/GridNode.h \
             UIWidgets/MapViewSubWidget.h \
             UIWidgets/NodeHandle.h \
             UIWidgets/RectangleGrid.h \
-            XMLAdaptor.h \
-            shakeMapClient.h \
-            CSVReaderWriter.h \
             UIWidgets/EarthquakeInputWidget.h \
             UIWidgets/PopUpWidget.h \
             UIWidgets/TreeItem.h \
@@ -102,14 +131,45 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/VisualizationWidget.h \
             UIWidgets/ComponentInputWidget.h \
             UIWidgets/BuildingModelingWidget.h \
+            UIWidgets/StructuralModelingWidget.h \
+            UIWidgets/BuildingModelGeneratorWidget.h \
+            UIWidgets/BuildingSimulationWidget.h \
             UIWidgets/CSVtoBIMModelingWidget.h \
-            UIWidgets/EngDemandParamWidget.h \
+            UIWidgets/DamageMeasureWidget.h \
+            UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/RegionalMappingWidget.h \
             UIWidgets/ShakeMapWidget.h \
             UIWidgets/UserInputGMWidget.h \
-#            UIWidgets/IntensityMeasureWidget.h \
-            UIWidgets/DamageMeasureWidget.h \
+            UIWidgets/OpenSeesPyBuildingModel.h \
+            EVENTS/UI/GMWidget.h \
+            EVENTS/UI/Location.h \
+            EVENTS/UI/Site.h \
+            EVENTS/UI/PointSourceRupture.h \
+            EVENTS/UI/EarthquakeRuptureForecast.h \
+            EVENTS/UI/RuptureLocation.h \
+            EVENTS/UI/EarthquakeRuptureForecastWidget.h \
+            EVENTS/UI/PointSourceRuptureWidget.h \
+            EVENTS/UI/GMPE.h \
+            EVENTS/UI/IntensityMeasure.h \
+            EVENTS/UI/SiteWidget.h \
+            EVENTS/UI/RuptureWidget.h \
+            EVENTS/UI/GMPEWidget.h \
+            EVENTS/UI/IntensityMeasureWidget.h \
+            EVENTS/UI/SpatialCorrelationWidget.h \
+            EVENTS/UI/JsonSerializable.h \
+            EVENTS/UI/RecordSelectionConfig.h \
+            EVENTS/UI/RecordSelectionWidget.h \
+            EVENTS/UI/HBoxFormLayout.h \
+            EVENTS/UI/SiteGrid.h \
+            EVENTS/UI/GridDivision.h \
+            EVENTS/UI/SiteConfig.h \
+            EVENTS/UI/SiteConfigWidget.h \
+            EVENTS/UI/SiteGridWidget.h \
+            EVENTS/UI/LocationsListModel.h \
+            EVENTS/UI/GmAppConfig.h \
+            EVENTS/UI/GmAppConfigWidget.h \
+            EVENTS/UI/GmCommon.h \
 
 
 RESOURCES += \

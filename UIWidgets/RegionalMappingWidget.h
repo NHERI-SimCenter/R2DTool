@@ -39,11 +39,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 09.30.2020
 
-#include <SimCenterWidget.h>
+#include <SimCenterAppWidget.h>
 
 class QLineEdit;
 
-class RegionalMappingWidget : public SimCenterWidget
+class RegionalMappingWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
@@ -56,13 +56,16 @@ public:
 
 public slots:
 
+    void handleFileNameChanged(const QString &value);
+
 signals:
 
 private:
 
+    QString eventGridPath;
     QLineEdit* samplesLineEdit;
     QLineEdit* neighborsLineEdit;
-    QLineEdit* filenameLineEdit;
+//    QLineEdit* filenameLineEdit;
 
 };
 

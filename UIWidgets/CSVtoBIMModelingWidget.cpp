@@ -13,12 +13,10 @@
 
 CSVtoBIMModelingWidget::CSVtoBIMModelingWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {    
-    QGroupBox* csvToBIMGroupBox = new QGroupBox("CSV to BIM Options", this);
-    csvToBIMGroupBox->setFlat(true);
 
-    QGridLayout* gridLayout = new QGridLayout(csvToBIMGroupBox);
+    QGridLayout* gridLayout = new QGridLayout(this);
 
-    QLabel* IDLabel = new QLabel("Select a range of building IDs for which to create a model.\nBy default, all buildings selected for analysis are converted into a BIM.",this);
+    QLabel* IDLabel = new QLabel("Select a range of building IDs for which to create a model. By default, all buildings selected for analysis are converted into a BIM.",this);
 
     selectComponentsLineEdit = new QLineEdit();
     selectComponentsLineEdit->setMaximumWidth(1000);
@@ -31,8 +29,12 @@ CSVtoBIMModelingWidget::CSVtoBIMModelingWidget(QWidget *parent) : SimCenterAppWi
     QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
     selectComponentsLineEdit->setValidator(LEValidator);
 
+    // Add a vertical spacer at the bottom to push everything up
+    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+
     gridLayout->addWidget(IDLabel,0,0);
     gridLayout->addWidget(selectComponentsLineEdit,1,0);
+    gridLayout->addItem(vspacer,2,0,1,2);
 
 }
 

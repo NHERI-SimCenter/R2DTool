@@ -37,38 +37,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
+// Latest revision: 11.20.2020
 
-#include <SimCenterAppWidget.h>
+#include "SimCenterAppWidget.h"
 
-class QGroupBox;
 
 class DamageMeasureWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit DamageMeasureWidget(QWidget *parent = 0);
+    explicit DamageMeasureWidget(QWidget *parent);
     ~DamageMeasureWidget();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
-    bool copyFiles(QString &destName);
-
-    void clear(void);
-
-signals:
-
-public slots:
 
 private:
-
-    QGroupBox* getPipeStrainWidget(void);
-    QGroupBox* getDM1Widget(void);
-    QGroupBox* getDM2Widget(void);
-    QGroupBox* getDM3Widget(void);
 
 };
 

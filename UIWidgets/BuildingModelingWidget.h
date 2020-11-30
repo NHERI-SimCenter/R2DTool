@@ -6,36 +6,31 @@
 
 #include "SimCenterAppWidget.h"
 
-class CSVtoBIMModelingWidget;
+class BuildingModelGeneratorWidget;
+class BuildingSimulationWidget;
+class StructuralModelingWidget;
+class RandomVariablesContainer;
 
 class QComboBox;
 class QGroupBox;
-class QStackedWidget;
+class QTabWidget;
 
 class BuildingModelingWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit BuildingModelingWidget(QWidget *parent);
+    explicit BuildingModelingWidget(QWidget *parent, RandomVariablesContainer* RVContainer);
     virtual ~BuildingModelingWidget();
-
-    QGroupBox* getComponentsWidget(void);
 
     bool outputToJSON(QJsonObject &rvObject);
 
-public slots:
-
-    void handleBuildingModelSelectionChanged(const int index);
-
 private:
-    QGroupBox* componentGroupBox;
-    QComboBox* buildingModelSelectCombo;
-
-    void createComponentsBox(void);
-
-    QStackedWidget* theStackedWidget;
-    CSVtoBIMModelingWidget* theCSVtoBIMWidget;
+    RandomVariablesContainer* theRandomVariablesContainer;
+    QTabWidget* theTabbedWidget;
+    BuildingModelGeneratorWidget* theBuildingModelGenWidget;
+    StructuralModelingWidget* theStructModelingWidget;
+    BuildingSimulationWidget* theBuildingSIMWidget;
 };
 
 #endif // BuildingModelingWidget_H

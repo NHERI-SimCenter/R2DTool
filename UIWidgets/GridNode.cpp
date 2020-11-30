@@ -44,7 +44,7 @@ QPainterPath GridNode::shape() const
 }
 
 
-void GridNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+void GridNode::paint(QPainter *painter, const QStyleOptionGraphicsItem */*option*/, QWidget *)
 {
     QBrush brush(nodeColor);
 

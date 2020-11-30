@@ -42,13 +42,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 
 class BuildingModelingWidget;
+class RandomVariablesContainer;
 
 class AssetsModelWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit AssetsModelWidget(QWidget *parent);
+    explicit AssetsModelWidget(QWidget *parent, RandomVariablesContainer * RVContainer);
     ~AssetsModelWidget();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -62,6 +63,7 @@ public:
 private:
 
     std::unique_ptr<BuildingModelingWidget> buildingWidget;
+    RandomVariablesContainer* theRandomVariablesContainer;
 
 };
 

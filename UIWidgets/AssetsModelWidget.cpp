@@ -63,8 +63,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 
 
-AssetsModelWidget::AssetsModelWidget(QWidget *parent)
-    : SimCenterAppWidget(parent)
+AssetsModelWidget::AssetsModelWidget(QWidget *parent, RandomVariablesContainer* RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
@@ -86,14 +85,12 @@ AssetsModelWidget::AssetsModelWidget(QWidget *parent)
 
     theComponentSelection->setWidth(120);
 
-    buildingWidget = std::make_unique<BuildingModelingWidget>(this);
-
-    QGroupBox* buildingInfoBox = buildingWidget->getComponentsWidget();
+    buildingWidget = std::make_unique<BuildingModelingWidget>(this,theRandomVariablesContainer);
 
     QGroupBox* pipelineInfoBox = new QGroupBox("Pipeline Models",this);
     pipelineInfoBox->setFlat(true);
 
-    theComponentSelection->addComponent("Buildings",buildingInfoBox);
+    theComponentSelection->addComponent("Buildings",buildingWidget.get());
     theComponentSelection->addComponent("Pipelines",pipelineInfoBox);
     theComponentSelection->displayComponent("Buildings");
 
@@ -109,11 +106,8 @@ AssetsModelWidget::~AssetsModelWidget()
 
 bool AssetsModelWidget::outputToJSON(QJsonObject &jsonObject)
 {
-    QJsonObject buildingObj;
 
-    buildingWidget->outputToJSON(buildingObj);
-
-    jsonObject.insert("Building",buildingObj);
+    buildingWidget->outputToJSON(jsonObject);
 
     return true;
 }

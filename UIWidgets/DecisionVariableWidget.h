@@ -1,5 +1,5 @@
-#ifndef Decision_VariableWidget_H
-#define Decision_VariableWidget_H
+#ifndef DecisionVariableWidget_H
+#define DecisionVariableWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,45 +37,24 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
+// Latest revision: 11.20.2020
 
-#include <SimCenterAppWidget.h>
+#include "SimCenterAppWidget.h"
 
-class QGroupBox;
-class QComboBox;
-class QStackedWidget;
-class RandomVariablesContainer;
-class ResultsWidget;
-class UQ_Engine;
-class RandomVariablesContainer;
 
 class DecisionVariableWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit DecisionVariableWidget(QWidget *parent = 0);
+    explicit DecisionVariableWidget(QWidget *parent);
     ~DecisionVariableWidget();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
-    bool copyFiles(QString &destName);
-
-    void clear(void);
-
-signals:
-
-public slots:
 
 private:
 
-    QGroupBox* getNumRepairsWidget(void);
-    QGroupBox* getNumBreaksWidget(void);
-    QGroupBox* getServiceabilityWidget(void);
-    QGroupBox* getDM4Widget(void);
-
 };
 
-#endif // Decision_VariableWidget_H
+#endif // DecisionVariableWidget_H

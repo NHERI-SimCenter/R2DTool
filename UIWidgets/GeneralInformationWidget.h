@@ -41,32 +41,26 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterWidget.h>
 
+class RegionalMappingWidget;
+
 class QLineEdit;
 class QGridLayout;
 class QComboBox;
 class QCheckBox;
 
-class RegionalMappingWidget;
-
 class GeneralInformationWidget : public SimCenterWidget
 {
     Q_OBJECT
 
-private:
-    explicit GeneralInformationWidget(QWidget *parent = 0);
-    ~GeneralInformationWidget();
-    static GeneralInformationWidget *theInstance;
-
 public:
-    static GeneralInformationWidget *getInstance(void);
+    explicit GeneralInformationWidget(QWidget *parent, RegionalMappingWidget* regionMapWidget);
+    ~GeneralInformationWidget();
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
 
     bool outputToJSON(QJsonArray &arrayObject);
     bool inputFromJSON(QJsonArray &arrayObject);
-
-    void clear(void);
 
     enum LengthUnit{m, cm, mm, in, ft};
     Q_ENUM(LengthUnit)
@@ -76,8 +70,6 @@ public:
     Q_ENUM(TimeUnit)
     enum TemperatureUnit{C, F, K};
     Q_ENUM(TemperatureUnit)
-
-    RegionalMappingWidget *getTheRegionalMappingWidget() const;
 
 public slots:
 

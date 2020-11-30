@@ -41,7 +41,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetsModelWidget.h"
 #include "HazardsWidget.h"
 #include "VisualizationWidget.h"
-
+#include "EngDemandParameterWidget.h"
+#include "DamageMeasureWidget.h"
+#include "DecisionVariableWidget.h"
 #include "WorkflowAppRDT.h"
 #include "LocalApplication.h"
 #include "RemoteApplication.h"
@@ -109,18 +111,18 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     // create the various widgets
     //
 
+    theRegionalMappingWidget = new RegionalMappingWidget(this);
+    theGeneralInformationWidget = new GeneralInformationWidget(this, theRegionalMappingWidget);
     theRVs = new RandomVariablesContainer();
     theVisualizationWidget = new VisualizationWidget(this);
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
-    theModelingWidget = new AssetsModelWidget(this);
+    theModelingWidget = new AssetsModelWidget(this, theRVs);
     theHazardsWidget = new HazardsWidget(this, theVisualizationWidget, theRVs);
-    theGeneralInformationWidget = GeneralInformationWidget::getInstance();
+    theEngDemandParamWidget = new EngDemandParameterWidget(this);
+    theDamageMeasureWidget = new DamageMeasureWidget(this);
+    theDecisionVariableWidget = new DecisionVariableWidget(this);
 
-    //    theSIM = new SIM_Selection(theRVs);
-    //    theEventSelection = new EarthquakeEventSelection(theRVs, theGI);
-    //    theAnalysisSelection = new FEM_Selection(theRVs);
     theUQWidget = new UQ_EngineSelection(theRVs);
-    //    theEDP_Selection = new EDP_EarthquakeSelection(theRVs);
     theUQResultsWidget = theUQWidget->getResults();
 
     localApp = new LocalApplication("RDT_workflow.py");
@@ -174,20 +176,29 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     horizontalLayout->addWidget(theComponentSelection);
 
     theComponentSelection->setWidth(120);
+    theComponentSelection->setItemWidthHeight(20,60);
 
     theGeneralInformationWidget->setObjectName("GeneralInformation");
     theAssetsWidget->setObjectName("Assets");
-    theModelingWidget->setObjectName("AssetModels");
+    theModelingWidget->setObjectName("Modeling");
     theHazardsWidget->setObjectName("Hazards");
     theUQWidget->setObjectName("UncertaintyQuantification");
     theUQResultsWidget->setObjectName("Results");
     theVisualizationWidget->setObjectName("Visualization");
+    theRegionalMappingWidget->setObjectName("RegionalMapping");
+    theEngDemandParamWidget->setObjectName("EngDemandParams");
+
+    theDamageMeasureWidget->setObjectName("DamageMeasures");
+    theDecisionVariableWidget->setObjectName("DecisionVariables");
 
     theComponentSelection->addComponent(tr("Visualization"), theVisualizationWidget);
     theComponentSelection->addComponent(tr("General\nInformation"), theGeneralInformationWidget);
+    theComponentSelection->addComponent(tr("Hazards"), theHazardsWidget);
     theComponentSelection->addComponent(tr("Assets"), theAssetsWidget);
     theComponentSelection->addComponent(tr("Modeling"), theModelingWidget);
-    theComponentSelection->addComponent(tr("Hazards"), theHazardsWidget);
+    theComponentSelection->addComponent(tr("Engineering\nDemand\nParameters"), theEngDemandParamWidget);
+    theComponentSelection->addComponent(tr("Damage\nMeasures"), theDamageMeasureWidget);
+    theComponentSelection->addComponent(tr("Decision\nVariables"), theDecisionVariableWidget);
     theComponentSelection->addComponent(tr("Uncertainty\nQuantification"), theUQWidget);
     theComponentSelection->addComponent(tr("Results"), theUQResultsWidget);
 
@@ -196,8 +207,8 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     // theComponentSelection->addComponent(QString("EDP"), theEDP_Selection);
     // theComponentSelection->addComponent(QString("RV"),  theRVs);
 
-//    theComponentSelection->displayComponent("Visualization");
-    theComponentSelection->displayComponent("General\nInformation");
+    theComponentSelection->displayComponent("Modeling");
+//    theComponentSelection->displayComponent("General\nInformation");
 
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
@@ -217,6 +228,11 @@ WorkflowAppRDT::~WorkflowAppRDT()
 void WorkflowAppRDT::replyFinished(QNetworkReply *pReply)
 {
     return;
+}
+
+RegionalMappingWidget *WorkflowAppRDT::getTheRegionalMappingWidget() const
+{
+    return theRegionalMappingWidget;
 }
 
 GeneralInformationWidget *WorkflowAppRDT::getGeneralInformationWidget() const
@@ -259,7 +275,7 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 
     theHazardsWidget->outputToJSON(apps);
 
-    theGeneralInformationWidget->getTheRegionalMappingWidget()->outputToJSON(apps);
+    theRegionalMappingWidget->outputToJSON(apps);
 
     theRunWidget->outputToJSON(jsonObjectTop);
 

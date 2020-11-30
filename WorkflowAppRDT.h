@@ -45,6 +45,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class AssetsWidget;
 class HazardsWidget;
+class EngDemandParameterWidget;
+class DamageMeasureWidget;
+class DecisionVariableWidget;
 class VisualizationWidget;
 class GeneralInformationWidget;
 class AssetsModelWidget;
@@ -59,6 +62,7 @@ class RemoteService;
 class ResultsWidget;
 class RunLocalWidget;
 class RunWidget;
+class RegionalMappingWidget;
 class SimCenterComponentSelection;
 class UQOptions;
 class UQ_Results;
@@ -83,12 +87,13 @@ public:
     void onExitButtonClicked();
     int getMaxNumParallelTasks();
     
+    void setActiveWidget(SimCenterAppWidget* widget);
+
     VisualizationWidget *getVisualizationWidget() const;
     AssetsWidget *getAssetsWidget() const;
     HazardsWidget *getHazardsWidget() const;
     GeneralInformationWidget *getGeneralInformationWidget() const;
-
-    void setActiveWidget(SimCenterAppWidget* widget);
+    RegionalMappingWidget *getTheRegionalMappingWidget() const;
 
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
@@ -109,12 +114,17 @@ private:
     // Widgets that go in sidebar
     AssetsWidget* theAssetsWidget;
     HazardsWidget* theHazardsWidget;
+    RegionalMappingWidget* theRegionalMappingWidget;
     VisualizationWidget* theVisualizationWidget;
     GeneralInformationWidget* theGeneralInformationWidget;
     AssetsModelWidget* theModelingWidget;
+    DamageMeasureWidget* theDamageMeasureWidget;
+    DecisionVariableWidget* theDecisionVariableWidget;
     RandomVariablesContainer* theRVs;
     UQ_EngineSelection* theUQWidget;
     UQ_Results* theUQResultsWidget;
+    EngDemandParameterWidget* theEngDemandParamWidget;
+
 
     // Objects for running the workflow and obtaining results
     RunWidget *theRunWidget;

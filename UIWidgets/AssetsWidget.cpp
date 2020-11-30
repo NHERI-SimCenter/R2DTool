@@ -104,7 +104,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
 //    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/AnchorageExample/AnchorageBuildings.csv";
 
-    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventoryCopy.csv";
+    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory3.csv";
     buildingWidget->testFileLoad(pathToBuildingInfoFile);
 
     this->setLayout(mainLayout);

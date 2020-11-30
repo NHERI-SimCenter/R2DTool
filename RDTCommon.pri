@@ -10,6 +10,7 @@ INCLUDEPATH +=  $$PATH_TO_COMMON/Workflow/UQ \
                 $$PATH_TO_COMMON/Workflow/GRAPHICS \
                 $$PATH_TO_COMMON/Workflow/EXECUTION \
                 $$PATH_TO_COMMON/Workflow/EDP \
+                $$PATH_TO_COMMON/Workflow/SIM \
 
 SOURCES +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.cpp \
             $$PATH_TO_COMMON/Workflow/UQ/GaussianProcessInputWidget.cpp \
@@ -56,6 +57,9 @@ SOURCES +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.cpp \
             $$PATH_TO_COMMON/Workflow/EDP/StandardEarthquakeEDP.cpp \
             $$PATH_TO_COMMON/Workflow/EDP/UserDefinedEDP.cpp \
             $$PATH_TO_COMMON/Workflow/EDP/EDP.cpp \
+            $$PATH_TO_COMMON/Workflow/SIM/OpenSeesBuildingModel.cpp \
+            $$PATH_TO_COMMON/Workflow/SIM/OpenSeesParser.cpp \
+#            $$PATH_TO_COMMON/Workflow/SIM/MDOF_BuildingModel.cpp \
 
 
 HEADERS +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.h \
@@ -103,5 +107,7 @@ HEADERS +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.h \
             $$PATH_TO_COMMON/Workflow/EDP/StandardEarthquakeEDP.h \
             $$PATH_TO_COMMON/Workflow/EDP/UserDefinedEDP.h \
             $$PATH_TO_COMMON/Workflow/EDP/EDP.h \
-
+            $$PATH_TO_COMMON/Workflow/SIM/OpenSeesBuildingModel.h \
+            $$PATH_TO_COMMON/Workflow/SIM/OpenSeesParser.h \
+#            $$PATH_TO_COMMON/Workflow/SIM/MDOF_BuildingModel.h \
 

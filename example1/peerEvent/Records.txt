@@ -1,3 +1,0 @@
-elCentro.AT2,1.5
-Rinaldi228.AT2,2.0
-Rinaldi318.AT2,2.0
