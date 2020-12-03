@@ -38,6 +38,8 @@ public:
 
     QStackedWidget* getUserInputGMWidget(void);
 
+    bool outputToJSON(QJsonObject &jsonObj);
+
 public slots:
 
     void showUserGMSelectDialog(void);
@@ -48,7 +50,7 @@ private slots:
     void chooseUserFileDialog(void);
 
 signals:
-
+    void outputDirectoryPathChanged(QString newPath);
     void loadingComplete(const bool value);
 
 private:

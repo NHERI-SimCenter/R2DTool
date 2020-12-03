@@ -1,31 +1,35 @@
 #include "BuildingSimulationWidget.h"
-
-//#include "CSVtoBIMModelingWidget.h"
+#include "InputWidgetOpenSeesAnalysis.h"
+#include "InputWidgetOpenSeesPyAnalysis.h"
 
 #include <QGroupBox>
 #include <QComboBox>
 #include <QStackedWidget>
 #include <QGridLayout>
+#include <QDebug>
 
-
-BuildingSimulationWidget::BuildingSimulationWidget(QWidget *parent) : SimCenterAppWidget(parent)
+BuildingSimulationWidget::BuildingSimulationWidget(QWidget *parent, RandomVariablesContainer* RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
 {
-    buildingModelSelectCombo = new QComboBox(this);
-    buildingModelSelectCombo->addItem("OpenSeesPy Simulation");
+    buildingSIMSelectCombo = new QComboBox(this);
+    buildingSIMSelectCombo->addItem("OpenSees Simulation");
+    buildingSIMSelectCombo->addItem("OpenSeesPy Simulation");
 
-    connect(buildingModelSelectCombo,QOverload<int>::of(&QComboBox::currentIndexChanged), this, &BuildingSimulationWidget::handleBuildingModelSelectionChanged);
+    connect(buildingSIMSelectCombo,QOverload<int>::of(&QComboBox::currentIndexChanged), this, &BuildingSimulationWidget::handleBuildingSIMSelectionChanged);
 
     QVBoxLayout* buildingModelLayout = new QVBoxLayout(this);
 
     theStackedWidget = new QStackedWidget(this);
 
-//    theCSVtoBIMWidget = new CSVtoBIMModelingWidget(this);
+    openSeesInputWidget = new InputWidgetOpenSeesAnalysis(theRandomVariablesContainer, this);
+    openSeesPyInputWidget = new InputWidgetOpenSeesPyAnalysis(theRandomVariablesContainer, this);
 
-//    theStackedWidget->addWidget(theCSVtoBIMWidget);
+    theStackedWidget->addWidget(openSeesInputWidget);
+    theStackedWidget->addWidget(openSeesPyInputWidget);
 
-    buildingModelLayout->addWidget(buildingModelSelectCombo);
-
+    buildingModelLayout->addWidget(buildingSIMSelectCombo);
     buildingModelLayout->addWidget(theStackedWidget);
+
+    buildingSIMSelectCombo->setCurrentText("OpenSeesPy Simulation");
 }
 
 
@@ -38,14 +42,27 @@ BuildingSimulationWidget::~BuildingSimulationWidget()
 bool BuildingSimulationWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
-//    theCSVtoBIMWidget->outputToJSON(jsonObj);
+    auto currentSelection = buildingSIMSelectCombo->currentText();
+
+    if(currentSelection.compare("OpenSees Simulation") == 0)
+    {
+        return openSeesInputWidget->outputToJSON(jsonObj);
+    }
+    else if(currentSelection.compare("OpenSeesPy Simulation") == 0)
+    {
+        return openSeesPyInputWidget->outputToJSON(jsonObj);
+    }
+    else
+    {
+        qDebug()<<"Warning, selection "<<currentSelection<<" not handled";
+        return false;
+    }
 
     return true;
 }
 
 
-
-void BuildingSimulationWidget::handleBuildingModelSelectionChanged(const int index)
+void BuildingSimulationWidget::handleBuildingSIMSelectionChanged(const int index)
 {
     theStackedWidget->setCurrentIndex(index);
 }

@@ -6,6 +6,7 @@
 #--------------------------------------#
 
 INCLUDEPATH +=  $$PATH_TO_COMMON/Workflow/UQ \
+                $$PATH_TO_COMMON/Workflow/ANALYSIS \
                 $$PATH_TO_COMMON/Workflow/WORKFLOW \
                 $$PATH_TO_COMMON/Workflow/GRAPHICS \
                 $$PATH_TO_COMMON/Workflow/EXECUTION \
@@ -40,6 +41,7 @@ SOURCES +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComboBox.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterFileInput.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterRVLineEdit.cpp \
+            $$PATH_TO_COMMON/Workflow/ANALYSIS/InputWidgetOpenSeesAnalysis.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/RunLocalWidget.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/AgaveCurl.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.cpp \
@@ -90,6 +92,7 @@ HEADERS +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComboBox.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterFileInput.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterRVLineEdit.h \
+            $$PATH_TO_COMMON/Workflow/ANALYSIS/InputWidgetOpenSeesAnalysis.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/RunLocalWidget.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/AgaveCurl.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.h \

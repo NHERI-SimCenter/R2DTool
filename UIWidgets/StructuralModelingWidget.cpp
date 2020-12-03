@@ -11,8 +11,8 @@
 StructuralModelingWidget::StructuralModelingWidget(QWidget *parent, RandomVariablesContainer* RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
 {
     buildingModelSelectCombo = new QComboBox(this);
-    buildingModelSelectCombo->addItem("OpenSeesPy Model");
     buildingModelSelectCombo->addItem("OpenSees Model");
+    buildingModelSelectCombo->addItem("OpenSeesPy Model");
 
     connect(buildingModelSelectCombo,QOverload<int>::of(&QComboBox::currentIndexChanged), this, &StructuralModelingWidget::handleBuildingModelSelectionChanged);
 
@@ -28,6 +28,9 @@ StructuralModelingWidget::StructuralModelingWidget(QWidget *parent, RandomVariab
 
     buildingModelLayout->addWidget(buildingModelSelectCombo);
     buildingModelLayout->addWidget(theStackedWidget);
+
+    buildingModelSelectCombo->setCurrentText("OpenSeesPy Model");
+
 }
 
 
@@ -39,10 +42,23 @@ StructuralModelingWidget::~StructuralModelingWidget()
 
 bool StructuralModelingWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    QJsonObject modelingObj;
-    theOpenSeesPyModelWidget->outputToJSON(modelingObj);
 
-    jsonObj.insert("Modeling",modelingObj);
+    auto currentSelection = buildingModelSelectCombo->currentText();
+
+    if(currentSelection.compare("OpenSeesPy Model") == 0)
+    {
+        return theOpenSeesPyModelWidget->outputToJSON(jsonObj);
+    }
+    else if(currentSelection.compare("OpenSees Model") == 0)
+    {
+        return theOpenSeesModelWidget->outputToJSON(jsonObj);
+    }
+    else
+    {
+        qDebug()<<"Warning, selection "<<currentSelection<<" not handled";
+        return false;
+    }
+
 
     return true;
 }

@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
+class BuildingEDPWidget;
 
 class EngDemandParameterWidget : public  SimCenterAppWidget
 {
@@ -54,6 +55,8 @@ public:
     bool inputFromJSON(QJsonObject &rvObject);
 
 private:
+
+    BuildingEDPWidget* theBuildingEDPWidget;
 
 };
 

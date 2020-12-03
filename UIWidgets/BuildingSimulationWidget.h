@@ -6,7 +6,9 @@
 
 #include "SimCenterAppWidget.h"
 
-class CSVtoBIMModelingWidget;
+class InputWidgetOpenSeesAnalysis;
+class InputWidgetOpenSeesPyAnalysis;
+class RandomVariablesContainer;
 
 class QComboBox;
 class QGroupBox;
@@ -17,20 +19,22 @@ class BuildingSimulationWidget : public  SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit BuildingSimulationWidget(QWidget *parent);
+    explicit BuildingSimulationWidget(QWidget *parent, RandomVariablesContainer* RVContainer);
     virtual ~BuildingSimulationWidget();
 
     bool outputToJSON(QJsonObject &rvObject);
 
 public slots:
 
-    void handleBuildingModelSelectionChanged(const int index);
+    void handleBuildingSIMSelectionChanged(const int index);
 
 private:
-    QComboBox* buildingModelSelectCombo;
+    QComboBox* buildingSIMSelectCombo;
 
     QStackedWidget* theStackedWidget;
-//    CSVtoBIMModelingWidget* theCSVtoBIMWidget;
+    InputWidgetOpenSeesAnalysis* openSeesInputWidget;
+    InputWidgetOpenSeesPyAnalysis* openSeesPyInputWidget;
+    RandomVariablesContainer* theRandomVariablesContainer;
 };
 
 #endif // BuildingSimulationWidget_H

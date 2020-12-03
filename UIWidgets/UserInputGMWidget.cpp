@@ -1,6 +1,8 @@
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
 #include "TreeView.h"
+#include "RegionalMappingWidget.h"
+#include "WorkflowAppRDT.h"
 
 // GIS Layers
 #include "GroupLayer.h"
@@ -33,13 +35,39 @@ UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *pa
     progressLabel = nullptr;
     pathToUserGMFile = "NULL";
 
-
-    //    this->loadComponentData();
 }
 
 UserInputGMWidget::~UserInputGMWidget()
 {
 
+}
+
+
+bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
+{
+
+    auto pathToEventGrid = filePathLineEdit->text();
+
+    if(pathToEventGrid.isEmpty())
+    {
+        QString msg = "Please specify the location of the ground motion input file";
+        this->userMessageDialog(msg);
+        return false;
+    }
+
+
+    const QFileInfo inputFile(pathToEventGrid);
+
+    if (!inputFile.exists() )
+    {
+        QString errMsg ="A File does not exist at the path: "+pathToEventGrid;
+        this->userMessageDialog(errMsg);
+        return false;
+    }
+
+    jsonObj.insert("pathEventData", inputFile.dir().absolutePath());
+
+    return true;
 }
 
 
@@ -138,6 +166,13 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     userGMStackedWidget->setMinimumWidth(400);
     userGMStackedWidget->setMinimumHeight(150);
 
+
+    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
+    connect(this,&UserInputGMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
+
+    pathToUserGMFile = "/Users/steve/Desktop/SimCenter/Examples/rWhaleExample/input_data_rdt/records/EventGrid.csv";
+    this->loadUserGMData();
+
     return userGMStackedWidget.get();
 }
 
@@ -164,13 +199,14 @@ void UserInputGMWidget::loadUserGMData(void)
     // Return if the user cancels
     if(pathToUserGMFile.isEmpty() || pathToUserGMFile == QDir::currentPath())
     {
-        pathToUserGMFile = "NULL";
+        pathToUserGMFile.clear();
+        filePathLineEdit->clear();
         return;
     }
 
-    const QFileInfo inputDir(pathToUserGMFile);
+    const QFileInfo inputFile(pathToUserGMFile);
 
-    if (!inputDir.exists() || !inputDir.isFile())
+    if (!inputFile.exists() || !inputFile.isFile())
     {
         QString errMsg ="A file does not exist at the path: "+pathToUserGMFile;
         this->userMessageDialog(errMsg);
@@ -179,7 +215,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
     QStringList acceptableFileExtensions = {"*.json", "*.csv"};
 
-    QStringList inputFiles = inputDir.dir().entryList(acceptableFileExtensions,QDir::Files);
+    QStringList inputFiles = inputFile.dir().entryList(acceptableFileExtensions,QDir::Files);
 
     if(inputFiles.empty())
     {
@@ -188,7 +224,7 @@ void UserInputGMWidget::loadUserGMData(void)
         return;
     }
 
-    QString fileName = inputDir.fileName();
+    QString fileName = inputFile.fileName();
 
     // Create a new shakemap
     auto layersTreeView = theVisualizationWidget->getLayersTree();
@@ -237,8 +273,6 @@ void UserInputGMWidget::loadUserGMData(void)
 
     progressLabel->setVisible(false);
 
-
-
     // Add the event layer to the map
 //    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
 
@@ -250,6 +284,8 @@ void UserInputGMWidget::loadUserGMData(void)
         userGMStackedWidget->close();
 
     emit loadingComplete(true);
+
+    emit outputDirectoryPathChanged(pathToUserGMFile);
 
     return;
 }

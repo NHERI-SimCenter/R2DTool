@@ -123,7 +123,7 @@ bool RegionalMappingWidget::inputFromJSON(QJsonObject &jsonObject){
 
 void RegionalMappingWidget::handleFileNameChanged(const QString &value)
 {
-    eventGridPath = value + "/EventGrid.csv";
+    eventGridPath = value;
 }
 
 

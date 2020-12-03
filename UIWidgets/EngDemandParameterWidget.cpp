@@ -38,29 +38,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Latest revision: 10.08.2020
 
 #include "EngDemandParameterWidget.h"
-#include "BuildingModelingWidget.h"
+#include "BuildingEDPWidget.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
 
 // Qt headers
 #include <QHBoxLayout>
-#include <QHeaderView>
 #include <QVBoxLayout>
-#include <QPushButton>
 #include <QGroupBox>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
-#include <QColorTransform>
 #include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QCheckBox>
 
 
 EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent)
@@ -71,7 +60,7 @@ EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent)
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Input Asset Classes"));
+    label->setText(QString("Engineering Demand Parameters (EDP)"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
@@ -86,13 +75,12 @@ EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent)
 
     theComponentSelection->setWidth(120);
 
-    QGroupBox* buildingInfoBox = new QGroupBox("Buildings",this);
-    buildingInfoBox->setFlat(true);
+    theBuildingEDPWidget = new BuildingEDPWidget(this);
 
     QGroupBox* pipelineInfoBox = new QGroupBox("Pipelines",this);
     pipelineInfoBox->setFlat(true);
 
-    theComponentSelection->addComponent("Buildings",buildingInfoBox);
+    theComponentSelection->addComponent("Buildings",theBuildingEDPWidget);
     theComponentSelection->addComponent("Pipelines",pipelineInfoBox);
     theComponentSelection->displayComponent("Buildings");
 
@@ -109,7 +97,11 @@ EngDemandParameterWidget::~EngDemandParameterWidget()
 bool EngDemandParameterWidget::outputToJSON(QJsonObject &jsonObject)
 {
 
+    QJsonObject EDPObject;
 
+    theBuildingEDPWidget->outputToJSON(EDPObject);
+
+    jsonObject.insert("EDP",EDPObject);
 
     return true;
 }

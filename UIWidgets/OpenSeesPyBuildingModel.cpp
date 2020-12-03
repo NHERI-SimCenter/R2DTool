@@ -148,25 +148,28 @@ OpenSeesPyBuildingModel::outputToJSON(QJsonObject &jsonObject)
     // just need to send the class type here.. type needed in object in case user screws up
     jsonObject["Application"]="OpenSeesPyInput";
 
-    jsonObject["dofMap"]=responseNodes->text();
-    jsonObject["ndm"]=ndm->text().toInt();
+    QJsonObject appData;
+
+    appData["dofMap"]=responseNodes->text();
+    appData["ndm"]=ndm->text().toInt();
 
     QFileInfo modelPath(filePath);
 
-    jsonObject["mainScript"] = modelPath.fileName();
-    jsonObject["modelPath"] = modelPath.absolutePath();
+    appData["mainScript"] = modelPath.fileName();
+    appData["modelPath"] = modelPath.absolutePath() +"/";
 
+//    QJsonArray rvArray;
+//    for (int i=0; i<varNamesAndValues.size()-1; i+=2) {
+//        QJsonObject rvObject;
+//        QString name = varNamesAndValues.at(i);
+//        rvObject["name"]=name;
+//        rvObject["value"]=QString("RV.")+name;
+//        rvArray.append(rvObject);
+//    }
 
-    QJsonArray rvArray;
-    for (int i=0; i<varNamesAndValues.size()-1; i+=2) {
-        QJsonObject rvObject;
-        QString name = varNamesAndValues.at(i);
-        rvObject["name"]=name;
-        rvObject["value"]=QString("RV.")+name;
-        rvArray.append(rvObject);
-    }
+//    appData["randomVar"]=rvArray;
 
-    jsonObject["randomVar"]=rvArray;
+    jsonObject["ApplicationData"] = appData;
 
     return true;
 }

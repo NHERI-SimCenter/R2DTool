@@ -94,6 +94,7 @@ public:
     HazardsWidget *getHazardsWidget() const;
     GeneralInformationWidget *getGeneralInformationWidget() const;
     RegionalMappingWidget *getTheRegionalMappingWidget() const;
+    DamageMeasureWidget *getTheDamageMeasureWidget() const;
 
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
@@ -118,12 +119,12 @@ private:
     VisualizationWidget* theVisualizationWidget;
     GeneralInformationWidget* theGeneralInformationWidget;
     AssetsModelWidget* theModelingWidget;
+    EngDemandParameterWidget* theEngDemandParamWidget;
     DamageMeasureWidget* theDamageMeasureWidget;
     DecisionVariableWidget* theDecisionVariableWidget;
     RandomVariablesContainer* theRVs;
     UQ_EngineSelection* theUQWidget;
     UQ_Results* theUQResultsWidget;
-    EngDemandParameterWidget* theEngDemandParamWidget;
 
 
     // Objects for running the workflow and obtaining results

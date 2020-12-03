@@ -1,5 +1,6 @@
-#ifndef DamageMeasureWidget_H
-#define DamageMeasureWidget_H
+#ifndef INPUT_WIDGET_OPENSEESPY_ANALYSIS_H
+#define INPUT_WIDGET_OPENSEESPY_ANALYSIS_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,27 +37,65 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 11.20.2020
+// Written: fmckenna
 
-#include "SimCenterAppWidget.h"
+#include <SimCenterAppWidget.h>
 
-class BuildingDMWidget;
+class QLineEdit;
+class RandomVariablesContainer;
+class QComboBox;
+class QStackedWidget;
 
-class DamageMeasureWidget : public  SimCenterAppWidget
+class InputWidgetOpenSeesPyAnalysis : public  SimCenterAppWidget
 {
     Q_OBJECT
-
 public:
-    explicit DamageMeasureWidget(QWidget *parent);
-    ~DamageMeasureWidget();
+    explicit InputWidgetOpenSeesPyAnalysis(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    ~InputWidgetOpenSeesPyAnalysis();
 
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
+    bool outputToJSON(QJsonObject &jsonObject) override;
+    bool inputFromJSON(QJsonObject &jsonObject) override;
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+    bool copyFiles(QString &dirName) override;
+
+signals:
+
+public slots:
+   void clear(void);
+   void chooseFileName(void);
+   void dampingEditingFinished();
+   void toleranceEditingFinished();
+
+   void changedDampingMethod(QString);
+
 
 private:
+    //QLineEdit   *theTolerance;
+    QLineEdit   *theAnalysis;
+    QLineEdit   *theConvergenceTest;
+    //QLineEdit   *theAlgorithm;
+    QComboBox   *theAlgorithm;
+    QLineEdit   *theIntegration;
+    QLineEdit   *theSolver;
 
-    BuildingDMWidget* theBuildingDMWidget;
+    QLineEdit *file;
+    RandomVariablesContainer *theRandomVariablesContainer;
+
+    QString lastDampingRatio;
+    QString lastTolerance;
+
+    QStackedWidget *theStackedWidget;
+    QComboBox *theSelectionBox;
+
+    QLineEdit *dampingRatio;
+    QLineEdit *firstMode;
+    QLineEdit *secondMode;
+    QComboBox *theRayleighStiffness;
+
+    QLineEdit *numModesModal;
+    QLineEdit *dampingRatioModal;
+    QLineEdit *dampingRatioModalTangent;
 };
 
-#endif // DamageMeasureWidget_H
+#endif // INPUTWIDGET_OPENSEESPY_ANALYSIS_H

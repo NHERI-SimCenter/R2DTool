@@ -11,7 +11,7 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 # C++17 support
 CONFIG += c++17
 
-# Specify the paths to the Simcenter common directory
+# Specify the path to the Simcenter common directory
 PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
@@ -62,6 +62,10 @@ SOURCES +=  main.cpp \
             UIWidgets/ComponentInputWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
+            UIWidgets/BuildingEDPWidget.cpp \
+            UIWidgets/BuildingEDPEQWidget.cpp \
+            UIWidgets/BuildingDMWidget.cpp \
+            UIWidgets/BuildingDMEQWidget.cpp \
             UIWidgets/StructuralModelingWidget.cpp \
             UIWidgets/BuildingSimulationWidget.cpp \
             UIWidgets/CSVtoBIMModelingWidget.cpp \
@@ -71,12 +75,15 @@ SOURCES +=  main.cpp \
             UIWidgets/AssetsWidget.cpp \
             UIWidgets/AssetsModelWidget.cpp \
             UIWidgets/DamageMeasureWidget.cpp \
+            UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/RegionalMappingWidget.cpp \
             UIWidgets/ShakeMapWidget.cpp \
             UIWidgets/UserInputGMWidget.cpp \
-            UIWidgets/OpenSeesPyBuildingModel.cpp \
+            UIWidgets/UserDefinedEDPR.cpp \
+            UIWidgets/OpenSeesPyBuildingModel.cpp \       
+            UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
             EVENTS/UI/GMWidget.cpp \
             EVENTS/UI/Location.cpp \
             EVENTS/UI/Site.cpp \
@@ -100,7 +107,6 @@ SOURCES +=  main.cpp \
             EVENTS/UI/SiteConfig.cpp \
             EVENTS/UI/SiteConfigWidget.cpp \
             EVENTS/UI/SiteGridWidget.cpp \
-            EVENTS/UI/LocationsListModel.cpp \
             EVENTS/UI/GmAppConfig.cpp \
             EVENTS/UI/GmAppConfigWidget.cpp \
             EVENTS/UI/GmCommon.cpp \
@@ -133,15 +139,22 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/BuildingModelingWidget.h \
             UIWidgets/StructuralModelingWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
+            UIWidgets/BuildingEDPWidget.h \
+            UIWidgets/BuildingEDPEQWidget.h \
+            UIWidgets/BuildingDMWidget.h \
+            UIWidgets/BuildingDMEQWidget.h \
             UIWidgets/BuildingSimulationWidget.h \
             UIWidgets/CSVtoBIMModelingWidget.h \
             UIWidgets/DamageMeasureWidget.h \
+            UIWidgets/PelicunDLWidget.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/RegionalMappingWidget.h \
             UIWidgets/ShakeMapWidget.h \
             UIWidgets/UserInputGMWidget.h \
+            UIWidgets/UserDefinedEDPR.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
+            UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
             EVENTS/UI/GMWidget.h \
             EVENTS/UI/Location.h \
             EVENTS/UI/Site.h \
@@ -166,7 +179,6 @@ HEADERS +=  WorkflowAppRDT.h\
             EVENTS/UI/SiteConfig.h \
             EVENTS/UI/SiteConfigWidget.h \
             EVENTS/UI/SiteGridWidget.h \
-            EVENTS/UI/LocationsListModel.h \
             EVENTS/UI/GmAppConfig.h \
             EVENTS/UI/GmAppConfigWidget.h \
             EVENTS/UI/GmCommon.h \

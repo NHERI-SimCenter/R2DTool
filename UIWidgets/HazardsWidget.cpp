@@ -99,11 +99,14 @@ HazardsWidget::~HazardsWidget()
 
 bool HazardsWidget::outputToJSON(QJsonObject &jsonObject)
 { 
-    QJsonObject eventsObj;
+    QJsonArray arrayEvents;
 
+    QJsonObject eventsObj;
     earthquakesWidget->outputToJSON(eventsObj);
 
-    jsonObject.insert("Events", eventsObj);
+    arrayEvents.append(eventsObj);
+
+    jsonObject.insert("Events", arrayEvents);
 
     return true;
 }

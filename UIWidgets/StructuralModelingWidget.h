@@ -9,7 +9,6 @@
 class OpenSeesBuildingModel;
 class OpenSeesPyBuildingModel;
 class RandomVariablesContainer;
-class RandomVariablesContainer;
 
 class QComboBox;
 class QGroupBox;

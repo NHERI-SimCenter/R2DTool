@@ -1,5 +1,6 @@
-#ifndef DamageMeasureWidget_H
-#define DamageMeasureWidget_H
+#ifndef USER_DEFINED_EDP_H
+#define USER_DEFINED_EDP_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,27 +37,43 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 11.20.2020
+// Written: fmckenna
 
-#include "SimCenterAppWidget.h"
+#include <SimCenterAppWidget.h>
 
-class BuildingDMWidget;
+#include <QGroupBox>
+#include <QVector>
+#include <QVBoxLayout>
+#include <QComboBox>
 
-class DamageMeasureWidget : public  SimCenterAppWidget
+class EDP;
+class InputWidgetParameters;
+class RandomVariablesContainer;
+
+class UserDefinedEDPR : public SimCenterAppWidget
 {
     Q_OBJECT
-
 public:
-    explicit DamageMeasureWidget(QWidget *parent);
-    ~DamageMeasureWidget();
+    explicit UserDefinedEDPR(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    ~UserDefinedEDPR();
 
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
+    bool outputToJSON(QJsonObject &jsonObject) override;
+    bool inputFromJSON(QJsonObject &jsonObject) override;
+
+    bool copyFiles(QString &dirName) override;
+
+    void setEDPSpecsFile(const QString& filename);
+
+signals:
+
+public slots:
+   void clear(void);
+   void chooseEDPSpecs(void);
 
 private:
 
-    BuildingDMWidget* theBuildingDMWidget;
+    QLineEdit* EDPSpecsLineEdit;
+    RandomVariablesContainer* theRandomVariablesContainer;
 };
 
-#endif // DamageMeasureWidget_H
+#endif // USER_DEFINED_EDP_H

@@ -38,29 +38,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Latest revision: 10.08.2020
 
 #include "DamageMeasureWidget.h"
-#include "BuildingModelingWidget.h"
+#include "BuildingDMWidget.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
 
-// Qt headers
 #include <QHBoxLayout>
-#include <QHeaderView>
 #include <QVBoxLayout>
-#include <QPushButton>
 #include <QGroupBox>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
-#include <QColorTransform>
 #include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QCheckBox>
 
 
 DamageMeasureWidget::DamageMeasureWidget(QWidget *parent)
@@ -71,7 +59,7 @@ DamageMeasureWidget::DamageMeasureWidget(QWidget *parent)
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Input Asset Classes"));
+    label->setText(QString("Damage Measures (DM)"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
@@ -86,13 +74,12 @@ DamageMeasureWidget::DamageMeasureWidget(QWidget *parent)
 
     theComponentSelection->setWidth(120);
 
-    QGroupBox* buildingInfoBox = new QGroupBox("Buildings",this);
-    buildingInfoBox->setFlat(true);
+    theBuildingDMWidget = new BuildingDMWidget(this);
 
     QGroupBox* pipelineInfoBox = new QGroupBox("Pipelines",this);
     pipelineInfoBox->setFlat(true);
 
-    theComponentSelection->addComponent("Buildings",buildingInfoBox);
+    theComponentSelection->addComponent("Buildings",theBuildingDMWidget);
     theComponentSelection->addComponent("Pipelines",pipelineInfoBox);
     theComponentSelection->displayComponent("Buildings");
 
@@ -109,7 +96,7 @@ DamageMeasureWidget::~DamageMeasureWidget()
 bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 {
 
-
+    theBuildingDMWidget->outputToJSON(jsonObject);
 
     return true;
 }

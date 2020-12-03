@@ -129,6 +129,9 @@ void EarthquakeInputWidget::createEarthquakesWidget(void)
     theRootStackedWidget->addWidget(theUserInputGMWidget->getUserInputGMWidget());
 
     theRootStackedWidget->setCurrentWidget(theEQSSWidget);
+
+    earthquakeSelectionCombo->setCurrentText("User Specified Ground Motions");
+
 }
 
 

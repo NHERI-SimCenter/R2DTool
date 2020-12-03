@@ -1,20 +1,17 @@
 #include "GMWidget.h"
 #include "SiteWidget.h"
+#include "RegionalMappingWidget.h"
+#include "WorkflowAppRDT.h"
 #include "IntensityMeasureWidget.h"
 #include "SpatialCorrelationWidget.h"
-#include "WorkflowAppRDT.h"
-#include "RegionalMappingWidget.h"
 #include "RuptureWidget.h"
 #include "GridNode.h"
 #include "GMPEWidget.h"
 #include "SiteGridWidget.h"
 #include "RecordSelectionWidget.h"
-#include "LocationsListModel.h"
-//#include "ScenarioProcessor.h"
 #include "SiteWidget.h"
 #include "CustomGraphicsView.h"
 #include "SiteConfigWidget.h"
-//#include "SiteResultsWidget.h"
 #include "GmAppConfig.h"
 #include "GmAppConfigWidget.h"
 #include "GmCommon.h"
@@ -33,10 +30,6 @@
 #include "SimpleRenderer.h"
 #include "SimpleMarkerSymbol.h"
 
-#include <QtWidgets>
-#include <QPalette>
-#include <QtQuick/QQuickView>
-#include <QQmlContext>
 #include <QDialog>
 #include <QVBoxLayout>
 
@@ -269,7 +262,7 @@ bool GMWidget::outputToJSON(QJsonObject &jsonObj)
 //        return false;
 //    }
 
-    auto pathToEventGrid = m_appConfig->getOutputDirectoryPath();
+    auto pathToEventGrid = m_appConfig->getOutputDirectoryPath() + "/";
 
     jsonObj.insert("pathEventData", pathToEventGrid);
 

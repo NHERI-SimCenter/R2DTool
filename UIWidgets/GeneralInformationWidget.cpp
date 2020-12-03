@@ -102,10 +102,10 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     jsonObj.insert("localAppDir", appDir);
 
     QJsonObject unitsObj;
-    unitsObj.insert("force", unitsForceCombo->currentText());
-    unitsObj.insert("length", unitsLengthCombo->currentText());
-    unitsObj.insert("time", unitsTimeCombo->currentText());
-    unitsObj.insert("temperature", unitsTemperatureCombo->currentText());
+    unitsObj.insert("force", "kips"/*unitsForceCombo->currentText()*/);
+    unitsObj.insert("length", "in" /*unitsLengthCombo->currentText()*/);
+    unitsObj.insert("time", "sec"/*unitsTimeCombo->currentText()*/);
+//    unitsObj.insert("temperature", unitsTemperatureCombo->currentText());
 
     QJsonObject outputsObj;
     outputsObj.insert("EDP", EDPCheckBox->isChecked());

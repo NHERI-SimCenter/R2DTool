@@ -18,7 +18,7 @@ BuildingModelingWidget::BuildingModelingWidget(QWidget *parent, RandomVariablesC
 
     theBuildingModelGenWidget = new BuildingModelGeneratorWidget(this);
     theStructModelingWidget = new StructuralModelingWidget(this,theRandomVariablesContainer);
-    theBuildingSIMWidget = new BuildingSimulationWidget(this);
+    theBuildingSIMWidget = new BuildingSimulationWidget(this, theRandomVariablesContainer);
 
     theTabbedWidget->addTab(theBuildingModelGenWidget,"Building Information Model (BIM) Generator");
     theTabbedWidget->addTab(theStructModelingWidget,"Building Response Model");
@@ -39,13 +39,32 @@ BuildingModelingWidget::~BuildingModelingWidget()
 
 bool BuildingModelingWidget::outputToJSON(QJsonObject &jsonObj)
 {
-
+    // Building model
     QJsonObject buildingObj;
-    theBuildingModelGenWidget->outputToJSON(buildingObj);
-    jsonObj.insert("Building",buildingObj);
+    auto res1 = theBuildingModelGenWidget->outputToJSON(buildingObj);
 
+    if(!res1)
+        return res1;
+    else
+        jsonObj.insert("Building",buildingObj);
 
-    theStructModelingWidget->outputToJSON(jsonObj);
+    // Structural model
+    QJsonObject modelingObj;
+    auto res2 = theStructModelingWidget->outputToJSON(modelingObj);
+
+    if(!res2)
+        return res2;
+    else
+        jsonObj.insert("Modeling",modelingObj);
+
+    // SIM
+    QJsonObject SIMobj;
+    auto res3 = theBuildingSIMWidget->outputToJSON(SIMobj);
+
+    if(!res3)
+        return res3;
+    else
+        jsonObj.insert("Simulation",SIMobj);
 
     return true;
 }

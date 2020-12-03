@@ -187,7 +187,6 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theVisualizationWidget->setObjectName("Visualization");
     theRegionalMappingWidget->setObjectName("RegionalMapping");
     theEngDemandParamWidget->setObjectName("EngDemandParams");
-
     theDamageMeasureWidget->setObjectName("DamageMeasures");
     theDecisionVariableWidget->setObjectName("DecisionVariables");
 
@@ -207,7 +206,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     // theComponentSelection->addComponent(QString("EDP"), theEDP_Selection);
     // theComponentSelection->addComponent(QString("RV"),  theRVs);
 
-    theComponentSelection->displayComponent("Modeling");
+    theComponentSelection->displayComponent("Damage\nMeasures");
 //    theComponentSelection->displayComponent("General\nInformation");
 
     // access a web page which will increment the usage count for this tool
@@ -220,6 +219,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
 }
 
+
 WorkflowAppRDT::~WorkflowAppRDT()
 {
 
@@ -229,6 +229,12 @@ void WorkflowAppRDT::replyFinished(QNetworkReply *pReply)
 {
     return;
 }
+
+DamageMeasureWidget *WorkflowAppRDT::getTheDamageMeasureWidget() const
+{
+    return theDamageMeasureWidget;
+}
+
 
 RegionalMappingWidget *WorkflowAppRDT::getTheRegionalMappingWidget() const
 {
@@ -266,10 +272,12 @@ void WorkflowAppRDT::setActiveWidget(SimCenterAppWidget* widget)
 
 bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 {
-    QJsonObject apps;
-
     // get each of the main widgets to output themselves   
     theGeneralInformationWidget->outputToJSON(jsonObjectTop);
+
+    theRunWidget->outputToJSON(jsonObjectTop);
+
+    QJsonObject apps;
 
     theModelingWidget->outputToJSON(apps);
 
@@ -277,11 +285,32 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 
     theRegionalMappingWidget->outputToJSON(apps);
 
-    theRunWidget->outputToJSON(jsonObjectTop);
+    theEngDemandParamWidget->outputToJSON(apps);
+
+    theDamageMeasureWidget->outputToJSON(apps);
+
+    QJsonObject dakotaUQ;
+
+    dakotaUQ.insert("Application","Dakota-UQ");
+
+    QJsonObject uq;
+
+    theUQWidget->getCurrentEngine()->outputToJSON(uq);
+
+    auto appData = uq["samplingMethodData"].toObject();
+
+    appData["seed"] = 1;
+    appData["samples"] = 5;
+
+    appData.insert("type","UQ");
+    appData.insert("concurrency",1);
+    appData.insert("keepSamples",true);
+
+    dakotaUQ.insert("ApplicationData",appData);
+
+    apps.insert("UQ",dakotaUQ);
 
     jsonObjectTop.insert("Applications",apps);
-
-    //theRunLocalWidget->outputToJSON(jsonObjectTop);
 
     return true;
 }
@@ -507,9 +536,11 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     QString tmpDirectory = workDir.absoluteFilePath(tmpDirName);
     QDir destinationDirectory(tmpDirectory);
 
-    if(destinationDirectory.exists()) {
+    if(destinationDirectory.exists())
+    {
         destinationDirectory.removeRecursively();
-    } else
+    }
+    else
         destinationDirectory.mkpath(tmpDirectory);
 
     QString templateDirectory  = destinationDirectory.absoluteFilePath(subDir);
@@ -538,7 +569,7 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     this->outputToJSON(json);
 
     json["runDir"]=tmpDirectory;
-    json["WorkflowType"]="Building Simulation";
+    json["WorkflowType"]="Regional Simulation";
 
 
     QJsonDocument doc(json);
