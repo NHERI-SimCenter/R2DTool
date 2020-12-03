@@ -36,12 +36,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: fmk
 // Latest revision: 11.20.2020
 
 #include "SimCenterAppWidget.h"
 
 class SecondaryComponentSelection;
+class QFrame;
+class QStackedWidget;
+class QPushButton;
+class QVBoxLayout;
 
 class MultiComponentRDT : public  SimCenterAppWidget
 {
@@ -64,10 +68,25 @@ public:
     bool addComponent(QString text, SimCenterAppWidget *);
     SimCenterAppWidget *getComponent(QString text);
 
+public slots:
+    void selectionChangedSlot(const QString &);
+
+  
 private:
+        virtual bool displayComponent(QString text);
+
+  int currentIndex;
+  int numHidden;
+  
+  QFrame *theSelectionWidget;
+  QVBoxLayout *theSelectionLayout;
+  QStackedWidget *theStackedWidget;  
+
   QList<QString> theNames;
+  QList<QPushButton *>thePushButtons;  
   QList<SimCenterAppWidget *> theComponents;
-  SecondaryComponentSelection *theSelection;
+
+  //  SecondaryComponentSelection *theSelection;
 };
 
 #endif // MultiComponentRDT_H

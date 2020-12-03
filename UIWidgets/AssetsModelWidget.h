@@ -39,12 +39,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 11.20.2020
 
-#include "SimCenterAppWidget.h"
+#include "MultiComponentRDT.h"
 
 class BuildingModelingWidget;
 class RandomVariablesContainer;
 
-class AssetsModelWidget : public  SimCenterAppWidget
+class AssetsModelWidget : public  MultiComponentRDT
 {
     Q_OBJECT
 
@@ -52,19 +52,12 @@ public:
     explicit AssetsModelWidget(QWidget *parent, RandomVariablesContainer * RVContainer);
     ~AssetsModelWidget();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
-    bool copyFiles(QString &destName);
-
     void clear(void);
 
 private:
 
-    std::unique_ptr<BuildingModelingWidget> buildingWidget;
+    BuildingModelingWidget *buildingWidget;
     RandomVariablesContainer* theRandomVariablesContainer;
-
 };
 
 #endif // AssetsModelWidget_H

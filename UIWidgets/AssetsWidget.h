@@ -39,12 +39,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 11.20.2020
 
-#include "SimCenterAppWidget.h"
+#include "MultiComponentRDT.h"
 
 class ComponentInputWidget;
 class VisualizationWidget;
 
-class AssetsWidget : public  SimCenterAppWidget
+class AssetsWidget : public  MultiComponentRDT
 {
     Q_OBJECT
 
@@ -52,20 +52,14 @@ public:
     explicit AssetsWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~AssetsWidget();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
-    bool copyFiles(QString &destName);
-
     void clear(void);
 
     ComponentInputWidget* getBuildingWidget() const;
     ComponentInputWidget* getPipelineWidget() const;
 
 private:
-    std::unique_ptr<ComponentInputWidget> buildingWidget;
-    std::unique_ptr<ComponentInputWidget> pipelineWidget;
+    ComponentInputWidget *buildingWidget;
+    ComponentInputWidget *pipelineWidget;
     VisualizationWidget* visualizationWidget;
 };
 

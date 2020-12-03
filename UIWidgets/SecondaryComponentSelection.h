@@ -120,12 +120,12 @@ public:
 signals:
 
 public slots:
-
-    /**
-     *   @brief selectionChangedSlot slot invoked when slection is changed.
+    /*
      *   @param QItemSelection new item selected
      */
+  
     void selectionChangedSlot(const QString &);
+
 private:
     int currentIndex;
     int numHidden;

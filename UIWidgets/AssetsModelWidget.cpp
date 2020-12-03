@@ -63,79 +63,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 
 
-AssetsModelWidget::AssetsModelWidget(QWidget *parent, RandomVariablesContainer* RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
+AssetsModelWidget::AssetsModelWidget(QWidget *parent, RandomVariablesContainer* RVContainer)
+    :MultiComponentRDT(parent), theRandomVariablesContainer(RVContainer)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setMargin(0);
+    buildingWidget = new BuildingModelingWidget(this,theRandomVariablesContainer);
+    SimCenterAppWidget* pipelineInfoBox = new SimCenterAppWidget(this);
 
-    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
-    SectionTitle *label = new SectionTitle();
-    label->setText(QString("Input Asset Classes"));
-    label->setMinimumWidth(150);
-
-    theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theHeaderLayout->addItem(spacer);
-
-    theHeaderLayout->addStretch(1);
-    mainLayout->addLayout(theHeaderLayout);
-
-    auto theComponentSelection = new SimCenterComponentSelection(this);
-    mainLayout->addWidget(theComponentSelection);
-
-    theComponentSelection->setWidth(120);
-
-    buildingWidget = std::make_unique<BuildingModelingWidget>(this,theRandomVariablesContainer);
-
-    QGroupBox* pipelineInfoBox = new QGroupBox("Pipeline Models",this);
-    pipelineInfoBox->setFlat(true);
-
-    theComponentSelection->addComponent("Buildings",buildingWidget.get());
-    theComponentSelection->addComponent("Pipelines",pipelineInfoBox);
-    theComponentSelection->displayComponent("Buildings");
-
-    this->setLayout(mainLayout);
+    this->addComponent("Buildings", buildingWidget);
+    this->addComponent("Gas Network",pipelineInfoBox);
+    this->hideAll();
 }
+
 
 
 AssetsModelWidget::~AssetsModelWidget()
 {
 
 }
-
-
-bool AssetsModelWidget::outputToJSON(QJsonObject &jsonObject)
-{
-
-    buildingWidget->outputToJSON(jsonObject);
-
-    return true;
-}
-
-
-bool AssetsModelWidget::inputFromJSON(QJsonObject &jsonObject)
-{
-    return false;
-}
-
-
-bool AssetsModelWidget::outputAppDataToJSON(QJsonObject &jsonObject)
-{
-    return true;
-}
-
-
-bool AssetsModelWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
-{
-    return false;
-}
-
-
-bool AssetsModelWidget::copyFiles(QString &destDir)
-{
-    return false;
-}
-
 
 
 

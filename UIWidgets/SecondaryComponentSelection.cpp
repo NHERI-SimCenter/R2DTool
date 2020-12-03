@@ -54,7 +54,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 SecondaryComponentSelection::SecondaryComponentSelection(QWidget *parent)
     :QWidget(parent), currentIndex(-1), numHidden(0)
 {
-
   QHBoxLayout *horizontalLayout = new QHBoxLayout();
   theSelectionWidget = new QFrame();
   theSelectionLayout = new QVBoxLayout();
@@ -295,3 +294,5 @@ SecondaryComponentSelection::show(QString text)
 
     return true;
 }
+
+

@@ -176,6 +176,45 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     unitsFormLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     unitsFormLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
 
+    // Assets
+    buildingsCheckBox = new QCheckBox("Buildings",this);
+    soilCheckBox = new QCheckBox("Soil",this);
+    gasCheckBox = new QCheckBox("Gas Network",this);
+    waterCheckBox = new QCheckBox("Water Network",this);
+    sewerCheckBox = new QCheckBox("Waste Network",this);
+    transportationCheckBox = new QCheckBox("Transportation Network",this);
+
+    connect(buildingsCheckBox, &QCheckBox::stateChanged, this, [=](){
+        qDebug("BUILDINGS CHECKED");
+         emit(assetChanged("Buildings",buildingsCheckBox->isChecked()));
+     });
+    connect(soilCheckBox, &QCheckBox::stateChanged, this, [=](){
+         emit(assetChanged("Soil",soilCheckBox->isChecked()));
+     });
+    connect(gasCheckBox, &QCheckBox::stateChanged, this, [=](){
+         emit(assetChanged("Gas Network",gasCheckBox->isChecked()));
+     });
+    connect(waterCheckBox, &QCheckBox::stateChanged, this, [=](){
+         emit(assetChanged("Water Network",waterCheckBox->isChecked()));
+     });
+    connect(sewerCheckBox, &QCheckBox::stateChanged, this, [=](){
+         this->assetChanged("Water Network",sewerCheckBox->isChecked());
+     });
+    connect(transportationCheckBox, &QCheckBox::stateChanged, this, [=](){
+         emit(assetChanged("TransportationNetwork",transportationCheckBox->isChecked()));
+     });
+
+
+    QGroupBox* assetGroupBox = new QGroupBox("Asset Layers", this);
+    assetGroupBox->setContentsMargins(0,5,0,0);
+    QVBoxLayout* assetLayout = new QVBoxLayout(assetGroupBox);
+    assetLayout->addWidget(buildingsCheckBox);
+    assetLayout->addWidget(soilCheckBox);
+    assetLayout->addWidget(gasCheckBox);
+    assetLayout->addWidget(waterCheckBox);
+    assetLayout->addWidget(sewerCheckBox);
+    assetLayout->addWidget(transportationCheckBox);            
+    
     // Outputs
     EDPCheckBox = new QCheckBox("Engineering demand parameters (EDP)",this);
     DMCheckBox = new QCheckBox("Damage measures (DM)",this);
@@ -210,11 +249,12 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     layout->addItem(spacer,1,0);
     layout->addWidget(unitsGroupBox,2,0);
     layout->addItem(spacer,3,0);
-    layout->addWidget(outputGroupBox,4,0);
-    layout->addItem(spacer,5,0);
-    layout->addWidget(regionalMappingGroupBox,6,0);
+    layout->addWidget(assetGroupBox,4,0);
+    layout->addItem(spacer,5,0);    
+    layout->addWidget(outputGroupBox,6,0);
+    layout->addItem(spacer,7,0);
+    layout->addWidget(regionalMappingGroupBox,8,0);
 
     return layout;
 }
-
 
