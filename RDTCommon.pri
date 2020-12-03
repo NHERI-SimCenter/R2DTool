@@ -38,6 +38,9 @@ SOURCES +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/CustomizedItemModel.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/JsonConfiguredWidget.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComboBox.cpp \
+            $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterDoubleSpinBox.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterSpinBox.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterLineEdit.cpp \	    
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterFileInput.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterRVLineEdit.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/RunLocalWidget.cpp \
@@ -58,7 +61,8 @@ SOURCES +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.cpp \
             $$PATH_TO_COMMON/Workflow/EDP/UserDefinedEDP.cpp \
             $$PATH_TO_COMMON/Workflow/EDP/EDP.cpp \
             $$PATH_TO_COMMON/Workflow/SIM/OpenSeesBuildingModel.cpp \
-            $$PATH_TO_COMMON/Workflow/SIM/OpenSeesParser.cpp \
+            $$PATH_TO_COMMON/Workflow/SIM/OpenSeesParser.cpp
+
 #            $$PATH_TO_COMMON/Workflow/SIM/MDOF_BuildingModel.cpp \
 
 
@@ -88,6 +92,9 @@ HEADERS +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/CustomizedItemModel.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/JsonConfiguredWidget.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComboBox.h \
+            $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterDoubleSpinBox.h \
+            $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterSpinBox.h \
+            $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterLineEdit.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterFileInput.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterRVLineEdit.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/RunLocalWidget.h \
@@ -108,6 +115,7 @@ HEADERS +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.h \
             $$PATH_TO_COMMON/Workflow/EDP/UserDefinedEDP.h \
             $$PATH_TO_COMMON/Workflow/EDP/EDP.h \
             $$PATH_TO_COMMON/Workflow/SIM/OpenSeesBuildingModel.h \
-            $$PATH_TO_COMMON/Workflow/SIM/OpenSeesParser.h \
+            $$PATH_TO_COMMON/Workflow/SIM/OpenSeesParser.h
+
 #            $$PATH_TO_COMMON/Workflow/SIM/MDOF_BuildingModel.h \
 

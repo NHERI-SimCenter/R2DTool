@@ -105,6 +105,7 @@ public slots:
     void processResults(QString dakotaOut, QString dakotaTab, QString inputFile);
     void loadFile(QString filename);
     void replyFinished(QNetworkReply*);
+    void assetSelectionChanged(QString, bool);
 
 private:
 

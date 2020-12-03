@@ -169,6 +169,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     this->setLayout(horizontalLayout);
     this->setContentsMargins(0,5,0,5);
     horizontalLayout->setMargin(0);
+    //horizontalLayout->setSpacing(0);
 
     // create the component selection & add the components to it
 
@@ -177,6 +178,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(20,60);
+    theComponentSelection->layout()->setSpacing(0);
 
     theGeneralInformationWidget->setObjectName("GeneralInformation");
     theAssetsWidget->setObjectName("Assets");
@@ -191,16 +193,16 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theDamageMeasureWidget->setObjectName("DamageMeasures");
     theDecisionVariableWidget->setObjectName("DecisionVariables");
 
-    theComponentSelection->addComponent(tr("Visualization"), theVisualizationWidget);
-    theComponentSelection->addComponent(tr("General\nInformation"), theGeneralInformationWidget);
-    theComponentSelection->addComponent(tr("Hazards"), theHazardsWidget);
-    theComponentSelection->addComponent(tr("Assets"), theAssetsWidget);
-    theComponentSelection->addComponent(tr("Modeling"), theModelingWidget);
-    theComponentSelection->addComponent(tr("Engineering\nDemand\nParameters"), theEngDemandParamWidget);
-    theComponentSelection->addComponent(tr("Damage\nMeasures"), theDamageMeasureWidget);
-    theComponentSelection->addComponent(tr("Decision\nVariables"), theDecisionVariableWidget);
-    theComponentSelection->addComponent(tr("Uncertainty\nQuantification"), theUQWidget);
-    theComponentSelection->addComponent(tr("Results"), theUQResultsWidget);
+    theComponentSelection->addComponent(tr("VIZ"), theVisualizationWidget);
+    theComponentSelection->addComponent(tr("GI"), theGeneralInformationWidget);
+    theComponentSelection->addComponent(tr("EVT"), theHazardsWidget);
+    theComponentSelection->addComponent(tr("ASD"), theAssetsWidget);
+    theComponentSelection->addComponent(tr("MOD"), theModelingWidget);
+    theComponentSelection->addComponent(tr("EDP"), theEngDemandParamWidget);
+    theComponentSelection->addComponent(tr("DM"), theDamageMeasureWidget);
+    theComponentSelection->addComponent(tr("DV"), theDecisionVariableWidget);
+    theComponentSelection->addComponent(tr("UQ"), theUQWidget);
+    theComponentSelection->addComponent(tr("RES"), theUQResultsWidget);
 
     // theComponentSelection->addComponent(QString("EVT"), theEventSelection);
     // theComponentSelection->addComponent(QString("FEM"), theAnalysisSelection);
@@ -215,6 +217,8 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     connect(manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(replyFinished(QNetworkReply*)));
+
+    connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
 
@@ -587,4 +591,25 @@ void WorkflowAppRDT::loadFile(const QString fileName){
 
 int WorkflowAppRDT::getMaxNumParallelTasks() {
     return theUQWidget->getNumParallelTasks();
+}
+
+void WorkflowAppRDT::assetSelectionChanged(QString text, bool value) {
+
+    if (text == "Buildings") {
+        if (value == true) {
+            theAssetsWidget->show("Buildings");
+            theModelingWidget->show("Buildings");
+        } else {
+            theAssetsWidget->hide("Buildings");
+            theModelingWidget->hide("Buildings");
+        }
+    } else if (text == "Gas Network") {
+        if (value == true) {
+            theAssetsWidget->show("Gas Network");
+            theModelingWidget->show("Gas Network");
+        } else {
+            theAssetsWidget->hide("Gas Network");
+            theModelingWidget->hide("Gas Network");
+        }
+    }
 }

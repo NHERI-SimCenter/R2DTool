@@ -1,95 +1,29 @@
-/* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
-All rights reserved.
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-The views and conclusions contained in the software and documentation are those
-of the authors and should not be interpreted as representing official policies,
-either expressed or implied, of the FreeBSD Project.
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
-UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-*************************************************************************** */
-
-// Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
-
 #include "HazardsWidget.h"
-#include "sectiontitle.h"
-#include "SimCenterComponentSelection.h"
-#include "EarthquakeInputWidget.h"
 #include "VisualizationWidget.h"
+#include "UserInputGMWidget.h"
+#include "GMWidget.h"
+#include "ShakeMapWidget.h"
+#include "WorkflowAppRDT.h"
 
-#include <QHBoxLayout>
-#include <QVBoxLayout>
 #include <QGroupBox>
-#include <QStackedWidget>
-#include <QComboBox>
-#include <QListWidget>
-#include <QPushButton>
-#include <QJsonObject>
-#include <QJsonArray>
+#include <QGridLayout>
 #include <QLabel>
-#include <QLineEdit>
-#include <QDebug>
-#include <QFileDialog>
-#include <QPushButton>
+#include <QComboBox>
+#include <QStackedWidget>
+#include <QCheckBox>
 
-HazardsWidget::HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer* RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
+HazardsWidget::HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setMargin(0);
+    theRootStackedWidget = nullptr;
+    theShakeMapWidget = nullptr;
+    theEQSSWidget = nullptr;
+    theUserInputGMWidget = nullptr;
+    hazardSelectionCombo = nullptr;
+    includeHazardCheckBox = nullptr;
 
-    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
-    SectionTitle *label = new SectionTitle();
-    label->setText(QString("Hazards"));
-    label->setMinimumWidth(150);
-
-    theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theHeaderLayout->addItem(spacer);
-
-    theHeaderLayout->addStretch(1);
-    mainLayout->addLayout(theHeaderLayout);
-
-    auto theComponentSelection = new SimCenterComponentSelection();
-    mainLayout->addWidget(theComponentSelection);
-
-    theComponentSelection->setWidth(120);
-
-    earthquakesWidget = std::make_unique<EarthquakeInputWidget>(parent, theVisualizationWidget, theRandomVariablesContainer);
-
-    QWidget* earthquakeBox = earthquakesWidget->getEarthquakesWidget();
-    QGroupBox* windBox = this->getWindBox();
-    QGroupBox* groundSetBox = this->getGroundSettlementBox();
-    QGroupBox* LandslideBox = this->getLandSlideBox();
-
-    theComponentSelection->addComponent("Earthquakes",earthquakeBox);
-    theComponentSelection->addComponent("Wind",windBox);
-    theComponentSelection->addComponent("Landslides",LandslideBox);
-    theComponentSelection->addComponent("Ground\nSettlement",groundSetBox);
-
-    theComponentSelection->displayComponent("Earthquakes");
-
-    this->setLayout(mainLayout);
+    this->createWidget();
 }
+
 
 HazardsWidget::~HazardsWidget()
 {
@@ -97,69 +31,129 @@ HazardsWidget::~HazardsWidget()
 }
 
 
-bool HazardsWidget::outputToJSON(QJsonObject &jsonObject)
-{ 
-    QJsonObject eventsObj;
+/*
+QWidget* HazardsWidget::getEarthquakesWidget(void)
+{
+    if(theEQWidget == nullptr)
+        this->createEarthquakesWidget();
 
-    earthquakesWidget->outputToJSON(eventsObj);
+    return theEQWidget;
+}
+*/
 
-    jsonObject.insert("Events", eventsObj);
+bool HazardsWidget::outputToJSON(QJsonObject &jsonObj)
+{
+    if(includeHazardCheckBox->isChecked() == false)
+        return false;
+
+    jsonObj.insert("EventClassification", "Earthquake");
+    jsonObj.insert("Application", "SimCenterEvent");
+
+    QJsonObject appDataObj;
+
+    auto currentSelection = hazardSelectionCombo->currentText();
+
+    if(currentSelection.compare("Earthquake Scenario Simulation") == 0)
+    {
+        theEQSSWidget->outputToJSON(appDataObj);
+    }
+    else if(currentSelection.compare("ShakeMap Input") == 0)
+    {
+        theShakeMapWidget->outputToJSON(appDataObj);
+    }
+    else if(currentSelection.compare("User Specified Ground Motions") == 0)
+    {
+        theUserInputGMWidget->outputToJSON(appDataObj);
+    }
+    else
+    {
+        qDebug()<<"Warning, could not recognize the earthquake combobox selection of"<<hazardSelectionCombo->currentText();
+    }
+
+    jsonObj.insert("ApplicationData",appDataObj);
 
     return true;
 }
 
 
-bool HazardsWidget::inputFromJSON(QJsonObject &jsonObject)
-{
+bool HazardsWidget::inputFromJSON(QJsonObject &jsonObject){
 
-    return false;
-}
-
-
-bool HazardsWidget::outputAppDataToJSON(QJsonObject &jsonObject)
-{
     return true;
 }
 
 
-bool HazardsWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+void HazardsWidget::createWidget(void)
 {
-    return true;
+  //    theEQWidget = new QWidget(this);
+
+    QGridLayout* gridLayout = new QGridLayout(this);
+
+    auto smallVSpacer = new QSpacerItem(0,10);
+
+    QLabel* selectionText = new QLabel();
+    selectionText->setText("Hazard Type:");
+
+    includeHazardCheckBox = new QCheckBox("Include earthquake hazard in analysis");
+    includeHazardCheckBox->setChecked(true);
+
+    hazardSelectionCombo = new QComboBox();
+    hazardSelectionCombo->addItem("Earthquake Scenario Simulation");
+    hazardSelectionCombo->addItem("Earthquake ShakeMap");
+    hazardSelectionCombo->addItem("User Specified Ground Motions");
+    hazardSelectionCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    connect(hazardSelectionCombo, SIGNAL(currentIndexChanged(QString)), this, SLOT(handleEQTypeSelection(QString)));
+
+    theRootStackedWidget = new QStackedWidget();
+
+    // Add a vertical spacer at the bottom to push everything up
+    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    gridLayout->addItem(smallVSpacer,0,0);
+    gridLayout->addWidget(selectionText,1,0);
+    gridLayout->addWidget(hazardSelectionCombo,1,1);
+    gridLayout->addWidget(includeHazardCheckBox,1,2);
+    gridLayout->addItem(hspacer,1,3);
+    gridLayout->addWidget(theRootStackedWidget,2,0,1,3);
+    gridLayout->addItem(vspacer, 3, 0,1,3);
+
+    theEQSSWidget = new GMWidget(this, theVisualizationWidget);
+    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
+    theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
+
+    connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
+
+    theRootStackedWidget->addWidget(theEQSSWidget);
+    theRootStackedWidget->addWidget(theShakeMapWidget->getShakeMapWidget());
+    theRootStackedWidget->addWidget(theUserInputGMWidget->getUserInputGMWidget());
+
+    theRootStackedWidget->setCurrentWidget(theEQSSWidget);
 }
 
-bool HazardsWidget::copyFiles(QString &destDir)
+
+void HazardsWidget::shakeMapLoadingFinished(const bool value)
 {
+    if(!value)
+        return;
 
-    return false;
-}
+    // Shift the focus to the visualization widget
+    auto mainWindowWidget = qobject_cast<WorkflowAppRDT*>(this->parent());
 
-QGroupBox* HazardsWidget::getLandSlideBox(void)
-{
-    QGroupBox* groupBox = new QGroupBox("Landslides");
-    groupBox->setFlat(true);
+    if(!mainWindowWidget)
+        return;
 
+    mainWindowWidget->setActiveWidget(theVisualizationWidget);
 
-    return groupBox;
-}
-
-
-QGroupBox* HazardsWidget::getWindBox(void)
-{
-    QGroupBox* groupBox = new QGroupBox("Wind");
-    groupBox->setFlat(true);
-
-
-    return groupBox;
 }
 
 
-QGroupBox* HazardsWidget::getGroundSettlementBox(void)
+void HazardsWidget::handleEQTypeSelection(const QString& selection)
 {
-    QGroupBox* groupBox = new QGroupBox("Ground Settlement");
-    groupBox->setFlat(true);
-
-
-    return groupBox;
+    if(selection == "Earthquake Scenario Simulation")
+        theRootStackedWidget->setCurrentWidget(theEQSSWidget);
+    else if(selection == "Earthquake ShakeMap")
+        theRootStackedWidget->setCurrentWidget(theShakeMapWidget->getShakeMapWidget());
+    else if(selection == "User Specified Ground Motions")
+        theRootStackedWidget->setCurrentWidget(theUserInputGMWidget->getUserInputGMWidget());
 }
-
-

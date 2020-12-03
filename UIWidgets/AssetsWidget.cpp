@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentInputWidget.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SimCenterComponentSelection.h"
+#include "SecondaryComponentSelection.h"
 
 // Qt headers
 #include <QHBoxLayout>
@@ -64,50 +64,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : SimCenterAppWidget(parent), visualizationWidget(visWidget)
+    : MultiComponentRDT(parent), visualizationWidget(visWidget)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setMargin(0);
 
-    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
-    SectionTitle *label = new SectionTitle();
-    label->setText(QString("Input Asset Classes"));
-    label->setMinimumWidth(150);
+    buildingWidget = new ComponentInputWidget(this, "Buildings");
+    pipelineWidget = new ComponentInputWidget(this, "Gas Network");
 
-    theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theHeaderLayout->addItem(spacer);
+    visualizationWidget->setBuildingWidget(buildingWidget);
+    visualizationWidget->setPipelineWidget(pipelineWidget);
 
-    theHeaderLayout->addStretch(1);
-    mainLayout->addLayout(theHeaderLayout);
-
-    auto theComponentSelection = new SimCenterComponentSelection(this);
-    mainLayout->addWidget(theComponentSelection);
-
-    theComponentSelection->setWidth(120);
-
-    buildingWidget = std::make_unique<ComponentInputWidget>(this, "Buildings");
-    pipelineWidget = std::make_unique<ComponentInputWidget>(this, "Pipelines");
-
-    visualizationWidget->setBuildingWidget(buildingWidget.get());
-    visualizationWidget->setPipelineWidget(pipelineWidget.get());
-
-    QGroupBox* buildingInfoBox = buildingWidget->getComponentsWidget();
-    QGroupBox* pipelineInfoBox = pipelineWidget->getComponentsWidget();
-
-    theComponentSelection->addComponent("Buildings",buildingInfoBox);
-    theComponentSelection->addComponent("Pipelines",pipelineInfoBox);
-    theComponentSelection->displayComponent("Pipelines");
-
-    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-    pipelineWidget->testFileLoad(pathToPipelineInfoFile);
-
-//    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/AnchorageExample/AnchorageBuildings.csv";
-
-    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory3.csv";
-    buildingWidget->testFileLoad(pathToBuildingInfoFile);
-
-    this->setLayout(mainLayout);
+    this->addComponent("Buildings", buildingWidget);
+    this->addComponent("Gas Network",pipelineWidget);
+    this->hideAll();
 }
 
 
@@ -117,45 +85,15 @@ AssetsWidget::~AssetsWidget()
 }
 
 
-bool AssetsWidget::outputToJSON(QJsonObject &jsonObject)
-{
-    return true;
-}
-
-
-bool AssetsWidget::inputFromJSON(QJsonObject &jsonObject)
-{
-    return false;
-}
-
-
-bool AssetsWidget::outputAppDataToJSON(QJsonObject &jsonObject)
-{
-    return true;
-}
-
-
-bool AssetsWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
-{
-    return false;
-}
-
-
-bool AssetsWidget::copyFiles(QString &destDir)
-{
-    return false;
-}
-
-
 ComponentInputWidget* AssetsWidget::getBuildingWidget() const
 {
-    return buildingWidget.get();
+    return buildingWidget;
 }
 
 
 ComponentInputWidget* AssetsWidget::getPipelineWidget() const
 {
-    return pipelineWidget.get();
+    return pipelineWidget;
 }
 
 

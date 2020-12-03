@@ -76,7 +76,7 @@ SiteGridWidget *SiteConfigWidget::getSiteGridWidget() const
 
 void SiteConfigWidget::setupConnections()
 {
-    connect(m_typeButtonsGroup, QOverload<int>::of(&QButtonGroup::idReleased), [this](int id)
+    connect(m_typeButtonsGroup, QOverload<int>::of(&QButtonGroup::buttonReleased), [this](int id)
     {
         if(id == 0)
             m_siteConfig.setType(SiteConfig::SiteType::Single);

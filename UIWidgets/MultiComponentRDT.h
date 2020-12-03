@@ -1,5 +1,5 @@
-#ifndef AssetsModelWidget_H
-#define AssetsModelWidget_H
+﻿#ifndef MultiComponentRDT_H
+#define MultiComponentRDT_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,28 +36,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: fmk
 // Latest revision: 11.20.2020
 
-#include "MultiComponentRDT.h"
+#include "SimCenterAppWidget.h"
 
-class BuildingModelingWidget;
-class RandomVariablesContainer;
+class SecondaryComponentSelection;
+class QFrame;
+class QStackedWidget;
+class QPushButton;
+class QVBoxLayout;
 
-class AssetsModelWidget : public  MultiComponentRDT
+class MultiComponentRDT : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit AssetsModelWidget(QWidget *parent, RandomVariablesContainer * RVContainer);
-    ~AssetsModelWidget();
+    explicit MultiComponentRDT(QWidget *parent);
+    ~MultiComponentRDT();
+
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &rvObject);
+    bool inputFromJSON(QJsonObject &rvObject);
+    bool copyFiles(QString &destName);
 
     void clear(void);
+    virtual void hideAll();
+    virtual bool hide(QString text);
+    virtual bool show(QString text);
+    bool addComponent(QString text, SimCenterAppWidget *);
+    SimCenterAppWidget *getComponent(QString text);
 
+public slots:
+    void selectionChangedSlot(const QString &);
+
+  
 private:
+        virtual bool displayComponent(QString text);
 
-    BuildingModelingWidget *buildingWidget;
-    RandomVariablesContainer* theRandomVariablesContainer;
+  int currentIndex;
+  int numHidden;
+  
+  QFrame *theSelectionWidget;
+  QVBoxLayout *theSelectionLayout;
+  QStackedWidget *theStackedWidget;  
+
+  QList<QString> theNames;
+  QList<QPushButton *>thePushButtons;  
+  QList<SimCenterAppWidget *> theComponents;
+
+  //  SecondaryComponentSelection *theSelection;
 };
 
-#endif // AssetsModelWidget_H
+#endif // MultiComponentRDT_H

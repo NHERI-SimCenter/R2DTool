@@ -27,6 +27,7 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString type) : SimC
 
     pathToComponentInfoFile = "NULL";
     componentGroupBox = nullptr;
+    this->createComponentsBox();
 }
 
 
@@ -239,7 +240,9 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addItem(smallVSpacer,5,0,1,5);
     gridLayout->addWidget(componentInfoText,6,0,1,5,Qt::AlignCenter);
     gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5);
+    gridLayout->setRowStretch(8, 1);
 //    gridLayout->addItem(vspacer, 8, 0);
+    this->setLayout(gridLayout);
 }
 
 

@@ -3,6 +3,7 @@
 #include <QtAlgorithms>
 #include <QJsonArray>
 #include <QLineEdit>
+#include <QDebug>
 
 IntensityMeasure::IntensityMeasure(QObject *parent) : QObject(parent)
 {
