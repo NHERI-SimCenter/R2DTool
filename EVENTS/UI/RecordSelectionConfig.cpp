@@ -1,4 +1,5 @@
 #include "RecordSelectionConfig.h"
+#include <QDebug>
 
 RecordSelectionConfig::RecordSelectionConfig(QObject *parent) : QObject(parent)
 {
