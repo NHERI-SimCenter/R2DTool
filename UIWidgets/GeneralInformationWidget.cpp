@@ -255,6 +255,8 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     layout->addItem(spacer,7,0);
     layout->addWidget(regionalMappingGroupBox,8,0);
 
+    buildingsCheckBox->setChecked(true);
+
     return layout;
 }
 

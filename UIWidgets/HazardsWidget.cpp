@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <QStackedWidget>
 #include <QCheckBox>
+#include <QJsonArray>
 
 HazardsWidget::HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
@@ -46,8 +47,11 @@ bool HazardsWidget::outputToJSON(QJsonObject &jsonObj)
     if(includeHazardCheckBox->isChecked() == false)
         return false;
 
-    jsonObj.insert("EventClassification", "Earthquake");
-    jsonObj.insert("Application", "SimCenterEvent");
+    QJsonArray arrayEvents;
+    QJsonObject EQObj;
+
+    EQObj.insert("EventClassification", "Earthquake");
+    EQObj.insert("Application", "SimCenterEvent");
 
     QJsonObject appDataObj;
 
@@ -70,7 +74,11 @@ bool HazardsWidget::outputToJSON(QJsonObject &jsonObj)
         qDebug()<<"Warning, could not recognize the earthquake combobox selection of"<<hazardSelectionCombo->currentText();
     }
 
-    jsonObj.insert("ApplicationData",appDataObj);
+    EQObj.insert("ApplicationData",appDataObj);
+
+    arrayEvents.append(EQObj);
+
+    jsonObj.insert("Events",arrayEvents);
 
     return true;
 }
@@ -129,6 +137,8 @@ void HazardsWidget::createWidget(void)
     theRootStackedWidget->addWidget(theUserInputGMWidget->getUserInputGMWidget());
 
     theRootStackedWidget->setCurrentWidget(theEQSSWidget);
+
+    hazardSelectionCombo->setCurrentText("User Specified Ground Motions");
 }
 
 
