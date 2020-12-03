@@ -74,6 +74,7 @@ public:
 public slots:
 
 signals:
+    void assetChanged(QString name, bool checked);
 
 private:
 
@@ -86,6 +87,13 @@ private:
     QComboBox* unitsTemperatureCombo;
     QComboBox* unitsTimeCombo;
 
+    QCheckBox* buildingsCheckBox;
+    QCheckBox* soilCheckBox;
+    QCheckBox* waterCheckBox;
+    QCheckBox* sewerCheckBox;  
+    QCheckBox* gasCheckBox;
+    QCheckBox* transportationCheckBox;
+  
     QCheckBox* EDPCheckBox;
     QCheckBox* DMCheckBox;
     QCheckBox* DVCheckBox;

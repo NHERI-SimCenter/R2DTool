@@ -46,6 +46,8 @@ SOURCES +=  main.cpp \
             TOOLS/XMLAdaptor.cpp \
             TOOLS/shakeMapClient.cpp \
             TOOLS/CSVReaderWriter.cpp \
+            UIWidgets/SecondaryComponentSelection.cpp \
+            UIWidgets/MultiComponentRDT.cpp \
             UIWidgets/CustomGraphicsScene.cpp \
             UIWidgets/CustomGraphicsView.cpp \
             UIWidgets/GridNode.cpp \
@@ -117,6 +119,8 @@ HEADERS +=  WorkflowAppRDT.h\
             TOOLS/XMLAdaptor.h \
             TOOLS/shakeMapClient.h \
             TOOLS/CSVReaderWriter.h \
+            UIWidgets/SecondaryComponentSelection.h \
+            UIWidgets/MultiComponentRDT.h \            
             UIWidgets/CustomGraphicsScene.h \
             UIWidgets/CustomGraphicsView.h \
             UIWidgets/GridNode.h \

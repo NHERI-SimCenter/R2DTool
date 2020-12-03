@@ -10,7 +10,8 @@
 #include <QGridLayout>
 #include <QJsonObject>
 
-BuildingModelingWidget::BuildingModelingWidget(QWidget *parent, RandomVariablesContainer* RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
+BuildingModelingWidget::BuildingModelingWidget(QWidget *parent, RandomVariablesContainer* RVContainer)
+    : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
 {    
     QVBoxLayout* buildingModelLayout = new QVBoxLayout(this);
 
