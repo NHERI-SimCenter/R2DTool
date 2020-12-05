@@ -12,7 +12,7 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 CONFIG += c++17
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../../release/SimCenterCommon
 
 # Application Icons
 win32 {
@@ -112,6 +112,8 @@ SOURCES +=  main.cpp \
             EVENTS/UI/GmAppConfig.cpp \
             EVENTS/UI/GmAppConfigWidget.cpp \
             EVENTS/UI/GmCommon.cpp \
+            EVENTS/UI/PeerLoginDialog.cpp \
+            EVENTS/UI/PeerNGAWest2Client.cpp
 
 
 HEADERS +=  WorkflowAppRDT.h\
@@ -186,6 +188,8 @@ HEADERS +=  WorkflowAppRDT.h\
             EVENTS/UI/GmAppConfig.h \
             EVENTS/UI/GmAppConfigWidget.h \
             EVENTS/UI/GmCommon.h \
+            EVENTS/UI/PeerLoginDialog.h \
+            EVENTS/UI/PeerNGAWest2Client.h
 
 
 RESOURCES += \

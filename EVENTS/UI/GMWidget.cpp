@@ -29,6 +29,12 @@
 #include "FeatureCollectionLayer.h"
 #include "SimpleRenderer.h"
 #include "SimpleMarkerSymbol.h"
+#include "PeerNgaWest2Client.h"
+#include "PeerLoginDialog.h"
+#include "ZipUtils.h"
+
+#include <QDir>
+#include <QFile>
 
 #include <QDialog>
 #include <QVBoxLayout>
@@ -110,11 +116,61 @@ void GMWidget::setAppConfig()
 void GMWidget::setupConnections()
 {
     //Connecting the run button
-    connect(m_runButton, &QPushButton::released, this, &GMWidget::runHazardSimulation);
+    connect(m_runButton, &QPushButton::released, this, [this]() {
+
+        if(!peerClient.loggedIn())
+        {
+            PeerLoginDialog loginDialog(&peerClient, this);
+            loginDialog.setWindowModality(Qt::ApplicationModal);
+            loginDialog.exec();
+            loginDialog.close();
+            if(loginDialog.result() != QDialog::Accepted)
+                return;
+        }
+
+        this->runHazardSimulation();
+    });
 
     connect(m_settingButton, &QPushButton::released, this, &GMWidget::setAppConfig);
 
     connect(m_siteConfigWidget->getSiteGridWidget(), &SiteGridWidget::selectGridOnMap, this, &GMWidget::showGISWindow);
+
+    connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString recordsFile)
+    {
+        qDebug() << "RECORDS DOWNLOADED: " << recordsFile;
+        /*
+        auto tempRecordsDir = QDir(groundMotionsFolder.path());
+        //Cleaning up previous search results
+        if(tempRecordsDir.exists("_SearchResults.csv"))
+            tempRecordsDir.remove("_SearchResults.csv");
+        ZipUtils::UnzipFile(recordsFile, tempRecordsDir);
+        processPeerRecords(tempRecordsDir);
+        */
+    });
+
+    //connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, &PEER_NGA_Records::updateStatus);
+
+    connect(&peerClient, &PeerNgaWest2Client::selectionStarted, this, [this]()
+    {
+        // this->progressBar->setHidden(false);
+        this->m_runButton->setEnabled(false);
+        this->m_runButton->setDown(true);
+    });
+
+
+    connect(&peerClient, &PeerNgaWest2Client::selectionFinished, this, [this]()
+    {
+      //  this->progressBar->setHidden(true);
+        this->m_runButton->setEnabled(true);
+        this->m_runButton->setDown(false);
+    });
+
+    connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString zipFile)
+    {
+        this->parseDownloadedRecords(zipFile);
+        this->m_runButton->setEnabled(true);
+        this->m_runButton->setDown(false);
+    });
 }
 
 
@@ -342,8 +398,8 @@ void GMWidget::runHazardSimulation(void)
     eventObj.insert("ScalingFactor", scalingObj);
     eventObj.insert("SaveIM", true);
     eventObj.insert("Database",  m_selectionconfig->getDatabase());
-    eventObj.insert("UserName", m_appConfig->getUsername());
-    eventObj.insert("UserPassword", m_appConfig->getPassword());
+    //eventObj.insert("UserName", m_appConfig->getUsername());
+    //eventObj.insert("UserPassword", m_appConfig->getPassword());
     eventObj.insert("OutputFormat", "SimCenterEvent");
 
     QJsonObject configFile;
@@ -490,21 +546,19 @@ void GMWidget::runHazardSimulation(void)
     auto pythonPath = SimCenterPreferences::getInstance()->getPython();
 
     // TODO: make this a relative link once we figure out the folder structure
-    auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
+    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
 
     QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
 
     process->start(pythonPath, args);
-
     process->waitForStarted();
 }
 
 
 void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-
-    progressBar->hide();
-
+    //progressBar->hide();
+    progressLabel->setText(progressLabel->text() + QString("\n Now contacting PEER server to download records"));
     auto existing = progressLabel->text();
 
     existing.append("\n");
@@ -537,7 +591,7 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
 
     progressLabel->setText(existing);
 
-    auto res = this->parseOutputFiles();
+    auto res = this->downloadRecords();
 
     simulationComplete = true;
 }
@@ -562,20 +616,45 @@ void GMWidget::handleProcessTextOutput(void)
 }
 
 
-int GMWidget::parseOutputFiles(void)
+int GMWidget::downloadRecords(void)
 {
-    auto pathToOutputDirectory = m_appConfig->getOutputDirectoryPath();
 
-    QDir directory(pathToOutputDirectory);
-    QStringList files = directory.entryList(QStringList() << "*.csv" << "*.CSV",QDir::Files);
-
-    foreach(QString filename, files)
-    {
-
-
+    QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath();
+    QString recordsListFilename = QString(pathToOutputDirectory + QDir::separator() + QString("RSN.csv"));
+    QFile theRecordsListFile = QFile(recordsListFilename);
+    if (!theRecordsListFile.exists()) {
+        QString errorMessage = QString("GMWidget::Record selection faild no file ") +  recordsListFilename + QString(" exists");
+        emit sendErrorMessage(errorMessage);
+        return -1;
     }
 
+    QStringList recordsList;
+
+    if (theRecordsListFile.open(QIODevice::ReadOnly)) {
+
+        //file opened successfully, parse csv file for records
+        while (!theRecordsListFile.atEnd()) {
+            QByteArray line = theRecordsListFile.readLine();
+            foreach (const QByteArray &item, line.split(',')) {
+                recordsList.append(QString::fromLocal8Bit(item).trimmed()); // Assuming local 8-bit.
+            }
+        }
+        peerClient.selectRecords(recordsList);
+    }
+    progressDialog->close();
+
     return 0;
+}
+
+int
+GMWidget::parseDownloadedRecords(QString zipFile) {
+
+    QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath();
+     bool result =  ZipUtils::UnzipFile(zipFile, pathToOutputDirectory);
+     if (result == false)
+         return -1;
+
+     return 0;
 }
 
 
@@ -605,7 +684,7 @@ void GMWidget::showInfoDialog(void)
 
     }
 
-    progressLabel->setText("Earthquake hazard simulation started.\nThis may take a while!\nA script will run in the background and Chrome browser should open\n");
+    progressLabel->setText("Earthquake hazard simulation started.\nThis may take a while! The script is using OpenSHA and determining which records to select from the Peer NGA West 2 database\n");
     progressBar->show();
     progressDialog->show();
     progressDialog->raise();

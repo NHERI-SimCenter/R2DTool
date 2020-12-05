@@ -5,6 +5,7 @@
 #include "SimCenterAppWidget.h"
 
 #include <QProcess>
+#include "PeerNgaWest2Client.h"
 
 class GmAppConfig;
 class IntensityMeasureWidget;
@@ -66,12 +67,17 @@ public slots:
     // Displays the text output of the process in the dialog
     void handleProcessTextOutput(void);
 
+    // Download records once selected
+    int downloadRecords(void);
+
     // Process the outfile files once the hazard simulation is complete
-    int parseOutputFiles(void);
+    int parseDownloadedRecords(QString);
 
 private slots:
 
 private:
+    PeerNgaWest2Client peerClient;
+
     RuptureWidget* m_ruptureWidget;
     GMPE* m_gmpe;
     GMPEWidget* m_gmpeWidget;
