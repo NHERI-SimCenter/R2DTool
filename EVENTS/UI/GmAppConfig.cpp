@@ -124,7 +124,7 @@ bool GmAppConfig::validate(QString& err)
         }
     }
 
-
+/*
     if(username.isEmpty() || password.isEmpty())
     {
         err = "Check that you have input your username and password for access to the record selection databse";
@@ -132,7 +132,7 @@ bool GmAppConfig::validate(QString& err)
         return false;
     }
 
-
+*/
     return true;
 }
 
