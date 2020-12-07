@@ -41,7 +41,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "BuildingDMWidget.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SimCenterComponentSelection.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -51,8 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 
 
-DamageMeasureWidget::DamageMeasureWidget(QWidget *parent)
-    : SimCenterAppWidget(parent)
+DamageMeasureWidget::DamageMeasureWidget(QWidget *parent) : MultiComponentRDT(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
@@ -69,19 +67,13 @@ DamageMeasureWidget::DamageMeasureWidget(QWidget *parent)
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
 
-    auto theComponentSelection = new SimCenterComponentSelection(this);
-    mainLayout->addWidget(theComponentSelection);
-
-    theComponentSelection->setWidth(120);
-
     theBuildingDMWidget = new BuildingDMWidget(this);
+    thePipelineDMWidget = new BuildingDMWidget(this);
 
-    QGroupBox* pipelineInfoBox = new QGroupBox("Pipelines",this);
-    pipelineInfoBox->setFlat(true);
 
-    theComponentSelection->addComponent("Buildings",theBuildingDMWidget);
-    theComponentSelection->addComponent("Pipelines",pipelineInfoBox);
-    theComponentSelection->displayComponent("Buildings");
+    this->addComponent("Buildings", theBuildingDMWidget);
+    this->addComponent("Gas Network",thePipelineDMWidget);
+    this->hideAll();
 
     this->setLayout(mainLayout);
 }

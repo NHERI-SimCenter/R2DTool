@@ -106,7 +106,7 @@ FeatureCollectionLayer* XMLAdaptor::parseXMLFile(const QString& filePath, QStrin
 
     auto gridFeatureCollection = new FeatureCollection(parent);
 
-    // Create the PGA feature collection table/layers
+    // Create the feature collection table/layers
     auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(),parent);
     gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
 

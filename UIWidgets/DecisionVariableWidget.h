@@ -39,10 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 11.20.2020
 
-#include "SimCenterAppWidget.h"
+#include "MultiComponentRDT.h"
 
-
-class DecisionVariableWidget : public  SimCenterAppWidget
+class DecisionVariableWidget : public MultiComponentRDT
 {
     Q_OBJECT
 

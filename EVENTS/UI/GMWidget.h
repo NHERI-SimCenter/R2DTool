@@ -3,6 +3,7 @@
 
 #include "MapViewSubWidget.h"
 #include "SimCenterAppWidget.h"
+#include "GroundMotionStation.h"
 
 #include <QProcess>
 #include "PeerNgaWest2Client.h"
@@ -105,6 +106,7 @@ private:
     void initAppConfig();
 
     bool simulationComplete;
+    QVector<GroundMotionStation> stationList;
 };
 
 #endif // GMWIDGET_H

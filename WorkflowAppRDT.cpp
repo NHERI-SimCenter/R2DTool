@@ -55,6 +55,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterComponentSelection.h"
 #include "RegionalMappingWidget.h"
 #include "GeneralInformationWidget.h"
+#include "MainWindowWorkflowApp.h"
 #include "RandomVariablesContainer.h"
 #include "InputWidgetSampling.h"
 #include "DakotaResultsSampling.h"
@@ -72,6 +73,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QLabel>
 #include <QMessageBox>
+#include <QMenuBar>
 #include <QProcess>
 #include <QPushButton>
 #include <QScrollArea>
@@ -209,7 +211,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     // theComponentSelection->addComponent(QString("RV"),  theRVs);
 
     theComponentSelection->displayComponent("Damage\nMeasures");
-//    theComponentSelection->displayComponent("General\nInformation");
+    //    theComponentSelection->displayComponent("General\nInformation");
 
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
@@ -221,6 +223,14 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
 
+
+}
+
+
+void WorkflowAppRDT::initialize(void)
+{
+    QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
+    exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadAlamedaExample);
 }
 
 
@@ -276,7 +286,7 @@ void WorkflowAppRDT::setActiveWidget(SimCenterAppWidget* widget)
 
 bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 {
-    // get each of the main widgets to output themselves   
+    // get each of the main widgets to output themselves
     theGeneralInformationWidget->outputToJSON(jsonObjectTop);
 
     theRunWidget->outputToJSON(jsonObjectTop);
@@ -364,6 +374,12 @@ void WorkflowAppRDT::processResults(QString dakotaOut, QString dakotaTab, QStrin
 void WorkflowAppRDT::clear(void)
 {
 
+}
+
+
+void WorkflowAppRDT::loadAlamedaExample()
+{
+    this->loadFile("/Users/steve/Documents/RDT/Examples/Alameda/Alameda.json");
 }
 
 
@@ -624,23 +640,24 @@ int WorkflowAppRDT::getMaxNumParallelTasks() {
     return theUQWidget->getNumParallelTasks();
 }
 
-void WorkflowAppRDT::assetSelectionChanged(QString text, bool value) {
+void WorkflowAppRDT::assetSelectionChanged(QString text, bool value)
+{
 
-    if (text == "Buildings") {
-        if (value == true) {
-            theAssetsWidget->show("Buildings");
-            theModelingWidget->show("Buildings");
-        } else {
-            theAssetsWidget->hide("Buildings");
-            theModelingWidget->hide("Buildings");
-        }
-    } else if (text == "Gas Network") {
-        if (value == true) {
-            theAssetsWidget->show("Gas Network");
-            theModelingWidget->show("Gas Network");
-        } else {
-            theAssetsWidget->hide("Gas Network");
-            theModelingWidget->hide("Gas Network");
-        }
+    if (value == true)
+    {
+        theAssetsWidget->show(text);
+        theModelingWidget->show(text);
+        theEngDemandParamWidget->show(text);
+        theDamageMeasureWidget->show(text);
+        theDecisionVariableWidget->show(text);
     }
+    else
+    {
+        theAssetsWidget->hide(text);
+        theModelingWidget->hide(text);
+        theEngDemandParamWidget->hide(text);
+        theDamageMeasureWidget->hide(text);
+        theDecisionVariableWidget->hide(text);
+    }
+
 }

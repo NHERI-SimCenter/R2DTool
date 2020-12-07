@@ -86,6 +86,8 @@ public:
     void onRemoteGetButtonClicked();
     void onExitButtonClicked();
     int getMaxNumParallelTasks();
+
+    void initialize(void);
     
     void setActiveWidget(SimCenterAppWidget* widget);
 
@@ -107,6 +109,9 @@ public slots:
     void loadFile(QString filename);
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
+
+    // Examples
+    void loadAlamedaExample();
 
 private:
 

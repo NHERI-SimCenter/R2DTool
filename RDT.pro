@@ -41,6 +41,8 @@ INCLUDEPATH += $$PWD/Utils \
 
 
 SOURCES +=  main.cpp \
+            UIWidgets/GroundMotionStation.cpp \
+            UIWidgets/GroundMotionTimeHistory.cpp \
             WorkflowAppRDT.cpp \
             RunWidget.cpp \
             TOOLS/XMLAdaptor.cpp \
@@ -121,6 +123,8 @@ HEADERS +=  WorkflowAppRDT.h\
             TOOLS/XMLAdaptor.h \
             TOOLS/shakeMapClient.h \
             TOOLS/CSVReaderWriter.h \
+            UIWidgets/GroundMotionStation.h \
+            UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/SecondaryComponentSelection.h \
             UIWidgets/MultiComponentRDT.h \            
             UIWidgets/CustomGraphicsScene.h \
@@ -206,7 +210,7 @@ win32:INCLUDEPATH += "c:\Users\SimCenter\libCurl-7.59.0\include"
 win32:LIBS += C:\Users\SimCenter\libCurl-7.59.0/lib/libcurl.lib
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
-win32:INCLUDEPATH += "..\jansson\build\include"
-win32:LIBS += "..\jansson\build\lib\release\jansson.lib"
+#win32:INCLUDEPATH += "..\jansson\build\include"
+#win32:LIBS += "..\jansson\build\lib\release\jansson.lib"
 
 

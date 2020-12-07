@@ -39,11 +39,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 11.20.2020
 
-#include "SimCenterAppWidget.h"
+#include "MultiComponentRDT.h"
 
 class BuildingDMWidget;
 
-class DamageMeasureWidget : public  SimCenterAppWidget
+class DamageMeasureWidget : public  MultiComponentRDT
 {
     Q_OBJECT
 
@@ -57,6 +57,7 @@ public:
 private:
 
     BuildingDMWidget* theBuildingDMWidget;
+    BuildingDMWidget* thePipelineDMWidget;
 };
 
 #endif // DamageMeasureWidget_H
