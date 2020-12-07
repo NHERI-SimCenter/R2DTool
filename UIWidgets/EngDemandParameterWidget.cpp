@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "BuildingEDPWidget.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SimCenterComponentSelection.h"
+#include "SecondaryComponentSelection.h"
 
 // Qt headers
 #include <QHBoxLayout>
@@ -52,8 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 
 
-EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent)
-    : SimCenterAppWidget(parent)
+EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent) : MultiComponentRDT(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
@@ -70,19 +69,12 @@ EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent)
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
 
-    auto theComponentSelection = new SimCenterComponentSelection(this);
-    mainLayout->addWidget(theComponentSelection);
-
-    theComponentSelection->setWidth(120);
-
     theBuildingEDPWidget = new BuildingEDPWidget(this);
+    thePipelineEDPWidget = new BuildingEDPWidget(this);
 
-    QGroupBox* pipelineInfoBox = new QGroupBox("Pipelines",this);
-    pipelineInfoBox->setFlat(true);
-
-    theComponentSelection->addComponent("Buildings",theBuildingEDPWidget);
-    theComponentSelection->addComponent("Pipelines",pipelineInfoBox);
-    theComponentSelection->displayComponent("Buildings");
+    this->addComponent("Buildings", theBuildingEDPWidget);
+    this->addComponent("Gas Network",thePipelineEDPWidget);
+    this->hideAll();
 
     this->setLayout(mainLayout);
 }

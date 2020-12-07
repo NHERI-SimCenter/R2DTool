@@ -3,18 +3,21 @@
 #include "TreeView.h"
 #include "RegionalMappingWidget.h"
 #include "WorkflowAppRDT.h"
+#include "CSVReaderWriter.h"
 
 // GIS Layers
 #include "GroupLayer.h"
 #include "LayerListModel.h"
 #include "FeatureCollectionLayer.h"
-#include "KmlLayer.h"
 #include "Layer.h"
+#include "SimpleMarkerSymbol.h"
+#include "SimpleRenderer.h"
 
 #include <QLabel>
 #include <QDialog>
 #include <QGridLayout>
 #include <QFile>
+#include <QFileInfo>
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QPushButton>
@@ -92,21 +95,21 @@ void UserInputGMWidget::showUserGMLayers(bool state)
         shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",QString());
 
 
-//    for(auto&& it : shakeMapContainer)
-//    {
-//        auto eventName = it->eventLayer->name();
-//        auto eventID = it->eventLayer->layerId();
-//        auto eventItem = layersTreeView->addItemToTree(eventName, eventID, shakeMapTreeItem);
+    //    for(auto&& it : shakeMapContainer)
+    //    {
+    //        auto eventName = it->eventLayer->name();
+    //        auto eventID = it->eventLayer->layerId();
+    //        auto eventItem = layersTreeView->addItemToTree(eventName, eventID, shakeMapTreeItem);
 
-//        auto layers = it->getAllActiveSubLayers();
-//        for(auto&& layer : layers)
-//        {
-//            auto layerName = layer->name();
-//            auto layerID = layer->layerId();
+    //        auto layers = it->getAllActiveSubLayers();
+    //        for(auto&& layer : layers)
+    //        {
+    //            auto layerName = layer->name();
+    //            auto layerID = layer->layerId();
 
-//            layersTreeView->addItemToTree(layerName, layerID, eventItem);
-//        }
-//    }
+    //            layersTreeView->addItemToTree(layerName, layerID, eventItem);
+    //        }
+    //    }
 }
 
 
@@ -219,17 +222,177 @@ void UserInputGMWidget::loadUserGMData(void)
 
     if(inputFiles.empty())
     {
-        QString errMsg ="No files with .json or .csv extensions were found at the path: "+pathToUserGMFile;
+        QString errMsg ="No files with .csv extensions were found at the path: "+pathToUserGMFile;
         this->userMessageDialog(errMsg);
         return;
     }
 
     QString fileName = inputFile.fileName();
 
-    // Create a new shakemap
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(pathToUserGMFile,err);
+
+    if(!err.isEmpty())
+    {
+        this->userMessageDialog(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    userGMStackedWidget->setCurrentWidget(progressBarWidget);
+
+    progressBarWidget->setVisible(true);
+
+    QApplication::processEvents();
+
+    progressBar->setRange(0,inputFiles.size());
+
+    progressBar->setValue(0);
+
+    // Create the table to store the fields
+    QList<Field> tableFields;
+    tableFields.append(Field::createText("AssetType", "NULL",4));
+    tableFields.append(Field::createText("TabName", "NULL",4));
+    tableFields.append(Field::createText("Latitude", "NULL",8));
+    tableFields.append(Field::createText("Longitude", "NULL",9));
+    tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
+    tableFields.append(Field::createText("Ground Motions","",1));
+
+    auto gridFeatureCollection = new FeatureCollection(this);
+
+    // Create the feature collection table/layers
+    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
+    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
+
+    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+
+    // Create red cross SimpleMarkerSymbol
+    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
+
+    // Create renderer and set symbol to crossSymbol
+    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+
+    // Set the renderer for the feature layer
+    gridFeatureCollectionTable->setRenderer(renderer);
+
+    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
+    //    gridLayer->setMinScale(80000);
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    int count = 0;
+
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        // Split the string at the spaces
+        auto vecValues = rowStr.at(0).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+
+        if(vecValues.size() != 3)
+        {
+            qDebug()<<"Error in importing user ground motions";
+            return;
+        }
+
+        auto stationName = vecValues[0];
+
+        auto stationPath = inputFile.dir().absolutePath() +"/"+ stationName;
+
+        bool ok;
+        auto lon = vecValues[1].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error longitude to a double, check the value";
+            this->userMessageDialog(errMsg);
+            return;
+        }
+
+        auto lat = vecValues[2].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error latitude to a double, check the value";
+            this->userMessageDialog(errMsg);
+            return;
+        }
+
+        GroundMotionStation GMStation(stationPath,lat,lon);
+
+        auto res = GMStation.importGroundMotions();
+
+        if(res == 0)
+        {
+            stationList.push_back(GMStation);
+
+            // create the feature attributes
+            QMap<QString, QVariant> featureAttributes;
+
+            //            auto attrbText = GMStation.
+            //            auto attrbVal = pointData[i];
+            //            featureAttributes.insert(attrbText,attrbVal);
+
+            auto vecGMs = GMStation.getStationGroundMotions();
+            featureAttributes.insert("Number of Ground Motions", vecGMs.size());
+
+
+            QString GMNames;
+            for(int i = 0; i<vecGMs.size(); ++i)
+            {
+                auto GMName = vecGMs.at(i).getName();
+
+                GMNames.append(GMName);
+
+                if(i != vecGMs.size()-1)
+                    GMNames.append(", ");
+
+            }
+
+            featureAttributes.insert("Ground Motions", GMNames);
+            featureAttributes.insert("AssetType", "GroundMotionGridPoint");
+            featureAttributes.insert("TabName", "Ground Motion Grid Point");
+
+            auto latitude = GMStation.getLatitude();
+            auto longitude = GMStation.getLongitude();
+
+            featureAttributes.insert("Latitude", latitude);
+            featureAttributes.insert("Longitude", longitude);
+
+            // Create the point and add it to the feature table
+            Point point(longitude,latitude);
+            Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+
+            gridFeatureCollectionTable->addFeature(feature);
+
+        }
+        else
+        {
+            QString errMsg = "Error importing ground motion " + stationName;
+            this->userMessageDialog(errMsg);
+            return;
+        }
+
+        ++count;
+        progressLabel->clear();
+        progressBar->setValue(count);
+
+        QApplication::processEvents();
+    }
+
+    // Create a new layer
     auto layersTreeView = theVisualizationWidget->getLayersTree();
 
-    // Check if there is a 'Shake Map' root item in the tree
+    // Check if there is a 'User Ground Motions' root item in the tree
     auto userInputTreeItem = layersTreeView->getTreeItem("User Ground Motions", nullptr);
 
     // If there is no item, create one
@@ -240,41 +403,11 @@ void UserInputGMWidget::loadUserGMData(void)
     // Add the event layer to the layer tree
     auto eventItem = layersTreeView->addItemToTree(fileName, QString(), userInputTreeItem);
 
-    // Create the root event group layer
-//    inputShakeMap->eventLayer = new GroupLayer(QList<Layer*>{});
-
-//    auto eventLayer = inputShakeMap->eventLayer;
-
-//    eventLayer->setName(eventName);
-
-//    userGMStackedWidget->setCurrentWidget(progressBarWidget);
-
-//    progressBarWidget->setVisible(true);
-
-//    QApplication::processEvents();
-
-//    progressBar->setRange(0,inputFiles.size());
-
-//    progressBar->setValue(0);
-
-    int count = 0;
-    foreach(QString filename, inputFiles)
-    {
-        auto inFilePath = pathToUserGMFile + filename;
-
-
-
-        ++count;
-        progressLabel->clear();
-        progressBar->setValue(count);
-
-        QApplication::processEvents();
-    }
 
     progressLabel->setVisible(false);
 
     // Add the event layer to the map
-//    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
+    theVisualizationWidget->addLayerToMap(gridLayer,eventItem);
 
     // Reset the widget back to the input pane and close
     userGMStackedWidget->setCurrentWidget(fileInputWidget);

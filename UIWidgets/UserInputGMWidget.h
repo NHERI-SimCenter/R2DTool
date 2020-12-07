@@ -1,8 +1,10 @@
 #ifndef UserInputGMWidget_H
 #define UserInputGMWidget_H
 
+#include "GroundMotionStation.h"
+#include "SimCenterAppWidget.h"
+
 #include <memory>
-#include <SimCenterAppWidget.h>
 
 #include <QMap>
 
@@ -64,6 +66,7 @@ private:
     QWidget* fileInputWidget;
     QProgressBar* progressBar;
     QString pathToUserGMFile;
+    QVector<GroundMotionStation> stationList;
 
 };
 

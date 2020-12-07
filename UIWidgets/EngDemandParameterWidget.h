@@ -39,11 +39,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 11.20.2020
 
-#include "SimCenterAppWidget.h"
+#include "MultiComponentRDT.h"
 
 class BuildingEDPWidget;
 
-class EngDemandParameterWidget : public  SimCenterAppWidget
+class EngDemandParameterWidget : public MultiComponentRDT
 {
     Q_OBJECT
 
@@ -57,6 +57,7 @@ public:
 private:
 
     BuildingEDPWidget* theBuildingEDPWidget;
+    BuildingEDPWidget* thePipelineEDPWidget;
 
 };
 

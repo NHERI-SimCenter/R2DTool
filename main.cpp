@@ -125,12 +125,12 @@ int main(int argc, char *argv[])
     AgaveCurl *theRemoteService = new AgaveCurl(tenant, storage, &dirName);
 
 
-    //
     // create the main window
-    //
-
-    WorkflowAppWidget *theInputApp = new WorkflowAppRDT(theRemoteService);
+    WorkflowAppRDT *theInputApp = new WorkflowAppRDT(theRemoteService);
     MainWindowWorkflowApp w(QString("RDT: Regional Resilience Determination Tool"), theInputApp, theRemoteService);
+
+    // Create the  menu bar and actions to run the examples
+    theInputApp->initialize();
 
     /*
     QString textAboutEE_UQ = "\

@@ -374,32 +374,32 @@ void GMWidget::runHazardSimulation(void)
             return;
         }
 
-        // Create the objects needed to visualize the grid in the GIS
-        auto gridFeatureCollection = new FeatureCollection(this);
+//        // Create the objects needed to visualize the grid in the GIS
+//        auto gridFeatureCollection = new FeatureCollection(this);
 
-        // The table field
-        QList<Field> tableFields;
-        tableFields.append(Field::createText("AssetType", "NULL",4));
-        tableFields.append(Field::createText("TabName", "NULL",4));
-        tableFields.append(Field::createText("Station ID", "NULL",4));
-        tableFields.append(Field::createText("Latitude", "NULL",4));
-        tableFields.append(Field::createText("Longitude", "NULL",4));
+//        // The table field
+//        QList<Field> tableFields;
+//        tableFields.append(Field::createText("AssetType", "NULL",4));
+//        tableFields.append(Field::createText("TabName", "NULL",4));
+//        tableFields.append(Field::createText("Station ID", "NULL",4));
+//        tableFields.append(Field::createText("Latitude", "NULL",4));
+//        tableFields.append(Field::createText("Longitude", "NULL",4));
 
-        // Create the PGA feature collection table/layers
-        auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(),this);
-        gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
+//        // Create the PGA feature collection table/layers
+//        auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(),this);
+//        gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
 
-        auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
-        gridLayer->setOpacity(0.5);
+//        auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+//        gridLayer->setOpacity(0.5);
 
-        // Create red cross SimpleMarkerSymbol
-        SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
+//        // Create red cross SimpleMarkerSymbol
+//        SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
 
-        // Create renderer and set symbol to crossSymbol
-        SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+//        // Create renderer and set symbol to crossSymbol
+//        SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
 
-        // Set the renderer for the feature layer
-        gridFeatureCollectionTable->setRenderer(renderer);
+//        // Set the renderer for the feature layer
+//        gridFeatureCollectionTable->setRenderer(renderer);
 
         auto siteGrid = mapViewSubWidget->getGrid();
 
@@ -426,35 +426,35 @@ void GMWidget::runHazardSimulation(void)
 
             gridData.push_back(stationRow);
 
-            // create the feature attributes
-            QMap<QString, QVariant> featureAttributes;
-            featureAttributes.insert("AssetType", "HazardSimGridPoint");
-            featureAttributes.insert("TabName", "Event Grid Point");
-            featureAttributes.insert("Station ID", i);
-            featureAttributes.insert("Latitude", latitude);
-            featureAttributes.insert("Longitude", longitude);
+//            // create the feature attributes
+//            QMap<QString, QVariant> featureAttributes;
+//            featureAttributes.insert("AssetType", "HazardSimGridPoint");
+//            featureAttributes.insert("TabName", "Ground Motion Grid Point");
+//            featureAttributes.insert("Station ID", i);
+//            featureAttributes.insert("Latitude", latitude);
+//            featureAttributes.insert("Longitude", longitude);
 
             // Create the point and add it to the feature table
-            Point point(longitude,latitude);
-            Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+//            Point point(longitude,latitude);
+//            Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
 
-            gridFeatureCollectionTable->addFeature(feature);
+//            gridFeatureCollectionTable->addFeature(feature);
         }
 
-        auto layerName = "EQ Hazard Simulation Grid";
+//        auto layerName = "EQ Hazard Simulation Grid";
 
-        gridLayer->setName(layerName);
+//        gridLayer->setName(layerName);
 
-        auto layersTree = theVisualizationWidget->getLayersTree();
+//        auto layersTree = theVisualizationWidget->getLayersTree();
 
-        auto layerID = theVisualizationWidget->createUniqueID();
+//        auto layerID = theVisualizationWidget->createUniqueID();
 
-        gridLayer->setLayerId(layerID);
+//        gridLayer->setLayerId(layerID);
 
-        // Add the layers to the layer tree
-        layersTree->addItemToTree(layerName, layerID);
+//        // Add the layers to the layer tree
+//        layersTree->addItemToTree(layerName, layerID);
 
-        theVisualizationWidget->addLayerToMap(gridLayer);
+//        theVisualizationWidget->addLayerToMap(gridLayer);
     }
 
 
@@ -503,8 +503,6 @@ void GMWidget::runHazardSimulation(void)
 void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
 
-    progressBar->hide();
-
     auto existing = progressLabel->text();
 
     existing.append("\n");
@@ -533,11 +531,26 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    existing.append("Earthquake hazard simulation complete\n\nThe folder containing the results: "+m_appConfig->getOutputDirectoryPath());
+    existing.append("Earthquake hazard simulation complete\n\nThe folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n" +
+                    "\nLoading the results from the output folder.");
 
     progressLabel->setText(existing);
 
     auto res = this->parseOutputFiles();
+
+    if(res != 0)
+    {
+        QString errText("Error loading the results!");
+
+        qDebug()<<errText;
+
+        existing.append(errText);
+
+        progressBar->hide();
+        return;
+    }
+
+    progressBar->hide();
 
     simulationComplete = true;
 }
@@ -564,16 +577,195 @@ void GMWidget::handleProcessTextOutput(void)
 
 int GMWidget::parseOutputFiles(void)
 {
-    auto pathToOutputDirectory = m_appConfig->getOutputDirectoryPath();
+    auto pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + "/" + "EventGrid.csv";
 
-    QDir directory(pathToOutputDirectory);
-    QStringList files = directory.entryList(QStringList() << "*.csv" << "*.CSV",QDir::Files);
+    const QFileInfo inputFile(pathToOutputDirectory);
 
-    foreach(QString filename, files)
+    if (!inputFile.exists() || !inputFile.isFile())
     {
+        QString errMsg ="A file does not exist at the path: "+pathToOutputDirectory;
+        this->userMessageDialog(errMsg);
+        return -1;
+    }
 
+    QStringList acceptableFileExtensions = {"*.CSV", "*.csv"};
+
+    QStringList inputFiles = inputFile.dir().entryList(acceptableFileExtensions,QDir::Files);
+
+    if(inputFiles.empty())
+    {
+        QString errMsg ="No files with .csv extensions were found at the path: "+pathToOutputDirectory;
+        this->userMessageDialog(errMsg);
+        return -1;
+    }
+
+    QString fileName = inputFile.fileName();
+
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(pathToOutputDirectory,err);
+
+    if(!err.isEmpty())
+    {
+        this->userMessageDialog(err);
+        return -1;
+    }
+
+    if(data.empty())
+        return -1;
+
+
+    QApplication::processEvents();
+
+    progressBar->setRange(0,inputFiles.size());
+
+    progressBar->setValue(0);
+
+    // Create the table to store the fields
+    QList<Field> tableFields;
+    tableFields.append(Field::createText("AssetType", "NULL",4));
+    tableFields.append(Field::createText("TabName", "NULL",4));
+    tableFields.append(Field::createText("Latitude", "NULL",8));
+    tableFields.append(Field::createText("Longitude", "NULL",9));
+    tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
+    tableFields.append(Field::createText("Ground Motions","",1));
+
+    auto gridFeatureCollection = new FeatureCollection(this);
+
+    // Create the feature collection table/layers
+    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
+    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
+
+    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+
+    // Create red cross SimpleMarkerSymbol
+    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
+
+    // Create renderer and set symbol to crossSymbol
+    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+
+    // Set the renderer for the feature layer
+    gridFeatureCollectionTable->setRenderer(renderer);
+
+    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
+    //    gridLayer->setMinScale(80000);
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        // Split the string at the spaces
+        auto vecValues = rowStr.at(0).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+
+        if(vecValues.size() != 3)
+        {
+            qDebug()<<"Error in importing ground motions";
+            return -1;
+        }
+
+        auto stationName = vecValues[0];
+
+        auto stationPath = inputFile.dir().absolutePath() +"/"+ stationName;
+
+        bool ok;
+        auto lon = vecValues[1].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error longitude to a double, check the value";
+            this->userMessageDialog(errMsg);
+            return -1;
+        }
+
+        auto lat = vecValues[2].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error latitude to a double, check the value";
+            this->userMessageDialog(errMsg);
+            return -1;
+        }
+
+        GroundMotionStation GMStation(stationPath,lat,lon);
+
+        auto res = GMStation.importGroundMotions();
+
+        if(res == 0)
+        {
+            stationList.push_back(GMStation);
+
+            // create the feature attributes
+            QMap<QString, QVariant> featureAttributes;
+
+            //            auto attrbText = GMStation.
+            //            auto attrbVal = pointData[i];
+            //            featureAttributes.insert(attrbText,attrbVal);
+
+            auto vecGMs = GMStation.getStationGroundMotions();
+            featureAttributes.insert("Number of Ground Motions", vecGMs.size());
+
+
+            QString GMNames;
+            for(int i = 0; i<vecGMs.size(); ++i)
+            {
+                auto GMName = vecGMs.at(i).getName();
+
+                GMNames.append(GMName);
+
+                if(i != vecGMs.size()-1)
+                    GMNames.append(", ");
+
+            }
+
+            featureAttributes.insert("Ground Motions", GMNames);
+            featureAttributes.insert("AssetType", "GroundMotionGridPoint");
+            featureAttributes.insert("TabName", "Ground Motion Grid Point");
+
+            auto latitude = GMStation.getLatitude();
+            auto longitude = GMStation.getLongitude();
+
+            featureAttributes.insert("Latitude", latitude);
+            featureAttributes.insert("Longitude", longitude);
+
+            // Create the point and add it to the feature table
+            Point point(longitude,latitude);
+            Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+
+            gridFeatureCollectionTable->addFeature(feature);
+
+        }
+        else
+        {
+            QString errMsg = "Error importing ground motion " + stationName;
+            this->userMessageDialog(errMsg);
+            return -1;
+        }
 
     }
+
+    // Create a new layer
+    auto layersTreeView = theVisualizationWidget->getLayersTree();
+
+    // Check if there is a 'User Ground Motions' root item in the tree
+    auto userInputTreeItem = layersTreeView->getTreeItem("EQ Hazard Simulation Grid", nullptr);
+
+    // If there is no item, create one
+    if(userInputTreeItem == nullptr)
+        userInputTreeItem = layersTreeView->addItemToTree("EQ Hazard Simulation Grid", QString());
+
+    // Add the event layer to the layer tree
+    auto eventItem = layersTreeView->addItemToTree(fileName, QString(), userInputTreeItem);
+
+    // Add the event layer to the map
+    theVisualizationWidget->addLayerToMap(gridLayer,eventItem);
 
     return 0;
 }

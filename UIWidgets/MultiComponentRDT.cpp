@@ -102,10 +102,9 @@ MultiComponentRDT::MultiComponentRDT(QWidget *parent)
 
     theSelectionWidget->setObjectName("SCS");
     const QString STYLE_SHEET = "QFrame#SCS {\n"
-                                "    background-color: whitesmoke;\n"
-                                "    border: 1px solid gray;\n"
-                                "    border-left: 0px;\n"
-                                "    border-right: 1px solid black;\n"
+                                "    border: 0px solid gray;\n"
+                                "    border-left: 1px;\n"
+                                "    border-right: 0px solid black;\n"
                                 "    border-top: 0px solid black;\n"
                                 "    border-bottom: 0px solid blacj;\n"
                                 "    border-radius: 0px;\n"
@@ -373,7 +372,7 @@ MultiComponentRDT::displayComponent(QString text)
         if (currentIndex != -1) {
 
             QPushButton *theOldItem = thePushButtons.at(currentIndex);
-            theOldItem->setStyleSheet("background-color: #64B5F6;");
+            theOldItem->setStyleSheet("background-color: rgb(79, 83, 89);");
         }
         currentIndex = index;
         return true;
