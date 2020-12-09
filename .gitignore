@@ -49,6 +49,9 @@ qrc_images.cpp
 qrc_images1.cpp
 qrc_styles.cpp
 
+# Sensitive Information
+PEERUserPass.h
+
 # OTHER
 Makefile
 Makefile.*

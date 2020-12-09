@@ -120,6 +120,7 @@ SOURCES +=  main.cpp \
 
 
 HEADERS +=  WorkflowAppRDT.h\
+            PEERUserPass.h \
             RunWidget.h \
             TOOLS/NGAW2Converter.h \
             TOOLS/XMLAdaptor.h \

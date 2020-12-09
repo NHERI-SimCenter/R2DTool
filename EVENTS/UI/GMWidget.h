@@ -55,7 +55,7 @@ signals:
 public slots:
     void setAppConfig();
     void showGISWindow();
-    void runHazardSimulation(void);
+    void runHazardSimulation(bool loginResult);
     void showInfoDialog(void);
 
     // Handles the results when the user is finished

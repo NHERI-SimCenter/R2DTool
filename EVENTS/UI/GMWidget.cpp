@@ -1,4 +1,4 @@
-#include "GMWidget.h"
+﻿#include "GMWidget.h"
 #include "SiteWidget.h"
 #include "RegionalMappingWidget.h"
 #include "NGAW2Converter.h"
@@ -21,6 +21,7 @@
 #include "CSVReaderWriter.h"
 #include "TreeView.h"
 #include "MapViewSubWidget.h"
+#include "PEERUserPass.h"
 
 #include "MapGraphicsView.h"
 #include "Map.h"
@@ -122,60 +123,49 @@ void GMWidget::setAppConfig()
 void GMWidget::setupConnections()
 {
     //Connecting the run button
-    connect(m_runButton, &QPushButton::released, this, [this]() {
+    connect(m_runButton, &QPushButton::clicked, this, [this]()
+    {
 
-        if(!peerClient.loggedIn())
+        // Get the type of site definition, i.e., single or grid
+        auto type = m_siteConfig->getType();
+
+        if(type == SiteConfig::SiteType::Single)
         {
-            PeerLoginDialog loginDialog(&peerClient, this);
-            loginDialog.setWindowModality(Qt::ApplicationModal);
-            loginDialog.exec();
-            loginDialog.close();
-            if(loginDialog.result() != QDialog::Accepted)
+            QString msg = "Single site selection not supported yet";
+            this->userMessageDialog(msg);
+            return;
+        }
+        else if(type == SiteConfig::SiteType::Grid)
+        {
+            if(!m_siteConfigWidget->getSiteGridWidget()->getGridCreated())
+            {
+                QString msg = "Please select a grid before continuing";
+                this->userMessageDialog(msg);
                 return;
+            }
         }
 
-        this->runHazardSimulation();
+        // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
+        QString userName = getPEERUserName();
+        QString password = getPEERPassWord();
+
+        peerClient.signIn(userName, password);
+
     });
 
-    connect(m_settingButton, &QPushButton::released, this, &GMWidget::setAppConfig);
+    connect(&peerClient, &PeerNgaWest2Client::loginFinished, this, [this](bool loginResult)
+    {
+        runHazardSimulation(loginResult);
+    });
+
+    connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
 
     connect(m_siteConfigWidget->getSiteGridWidget(), &SiteGridWidget::selectGridOnMap, this, &GMWidget::showGISWindow);
 
-    //    connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [](QString recordsFile)
-    //    {
-    //        qDebug() << "RECORDS DOWNLOADED: " << recordsFile;
-    //        /*
-    //        auto tempRecordsDir = QDir(groundMotionsFolder.path());
-    //        //Cleaning up previous search results
-    //        if(tempRecordsDir.exists("_SearchResults.csv"))
-    //            tempRecordsDir.remove("_SearchResults.csv");
-    //        ZipUtils::UnzipFile(recordsFile, tempRecordsDir);
-    //        processPeerRecords(tempRecordsDir);
-    //        */
-    //    });
-
-    //connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, &PEER_NGA_Records::updateStatus);
-
-    connect(&peerClient, &PeerNgaWest2Client::selectionStarted, this, [this]()
-    {
-        // this->progressBar->setHidden(false);
-        this->m_runButton->setEnabled(false);
-        this->m_runButton->setDown(true);
-    });
-
-
-    connect(&peerClient, &PeerNgaWest2Client::selectionFinished, this, [this]()
-    {
-        //  this->progressBar->setHidden(true);
-        this->m_runButton->setEnabled(true);
-        this->m_runButton->setDown(false);
-    });
 
     connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString zipFile)
     {
         this->parseDownloadedRecords(zipFile);
-        this->m_runButton->setEnabled(true);
-        this->m_runButton->setDown(false);
     });
 }
 
@@ -339,9 +329,24 @@ bool GMWidget::inputFromJSON(QJsonObject &jsonObject){
 }
 
 
-void GMWidget::runHazardSimulation(void)
+void GMWidget::runHazardSimulation(bool loginResult)
 {
+
     simulationComplete = false;
+
+    this->showInfoDialog();
+
+    if(!loginResult)
+    {
+        QString err = "Failed to login to PEER NGA West 2 Ground Motion Database. Check your internet connection.";
+        this->handleErrorMessage(err);
+        return;
+    }
+    else
+    {
+        progressTextEdit->appendPlainText("\nSuccessfully logged into PEER NGA West 2 Ground Motion Database.\n");
+    }
+
 
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
@@ -367,8 +372,7 @@ void GMWidget::runHazardSimulation(void)
     QString err;
     if(!m_appConfig->validate(err))
     {
-        this->userMessageDialog(err);
-        qDebug()<<err;
+        this->handleErrorMessage(err);
         return;
     }
 
@@ -392,8 +396,7 @@ void GMWidget::runHazardSimulation(void)
     if(EqRupture.isEmpty())
     {
         QString err = "Error in getting the earthquake rupture .JSON";
-        qDebug()<<err;
-        this->userMessageDialog(err);
+        this->handleErrorMessage(err);
         return;
     }
 
@@ -416,8 +419,7 @@ void GMWidget::runHazardSimulation(void)
     if(numGM == -1)
     {
         QString err = "Error in getting the number of ground motions at a site";
-        qDebug()<<err;
-        this->userMessageDialog(err);
+        this->handleErrorMessage(err);
         return;
     }
 
@@ -495,8 +497,7 @@ void GMWidget::runHazardSimulation(void)
 
     if(res != 0)
     {
-        this->userMessageDialog(err);
-        qDebug()<<err;
+        this->handleErrorMessage(err);
         return;
     }
 
@@ -532,6 +533,7 @@ void GMWidget::runHazardSimulation(void)
 
 void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    this->m_runButton->setEnabled(true);
 
     if(exitStatus == QProcess::ExitStatus::CrashExit)
     {
@@ -566,11 +568,11 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    progressTextEdit->appendPlainText("\nDownload and parsing of ground motion records complete.");
+    progressTextEdit->appendPlainText("Download and parsing of ground motion records complete.\n");
 
     progressBar->hide();
 
-    progressTextEdit->appendPlainText("\nEarthquake hazard simulation complete.");
+    progressTextEdit->appendPlainText("Earthquake hazard simulation complete.");
 
     simulationComplete = true;
 }
@@ -578,7 +580,7 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
 
 void GMWidget::handleProcessStarted(void)
 {
-    this->showInfoDialog();
+    this->m_runButton->setEnabled(false);
 }
 
 
