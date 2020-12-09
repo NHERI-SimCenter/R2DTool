@@ -25,7 +25,7 @@ MapViewSubWidget::MapViewSubWidget(QWidget* parent, MapGraphicsView* mainView) :
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    setRenderHint(QPainter::Antialiasing);
+    setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     this->setScene(mainViewWidget->scene());
 
@@ -165,9 +165,8 @@ void MapViewSubWidget::showEvent(QShowEvent *event)
     //    auto displayText = this->scene()->addSimpleText("Test");
     //    QFont sansFont("Helvetica [Cronyx]", 24);
     //    displayText->setFont(sansFont);
-
-    this->addGridToScene();
 }
+
 
 void MapViewSubWidget::closeEvent(QCloseEvent *event)
 {

@@ -6,6 +6,7 @@
 #include "WorkflowAppRDT.h"
 
 #include <QGroupBox>
+#include <QJsonObject>
 #include <QGridLayout>
 #include <QLabel>
 #include <QComboBox>

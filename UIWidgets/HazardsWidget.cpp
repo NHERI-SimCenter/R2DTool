@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <QStackedWidget>
 #include <QCheckBox>
+#include <QJsonObject>
 #include <QJsonArray>
 
 HazardsWidget::HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)

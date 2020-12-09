@@ -106,9 +106,12 @@ public:
 
     QString createUniqueID(void);
 
+    void takeScreenShot(void);
+
 signals:
     // Convex hull
     void taskSelectionChanged();
+    void emitScreenshot(QImage img);
 
 public slots:
     // Convex hull
@@ -120,6 +123,7 @@ public slots:
     void changeLayerOrder(const int from, const int to);
     void handleLayerSelection(TreeItem* item);
     void handleOpacityChange(const QString& layerID, const double opacity);
+    void exportImageComplete(QUuid id, QImage img);
 
 private slots:
     void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);

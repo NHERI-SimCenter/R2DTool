@@ -130,7 +130,7 @@ private:
     DecisionVariableWidget* theDecisionVariableWidget;
     RandomVariablesContainer* theRVs;
     UQ_EngineSelection* theUQWidget;
-    UQ_Results* theUQResultsWidget;
+    ResultsWidget* theResultsWidget;
 
 
     // Objects for running the workflow and obtaining results

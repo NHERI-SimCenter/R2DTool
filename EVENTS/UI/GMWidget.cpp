@@ -20,11 +20,10 @@
 #include "SimCenterPreferences.h"
 #include "CSVReaderWriter.h"
 #include "TreeView.h"
+#include "MapViewSubWidget.h"
 
 #include "MapGraphicsView.h"
 #include "Map.h"
-#include "PolygonBuilder.h"
-#include "Graphic.h"
 #include "Point.h"
 #include "FeatureCollection.h"
 #include "FeatureCollectionLayer.h"
@@ -84,7 +83,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
 
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
-    mapViewSubWidget = new MapViewSubWidget(nullptr,mapViewMainWidget);
+    mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr,mapViewMainWidget);
 
     auto userGrid = mapViewSubWidget->getGrid();
     userGrid->createGrid();
@@ -312,6 +311,8 @@ void GMWidget::showGISWindow()
         return;
 
     mapViewSubWidget->show();
+    mapViewSubWidget->addGridToScene();
+
     mapViewSubWidget->setWindowTitle(QApplication::translate("toplevel", "Select ground motion grid"));
 }
 
@@ -565,12 +566,11 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    progressTextEdit->appendPlainText("\nDownload of ground motion records complete.");
+    progressTextEdit->appendPlainText("\nDownload and parsing of ground motion records complete.");
 
     progressBar->hide();
 
-    progressTextEdit->appendPlainText("\nEarthquake hazard simulation complete\n\nThe folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n" +
-                                      "\nLoading the results from the output folder.");
+    progressTextEdit->appendPlainText("\nEarthquake hazard simulation complete.");
 
     simulationComplete = true;
 }
@@ -870,13 +870,7 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
         return res2;
     }
 
-    progressTextEdit->appendPlainText("\nDownload of ground motion records complete.");
-
-    progressBar->hide();
-
-    progressTextEdit->appendPlainText("\nEarthquake hazard simulation complete\n\nThe folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n" +
-                                      "\nLoading the results from the output folder.");
-
+    progressTextEdit->appendPlainText("The folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n");
 
     return 0;
 }

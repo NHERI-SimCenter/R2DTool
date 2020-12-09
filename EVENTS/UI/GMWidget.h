@@ -1,7 +1,6 @@
 #ifndef GMWIDGET_H
 #define GMWIDGET_H
 
-#include "MapViewSubWidget.h"
 #include "SimCenterAppWidget.h"
 #include "GroundMotionStation.h"
 #include "PeerNgaWest2Client.h"
@@ -20,6 +19,7 @@ class SiteConfigWidget;
 class GMPE;
 class IntensityMeasure;
 class VisualizationWidget;
+class MapViewSubWidget;
 
 class QDialog;
 class QPlainTextEdit;
@@ -32,7 +32,6 @@ namespace Esri
 namespace ArcGISRuntime
 {
 class MapGraphicsView;
-class PolygonBuilder;
 }
 }
 
@@ -99,7 +98,7 @@ private:
     QProgressBar* progressBar;
 
     VisualizationWidget* theVisualizationWidget;
-    MapViewSubWidget* mapViewSubWidget;
+    std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
     void setupConnections();

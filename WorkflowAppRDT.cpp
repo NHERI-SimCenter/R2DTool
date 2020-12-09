@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetsModelWidget.h"
 #include "HazardsWidget.h"
 #include "VisualizationWidget.h"
+#include "ResultsWidget.h"
 #include "EngDemandParameterWidget.h"
 #include "DamageMeasureWidget.h"
 #include "DecisionVariableWidget.h"
@@ -123,9 +124,8 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theEngDemandParamWidget = new EngDemandParameterWidget(this);
     theDamageMeasureWidget = new DamageMeasureWidget(this);
     theDecisionVariableWidget = new DecisionVariableWidget(this);
-
     theUQWidget = new UQ_EngineSelection(theRVs);
-    theUQResultsWidget = theUQWidget->getResults();
+    theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
     localApp = new LocalApplication("RDT_workflow.py");
     remoteApp = new RemoteApplication("RDT_workflow.py", theService);
@@ -136,13 +136,9 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
 
     // connect signals and slots - error messages and signals
-    //    connect(theResults,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    //    connect(theResults, SIGNAL(sendErrorMessage(QString)), this, SLOT(errorMessage(QString)));
-
     //    connect(theGI,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     //    connect(theGI,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     //    connect(theGI,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
 
     connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(theRunWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
@@ -166,15 +162,13 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
 
-    // create layout to hold component selection
+    // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
     this->setContentsMargins(0,5,0,5);
     horizontalLayout->setMargin(0);
-    //horizontalLayout->setSpacing(0);
 
-    // create the component selection & add the components to it
-
+    // Create the component selection & add the components to it
     theComponentSelection = new SimCenterComponentSelection();
     horizontalLayout->addWidget(theComponentSelection);
 
@@ -187,7 +181,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theModelingWidget->setObjectName("Modeling");
     theHazardsWidget->setObjectName("Hazards");
     theUQWidget->setObjectName("UncertaintyQuantification");
-    theUQResultsWidget->setObjectName("Results");
+    theResultsWidget->setObjectName("Results");
     theVisualizationWidget->setObjectName("Visualization");
     theRegionalMappingWidget->setObjectName("RegionalMapping");
     theEngDemandParamWidget->setObjectName("EngDemandParams");
@@ -203,7 +197,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theComponentSelection->addComponent(tr("DM"), theDamageMeasureWidget);
     theComponentSelection->addComponent(tr("DV"), theDecisionVariableWidget);
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
-    theComponentSelection->addComponent(tr("RES"), theUQResultsWidget);
+    theComponentSelection->addComponent(tr("RES"), theResultsWidget);
 
     // theComponentSelection->addComponent(QString("EVT"), theEventSelection);
     // theComponentSelection->addComponent(QString("FEM"), theAnalysisSelection);
@@ -330,44 +324,13 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppRDT::processResults(QString dakotaOut, QString dakotaTab, QString inputFile){
+void WorkflowAppRDT::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/, QString inputFile)
+{
 
-
-    //
-    // get results widget fr currently selected UQ option
-    //
-
-    theUQResultsWidget=theUQWidget->getResults();
-    if (theUQResultsWidget == NULL) {
-        this->errorMessage("FATAL - UQ option selected not returning results widget");
-        return;
-    }
-
-    //
-    // connect signals for results widget
-    //
-
-    connect(theUQResultsWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theUQResultsWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-
-    //
-    // swap current results with existing one in selection & disconnect signals
-    //
-
-    QWidget *oldResults = theComponentSelection->swapComponent(QString("RES"), theUQResultsWidget);
-    if (oldResults != NULL) {
-        disconnect(oldResults,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-        disconnect(oldResults,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-        delete oldResults;
-    }
-
-    //
-    // proess results
-    //
-
-    theUQResultsWidget->processResults(dakotaOut, dakotaTab);
+    theResultsWidget->processResults(inputFile);
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
+
 }
 
 

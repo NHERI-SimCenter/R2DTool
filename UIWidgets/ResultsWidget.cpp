@@ -39,12 +39,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "ResultsWidget.h"
 #include "sectiontitle.h"
+#include "MapViewSubWidget.h"
+#include "VisualizationWidget.h"
 
 // GIS headers
 #include "Basemap.h"
 #include "Map.h"
 #include "MapGraphicsView.h"
 
+#include <QPaintEngine>
+#include <QGridLayout>
 #include <QListWidget>
 #include <QVBoxLayout>
 #include <QGroupBox>
@@ -54,15 +58,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QDebug>
+#include <QPrinter>
 
 using namespace Esri::ArcGISRuntime;
 
-ResultsWidget::ResultsWidget(QWidget *parent)
-    : SimCenterWidget(parent), resultWidget(nullptr)
+ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
 
+    // Header layout and objects
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Results"));
@@ -73,42 +78,37 @@ ResultsWidget::ResultsWidget(QWidget *parent)
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
 
-    QHBoxLayout *theVizLayout = new QHBoxLayout();
+    // Layout to display the results
+    resultsPageWidget = new QWidget(this);
+    QGridLayout* resultsDisplayGridLayout = new QGridLayout(resultsPageWidget);
+    resultsDisplayGridLayout->setContentsMargins(0,0,0,0);
 
-    auto visSelectBox = this->getVisSelectionGroupBox();
+    // Create a map view that will be used for selecting the grid points
+    mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
+    mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr,mapViewMainWidget);
 
-    theVizLayout->addWidget(visSelectBox);
+    resultsDisplayGridLayout->addWidget(mapViewSubWidget.get());
 
-    // Create the Widget view
-    mapViewWidget = new MapGraphicsView(this);
-
-    // Create a map using the topographic Basemap
-    mapObject = new Map(Basemap::topographic(this), this);
-
-    mapViewWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
-    // Set map to map view
-    mapViewWidget->setMap(mapObject);
-
-    theVizLayout->addWidget(mapViewWidget);
-
-    // Export objects
+    // Export layout and objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
+    QLabel* exportLabel = new QLabel("Export folder:", this);
 
-    QLabel* exportLabel = new QLabel("Export folder:");
-
-    auto exportPathLineEdit = new QLineEdit();
+    exportPathLineEdit = new QLineEdit(this);
     exportPathLineEdit->setMaximumWidth(1000);
     exportPathLineEdit->setMinimumWidth(400);
     exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    QPushButton *exportBrowseFileButton = new QPushButton();
+    exportPathLineEdit->setText("/Users/steve/Desktop/Results.pdf");
+
+    QPushButton *exportBrowseFileButton = new QPushButton(this);
     exportBrowseFileButton->setText(tr("Browse"));
     exportBrowseFileButton->setMaximumWidth(150);
 
-    QPushButton *exportFileButton = new QPushButton();
-    exportFileButton->setText(tr("Export to CSV"));
+    QPushButton *exportFileButton = new QPushButton(this);
+    exportFileButton->setText(tr("Export to PDF"));
     exportFileButton->setMaximumWidth(150);
+
+    connect(exportFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
     theExportLayout->addStretch();
     theExportLayout->addWidget(exportLabel);
@@ -117,10 +117,11 @@ ResultsWidget::ResultsWidget(QWidget *parent)
     theExportLayout->addWidget(exportFileButton);
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addLayout(theVizLayout);
+    mainLayout->addWidget(resultsPageWidget);
     mainLayout->addLayout(theExportLayout);
 
-    this->setLayout(mainLayout);
+    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&ResultsWidget::assemblePDF);
+
     this->setMinimumWidth(640);
 }
 
@@ -143,66 +144,47 @@ bool ResultsWidget::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-int ResultsWidget::processResults(QString &filenameResults, QString &filenameTab) {
+int ResultsWidget::processResults(QString &filenameResults) {
 
     return 0;
 }
 
 
-QGroupBox* ResultsWidget::getVisSelectionGroupBox(void)
+int ResultsWidget::printToPDF(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Select Data to Visualize");
-    groupBox->setMaximumWidth(250);
-//    groupBox->setStyleSheet("background-color: white;");
+    theVisualizationWidget->takeScreenShot();
 
-    auto layout = new QVBoxLayout();
-    groupBox->setLayout(layout);
-
-    auto mapDataLabel = new QLabel("Pre-packaged maps and data sets:");
-    mapDataLabel->setStyleSheet("font-weight: bold; color: black");
-
-    QCheckBox* CGS1Checkbox = new QCheckBox("CGS Geologic Map (Ref.)");
-    QCheckBox* CGS2Checkbox = new QCheckBox("CGS Liquefaction Susceptibility\nMap (Ref.)");
-    CGS1Checkbox->setChecked(true);
-
-    auto DVLabel = new QLabel("Decision Variables:");
-    DVLabel->setStyleSheet("font-weight: bold; color: black");
-
-    auto allRepairsLabel = new QLabel("Annual number of repairs \n(breaks and leaks)");
-    allRepairsLabel->setStyleSheet("text-decoration: underline; color: black");
-
-    QCheckBox* GMCheckbox = new QCheckBox("Ground Motion");
-    QCheckBox* LatSpreadCheckbox = new QCheckBox("Lateral Spreading");
-    QCheckBox* LandslideCheckbox = new QCheckBox("Landslide");
-    GMCheckbox->setChecked(true);
-
-    auto breaksLabel = new QLabel("Annual number of breaks");
-    breaksLabel->setStyleSheet("text-decoration: underline; color: black");
-    QCheckBox* GMCheckbox2 = new QCheckBox("Ground Motion");
-    QCheckBox* LatSpreadCheckbox2 = new QCheckBox("Lateral Spreading");
-    QCheckBox* LandslideCheckbox2 = new QCheckBox("Landslide");
-
-    auto othersLabel = new QLabel("Others:");
-    othersLabel->setStyleSheet("font-weight: bold; color: black");
-    QCheckBox* shakeMapCheckbox = new QCheckBox("ShakeMap");
-
-    layout->addWidget(mapDataLabel);
-    layout->addWidget(CGS1Checkbox);
-    layout->addWidget(CGS2Checkbox);
-    layout->addWidget(DVLabel);
-    layout->addWidget(allRepairsLabel);
-    layout->addWidget(GMCheckbox);
-    layout->addWidget(LatSpreadCheckbox);
-    layout->addWidget(LandslideCheckbox);
-    layout->addWidget(breaksLabel);
-    layout->addWidget(GMCheckbox2);
-    layout->addWidget(LatSpreadCheckbox2);
-    layout->addWidget(LandslideCheckbox2);
-    layout->addWidget(othersLabel);
-    layout->addWidget(shakeMapCheckbox);
-
-    layout->addStretch();
-
-    return groupBox;
+    return 0;
 }
 
+
+int ResultsWidget::assemblePDF(QImage screenShot)
+{
+
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPageMargins(12, 16, 12, 20, QPrinter::Millimeter);
+
+    auto outputFileName = exportPathLineEdit->text();
+
+    if(outputFileName.isEmpty())
+    {
+        QString errMsg = "The file name is empty";
+        this->userMessageDialog(errMsg);
+        return -1;
+    }
+
+    printer.setOutputFileName(outputFileName);
+
+
+    QPainter painter;
+    painter.begin (&printer);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+    auto scale = 10.0;
+    painter.drawImage (QRect (0,0,scale*screenShot.width(), scale*screenShot.height()), screenShot);
+
+    painter.end ();
+
+    return 0;
+}

@@ -86,6 +86,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     // Create the Widget view
     mapViewWidget = new MapGraphicsView(this);
+    mapViewWidget->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     // Create a map using the topographic Basemap
     mapGIS = new Map(Basemap::topographic(this), this);
@@ -121,6 +122,9 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Connect to MapQuickView::identifyLayerCompleted signal
     connect(mapViewWidget, &MapGraphicsView::identifyLayersCompleted, this, &VisualizationWidget::identifyLayersCompleted);
 
+    // Connect to the exportImageCompleted signal
+    connect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
+
     // Test
     //    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
     //    QString layerName = "Buildings Foot Print";
@@ -155,7 +159,7 @@ VisualizationWidget::~VisualizationWidget()
 void VisualizationWidget::createVisualizationWidget(void)
 {
     visWidget = new QWidget(this);
-    visWidget->setContentsMargins(0,0,0,0);
+    visWidget->setContentsMargins(0,0,0,0);    
 
     QGridLayout* layout = new QGridLayout(visWidget);
     visWidget->setLayout(layout);
@@ -1583,6 +1587,19 @@ QString VisualizationWidget::createUniqueID(void)
 
     return id.toString();
 }
+
+
+void VisualizationWidget::takeScreenShot(void)
+{
+    mapViewWidget->exportImage();
+}
+
+
+void VisualizationWidget::exportImageComplete(QUuid id, QImage img)
+{
+    emitScreenshot(img);
+}
+
 
 //     connect to the mouse clicked signal on the MapQuickView
 //     This code snippet adds a point to where the mouse click is

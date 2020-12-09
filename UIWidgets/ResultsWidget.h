@@ -39,7 +39,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 10.01.2020
 
-#include <SimCenterWidget.h>
+#include <SimCenterAppWidget.h>
+
+
+class VisualizationWidget;
+class MapViewSubWidget;
+
+class QLineEdit;
 
 namespace Esri
 {
@@ -50,37 +56,38 @@ class MapGraphicsView;
 }
 }
 
-class QGroupBox;
-
-class ResultsWidget : public SimCenterWidget
+class ResultsWidget : public SimCenterAppWidget
 {
 
     Q_OBJECT
 
 public:
 
-    explicit ResultsWidget(QWidget *parent = nullptr);
+    explicit ResultsWidget(QWidget *parent, VisualizationWidget* visWidget);
     virtual ~ResultsWidget();
 
     virtual bool outputToJSON(QJsonObject &rvObject);
     virtual bool inputFromJSON(QJsonObject &rvObject);
 
-    virtual int processResults(QString &filenameResults, QString &filenameTab);
+    virtual int processResults(QString &filenameResults);
 
-signals:
+private slots:
 
-public slots:
+    int printToPDF(void);
 
-protected:
+    int assemblePDF(QImage screenShot);
 
-    ResultsWidget *resultWidget;
 
 private:
 
-    QGroupBox* getVisSelectionGroupBox(void);
+    QLineEdit* exportPathLineEdit;
 
-    Esri::ArcGISRuntime::Map*             mapObject = nullptr;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
+    QWidget* resultsPageWidget;
+
+    VisualizationWidget* theVisualizationWidget;
+    std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
+    Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
+
 };
 
 #endif // ResultsWidget
