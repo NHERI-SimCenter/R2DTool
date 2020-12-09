@@ -12,7 +12,7 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 CONFIG += c++17
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../release/SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -41,6 +41,7 @@ INCLUDEPATH += $$PWD/Utils \
 
 
 SOURCES +=  main.cpp \
+            TOOLS/NGAW2Converter.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             WorkflowAppRDT.cpp \
@@ -120,6 +121,7 @@ SOURCES +=  main.cpp \
 
 HEADERS +=  WorkflowAppRDT.h\
             RunWidget.h \
+            TOOLS/NGAW2Converter.h \
             TOOLS/XMLAdaptor.h \
             TOOLS/shakeMapClient.h \
             TOOLS/CSVReaderWriter.h \

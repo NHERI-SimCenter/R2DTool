@@ -2,8 +2,8 @@
 
 SiteGrid::SiteGrid(QObject *parent) : QObject(parent)
 {
-    m_latitude.set(0.0, 0.0, 10);
-    m_longitude.set(0.0, 0.0, 10);
+    m_latitude.set(0.0, 0.0, 5);
+    m_longitude.set(0.0, 0.0, 5);
 }
 
 GridDivision &SiteGrid::latitude()

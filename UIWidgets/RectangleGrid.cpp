@@ -34,8 +34,8 @@ RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
     latMax = 0.0;
     lonMax = 0.0;
 
-    numDivisionsHoriz = 10;
-    numDivisionsVertical = 10;
+    numDivisionsHoriz = 5;
+    numDivisionsVertical = 5;
 
     color.setRgb(0,0,255,30);
 

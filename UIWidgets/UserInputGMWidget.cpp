@@ -128,7 +128,7 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
     progressBarWidget->setLayout(progressBarLayout);
 
-    auto progressText = new QLabel("Loading ShakeMap data. This may take a while.",progressBarWidget);
+    auto progressText = new QLabel("Loading user ground motion data. This may take a while.",progressBarWidget);
     progressLabel =  new QLabel(" ",this);
     progressBar = new QProgressBar(progressBarWidget);
 
@@ -146,7 +146,7 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     userGMStackedWidget->setCurrentWidget(fileInputWidget);
 
     QLabel* selectComponentsText = new QLabel();
-    selectComponentsText->setText("Select a file containing earthquake ground motions");
+    selectComponentsText->setText("Select a folder containing earthquake ground motions");
 
     filePathLineEdit = new QLineEdit();
     filePathLineEdit->setMaximumWidth(750);
@@ -165,7 +165,7 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     inputLayout->addWidget(browseFileButton);
     inputLayout->addStretch(0);
 
-    userGMStackedWidget->setWindowTitle("Select file containing earthquake ground motions");
+    userGMStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
     userGMStackedWidget->setMinimumWidth(400);
     userGMStackedWidget->setMinimumHeight(150);
 
@@ -173,7 +173,7 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
     connect(this,&UserInputGMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 
-    pathToUserGMFile = "/Users/steve/Desktop/SimCenter/Examples/rWhaleExample/input_data_rdt/records/EventGrid.csv";
+    pathToUserGMFile = "/Users/steve/Documents/RDT/LocalWorkDir/HazardSimulation/Output/";
     this->loadUserGMData();
 
     return userGMStackedWidget.get();
@@ -209,10 +209,12 @@ void UserInputGMWidget::loadUserGMData(void)
 
     const QFileInfo inputFile(pathToUserGMFile);
 
-    if (!inputFile.exists() || !inputFile.isFile())
+    if (!inputFile.exists() || inputFile.isFile())
     {
-        QString errMsg ="A file does not exist at the path: "+pathToUserGMFile;
+        QString errMsg ="A folder does not exist at the path: "+pathToUserGMFile;
         this->userMessageDialog(errMsg);
+        pathToUserGMFile.clear();
+        filePathLineEdit->clear();
         return;
     }
 
@@ -227,13 +229,21 @@ void UserInputGMWidget::loadUserGMData(void)
         return;
     }
 
-    QString fileName = inputFile.fileName();
+    if(!inputFiles.contains("EventGrid.csv"))
+    {
+        QString errMsg ="No EventGrid.csv file was found at the path: "+pathToUserGMFile;
+        this->userMessageDialog(errMsg);
+        return;
+    }
+
+
+    QString fileName = pathToUserGMFile + "EventGrid.csv";
 
 
     CSVReaderWriter csvTool;
 
     QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(pathToUserGMFile,err);
+    QVector<QStringList> data = csvTool.parseCSVFile(fileName,err);
 
     if(!err.isEmpty())
     {
@@ -245,7 +255,6 @@ void UserInputGMWidget::loadUserGMData(void)
         return;
 
     userGMStackedWidget->setCurrentWidget(progressBarWidget);
-
     progressBarWidget->setVisible(true);
 
     QApplication::processEvents();
@@ -295,35 +304,35 @@ void UserInputGMWidget::loadUserGMData(void)
     {
         auto rowStr = data.at(i);
 
-        // Split the string at the spaces
-        auto vecValues = rowStr.at(0).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+        auto stationName = rowStr[0];
 
-        if(vecValues.size() != 3)
-        {
-            qDebug()<<"Error in importing user ground motions";
-            return;
-        }
-
-        auto stationName = vecValues[0];
-
-        auto stationPath = inputFile.dir().absolutePath() +"/"+ stationName;
+        // Path to station files, e.g., site0.csv
+        auto stationPath = inputFile.dir().absolutePath() + QDir::separator() + stationName;
 
         bool ok;
-        auto lon = vecValues[1].toDouble(&ok);
+        auto lon = rowStr[1].toDouble(&ok);
 
         if(!ok)
         {
             QString errMsg = "Error longitude to a double, check the value";
             this->userMessageDialog(errMsg);
+
+            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
             return;
         }
 
-        auto lat = vecValues[2].toDouble(&ok);
+        auto lat = rowStr[2].toDouble(&ok);
 
         if(!ok)
         {
             QString errMsg = "Error latitude to a double, check the value";
             this->userMessageDialog(errMsg);
+
+            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
             return;
         }
 
@@ -379,6 +388,10 @@ void UserInputGMWidget::loadUserGMData(void)
         {
             QString errMsg = "Error importing ground motion " + stationName;
             this->userMessageDialog(errMsg);
+
+            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
             return;
         }
 
@@ -402,7 +415,6 @@ void UserInputGMWidget::loadUserGMData(void)
 
     // Add the event layer to the layer tree
     auto eventItem = layersTreeView->addItemToTree(fileName, QString(), userInputTreeItem);
-
 
     progressLabel->setVisible(false);
 

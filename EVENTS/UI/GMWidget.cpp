@@ -1,6 +1,7 @@
 #include "GMWidget.h"
 #include "SiteWidget.h"
 #include "RegionalMappingWidget.h"
+#include "NGAW2Converter.h"
 #include "WorkflowAppRDT.h"
 #include "IntensityMeasureWidget.h"
 #include "SpatialCorrelationWidget.h"
@@ -35,9 +36,14 @@
 
 #include <QDir>
 #include <QFile>
-
+#include <QFileInfo>
+#include <QList>
+#include <QPlainTextEdit>
 #include <QDialog>
+#include <QJsonObject>
 #include <QVBoxLayout>
+#include <QStringList>
+#include <QString>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -97,6 +103,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     this->setLayout(toolsGridLayout);
 
     setupConnections();
+
 }
 
 
@@ -135,18 +142,18 @@ void GMWidget::setupConnections()
 
     connect(m_siteConfigWidget->getSiteGridWidget(), &SiteGridWidget::selectGridOnMap, this, &GMWidget::showGISWindow);
 
-    connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString recordsFile)
-    {
-        qDebug() << "RECORDS DOWNLOADED: " << recordsFile;
-        /*
-        auto tempRecordsDir = QDir(groundMotionsFolder.path());
-        //Cleaning up previous search results
-        if(tempRecordsDir.exists("_SearchResults.csv"))
-            tempRecordsDir.remove("_SearchResults.csv");
-        ZipUtils::UnzipFile(recordsFile, tempRecordsDir);
-        processPeerRecords(tempRecordsDir);
-        */
-    });
+    //    connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [](QString recordsFile)
+    //    {
+    //        qDebug() << "RECORDS DOWNLOADED: " << recordsFile;
+    //        /*
+    //        auto tempRecordsDir = QDir(groundMotionsFolder.path());
+    //        //Cleaning up previous search results
+    //        if(tempRecordsDir.exists("_SearchResults.csv"))
+    //            tempRecordsDir.remove("_SearchResults.csv");
+    //        ZipUtils::UnzipFile(recordsFile, tempRecordsDir);
+    //        processPeerRecords(tempRecordsDir);
+    //        */
+    //    });
 
     //connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, &PEER_NGA_Records::updateStatus);
 
@@ -160,7 +167,7 @@ void GMWidget::setupConnections()
 
     connect(&peerClient, &PeerNgaWest2Client::selectionFinished, this, [this]()
     {
-      //  this->progressBar->setHidden(true);
+        //  this->progressBar->setHidden(true);
         this->m_runButton->setEnabled(true);
         this->m_runButton->setDown(false);
     });
@@ -286,7 +293,6 @@ void GMWidget::initAppConfig()
 }
 
 
-
 void GMWidget::saveAppSettings()
 {
     QSettings settings;
@@ -310,13 +316,12 @@ void GMWidget::showGISWindow()
 }
 
 
-
 bool GMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-//    if(simulationComplete == false)
-//    {
-//        return false;
-//    }
+    //    if(simulationComplete == false)
+    //    {
+    //        return false;
+    //    }
 
     auto pathToEventGrid = m_appConfig->getOutputDirectoryPath() + "/";
 
@@ -337,6 +342,24 @@ void GMWidget::runHazardSimulation(void)
 {
     simulationComplete = false;
 
+    QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+
+    // Remove old csv files in the output folder
+    const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
+
+    // Get the existing files in the folder to see if we already have the record
+    QStringList acceptableFileExtensions = {"*.csv"};
+    QStringList existingCSVFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+
+    // Remove the csv files - in case we have less sites that previous and they are not overwritten
+    for(auto&& it : existingCSVFiles)
+    {
+        QFile file(pathToGMFilesDirectory + it);
+        file.remove();
+    }
+
+
+    // Remove the grid from the visualization screen
     mapViewSubWidget->removeGridFromScene();
 
     // First check if the settings are valid
@@ -344,14 +367,19 @@ void GMWidget::runHazardSimulation(void)
     if(!m_appConfig->validate(err))
     {
         this->userMessageDialog(err);
+        qDebug()<<err;
         return;
     }
+
+    int maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+
+    //    maxID = 5;
 
     QJsonObject siteObj;
     siteObj.insert("Type", "From_CSV");
     siteObj.insert("input_file", "SiteFile.csv");
-    siteObj.insert("min_ID", 1);
-    siteObj.insert("max_ID", 2);
+    siteObj.insert("min_ID", 0);
+    siteObj.insert("max_ID", maxID);
 
     QJsonObject scenarioObj;
     scenarioObj.insert("Type", "Earthquake");
@@ -363,6 +391,7 @@ void GMWidget::runHazardSimulation(void)
     if(EqRupture.isEmpty())
     {
         QString err = "Error in getting the earthquake rupture .JSON";
+        qDebug()<<err;
         this->userMessageDialog(err);
         return;
     }
@@ -386,6 +415,7 @@ void GMWidget::runHazardSimulation(void)
     if(numGM == -1)
     {
         QString err = "Error in getting the number of ground motions at a site";
+        qDebug()<<err;
         this->userMessageDialog(err);
         return;
     }
@@ -398,8 +428,6 @@ void GMWidget::runHazardSimulation(void)
     eventObj.insert("ScalingFactor", scalingObj);
     eventObj.insert("SaveIM", true);
     eventObj.insert("Database",  m_selectionconfig->getDatabase());
-    //eventObj.insert("UserName", m_appConfig->getUsername());
-    //eventObj.insert("UserPassword", m_appConfig->getPassword());
     eventObj.insert("OutputFormat", "SimCenterEvent");
 
     QJsonObject configFile;
@@ -419,7 +447,7 @@ void GMWidget::runHazardSimulation(void)
 
     if(type == SiteConfig::SiteType::Single)
     {
-
+        qDebug()<<"Single site selection not supported yet";
     }
     else if(type == SiteConfig::SiteType::Grid)
     {
@@ -430,33 +458,7 @@ void GMWidget::runHazardSimulation(void)
             return;
         }
 
-//        // Create the objects needed to visualize the grid in the GIS
-//        auto gridFeatureCollection = new FeatureCollection(this);
-
-//        // The table field
-//        QList<Field> tableFields;
-//        tableFields.append(Field::createText("AssetType", "NULL",4));
-//        tableFields.append(Field::createText("TabName", "NULL",4));
-//        tableFields.append(Field::createText("Station ID", "NULL",4));
-//        tableFields.append(Field::createText("Latitude", "NULL",4));
-//        tableFields.append(Field::createText("Longitude", "NULL",4));
-
-//        // Create the PGA feature collection table/layers
-//        auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(),this);
-//        gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
-
-//        auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
-//        gridLayer->setOpacity(0.5);
-
-//        // Create red cross SimpleMarkerSymbol
-//        SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
-
-//        // Create renderer and set symbol to crossSymbol
-//        SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
-
-//        // Set the renderer for the feature layer
-//        gridFeatureCollectionTable->setRenderer(renderer);
-
+        // Create the objects needed to visualize the grid in the GIS
         auto siteGrid = mapViewSubWidget->getGrid();
 
         // Get the vector of grid nodes
@@ -481,38 +483,8 @@ void GMWidget::runHazardSimulation(void)
             stationRow.push_back(QString::number(longitude));
 
             gridData.push_back(stationRow);
-
-//            // create the feature attributes
-//            QMap<QString, QVariant> featureAttributes;
-//            featureAttributes.insert("AssetType", "HazardSimGridPoint");
-//            featureAttributes.insert("TabName", "Ground Motion Grid Point");
-//            featureAttributes.insert("Station ID", i);
-//            featureAttributes.insert("Latitude", latitude);
-//            featureAttributes.insert("Longitude", longitude);
-
-            // Create the point and add it to the feature table
-//            Point point(longitude,latitude);
-//            Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
-
-//            gridFeatureCollectionTable->addFeature(feature);
         }
-
-//        auto layerName = "EQ Hazard Simulation Grid";
-
-//        gridLayer->setName(layerName);
-
-//        auto layersTree = theVisualizationWidget->getLayersTree();
-
-//        auto layerID = theVisualizationWidget->createUniqueID();
-
-//        gridLayer->setLayerId(layerID);
-
-//        // Add the layers to the layer tree
-//        layersTree->addItemToTree(layerName, layerID);
-
-//        theVisualizationWidget->addLayerToMap(gridLayer);
     }
-
 
     QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + "SiteFile.csv";
 
@@ -523,6 +495,7 @@ void GMWidget::runHazardSimulation(void)
     if(res != 0)
     {
         this->userMessageDialog(err);
+        qDebug()<<err;
         return;
     }
 
@@ -546,7 +519,8 @@ void GMWidget::runHazardSimulation(void)
     auto pythonPath = SimCenterPreferences::getInstance()->getPython();
 
     // TODO: make this a relative link once we figure out the folder structure
-    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
+    auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
+    //    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
 
     QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
 
@@ -558,57 +532,45 @@ void GMWidget::runHazardSimulation(void)
 void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
 
-    //progressBar->hide();
-    progressLabel->setText(progressLabel->text() + QString("\n Now contacting PEER server to download records"));
-
-    auto existing = progressLabel->text();
-
-    existing.append("\n");
-
     if(exitStatus == QProcess::ExitStatus::CrashExit)
     {
-        QString errText("Error, the process crashed");
-        qDebug()<<errText;
+        QString errText("Error, the process running the hazard simulation script crashed");
+        this->handleErrorMessage(errText);
+        progressBar->hide();
 
-        existing.append(errText);
-
-        progressLabel->setText(existing);
         return;
     }
 
     if(exitCode != 0)
     {
-        QString errText("An error occurred, the exit code is " + QString::number(exitCode));
+        QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
+        this->handleErrorMessage(errText);
+        progressBar->hide();
 
-        qDebug()<<errText;
-
-        existing.append(errText);
-
-
-        progressLabel->setText(existing);
         return;
     }
 
-    existing.append("Earthquake hazard simulation complete\n\nThe folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n" +
-                    "\nLoading the results from the output folder.");
+    progressTextEdit->appendPlainText("Contacting PEER server to download ground motion records.\n");
 
-    progressLabel->setText(existing);
+    QApplication::processEvents();
 
     auto res = this->downloadRecords();
 
     if(res != 0)
     {
-        QString errText("Error loading the results!");
-
-        qDebug()<<errText;
-
-        existing.append(errText);
-
+        QString errText("Error downloading the ground motion records");
+        this->handleErrorMessage(errText);
         progressBar->hide();
+
         return;
     }
 
+    progressTextEdit->appendPlainText("\nDownload of ground motion records complete.");
+
     progressBar->hide();
+
+    progressTextEdit->appendPlainText("\nEarthquake hazard simulation complete\n\nThe folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n" +
+                                      "\nLoading the results from the output folder.");
 
     simulationComplete = true;
 }
@@ -624,37 +586,82 @@ void GMWidget::handleProcessTextOutput(void)
 {
     QByteArray output = process->readAllStandardOutput();
 
-    auto existing = progressLabel->text();
+    progressTextEdit->appendPlainText("\n***Output from script start***\n");
+    progressTextEdit->appendPlainText(QString(output));
+    progressTextEdit->appendPlainText("***Output from script end***\n");
 
-    existing.append("\n");
-    existing.append(QString(output));
-
-    progressLabel->setText(existing);
 }
 
 
 int GMWidget::downloadRecords(void)
 {
 
-    QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath();
-    QString recordsListFilename = QString(pathToOutputDirectory + QDir::separator() + QString("RSN.csv"));
+    QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+    QString recordsListFilename = QString(pathToGMFilesDirectory + QString("RSN.csv"));
     QFile theRecordsListFile = QFile(recordsListFilename);
-    if (!theRecordsListFile.exists()) {
-        QString errorMessage = QString("GMWidget::Record selection faild no file ") +  recordsListFilename + QString(" exists");
+
+    if (!theRecordsListFile.exists())
+    {
+        QString errorMessage = QString("GMWidget::Record selection failed, no file ") +  recordsListFilename + QString(" exists");
         emit sendErrorMessage(errorMessage);
         return -1;
     }
 
     QStringList recordsList;
 
-    auto pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + "/" + "EventGrid.csv";
+    if (theRecordsListFile.open(QIODevice::ReadOnly))
+    {
+        //file opened successfully, parse csv file for records
+        while (!theRecordsListFile.atEnd())
+        {
+            QByteArray line = theRecordsListFile.readLine();
+            foreach (const QByteArray &item, line.split(','))
+            {
+                recordsList.append(QString::fromLocal8Bit(item).trimmed()); // Assuming local 8-bit.
+            }
+        }
+
+
+        // Check if any of the records exist, do not need to download them again
+        const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
+
+        // Get the existing files in the folder to see if we already have the record
+        QStringList acceptableFileExtensions = {"*.json"};
+        QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+
+        QStringList recordsToDownload;
+
+        if(!existingFiles.empty())
+        {
+            for(auto&& it : recordsList)
+            {
+                auto fileToCheck = "RSN" + it + ".json";
+                if(!existingFiles.contains(fileToCheck))
+                    recordsToDownload.append(it);
+            }
+        }
+        else
+        {
+            recordsToDownload = recordsList;
+        }
+
+        peerClient.selectRecords(recordsToDownload);
+
+    }
+
+    return 0;
+}
+
+
+int GMWidget::processDownloadedRecords(QString& errorMessage)
+{
+    auto pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator() + "EventGrid.csv";
 
     const QFileInfo inputFile(pathToOutputDirectory);
 
     if (!inputFile.exists() || !inputFile.isFile())
     {
-        QString errMsg ="A file does not exist at the path: "+pathToOutputDirectory;
-        this->userMessageDialog(errMsg);
+        errorMessage ="A file does not exist at the path: " + pathToOutputDirectory;
         return -1;
     }
 
@@ -664,24 +671,11 @@ int GMWidget::downloadRecords(void)
 
     if(inputFiles.empty())
     {
-        QString errMsg ="No files with .csv extensions were found at the path: "+pathToOutputDirectory;
-        this->userMessageDialog(errMsg);
+        errorMessage ="No files with .csv extensions were found at the path: "+pathToOutputDirectory;
         return -1;
     }
 
     QString fileName = inputFile.fileName();
-
-    if (theRecordsListFile.open(QIODevice::ReadOnly)) {
-
-
-        //file opened successfully, parse csv file for records
-        while (!theRecordsListFile.atEnd()) {
-            QByteArray line = theRecordsListFile.readLine();
-            foreach (const QByteArray &item, line.split(',')) {
-                recordsList.append(QString::fromLocal8Bit(item).trimmed()); // Assuming local 8-bit.
-            }
-        }
-        peerClient.selectRecords(recordsList);
 
     CSVReaderWriter csvTool;
 
@@ -690,10 +684,9 @@ int GMWidget::downloadRecords(void)
 
     if(!err.isEmpty())
     {
-        this->userMessageDialog(err);
+        errorMessage = err;
         return -1;
     }
-    progressDialog->close();
 
     if(data.empty())
         return -1;
@@ -732,7 +725,7 @@ int GMWidget::downloadRecords(void)
     gridFeatureCollectionTable->setRenderer(renderer);
 
     // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
-    //    gridLayer->setMinScale(80000);
+    // gridLayer->setMinScale(80000);
 
     // Pop off the row that contains the header information
     data.pop_front();
@@ -742,10 +735,7 @@ int GMWidget::downloadRecords(void)
     // Get the data
     for(int i = 0; i<numRows; ++i)
     {
-        auto rowStr = data.at(i);
-
-        // Split the string at the spaces
-        auto vecValues = rowStr.at(0).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+        auto vecValues = data.at(i);
 
         if(vecValues.size() != 3)
         {
@@ -753,17 +743,12 @@ int GMWidget::downloadRecords(void)
             return -1;
         }
 
-        auto stationName = vecValues[0];
-
-        auto stationPath = inputFile.dir().absolutePath() +"/"+ stationName;
-
         bool ok;
         auto lon = vecValues[1].toDouble(&ok);
 
         if(!ok)
         {
-            QString errMsg = "Error longitude to a double, check the value";
-            this->userMessageDialog(errMsg);
+            errorMessage = "Error converting longitude object " + vecValues[1] + " to a double";
             return -1;
         }
 
@@ -771,10 +756,13 @@ int GMWidget::downloadRecords(void)
 
         if(!ok)
         {
-            QString errMsg = "Error latitude to a double, check the value";
-            this->userMessageDialog(errMsg);
+            errorMessage = "Error converting latitude object " + vecValues[2] + " to a double";
             return -1;
         }
+
+        auto stationName = vecValues[0];
+
+        auto stationPath = inputFile.dir().absolutePath() + QDir::separator() + stationName;
 
         GroundMotionStation GMStation(stationPath,lat,lon);
 
@@ -787,13 +775,8 @@ int GMWidget::downloadRecords(void)
             // create the feature attributes
             QMap<QString, QVariant> featureAttributes;
 
-            //            auto attrbText = GMStation.
-            //            auto attrbVal = pointData[i];
-            //            featureAttributes.insert(attrbText,attrbVal);
-
             auto vecGMs = GMStation.getStationGroundMotions();
             featureAttributes.insert("Number of Ground Motions", vecGMs.size());
-
 
             QString GMNames;
             for(int i = 0; i<vecGMs.size(); ++i)
@@ -826,8 +809,7 @@ int GMWidget::downloadRecords(void)
         }
         else
         {
-            QString errMsg = "Error importing ground motion " + stationName;
-            this->userMessageDialog(errMsg);
+            errorMessage = "Error importing ground motion file: " + stationName;
             return -1;
         }
 
@@ -852,16 +834,54 @@ int GMWidget::downloadRecords(void)
     return 0;
 }
 
-int
-GMWidget::parseDownloadedRecords(QString zipFile) {
+
+int GMWidget::parseDownloadedRecords(QString zipFile)
+{
 
     QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath();
-     bool result =  ZipUtils::UnzipFile(zipFile, pathToOutputDirectory);
-     if (result == false)
-         return -1;
+    bool result =  ZipUtils::UnzipFile(zipFile, pathToOutputDirectory);
+    if (result == false)
+    {
+        QString errMsg = "Error in unziping the downloaded ground motion files";
+        this->handleErrorMessage(errMsg);
+        return -1;
+    }
 
-     return 0;
+    NGAW2Converter tool;
+
+    QJsonObject createdRecords;
+    QString errMsg;
+    auto res = tool.convertToSimCenterEvent(pathToOutputDirectory + QDir::separator(), errMsg, &createdRecords);
+    if(res != 0)
+    {
+        if(res == -2)
+        {
+            errMsg.prepend("Error downloading ground motion files from PEER server.\n");
+        }
+
+        this->handleErrorMessage(errMsg);
+        return res;
+    }
+
+    auto res2 = this->processDownloadedRecords(errMsg);
+    if(res2 != 0)
+    {
+        this->handleErrorMessage(errMsg);
+        return res2;
+    }
+
+    progressTextEdit->appendPlainText("\nDownload of ground motion records complete.");
+
+    progressBar->hide();
+
+    progressTextEdit->appendPlainText("\nEarthquake hazard simulation complete\n\nThe folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n" +
+                                      "\nLoading the results from the output folder.");
+
+
+    return 0;
 }
+
+
 
 
 void GMWidget::showInfoDialog(void)
@@ -876,23 +896,36 @@ void GMWidget::showInfoDialog(void)
         progressDialog->setMinimumHeight(500);
         progressDialog->setMinimumWidth(640);
 
-        progressLabel =  new QLabel("Earthquake hazard simulation started.\nThis may take a while!\nA script will run in the background and Chrome browser should open. \n",this);
-        progressLabel->setStyleSheet("qproperty-alignment: AlignCenter");
+        progressTextEdit = new QPlainTextEdit(this);
+        progressTextEdit->setWordWrapMode(QTextOption::WrapMode::WordWrap);
+        progressTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        progressTextEdit->setReadOnly(true);
         progressBar = new QProgressBar(progressDialog);
         progressBar->setRange(0,0);
 
-        auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-        progressBarLayout->addItem(vspacer);
-        progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
+        progressBarLayout->addWidget(progressTextEdit);
         progressBarLayout->addWidget(progressBar);
-        progressBarLayout->addItem(vspacer);
-        progressBarLayout->addStretch(1);
-
     }
 
-    progressLabel->setText("Earthquake hazard simulation started.\nThis may take a while! The script is using OpenSHA and determining which records to select from the Peer NGA West 2 database\n");
+    progressTextEdit->clear();
+    progressTextEdit->appendPlainText("Earthquake hazard simulation started.\n \nThis may take a while! The script is using OpenSHA and determining which records to select from the PEER NGA West 2 database.");
     progressBar->show();
     progressDialog->show();
     progressDialog->raise();
     progressDialog->activateWindow();
 }
+
+
+void GMWidget::handleErrorMessage(const QString& errorMessage)
+{
+    progressTextEdit->appendPlainText("\n");
+
+    auto msgStr = QString("<font color=%1>").arg("red") + errorMessage + QString("</font>") + QString("<font color=%1>").arg("black") + QString("&nbsp;") + QString("</font>");
+
+    // Output to console and to text edit
+    qDebug()<<msgStr;
+    progressTextEdit->appendHtml(msgStr);
+
+    progressTextEdit->appendPlainText("\n");
+}
+

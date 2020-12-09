@@ -4,9 +4,9 @@
 #include "MapViewSubWidget.h"
 #include "SimCenterAppWidget.h"
 #include "GroundMotionStation.h"
+#include "PeerNgaWest2Client.h"
 
 #include <QProcess>
-#include "PeerNgaWest2Client.h"
 
 class GmAppConfig;
 class IntensityMeasureWidget;
@@ -22,7 +22,7 @@ class IntensityMeasure;
 class VisualizationWidget;
 
 class QDialog;
-class QLabel;
+class QPlainTextEdit;
 class QPushButton;
 class QProgressBar;
 class QStatusBar;
@@ -95,7 +95,7 @@ private:
     GmAppConfig* m_appConfig;
 
     QDialog* progressDialog;
-    QLabel* progressLabel;
+    QPlainTextEdit* progressTextEdit;
     QProgressBar* progressBar;
 
     VisualizationWidget* theVisualizationWidget;
@@ -107,6 +107,10 @@ private:
 
     bool simulationComplete;
     QVector<GroundMotionStation> stationList;
+
+    int processDownloadedRecords(QString& errorMessage);
+
+    void handleErrorMessage(const QString& errorMessage);
 };
 
 #endif // GMWIDGET_H

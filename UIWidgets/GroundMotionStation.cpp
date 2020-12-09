@@ -56,9 +56,9 @@ int GroundMotionStation::importGroundMotions(void)
     if(numCols != 2)
         return - 1;
 
-    QFileInfo stationFile(stationFilePath);
+    QFileInfo stationInfo(stationFilePath);
 
-    QString baseDirectory = stationFile.dir().absolutePath() + "/";
+    auto baseDir = stationInfo.dir().absolutePath();
 
     // Get the data
     for(int i = 0; i<numRows; ++i)
@@ -76,7 +76,7 @@ int GroundMotionStation::importGroundMotions(void)
         if(!ok)
             return -1;
 
-        auto GMFilePath = baseDirectory+GMFile+".json";
+        auto GMFilePath = baseDir + QDir::separator() + GMFile + ".json";
 
         auto res = this->importGroundMotionTimeHistory(GMFilePath, factor);
 
@@ -201,10 +201,12 @@ int GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,c
     return 0;
 }
 
+
 QVector<GroundMotionTimeHistory> GroundMotionStation::getStationGroundMotions() const
 {
     return stationGroundMotions;
 }
+
 
 QString GroundMotionStation::getStationFilePath() const
 {
