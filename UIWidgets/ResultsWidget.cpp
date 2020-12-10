@@ -39,14 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "ResultsWidget.h"
 #include "sectiontitle.h"
-#include "ResultsMapViewWidget.h".h"
+#include "PelicunPostProcessor.h"
 #include "VisualizationWidget.h"
-#include "CSVReaderWriter.h"
-
-// GIS headers
-#include "Basemap.h"
-#include "Map.h"
-#include "MapGraphicsView.h"
+#include "SimCenterPreferences.h"
 
 #include <QPaintEngine>
 #include <QGridLayout>
@@ -60,6 +55,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMessageBox>
 #include <QDebug>
 #include <QPrinter>
+#include <QDir>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -81,15 +77,6 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     // Layout to display the results
     resultsPageWidget = new QWidget(this);
-    QGridLayout* resultsDisplayGridLayout = new QGridLayout(resultsPageWidget);
-    resultsDisplayGridLayout->setContentsMargins(0,0,0,0);
-
-    // Create a map view that will be used for selecting the grid points
-    mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
-    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr,mapViewMainWidget);
-    mapViewSubWidget->setFixedSize(QSize(700,700));
-
-    resultsDisplayGridLayout->addWidget(mapViewSubWidget.get(),0,0);
 
     // Export layout and objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
@@ -125,6 +112,8 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&ResultsWidget::assemblePDF);
 
     this->setMinimumWidth(640);
+
+    this->processResults();
 }
 
 
@@ -146,7 +135,30 @@ bool ResultsWidget::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-int ResultsWidget::processResults(QString &filenameResults) {
+int ResultsWidget::processResults()
+{
+
+    auto SCPrefs = SimCenterPreferences::getInstance();
+
+    //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
+
+    QString resultsDirectory = "/Users/steve/Desktop/SimCenter/Examples/rWhaleExample/RDT_example_results_new/";
+
+
+    if(DVApp.compare("Pelicun") == 0)
+    {
+        thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(theVisualizationWidget);
+
+        auto res = thePelicunPostProcessor->importResults(resultsDirectory);
+
+        if(res != 0)
+        {
+            QString err = "Error importing the results from "+resultsDirectory;
+            return -1;
+        }
+    }
+
+
 
     return 0;
 }
