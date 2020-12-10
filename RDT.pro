@@ -12,14 +12,14 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 CONFIG += c++17
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../SimCenterCommon
 
 # Application Icons
 win32 {
-    RC_ICONS = icons/NHERI-EEUQ-Icon.ico
+    RC_ICONS = icons/NHERI-RDT-Icon.ico
 } else {
     mac {
-    ICON = icons/NHERI-EEUQ-Icon.icns
+    ICON = icons/NHERI-RDT-Icon.icns
     }
 }
 
@@ -205,7 +205,7 @@ RESOURCES += \
 
 
 DISTFILES += \
-    resources/docs/textAboutEEUQ.html
+    resources/docs/textAboutRDT.html
 
 # External libraries
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
