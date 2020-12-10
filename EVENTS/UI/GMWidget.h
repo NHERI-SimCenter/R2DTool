@@ -48,14 +48,14 @@ public:
     void saveAppSettings();
 
 signals:
-    void locationsChanged();
-    void sceneViewChanged();
-    void mapViewChanged();
+    void locationsChanged(void);
+    void sceneViewChanged(void);
+    void mapViewChanged(void);
 
 public slots:
-    void setAppConfig();
-    void showGISWindow();
-    void runHazardSimulation(bool loginResult);
+    void setAppConfig(void);
+    void showGISWindow(void);
+    void runHazardSimulation(void);
     void showInfoDialog(void);
 
     // Handles the results when the user is finished

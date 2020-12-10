@@ -49,7 +49,7 @@ UserInputGMWidget::~UserInputGMWidget()
 bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
-    auto pathToEventGrid = filePathLineEdit->text();
+    auto pathToEventGrid = filePathLineEdit->text() + "EventGrid.csv";
 
     if(pathToEventGrid.isEmpty())
     {
@@ -430,7 +430,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
     emit loadingComplete(true);
 
-    emit outputDirectoryPathChanged(pathToUserGMFile);
+    emit outputDirectoryPathChanged(pathToUserGMFile + "EventGrid.csv");
 
     return;
 }
