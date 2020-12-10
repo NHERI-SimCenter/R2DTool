@@ -314,10 +314,10 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppRDT::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/, QString inputFile)
+void WorkflowAppRDT::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/, QString /*inputFile*/)
 {
 
-    theResultsWidget->processResults(inputFile);
+    theResultsWidget->processResults();
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
 

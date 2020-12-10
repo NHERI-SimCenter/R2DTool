@@ -41,20 +41,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterAppWidget.h>
 
-
 class VisualizationWidget;
-class ResultsMapViewWidget;
+class PelicunPostProcessor;
 
 class QLineEdit;
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Map;
-class MapGraphicsView;
-}
-}
 
 class ResultsWidget : public SimCenterAppWidget
 {
@@ -69,7 +59,7 @@ public:
     virtual bool outputToJSON(QJsonObject &rvObject);
     virtual bool inputFromJSON(QJsonObject &rvObject);
 
-    virtual int processResults(QString &filenameResults);
+    virtual int processResults();
 
 private slots:
 
@@ -80,13 +70,15 @@ private slots:
 
 private:
 
+    QString DVApp = "Pelicun";
     QLineEdit* exportPathLineEdit;
 
     QWidget* resultsPageWidget;
 
     VisualizationWidget* theVisualizationWidget;
-    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
+
+    std::unique_ptr<PelicunPostProcessor> thePelicunPostProcessor;
+
 
 };
 
