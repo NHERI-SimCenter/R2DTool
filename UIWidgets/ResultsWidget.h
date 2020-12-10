@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 class VisualizationWidget;
-class MapViewSubWidget;
+class ResultsMapViewWidget;
 
 class QLineEdit;
 
@@ -85,7 +85,7 @@ private:
     QWidget* resultsPageWidget;
 
     VisualizationWidget* theVisualizationWidget;
-    std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
+    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
 };

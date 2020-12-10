@@ -84,6 +84,7 @@ SOURCES +=  main.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/RegionalMappingWidget.cpp \
+            UIWidgets/ResultsMapViewWidget.cpp \
             UIWidgets/ShakeMapWidget.cpp \
             UIWidgets/UserInputGMWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
@@ -163,6 +164,7 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/RegionalMappingWidget.h \
+            UIWidgets/ResultsMapViewWidget.h \
             UIWidgets/ShakeMapWidget.h \
             UIWidgets/UserInputGMWidget.h \
             UIWidgets/UserDefinedEDPR.h \

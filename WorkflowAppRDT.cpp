@@ -105,15 +105,12 @@ WorkflowAppRDT *WorkflowAppRDT::theInstance = nullptr;
 WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     : WorkflowAppWidget(theService, parent)
 {
-    // set static pointer for global procedure
+    // Set static pointer for global procedure
     theApp = this;
 
     theInstance = this;
 
-    //
-    // create the various widgets
-    //
-
+    // Create the various widgets
     theRegionalMappingWidget = new RegionalMappingWidget(this);
     theGeneralInformationWidget = new GeneralInformationWidget(this, theRegionalMappingWidget);
     theRVs = new RandomVariablesContainer();
@@ -199,13 +196,7 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
 
-    // theComponentSelection->addComponent(QString("EVT"), theEventSelection);
-    // theComponentSelection->addComponent(QString("FEM"), theAnalysisSelection);
-    // theComponentSelection->addComponent(QString("EDP"), theEDP_Selection);
-    // theComponentSelection->addComponent(QString("RV"),  theRVs);
-
-    theComponentSelection->displayComponent("Damage\nMeasures");
-    //    theComponentSelection->displayComponent("General\nInformation");
+    theComponentSelection->displayComponent("VIZ");
 
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
@@ -216,7 +207,6 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
-
 
 }
 
