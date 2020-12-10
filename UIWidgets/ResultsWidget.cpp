@@ -39,8 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "ResultsWidget.h"
 #include "sectiontitle.h"
-#include "MapViewSubWidget.h"
+#include "ResultsMapViewWidget.h".h"
 #include "VisualizationWidget.h"
+#include "CSVReaderWriter.h"
 
 // GIS headers
 #include "Basemap.h"
@@ -85,9 +86,10 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
-    mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr,mapViewMainWidget);
+    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr,mapViewMainWidget);
+    mapViewSubWidget->setFixedSize(QSize(700,700));
 
-    resultsDisplayGridLayout->addWidget(mapViewSubWidget.get());
+    resultsDisplayGridLayout->addWidget(mapViewSubWidget.get(),0,0);
 
     // Export layout and objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
