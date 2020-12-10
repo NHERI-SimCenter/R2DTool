@@ -53,6 +53,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
 
     simulationComplete = false;
     progressDialog = nullptr;
+    progressTextEdit = nullptr;
 
     process = new QProcess(this);
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &GMWidget::handleProcessFinished);
@@ -113,7 +114,7 @@ GMWidget::~GMWidget()
 }
 
 
-void GMWidget::setAppConfig()
+void GMWidget::setAppConfig(void)
 {
     GmAppConfigWidget* configWidget = new GmAppConfigWidget(m_appConfig, this);
     configWidget->show();
@@ -151,11 +152,13 @@ void GMWidget::setupConnections()
 
         peerClient.signIn(userName, password);
 
+        runHazardSimulation();
     });
 
-    connect(&peerClient, &PeerNgaWest2Client::loginFinished, this, [this](bool loginResult)
+    connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, [this](QString statusUpdate)
     {
-        runHazardSimulation(loginResult);
+        if(progressTextEdit != nullptr)
+            progressTextEdit->appendPlainText(statusUpdate + "\n");
     });
 
     connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
@@ -293,7 +296,7 @@ void GMWidget::saveAppSettings()
 }
 
 
-void GMWidget::showGISWindow()
+void GMWidget::showGISWindow(void)
 {
     auto scene = mapViewMainWidget->scene();
     auto sceneRect = scene->sceneRect();
@@ -329,24 +332,12 @@ bool GMWidget::inputFromJSON(QJsonObject &jsonObject){
 }
 
 
-void GMWidget::runHazardSimulation(bool loginResult)
+void GMWidget::runHazardSimulation(void)
 {
 
     simulationComplete = false;
 
     this->showInfoDialog();
-
-    if(!loginResult)
-    {
-        QString err = "Failed to login to PEER NGA West 2 Ground Motion Database. Check your internet connection.";
-        this->handleErrorMessage(err);
-        return;
-    }
-    else
-    {
-        progressTextEdit->appendPlainText("\nSuccessfully logged into PEER NGA West 2 Ground Motion Database.\n");
-    }
-
 
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
@@ -572,7 +563,7 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
 
     progressBar->hide();
 
-    progressTextEdit->appendPlainText("Earthquake hazard simulation complete.");
+    progressTextEdit->appendPlainText("Earthquake hazard simulation complete.\n");
 
     simulationComplete = true;
 }
@@ -904,7 +895,7 @@ void GMWidget::showInfoDialog(void)
     }
 
     progressTextEdit->clear();
-    progressTextEdit->appendPlainText("Earthquake hazard simulation started.\n \nThis may take a while! The script is using OpenSHA and determining which records to select from the PEER NGA West 2 database.");
+    progressTextEdit->appendPlainText("Earthquake hazard simulation started.\nThis may take a while! The script is using OpenSHA and determining which records to select from the PEER NGA West 2 database.\n");
     progressBar->show();
     progressDialog->show();
     progressDialog->raise();
