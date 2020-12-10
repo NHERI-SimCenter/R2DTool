@@ -186,11 +186,11 @@ void MapViewSubWidget::resizeParent(QRectF rect)
 
     this->resize(width,height);
 
-    if(displayText != nullptr)
-    {
-        displayText->setX(width*0.05);
-        displayText->setY(height*0.80);
-    }
+//    if(displayText != nullptr)
+//    {
+//        displayText->setX(width*0.05);
+//        displayText->setY(height*0.80);
+//    }
 }
 
 
