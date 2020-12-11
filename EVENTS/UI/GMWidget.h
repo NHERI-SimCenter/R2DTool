@@ -110,6 +110,10 @@ private:
     int processDownloadedRecords(QString& errorMessage);
 
     void handleErrorMessage(const QString& errorMessage);
+
+    int numDownloaded;
+    bool downloadComplete;
+    QStringList recordsList;
 };
 
 #endif // GMWIDGET_H
