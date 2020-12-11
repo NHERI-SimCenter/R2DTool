@@ -122,7 +122,7 @@ SOURCES +=  main.cpp \
 
 
 HEADERS +=  WorkflowAppRDT.h\
-            PEERUserPass.h \
+            RDTUserPass.h \
             RunWidget.h \
             TOOLS/NGAW2Converter.h \
             TOOLS/PelicunPostProcessor.h \

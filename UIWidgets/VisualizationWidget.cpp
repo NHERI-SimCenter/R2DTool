@@ -56,11 +56,14 @@
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QFileInfo>
+#include <QCoreApplication>
 
 using namespace Esri::ArcGISRuntime;
 
 VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(parent)
-{
+{    
+
+
     visWidget = nullptr;
     this->setContentsMargins(0,0,0,0);
 
@@ -445,9 +448,7 @@ void VisualizationWidget::loadBuildingData(void)
             featureAttributes.insert(attrbText,attrbVal);
         }
 
-        double r = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
-
-        featureAttributes.insert("LossRatio", r);
+        featureAttributes.insert("LossRatio", 0.0);
         featureAttributes.insert("AssetType", "BUILDING");
         featureAttributes.insert("TabName", buildingTableWidget->item(i,0)->data(0).toString());
 

@@ -50,7 +50,7 @@ qrc_images1.cpp
 qrc_styles.cpp
 
 # Sensitive Information
-PEERUserPass.h
+#RDTUserPass.h
 
 # OTHER
 Makefile

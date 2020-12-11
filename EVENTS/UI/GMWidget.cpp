@@ -21,7 +21,7 @@
 #include "CSVReaderWriter.h"
 #include "TreeView.h"
 #include "MapViewSubWidget.h"
-#include "PEERUserPass.h"
+#include "RDTUserPass.h"
 
 #include "MapGraphicsView.h"
 #include "Map.h"

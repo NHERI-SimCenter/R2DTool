@@ -2,9 +2,10 @@
 // Latest revision: 10.13.2020
 
 #include "MainWindowWorkflowApp.h"
-#include <AgaveCurl.h>
-#include <WorkflowAppRDT.h>
-#include <GoogleAnalytics.h>
+#include "AgaveCurl.h"
+#include "WorkflowAppRDT.h"
+#include "GoogleAnalytics.h"
+#include "RDTUserPass.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("RDT");
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("2.1.0");
+
     //    GoogleAnalytics::SetTrackingId("UA-126303135-1");
     //    GoogleAnalytics::StartSession();
     //    GoogleAnalytics::ReportStart();
@@ -109,15 +111,13 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(glFormat);
     ***********************************************************************************/
 
-    //
     // regular Qt startup
-    //
-
     QApplication a(argc, argv);
-    //
-    // create a remote interface
-    //
 
+    // Set the key for the arc gis interface
+    a.setProperty("Esri.ArcGISRuntime.license", getArcGISKey());
+
+    // create a remote interface
     QString tenant("designsafe");
     QString storage("agave://designsafe.storage.default/");
     QString dirName("RDT");
@@ -180,10 +180,8 @@ int main(int argc, char *argv[])
     QString messageBoardURL("https://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=6.0");
     w.setFeedbackURL(messageBoardURL);
 
-    //
-    // move remote interface to a thread
-    //
 
+    // move remote interface to a thread
     QThread *thread = new QThread();
     theRemoteService->moveToThread(thread);
 
@@ -192,9 +190,7 @@ int main(int argc, char *argv[])
 
     thread->start();
 
-    //
     // show the main window, set styles & start the event loop
-    //
 
     w.show();
     w.statusBar()->showMessage("Ready", 5000);

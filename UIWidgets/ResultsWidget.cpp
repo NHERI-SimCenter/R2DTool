@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PelicunPostProcessor.h"
 #include "VisualizationWidget.h"
 #include "SimCenterPreferences.h"
+#include "WorkflowAppRDT.h"
+#include "GeneralInformationWidget.h"
 
 #include <QPaintEngine>
 #include <QGridLayout>
@@ -61,13 +63,17 @@ using namespace Esri::ArcGISRuntime;
 
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    auto workflowApp = WorkflowAppRDT::getInstance();
+
+    auto analysisName = workflowApp->getGeneralInformationWidget()->getAnalysisName();
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(5,0,0,0);
 
     // Header layout and objects
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Results"));
+    label->setText(tr("Regional Results Summary"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
@@ -76,7 +82,10 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theHeaderLayout->addStretch(1);
 
     // Layout to display the results
-    resultsPageWidget = new QWidget(this);
+//    resultsPageWidget = new QWidget();
+
+    thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(this,theVisualizationWidget);
+    auto pelicanResults = thePelicunPostProcessor->getResultsGridLayout();
 
     // Export layout and objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
@@ -106,7 +115,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theExportLayout->addWidget(exportFileButton);
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addWidget(resultsPageWidget);
+    mainLayout->addLayout(pelicanResults);
     mainLayout->addLayout(theExportLayout);
 
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&ResultsWidget::assemblePDF);
@@ -147,8 +156,6 @@ int ResultsWidget::processResults()
 
     if(DVApp.compare("Pelicun") == 0)
     {
-        thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(theVisualizationWidget);
-
         auto res = thePelicunPostProcessor->importResults(resultsDirectory);
 
         if(res != 0)
