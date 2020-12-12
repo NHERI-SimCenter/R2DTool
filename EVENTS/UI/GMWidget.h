@@ -51,6 +51,7 @@ signals:
     void locationsChanged(void);
     void sceneViewChanged(void);
     void mapViewChanged(void);
+    void outputDirectoryPathChanged(QString newPath);
 
 public slots:
     void setAppConfig(void);

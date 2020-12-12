@@ -23,7 +23,7 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString type) : SimC
     label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze. Leave blank to analyze all " + componentType.toLower() + "."
              "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
 
-    label3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
+    label3 = QStringRef(&componentType, 0, componentType.length()) + " Information";
 
     pathToComponentInfoFile = "NULL";
     componentGroupBox = nullptr;
@@ -219,12 +219,11 @@ void ComponentInputWidget::createComponentsBox(void)
     componentTableWidget = new QTableWidget();
     componentTableWidget->verticalHeader()->setVisible(false);
     componentTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    componentTableWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    componentTableWidget->hide();
+
+    componentTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    componentTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 
     // Add a vertical spacer at the bottom to push everything up
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-
     gridLayout->addItem(smallVSpacer,0,0,1,5);
     gridLayout->addWidget(topText,1,0,1,5);
     gridLayout->addWidget(pathText,2,0);

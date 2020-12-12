@@ -170,6 +170,9 @@ void GMWidget::setupConnections()
     {
         this->parseDownloadedRecords(zipFile);
     });
+
+    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
+    connect(this,&GMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 }
 
 
@@ -312,14 +315,14 @@ void GMWidget::showGISWindow(void)
 
 bool GMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    //    if(simulationComplete == false)
-    //    {
-    //        return false;
-    //    }
+    if(simulationComplete == false)
+    {
+        return false;
+    }
 
-    auto pathToEventGrid = m_appConfig->getOutputDirectoryPath() + "/";
+    auto pathToEventGridFolder = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
-    jsonObj.insert("pathEventData", pathToEventGrid);
+    jsonObj.insert("pathEventData", pathToEventGridFolder);
 
     return true;
 }
@@ -566,11 +569,17 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     progressTextEdit->appendPlainText("Earthquake hazard simulation complete.\n");
 
     simulationComplete = true;
+
+    auto pathToEventGridFolder = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+
+    emit outputDirectoryPathChanged(pathToEventGridFolder + "EventGrid.csv");
+
 }
 
 
 void GMWidget::handleProcessStarted(void)
 {
+    progressTextEdit->appendPlainText("Running script in the background.\n");
     this->m_runButton->setEnabled(false);
 }
 
@@ -869,8 +878,6 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
 }
 
 
-
-
 void GMWidget::showInfoDialog(void)
 {
     if (!progressDialog)
@@ -880,13 +887,14 @@ void GMWidget::showInfoDialog(void)
         auto progressBarLayout = new QVBoxLayout(progressDialog);
         progressDialog->setLayout(progressBarLayout);
 
-        progressDialog->setMinimumHeight(500);
-        progressDialog->setMinimumWidth(640);
+        progressDialog->setMinimumHeight(640);
+        progressDialog->setMinimumWidth(750);
 
         progressTextEdit = new QPlainTextEdit(this);
         progressTextEdit->setWordWrapMode(QTextOption::WrapMode::WordWrap);
         progressTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         progressTextEdit->setReadOnly(true);
+
         progressBar = new QProgressBar(progressDialog);
         progressBar->setRange(0,0);
 
@@ -895,7 +903,7 @@ void GMWidget::showInfoDialog(void)
     }
 
     progressTextEdit->clear();
-    progressTextEdit->appendPlainText("Earthquake hazard simulation started.\nThis may take a while! The script is using OpenSHA and determining which records to select from the PEER NGA West 2 database.\n");
+    progressTextEdit->appendPlainText("Earthquake hazard simulation started. This may take a while!\n\nThe script is using OpenSHA and determining which records to select from the PEER NGA West 2 database.\n");
     progressBar->show();
     progressDialog->show();
     progressDialog->raise();

@@ -3,6 +3,7 @@
 #include "VisualizationWidget.h"
 
 #include <QHeaderView>
+#include <QGroupBox>
 #include <QTableWidget>
 #include <QFileInfo>
 #include <QLabel>
@@ -28,23 +29,42 @@ using namespace QtCharts;
 PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     // Create the table that will show the Component information
-    componentTableWidget = new QTableWidget();
-    componentTableWidget->verticalHeader()->setVisible(false);
-    componentTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    componentTableWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    componentTableWidget->hide();
+    pelicunResultsTableWidget = new QTableWidget(this);
+    pelicunResultsTableWidget->verticalHeader()->setVisible(false);
+    pelicunResultsTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    pelicunResultsTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    pelicunResultsTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+
+    QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
+
+    pelicunResultsTableWidget->setColumnCount(tableHeadings.size());
+    pelicunResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
 
     // Layout to display the results
     resultsGridLayout = new QGridLayout();
-    resultsGridLayout->setContentsMargins(20,0,0,0);
+    resultsGridLayout->setContentsMargins(10,0,0,0);
+
+    QGroupBox* totalsWidget = new QGroupBox("Total Estimates",this);
+    totalsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    QGridLayout* totalsLayout = new QGridLayout(totalsWidget);
 
     QLabel* estCasLabel = new QLabel("Estimated Casualties", this);
+    QLabel* estLossLabel = new QLabel("Estimated Economic Losses - Millions of USD", this);
 
-    aggCasLabel = new QLabel("Aggregate casualties:", this);
+    estCasLabel->setStyleSheet("font-weight: bold");
+    estLossLabel->setStyleSheet("font-weight: bold");
 
-    QLabel* estLossLabel = new QLabel("Estimated Economic Losses", this);
+    totalCasLabel = new QLabel("Casualties:", this);
+    totalLossLabel = new QLabel("Losses:", this);
+    totalRepairTimeLabel = new QLabel("Repair Time: N/A", this);
+    totalFatalitiesLabel = new QLabel("Fatalities: N/A", this);
 
-    aggLossLabel = new QLabel("Aggregate losses:", this);
+    totalsLayout->addWidget(totalCasLabel,0,0);
+    totalsLayout->addWidget(totalLossLabel,0,1);
+    totalsLayout->addWidget(totalRepairTimeLabel,1,0);
+    totalsLayout->addWidget(totalFatalitiesLabel,1,1);
+
 
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
@@ -52,16 +72,19 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr,mapViewMainWidget);
 
     mapViewSubWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    mapViewSubWidget->setMaximumWidth(990);
 
+    mapViewSubWidget->setMinimumHeight(400);
 
-    resultsGridLayout->addWidget(estCasLabel,0,0,1,2,Qt::AlignCenter);
-    resultsGridLayout->addWidget(estLossLabel,0,2,1,2,Qt::AlignCenter);
+    resultsGridLayout->addWidget(estCasLabel,0,0,Qt::AlignCenter);
+    resultsGridLayout->addWidget(estLossLabel,0,1,Qt::AlignCenter);
+    resultsGridLayout->addWidget(totalsWidget,0,2,2,1,Qt::AlignLeft);
+
     // Charts go here->
-    resultsGridLayout->addWidget(aggCasLabel,2,0,1,2,Qt::AlignCenter);
-    resultsGridLayout->addWidget(aggLossLabel,2,2,1,2,Qt::AlignCenter);
 
-    resultsGridLayout->addWidget(mapViewSubWidget.get(),3,0,1,7);
+    resultsGridLayout->addWidget(mapViewSubWidget.get(),4,0,1,2);
+
+    resultsGridLayout->setColumnStretch(4, 1);
+
 }
 
 
@@ -123,12 +146,77 @@ int PelicunPostProcessor::importResults(const QString& pathToResults)
 }
 
 
-int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DMdata)
+int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVdata)
 {
+    if(DVdata.size() < 4)
+        return -1;
+
+    auto numHeaders = DVdata.at(0).size();
+
+    QVector<QString> headerStrings(numHeaders);
+
+    for(int i = 0; i<numHeaders; ++i)
+    {
+        QString headerStr =  DVdata.at(0).at(i)  +"-"+ DVdata.at(1).at(i)  +"-"+  DVdata.at(2).at(i)  +"-"+  DVdata.at(3).at(i);
+
+        headerStrings[i] = headerStr;
+    }
+
+    pelicunResultsTableWidget->setRowCount(DVdata.size()-4);
+
+    int count = 0;
+    for(int i = 4; i<DVdata.size(); ++i, ++count)
+    {
+        auto inputRow = DVdata.at(i);
+
+        Building building;
+
+        for(int j = 1; j<numHeaders; ++j)
+        {
+            building.values.insert(headerStrings.at(j),inputRow.at(j).toDouble());
+        }
+
+        building.ID = inputRow.at(0).toInt();
+
+        buildingsVec.push_back(building);
+
+        auto IDStr = inputRow.at(0);
+        auto totalRepairCost = inputRow.at(1);
+        auto replaceMentProb = inputRow.at(6);
+        auto repairTime = inputRow.at(28);
+        auto fatalities = inputRow.at(48);
+        auto lossRatio = totalRepairCost;
+
+        auto IDItem = new QTableWidgetItem(IDStr);
+        auto RepCostItem = new QTableWidgetItem(totalRepairCost);
+        auto RepProbItem = new QTableWidgetItem(replaceMentProb);
+        auto RepairTimeItem = new QTableWidgetItem(repairTime);
+        auto fatalitiesItem = new QTableWidgetItem(fatalities);
+        auto lossRatioItem = new QTableWidgetItem(lossRatio);
+
+
+        pelicunResultsTableWidget->setItem(count,0, IDItem);
+        pelicunResultsTableWidget->setItem(count,1, RepCostItem);
+        pelicunResultsTableWidget->setItem(count,2, RepairTimeItem);
+        pelicunResultsTableWidget->setItem(count,3, RepProbItem);
+        pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
+        pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
+    }
+
 
     this->createCasualtiesChart();
 
     this->createLossesChart();
+
+    casualtiesChartView->setMinimumHeight(250);
+    casualtiesChartView->setMaximumWidth(500);
+
+    lossesChartView->setMinimumHeight(250);
+    lossesChartView->setMaximumWidth(500);
+
+    resultsGridLayout->addWidget(casualtiesChartView,1,0,3,1);
+    resultsGridLayout->addWidget(lossesChartView,1,1,3,1);
+    resultsGridLayout->addWidget(pelicunResultsTableWidget,2,2,3,1);
 
 
     return 0;
@@ -137,12 +225,12 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DMdata)
 
 int PelicunPostProcessor::createCasualtiesChart()
 {
-    QBarSet *set0 = new QBarSet("Casulaties");
+    QBarSet *set0 = new QBarSet("Casualties");
 
     *set0 << 2.1 << 4.2 << 6.3 << 2.4 << 1.5;
 
-    auto aggCas = aggCasLabel->text().append(" "+QString::number(set0->sum()));
-    aggCasLabel->setText(aggCas);
+    auto aggCas = totalCasLabel->text().append(" "+QString::number(set0->sum()));
+    totalCasLabel->setText(aggCas);
 
     QBarSeries *series = new QBarSeries();
     series->append(set0);
@@ -153,7 +241,9 @@ int PelicunPostProcessor::createCasualtiesChart()
     QChart *chart = new QChart();
     chart->setDropShadowEnabled(false);
     chart->addSeries(series);
+    chart->setMargins(QMargins(5,5,5,5));
     chart->layout()->setContentsMargins(0, 0, 0, 0);
+
 
     QStringList categories;
     categories << "Level 1" << "Level 2" << "Level 3" << "Level 4";
@@ -162,22 +252,17 @@ int PelicunPostProcessor::createCasualtiesChart()
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
-//    QValueAxis *axisY = new QValueAxis();
-//    //    axisY->setRange(0,15);
-//    chart->addAxis(axisY, Qt::AlignLeft);
-//    series->attachAxis(axisY);
+    //    QValueAxis *axisY = new QValueAxis();
+    //    //    axisY->setRange(0,15);
+    //    chart->addAxis(axisY, Qt::AlignLeft);
+    //    series->attachAxis(axisY);
 
     chart->legend()->setVisible(false);
 
-    chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-    chartView->setContentsMargins(0,0,0,0);
-    chartView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
-    chartView->setMinimumHeight(300);
-    chartView->setMaximumWidth(500);
-
-    resultsGridLayout->addWidget(chartView,1,0,1,2);
+    casualtiesChartView = new QChartView(chart);
+    casualtiesChartView->setRenderHint(QPainter::Antialiasing);
+    casualtiesChartView->setContentsMargins(0,0,0,0);
+    casualtiesChartView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     return 0;
 }
@@ -190,13 +275,13 @@ int PelicunPostProcessor::createLossesChart()
     QBarSet *set2 = new QBarSet("Non-structural Drift");
 
     *set0 << 1.7 << 2.4 << 3.1 << 4.2 ;
-    *set1 << 5.1 << 0.1 << 0.3 << 4.3 ;
+    *set1 << 5.1 << 4.2 << 11.3 << 4.3 ;
     *set2 << 3.2 << 5.4 << 8.4 << 13.4;
 
     auto sumLosses = set0->sum() + set1->sum() + set2->sum();
 
-    auto aggLoss = aggLossLabel->text().append(" "+QString::number(sumLosses));
-    aggLossLabel->setText(aggLoss);
+    auto aggLoss = totalLossLabel->text().append(" "+QString::number(sumLosses));
+    totalLossLabel->setText(aggLoss);
 
     QStackedBarSeries *series = new QStackedBarSeries();
     series->append(set0);
@@ -212,30 +297,28 @@ int PelicunPostProcessor::createLossesChart()
     chart->setMargins(QMargins(5,5,5,5));
     chart->layout()->setContentsMargins(0, 0, 0, 0);
 
+
     QStringList categories;
     categories << "DS = 1" << "DS = 2" << "DS = 3" << "DS = 4";
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
+    axisX->setMinorGridLineVisible(false);
     axisX->append(categories);
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
-    QValueAxis *axisY = new QValueAxis();
-    axisY->setTitleText("Millions of dollars [$]");
-    //    axisY->setRange(0,25);
-    chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisY);
+    //    QValueAxis *axisY = new QValueAxis();
+    //    axisY->setTickCount(2);
+    //    axisY->setLabelsVisible(false);
+    //    axisY->setGridLineVisible(false);
+    //    chart->addAxis(axisY, Qt::AlignLeft);
+    //    series->attachAxis(axisY);
 
     chart->legend()->setVisible(true);
 
-    chartView2 = new QChartView(chart);
-    chartView2->setRenderHint(QPainter::Antialiasing);
-    chartView2->setContentsMargins(0,0,0,0);
-    chartView2->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
-    chartView2->setMinimumHeight(300);
-    chartView2->setMaximumWidth(500);
-
-    resultsGridLayout->addWidget(chartView2,1,2,1,2);
+    lossesChartView = new QChartView(chart);
+    lossesChartView->setRenderHint(QPainter::Antialiasing);
+    lossesChartView->setContentsMargins(0,0,0,0);
+    lossesChartView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     return 0;
 }

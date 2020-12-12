@@ -75,15 +75,14 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
 
     QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-//    pipelineWidget->testFileLoad(pathToPipelineInfoFile);
+    pipelineWidget->testFileLoad(pathToPipelineInfoFile);
 
 //    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/AnchorageExample/AnchorageBuildings.csv";
 
 //    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory3.csv";
 
     QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/input_params.csv";
-
-//    buildingWidget->testFileLoad(pathToBuildingInfoFile);
+    buildingWidget->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);

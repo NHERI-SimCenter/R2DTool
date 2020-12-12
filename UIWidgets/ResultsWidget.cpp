@@ -113,10 +113,11 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theExportLayout->addWidget(exportPathLineEdit);
     theExportLayout->addWidget(exportBrowseFileButton);
     theExportLayout->addWidget(exportFileButton);
+    theExportLayout->addStretch();
 
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addLayout(pelicanResults);
-    mainLayout->addLayout(theExportLayout);
+    mainLayout->addLayout(theExportLayout,1);
 
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&ResultsWidget::assemblePDF);
 
@@ -151,7 +152,7 @@ int ResultsWidget::processResults()
 
     //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
 
-    QString resultsDirectory = "/Users/steve/Desktop/SimCenter/Examples/rWhaleExample/RDT_example_results_new/";
+    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
 
 
     if(DVApp.compare("Pelicun") == 0)
@@ -160,7 +161,7 @@ int ResultsWidget::processResults()
 
         if(res != 0)
         {
-            QString err = "Error importing the results from "+resultsDirectory;
+            QString err = "Error importing the results from " + resultsDirectory;
             return -1;
         }
     }
