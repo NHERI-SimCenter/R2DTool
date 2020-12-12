@@ -28,6 +28,15 @@ class MapGraphicsView;
 }
 }
 
+struct Building
+{
+public:
+
+    QMap<QString, double> values;
+
+    int ID;
+};
+
 class PelicunPostProcessor : public SimCenterAppWidget
 {
 public:
@@ -38,26 +47,30 @@ public:
     QGridLayout *getResultsGridLayout() const;
 
 private:
-    int processDVResults(const QVector<QStringList>& DMdata);
+    int processDVResults(const QVector<QStringList>& DVdata);
 
     QGridLayout* resultsGridLayout;
 
-    QLabel* aggCasLabel;
-    QLabel* aggLossLabel;
+    QLabel* totalCasLabel;
+    QLabel* totalLossLabel;
+    QLabel* totalRepairTimeLabel;
+    QLabel* totalFatalitiesLabel;
 
-    QTableWidget* componentTableWidget;
+    QTableWidget* pelicunResultsTableWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
     std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
-    QtCharts::QChartView *chartView;
-    QtCharts::QChartView *chartView2;
+    QtCharts::QChartView *casualtiesChartView;
+    QtCharts::QChartView *lossesChartView;
 
     int createLossesChart();
 
     int createCasualtiesChart();
+
+    QVector<Building> buildingsVec;
 
 };
 

@@ -19,6 +19,12 @@
 #include <QThread>
 #include <QTime>
 
+
+#include "ArcGISRuntimeEnvironment.h"
+
+using namespace Esri::ArcGISRuntime;
+
+
 static QString logFilePath;
 static bool logToFile = false;
 
@@ -61,61 +67,55 @@ int main(int argc, char *argv[])
 
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    //Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
+    // Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
     QCoreApplication::setApplicationName("RDT");
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("2.1.0");
 
-    //    GoogleAnalytics::SetTrackingId("UA-126303135-1");
-    //    GoogleAnalytics::StartSession();
-    //    GoogleAnalytics::ReportStart();
+    // GoogleAnalytics::SetTrackingId("UA-126303135-1");
+    // GoogleAnalytics::StartSession();
+    // GoogleAnalytics::ReportStart();
 
-    //
     // set up logging of output messages for user debugging
-    //
-
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
             + QDir::separator() + QCoreApplication::applicationName();
 
     // make sure tool dir exists in Documentss folder
     QDir dirWork(logFilePath);
     if (!dirWork.exists())
-        if (!dirWork.mkpath(logFilePath)) {
+        if (!dirWork.mkpath(logFilePath))   {
             qDebug() << QString("Could not create Working Dir: ") << logFilePath;
         }
 
-    // full path to debug.log file
+    // Full path to debug.log file
     logFilePath = logFilePath + QDir::separator() + QString("debug.log");
 
-    // remove old log file
+    // Remove old log file
     QFile debugFile(logFilePath);
     debugFile.remove();
 
-    QByteArray envVar = qgetenv("QTDIR");       //  check if the app is run in Qt Creator
+    QByteArray envVar = qgetenv("QTDIR");  //  check if the app is run in Qt Creator
 
     if (envVar.isEmpty())
         logToFile = true;
 
     qInstallMessageHandler(customMessageOutput);
 
-    //
     // window scaling
-    //
-
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    /******************  code to reset openGL version .. keep around in case need again
+    /******************code to reset openGL version .. keep around in case need again
     QSurfaceFormat glFormat;
     glFormat.setVersion(3, 3);
     glFormat.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(glFormat);
-    ***********************************************************************************/
+    *********************************************************************************/
 
-    // regular Qt startup
+    // Regular Qt startup
     QApplication a(argc, argv);
 
-    // Set the key for the arc gis interface
-    a.setProperty("Esri.ArcGISRuntime.license", getArcGISKey());
+    // Set the key for the ArcGIS interface
+    ArcGISRuntimeEnvironment::setLicense(getArcGISKey());
 
     // create a remote interface
     QString tenant("designsafe");
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     AgaveCurl *theRemoteService = new AgaveCurl(tenant, storage, &dirName);
 
 
-    // create the main window
+    // Create the main window
     WorkflowAppRDT *theInputApp = new WorkflowAppRDT(theRemoteService);
     MainWindowWorkflowApp w(QString("RDT: Regional Resilience Determination Tool"), theInputApp, theRemoteService);
 
@@ -163,15 +163,14 @@ int main(int argc, char *argv[])
         w.setAbout(textAboutEE_UQ);
     */
 
-
-    QString aboutTitle = "About the SimCenter EE-UQ Application"; // this is the title displayed in the on About dialog
-    QString aboutSource = ":/resources/docs/textAboutEEUQ.html";  // this is an HTML file stored under resources
+    QString aboutTitle = "About the SimCenter RDT Application";     // this is the title displayed in the on About dialog
+    QString aboutSource = ":/resources/docs/textAboutEEUQ.html";    // this is an HTML file stored under resources
     w.setAbout(aboutTitle, aboutSource);
 
     QString version("Version 1.0.0");
     w.setVersion(version);
 
-    QString citeText("Frank McKenna, Wael Elhaddad, Michael Gardner, Adam Zsarnoczay, & Charles Wang. (2019, October 8). NHERI-SimCenter/EE-UQ: Version 2.0.0 (Version v2.0.0). Zenodo. http://doi.org/10.5281/zenodo.3475642");
+    QString citeText("TO DO RDT CITATION");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/EE-UQ-Documentation/");
@@ -181,7 +180,7 @@ int main(int argc, char *argv[])
     w.setFeedbackURL(messageBoardURL);
 
 
-    // move remote interface to a thread
+    // Move remote interface to a thread
     QThread *thread = new QThread();
     theRemoteService->moveToThread(thread);
 
@@ -190,8 +189,7 @@ int main(int argc, char *argv[])
 
     thread->start();
 
-    // show the main window, set styles & start the event loop
-
+    // Show the main window, set styles & start the event loop
     w.show();
     w.statusBar()->showMessage("Ready", 5000);
 
@@ -229,10 +227,7 @@ int main(int argc, char *argv[])
 
     int res = a.exec();
 
-    //
-    // on done with event loop, logout & stop the thread
-    //
-
+    // On done with event loop, logout & stop the thread
     theRemoteService->logout();
     thread->quit();
 
