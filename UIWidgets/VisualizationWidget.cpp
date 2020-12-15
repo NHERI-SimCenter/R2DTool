@@ -331,7 +331,12 @@ void VisualizationWidget::convexHullPointSelector(QMouseEvent& e)
 {
     e.accept();
 
+    qDebug()<<"Viz Widget Mouse: "<<e.x()<<","<< e.y();
+
     const Point clickedPoint = mapViewWidget->screenToLocation(e.x(), e.y());
+
+    qDebug()<<"Viz Widget Point: "<<clickedPoint.x()<<","<< clickedPoint.y();
+
     m_multipointBuilder->points()->addPoint(clickedPoint);
     m_inputsGraphic->setGeometry(m_multipointBuilder->toGeometry());
 

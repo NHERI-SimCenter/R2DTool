@@ -43,6 +43,7 @@ INCLUDEPATH += $$PWD/Utils \
 SOURCES +=  main.cpp \
             TOOLS/NGAW2Converter.cpp \
             TOOLS/PelicunPostProcessor.cpp \
+            TOOLS/TablePrinter.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             WorkflowAppRDT.cpp \
@@ -126,6 +127,7 @@ HEADERS +=  WorkflowAppRDT.h\
             RunWidget.h \
             TOOLS/NGAW2Converter.h \
             TOOLS/PelicunPostProcessor.h \
+            TOOLS/TablePrinter.h \
             TOOLS/XMLAdaptor.h \
             TOOLS/shakeMapClient.h \
             TOOLS/CSVReaderWriter.h \
