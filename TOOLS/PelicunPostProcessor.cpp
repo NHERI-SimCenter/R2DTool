@@ -2,6 +2,8 @@
 #include "CSVReaderWriter.h"
 #include "VisualizationWidget.h"
 #include "TablePrinter.h"
+#include "WorkflowAppRDT.h"
+#include "GeneralInformationWidget.h"
 
 #include <QHeaderView>
 #include <QGroupBox>
@@ -20,7 +22,10 @@
 #include <QChartView>
 #include <QGraphicsLayout>
 #include <QPrinter>
+#include <QTextCursor>
 #include <QPixmap>
+#include <QFontMetrics>
+#include <QTextTable>
 
 // GIS headers
 #include "Basemap.h"
@@ -448,74 +453,244 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
     // The printer
     QPrinter printer(QPrinter::HighResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setPageMargins(12, 16, 12, 20, QPrinter::Millimeter);
+    printer.setPaperSize(QPrinter::Letter);
+    printer.setPageMargins(25.4, 25.4, 25.4, 25.4, QPrinter::Millimeter);
     printer.setFullPage(true);
     qreal leftMargin, topMargin;
-    printer.getPageMargins(&leftMargin,&topMargin,nullptr,nullptr,QPrinter::DevicePixel);
+    printer.getPageMargins(&leftMargin,&topMargin,nullptr,nullptr,QPrinter::Point);
     printer.setOutputFileName(outputFilePath);
 
-    // The main painter
-    QPainter painter;
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    painter.begin(&printer);
+    // Create a new document
+    QTextDocument* document = new QTextDocument();
+    QTextCursor cursor(document);
+    document->setDocumentMargin(25.4);
+    document->setDefaultFont(QFont("Helvetica"));
+
+    // Define font styles
+    QTextCharFormat normalFormat;
+    normalFormat.setFontWeight(QFont::Normal);
+
+    QTextCharFormat titleFormat;
+    titleFormat.setFontWeight(QFont::Bold);
+    titleFormat.setFontCapitalization(QFont::AllUppercase);
+    titleFormat.setFontPointSize(normalFormat.fontPointSize() * 2.0);
+
+    QTextCharFormat captionFormat;
+    captionFormat.setFontWeight(QFont::Light);
+    captionFormat.setFontPointSize(normalFormat.fontPointSize() / 2.0);
+    captionFormat.setFontItalic(true);
+
+    QTextCharFormat boldFormat;
+    boldFormat.setFontWeight(QFont::Bold);
+
+    QFontMetrics normMetrics(normalFormat.font());
+    auto lineSpacing = normMetrics.lineSpacing();
+
+    // Define alignment formats
+    QTextBlockFormat alignCenter;
+    alignCenter.setLineHeight(lineSpacing, QTextBlockFormat::LineDistanceHeight) ;
+    alignCenter.setAlignment(Qt::AlignCenter);
+
+    QTextBlockFormat alignLeft;
+    alignLeft.setAlignment(Qt::AlignLeft);
+    alignLeft.setLineHeight(lineSpacing, QTextBlockFormat::LineDistanceHeight) ;
+
+    cursor.movePosition(QTextCursor::Start);
+
+    cursor.insertBlock(alignCenter);
+
+    // Insert the simcenter logo at the top
+    QImage simCenterLogo(":resources/SimCenter@1x.png");
+    document->addResource(QTextDocument::ImageResource, QUrl("Logo"), simCenterLogo);
+    QTextImageFormat imageFormatSimCenterLogo;
+    imageFormatSimCenterLogo.setName("Logo");
+    imageFormatSimCenterLogo.setWidth(250);
+    imageFormatSimCenterLogo.setQuality(600);
+
+    cursor.insertImage(imageFormatSimCenterLogo);
+
+    cursor.insertText("\nRegional Resilience Determination Tool (RDT)\n",titleFormat);
+
+    cursor.insertText("Results Summary\n",boldFormat);
+
+    cursor.setBlockFormat(alignLeft);
+
+    cursor.insertText("Employing Pelicun loss methodology to calculate seismic losses.\n",normalFormat);
+
+    QString currentDT = "Timestamp: " + QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss") + "\n";
+    cursor.insertText(currentDT,normalFormat);
+
+    auto workflowApp = WorkflowAppRDT::getInstance();
+    auto analysisName = workflowApp->getGeneralInformationWidget()->getAnalysisName();
+
+    QString analysisNameLabel = "Analysis name: " + analysisName + "\n";
+    cursor.insertText(analysisNameLabel,normalFormat);
+
+    cursor.insertText("Estimated Regional Totals\n",boldFormat);
+
+    QTextTableFormat tableFormat;
+    tableFormat.setPadding(5.0);
+    tableFormat.setCellPadding(5.0);
+    tableFormat.setBorder(0.0);
+    tableFormat.setAlignment(Qt::AlignVCenter);
+
+    tableFormat.setBackground(QColor("#f0f0f0"));
+    QVector<QTextLength> constraints;
+    constraints << QTextLength(QTextLength::PercentageLength, 25);
+    constraints << QTextLength(QTextLength::PercentageLength, 25);
+    constraints << QTextLength(QTextLength::PercentageLength, 25);
+    constraints << QTextLength(QTextLength::PercentageLength, 25);
+    tableFormat.setColumnWidthConstraints(constraints);
+
+    // rows, columns, tableFormat
+    QTextTable *table = cursor.insertTable(3, 4, tableFormat);
+
+    {
+        QTextTableCell cell = table->cellAt(0, 0);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(totalCasLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(0, 1);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(totalCasValueLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(0, 2);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(totalFatalitiesLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(0, 3);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(totalFatalitiesValueLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(1, 0);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(totalLossLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(1, 1);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(totalLossValueLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(1, 2);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(totalRepairTimeLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(1, 3);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(totalRepairTimeValueLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(2, 0);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(structLossLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(2, 1);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(structLossValueLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(2, 2);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(nonStructLossLabel->text());
+    }
+
+    {
+        QTextTableCell cell = table->cellAt(2, 3);
+        cell.setFormat(normalFormat);
+        QTextCursor cellCursor = cell.firstCursorPosition();
+        cellCursor.insertText(nonStructLossValueLabel->text());
+    }
+
+    cursor.movePosition( QTextCursor::End );
+
+    cursor.insertText("\n\n",normalFormat);
 
     // Ratio of the page width that is printable
-    auto useablePageWidth = printer.pageRect().width()-(2.0*leftMargin);
-
-
-    int logicalDPIX = printer.logicalDpiX();
-    int logicalDPIY = printer.logicalDpiY();
-    const int PointsPerInch = 150;
-
-    QTransform t;
-    float scalingx=(float)logicalDPIX/PointsPerInch;  // 16.6
-    float scalingy=(float)logicalDPIY/PointsPerInch;  // 16.6
-
-    t.scale(scalingx,scalingy);
+    auto useablePageWidth = printer.pageRect(QPrinter::Point).width()-(1.5*leftMargin);
 
     QRect viewPortRect(0, mapViewMainWidget->height() - mapViewSubWidget->height(), mapViewSubWidget->width(), mapViewSubWidget->height());
     QImage cropped = screenShot.copy(viewPortRect);
+    document->addResource(QTextDocument::ImageResource,QUrl("Figure1"),cropped);
+    QTextImageFormat imageFormatFig1;
+    imageFormatFig1.setName("Figure1");
+    imageFormatFig1.setQuality(600);
+    imageFormatFig1.setWidth(useablePageWidth);
 
-    qreal scale = useablePageWidth/qreal(cropped.width());
+    cursor.setBlockFormat(alignCenter);
 
-    QRect cropImgRect(0, 0, scale*cropped.width(), scale*cropped.height());
+    cursor.insertImage(imageFormatFig1);
 
-    QPixmap vizPixMap(QSize(cropImgRect.width(),cropImgRect.height()));
-    vizPixMap.fill(QColor(Qt::white).rgb());
+    cursor.insertText("Regional mapping visualization.\n",captionFormat);
 
-    QPainter vizPainter(&vizPixMap);
-    vizPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    vizPainter.drawImage(cropImgRect, cropped);
+    auto rectFig2 = casualtiesChartView->viewport()->rect();
+    QPixmap pixmapFig2(rectFig2.size());
+    QPainter painterFig2(&pixmapFig2);
+    painterFig2.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    casualtiesChartView->render(&painterFig2, pixmapFig2.rect(), rectFig2);
+    auto figure2 = pixmapFig2.toImage();
 
-    QPoint posViz(leftMargin,topMargin);
-    painter.drawPixmap(posViz,vizPixMap);
+    QTextImageFormat imageFormatFig2;
+    imageFormatFig2.setName("Figure2");
+    imageFormatFig2.setQuality(600);
+    imageFormatFig2.setWidth(400);
 
-    printer.newPage();
-    painter.resetTransform();
+    document->addResource(QTextDocument::ImageResource,QUrl("Figure2"),figure2);
+
+    cursor.insertImage(imageFormatFig2,QTextFrameFormat::InFlow);
+
+    cursor.insertText("\nEstimated casualties.\n",captionFormat);
+
+    auto rectFig3 = lossesChartView->viewport()->rect();
+    QPixmap pixmapFig3(rectFig3.size());
+    QPainter painterFig3(&pixmapFig3);
+    painterFig3.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    lossesChartView->render(&painterFig3, pixmapFig3.rect(), rectFig3);
+    auto figure3 = pixmapFig3.toImage();
+
+    QTextImageFormat imageFormatFig3;
+    imageFormatFig3.setName("Figure3");
+    imageFormatFig3.setQuality(600);
+    imageFormatFig3.setWidth(400);
+
+    document->addResource(QTextDocument::ImageResource,QUrl("Figure3"),figure3);
+    cursor.insertImage(imageFormatFig3,QTextFrameFormat::InFlow);
+
+    cursor.insertText("\nEstimated economic losses.\n",captionFormat);
+
+    cursor.insertText("Individual Asset Results\n",boldFormat);
 
     TablePrinter prettyTablePrinter;
+    prettyTablePrinter.printToTable(&cursor, pelicunResultsTableWidget,"Asset Results");
 
-    auto doc = prettyTablePrinter.printToTable(pelicunResultsTableWidget,"Asset Results");
-
-    qreal scaleDoc = useablePageWidth/qreal(doc->size().width());
-
-    QRect docRect(0, 0, scaleDoc*doc->size().width(), scaleDoc*doc->size().height());
-
-
-    QPixmap docPix(docRect.width(),docRect.height());
-    docPix.fill(QColor(Qt::white).rgb());
-
-    QPainter painter2(&docPix);
-    painter2.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    doc->drawContents(&painter2,docRect);
-
-    painter2.setTransform(t);
-
-    QPoint posTable(0,0);
-    painter.drawPixmap(posTable,docPix);
-
-//        doc->print(&printer);
-
+    document->print(&printer);
 
 
     return 0;

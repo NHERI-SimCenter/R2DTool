@@ -1,7 +1,7 @@
 #include "TablePrinter.h"
 
 #include <QTableView>
-#include <QTextDocument>
+#include <QTextCursor>
 #include <QTextStream>
 
 TablePrinter::TablePrinter()
@@ -10,7 +10,7 @@ TablePrinter::TablePrinter()
 }
 
 
-QTextDocument* TablePrinter::printToTable(QTableView* tableView, const QString& strTitle)
+void TablePrinter::printToTable(QTextCursor* cursor, QTableView* tableView, const QString& strTitle)
 {
     QString strStream;
     QTextStream out(&strStream);
@@ -48,8 +48,6 @@ QTextDocument* TablePrinter::printToTable(QTableView* tableView, const QString& 
             "</body>\n"
             "</html>\n";
 
-    QTextDocument* document = new QTextDocument();
-    document->setHtml(strStream);
+    cursor->insertHtml(strStream);
 
-    return document;
 }

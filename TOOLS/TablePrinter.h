@@ -10,7 +10,7 @@ class TablePrinter
 public:
     TablePrinter();
 
-    QTextDocument* printToTable(QTableView* tableView, const QString& strTitle);
+    void printToTable(QTextCursor* cursor, QTableView* tableView, const QString& strTitle);
 
 };
 

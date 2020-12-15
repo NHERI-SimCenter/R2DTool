@@ -148,7 +148,6 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //   rastLayer->setName(layerName);
     //   this->addLayerToMap(rastLayer,treeItem);
 
-
 }
 
 
@@ -376,11 +375,22 @@ void VisualizationWidget::loadBuildingData(void)
     fields.append(Field::createText("AssetType", "NULL",4));
     fields.append(Field::createText("TabName", "NULL",4));
 
+
+    // Select a column that will define the building layers
+    int columnToMapLayers = 0;
+
+    QString columnFilter = "occupancy";
+
     // Set the table headers as fields in the table
     for(int i =0; i<buildingTableWidget->columnCount(); ++i)
     {
         auto headerItem = buildingTableWidget->horizontalHeaderItem(i);
+
         auto fieldText = headerItem->text();
+
+        if(fieldText.compare(columnFilter) == 0)
+            columnToMapLayers = i;
+
         fields.append(Field::createText(fieldText, fieldText,fieldText.size()));
     }
 
@@ -395,9 +405,6 @@ void VisualizationWidget::loadBuildingData(void)
     auto buildingsItem = layersTree->addItemToTree("Buildings", layerID);
 
     auto nRows = buildingTableWidget->rowCount();
-
-    // Select a column that will define the layers
-    int columnToMapLayers = 7;
 
     std::vector<std::string> vecLayerItems;
     for(int i = 0; i<nRows; ++i)
@@ -468,8 +475,12 @@ void VisualizationWidget::loadBuildingData(void)
         Point point(longitude,latitude);
         Feature* feature = featureCollectionTable->createFeature(featureAttributes, point, this);
 
+        auto val = rand() / double(RAND_MAX);
+        feature->attributes()->replaceAttribute("LossRatio", val);
+
         featureCollectionTable->addFeature(feature);
     }
+
 
     mapGIS->operationalLayers()->append(buildingLayer);
 
