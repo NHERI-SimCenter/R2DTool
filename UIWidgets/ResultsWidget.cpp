@@ -62,10 +62,6 @@ using namespace Esri::ArcGISRuntime;
 
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    auto workflowApp = WorkflowAppRDT::getInstance();
-
-    auto analysisName = workflowApp->getGeneralInformationWidget()->getAnalysisName();
-
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(5,0,0,0);
 

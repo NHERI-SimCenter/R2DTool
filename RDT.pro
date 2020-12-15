@@ -44,6 +44,7 @@ SOURCES +=  main.cpp \
             TOOLS/NGAW2Converter.cpp \
             TOOLS/PelicunPostProcessor.cpp \
             TOOLS/TablePrinter.cpp \
+            UIWidgets/BuildingDatabase.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             WorkflowAppRDT.cpp \
@@ -131,6 +132,7 @@ HEADERS +=  WorkflowAppRDT.h\
             TOOLS/XMLAdaptor.h \
             TOOLS/shakeMapClient.h \
             TOOLS/CSVReaderWriter.h \
+            UIWidgets/BuildingDatabase.h \
             UIWidgets/GroundMotionStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/SecondaryComponentSelection.h \

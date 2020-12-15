@@ -5,5 +5,6 @@
         <file>icons/NHERI-EEUQ-Icon.ico</file>
         <file>icons/NHERI-EEUQ-Icon.png</file>
         <file>resources/docs/textAboutEEUQ.html</file>
+        <file>resources/SimCenter@1x.png</file>
     </qresource>
 </RCC>
