@@ -48,7 +48,6 @@ class QLineEdit;
 
 class ResultsWidget : public SimCenterAppWidget
 {
-
     Q_OBJECT
 
 public:
@@ -64,9 +63,6 @@ public:
 private slots:
 
     int printToPDF(void);
-
-    int assemblePDF(QImage screenShot);
-
 
 private:
 

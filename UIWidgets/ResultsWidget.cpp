@@ -56,7 +56,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QDebug>
-#include <QPrinter>
 #include <QDir>
 
 using namespace Esri::ArcGISRuntime;
@@ -82,7 +81,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theHeaderLayout->addStretch(1);
 
     // Layout to display the results
-//    resultsPageWidget = new QWidget();
+    //    resultsPageWidget = new QWidget();
 
     thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(this,theVisualizationWidget);
     auto pelicanResults = thePelicunPostProcessor->getResultsGridLayout();
@@ -119,7 +118,6 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     mainLayout->addLayout(pelicanResults);
     mainLayout->addLayout(theExportLayout,1);
 
-    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&ResultsWidget::assemblePDF);
 
     this->setMinimumWidth(640);
 
@@ -174,19 +172,6 @@ int ResultsWidget::processResults()
 
 int ResultsWidget::printToPDF(void)
 {
-    theVisualizationWidget->takeScreenShot();
-
-    return 0;
-}
-
-
-int ResultsWidget::assemblePDF(QImage screenShot)
-{
-
-    QPrinter printer(QPrinter::HighResolution);
-    printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setPageMargins(12, 16, 12, 20, QPrinter::Millimeter);
-
     auto outputFileName = exportPathLineEdit->text();
 
     if(outputFileName.isEmpty())
@@ -196,17 +181,18 @@ int ResultsWidget::assemblePDF(QImage screenShot)
         return -1;
     }
 
-    printer.setOutputFileName(outputFileName);
+    if(DVApp.compare("Pelicun") == 0)
+    {
+        auto res = thePelicunPostProcessor->printToPDF(outputFileName);
 
-
-    QPainter painter;
-    painter.begin (&printer);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-
-    auto scale = 10.0;
-    painter.drawImage (QRect (0,0,scale*screenShot.width(), scale*screenShot.height()), screenShot);
-
-    painter.end ();
+        if(res != 0)
+        {
+            QString err = "Error printing the PDF";
+            this->userMessageDialog(err);
+            return -1;
+        }
+    }
 
     return 0;
 }
+

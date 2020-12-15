@@ -17,6 +17,7 @@ class QLabel;
 namespace QtCharts
 {
 class QChartView;
+class QBarSet;
 }
 
 namespace Esri
@@ -32,29 +33,52 @@ struct Building
 {
 public:
 
-    QMap<QString, double> values;
+    // Map to store the results - the QString (key) is the header text while the double is the value for that building
+    QMap<QString, double> ResultsValues;
 
     int ID;
 };
 
 class PelicunPostProcessor : public SimCenterAppWidget
 {
+    Q_OBJECT
+
 public:
+
     PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget);
 
     int importResults(const QString& pathToResults);
 
     QGridLayout *getResultsGridLayout() const;
 
+    int printToPDF(const QString& outputPath);
+
+
+private slots:
+
+    int assemblePDF(QImage screenShot);
+
 private:
+
     int processDVResults(const QVector<QStringList>& DVdata);
+
+    QString outputFilePath;
 
     QGridLayout* resultsGridLayout;
 
     QLabel* totalCasLabel;
     QLabel* totalLossLabel;
     QLabel* totalRepairTimeLabel;
-    QLabel* totalFatalitiesLabel;
+    QLabel* totalFatalitiesLabel; 
+    QLabel* structLossLabel;
+    QLabel* nonStructLossLabel;
+
+    QLabel* totalCasValueLabel;
+    QLabel* totalLossValueLabel;
+    QLabel* totalRepairTimeValueLabel;
+    QLabel* totalFatalitiesValueLabel;
+    QLabel* structLossValueLabel;
+    QLabel* nonStructLossValueLabel;
 
     QTableWidget* pelicunResultsTableWidget;
 
@@ -66,9 +90,9 @@ private:
     QtCharts::QChartView *casualtiesChartView;
     QtCharts::QChartView *lossesChartView;
 
-    int createLossesChart();
+    int createLossesChart(QtCharts::QBarSet *structLossSet, QtCharts::QBarSet *NSAccLossSet, QtCharts::QBarSet *NSDriftLossSet);
 
-    int createCasualtiesChart();
+    int createCasualtiesChart(QtCharts::QBarSet *casualtiesSet);
 
     QVector<Building> buildingsVec;
 
