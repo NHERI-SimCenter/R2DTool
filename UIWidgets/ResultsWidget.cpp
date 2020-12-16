@@ -77,10 +77,9 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theHeaderLayout->addStretch(1);
 
     // Layout to display the results
-    //    resultsPageWidget = new QWidget();
+    resultsPageWidget = new QWidget();
 
-    thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(this,theVisualizationWidget);
-    auto pelicanResults = thePelicunPostProcessor->getResultsGridLayout();
+    thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(nullptr,theVisualizationWidget);
 
     // Export layout and objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
@@ -111,13 +110,13 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theExportLayout->addStretch();
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addLayout(pelicanResults);
+    mainLayout->addWidget(resultsPageWidget);
     mainLayout->addLayout(theExportLayout,1);
-
+    mainLayout->addStretch(1);
 
     this->setMinimumWidth(640);
 
-    this->processResults();
+        this->processResults();
 }
 
 
@@ -144,9 +143,9 @@ int ResultsWidget::processResults()
 
     auto SCPrefs = SimCenterPreferences::getInstance();
 
-    //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
+//    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
 
-    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
+        QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
 
 
     if(DVApp.compare("Pelicun") == 0)
@@ -158,6 +157,8 @@ int ResultsWidget::processResults()
             QString err = "Error importing the results from " + resultsDirectory;
             return -1;
         }
+
+        resultsPageWidget->setLayout(thePelicunPostProcessor->getResultsGridLayout());
     }
 
 

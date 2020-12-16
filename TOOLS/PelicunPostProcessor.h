@@ -6,13 +6,16 @@
 
 #include "ResultsMapViewWidget.h"
 #include "SimCenterAppWidget.h"
+#include "BuildingDatabase.h"
 
 class VisualizationWidget;
 class ResultsMapViewWidget;
+class REmpiricalProbabilityDistribution;
 
 class QTableWidget;
 class QGridLayout;
 class QLabel;
+class QComboBox;
 
 namespace QtCharts
 {
@@ -29,15 +32,6 @@ class MapGraphicsView;
 }
 }
 
-struct Building
-{
-public:
-
-    // Map to store the results - the QString (key) is the header text while the double is the value for that building
-    QMap<QString, double> ResultsValues;
-
-    int ID;
-};
 
 class PelicunPostProcessor : public SimCenterAppWidget
 {
@@ -53,10 +47,29 @@ public:
 
     int printToPDF(const QString& outputPath);
 
+    // Function to convert a QString and QVariant to double
+    // Throws an error exception if conversion fails
+    template <typename T>
+    auto objectToDouble(T obj)
+    {
+        // Assume a zero value if the string is empty
+        if(obj.isNull())
+            return 0.0;
+
+        bool OK;
+        auto val = obj.toDouble(&OK);
+
+        if(!OK)
+            throw QString("Could not convert the object to a double");
+
+        return val;
+    }
 
 private slots:
 
     int assemblePDF(QImage screenShot);
+
+    void sortTable(int index);
 
 private:
 
@@ -84,11 +97,16 @@ private:
 
     VisualizationWidget* theVisualizationWidget;
 
+    QComboBox* sortComboBox;
+
     std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
     QtCharts::QChartView *casualtiesChartView;
     QtCharts::QChartView *lossesChartView;
+    QtCharts::QChartView *lossesHistogram;
+
+    int createHistogramChart(REmpiricalProbabilityDistribution* probDist);
 
     int createLossesChart(QtCharts::QBarSet *structLossSet, QtCharts::QBarSet *NSAccLossSet, QtCharts::QBarSet *NSDriftLossSet);
 

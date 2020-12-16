@@ -21,7 +21,7 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString type) : SimC
 {
     label1 = "Load information from a CSV file";
     label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze. Leave blank to analyze all " + componentType.toLower() + "."
-             "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+                                                                                                                                                "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
 
     label3 = QStringRef(&componentType, 0, componentType.length()) + " Information";
 
@@ -66,7 +66,6 @@ void ComponentInputWidget::loadComponentData(void)
         this->userMessageDialog(err);
         return;
     }
-
 
     if(data.empty())
         return;
@@ -194,7 +193,7 @@ void ComponentInputWidget::createComponentsBox(void)
     selectComponentsLineEdit->setPlaceholderText("e.g., 1, 3, 5-10, 12");
 
     // Create a regExp validator to make sure only '-' & ',' & ' ' & numbers are input
-    QRegExp LERegExp ("((([1-9][0-9]*)|([1-9][0-9]*-[1-9][0-9]*))[ ]*,[ ]*)*([[1-9][0-9]*-[1-9][0-9]*|[1-9][0-9]*)");
+    QRegExp LERegExp ("((([0-9]*)|([0-9]+-[1-9][0-9]*))[ ]*,[ ]*)*([[0-9]+-[1-9][0-9]*|[0-9]*)");
     QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
     selectComponentsLineEdit->setValidator(LEValidator);
 
@@ -240,14 +239,49 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addWidget(componentInfoText,6,0,1,5,Qt::AlignCenter);
     gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5);
     gridLayout->setRowStretch(8, 1);
-//    gridLayout->addItem(vspacer, 8, 0);
+    //    gridLayout->addItem(vspacer, 8, 0);
     this->setLayout(gridLayout);
 }
 
 
 void ComponentInputWidget::handleComponentSelection(void)
 {
+
     auto nRows = componentTableWidget->rowCount();
+
+    if(nRows == 0)
+        return;
+
+    // Get the ID of the first and last component
+    bool OK;
+    auto firstID = componentTableWidget->item(0,0)->data(0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->userMessageDialog(msg);
+        return;
+    }
+
+    auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->userMessageDialog(msg);
+        return;
+    }
+
+    // First check that all of the selected IDs are within range
+    for(auto&& it : selectedComponentIDs)
+    {
+        if(it<firstID || it>lastID)
+        {
+            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
+            this->userMessageDialog(msg);
+            return;
+        }
+    }
 
     // Hide all rows in the table
     for(int i = 0; i<nRows; ++i)
@@ -255,7 +289,7 @@ void ComponentInputWidget::handleComponentSelection(void)
 
     // Unhide the selected rows
     for(auto&& it : selectedComponentIDs)
-        componentTableWidget->setRowHidden(it-1,false);
+        componentTableWidget->setRowHidden(it - firstID,false);
 
     auto numAssets = selectedComponentIDs.size();
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
@@ -334,12 +368,11 @@ void ComponentInputWidget::selectComponents()
     while(s_stream.good()) {
         std:: string subString;
         getline(s_stream, subString, ',');
-        subStringVec.push_back(subString);
+
+        if(!subString.empty())
+            subStringVec.push_back(subString);
     }
 
-    auto nRows = componentTableWidget->rowCount();
-
-    QString msg = "Error: the provided asset ID is out of bounds";
 
     // Check for the case where the IDs are given as a range
     std::string dashDelim = "-";
@@ -366,12 +399,6 @@ void ComponentInputWidget::selectComponents()
                 continue;
             }
 
-            if(IDEnd-1 >= nRows)
-            {
-                this->userMessageDialog(msg);
-                return;
-            }
-
             // Add the IDs to the set
             for(int ID = IDStart; ID<=IDEnd; ++ID)
                 selectedComponentIDs.insert(ID);
@@ -379,12 +406,6 @@ void ComponentInputWidget::selectComponents()
         else // Asset ID is given individually
         {
             auto ID = std::stoi(subStr);
-
-            if(ID-1 >= nRows)
-            {
-                this->userMessageDialog(msg);
-                return;
-            }
 
             selectedComponentIDs.insert(ID);
         }

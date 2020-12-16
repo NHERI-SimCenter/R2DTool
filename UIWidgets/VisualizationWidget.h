@@ -2,6 +2,7 @@
 #define VISUALIZATIONWIDGET_H
 
 #include "SimCenterAppWidget.h"
+#include "BuildingDatabase.h"
 
 #include <QMap>
 #include <QObject>
@@ -108,6 +109,8 @@ public:
 
     void takeScreenShot(void);
 
+    BuildingDatabase* getBuildingDatabase();
+
 signals:
     // Convex hull
     void taskSelectionChanged();
@@ -175,6 +178,8 @@ private:
     // The GIS widget
     QWidget* visWidget;
     void createVisualizationWidget(void);
+
+    BuildingDatabase theBuildingDb;
 
 };
 
