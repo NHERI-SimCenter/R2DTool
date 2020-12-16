@@ -228,6 +228,11 @@ void VisualizationWidget::createVisualizationWidget(void)
     layout->addWidget(mapViewWidget,0,1,12,2);
 }
 
+BuildingDatabase* VisualizationWidget::getBuildingDatabase()
+{
+    return &theBuildingDb;
+}
+
 
 // Convex hull stuff
 void VisualizationWidget::plotConvexHull()
@@ -450,14 +455,27 @@ void VisualizationWidget::loadBuildingData(void)
         // create the feature attributes
         QMap<QString, QVariant> featureAttributes;
 
+        // Create a new building
+        Building building;
+
+        int buildingID = buildingTableWidget->item(i,0)->data(0).toInt();
+
+        building.ID = buildingID;
+
+        QMap<QString, QVariant> buildingAttributeMap;
+
         // The feature attributes are the columns from the table
         for(int j = 0; j<buildingTableWidget->columnCount(); ++j)
         {
             auto attrbText = buildingTableWidget->horizontalHeaderItem(j)->text();
             auto attrbVal = buildingTableWidget->item(i,j)->data(0);
 
+            buildingAttributeMap.insert(attrbText,attrbVal.toString());
+
             featureAttributes.insert(attrbText,attrbVal);
         }
+
+        building.buildingAttributes = buildingAttributeMap;
 
         featureAttributes.insert("LossRatio", 0.0);
         featureAttributes.insert("AssetType", "BUILDING");
@@ -475,8 +493,9 @@ void VisualizationWidget::loadBuildingData(void)
         Point point(longitude,latitude);
         Feature* feature = featureCollectionTable->createFeature(featureAttributes, point, this);
 
-        auto val = rand() / double(RAND_MAX);
-        feature->attributes()->replaceAttribute("LossRatio", val);
+        building.buildingFeature = feature;
+
+        theBuildingDb.addBuilding(buildingID, building);
 
         featureCollectionTable->addFeature(feature);
     }
@@ -947,10 +966,10 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.1, symbol1);
+    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.05, symbol1);
     classBreaks.append(classBreak1);
 
-    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 0.1, 0.25, symbol2);
+    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2);
     classBreaks.append(classBreak2);
 
     auto classBreak3 = new ClassBreak("Medium Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3);

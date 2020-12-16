@@ -81,7 +81,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
 //    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory3.csv";
 
-    QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/input_params.csv";
+    QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/BuildingInventory.csv";
     buildingWidget->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);

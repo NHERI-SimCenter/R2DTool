@@ -51,6 +51,7 @@ SOURCES +=  main.cpp \
             RunWidget.cpp \
             TOOLS/XMLAdaptor.cpp \
             TOOLS/shakeMapClient.cpp \
+            TOOLS/REmpiricalProbabilityDistribution.cpp \
             TOOLS/CSVReaderWriter.cpp \
             UIWidgets/SecondaryComponentSelection.cpp \
             UIWidgets/MultiComponentRDT.cpp \
@@ -131,6 +132,7 @@ HEADERS +=  WorkflowAppRDT.h\
             TOOLS/TablePrinter.h \
             TOOLS/XMLAdaptor.h \
             TOOLS/shakeMapClient.h \
+            TOOLS/REmpiricalProbabilityDistribution.h \
             TOOLS/CSVReaderWriter.h \
             UIWidgets/BuildingDatabase.h \
             UIWidgets/GroundMotionStation.h \
