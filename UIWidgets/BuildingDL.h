@@ -1,10 +1,10 @@
-#ifndef RegionalMappingWidget_H
-#define RegionalMappingWidget_H
+#ifndef BuildingDLWidget_H
+#define BuildingDLWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -28,46 +28,36 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
+// Latest revision: 11.20.2020
 
-#include <SimCenterAppWidget.h>
+#include "MultiComponentRDT.h"
 
-class QLineEdit;
+class BuildingDMWidget;
 
-class RegionalMappingWidget : public SimCenterAppWidget
+class BuildingDLWidget : public  MultiComponentRDT
 {
     Q_OBJECT
 
 public:
-    explicit RegionalMappingWidget(QWidget *parent = nullptr);
-    ~RegionalMappingWidget();
+    explicit BuildingDLWidget(QWidget *parent);
+    ~BuildingDLWidget();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
-public slots:
-
-    void handleFileNameChanged(const QString &value);
-
-signals:
+    bool outputToJSON(QJsonObject &rvObject);
+    bool inputFromJSON(QJsonObject &rvObject);
 
 private:
 
-    QString eventGridPath;
-    QLineEdit* samplesLineEdit;
-    QLineEdit* neighborsLineEdit;
-//    QLineEdit* filenameLineEdit;
-
+    BuildingDMWidget* theBuildingDMWidget;
+    BuildingDMWidget* thePipelineDMWidget;
 };
 
-
-#endif // RegionalMappingWidget_H
+#endif // BuildingDLWidget_H

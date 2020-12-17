@@ -43,6 +43,12 @@ public:
 
     void testFileLoad(QString& path);
 
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &rvObject);
+    bool inputFromJSON(QJsonObject &rvObject);
+    bool copyFiles(QString &destName);
+
     QString getPathToComponentFile(void) const;
 
 signals:

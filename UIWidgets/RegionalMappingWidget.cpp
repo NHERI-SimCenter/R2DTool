@@ -93,7 +93,7 @@ RegionalMappingWidget::~RegionalMappingWidget()
 }
 
 
-bool RegionalMappingWidget::outputToJSON(QJsonObject &jsonObj)
+bool RegionalMappingWidget::outputAppDataToJSON(QJsonObject &jsonObj)
 {
 
     QJsonObject regionalMapObj;
@@ -114,7 +114,7 @@ bool RegionalMappingWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool RegionalMappingWidget::inputFromJSON(QJsonObject &jsonObject){
+bool RegionalMappingWidget::inputAppDataFromJSON(QJsonObject &jsonObject){
 
 
     return true;

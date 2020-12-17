@@ -57,7 +57,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMetaEnum>
 
 
-GeneralInformationWidget::GeneralInformationWidget(QWidget *parent, RegionalMappingWidget* regionMapWidget) : SimCenterWidget(parent), theRegionalMappingWidget(regionMapWidget)
+GeneralInformationWidget::GeneralInformationWidget(QWidget *parent)
+    : SimCenterWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 //    mainLayout->setMargin(0);
@@ -192,7 +193,6 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     transportationCheckBox = new QCheckBox("Transportation Network",this);
 
     connect(buildingsCheckBox, &QCheckBox::stateChanged, this, [=](){
-        qDebug("BUILDINGS CHECKED");
          emit(assetChanged("Buildings",buildingsCheckBox->isChecked()));
      });
     connect(soilCheckBox, &QCheckBox::stateChanged, this, [=](){
@@ -241,12 +241,14 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     outputLayout->addWidget(DVCheckBox);
     outputLayout->addWidget(realizationCheckBox);
 
+    /*
     QGroupBox* regionalMappingGroupBox = new QGroupBox("Regional Mapping", this);
     regionalMappingGroupBox->setContentsMargins(0,5,0,0);
 
     regionalMappingGroupBox->setLayout(theRegionalMappingWidget->layout());
 
-//    regionalMappingGroupBox->addWidget(theRegionalMappingWidget);
+    //    regionalMappingGroupBox->addWidget(theRegionalMappingWidget);
+    */
 
     QSpacerItem *spacer = new QSpacerItem(0,20);
 
@@ -260,10 +262,13 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     layout->addItem(spacer,5,0);    
     layout->addWidget(outputGroupBox,6,0);
     layout->addItem(spacer,7,0);
-    layout->addWidget(regionalMappingGroupBox,8,0);
-
-    buildingsCheckBox->setChecked(true);
+    //layout->addWidget(regionalMappingGroupBox,8,0);
 
     return layout;
 }
 
+bool
+GeneralInformationWidget::setAssetTypeState(QString assetType, bool checkedStatus){
+    if (assetType == "Buildings")
+        buildingsCheckBox->setChecked(checkedStatus);
+}

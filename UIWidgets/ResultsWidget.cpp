@@ -132,7 +132,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     this->setMinimumWidth(640);
 
-    this->processResults();
+//    this->processResults();
 }
 
 
@@ -159,9 +159,9 @@ int ResultsWidget::processResults()
 
     auto SCPrefs = SimCenterPreferences::getInstance();
 
-    //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
+    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
 
-    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
+//    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
 
     try
     {
