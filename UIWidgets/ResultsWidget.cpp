@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #include "WorkflowAppRDT.h"
 #include "GeneralInformationWidget.h"
+#include "AssetInputDelegate.h"
 
 #include <QPaintEngine>
 #include <QGridLayout>
@@ -102,6 +103,21 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     connect(exportFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
+    QLabel* selectComponentsText = new QLabel("Select a subset of components to display the results:",this);
+    selectComponentsLineEdit = new AssetInputDelegate();
+
+    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);
+
+    QPushButton *selectComponentsButton = new QPushButton();
+    selectComponentsButton->setText(tr("Select"));
+    selectComponentsButton->setMaximumWidth(150);
+
+    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
+
+    theExportLayout->addStretch();
+    theExportLayout->addWidget(selectComponentsText);
+    theExportLayout->addWidget(selectComponentsLineEdit);
+    theExportLayout->addWidget(selectComponentsButton);
     theExportLayout->addStretch();
     theExportLayout->addWidget(exportLabel);
     theExportLayout->addWidget(exportPathLineEdit);
@@ -116,7 +132,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     this->setMinimumWidth(640);
 
-        this->processResults();
+    this->processResults();
 }
 
 
@@ -143,24 +159,24 @@ int ResultsWidget::processResults()
 
     auto SCPrefs = SimCenterPreferences::getInstance();
 
-//    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
+    //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
 
-        QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
+    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
 
-
-    if(DVApp.compare("Pelicun") == 0)
+    try
     {
-        auto res = thePelicunPostProcessor->importResults(resultsDirectory);
-
-        if(res != 0)
+        if(DVApp.compare("Pelicun") == 0)
         {
-            QString err = "Error importing the results from " + resultsDirectory;
-            return -1;
+            thePelicunPostProcessor->importResults(resultsDirectory);
+
+            mainLayout->replaceWidget(resultsPageWidget,thePelicunPostProcessor.get());
         }
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
 
-        mainLayout->replaceWidget(resultsPageWidget,thePelicunPostProcessor.get());
-
-        thePelicunPostProcessor->show();
+        return -1;
     }
 
 
@@ -193,4 +209,37 @@ int ResultsWidget::printToPDF(void)
 
     return 0;
 }
+
+
+void ResultsWidget::selectComponents(void)
+{
+    try
+    {
+        selectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
+    }
+}
+
+
+void ResultsWidget::handleComponentSelection(void)
+{
+
+    try
+    {
+        if(DVApp.compare("Pelicun") == 0)
+        {
+            auto IDSet = selectComponentsLineEdit->getSelectedComponentIDs();
+            thePelicunPostProcessor->processResultsSubset(IDSet);
+        }
+
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
+    }
+}
+
 

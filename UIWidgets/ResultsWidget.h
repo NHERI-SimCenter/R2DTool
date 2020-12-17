@@ -45,6 +45,7 @@ class VisualizationWidget;
 class PelicunPostProcessor;
 class QVBoxLayout;
 class QLineEdit;
+class AssetInputDelegate;
 
 class ResultsWidget : public SimCenterAppWidget
 {
@@ -63,11 +64,14 @@ public:
 private slots:
 
     int printToPDF(void);
+    void selectComponents(void);
+    void handleComponentSelection(void);
 
 private:
 
     QString DVApp = "Pelicun";
     QLineEdit* exportPathLineEdit;
+    AssetInputDelegate* selectComponentsLineEdit;
 
     QVBoxLayout* mainLayout;
 

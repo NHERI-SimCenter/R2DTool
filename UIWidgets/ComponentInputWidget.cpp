@@ -1,5 +1,5 @@
 #include "ComponentInputWidget.h"
-
+#include "AssetInputDelegate.h"
 #include "CSVReaderWriter.h"
 
 #include <QFileDialog>
@@ -12,7 +12,6 @@
 #include <QHeaderView>
 
 // Std library headers
-#include <sstream>
 #include <string>
 #include <algorithm>
 
@@ -186,16 +185,8 @@ void ComponentInputWidget::createComponentsBox(void)
     QLabel* selectComponentsText = new QLabel();
     selectComponentsText->setText(label2);
 
-    selectComponentsLineEdit = new QLineEdit();
-    selectComponentsLineEdit->setMaximumWidth(1000);
-    selectComponentsLineEdit->setMinimumWidth(400);
-    selectComponentsLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    selectComponentsLineEdit->setPlaceholderText("e.g., 1, 3, 5-10, 12");
-
-    // Create a regExp validator to make sure only '-' & ',' & ' ' & numbers are input
-    QRegExp LERegExp ("((([0-9]*)|([0-9]+-[1-9][0-9]*))[ ]*,[ ]*)*([[0-9]+-[1-9][0-9]*|[0-9]*)");
-    QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
-    selectComponentsLineEdit->setValidator(LEValidator);
+    selectComponentsLineEdit = new AssetInputDelegate();
+    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ComponentInputWidget::handleComponentSelection);
 
     QPushButton *selectComponentsButton = new QPushButton();
     selectComponentsButton->setText(tr("Select"));
@@ -244,6 +235,19 @@ void ComponentInputWidget::createComponentsBox(void)
 }
 
 
+void ComponentInputWidget::selectComponents(void)
+{
+    try
+    {
+        selectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
+    }
+}
+
+
 void ComponentInputWidget::handleComponentSelection(void)
 {
 
@@ -272,6 +276,8 @@ void ComponentInputWidget::handleComponentSelection(void)
         return;
     }
 
+    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
     // First check that all of the selected IDs are within range
     for(auto&& it : selectedComponentIDs)
     {
@@ -297,12 +303,6 @@ void ComponentInputWidget::handleComponentSelection(void)
 }
 
 
-std::set<int>& ComponentInputWidget::getSelectedComponentIDs()
-{
-    return selectedComponentIDs;
-}
-
-
 void ComponentInputWidget::clearComponentSelection(void)
 {
     auto nRows = componentTableWidget->rowCount();
@@ -313,7 +313,7 @@ void ComponentInputWidget::clearComponentSelection(void)
         componentTableWidget->setRowHidden(i,false);
     }
 
-    selectedComponentIDs.clear();
+    componentFileLineEdit->clear();
 }
 
 
@@ -347,83 +347,15 @@ void ComponentInputWidget::setComponentType(const QString &value)
 }
 
 
-void ComponentInputWidget::selectComponents()
-{
-    auto inputText = selectComponentsLineEdit->text();
-
-    // Quick return if the input text is empty
-    if(inputText.isEmpty())
-        return;
-
-    // Remove any white space from the string
-    inputText.remove(" ");
-
-    // Split the incoming text into the parts delimited by commas
-    std::vector<std::string> subStringVec;
-
-    // Create string stream from the string
-    std::stringstream s_stream(inputText.toStdString());
-
-    // Split the input string to substrings at the comma
-    while(s_stream.good()) {
-        std:: string subString;
-        getline(s_stream, subString, ',');
-
-        if(!subString.empty())
-            subStringVec.push_back(subString);
-    }
-
-
-    // Check for the case where the IDs are given as a range
-    std::string dashDelim = "-";
-
-    for(auto&& subStr : subStringVec)
-    {
-        // Handle the case where there is a range of assets separated by a '-'
-        if (subStr.find(dashDelim) != std::string::npos)
-        {
-            auto pos = subStr.find(dashDelim);
-            // Get the strings on either side of the '-' character
-            std::string intStart = subStr.substr(0, pos);
-            std::string intEnd = subStr.substr(pos + dashDelim.length());
-
-            // Convert them into integers
-            auto IDStart = std::stoi(intStart);
-            auto IDEnd = std::stoi(intEnd);
-
-            // Make sure that the end integer is greater than the first
-            if(IDStart>IDEnd)
-            {
-                QString err = "Error in the range of asset IDs provided in the Component asset selection box";
-                this->userMessageDialog(err);
-                continue;
-            }
-
-            // Add the IDs to the set
-            for(int ID = IDStart; ID<=IDEnd; ++ID)
-                selectedComponentIDs.insert(ID);
-        }
-        else // Asset ID is given individually
-        {
-            auto ID = std::stoi(subStr);
-
-            selectedComponentIDs.insert(ID);
-        }
-    }
-
-    this->handleComponentSelection();
-}
-
-
 void ComponentInputWidget::insertSelectedComponent(const int ComponentID)
 {
-    selectedComponentIDs.insert(ComponentID);
+    selectComponentsLineEdit->insertSelectedCompoonent(ComponentID);
 }
 
 
 int ComponentInputWidget::numberComponentsSelected(void)
 {
-    return selectedComponentIDs.size();
+    return selectComponentsLineEdit->size();
 }
 
 

@@ -127,11 +127,14 @@ public slots:
     void handleLayerSelection(TreeItem* item);
     void handleOpacityChange(const QString& layerID, const double opacity);
     void exportImageComplete(QUuid id, QImage img);
+    void onMouseClicked(QMouseEvent& mouseEvent);
+
+    void onMouseClickedGlobal(QPoint pos);
+
 
 private slots:
     void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);
     void featureSelectionQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
-    void onMouseClicked(QMouseEvent& mouseEvent);
     void handleSelectedFeatures(void);
     void handleAsynchronousSelectionTask(void);
     void handleBasemapSelection(const QString selection);

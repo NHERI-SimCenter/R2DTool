@@ -1168,6 +1168,24 @@ void VisualizationWidget::onMouseClicked(QMouseEvent& mouseEvent)
 }
 
 
+void VisualizationWidget::onMouseClickedGlobal(QPoint pos)
+{
+
+    auto localPos = this->mapFromGlobal(pos);
+
+    constexpr double tolerance = 12;
+    constexpr bool returnPopups = false;
+    const int maxResults = 10;
+
+    auto taskWatcher =  mapViewWidget->identifyLayers(localPos.x(), localPos.y(), tolerance, returnPopups, maxResults);
+
+    if (!taskWatcher.isValid())
+        qDebug() <<"Error, task not valid in "<<__PRETTY_FUNCTION__;
+    else
+        taskIDMap[taskWatcher.taskId()] = taskWatcher.description();
+}
+
+
 void VisualizationWidget::handleAsynchronousSelectionTask(void)
 {
     // Only handle the selected features when all tasks are complete
