@@ -1,5 +1,6 @@
-#ifndef RegionalMappingWidget_H
-#define RegionalMappingWidget_H
+#ifndef HAZARD_TO_ASSET_BUILDING_H
+#define HAZARD_TO_ASSET_BUILDING_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -41,33 +42,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterAppWidget.h>
 
-class QLineEdit;
+class RegionalMappingWidget;
+class SimCenterAppSelection;
 
-class RegionalMappingWidget : public SimCenterAppWidget
+class HazardToAssetBuilding : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit RegionalMappingWidget(QWidget *parent = nullptr);
-    ~RegionalMappingWidget();
+    explicit HazardToAssetBuilding(QWidget *parent);
+    ~HazardToAssetBuilding();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    bool outputAppDataToJSON(QJsonObject &arrayObject);
+    bool inputAppDataFromJSON(QJsonObject &arrayObject);
+
+    QString getAnalysisName(void);
 
 public slots:
-
-    void handleFileNameChanged(const QString &value);
 
 signals:
 
 private:
-
-    QString eventGridPath;
-    QLineEdit* samplesLineEdit;
-    QLineEdit* neighborsLineEdit;
-//    QLineEdit* filenameLineEdit;
-
+    RegionalMappingWidget *theRegionalMapping;
+    SimCenterAppSelection *theLocalMapping;
 };
 
 
-#endif // RegionalMappingWidget_H
+#endif // HAZARD_TO_ASSET_BUILDING_H

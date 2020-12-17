@@ -41,7 +41,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterWidget.h>
 
-class RegionalMappingWidget;
 
 class QLineEdit;
 class QGridLayout;
@@ -53,7 +52,7 @@ class GeneralInformationWidget : public SimCenterWidget
     Q_OBJECT
 
 public:
-    explicit GeneralInformationWidget(QWidget *parent, RegionalMappingWidget* regionMapWidget);
+    explicit GeneralInformationWidget(QWidget *parent);
     ~GeneralInformationWidget();
 
     bool outputToJSON(QJsonObject &jsonObject);
@@ -72,6 +71,8 @@ public:
     Q_ENUM(TimeUnit)
     enum TemperatureUnit{C, F, K};
     Q_ENUM(TemperatureUnit)
+
+    bool setAssetTypeState(QString assetType, bool);
 
 public slots:
 
@@ -100,8 +101,6 @@ private:
     QCheckBox* DMCheckBox;
     QCheckBox* DVCheckBox;
     QCheckBox* realizationCheckBox;
-
-    RegionalMappingWidget* theRegionalMappingWidget;
 
     template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
     template<typename UnitEnum> UnitEnum unitStringToEnum(QString unitString);

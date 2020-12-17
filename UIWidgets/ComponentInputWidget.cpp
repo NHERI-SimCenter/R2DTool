@@ -10,6 +10,8 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QHeaderView>
+#include <QFileInfo>
+#include <QJsonObject>
 
 // Std library headers
 #include <string>
@@ -207,6 +209,8 @@ void ComponentInputWidget::createComponentsBox(void)
 
     // Create the table that will show the Component information
     componentTableWidget = new QTableWidget();
+    componentTableWidget->hide();
+    componentTableWidget->setToolTip("Component details");
     componentTableWidget->verticalHeader()->setVisible(false);
     componentTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
@@ -370,5 +374,50 @@ void ComponentInputWidget::testFileLoad(QString& path)
     pathToComponentInfoFile = path;
     componentFileLineEdit->setText(path);
     this->loadComponentData();
+
+}
+
+bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+{
+   qDebug() << "Component OutputAPPDATAtoJSON";
+    jsonObject["Application"]=componentType;
+
+    QJsonObject data;
+    QFileInfo componentFile(componentFileLineEdit->text());
+    if (componentFile.exists()) {
+        data["sourceFile"]=componentFile.fileName();
+        data["pathToSource"]=componentFile.path();
+    } else {
+        data["sourceFile"]=QString("None");
+        data["pathToSource"]=QString("");
+        return false;
+    }
+
+    jsonObject["ApplicationData"] = data;
+
+    return true;
+}
+
+
+bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+{
+
+}
+
+
+bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+
+}
+
+
+bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+
+}
+
+
+bool ComponentInputWidget::copyFiles(QString &destName)
+{
 
 }

@@ -41,16 +41,21 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Latest revision: 10.08.2020
 
 #include "WorkflowAppWidget.h"
-#include "UQ_EngineSelection.h"
 
+class UQWidget;
+class DLWidget;
 class AssetsWidget;
 class HazardsWidget;
 class EngDemandParameterWidget;
-class DamageMeasureWidget;
-class DecisionVariableWidget;
+//class DamageMeasureWidget;
+//class DecisionVariableWidget;
 class VisualizationWidget;
 class GeneralInformationWidget;
-class AssetsModelWidget;
+class ModelWidget;
+class AnalysisWidget;
+class HazardToAssetWidget;
+class SimCenterAppWidget;
+
 class Application;
 class InputWidgetUQ;
 class QNetworkAccessManager;
@@ -62,7 +67,8 @@ class RemoteService;
 class ResultsWidget;
 class RunLocalWidget;
 class RunWidget;
-class RegionalMappingWidget;
+
+//class RegionalMappingWidget;
 class SimCenterComponentSelection;
 class UQOptions;
 class UQ_Results;
@@ -93,10 +99,9 @@ public:
 
     VisualizationWidget *getVisualizationWidget() const;
     AssetsWidget *getAssetsWidget() const;
-    HazardsWidget *getHazardsWidget() const;
+    //HazardsWidget *getHazardsWidget() const;
     GeneralInformationWidget *getGeneralInformationWidget() const;
-    RegionalMappingWidget *getTheRegionalMappingWidget() const;
-    DamageMeasureWidget *getTheDamageMeasureWidget() const;
+    //DLWidget *getTheDamageMeasureWidget() const;
 
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
@@ -118,22 +123,34 @@ private:
     // Sidebar container selection
     SimCenterComponentSelection *theComponentSelection;
 
+    //
     // Widgets that go in sidebar
-    AssetsWidget* theAssetsWidget;
-    HazardsWidget* theHazardsWidget;
-    RegionalMappingWidget* theRegionalMappingWidget;
+    //
+
     VisualizationWidget* theVisualizationWidget;
     GeneralInformationWidget* theGeneralInformationWidget;
-    AssetsModelWidget* theModelingWidget;
-    EngDemandParameterWidget* theEngDemandParamWidget;
-    DamageMeasureWidget* theDamageMeasureWidget;
-    DecisionVariableWidget* theDecisionVariableWidget;
+    HazardsWidget* theHazardsWidget;
+    AssetsWidget* theAssetsWidget;
+    HazardToAssetWidget* theHazardToAssetWidget;
+    ModelWidget* theModelingWidget;
+    AnalysisWidget *theAnalysisWidget;
+    DLWidget* theDamageAndLossWidget;
+    UQWidget* theUQWidget;
     RandomVariablesContainer* theRVs;
-    UQ_EngineSelection* theUQWidget;
     ResultsWidget* theResultsWidget;
+    EngDemandParameterWidget* theEngDemandParamWidget;
 
+    //
+    // gone but not forgotten
+    //
 
+    // DecisionVariableWidget* theDecisionVariableWidget;
+    // RegionalMappingWidget* theRegionalMappingWidget;
+
+    //
     // Objects for running the workflow and obtaining results
+    //
+
     RunWidget *theRunWidget;
     Application *localApp;
     Application *remoteApp;
