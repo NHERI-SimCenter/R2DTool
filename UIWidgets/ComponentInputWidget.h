@@ -6,10 +6,12 @@
 
 #include "SimCenterAppWidget.h"
 
+#include <set>
+
 #include <QString>
 #include <QObject>
 
-#include <set>
+class AssetInputDelegate;
 
 class QGroupBox;
 class QLineEdit;
@@ -27,8 +29,6 @@ public:
     QGroupBox* getComponentsWidget(void);
 
     QTableWidget *getTableWidget() const;
-
-    std::set<int>& getSelectedComponentIDs();
 
     void insertSelectedComponent(const int ComponentID);
 
@@ -55,10 +55,10 @@ signals:
     void componentDataLoaded();
 
 public slots:
-    void selectComponents(void);
     void handleComponentSelection(void);
 
 private slots:
+    void selectComponents(void);
     void loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
@@ -66,11 +66,10 @@ private slots:
 private:
     QString pathToComponentInfoFile;
     QLineEdit* componentFileLineEdit;
-    QLineEdit* selectComponentsLineEdit;
+    AssetInputDelegate* selectComponentsLineEdit;
     QTableWidget* componentTableWidget;
     QLabel* componentInfoText;
     QGroupBox* componentGroupBox;
-    std::set<int> selectedComponentIDs;
 
     QString componentType;
     QString label1;

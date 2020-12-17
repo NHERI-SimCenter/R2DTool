@@ -171,8 +171,8 @@ void GMWidget::setupConnections()
         this->parseDownloadedRecords(zipFile);
     });
 
-    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
-    connect(this,&GMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
+//    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
+//    connect(this,&GMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 }
 
 
@@ -181,8 +181,8 @@ void GMWidget::initAppConfig()
 
     m_appConfig = new GmAppConfig(this);
 
-    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
-    connect(m_appConfig,&GmAppConfig::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
+//    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
+//    connect(m_appConfig,&GmAppConfig::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 
     //First, We will look into settings
     QSettings settings;

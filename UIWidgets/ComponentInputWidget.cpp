@@ -1,5 +1,5 @@
 #include "ComponentInputWidget.h"
-
+#include "AssetInputDelegate.h"
 #include "CSVReaderWriter.h"
 
 #include <QFileDialog>
@@ -14,7 +14,6 @@
 #include <QJsonObject>
 
 // Std library headers
-#include <sstream>
 #include <string>
 #include <algorithm>
 
@@ -23,7 +22,7 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString type) : SimC
 {
     label1 = "Load information from a CSV file";
     label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze. Leave blank to analyze all " + componentType.toLower() + "."
-             "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+                                                                                                                                                "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
 
     label3 = QStringRef(&componentType, 0, componentType.length()) + " Information";
 
@@ -68,7 +67,6 @@ void ComponentInputWidget::loadComponentData(void)
         this->userMessageDialog(err);
         return;
     }
-
 
     if(data.empty())
         return;
@@ -189,16 +187,8 @@ void ComponentInputWidget::createComponentsBox(void)
     QLabel* selectComponentsText = new QLabel();
     selectComponentsText->setText(label2);
 
-    selectComponentsLineEdit = new QLineEdit();
-    selectComponentsLineEdit->setMaximumWidth(1000);
-    selectComponentsLineEdit->setMinimumWidth(400);
-    selectComponentsLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    selectComponentsLineEdit->setPlaceholderText("e.g., 1, 3, 5-10, 12");
-
-    // Create a regExp validator to make sure only '-' & ',' & ' ' & numbers are input
-    QRegExp LERegExp ("((([1-9][0-9]*)|([1-9][0-9]*-[1-9][0-9]*))[ ]*,[ ]*)*([[1-9][0-9]*-[1-9][0-9]*|[1-9][0-9]*)");
-    QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
-    selectComponentsLineEdit->setValidator(LEValidator);
+    selectComponentsLineEdit = new AssetInputDelegate();
+    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ComponentInputWidget::handleComponentSelection);
 
     QPushButton *selectComponentsButton = new QPushButton();
     selectComponentsButton->setText(tr("Select"));
@@ -219,6 +209,8 @@ void ComponentInputWidget::createComponentsBox(void)
 
     // Create the table that will show the Component information
     componentTableWidget = new QTableWidget();
+    componentTableWidget->hide();
+    componentTableWidget->setToolTip("Component details");
     componentTableWidget->verticalHeader()->setVisible(false);
     componentTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
@@ -242,14 +234,64 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addWidget(componentInfoText,6,0,1,5,Qt::AlignCenter);
     gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5);
     gridLayout->setRowStretch(8, 1);
-//    gridLayout->addItem(vspacer, 8, 0);
+    //    gridLayout->addItem(vspacer, 8, 0);
     this->setLayout(gridLayout);
+}
+
+
+void ComponentInputWidget::selectComponents(void)
+{
+    try
+    {
+        selectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
+    }
 }
 
 
 void ComponentInputWidget::handleComponentSelection(void)
 {
+
     auto nRows = componentTableWidget->rowCount();
+
+    if(nRows == 0)
+        return;
+
+    // Get the ID of the first and last component
+    bool OK;
+    auto firstID = componentTableWidget->item(0,0)->data(0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->userMessageDialog(msg);
+        return;
+    }
+
+    auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->userMessageDialog(msg);
+        return;
+    }
+
+    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
+    // First check that all of the selected IDs are within range
+    for(auto&& it : selectedComponentIDs)
+    {
+        if(it<firstID || it>lastID)
+        {
+            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
+            this->userMessageDialog(msg);
+            return;
+        }
+    }
 
     // Hide all rows in the table
     for(int i = 0; i<nRows; ++i)
@@ -257,17 +299,11 @@ void ComponentInputWidget::handleComponentSelection(void)
 
     // Unhide the selected rows
     for(auto&& it : selectedComponentIDs)
-        componentTableWidget->setRowHidden(it-1,false);
+        componentTableWidget->setRowHidden(it - firstID,false);
 
     auto numAssets = selectedComponentIDs.size();
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     this->userMessageDialog(msg);
-}
-
-
-std::set<int>& ComponentInputWidget::getSelectedComponentIDs()
-{
-    return selectedComponentIDs;
 }
 
 
@@ -281,7 +317,7 @@ void ComponentInputWidget::clearComponentSelection(void)
         componentTableWidget->setRowHidden(i,false);
     }
 
-    selectedComponentIDs.clear();
+    componentFileLineEdit->clear();
 }
 
 
@@ -315,96 +351,15 @@ void ComponentInputWidget::setComponentType(const QString &value)
 }
 
 
-void ComponentInputWidget::selectComponents()
-{
-    auto inputText = selectComponentsLineEdit->text();
-
-    // Quick return if the input text is empty
-    if(inputText.isEmpty())
-        return;
-
-    // Remove any white space from the string
-    inputText.remove(" ");
-
-    // Split the incoming text into the parts delimited by commas
-    std::vector<std::string> subStringVec;
-
-    // Create string stream from the string
-    std::stringstream s_stream(inputText.toStdString());
-
-    // Split the input string to substrings at the comma
-    while(s_stream.good()) {
-        std:: string subString;
-        getline(s_stream, subString, ',');
-        subStringVec.push_back(subString);
-    }
-
-    auto nRows = componentTableWidget->rowCount();
-
-    QString msg = "Error: the provided asset ID is out of bounds";
-
-    // Check for the case where the IDs are given as a range
-    std::string dashDelim = "-";
-
-    for(auto&& subStr : subStringVec)
-    {
-        // Handle the case where there is a range of assets separated by a '-'
-        if (subStr.find(dashDelim) != std::string::npos)
-        {
-            auto pos = subStr.find(dashDelim);
-            // Get the strings on either side of the '-' character
-            std::string intStart = subStr.substr(0, pos);
-            std::string intEnd = subStr.substr(pos + dashDelim.length());
-
-            // Convert them into integers
-            auto IDStart = std::stoi(intStart);
-            auto IDEnd = std::stoi(intEnd);
-
-            // Make sure that the end integer is greater than the first
-            if(IDStart>IDEnd)
-            {
-                QString err = "Error in the range of asset IDs provided in the Component asset selection box";
-                this->userMessageDialog(err);
-                continue;
-            }
-
-            if(IDEnd-1 >= nRows)
-            {
-                this->userMessageDialog(msg);
-                return;
-            }
-
-            // Add the IDs to the set
-            for(int ID = IDStart; ID<=IDEnd; ++ID)
-                selectedComponentIDs.insert(ID);
-        }
-        else // Asset ID is given individually
-        {
-            auto ID = std::stoi(subStr);
-
-            if(ID-1 >= nRows)
-            {
-                this->userMessageDialog(msg);
-                return;
-            }
-
-            selectedComponentIDs.insert(ID);
-        }
-    }
-
-    this->handleComponentSelection();
-}
-
-
 void ComponentInputWidget::insertSelectedComponent(const int ComponentID)
 {
-    selectedComponentIDs.insert(ComponentID);
+    selectComponentsLineEdit->insertSelectedCompoonent(ComponentID);
 }
 
 
 int ComponentInputWidget::numberComponentsSelected(void)
 {
-    return selectedComponentIDs.size();
+    return selectComponentsLineEdit->size();
 }
 
 
@@ -442,18 +397,26 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     return true;
 }
+
+
 bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
 }
+
+
 bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 {
 
 }
+
+
 bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
 
 }
+
+
 bool ComponentInputWidget::copyFiles(QString &destName)
 {
 

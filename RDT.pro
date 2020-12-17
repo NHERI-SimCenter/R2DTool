@@ -12,7 +12,7 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 CONFIG += c++17
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -41,14 +41,18 @@ INCLUDEPATH += $$PWD/Utils \
 
 
 SOURCES +=  main.cpp \
+            TOOLS/AssetInputDelegate.cpp \
             TOOLS/NGAW2Converter.cpp \
             TOOLS/PelicunPostProcessor.cpp \
+            TOOLS/TablePrinter.cpp \
+            UIWidgets/BuildingDatabase.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             WorkflowAppRDT.cpp \
             RunWidget.cpp \
             TOOLS/XMLAdaptor.cpp \
             TOOLS/shakeMapClient.cpp \
+            TOOLS/REmpiricalProbabilityDistribution.cpp \
             TOOLS/CSVReaderWriter.cpp \
             UIWidgets/SecondaryComponentSelection.cpp \
             UIWidgets/MultiComponentRDT.cpp \
@@ -130,11 +134,15 @@ SOURCES +=  main.cpp \
 HEADERS +=  WorkflowAppRDT.h\
             RDTUserPass.h \
             RunWidget.h \
+            TOOLS/AssetInputDelegate.h \
             TOOLS/NGAW2Converter.h \
             TOOLS/PelicunPostProcessor.h \
+            TOOLS/TablePrinter.h \
             TOOLS/XMLAdaptor.h \
             TOOLS/shakeMapClient.h \
+            TOOLS/REmpiricalProbabilityDistribution.h \
             TOOLS/CSVReaderWriter.h \
+            UIWidgets/BuildingDatabase.h \
             UIWidgets/GroundMotionStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/SecondaryComponentSelection.h \

@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #include "WorkflowAppRDT.h"
 #include "GeneralInformationWidget.h"
+#include "AssetInputDelegate.h"
 
 #include <QPaintEngine>
 #include <QGridLayout>
@@ -56,18 +57,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QDebug>
-#include <QPrinter>
 #include <QDir>
 
 using namespace Esri::ArcGISRuntime;
 
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    auto workflowApp = WorkflowAppRDT::getInstance();
-
-    auto analysisName = workflowApp->getGeneralInformationWidget()->getAnalysisName();
-
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(5,0,0,0);
 
     // Header layout and objects
@@ -82,10 +78,9 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theHeaderLayout->addStretch(1);
 
     // Layout to display the results
-//    resultsPageWidget = new QWidget();
+    resultsPageWidget = new QWidget();
 
-    thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(this,theVisualizationWidget);
-    auto pelicanResults = thePelicunPostProcessor->getResultsGridLayout();
+    thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(parent,theVisualizationWidget);
 
     // Export layout and objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
@@ -108,6 +103,21 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     connect(exportFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
+    QLabel* selectComponentsText = new QLabel("Select a subset of components to display the results:",this);
+    selectComponentsLineEdit = new AssetInputDelegate();
+
+    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);
+
+    QPushButton *selectComponentsButton = new QPushButton();
+    selectComponentsButton->setText(tr("Select"));
+    selectComponentsButton->setMaximumWidth(150);
+
+    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
+
+    theExportLayout->addStretch();
+    theExportLayout->addWidget(selectComponentsText);
+    theExportLayout->addWidget(selectComponentsLineEdit);
+    theExportLayout->addWidget(selectComponentsButton);
     theExportLayout->addStretch();
     theExportLayout->addWidget(exportLabel);
     theExportLayout->addWidget(exportPathLineEdit);
@@ -116,14 +126,13 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theExportLayout->addStretch();
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addLayout(pelicanResults);
+    mainLayout->addWidget(resultsPageWidget);
     mainLayout->addLayout(theExportLayout,1);
-
-    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&ResultsWidget::assemblePDF);
+    mainLayout->addStretch(1);
 
     this->setMinimumWidth(640);
 
-    this->processResults();
+//    this->processResults();
 }
 
 
@@ -150,22 +159,25 @@ int ResultsWidget::processResults()
 
     auto SCPrefs = SimCenterPreferences::getInstance();
 
-    //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
+    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
 
-    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
+//    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
 
-
-    if(DVApp.compare("Pelicun") == 0)
+    try
     {
-        auto res = thePelicunPostProcessor->importResults(resultsDirectory);
-
-        if(res != 0)
+        if(DVApp.compare("Pelicun") == 0)
         {
-            QString err = "Error importing the results from " + resultsDirectory;
-            return -1;
+            thePelicunPostProcessor->importResults(resultsDirectory);
+
+            mainLayout->replaceWidget(resultsPageWidget,thePelicunPostProcessor.get());
         }
     }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
 
+        return -1;
+    }
 
 
     return 0;
@@ -174,19 +186,6 @@ int ResultsWidget::processResults()
 
 int ResultsWidget::printToPDF(void)
 {
-    theVisualizationWidget->takeScreenShot();
-
-    return 0;
-}
-
-
-int ResultsWidget::assemblePDF(QImage screenShot)
-{
-
-    QPrinter printer(QPrinter::HighResolution);
-    printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setPageMargins(12, 16, 12, 20, QPrinter::Millimeter);
-
     auto outputFileName = exportPathLineEdit->text();
 
     if(outputFileName.isEmpty())
@@ -196,17 +195,51 @@ int ResultsWidget::assemblePDF(QImage screenShot)
         return -1;
     }
 
-    printer.setOutputFileName(outputFileName);
+    if(DVApp.compare("Pelicun") == 0)
+    {
+        auto res = thePelicunPostProcessor->printToPDF(outputFileName);
 
-
-    QPainter painter;
-    painter.begin (&printer);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-
-    auto scale = 10.0;
-    painter.drawImage (QRect (0,0,scale*screenShot.width(), scale*screenShot.height()), screenShot);
-
-    painter.end ();
+        if(res != 0)
+        {
+            QString err = "Error printing the PDF";
+            this->userMessageDialog(err);
+            return -1;
+        }
+    }
 
     return 0;
 }
+
+
+void ResultsWidget::selectComponents(void)
+{
+    try
+    {
+        selectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
+    }
+}
+
+
+void ResultsWidget::handleComponentSelection(void)
+{
+
+    try
+    {
+        if(DVApp.compare("Pelicun") == 0)
+        {
+            auto IDSet = selectComponentsLineEdit->getSelectedComponentIDs();
+            thePelicunPostProcessor->processResultsSubset(IDSet);
+        }
+
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
+    }
+}
+
+

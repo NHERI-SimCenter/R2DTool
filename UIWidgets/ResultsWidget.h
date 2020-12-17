@@ -43,12 +43,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class VisualizationWidget;
 class PelicunPostProcessor;
-
+class QVBoxLayout;
 class QLineEdit;
+class AssetInputDelegate;
 
 class ResultsWidget : public SimCenterAppWidget
 {
-
     Q_OBJECT
 
 public:
@@ -64,14 +64,16 @@ public:
 private slots:
 
     int printToPDF(void);
-
-    int assemblePDF(QImage screenShot);
-
+    void selectComponents(void);
+    void handleComponentSelection(void);
 
 private:
 
     QString DVApp = "Pelicun";
     QLineEdit* exportPathLineEdit;
+    AssetInputDelegate* selectComponentsLineEdit;
+
+    QVBoxLayout* mainLayout;
 
     QWidget* resultsPageWidget;
 

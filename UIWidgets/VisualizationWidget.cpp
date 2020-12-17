@@ -148,7 +148,6 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //   rastLayer->setName(layerName);
     //   this->addLayerToMap(rastLayer,treeItem);
 
-
 }
 
 
@@ -227,6 +226,11 @@ void VisualizationWidget::createVisualizationWidget(void)
 
 
     layout->addWidget(mapViewWidget,0,1,12,2);
+}
+
+BuildingDatabase* VisualizationWidget::getBuildingDatabase()
+{
+    return &theBuildingDb;
 }
 
 
@@ -331,7 +335,12 @@ void VisualizationWidget::convexHullPointSelector(QMouseEvent& e)
 {
     e.accept();
 
+    qDebug()<<"Viz Widget Mouse: "<<e.x()<<","<< e.y();
+
     const Point clickedPoint = mapViewWidget->screenToLocation(e.x(), e.y());
+
+    qDebug()<<"Viz Widget Point: "<<clickedPoint.x()<<","<< clickedPoint.y();
+
     m_multipointBuilder->points()->addPoint(clickedPoint);
     m_inputsGraphic->setGeometry(m_multipointBuilder->toGeometry());
 
@@ -371,11 +380,22 @@ void VisualizationWidget::loadBuildingData(void)
     fields.append(Field::createText("AssetType", "NULL",4));
     fields.append(Field::createText("TabName", "NULL",4));
 
+
+    // Select a column that will define the building layers
+    int columnToMapLayers = 0;
+
+    QString columnFilter = "occupancy";
+
     // Set the table headers as fields in the table
     for(int i =0; i<buildingTableWidget->columnCount(); ++i)
     {
         auto headerItem = buildingTableWidget->horizontalHeaderItem(i);
+
         auto fieldText = headerItem->text();
+
+        if(fieldText.compare(columnFilter) == 0)
+            columnToMapLayers = i;
+
         fields.append(Field::createText(fieldText, fieldText,fieldText.size()));
     }
 
@@ -390,9 +410,6 @@ void VisualizationWidget::loadBuildingData(void)
     auto buildingsItem = layersTree->addItemToTree("Buildings", layerID);
 
     auto nRows = buildingTableWidget->rowCount();
-
-    // Select a column that will define the layers
-    int columnToMapLayers = 7;
 
     std::vector<std::string> vecLayerItems;
     for(int i = 0; i<nRows; ++i)
@@ -438,14 +455,27 @@ void VisualizationWidget::loadBuildingData(void)
         // create the feature attributes
         QMap<QString, QVariant> featureAttributes;
 
+        // Create a new building
+        Building building;
+
+        int buildingID = buildingTableWidget->item(i,0)->data(0).toInt();
+
+        building.ID = buildingID;
+
+        QMap<QString, QVariant> buildingAttributeMap;
+
         // The feature attributes are the columns from the table
         for(int j = 0; j<buildingTableWidget->columnCount(); ++j)
         {
             auto attrbText = buildingTableWidget->horizontalHeaderItem(j)->text();
             auto attrbVal = buildingTableWidget->item(i,j)->data(0);
 
+            buildingAttributeMap.insert(attrbText,attrbVal.toString());
+
             featureAttributes.insert(attrbText,attrbVal);
         }
+
+        building.buildingAttributes = buildingAttributeMap;
 
         featureAttributes.insert("LossRatio", 0.0);
         featureAttributes.insert("AssetType", "BUILDING");
@@ -463,8 +493,13 @@ void VisualizationWidget::loadBuildingData(void)
         Point point(longitude,latitude);
         Feature* feature = featureCollectionTable->createFeature(featureAttributes, point, this);
 
+        building.buildingFeature = feature;
+
+        theBuildingDb.addBuilding(buildingID, building);
+
         featureCollectionTable->addFeature(feature);
     }
+
 
     mapGIS->operationalLayers()->append(buildingLayer);
 
@@ -931,10 +966,10 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.1, symbol1);
+    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.05, symbol1);
     classBreaks.append(classBreak1);
 
-    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 0.1, 0.25, symbol2);
+    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2);
     classBreaks.append(classBreak2);
 
     auto classBreak3 = new ClassBreak("Medium Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3);
@@ -1125,6 +1160,24 @@ void VisualizationWidget::onMouseClicked(QMouseEvent& mouseEvent)
     const int maxResults = 10;
 
     auto taskWatcher =  mapViewWidget->identifyLayers(mouseEvent.x(), mouseEvent.y(), tolerance, returnPopups, maxResults);
+
+    if (!taskWatcher.isValid())
+        qDebug() <<"Error, task not valid in "<<__PRETTY_FUNCTION__;
+    else
+        taskIDMap[taskWatcher.taskId()] = taskWatcher.description();
+}
+
+
+void VisualizationWidget::onMouseClickedGlobal(QPoint pos)
+{
+
+    auto localPos = this->mapFromGlobal(pos);
+
+    constexpr double tolerance = 12;
+    constexpr bool returnPopups = false;
+    const int maxResults = 10;
+
+    auto taskWatcher =  mapViewWidget->identifyLayers(localPos.x(), localPos.y(), tolerance, returnPopups, maxResults);
 
     if (!taskWatcher.isValid())
         qDebug() <<"Error, task not valid in "<<__PRETTY_FUNCTION__;
