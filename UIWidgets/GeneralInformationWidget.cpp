@@ -127,6 +127,12 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
 }
 
 
+QString GeneralInformationWidget::getAnalysisName(void)
+{
+    return nameEdit->text();
+}
+
+
 QGridLayout* GeneralInformationWidget::getInfoLayout(void)
 {
     // Analysis information
@@ -138,6 +144,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     analysisLayout->setAlignment(Qt::AlignLeft);
     analysisLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     analysisLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+    nameEdit->setText("RDT Analysis");
 
     unitsForceCombo = new QComboBox(this);
     unitsForceCombo->addItem("Newtons", ForceUnit::N);

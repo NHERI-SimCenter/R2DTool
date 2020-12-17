@@ -1,5 +1,6 @@
 ﻿#ifndef AssetsWidget_H
 #define AssetsWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,11 +38,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 11.20.2020
+// Modified: fmk
+// Latest revision: 12.2020
 
 #include "MultiComponentRDT.h"
 
-class ComponentInputWidget;
+//class ComponentInputWidget;
+class SimCenterAppSelection;
 class VisualizationWidget;
 
 class AssetsWidget : public  MultiComponentRDT
@@ -54,12 +57,12 @@ public:
 
     void clear(void);
 
-    ComponentInputWidget* getBuildingWidget() const;
-    ComponentInputWidget* getPipelineWidget() const;
+  //    ComponentInputWidget* getBuildingWidget() const;
+  //    ComponentInputWidget* getPipelineWidget() const;
 
 private:
-    ComponentInputWidget *buildingWidget;
-    ComponentInputWidget *pipelineWidget;
+    SimCenterAppSelection *buildingWidget;
+    SimCenterAppSelection *pipelineWidget;
     VisualizationWidget* visualizationWidget;
 };
 

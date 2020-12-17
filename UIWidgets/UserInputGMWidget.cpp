@@ -169,12 +169,11 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     userGMStackedWidget->setMinimumWidth(400);
     userGMStackedWidget->setMinimumHeight(150);
 
-
     auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
     connect(this,&UserInputGMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 
-    pathToUserGMFile = "/Users/steve/Documents/RDT/LocalWorkDir/HazardSimulation/Output/";
-    this->loadUserGMData();
+    //    pathToUserGMFile = "/Users/steve/Documents/RDT/LocalWorkDir/HazardSimulation/Output/";
+    //    this->loadUserGMData();
 
     return userGMStackedWidget.get();
 }

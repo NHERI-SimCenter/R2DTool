@@ -56,11 +56,13 @@
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QFileInfo>
+#include <QCoreApplication>
 
 using namespace Esri::ArcGISRuntime;
 
 VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(parent)
-{
+{    
+
     visWidget = nullptr;
     this->setContentsMargins(0,0,0,0);
 
@@ -136,15 +138,15 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //    this->addLayerToMap(buildingsLayer,buildingsItem);
 
 
-    //    QString layerName = "Bathymetry";
-    //    QString layerID = this->createUniqueID();
-    //    TreeItem* treeItem = layersTree->addItemToTree(layerName,layerID);
+    //   QString layerName = "Bathymetry";
+    //   QString layerID = this->createUniqueID();
+    //   TreeItem* treeItem = layersTree->addItemToTree(layerName,layerID);
 
-    //    QString filePath = "/Users/steve/Downloads/GEBCO_2020_18_Nov_2020_f103650dc2c4/gebco_2020_n30.0_s15.0_w-179.0_e-152.0.tif";
-    //    auto rastLayer = this->createAndAddRasterLayer(filePath, layerName, treeItem) ;
-    //    rastLayer->setLayerId(layerID);
-    //    rastLayer->setName(layerName);
-    //    this->addLayerToMap(rastLayer,treeItem);
+    //   QString filePath = "/Users/steve/Downloads/GEBCO_2020_18_Nov_2020_f103650dc2c4/gebco_2020_n30.0_s15.0_w-179.0_e-152.0.tif";
+    //   auto rastLayer = this->createAndAddRasterLayer(filePath, layerName, treeItem) ;
+    //   rastLayer->setLayerId(layerID);
+    //   rastLayer->setName(layerName);
+    //   this->addLayerToMap(rastLayer,treeItem);
 
 
 }
@@ -445,9 +447,7 @@ void VisualizationWidget::loadBuildingData(void)
             featureAttributes.insert(attrbText,attrbVal);
         }
 
-        double r = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
-
-        featureAttributes.insert("LossRatio", r);
+        featureAttributes.insert("LossRatio", 0.0);
         featureAttributes.insert("AssetType", "BUILDING");
         featureAttributes.insert("TabName", buildingTableWidget->item(i,0)->data(0).toString());
 
@@ -931,7 +931,7 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", 0.0, 0.1, symbol1);
+    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.1, symbol1);
     classBreaks.append(classBreak1);
 
     auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 0.1, 0.25, symbol2);

@@ -51,8 +51,8 @@ public:
     explicit RegionalMappingWidget(QWidget *parent = nullptr);
     ~RegionalMappingWidget();
 
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
 
 public slots:
 

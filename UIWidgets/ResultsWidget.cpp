@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PelicunPostProcessor.h"
 #include "VisualizationWidget.h"
 #include "SimCenterPreferences.h"
+#include "WorkflowAppRDT.h"
+#include "GeneralInformationWidget.h"
 
 #include <QPaintEngine>
 #include <QGridLayout>
@@ -61,13 +63,17 @@ using namespace Esri::ArcGISRuntime;
 
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    auto workflowApp = WorkflowAppRDT::getInstance();
+
+    auto analysisName = workflowApp->getGeneralInformationWidget()->getAnalysisName();
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(5,0,0,0);
 
     // Header layout and objects
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Results"));
+    label->setText(tr("Regional Results Summary"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
@@ -76,7 +82,10 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theHeaderLayout->addStretch(1);
 
     // Layout to display the results
-    resultsPageWidget = new QWidget(this);
+//    resultsPageWidget = new QWidget();
+
+    thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(this,theVisualizationWidget);
+    auto pelicanResults = thePelicunPostProcessor->getResultsGridLayout();
 
     // Export layout and objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
@@ -104,10 +113,11 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theExportLayout->addWidget(exportPathLineEdit);
     theExportLayout->addWidget(exportBrowseFileButton);
     theExportLayout->addWidget(exportFileButton);
+    theExportLayout->addStretch();
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addWidget(resultsPageWidget);
-    mainLayout->addLayout(theExportLayout);
+    mainLayout->addLayout(pelicanResults);
+    mainLayout->addLayout(theExportLayout,1);
 
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&ResultsWidget::assemblePDF);
 
@@ -142,18 +152,16 @@ int ResultsWidget::processResults()
 
     //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
 
-    QString resultsDirectory = "/Users/steve/Desktop/SimCenter/Examples/rWhaleExample/RDT_example_results_new/";
+    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
 
 
     if(DVApp.compare("Pelicun") == 0)
     {
-        thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(theVisualizationWidget);
-
         auto res = thePelicunPostProcessor->importResults(resultsDirectory);
 
         if(res != 0)
         {
-            QString err = "Error importing the results from "+resultsDirectory;
+            QString err = "Error importing the results from " + resultsDirectory;
             return -1;
         }
     }
