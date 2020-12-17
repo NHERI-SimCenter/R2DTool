@@ -110,20 +110,6 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     theInstance = this;
 
-    // Create the various widgets
-    theRegionalMappingWidget = new RegionalMappingWidget(this);
-    theGeneralInformationWidget = new GeneralInformationWidget(this, theRegionalMappingWidget);
-    theRVs = new RandomVariablesContainer();
-    theVisualizationWidget = new VisualizationWidget(this);
-    theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
-    theModelingWidget = new AssetsModelWidget(this, theRVs);
-    theHazardsWidget = new HazardsWidget(this, theVisualizationWidget, theRVs);
-    theEngDemandParamWidget = new EngDemandParameterWidget(this);
-    theDamageMeasureWidget = new DamageMeasureWidget(this);
-    theDecisionVariableWidget = new DecisionVariableWidget(this);
-    theUQWidget = new UQ_EngineSelection(theRVs);
-    theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
-
     localApp = new LocalApplication("RDT_workflow.py");
     remoteApp = new RemoteApplication("RDT_workflow.py", theService);
 
@@ -158,6 +144,38 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     connect(theJobManager,SIGNAL(loadFile(QString)), this, SLOT(loadFile(QString)));
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
+
+    // access a web page which will increment the usage count for this tool
+    manager = new QNetworkAccessManager(this);
+
+    connect(manager, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(replyFinished(QNetworkReply*)));
+
+    manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
+
+}
+
+
+void WorkflowAppRDT::initialize(void)
+{
+    QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
+    exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadAlamedaExample);
+
+    // Create the various widgets
+    theRegionalMappingWidget = new RegionalMappingWidget(this);
+    theGeneralInformationWidget = new GeneralInformationWidget(this, theRegionalMappingWidget);
+    theRVs = new RandomVariablesContainer();
+    theVisualizationWidget = new VisualizationWidget(this);
+    theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
+    theModelingWidget = new AssetsModelWidget(this, theRVs);
+    theHazardsWidget = new HazardsWidget(this, theVisualizationWidget, theRVs);
+    theEngDemandParamWidget = new EngDemandParameterWidget(this);
+    theDamageMeasureWidget = new DamageMeasureWidget(this);
+    theDecisionVariableWidget = new DecisionVariableWidget(this);
+    theUQWidget = new UQ_EngineSelection(theRVs);
+    theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
+
+    connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
 
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
@@ -198,23 +216,6 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     theComponentSelection->displayComponent("VIZ");
 
-    // access a web page which will increment the usage count for this tool
-    manager = new QNetworkAccessManager(this);
-
-    connect(manager, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(replyFinished(QNetworkReply*)));
-
-    connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
-
-    manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
-
-}
-
-
-void WorkflowAppRDT::initialize(void)
-{
-    QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-    exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadAlamedaExample);
 }
 
 

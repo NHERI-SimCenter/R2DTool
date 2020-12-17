@@ -3,10 +3,12 @@
 #include "VisualizationWidget.h"
 #include "TablePrinter.h"
 #include "WorkflowAppRDT.h"
+#include "MainWindowWorkflowApp.h"
 #include "GeneralInformationWidget.h"
 #include "REmpiricalProbabilityDistribution.h"
 
 #include <QHeaderView>
+#include <QTabWidget>
 #include <QGroupBox>
 #include <QTableWidget>
 #include <QFileInfo>
@@ -17,6 +19,7 @@
 #include <QBarSet>
 #include <QBarSeries>
 #include <QChart>
+#include <QDockWidget>
 #include <QBarCategoryAxis>
 #include <QStackedBarSeries>
 #include <QValueAxis>
@@ -29,6 +32,7 @@
 #include <QTextTable>
 #include <QComboBox>
 #include <QLineSeries>
+#include <QMenuBar>
 
 // GIS headers
 #include "Basemap.h"
@@ -38,52 +42,18 @@
 
 using namespace QtCharts;
 
-PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : QMainWindow(parent), theVisualizationWidget(visWidget)
 {
+    // Create a view menu for the dockable windows
+    auto mainWindow = WorkflowAppRDT::getInstance()->getTheMainWindow();
+    QMenu *viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
+
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&PelicunPostProcessor::assemblePDF);
 
-    // Create the table that will show the Component information
-    pelicunResultsTableWidget = new QTableWidget(this);
-    pelicunResultsTableWidget->verticalHeader()->setVisible(false);
-    pelicunResultsTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    pelicunResultsTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    pelicunResultsTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
-
-    pelicunResultsTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    pelicunResultsTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
-    QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
-
-    pelicunResultsTableWidget->setColumnCount(tableHeadings.size());
-    pelicunResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
-    pelicunResultsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-    // Combo box to select how to sort the table
-    QStringList comboBoxHeadings = {"Asset ID","Repair Cost","Repair Time","Replacement Probability","Fatalities","Loss Ratio"};
-    sortComboBox = new QComboBox();
-    sortComboBox->insertItems(0,comboBoxHeadings);
-
-    sortComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-    auto comboBoxLabel = new QLabel("Sorting Filter:", this);
-
-    connect(sortComboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),this, &PelicunPostProcessor::sortTable);
-
-    // Layout to display the results
-    resultsGridLayout = new QGridLayout();
-    resultsGridLayout->setContentsMargins(10,0,0,0);
-
-    QGroupBox* totalsWidget = new QGroupBox("Estimated Regional Totals",this);
-    totalsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    // Summary group box
+    QWidget* totalsWidget = new QWidget(this);
+    totalsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
     QGridLayout* totalsLayout = new QGridLayout(totalsWidget);
-
-    QLabel* estCasLabel = new QLabel("Estimated Casualties", this);
-    QLabel* estLossLabel = new QLabel("Estimated Economic Losses", this);
-    QLabel* relFreqLabel = new QLabel("Relative Frequency Diagram of Expected Losses", this);
-
-    estCasLabel->setStyleSheet("font-weight: bold");
-    estLossLabel->setStyleSheet("font-weight: bold");
-    relFreqLabel->setStyleSheet("font-weight: bold");
 
     totalCasLabel = new QLabel("Casualties:", this);
     totalFatalitiesLabel = new QLabel("Fatalities:", this);
@@ -112,30 +82,89 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     totalsLayout->addWidget(nonStructLossLabel,2,2);
     totalsLayout->addWidget(nonStructLossValueLabel,2,3,1,1,Qt::AlignLeft);
 
+    QDockWidget* summaryDock = new QDockWidget("Estimated Regional Totals",this);
+
+    summaryDock->setWidget(totalsWidget);
+    viewMenu->addAction(summaryDock->toggleViewAction());
+    addDockWidget(Qt::RightDockWidgetArea, summaryDock);
+
+    // Charts
+    theChartsTabWidget = new QTabWidget(this);
+
+    QDockWidget* chartsDock = new QDockWidget(tr("Charts"), this);
+    chartsDock->setContentsMargins(5,5,5,5);
+    chartsDock->setWidget(theChartsTabWidget);
+    viewMenu->addAction(chartsDock->toggleViewAction());
+
+    this->addDockWidget(Qt::RightDockWidgetArea,chartsDock);
+
+    // Create the table that will show the Component information
+    tableWidget = new QWidget(this);
+
+    auto tableWidgetLayout = new QVBoxLayout(tableWidget);
+
+    pelicunResultsTableWidget = new QTableWidget(this);
+    pelicunResultsTableWidget->verticalHeader()->setVisible(false);
+    pelicunResultsTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    pelicunResultsTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    pelicunResultsTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+
+    pelicunResultsTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    pelicunResultsTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
+
+    pelicunResultsTableWidget->setColumnCount(tableHeadings.size());
+    pelicunResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
+    pelicunResultsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Combo box to select how to sort the table
+    QHBoxLayout *comboLayout = new QHBoxLayout();
+
+    QStringList comboBoxHeadings = {"Asset ID","Repair Cost","Repair Time","Replacement Probability","Fatalities","Loss Ratio"};
+    sortComboBox = new QComboBox();
+    sortComboBox->insertItems(0,comboBoxHeadings);
+    sortComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+
+    connect(sortComboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),this, &PelicunPostProcessor::sortTable);
+
+    auto comboBoxLabel = new QLabel("Sorting Filter:", this);
+
+    comboLayout->addWidget(comboBoxLabel);
+    comboLayout->addWidget(sortComboBox);
+    comboLayout->addStretch(0);
+
+    tableWidgetLayout->addLayout(comboLayout);
+    tableWidgetLayout->addWidget(pelicunResultsTableWidget);
+    tableWidgetLayout->addStretch(0);
+
+    QDockWidget* tableDock = new QDockWidget("Detailed Results",this);
+    tableDock->setWidget(tableWidget);
+    tableDock->setMinimumWidth(475);
+    addDockWidget(Qt::RightDockWidgetArea, tableDock);
+
+    viewMenu->addAction(tableDock->toggleViewAction());
+
+    //    mainWindow->menuBar()->addAction(tableDock->toggleViewAction());
+
 
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
-    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr,mapViewMainWidget);
+    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(this,mapViewMainWidget);
 
     mapViewSubWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    mapViewSubWidget->setFixedHeight(400);
+    //    mapViewSubWidget->setMaximumWidth(780);
 
-    resultsGridLayout->addWidget(estCasLabel,0,0,Qt::AlignCenter);
-    resultsGridLayout->addWidget(estLossLabel,0,1,Qt::AlignCenter);
-    resultsGridLayout->addWidget(totalsWidget,0,2,2,2,Qt::AlignLeft);
-    resultsGridLayout->addWidget(relFreqLabel,2,2,1,2,Qt::AlignCenter);
+    QDockWidget* mapViewDock = new QDockWidget("Regional Map",this);
+    mapViewDock->setAllowedAreas(Qt::LeftDockWidgetArea);
+    mapViewDock->setWidget(mapViewSubWidget.get());
+    addDockWidget(Qt::LeftDockWidgetArea, mapViewDock);
 
-    // Charts go here->
+    viewMenu->addAction(mapViewDock->toggleViewAction());
 
-    resultsGridLayout->addWidget(comboBoxLabel,7,2,1,1);
-
-    resultsGridLayout->addWidget(sortComboBox,7,3,1,1);
-
-    resultsGridLayout->addWidget(mapViewSubWidget.get(),6,0,4,2);
-
-    resultsGridLayout->setColumnStretch(9, 1);
 
 }
 
@@ -350,7 +379,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVdata)
     }
     catch (const QString msg)
     {
-        this->userMessageDialog(msg);
+        //        this->userMessageDialog(msg);
 
         return -1;
     }
@@ -390,19 +419,21 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVdata)
 
     this->createHistogramChart(&theProbDist);
 
-    // Arrange the charts in a grid
-    casualtiesChartView->setMinimumHeight(250);
-    casualtiesChartView->setMaximumWidth(500);
+    // Set a default size to the charts
+    //    auto height = 240;
+    //    auto width = 320;
+    //    casualtiesChartView->setMinimumHeight(height);
+    //    casualtiesChartView->setMinimumWidth(width);
 
-    lossesChartView->setMinimumHeight(250);
-    lossesChartView->setMaximumWidth(500);
+    //    lossesChartView->setMinimumHeight(height);
+    //    lossesChartView->setMinimumWidth(width);
 
-    resultsGridLayout->addWidget(casualtiesChartView,1,0,5,1);
-    resultsGridLayout->addWidget(lossesChartView,1,1,5,1);
+    //    lossesHistogram->setMinimumHeight(height);
+    //    lossesHistogram->setMinimumWidth(width);
 
-    resultsGridLayout->addWidget(lossesHistogram,3,2,4,2);
-
-    resultsGridLayout->addWidget(pelicunResultsTableWidget,8,2,1,2,Qt::AlignTop);
+    theChartsTabWidget->addTab(casualtiesChartView,"Casualties");
+    theChartsTabWidget->addTab(lossesChartView,"Losses");
+    theChartsTabWidget->addTab(lossesHistogram,"RF Losses");
 
     return 0;
 }
@@ -471,8 +502,6 @@ int PelicunPostProcessor::createHistogramChart(REmpiricalProbabilityDistribution
     lossesHistogram->setContentsMargins(0,0,0,0);
     lossesHistogram->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    lossesHistogram->show();
-
     return 0;
 }
 
@@ -484,9 +513,9 @@ int PelicunPostProcessor::createLossesChart(QBarSet *structLossSet, QBarSet *NSA
     series->append(NSAccLossSet);
     series->append(NSDriftLossSet);
     series->setBarWidth(1.0);
-//    series->setLabelsVisible(true);
-//    series->setLabelsPrecision(3);
-//    series->setLabelsPosition(QAbstractBarSeries::LabelsCenter);
+    //    series->setLabelsVisible(true);
+    //    series->setLabelsPrecision(3);
+    //    series->setLabelsPosition(QAbstractBarSeries::LabelsCenter);
 
     QChart *chart = new QChart();
     chart->setDropShadowEnabled(false);
@@ -730,6 +759,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("Regional map visualization.\n",captionFormat);
 
+    casualtiesChartView->setVisible(true);
     auto rectFig2 = casualtiesChartView->viewport()->rect();
     QPixmap pixmapFig2(rectFig2.size());
     QPainter painterFig2(&pixmapFig2);
@@ -748,6 +778,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("\nEstimated casualties.\n",captionFormat);
 
+    lossesChartView->setVisible(true);
     auto rectFig3 = lossesChartView->viewport()->rect();
     QPixmap pixmapFig3(rectFig3.size());
     QPainter painterFig3(&pixmapFig3);
@@ -765,25 +796,23 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("\nEstimated economic losses.\n",captionFormat);
 
+    lossesHistogram->setVisible(true);
+    auto rectFig4 = lossesHistogram->viewport()->rect();
+    QPixmap pixmapFig4(rectFig4.size());
+    QPainter painterFig4(&pixmapFig4);
+    painterFig4.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    lossesHistogram->render(&painterFig4, pixmapFig4.rect(), rectFig4);
+    auto figure4 = pixmapFig4.toImage();
 
-    {
-        auto rectFig4 = lossesHistogram->viewport()->rect();
-        QPixmap pixmapFig4(rectFig4.size());
-        QPainter painterFig4(&pixmapFig4);
-        painterFig4.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-        lossesHistogram->render(&painterFig4, pixmapFig4.rect(), rectFig4);
-        auto figure4 = pixmapFig4.toImage();
+    QTextImageFormat imageFormatFig4;
+    imageFormatFig4.setName("Figure4");
+    imageFormatFig4.setQuality(600);
+    imageFormatFig4.setWidth(400);
 
-        QTextImageFormat imageFormatFig4;
-        imageFormatFig4.setName("Figure4");
-        imageFormatFig4.setQuality(600);
-        imageFormatFig4.setWidth(400);
+    document->addResource(QTextDocument::ImageResource,QUrl("Figure4"),figure4);
+    cursor.insertImage(imageFormatFig4,QTextFrameFormat::InFlow);
 
-        document->addResource(QTextDocument::ImageResource,QUrl("Figure4"),figure4);
-        cursor.insertImage(imageFormatFig4,QTextFrameFormat::InFlow);
-
-        cursor.insertText("\nRelative frequency diagram of expected losses.\n",captionFormat);
-    }
+    cursor.insertText("\nRelative frequency diagram of expected losses.\n",captionFormat);
 
     cursor.insertText("Individual Asset Results - Sorted According to the " + sortComboBox->currentText() + "\n",boldFormat);
 
@@ -792,14 +821,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     document->print(&printer);
 
-
     return 0;
-}
-
-
-QGridLayout *PelicunPostProcessor::getResultsGridLayout() const
-{
-    return resultsGridLayout;
 }
 
 

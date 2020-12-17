@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class VisualizationWidget;
 class PelicunPostProcessor;
-
+class QVBoxLayout;
 class QLineEdit;
 
 class ResultsWidget : public SimCenterAppWidget
@@ -68,6 +68,8 @@ private:
 
     QString DVApp = "Pelicun";
     QLineEdit* exportPathLineEdit;
+
+    QVBoxLayout* mainLayout;
 
     QWidget* resultsPageWidget;
 

@@ -62,11 +62,11 @@ void ResultsMapViewWidget::wheelEvent(QWheelEvent* wheelEvent)
 
 void ResultsMapViewWidget::resizeEvent(QResizeEvent *event)
 {
-    //    auto mapWidth = mainViewWidget->mapWidth();
-    //    auto mapHeight = mainViewWidget->mapHeight();
+    auto mapWidth = mainViewWidget->mapWidth();
+    auto mapHeight = mainViewWidget->mapHeight();
 
-    //    this->setMaximumWidth(mapWidth);
-    //    this->setMaximumHeight(mapHeight);
+    this->setMaximumWidth(mapWidth);
+    this->setMaximumHeight(mapHeight);
 
     QAbstractScrollArea::resizeEvent(event);
 }
@@ -74,11 +74,11 @@ void ResultsMapViewWidget::resizeEvent(QResizeEvent *event)
 
 void ResultsMapViewWidget::showEvent(QShowEvent *event)
 {
-    //    auto width = mainViewWidget->width();
-    //    auto height = mainViewWidget->height();
+    auto width = mainViewWidget->width();
+    auto height = mainViewWidget->height();
 
-    //    this->setMaximumWidth(width);
-    //    this->setMaximumHeight(height);
+    this->setMaximumWidth(width);
+    this->setMaximumHeight(height);
 
     QAbstractScrollArea::showEvent(event);
 }

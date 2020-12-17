@@ -62,7 +62,7 @@ using namespace Esri::ArcGISRuntime;
 
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(5,0,0,0);
 
     // Header layout and objects
@@ -79,7 +79,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     // Layout to display the results
     resultsPageWidget = new QWidget();
 
-    thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(nullptr,theVisualizationWidget);
+    thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(parent,theVisualizationWidget);
 
     // Export layout and objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
@@ -158,9 +158,10 @@ int ResultsWidget::processResults()
             return -1;
         }
 
-        resultsPageWidget->setLayout(thePelicunPostProcessor->getResultsGridLayout());
-    }
+        mainLayout->replaceWidget(resultsPageWidget,thePelicunPostProcessor.get());
 
+        thePelicunPostProcessor->show();
+    }
 
 
     return 0;
