@@ -47,12 +47,12 @@ bool CSVtoBIMModelingWidget::outputToJSON(QJsonObject &jsonObj)
 
     auto assetsWidget = mainWindowWidget->getAssetsWidget();
 
-    auto buildingSourceFile = assetsWidget->getBuildingWidget()->getPathToComponentFile();
+    //auto buildingSourceFile = assetsWidget->getBuildingWidget()->getPathToComponentFile();
 
     QJsonObject appDataObj;
     appDataObj.insert("Min", 1);
     appDataObj.insert("Max", 3);
-    appDataObj.insert("buildingSourceFile", buildingSourceFile);
+    //appDataObj.insert("buildingSourceFile", buildingSourceFile);
 
     jsonObj.insert("ApplicationData",appDataObj);
 

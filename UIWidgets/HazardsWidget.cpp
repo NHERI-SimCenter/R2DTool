@@ -139,7 +139,7 @@ void HazardsWidget::createWidget(void)
 
     theRootStackedWidget->setCurrentWidget(theEQSSWidget);
 
-    hazardSelectionCombo->setCurrentText("User Specified Ground Motions");
+    hazardSelectionCombo->setCurrentText("Earthquake Scenario Simulation");
 }
 
 

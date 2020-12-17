@@ -1,5 +1,3 @@
-#ifndef RegionalMappingWidget_H
-#define RegionalMappingWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,38 +34,59 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
+// Written by: fmk
+// Latest revision: 12.2020
 
-#include <SimCenterAppWidget.h>
+#include "HazardToAssetWidget.h"
 
-class QLineEdit;
+#include "HazardToAssetBuilding.h"
+#include <SimCenterAppSelection.h>
 
-class RegionalMappingWidget : public SimCenterAppWidget
+#include "VisualizationWidget.h"
+#include "sectiontitle.h"
+#include "SecondaryComponentSelection.h"
+
+// Qt headers
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QTableWidget>
+#include <QColorTransform>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QDebug>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QPointer>
+#include <QPushButton>
+#include <QCheckBox>
+
+#include <SimCenterAppSelection.h>
+#include "ComponentInputWidget.h"
+#include <HazardToAssetBuilding.h>
+
+HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget)
+    : MultiComponentRDT(parent)
 {
-    Q_OBJECT
 
-public:
-    explicit RegionalMappingWidget(QWidget *parent = nullptr);
-    ~RegionalMappingWidget();
-
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
-public slots:
-
-    void handleFileNameChanged(const QString &value);
-
-signals:
-
-private:
-
-    QString eventGridPath;
-    QLineEdit* samplesLineEdit;
-    QLineEdit* neighborsLineEdit;
-//    QLineEdit* filenameLineEdit;
-
-};
+  buildingWidget = new HazardToAssetBuilding(this);
+  
+  
+  pipelineWidget = new SimCenterAppSelection(QString("Hazard To Asset Application"), QString("HazardToAsset"), this);
+  
+  this->addComponent("Buildings", buildingWidget);
+  this->addComponent("Gas Network",pipelineWidget);
+  this->hideAll();
+}
 
 
-#endif // RegionalMappingWidget_H
+HazardToAssetWidget::~HazardToAssetWidget()
+{
+
+}
+
+

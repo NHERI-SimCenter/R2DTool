@@ -1,5 +1,3 @@
-#ifndef RegionalMappingWidget_H
-#define RegionalMappingWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -37,37 +35,71 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
+// Latest revision: 10.08.2020
 
-#include <SimCenterAppWidget.h>
+#include "DamageMeasureWidget.h"
+#include "BuildingDMWidget.h"
+#include "VisualizationWidget.h"
+#include "sectiontitle.h"
 
-class QLineEdit;
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QDebug>
 
-class RegionalMappingWidget : public SimCenterAppWidget
+
+DamageMeasureWidget::DamageMeasureWidget(QWidget *parent) : MultiComponentRDT(parent)
 {
-    Q_OBJECT
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->setMargin(0);
 
-public:
-    explicit RegionalMappingWidget(QWidget *parent = nullptr);
-    ~RegionalMappingWidget();
+    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
+    SectionTitle *label = new SectionTitle();
+    label->setText(QString("Damage Measures (DM)"));
+    label->setMinimumWidth(150);
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    theHeaderLayout->addWidget(label);
+    QSpacerItem *spacer = new QSpacerItem(50,10);
+    theHeaderLayout->addItem(spacer);
 
-public slots:
+    theHeaderLayout->addStretch(1);
+    mainLayout->addLayout(theHeaderLayout);
 
-    void handleFileNameChanged(const QString &value);
-
-signals:
-
-private:
-
-    QString eventGridPath;
-    QLineEdit* samplesLineEdit;
-    QLineEdit* neighborsLineEdit;
-//    QLineEdit* filenameLineEdit;
-
-};
+    theBuildingDMWidget = new BuildingDMWidget(this);
+    thePipelineDMWidget = new BuildingDMWidget(this);
 
 
-#endif // RegionalMappingWidget_H
+    this->addComponent("Buildings", theBuildingDMWidget);
+    this->addComponent("Gas Network",thePipelineDMWidget);
+    this->hideAll();
+
+    this->setLayout(mainLayout);
+}
+
+
+DamageMeasureWidget::~DamageMeasureWidget()
+{
+
+}
+
+
+bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
+{
+
+    theBuildingDMWidget->outputToJSON(jsonObject);
+
+    return true;
+}
+
+
+bool DamageMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
+{
+    return false;
+}
+
+
+
+
+
