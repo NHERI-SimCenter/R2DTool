@@ -1,21 +1,23 @@
 #ifndef PELICUNPOSTPROCESSOR_H
 #define PELICUNPOSTPROCESSOR_H
 
+#include "ResultsMapViewWidget.h"
+#include "QMainWindow.h"
+#include "BuildingDatabase.h"
+
 #include <memory>
 #include <QString>
-
-#include "ResultsMapViewWidget.h"
-#include "SimCenterAppWidget.h"
-#include "BuildingDatabase.h"
 
 class VisualizationWidget;
 class ResultsMapViewWidget;
 class REmpiricalProbabilityDistribution;
 
+class QDockWidget;
 class QTableWidget;
 class QGridLayout;
 class QLabel;
 class QComboBox;
+class QTabWidget;
 
 namespace QtCharts
 {
@@ -33,7 +35,7 @@ class MapGraphicsView;
 }
 
 
-class PelicunPostProcessor : public SimCenterAppWidget
+class PelicunPostProcessor : public QMainWindow
 {
     Q_OBJECT
 
@@ -42,8 +44,6 @@ public:
     PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget);
 
     int importResults(const QString& pathToResults);
-
-    QGridLayout *getResultsGridLayout() const;
 
     int printToPDF(const QString& outputPath);
 
@@ -77,8 +77,6 @@ private:
 
     QString outputFilePath;
 
-    QGridLayout* resultsGridLayout;
-
     QLabel* totalCasLabel;
     QLabel* totalLossLabel;
     QLabel* totalRepairTimeLabel;
@@ -93,7 +91,11 @@ private:
     QLabel* structLossValueLabel;
     QLabel* nonStructLossValueLabel;
 
+    QWidget *tableWidget;
+
     QTableWidget* pelicunResultsTableWidget;
+
+    QTabWidget* theChartsTabWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
