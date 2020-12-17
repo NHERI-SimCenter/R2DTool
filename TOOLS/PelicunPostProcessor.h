@@ -2,11 +2,13 @@
 #define PELICUNPOSTPROCESSOR_H
 
 #include "ResultsMapViewWidget.h"
-#include "QMainWindow.h"
 #include "BuildingDatabase.h"
 
-#include <memory>
 #include <QString>
+#include <QMainWindow>
+
+#include <memory>
+#include <set>
 
 class VisualizationWidget;
 class ResultsMapViewWidget;
@@ -17,7 +19,6 @@ class QTableWidget;
 class QGridLayout;
 class QLabel;
 class QComboBox;
-class QTabWidget;
 
 namespace QtCharts
 {
@@ -43,7 +44,7 @@ public:
 
     PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget);
 
-    int importResults(const QString& pathToResults);
+    void importResults(const QString& pathToResults);
 
     int printToPDF(const QString& outputPath);
 
@@ -65,22 +66,30 @@ public:
         return val;
     }
 
+    void processResultsSubset(const std::set<int>& selectedComponentIDs);
+
 private slots:
 
     int assemblePDF(QImage screenShot);
 
     void sortTable(int index);
 
+    void restoreUI(void);
+
 private:
 
-    int processDVResults(const QVector<QStringList>& DVdata);
+    int processDVResults(const QVector<QStringList>& DVResults);
+
+    QVector<QStringList> DMdata;
+    QVector<QStringList> DVdata;
+    QVector<QStringList> EDPdata;
 
     QString outputFilePath;
 
     QLabel* totalCasLabel;
     QLabel* totalLossLabel;
     QLabel* totalRepairTimeLabel;
-    QLabel* totalFatalitiesLabel; 
+    QLabel* totalFatalitiesLabel;
     QLabel* structLossLabel;
     QLabel* nonStructLossLabel;
 
@@ -95,7 +104,9 @@ private:
 
     QTableWidget* pelicunResultsTableWidget;
 
-    QTabWidget* theChartsTabWidget;
+    QDockWidget* chartsDock1;
+    QDockWidget* chartsDock2;
+    QDockWidget* chartsDock3;
 
     VisualizationWidget* theVisualizationWidget;
 
@@ -115,6 +126,8 @@ private:
     int createCasualtiesChart(QtCharts::QBarSet *casualtiesSet);
 
     QVector<Building> buildingsVec;
+
+    QByteArray uiState;
 
 };
 

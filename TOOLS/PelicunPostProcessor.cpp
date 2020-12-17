@@ -48,6 +48,8 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     auto mainWindow = WorkflowAppRDT::getInstance()->getTheMainWindow();
     QMenu *viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
 
+    viewMenu->addAction(tr("&Restore"), this, &PelicunPostProcessor::restoreUI);
+
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&PelicunPostProcessor::assemblePDF);
 
     // Summary group box
@@ -83,20 +85,36 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     totalsLayout->addWidget(nonStructLossValueLabel,2,3,1,1,Qt::AlignLeft);
 
     QDockWidget* summaryDock = new QDockWidget("Estimated Regional Totals",this);
-
+    summaryDock->setObjectName("SummaryDock");
     summaryDock->setWidget(totalsWidget);
     viewMenu->addAction(summaryDock->toggleViewAction());
     addDockWidget(Qt::RightDockWidgetArea, summaryDock);
 
     // Charts
-    theChartsTabWidget = new QTabWidget(this);
+    //    theChartsTabWidget = new QTabWidget(this);
 
-    QDockWidget* chartsDock = new QDockWidget(tr("Charts"), this);
-    chartsDock->setContentsMargins(5,5,5,5);
-    chartsDock->setWidget(theChartsTabWidget);
-    viewMenu->addAction(chartsDock->toggleViewAction());
+    chartsDock1 = new QDockWidget(tr("Casualties"), this);
+    chartsDock1->setObjectName("Casualties");
+    chartsDock1->setContentsMargins(5,5,5,5);
 
-    this->addDockWidget(Qt::RightDockWidgetArea,chartsDock);
+    chartsDock2 = new QDockWidget(tr("Economic Losses"), this);
+    chartsDock2->setObjectName("Economic Losses");
+    chartsDock2->setContentsMargins(5,5,5,5);
+
+    chartsDock3 = new QDockWidget(tr("Relative Freq. Losses"), this);
+    chartsDock3->setObjectName("Relative Freq. Losses");
+    chartsDock3->setContentsMargins(5,5,5,5);
+
+    viewMenu->addAction(chartsDock1->toggleViewAction());
+    viewMenu->addAction(chartsDock2->toggleViewAction());
+    viewMenu->addAction(chartsDock3->toggleViewAction());
+
+    this->addDockWidget(Qt::RightDockWidgetArea,chartsDock1);
+
+    this->tabifyDockWidget(chartsDock1,chartsDock2);
+    this->tabifyDockWidget(chartsDock1,chartsDock3);
+
+    chartsDock1->setFocus();
 
     // Create the table that will show the Component information
     tableWidget = new QWidget(this);
@@ -140,36 +158,41 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     tableWidgetLayout->addStretch(0);
 
     QDockWidget* tableDock = new QDockWidget("Detailed Results",this);
+    tableDock->setObjectName("TableDock");
     tableDock->setWidget(tableWidget);
     tableDock->setMinimumWidth(475);
     addDockWidget(Qt::RightDockWidgetArea, tableDock);
 
     viewMenu->addAction(tableDock->toggleViewAction());
 
-    //    mainWindow->menuBar()->addAction(tableDock->toggleViewAction());
-
+    // mainWindow->menuBar()->addAction(tableDock->toggleViewAction());
 
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
-    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(this,mapViewMainWidget);
+    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr, mapViewMainWidget);
+
+    // Popup stuff
+    // Once map is set, connect to MapQuickView mouse clicked signal
+    connect(mapViewSubWidget.get(), &ResultsMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
 
     mapViewSubWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    //    mapViewSubWidget->setMaximumWidth(780);
+    // mapViewSubWidget->setMaximumWidth(780);
 
     QDockWidget* mapViewDock = new QDockWidget("Regional Map",this);
+    mapViewDock->setObjectName("MapViewDock");
     mapViewDock->setAllowedAreas(Qt::LeftDockWidgetArea);
     mapViewDock->setWidget(mapViewSubWidget.get());
     addDockWidget(Qt::LeftDockWidgetArea, mapViewDock);
 
     viewMenu->addAction(mapViewDock->toggleViewAction());
 
-
+    uiState = this->saveState();
 }
 
 
-int PelicunPostProcessor::importResults(const QString& pathToResults)
+void PelicunPostProcessor::importResults(const QString& pathToResults)
 {
 
     // Remove old csv files in the output pathToResults
@@ -179,10 +202,12 @@ int PelicunPostProcessor::importResults(const QString& pathToResults)
     QStringList acceptableFileExtensions = {"*.csv"};
     QStringList existingCSVFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
 
+    QString errMsg;
+
     if(existingCSVFiles.empty())
     {
-        QString errMessage = "The results folder is empty";
-        return -1;
+        errMsg = "The results folder is empty";
+        throw errMsg;
     }
 
     QString DMResultsSheet;
@@ -201,48 +226,46 @@ int PelicunPostProcessor::importResults(const QString& pathToResults)
 
     CSVReaderWriter csvTool;
 
-    QString err;
-    QVector<QStringList> DMdata = csvTool.parseCSVFile(pathToResults + DMResultsSheet,err);
+    DMdata = csvTool.parseCSVFile(pathToResults + DMResultsSheet,errMsg);
+    if(!errMsg.isEmpty())
+        throw errMsg;
 
-    if(!err.isEmpty() || DMdata.empty())
-        return -1;
+    DVdata = csvTool.parseCSVFile(pathToResults + DVResultsSheet,errMsg);
+    if(!errMsg.isEmpty())
+        throw errMsg;
 
+    EDPdata = csvTool.parseCSVFile(pathToResults + EDPreultsSheet,errMsg);
+    if(!errMsg.isEmpty())
+        throw errMsg;
 
-    QVector<QStringList> DVdata = csvTool.parseCSVFile(pathToResults + DVResultsSheet,err);
+    if(!DVdata.empty())
+        this->processDVResults(DVdata);
+    else
+    {
+        errMsg = "The DV results are empty";
+        throw errMsg;
+    }
 
-    if(!err.isEmpty() || DVdata.empty())
-        return -1;
-
-
-    QVector<QStringList> EDPdata = csvTool.parseCSVFile(pathToResults + EDPreultsSheet,err);
-
-    if(!err.isEmpty() || EDPdata.empty())
-        return -1;
-
-
-    auto res1 = this->processDVResults(DVdata);
-
-    return res1;
 }
 
 
-int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVdata)
+int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults)
 {
-    if(DVdata.size() < 4)
+    if(DVResults.size() < 4)
         return -1;
 
-    auto numHeaders = DVdata.at(0).size();
+    auto numHeaders = DVResults.at(0).size();
 
     QVector<QString> headerStrings(numHeaders);
 
     for(int i = 0; i<numHeaders; ++i)
     {
-        QString headerStr =  DVdata.at(0).at(i)  +"-"+ DVdata.at(1).at(i)  +"-"+  DVdata.at(2).at(i)  +"-"+  DVdata.at(3).at(i);
+        QString headerStr =  DVResults.at(0).at(i)  +"-"+ DVResults.at(1).at(i)  +"-"+  DVResults.at(2).at(i)  +"-"+  DVResults.at(3).at(i);
 
         headerStrings[i] = headerStr;
     }
 
-    pelicunResultsTableWidget->setRowCount(DVdata.size()-4);
+    pelicunResultsTableWidget->setRowCount(DVResults.size()-4);
 
     auto cumulativeStructDS1 = 0.0;
     auto cumulativeStructDS2 = 0.0;
@@ -271,118 +294,110 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVdata)
     // Get the buildings database
     auto theBuildingDB = theVisualizationWidget->getBuildingDatabase();
 
-    try
+    int count = 0;
+    for(int i = 4; i<DVResults.size(); ++i, ++count)
     {
-        int count = 0;
-        for(int i = 4; i<DVdata.size(); ++i, ++count)
+        auto inputRow = DVResults.at(i);
+
+        bool OK;
+        auto buildingID = inputRow.at(0).toInt(&OK);
+
+        if(!OK)
+            throw QString("Could not convert the building ID " + inputRow.at(0) + " to an integer");
+
+        auto building = theBuildingDB->getBuilding(buildingID);
+
+        if(building.ID == -1)
+            throw QString("Could not convert the building ID " + QString::number(buildingID) + " from the database");
+
+
+        for(int j = 1; j<numHeaders; ++j)
         {
-            auto inputRow = DVdata.at(i);
-
-            bool OK;
-            auto buildingID = inputRow.at(0).toInt(&OK);
-
-            if(!OK)
-                throw QString("Could not convert the building ID " + inputRow.at(0) + " to an integer");
-
-            auto building = theBuildingDB->getBuilding(buildingID);
-
-            if(building.ID == -1)
-                throw QString("Could not convert the building ID " + QString::number(buildingID) + " from the database");
-
-
-            for(int j = 1; j<numHeaders; ++j)
-            {
-                building.ResultsValues.insert(headerStrings.at(j),inputRow.at(j).toDouble());
-            }
-
-            auto replacementCostVar = building.buildingAttributes.value("replacementCost",QVariant(0.0));
-
-            auto replacementCost = objectToDouble(replacementCostVar);
-
-            building.ID = buildingID;
-
-            buildingsVec.push_back(building);
-
-            // This assumes that the output from pelicun will not change
-            auto IDStr = inputRow.at(0);            // ID
-            auto totalRepairCost = inputRow.at(1);  // Aggregate repair cost (mean)
-            auto replaceMentProb = inputRow.at(6);  // Replacement probability, i.e., repair impractical probability
-            auto repairTime = inputRow.at(28);      // Aggregate repair time (mean)
-
-            cumulativeRepairTime += objectToDouble(repairTime);
-
-            auto StructDS1 = objectToDouble(inputRow.at(8));    // Structural losses damage state 1 (mean)
-            auto StructDS2 = objectToDouble(inputRow.at(9));    // Structural losses damage state 2 (mean)
-            auto StructDS3 = objectToDouble(inputRow.at(10));   // Structural losses damage state 3 (mean)
-            auto StructDS4 = objectToDouble(inputRow.at(11));   // Structural losses damage state 4 (mean)
-
-            cumulativeStructDS1 += StructDS1;
-            cumulativeStructDS2 += StructDS2;
-            cumulativeStructDS3 += StructDS3;
-            cumulativeStructDS4 += StructDS4;
-
-            auto NSAccDS1 = objectToDouble(inputRow.at(19));    // Non-structural acceleration sensitive losses damage state 1 (mean)
-            auto NSAccDS2 = objectToDouble(inputRow.at(20));    // Non-structural acceleration sensitive losses damage state 2 (mean)
-            auto NSAccDS3 = objectToDouble(inputRow.at(21));    // Non-structural acceleration sensitive losses damage state 3 (mean)
-            auto NSAccDS4 = objectToDouble(inputRow.at(22));    // Non-structural acceleration sensitive losses damage state 4 (mean)
-
-            cumulativeNSAccDS1 += NSAccDS1;
-            cumulativeNSAccDS2 += NSAccDS2;
-            cumulativeNSAccDS3 += NSAccDS3;
-            cumulativeNSAccDS4 += NSAccDS4;
-
-            auto NSDriftDS1 = objectToDouble(inputRow.at(24));  // Non-structural drift sensitive losses damage state 1 (mean)
-            auto NSDriftDS2 = objectToDouble(inputRow.at(25));  // Non-structural drift sensitive losses damage state 2 (mean)
-            auto NSDriftDS3 = objectToDouble(inputRow.at(26));  // Non-structural drift sensitive losses damage state 3 (mean)
-            auto NSDriftDS4 = objectToDouble(inputRow.at(27));  // Non-structural drift sensitive losses damage state 4 (mean)
-
-            cumulativeNSDriftDS1 += NSDriftDS1;
-            cumulativeNSDriftDS2 += NSDriftDS2;
-            cumulativeNSDriftDS3 += NSDriftDS3;
-            cumulativeNSDriftDS4 += NSDriftDS4;
-
-            auto injSevLvl1 = objectToDouble(inputRow.at(33));  // Injuries severity level 1 (mean)
-            auto injSevLvl2 = objectToDouble(inputRow.at(38));  // Injuries severity level 2 (mean)
-            auto injSevLvl3 = objectToDouble(inputRow.at(43));  // Injuries severity level 3 (mean)
-            auto fatalities = objectToDouble(inputRow.at(48));  // Injuries severity level 4 (mean)
-
-            cumulativeinjSevLvl1 += injSevLvl1;
-            cumulativeinjSevLvl2 += injSevLvl2;
-            cumulativeinjSevLvl3 += injSevLvl3;
-            cumulativeinjSevLvl4 += fatalities;
-
-            auto repairCost = objectToDouble(totalRepairCost);
-            auto lossRatio = repairCost/replacementCost;
-
-            theProbDist.addSample(repairCost);
-
-            auto IDItem = new QTableWidgetItem(IDStr);
-            auto RepCostItem = new QTableWidgetItem(totalRepairCost);
-            auto RepProbItem = new QTableWidgetItem(replaceMentProb);
-            auto RepairTimeItem = new QTableWidgetItem(repairTime);
-            auto fatalitiesItem = new QTableWidgetItem(inputRow.at(48));
-            auto lossRatioItem = new QTableWidgetItem(QString::number(lossRatio));
-
-            pelicunResultsTableWidget->setItem(count,0, IDItem);
-            pelicunResultsTableWidget->setItem(count,1, RepCostItem);
-            pelicunResultsTableWidget->setItem(count,2, RepairTimeItem);
-            pelicunResultsTableWidget->setItem(count,3, RepProbItem);
-            pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
-            pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
-
-            auto buildingFeature = building.buildingFeature;
-
-            buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
-
-            buildingFeature->featureTable()->updateFeature(buildingFeature);
+            building.ResultsValues.insert(headerStrings.at(j),inputRow.at(j).toDouble());
         }
-    }
-    catch (const QString msg)
-    {
-        //        this->userMessageDialog(msg);
 
-        return -1;
+        auto replacementCostVar = building.buildingAttributes.value("replacementCost",QVariant(0.0));
+
+        auto replacementCost = objectToDouble(replacementCostVar);
+
+        building.ID = buildingID;
+
+        buildingsVec.push_back(building);
+
+        // This assumes that the output from pelicun will not change
+        auto IDStr = inputRow.at(0);            // ID
+        auto totalRepairCost = inputRow.at(1);  // Aggregate repair cost (mean)
+        auto replaceMentProb = inputRow.at(6);  // Replacement probability, i.e., repair impractical probability
+        auto repairTime = inputRow.at(28);      // Aggregate repair time (mean)
+
+        cumulativeRepairTime += objectToDouble(repairTime);
+
+        auto StructDS1 = objectToDouble(inputRow.at(8));    // Structural losses damage state 1 (mean)
+        auto StructDS2 = objectToDouble(inputRow.at(9));    // Structural losses damage state 2 (mean)
+        auto StructDS3 = objectToDouble(inputRow.at(10));   // Structural losses damage state 3 (mean)
+        auto StructDS4 = objectToDouble(inputRow.at(11));   // Structural losses damage state 4 (mean)
+
+        cumulativeStructDS1 += StructDS1;
+        cumulativeStructDS2 += StructDS2;
+        cumulativeStructDS3 += StructDS3;
+        cumulativeStructDS4 += StructDS4;
+
+        auto NSAccDS1 = objectToDouble(inputRow.at(19));    // Non-structural acceleration sensitive losses damage state 1 (mean)
+        auto NSAccDS2 = objectToDouble(inputRow.at(20));    // Non-structural acceleration sensitive losses damage state 2 (mean)
+        auto NSAccDS3 = objectToDouble(inputRow.at(21));    // Non-structural acceleration sensitive losses damage state 3 (mean)
+        auto NSAccDS4 = objectToDouble(inputRow.at(22));    // Non-structural acceleration sensitive losses damage state 4 (mean)
+
+        cumulativeNSAccDS1 += NSAccDS1;
+        cumulativeNSAccDS2 += NSAccDS2;
+        cumulativeNSAccDS3 += NSAccDS3;
+        cumulativeNSAccDS4 += NSAccDS4;
+
+        auto NSDriftDS1 = objectToDouble(inputRow.at(24));  // Non-structural drift sensitive losses damage state 1 (mean)
+        auto NSDriftDS2 = objectToDouble(inputRow.at(25));  // Non-structural drift sensitive losses damage state 2 (mean)
+        auto NSDriftDS3 = objectToDouble(inputRow.at(26));  // Non-structural drift sensitive losses damage state 3 (mean)
+        auto NSDriftDS4 = objectToDouble(inputRow.at(27));  // Non-structural drift sensitive losses damage state 4 (mean)
+
+        cumulativeNSDriftDS1 += NSDriftDS1;
+        cumulativeNSDriftDS2 += NSDriftDS2;
+        cumulativeNSDriftDS3 += NSDriftDS3;
+        cumulativeNSDriftDS4 += NSDriftDS4;
+
+        auto injSevLvl1 = objectToDouble(inputRow.at(33));  // Injuries severity level 1 (mean)
+        auto injSevLvl2 = objectToDouble(inputRow.at(38));  // Injuries severity level 2 (mean)
+        auto injSevLvl3 = objectToDouble(inputRow.at(43));  // Injuries severity level 3 (mean)
+        auto fatalities = objectToDouble(inputRow.at(48));  // Injuries severity level 4 (mean)
+
+        cumulativeinjSevLvl1 += injSevLvl1;
+        cumulativeinjSevLvl2 += injSevLvl2;
+        cumulativeinjSevLvl3 += injSevLvl3;
+        cumulativeinjSevLvl4 += fatalities;
+
+        auto repairCost = objectToDouble(totalRepairCost);
+        auto lossRatio = repairCost/replacementCost;
+
+        theProbDist.addSample(repairCost);
+
+        auto IDItem = new QTableWidgetItem(IDStr);
+        auto RepCostItem = new QTableWidgetItem(totalRepairCost);
+        auto RepProbItem = new QTableWidgetItem(replaceMentProb);
+        auto RepairTimeItem = new QTableWidgetItem(repairTime);
+        auto fatalitiesItem = new QTableWidgetItem(inputRow.at(48));
+        auto lossRatioItem = new QTableWidgetItem(QString::number(lossRatio));
+
+        pelicunResultsTableWidget->setItem(count,0, IDItem);
+        pelicunResultsTableWidget->setItem(count,1, RepCostItem);
+        pelicunResultsTableWidget->setItem(count,2, RepairTimeItem);
+        pelicunResultsTableWidget->setItem(count,3, RepProbItem);
+        pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
+        pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
+
+        auto buildingFeature = building.buildingFeature;
+
+        buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
+
+        buildingFeature->featureTable()->updateFeature(buildingFeature);
     }
+
 
     //  CASUALTIES
     QBarSet *casualtiesSet = new QBarSet("Casualties");
@@ -420,20 +435,9 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVdata)
     this->createHistogramChart(&theProbDist);
 
     // Set a default size to the charts
-    //    auto height = 240;
-    //    auto width = 320;
-    //    casualtiesChartView->setMinimumHeight(height);
-    //    casualtiesChartView->setMinimumWidth(width);
-
-    //    lossesChartView->setMinimumHeight(height);
-    //    lossesChartView->setMinimumWidth(width);
-
-    //    lossesHistogram->setMinimumHeight(height);
-    //    lossesHistogram->setMinimumWidth(width);
-
-    theChartsTabWidget->addTab(casualtiesChartView,"Casualties");
-    theChartsTabWidget->addTab(lossesChartView,"Losses");
-    theChartsTabWidget->addTab(lossesHistogram,"RF Losses");
+    chartsDock1->setWidget(casualtiesChartView);
+    chartsDock2->setWidget(lossesChartView);
+    chartsDock3->setWidget(lossesHistogram);
 
     return 0;
 }
@@ -554,6 +558,24 @@ int PelicunPostProcessor::printToPDF(const QString& outputPath)
     theVisualizationWidget->takeScreenShot();
 
     return 0;
+}
+
+
+void PelicunPostProcessor::processResultsSubset(const std::set<int>& selectedComponentIDs)
+{
+    if(DVdata.empty())
+    {
+        QString msg = "No results to import!";
+        throw msg;
+        return;
+    }
+
+    for(auto&& id : selectedComponentIDs)
+    {
+
+        qDebug()<<id;
+
+    }
 }
 
 
@@ -759,6 +781,10 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("Regional map visualization.\n",captionFormat);
 
+    auto origSize = casualtiesChartView->size();
+
+    casualtiesChartView->resize(QSize(640,480));
+
     casualtiesChartView->setVisible(true);
     auto rectFig2 = casualtiesChartView->viewport()->rect();
     QPixmap pixmapFig2(rectFig2.size());
@@ -766,6 +792,8 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
     painterFig2.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     casualtiesChartView->render(&painterFig2, pixmapFig2.rect(), rectFig2);
     auto figure2 = pixmapFig2.toImage();
+
+    casualtiesChartView->resize(origSize);
 
     QTextImageFormat imageFormatFig2;
     imageFormatFig2.setName("Figure2");
@@ -778,13 +806,15 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("\nEstimated casualties.\n",captionFormat);
 
-    lossesChartView->setVisible(true);
+    auto origSize2 = lossesChartView->size();
+    lossesChartView->resize(QSize(640,480));
     auto rectFig3 = lossesChartView->viewport()->rect();
     QPixmap pixmapFig3(rectFig3.size());
     QPainter painterFig3(&pixmapFig3);
     painterFig3.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     lossesChartView->render(&painterFig3, pixmapFig3.rect(), rectFig3);
     auto figure3 = pixmapFig3.toImage();
+    lossesChartView->resize(origSize2);
 
     QTextImageFormat imageFormatFig3;
     imageFormatFig3.setName("Figure3");
@@ -796,13 +826,15 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("\nEstimated economic losses.\n",captionFormat);
 
-    lossesHistogram->setVisible(true);
+    auto origSize3 = lossesHistogram->size();
+    lossesHistogram->resize(QSize(640,480));
     auto rectFig4 = lossesHistogram->viewport()->rect();
     QPixmap pixmapFig4(rectFig4.size());
     QPainter painterFig4(&pixmapFig4);
     painterFig4.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     lossesHistogram->render(&painterFig4, pixmapFig4.rect(), rectFig4);
     auto figure4 = pixmapFig4.toImage();
+    lossesHistogram->resize(origSize3);
 
     QTextImageFormat imageFormatFig4;
     imageFormatFig4.setName("Figure4");
@@ -834,4 +866,9 @@ void PelicunPostProcessor::sortTable(int index)
 
 }
 
+
+void PelicunPostProcessor::restoreUI(void)
+{
+    this->restoreState(uiState);
+}
 

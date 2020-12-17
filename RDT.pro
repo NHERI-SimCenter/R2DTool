@@ -41,6 +41,7 @@ INCLUDEPATH += $$PWD/Utils \
 
 
 SOURCES +=  main.cpp \
+            TOOLS/AssetInputDelegate.cpp \
             TOOLS/NGAW2Converter.cpp \
             TOOLS/PelicunPostProcessor.cpp \
             TOOLS/TablePrinter.cpp \
@@ -127,6 +128,7 @@ SOURCES +=  main.cpp \
 HEADERS +=  WorkflowAppRDT.h\
             RDTUserPass.h \
             RunWidget.h \
+            TOOLS/AssetInputDelegate.h \
             TOOLS/NGAW2Converter.h \
             TOOLS/PelicunPostProcessor.h \
             TOOLS/TablePrinter.h \

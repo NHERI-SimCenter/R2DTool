@@ -60,6 +60,14 @@ void ResultsMapViewWidget::wheelEvent(QWheelEvent* wheelEvent)
 }
 
 
+void ResultsMapViewWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    auto globalPoint = event->globalPos();
+
+    emit mouseClick(globalPoint);
+}
+
+
 void ResultsMapViewWidget::resizeEvent(QResizeEvent *event)
 {
     auto mapWidth = mainViewWidget->mapWidth();
