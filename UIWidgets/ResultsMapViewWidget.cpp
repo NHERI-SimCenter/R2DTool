@@ -28,71 +28,28 @@ ResultsMapViewWidget::ResultsMapViewWidget(QWidget* parent, MapGraphicsView* mai
 
     this->setScene(mainViewWidget->scene());
 
-    connect(this, &Esri::ArcGISRuntime::MapGraphicsView::viewpointChanged, this, [this]
-    {
-        if (this->isNavigating())
-            mainViewWidget->setViewpoint(this->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
-
-    }, Qt::UniqueConnection);
-
-    connect(mainViewWidget, &Esri::ArcGISRuntime::MapGraphicsView::viewpointChanged, this, [this]
-    {
-        if (mainViewWidget->isNavigating())
-            this->setViewpoint(mainViewWidget->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
-
-    }, Qt::UniqueConnection);
-
-
+    this->setGeometry(mainViewWidget->geometry());
 }
 
 
 void ResultsMapViewWidget::wheelEvent(QWheelEvent* wheelEvent)
-{
+{ 
+    auto hThis = this->geometry().height();
+    auto wThis =this->geometry().width();
 
-    //    QRect widgetRect = mainViewWidget->geometry();
-    //    widgetRect.moveTopLeft(mainViewWidget->parentWidget()->mapToGlobal(widgetRect.topLeft()));
+    auto hThat =mainViewWidget->geometry().height();
+    auto wThat =mainViewWidget->geometry().width();
 
     auto mousePos = wheelEvent->position().toPoint();
-    auto mouseAD = wheelEvent->angleDelta();
 
     // Position
-
-    QRect widgetRect = this->geometry();
-    QPoint thisTLGlobal = this->mapToGlobal(widgetRect.center());
-
-
-    QRect widgetRect2 = mainViewWidget->geometry();
-    QPoint thatTLGlobal = mainViewWidget->mapToGlobal(widgetRect2.center());
-
-    auto diff = thatTLGlobal - thisTLGlobal;
-
-
-    auto thisGlobalMousePos = this->mapToGlobal(mousePos);
-
-    auto thatMousePos = mainViewWidget->mapFromGlobal(thisGlobalMousePos + diff);
-
-    // Angle delta
-    const QPoint globalAD = this->mapToGlobal(mouseAD);
-    QPoint localAD = mainViewWidget->mapFromGlobal(globalAD);
-
+    auto x = mousePos.x( ) + 0.5*(wThat-wThis);
+    auto y =  mousePos.y() + 0.5*(hThat-hThis);
 
     // Get the point of the mouse
-    Esri::ArcGISRuntime::Point mapPoint = mainViewWidget->screenToLocation(thatMousePos.x(), thatMousePos.y());
+    Esri::ArcGISRuntime::Point mapPoint = mainViewWidget->screenToLocation(x,y);
 
-
-    auto ry = localAD.ry();
-    auto angle = 0.0;
-    if(ry<0)
-        angle = 86;
-    else
-        angle = -86;
-
-    qDebug()<<"rx"<<localAD.rx();
-    qDebug()<<"ry"<<localAD.ry();
-
-
-
-//    auto angle = -1*localAD.ry();
+    auto angle = -1*wheelEvent->angleDelta().ry();
 
     double scaleFactor = pow(zoomFactor, angle);
 
@@ -103,13 +60,21 @@ void ResultsMapViewWidget::wheelEvent(QWheelEvent* wheelEvent)
 }
 
 
+void ResultsMapViewWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    auto globalPoint = event->globalPos();
+
+    emit mouseClick(globalPoint);
+}
+
+
 void ResultsMapViewWidget::resizeEvent(QResizeEvent *event)
 {
-    //    auto mapWidth = mainViewWidget->mapWidth();
-    //    auto mapHeight = mainViewWidget->mapHeight();
+    auto mapWidth = mainViewWidget->mapWidth();
+    auto mapHeight = mainViewWidget->mapHeight();
 
-    //    this->setMaximumWidth(mapWidth);
-    //    this->setMaximumHeight(mapHeight);
+    this->setMaximumWidth(mapWidth);
+    this->setMaximumHeight(mapHeight);
 
     QAbstractScrollArea::resizeEvent(event);
 }
@@ -117,11 +82,11 @@ void ResultsMapViewWidget::resizeEvent(QResizeEvent *event)
 
 void ResultsMapViewWidget::showEvent(QShowEvent *event)
 {
-    //    auto width = mainViewWidget->width();
-    //    auto height = mainViewWidget->height();
+    auto width = mainViewWidget->width();
+    auto height = mainViewWidget->height();
 
-    //    this->setMaximumWidth(width);
-    //    this->setMaximumHeight(height);
+    this->setMaximumWidth(width);
+    this->setMaximumHeight(height);
 
     QAbstractScrollArea::showEvent(event);
 }

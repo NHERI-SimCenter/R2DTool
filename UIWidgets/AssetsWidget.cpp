@@ -69,23 +69,21 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentRDT(parent), visualizationWidget(visWidget)
 {
 
-  buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("CSV_to_BIM"), this);
-  ComponentInputWidget *csvBuildingInventory = new ComponentInputWidget(this, "Buildings");
-  buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
+    buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("CSV_to_BIM"), this);
+    ComponentInputWidget *csvBuildingInventory = new ComponentInputWidget(this, "Buildings");
+    buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
 
-  pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
-  ComponentInputWidget *csvPipelineWidget = new ComponentInputWidget(this, "Gas Network");
+    pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
+    ComponentInputWidget *csvPipelineWidget = new ComponentInputWidget(this, "Gas Network");
 
-  visualizationWidget->setBuildingWidget(csvBuildingInventory);
-  visualizationWidget->setPipelineWidget(csvPipelineWidget);
+    visualizationWidget->setBuildingWidget(csvBuildingInventory);
+    visualizationWidget->setPipelineWidget(csvPipelineWidget);
 
-  QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-  csvPipelineWidget->testFileLoad(pathToPipelineInfoFile);
+//    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
+//    csvPipelineWidget->testFileLoad(pathToPipelineInfoFile);
 
-
-    QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/input_params.csv";
-    csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
+//    QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/BuildingInventory.csv";
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
