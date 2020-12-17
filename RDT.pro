@@ -79,8 +79,14 @@ SOURCES +=  main.cpp \
             UIWidgets/HazardsWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/AssetsWidget.cpp \
+            UIWidgets/UQWidget.cpp \
+            UIWidgets/AnalysisWidget.cpp \
+            UIWidgets/ModelWidget.cpp \
+            UIWidgets/HazardToAssetWidget.cpp \
+            UIWidgets/HazardToAssetBuilding.cpp \
             UIWidgets/AssetsModelWidget.cpp \
             UIWidgets/DamageMeasureWidget.cpp \
+            UIWidgets/DLWidget.cpp \
             UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
@@ -149,6 +155,11 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/HazardsWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/AssetsWidget.h \
+            UIWidgets/ModelWidget.h \
+            UIWidgets/AnalysisWidget.h \
+            UIWidgets/UQWidget.h \
+            UIWidgets/HazardToAssetWidget.h \
+            UIWidgets/HazardToAssetBuilding.h \
             UIWidgets/AssetsModelWidget.h \
             UIWidgets/VisualizationWidget.h \
             UIWidgets/ComponentInputWidget.h \
@@ -162,6 +173,7 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/BuildingSimulationWidget.h \
             UIWidgets/CSVtoBIMModelingWidget.h \
             UIWidgets/DamageMeasureWidget.h \
+            UIWidgets/DLWidget.h \
             UIWidgets/PelicunDLWidget.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \

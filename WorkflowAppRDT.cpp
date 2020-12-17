@@ -38,23 +38,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Latest revision: 10.08.2020
 
 #include "AssetsWidget.h"
-#include "AssetsModelWidget.h"
+#include "AnalysisWidget.h"
+#include "ModelWidget.h"
 #include "HazardsWidget.h"
+#include "HazardToAssetWidget.h"
 #include "VisualizationWidget.h"
 #include "ResultsWidget.h"
 #include "EngDemandParameterWidget.h"
-#include "DamageMeasureWidget.h"
-#include "DecisionVariableWidget.h"
+#include "DLWidget.h"
+
+//#include "DamageMeasureWidget.h"
+//#include "DecisionVariableWidget.h"
 #include "WorkflowAppRDT.h"
 #include "LocalApplication.h"
 #include "RemoteApplication.h"
 #include "RemoteJobManager.h"
 #include "RunWidget.h"
-#include "InputWidgetUQ.h"
+//#include "InputWidgetUQ.h"
 #include "RunLocalWidget.h"
 #include "RemoteService.h"
 #include "SimCenterComponentSelection.h"
-#include "RegionalMappingWidget.h"
+//#include "RegionalMappingWidget.h"
 #include "GeneralInformationWidget.h"
 #include "MainWindowWorkflowApp.h"
 #include "RandomVariablesContainer.h"
@@ -62,6 +66,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "DakotaResultsSampling.h"
 #include "CustomizedItemModel.h"
 #include "GoogleAnalytics.h"
+#include "UQWidget.h"
+
+#include <DLWidget.h>
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -111,17 +118,19 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theInstance = this;
 
     // Create the various widgets
-    theRegionalMappingWidget = new RegionalMappingWidget(this);
-    theGeneralInformationWidget = new GeneralInformationWidget(this, theRegionalMappingWidget);
+    //theRegionalMappingWidget = new RegionalMappingWidget(this);
+    theGeneralInformationWidget = new GeneralInformationWidget(this);
     theRVs = new RandomVariablesContainer();
     theVisualizationWidget = new VisualizationWidget(this);
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
-    theModelingWidget = new AssetsModelWidget(this, theRVs);
+    theHazardToAssetWidget = new HazardToAssetWidget(this, theVisualizationWidget);
+    theModelingWidget = new ModelWidget(this, theRVs);
+    theAnalysisWidget = new AnalysisWidget(this, theRVs);
     theHazardsWidget = new HazardsWidget(this, theVisualizationWidget, theRVs);
     theEngDemandParamWidget = new EngDemandParameterWidget(this);
-    theDamageMeasureWidget = new DamageMeasureWidget(this);
-    theDecisionVariableWidget = new DecisionVariableWidget(this);
-    theUQWidget = new UQ_EngineSelection(theRVs);
+    theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
+    //theDecisionVariableWidget = new DecisionVariableWidget(this);
+    theUQWidget = new UQWidget(this, theRVs);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
     localApp = new LocalApplication("RDT_workflow.py");
@@ -177,23 +186,29 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theAssetsWidget->setObjectName("Assets");
     theModelingWidget->setObjectName("Modeling");
     theHazardsWidget->setObjectName("Hazards");
+    theHazardToAssetWidget->setObjectName("HazardToAsset");
     theUQWidget->setObjectName("UncertaintyQuantification");
+    theAnalysisWidget->setObjectName("Analysis");
     theResultsWidget->setObjectName("Results");
-    theVisualizationWidget->setObjectName("Visualization");
-    theRegionalMappingWidget->setObjectName("RegionalMapping");
-    theEngDemandParamWidget->setObjectName("EngDemandParams");
-    theDamageMeasureWidget->setObjectName("DamageMeasures");
-    theDecisionVariableWidget->setObjectName("DecisionVariables");
+    theVisualizationWidget->setObjectName("Visualization");   
+    theDamageAndLossWidget->setObjectName("DamageMeasures");
+
+    //theDecisionVariableWidget->setObjectName("DecisionVariables");
+    //theRegionalMappingWidget->setObjectName("RegionalMapping");
+    //theEngDemandParamWidget->setObjectName("EngDemandParams");
 
     theComponentSelection->addComponent(tr("VIZ"), theVisualizationWidget);
     theComponentSelection->addComponent(tr("GI"), theGeneralInformationWidget);
-    theComponentSelection->addComponent(tr("EVT"), theHazardsWidget);
+    theComponentSelection->addComponent(tr("HAZ"), theHazardsWidget);
     theComponentSelection->addComponent(tr("ASD"), theAssetsWidget);
+    theComponentSelection->addComponent(tr("HTA"), theHazardToAssetWidget);
     theComponentSelection->addComponent(tr("MOD"), theModelingWidget);
-    theComponentSelection->addComponent(tr("EDP"), theEngDemandParamWidget);
-    theComponentSelection->addComponent(tr("DM"), theDamageMeasureWidget);
-    theComponentSelection->addComponent(tr("DV"), theDecisionVariableWidget);
+    theComponentSelection->addComponent(tr("ANA"), theAnalysisWidget);
+    theComponentSelection->addComponent(tr("DL"), theDamageAndLossWidget);
+    //theComponentSelection->addComponent(tr("EDP"), theEngDemandParamWidget);  // EDP from DL
+    //theComponentSelection->addComponent(tr("DV"), theDecisionVariableWidget); // removed
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
+    theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
 
     theComponentSelection->displayComponent("VIZ");
@@ -208,6 +223,8 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
 
+    // for RDT select Buildings in GeneralInformation by default
+    theGeneralInformationWidget->setAssetTypeState("Buildings", true);
 }
 
 
@@ -228,31 +245,31 @@ void WorkflowAppRDT::replyFinished(QNetworkReply *pReply)
     return;
 }
 
-DamageMeasureWidget *WorkflowAppRDT::getTheDamageMeasureWidget() const
+/*
+DLWidget *WorkflowAppRDT::gettheDamageAndLossWidget() const
 {
-    return theDamageMeasureWidget;
+    return theDamageAndLossWidget;
 }
 
 
-RegionalMappingWidget *WorkflowAppRDT::getTheRegionalMappingWidget() const
+
+
+HazardsWidget *WorkflowAppRDT::getHazardsWidget() const
 {
-    return theRegionalMappingWidget;
+    return theHazardsWidget;
 }
+*/
 
 GeneralInformationWidget *WorkflowAppRDT::getGeneralInformationWidget() const
 {
     return theGeneralInformationWidget;
 }
 
-HazardsWidget *WorkflowAppRDT::getHazardsWidget() const
-{
-    return theHazardsWidget;
-}
-
 AssetsWidget *WorkflowAppRDT::getAssetsWidget() const
 {
     return theAssetsWidget;
 }
+
 
 VisualizationWidget *WorkflowAppRDT::getVisualizationWidget() const
 {
@@ -273,43 +290,32 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     // get each of the main widgets to output themselves
     theGeneralInformationWidget->outputToJSON(jsonObjectTop);
 
-    theRunWidget->outputToJSON(jsonObjectTop);
-
+    // ouput application data
     QJsonObject apps;
 
-    theModelingWidget->outputToJSON(apps);
-
-    theHazardsWidget->outputToJSON(apps);
-
-    theRegionalMappingWidget->outputToJSON(apps);
-
-    theEngDemandParamWidget->outputToJSON(apps);
-
-    theDamageMeasureWidget->outputToJSON(apps);
-
-    QJsonObject dakotaUQ;
-
-    dakotaUQ.insert("Application","Dakota-UQ");
-
-    QJsonObject uq;
-
-    theUQWidget->getCurrentEngine()->outputToJSON(uq);
-
-    auto appData = uq["samplingMethodData"].toObject();
-
-    appData["seed"] = 1;
-    appData["samples"] = 5;
-
-    appData.insert("type","UQ");
-    appData.insert("concurrency",1);
-    appData.insert("keepSamples",true);
-
-    dakotaUQ.insert("ApplicationData",appData);
-
-    apps.insert("UQ",dakotaUQ);
+    theModelingWidget->outputAppDataToJSON(apps);
+    theUQWidget->outputAppDataToJSON(apps);
+    theAssetsWidget->outputAppDataToJSON(apps);
+    //theHazardsWidget->outputAppDataToJSON(apps);
+    theAnalysisWidget->outputAppDataToJSON(apps);
+    theDamageAndLossWidget->outputAppDataToJSON(apps);
+    theHazardToAssetWidget->outputAppDataToJSON(apps);
+    theDamageAndLossWidget->outputAppDataToJSON(apps);
 
     jsonObjectTop.insert("Applications",apps);
 
+    //  output regular data
+    /*
+    theRunWidget->outputToJSON(jsonObjectTop);
+    theModelingWidget->outputToJSON(jsonObjectTop);
+    theHazardsWidget->outputToJSON(jsonObjectTop);
+    theAnalysisWidget->outputToJSON(jsonObjectTop);
+    theDamageAndLossWidget->outputToJSON(jsonObjectTop);
+    theHazardToAssetWidget->outputToJSON(jsonObjectTop);
+    theUQWidget->outputToJSON(jsonObjectTop);
+    theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
+    theRVs->outputToJSON(jsonObjectTop);
+*/
     return true;
 }
 
@@ -595,22 +601,27 @@ int WorkflowAppRDT::getMaxNumParallelTasks() {
 
 void WorkflowAppRDT::assetSelectionChanged(QString text, bool value)
 {
-
     if (value == true)
     {
         theAssetsWidget->show(text);
+        theHazardToAssetWidget->show(text);
         theModelingWidget->show(text);
+        theAnalysisWidget->show(text);
         theEngDemandParamWidget->show(text);
-        theDamageMeasureWidget->show(text);
-        theDecisionVariableWidget->show(text);
+        theDamageAndLossWidget->show(text);
+        theUQWidget->show(text);
+        //theDecisionVariableWidget->show(text);
     }
     else
     {
         theAssetsWidget->hide(text);
+        theHazardToAssetWidget->hide(text);
         theModelingWidget->hide(text);
+        theAnalysisWidget->hide(text);
         theEngDemandParamWidget->hide(text);
-        theDamageMeasureWidget->hide(text);
-        theDecisionVariableWidget->hide(text);
+        theDamageAndLossWidget->hide(text);
+        theUQWidget->hide(text);
+        //theDecisionVariableWidget->hide(text);
     }
 
 }
