@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #include "sectiontitle.h"
 #include "RegionalMappingWidget.h"
-#include <SimCenterAppSelection.h>
+#include <SimCenterAppEventSelection.h>
 #include <NoArgSimCenterApp.h>
 
 #include <QFormLayout>
@@ -82,7 +82,7 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     regionalMappingGroupBox->setLayout(theRegionalMapping->layout());
     mainLayout->addWidget(regionalMappingGroupBox);
 
-    theLocalMapping = new SimCenterAppSelection(QString("Local Event Type"), QString("EVENT"), this);
+    theLocalMapping = new SimCenterAppEventSelection(QString("Local Event Type"), QString("Events"), this);
     SimCenterAppWidget *simcenterEvent = new NoArgSimCenterApp(QString("SimCenterEvent"));
     SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
 
