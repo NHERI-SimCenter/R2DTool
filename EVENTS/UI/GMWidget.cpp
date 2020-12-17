@@ -515,8 +515,8 @@ void GMWidget::runHazardSimulation(void)
     auto pythonPath = SimCenterPreferences::getInstance()->getPython();
 
     // TODO: make this a relative link once we figure out the folder structure
-    auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
-    //    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
+    //auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
+    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
 
     QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
 
@@ -550,6 +550,9 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     progressTextEdit->appendPlainText("Contacting PEER server to download ground motion records.\n");
 
     QApplication::processEvents();
+
+    numDownloaded = 0;
+    downloadComplete = false;
 
     auto res = this->downloadRecords();
 
@@ -597,58 +600,94 @@ void GMWidget::handleProcessTextOutput(void)
 
 int GMWidget::downloadRecords(void)
 {
-
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
-    QString recordsListFilename = QString(pathToGMFilesDirectory + QString("RSN.csv"));
-    QFile theRecordsListFile = QFile(recordsListFilename);
 
-    if (!theRecordsListFile.exists())
-    {
-        QString errorMessage = QString("GMWidget::Record selection failed, no file ") +  recordsListFilename + QString(" exists");
-        emit sendErrorMessage(errorMessage);
-        return -1;
+    // read file of selected record and crate a list containing records to download
+    if (numDownloaded == 0) {
+
+        recordsList.empty();
+
+        QString recordsListFilename = QString(pathToGMFilesDirectory + QString("RSN.csv"));
+        QFile theRecordsListFile = QFile(recordsListFilename);
+
+        if (!theRecordsListFile.exists())
+        {
+            QString errorMessage = QString("GMWidget::Record selection failed, no file ") +  recordsListFilename + QString(" exists");
+            emit sendErrorMessage(errorMessage);
+            return -1;
+        }
+
+        if (theRecordsListFile.open(QIODevice::ReadOnly))
+        {
+            //file opened successfully, parse csv file for records
+            while (!theRecordsListFile.atEnd())
+            {
+                QByteArray line = theRecordsListFile.readLine();
+                foreach (const QByteArray &item, line.split(','))
+                {
+                    recordsList.append(QString::fromLocal8Bit(item).trimmed()); // Assuming local 8-bit.
+                }
+            }
+        }
+
+        theRecordsListFile.close();
     }
 
-    QStringList recordsList;
 
-    if (theRecordsListFile.open(QIODevice::ReadOnly))
+    // Check if any of the records exist, do not need to download them again
+    const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
+
+    // Get the existing files in the folder to see if we already have the record
+    QStringList acceptableFileExtensions = {"*.json"};
+    QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+
+    QStringList recordsToDownload;
+
+    //int firstRecord = numDownloaded;
+    //int lastRecordCanDownload = numDownloaded+100;
+
+    /*
+    if(!existingFiles.empty())
     {
-        //file opened successfully, parse csv file for records
-        while (!theRecordsListFile.atEnd())
+        for(auto&& it : recordsList)
         {
-            QByteArray line = theRecordsListFile.readLine();
-            foreach (const QByteArray &item, line.split(','))
-            {
-                recordsList.append(QString::fromLocal8Bit(item).trimmed()); // Assuming local 8-bit.
+            auto fileToCheck = "RSN" + it + ".json";
+            if(!existingFiles.contains(fileToCheck))
+                recordsToDownload.append(it);
+        }
+    }
+    else
+    {
+        recordsToDownload = recordsList;
+    }
+    */
+
+    // loop over records, at to list those not downloaded, break at 100 as limit in one download
+    int firstRecord = numDownloaded;
+    int numToDownload = 0;
+    for (int i=firstRecord; i<recordsList.size(); i++) {
+        QString it = recordsList.at(i);
+        QString fileToCheck = "RSN" + it + ".json";
+        if(!existingFiles.contains(fileToCheck)) {
+            recordsToDownload.append(it);
+            numToDownload++;
+            numDownloaded++;
+            if (numToDownload == 100) {
+                i = recordsList.size();
             }
-        }
+        } else
+            numDownloaded++;
+    }
 
-
-        // Check if any of the records exist, do not need to download them again
-        const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
-
-        // Get the existing files in the folder to see if we already have the record
-        QStringList acceptableFileExtensions = {"*.json"};
-        QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
-
-        QStringList recordsToDownload;
-
-        if(!existingFiles.empty())
-        {
-            for(auto&& it : recordsList)
-            {
-                auto fileToCheck = "RSN" + it + ".json";
-                if(!existingFiles.contains(fileToCheck))
-                    recordsToDownload.append(it);
-            }
-        }
-        else
-        {
-            recordsToDownload = recordsList;
-        }
-
+    static QString errorMessage;
+    errorMessage = "";
+    if (numToDownload == 0) {
+        downloadComplete = true;
+        processDownloadedRecords(errorMessage);
+    } else {
+        if (numDownloaded == recordsList.size())
+            downloadComplete = true; // at least it will be when download the records!
         peerClient.selectRecords(recordsToDownload);
-
     }
 
     return 0;
@@ -839,7 +878,6 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
 int GMWidget::parseDownloadedRecords(QString zipFile)
 {
-
     QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath();
     bool result =  ZipUtils::UnzipFile(zipFile, pathToOutputDirectory);
     if (result == false)
@@ -848,6 +886,10 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
         this->handleErrorMessage(errMsg);
         return -1;
     }
+
+    // if more records to download due to 100 record limit .. go dowenload them
+    if (downloadComplete == false)
+        this->downloadRecords();
 
     NGAW2Converter tool;
 

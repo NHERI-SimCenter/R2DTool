@@ -14,7 +14,7 @@ class PelicunDLWidget : public SimCenterAppWidget
 public:
     explicit PelicunDLWidget(QWidget *parent = nullptr);
 
-    bool outputToJSON(QJsonObject &jsonObject);
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
 
 signals:
 

@@ -47,7 +47,7 @@ PelicunDLWidget::PelicunDLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     gridLayout->addWidget(typeLabel,0,0);
     gridLayout->addWidget(DLTypeComboBox,0,1);
-    gridLayout->addWidget(eventTimeLabel,1,1);
+    gridLayout->addWidget(eventTimeLabel,1,0);
     gridLayout->addWidget(eventTimeComboBox,1,1);
     gridLayout->addWidget(realizationsLabel,2,0);
     gridLayout->addWidget(realizationsLineEdit,2,1);
@@ -63,12 +63,11 @@ PelicunDLWidget::PelicunDLWidget(QWidget *parent): SimCenterAppWidget(parent)
 }
 
 
-bool PelicunDLWidget::outputToJSON(QJsonObject &jsonObject)
+bool PelicunDLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
-    QJsonObject DLObj;
 
-    DLObj.insert("Application","pelicun");
+    jsonObject.insert("Application","pelicun");
 
     QJsonObject appDataObj;
 
@@ -80,9 +79,7 @@ bool PelicunDLWidget::outputToJSON(QJsonObject &jsonObject)
     appDataObj.insert("event_time",eventTimeComboBox->currentText());
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
 
-    DLObj.insert("ApplicationData",appDataObj);
-
-    jsonObject.insert("DL",DLObj);
+    jsonObject.insert("ApplicationData",appDataObj);
 
     return true;
 }

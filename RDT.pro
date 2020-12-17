@@ -12,14 +12,14 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 CONFIG += c++17
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../SimCenterCommon
 
 # Application Icons
 win32 {
-    RC_ICONS = icons/NHERI-EEUQ-Icon.ico
+    RC_ICONS = icons/NHERI-RDT-Icon.ico
 } else {
     mac {
-    ICON = icons/NHERI-EEUQ-Icon.icns
+    ICON = icons/NHERI-RDT-Icon.icns
     }
 }
 
@@ -79,8 +79,14 @@ SOURCES +=  main.cpp \
             UIWidgets/HazardsWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/AssetsWidget.cpp \
+            UIWidgets/UQWidget.cpp \
+            UIWidgets/AnalysisWidget.cpp \
+            UIWidgets/ModelWidget.cpp \
+            UIWidgets/HazardToAssetWidget.cpp \
+            UIWidgets/HazardToAssetBuilding.cpp \
             UIWidgets/AssetsModelWidget.cpp \
             UIWidgets/DamageMeasureWidget.cpp \
+            UIWidgets/DLWidget.cpp \
             UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
@@ -149,6 +155,11 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/HazardsWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/AssetsWidget.h \
+            UIWidgets/ModelWidget.h \
+            UIWidgets/AnalysisWidget.h \
+            UIWidgets/UQWidget.h \
+            UIWidgets/HazardToAssetWidget.h \
+            UIWidgets/HazardToAssetBuilding.h \
             UIWidgets/AssetsModelWidget.h \
             UIWidgets/VisualizationWidget.h \
             UIWidgets/ComponentInputWidget.h \
@@ -162,6 +173,7 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/BuildingSimulationWidget.h \
             UIWidgets/CSVtoBIMModelingWidget.h \
             UIWidgets/DamageMeasureWidget.h \
+            UIWidgets/DLWidget.h \
             UIWidgets/PelicunDLWidget.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
@@ -209,7 +221,7 @@ RESOURCES += \
 
 
 DISTFILES += \
-    resources/docs/textAboutEEUQ.html
+    resources/docs/textAboutRDT.html
 
 # External libraries
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
