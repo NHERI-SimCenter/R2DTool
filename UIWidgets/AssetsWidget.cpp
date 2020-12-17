@@ -62,28 +62,30 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QCheckBox>
 
+#include "SimCenterAppSelection.h"
+#include "ComponentInputWidget.h"
 
 AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentRDT(parent), visualizationWidget(visWidget)
 {
 
-    buildingWidget = new ComponentInputWidget(this, "Buildings");
-    pipelineWidget = new ComponentInputWidget(this, "Gas Network");
-
-    visualizationWidget->setBuildingWidget(buildingWidget);
-    visualizationWidget->setPipelineWidget(pipelineWidget);
+  buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("CSV_to_BIM"), this);
+  ComponentInputWidget *csvBuildingInventory = new ComponentInputWidget(this, "Buildings");
+  buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
 
-    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-    pipelineWidget->testFileLoad(pathToPipelineInfoFile);
+  pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
+  ComponentInputWidget *csvPipelineWidget = new ComponentInputWidget(this, "Gas Network");
 
-//    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/AnchorageExample/AnchorageBuildings.csv";
+  visualizationWidget->setBuildingWidget(csvBuildingInventory);
+  visualizationWidget->setPipelineWidget(csvPipelineWidget);
 
-//    QString pathToBuildingInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory3.csv";
+  QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
+  csvPipelineWidget->testFileLoad(pathToPipelineInfoFile);
+
 
     QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/input_params.csv";
-
-    buildingWidget->testFileLoad(pathToBuildingInfoFile);
+    csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
@@ -97,16 +99,7 @@ AssetsWidget::~AssetsWidget()
 }
 
 
-ComponentInputWidget* AssetsWidget::getBuildingWidget() const
-{
-    return buildingWidget;
-}
 
-
-ComponentInputWidget* AssetsWidget::getPipelineWidget() const
-{
-    return pipelineWidget;
-}
 
 
 

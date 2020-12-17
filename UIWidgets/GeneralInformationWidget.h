@@ -62,6 +62,8 @@ public:
     bool outputToJSON(QJsonArray &arrayObject);
     bool inputFromJSON(QJsonArray &arrayObject);
 
+    QString getAnalysisName(void);
+
     enum LengthUnit{m, cm, mm, in, ft};
     Q_ENUM(LengthUnit)
     enum ForceUnit{N, kN, lb, kips};
