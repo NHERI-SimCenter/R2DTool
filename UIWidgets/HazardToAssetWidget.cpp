@@ -64,6 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPointer>
 #include <QPushButton>
 #include <QCheckBox>
+#include <QString>
 
 #include <SimCenterAppSelection.h>
 #include "ComponentInputWidget.h"
@@ -73,13 +74,13 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
     : MultiComponentRDT(parent)
 {
 
-  buildingWidget = new HazardToAssetBuilding(this);
-  
-  
+  buildingWidget = new HazardToAssetBuilding(this); 
   pipelineWidget = new SimCenterAppSelection(QString("Hazard To Asset Application"), QString("HazardToAsset"), this);
   
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",pipelineWidget);
+
+  connect(this, SIGNAL(hazardGridFileChangedSignal(QString)), buildingWidget, SLOT(hazardGridFileChangedSlot(QString)));
   this->hideAll();
 }
 
@@ -90,3 +91,7 @@ HazardToAssetWidget::~HazardToAssetWidget()
 }
 
 
+void
+HazardToAssetWidget::hazardGridFileChangedSlot(QString newPath){
+    emit hazardGridFileChangedSignal(newPath);
+}
