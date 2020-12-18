@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterAppWidget.h>
 
 class RegionalMappingWidget;
-class SimCenterAppSelection;
+class SimCenterAppEventSelection;
 
 class HazardToAssetBuilding : public SimCenterAppWidget
 {
@@ -67,7 +67,7 @@ signals:
 
 private:
     RegionalMappingWidget *theRegionalMapping;
-    SimCenterAppSelection *theLocalMapping;
+    SimCenterAppEventSelection *theLocalMapping;
 };
 
 
