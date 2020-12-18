@@ -24,6 +24,7 @@ namespace QtCharts
 {
 class QChartView;
 class QBarSet;
+class QChart;
 }
 
 namespace Esri
@@ -62,6 +63,23 @@ public:
 
         if(!OK)
             throw QString("Could not convert the object to a double");
+
+        return val;
+    }
+
+
+    template <typename T>
+    auto objectToInt(T obj)
+    {
+        // Assume a zero value if the string is empty
+        if(obj.isNull())
+            return 0;
+
+        bool OK;
+        auto val = obj.toInt(&OK);
+
+        if(!OK)
+            throw QString("Could not convert the object to an integer");
 
         return val;
     }
@@ -115,9 +133,13 @@ private:
     std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
+    QtCharts::QChart *casualtiesChart;
+    QtCharts::QChart *RFDiagChart;
+    QtCharts::QChart *Losseschart;
+
     QtCharts::QChartView *casualtiesChartView;
     QtCharts::QChartView *lossesChartView;
-    QtCharts::QChartView *lossesHistogram;
+    QtCharts::QChartView *lossesRFDiagram;
 
     int createHistogramChart(REmpiricalProbabilityDistribution* probDist);
 
@@ -129,6 +151,8 @@ private:
 
     QByteArray uiState;
 
+    // The number of header rows in the Pelicun results file
+    int numHeaderRows;
 };
 
 #endif // PELICUNPOSTPROCESSOR_H

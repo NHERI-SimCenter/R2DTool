@@ -44,6 +44,10 @@ using namespace QtCharts;
 
 PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : QMainWindow(parent), theVisualizationWidget(visWidget)
 {
+    casualtiesChart = nullptr;
+    RFDiagChart = nullptr;
+    Losseschart = nullptr;
+
     // Create a view menu for the dockable windows
     auto mainWindow = WorkflowAppRDT::getInstance()->getTheMainWindow();
     QMenu *viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
@@ -91,8 +95,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     addDockWidget(Qt::RightDockWidgetArea, summaryDock);
 
     // Charts
-    //    theChartsTabWidget = new QTabWidget(this);
-
     chartsDock1 = new QDockWidget(tr("Casualties"), this);
     chartsDock1->setObjectName("Casualties");
     chartsDock1->setContentsMargins(5,5,5,5);
@@ -165,8 +167,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 
     viewMenu->addAction(tableDock->toggleViewAction());
 
-    // mainWindow->menuBar()->addAction(tableDock->toggleViewAction());
-
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
@@ -178,8 +178,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 
     mapViewSubWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    // mapViewSubWidget->setMaximumWidth(780);
-
     QDockWidget* mapViewDock = new QDockWidget("Regional Map",this);
     mapViewDock->setObjectName("MapViewDock");
     mapViewDock->setAllowedAreas(Qt::LeftDockWidgetArea);
@@ -189,6 +187,9 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     viewMenu->addAction(mapViewDock->toggleViewAction());
 
     uiState = this->saveState();
+
+    // The number of header rows in the Pelicun results file
+    numHeaderRows = 4;
 }
 
 
@@ -251,21 +252,24 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
 
 int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults)
 {
-    if(DVResults.size() < 4)
-        return -1;
+    if(DVResults.size() < numHeaderRows)
+    {
+        QString msg = "No results to import!";
+        throw msg;
+    }
 
-    auto numHeaders = DVResults.at(0).size();
+    auto numHeaderColumns = DVResults.at(0).size();
 
-    QVector<QString> headerStrings(numHeaders);
+    QVector<QString> headerStrings(numHeaderColumns);
 
-    for(int i = 0; i<numHeaders; ++i)
+    for(int i = 0; i<numHeaderColumns; ++i)
     {
         QString headerStr =  DVResults.at(0).at(i)  +"-"+ DVResults.at(1).at(i)  +"-"+  DVResults.at(2).at(i)  +"-"+  DVResults.at(3).at(i);
 
         headerStrings[i] = headerStr;
     }
 
-    pelicunResultsTableWidget->setRowCount(DVResults.size()-4);
+    pelicunResultsTableWidget->setRowCount(DVResults.size()-numHeaderRows);
 
     auto cumulativeStructDS1 = 0.0;
     auto cumulativeStructDS2 = 0.0;
@@ -294,24 +298,19 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Get the buildings database
     auto theBuildingDB = theVisualizationWidget->getBuildingDatabase();
 
-    int count = 0;
-    for(int i = 4; i<DVResults.size(); ++i, ++count)
+    // 4 rows of headers in the results file
+    for(int i = numHeaderRows, count = 0; i<DVResults.size(); ++i, ++count)
     {
         auto inputRow = DVResults.at(i);
 
-        bool OK;
-        auto buildingID = inputRow.at(0).toInt(&OK);
-
-        if(!OK)
-            throw QString("Could not convert the building ID " + inputRow.at(0) + " to an integer");
+        auto buildingID = objectToInt(inputRow.at(0));
 
         auto building = theBuildingDB->getBuilding(buildingID);
 
         if(building.ID == -1)
-            throw QString("Could not convert the building ID " + QString::number(buildingID) + " from the database");
+            throw QString("Could not find the building ID " + QString::number(buildingID) + " in the database");
 
-
-        for(int j = 1; j<numHeaders; ++j)
+        for(int j = 1; j<numHeaderColumns; ++j)
         {
             building.ResultsValues.insert(headerStrings.at(j),inputRow.at(j).toDouble());
         }
@@ -398,7 +397,6 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         buildingFeature->featureTable()->updateFeature(buildingFeature);
     }
 
-
     //  CASUALTIES
     QBarSet *casualtiesSet = new QBarSet("Casualties");
 
@@ -434,10 +432,15 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
     this->createHistogramChart(&theProbDist);
 
+    if(theProbDist.getNumberSamples() < 2)
+        lossesRFDiagram->setProperty("ToPlot",false);
+    else
+        lossesRFDiagram->setProperty("ToPlot",true);
+
     // Set a default size to the charts
     chartsDock1->setWidget(casualtiesChartView);
     chartsDock2->setWidget(lossesChartView);
-    chartsDock3->setWidget(lossesHistogram);
+    chartsDock3->setWidget(lossesRFDiagram);
 
     return 0;
 }
@@ -451,25 +454,37 @@ int PelicunPostProcessor::createCasualtiesChart(QBarSet *casualtiesSet)
     series->setLabelsVisible(true);
     series->setLabelsPosition(QAbstractBarSeries::LabelsCenter);
 
-    QChart *chart = new QChart();
-    chart->setDropShadowEnabled(false);
-    chart->addSeries(series);
-    chart->setMargins(QMargins(5,5,5,5));
-    chart->layout()->setContentsMargins(0, 0, 0, 0);
+    if(casualtiesChart == nullptr)
+    {
+        casualtiesChart = new QChart();
+        casualtiesChart->setDropShadowEnabled(false);
+        casualtiesChart->setMargins(QMargins(5,5,5,5));
+        casualtiesChart->layout()->setContentsMargins(0, 0, 0, 0);
+        casualtiesChart->legend()->setVisible(false);
+
+        casualtiesChartView = new QChartView(casualtiesChart);
+        casualtiesChartView->setRenderHint(QPainter::Antialiasing);
+        casualtiesChartView->setContentsMargins(0,0,0,0);
+        casualtiesChartView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    }
+    else
+    {
+        casualtiesChart->removeAllSeries();
+
+        auto axes = casualtiesChart->axes();
+
+        for(auto&& it : axes)
+            casualtiesChart->removeAxis(it);
+    }
+
+    casualtiesChart->addSeries(series);
 
     QStringList categories;
     categories << "Level 1" << "Level 2" << "Level 3" << "Level 4";
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->append(categories);
-    chart->addAxis(axisX, Qt::AlignBottom);
+    casualtiesChart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
-
-    chart->legend()->setVisible(false);
-
-    casualtiesChartView = new QChartView(chart);
-    casualtiesChartView->setRenderHint(QPainter::Antialiasing);
-    casualtiesChartView->setContentsMargins(0,0,0,0);
-    casualtiesChartView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     return 0;
 }
@@ -477,8 +492,22 @@ int PelicunPostProcessor::createCasualtiesChart(QBarSet *casualtiesSet)
 
 int PelicunPostProcessor::createHistogramChart(REmpiricalProbabilityDistribution* probDist)
 {
-    auto yValues = probDist->getRelativeFrequencyDiagram();
-    auto xValues = probDist->getHistogramTicks();
+
+    QVector<double> xValues;
+    QVector<double> yValues;
+
+    // Handle the special case where there is only one sample
+    if(probDist->getNumberSamples() < 2)
+    {
+        xValues = probDist->getValues();
+        yValues.push_back(1.0);
+
+    }
+    else
+    {
+        xValues = probDist->getHistogramTicks();
+        yValues = probDist->getRelativeFrequencyDiagram();
+    }
 
     QLineSeries *series = new QLineSeries();
 
@@ -487,24 +516,37 @@ int PelicunPostProcessor::createHistogramChart(REmpiricalProbabilityDistribution
         series->append(xValues.at(i),yValues.at(i));
     }
 
-    QChart *chart = new QChart();
-    chart->setDropShadowEnabled(false);
-    chart->addSeries(series);
-    chart->setMargins(QMargins(5,5,5,5));
-    chart->layout()->setContentsMargins(0, 0, 0, 0);
+    if(RFDiagChart == nullptr)
+    {
+        RFDiagChart = new QChart();
+        RFDiagChart->setDropShadowEnabled(false);
+        RFDiagChart->setMargins(QMargins(5,5,5,5));
+        RFDiagChart->layout()->setContentsMargins(0, 0, 0, 0);
+        RFDiagChart->legend()->setVisible(false);
+
+        lossesRFDiagram = new QChartView(RFDiagChart);
+        lossesRFDiagram->setRenderHint(QPainter::Antialiasing);
+        lossesRFDiagram->setContentsMargins(0,0,0,0);
+        lossesRFDiagram->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    }
+    else
+    {
+        RFDiagChart->removeAllSeries();
+
+        auto axes = RFDiagChart->axes(Qt::Horizontal);
+
+        for(auto&& it : axes)
+            RFDiagChart->removeAxis(it);
+    }
+
+    RFDiagChart->addSeries(series);
 
     QValueAxis *axisX = new QValueAxis();
     axisX->setGridLineVisible(false);
-    chart->addAxis(axisX, Qt::AlignBottom);
+    axisX->setLabelsVisible(true);
+    RFDiagChart->addAxis(axisX, Qt::AlignBottom);
 
     series->attachAxis(axisX);
-
-    chart->legend()->setVisible(false);
-
-    lossesHistogram = new QChartView(chart);
-    lossesHistogram->setRenderHint(QPainter::Antialiasing);
-    lossesHistogram->setContentsMargins(0,0,0,0);
-    lossesHistogram->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     return 0;
 }
@@ -521,15 +563,34 @@ int PelicunPostProcessor::createLossesChart(QBarSet *structLossSet, QBarSet *NSA
     //    series->setLabelsPrecision(3);
     //    series->setLabelsPosition(QAbstractBarSeries::LabelsCenter);
 
-    QChart *chart = new QChart();
-    chart->setDropShadowEnabled(false);
-    chart->addSeries(series);
-    chart->setMargins(QMargins(5,5,5,5));
-    chart->layout()->setContentsMargins(0, 0, 0, 0);
+    if(Losseschart == nullptr)
+    {
+        Losseschart = new QChart();
+        Losseschart->setDropShadowEnabled(false);
+        Losseschart->setMargins(QMargins(5,5,5,5));
+        Losseschart->layout()->setContentsMargins(0, 0, 0, 0);
+        Losseschart->legend()->setVisible(true);
+
+        lossesChartView = new QChartView(Losseschart);
+        lossesChartView->setRenderHint(QPainter::Antialiasing);
+        lossesChartView->setContentsMargins(0,0,0,0);
+        lossesChartView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    }
+    else
+    {
+        Losseschart->removeAllSeries();
+
+        auto axes = Losseschart->axes();
+
+        for(auto&& it : axes)
+            Losseschart->removeAxis(it);
+    }
+
+    Losseschart->addSeries(series);
 
     QValueAxis *axisY = new QValueAxis();
     axisY->setGridLineVisible(false);
-    chart->addAxis(axisY, Qt::AlignLeft);
+    Losseschart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
 
     QStringList categories;
@@ -537,15 +598,8 @@ int PelicunPostProcessor::createLossesChart(QBarSet *structLossSet, QBarSet *NSA
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->setMinorGridLineVisible(false);
     axisX->append(categories);
-    chart->addAxis(axisX, Qt::AlignBottom);
+    Losseschart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
-
-    chart->legend()->setVisible(true);
-
-    lossesChartView = new QChartView(chart);
-    lossesChartView->setRenderHint(QPainter::Antialiasing);
-    lossesChartView->setContentsMargins(0,0,0,0);
-    lossesChartView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     return 0;
 }
@@ -563,19 +617,60 @@ int PelicunPostProcessor::printToPDF(const QString& outputPath)
 
 void PelicunPostProcessor::processResultsSubset(const std::set<int>& selectedComponentIDs)
 {
-    if(DVdata.empty())
+
+    if(selectedComponentIDs.empty())
+        return;
+
+    if(DVdata.size() < numHeaderRows)
     {
         QString msg = "No results to import!";
         throw msg;
-        return;
     }
+
+    if(DVdata.at(numHeaderRows).isEmpty() || DVdata.last().isEmpty())
+    {
+        QString msg = "No values in the cells";
+        throw msg;
+    }
+
+    auto firstID = objectToInt(DVdata.at(numHeaderRows).at(0));
+
+    auto lastID = objectToInt(DVdata.last().at(0));
+
+    QVector<QStringList> DVsubset(&DVdata[0],&DVdata[numHeaderRows]);
 
     for(auto&& id : selectedComponentIDs)
     {
+        // Check that the ID falls within the bounds of the data
+        if(id<firstID || id>lastID)
+        {
+            QString msg = "ID " + QString::number(id) + " is out of bounds of the results";
+            throw msg;
+        }
 
-        qDebug()<<id;
+        auto found = false;
+        for(int i = numHeaderRows; i<DVdata.size(); ++i)
+        {
+            auto inputRow = DVdata.at(i);
 
+            auto buildingID = objectToInt(inputRow.at(0));
+
+            if(id == buildingID)
+            {
+                DVsubset << inputRow;
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)
+        {
+            QString msg = "ID " + QString::number(id) + " cannot be found in the results";
+            throw msg;
+        }
     }
+
+    this->processDVResults(DVsubset);
 }
 
 
@@ -826,25 +921,28 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("\nEstimated economic losses.\n",captionFormat);
 
-    auto origSize3 = lossesHistogram->size();
-    lossesHistogram->resize(QSize(640,480));
-    auto rectFig4 = lossesHistogram->viewport()->rect();
-    QPixmap pixmapFig4(rectFig4.size());
-    QPainter painterFig4(&pixmapFig4);
-    painterFig4.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    lossesHistogram->render(&painterFig4, pixmapFig4.rect(), rectFig4);
-    auto figure4 = pixmapFig4.toImage();
-    lossesHistogram->resize(origSize3);
+    if(lossesRFDiagram->property("ToPlot").toBool())
+    {
+        auto origSize3 = lossesRFDiagram->size();
+        lossesRFDiagram->resize(QSize(640,480));
+        auto rectFig4 = lossesRFDiagram->viewport()->rect();
+        QPixmap pixmapFig4(rectFig4.size());
+        QPainter painterFig4(&pixmapFig4);
+        painterFig4.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+        lossesRFDiagram->render(&painterFig4, pixmapFig4.rect(), rectFig4);
+        auto figure4 = pixmapFig4.toImage();
+        lossesRFDiagram->resize(origSize3);
 
-    QTextImageFormat imageFormatFig4;
-    imageFormatFig4.setName("Figure4");
-    imageFormatFig4.setQuality(600);
-    imageFormatFig4.setWidth(400);
+        QTextImageFormat imageFormatFig4;
+        imageFormatFig4.setName("Figure4");
+        imageFormatFig4.setQuality(600);
+        imageFormatFig4.setWidth(400);
 
-    document->addResource(QTextDocument::ImageResource,QUrl("Figure4"),figure4);
-    cursor.insertImage(imageFormatFig4,QTextFrameFormat::InFlow);
+        document->addResource(QTextDocument::ImageResource,QUrl("Figure4"),figure4);
+        cursor.insertImage(imageFormatFig4,QTextFrameFormat::InFlow);
 
-    cursor.insertText("\nRelative frequency diagram of expected losses.\n",captionFormat);
+        cursor.insertText("\nRelative frequency diagram of expected losses.\n",captionFormat);
+    }
 
     cursor.insertText("Individual Asset Results - Sorted According to the " + sortComboBox->currentText() + "\n",boldFormat);
 

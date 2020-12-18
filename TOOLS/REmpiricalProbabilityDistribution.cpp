@@ -87,6 +87,7 @@ double  REmpiricalProbabilityDistribution::CV(void)
 
 QVector<double>  REmpiricalProbabilityDistribution::getRelativeFrequencyDiagram(void)
 {
+    theFrequencyDiagram.clear();
 
     auto theHistogram = this->updateHistogram();
 
@@ -94,7 +95,6 @@ QVector<double>  REmpiricalProbabilityDistribution::getRelativeFrequencyDiagram(
 
     // Get sizes
     int vSize = theHistogram.size();
-    theFrequencyDiagram.clear();
 
     //resize the frequency diagram
     theFrequencyDiagram.resize(vSize);
@@ -116,11 +116,14 @@ QVector<double>  REmpiricalProbabilityDistribution::getRelativeFrequencyDiagram(
 
 QVector<double>  REmpiricalProbabilityDistribution::getHistogramTicks(void)
 {
-    QVector<double> theHistogramTicks(numBins);
 
-    auto stdv = this->stdDev();
+    QVector<double> theHistogramTicks;
 
     auto meanVal = this->mean();
+
+    theHistogramTicks.resize(numBins);
+
+    auto stdv = this->stdDev();
 
     // Get size of histogram
     histogramMin = meanVal - 5.0 * stdv;
@@ -128,7 +131,8 @@ QVector<double>  REmpiricalProbabilityDistribution::getHistogramTicks(void)
     binSize = (histogramMax - histogramMin) / numBins;
 
     // Set bin ticks
-    for (int k=0; k<numBins; ++k) {
+    for (int k=0; k<numBins; ++k)
+    {
 
         theHistogramTicks[k] = histogramMin + k * binSize - 0.5 * binSize;
     }
@@ -201,9 +205,9 @@ QVector<double>  REmpiricalProbabilityDistribution::updateHistogram()
 {
     QVector<double> theHistogram(numBins);
 
-    if(n<=1)
+    if(n<1)
     {
-        qDebug()<<"Error, need more than 1 sample to create a histogram";
+        qDebug()<<"Error, need samples to create a histogram";
         return theHistogram;
     }
 
