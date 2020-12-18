@@ -28,7 +28,7 @@ double GroundMotionStation::getLongitude() const
 }
 
 
-int GroundMotionStation::importGroundMotions(void)
+void GroundMotionStation::importGroundMotions(void)
 {
     CSVReaderWriter csvTool;
 
@@ -37,12 +37,10 @@ int GroundMotionStation::importGroundMotions(void)
 
     // Return if there is an error or the data is empty
     if(!err.isEmpty())
-    {
-        return -1;
-    }
+        throw err;
 
     if(data.size() < 2)
-        return -1;
+        throw "The file " + stationFilePath + " is empty";
 
     // Get the header file
     QStringList tableHeadings = data.first();
@@ -54,7 +52,7 @@ int GroundMotionStation::importGroundMotions(void)
     auto numCols = tableHeadings.size();
 
     if(numCols != 2)
-        return - 1;
+        throw "The number of header columns in the file " + stationFilePath + " should be 2";
 
     QFileInfo stationInfo(stationFilePath);
 
@@ -66,7 +64,7 @@ int GroundMotionStation::importGroundMotions(void)
         auto rowStringList = data[i];
 
         if(rowStringList.size() != 2)
-            return - 1;
+            throw "The number of columns in the row " + QString::number(i) + " should be 2";
 
         auto GMFile = rowStringList[0];
 
@@ -74,31 +72,23 @@ int GroundMotionStation::importGroundMotions(void)
         auto factor = rowStringList[1].toDouble(&ok);
 
         if(!ok)
-            return -1;
+            throw "Error converting the string " + rowStringList[1] + " to a double";
 
         auto GMFilePath = baseDir + QDir::separator() + GMFile + ".json";
 
-        auto res = this->importGroundMotionTimeHistory(GMFilePath, factor);
-
-        if(res != 0)
-            return res;
-
+        this->importGroundMotionTimeHistory(GMFilePath, factor);
     }
-
-    return 0;
 }
 
 
-int GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,const double scalingFactor)
+void GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,const double scalingFactor)
 {
     QFile file(filePath);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        //        emit errorMessage(QString("Could Not Open File: ") + fileName);
-        return -1;
-    }
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+        throw "Could not open the file at: "+ filePath;
+
 
     // place contents of file into json object
-
     QString val;
     val=file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(val.toUtf8());
@@ -111,7 +101,7 @@ int GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,c
     auto gmNameObj = jsonObj.value("name");
 
     if(gmNameObj.isNull())
-        return -1;
+        throw "NUll JSON object for field 'name'";
 
     QString gmName = gmNameObj.toString();
 
@@ -119,7 +109,7 @@ int GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,c
     auto dTObj = jsonObj.value("dT");
 
     if(dTObj.isNull())
-        return -1;
+        throw "NUll JSON object for field 'dT'";
 
     double dT = dTObj.toDouble();
 
@@ -198,7 +188,6 @@ int GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,c
 
     stationGroundMotions.push_back(std::move(newGM));
 
-    return 0;
 }
 
 

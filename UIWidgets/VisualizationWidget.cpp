@@ -824,7 +824,7 @@ void VisualizationWidget::handleLayerSelection(TreeItem* item)
 
                 if(found)
                 {
-                    //                    isGroupLayer->setVisible(true);
+                    isGroupLayer->setVisible(true);
                     return true;
                 }
             }

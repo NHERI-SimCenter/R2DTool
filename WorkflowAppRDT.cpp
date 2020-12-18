@@ -169,7 +169,6 @@ void WorkflowAppRDT::initialize(void)
     exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadAlamedaExample);
 
     // Create the various widgets
-    //theRegionalMappingWidget = new RegionalMappingWidget(this);
     theGeneralInformationWidget = new GeneralInformationWidget(this);
     theRVs = new RandomVariablesContainer();
     theVisualizationWidget = new VisualizationWidget(this);
@@ -199,21 +198,6 @@ void WorkflowAppRDT::initialize(void)
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(20,60);
     theComponentSelection->layout()->setSpacing(0);
-
-    theGeneralInformationWidget->setObjectName("GeneralInformation");
-    theAssetsWidget->setObjectName("Assets");
-    theModelingWidget->setObjectName("Modeling");
-    theHazardsWidget->setObjectName("Hazards");
-    theHazardToAssetWidget->setObjectName("HazardToAsset");
-    theUQWidget->setObjectName("UncertaintyQuantification");
-    theAnalysisWidget->setObjectName("Analysis");
-    theResultsWidget->setObjectName("Results");
-    theVisualizationWidget->setObjectName("Visualization");   
-    theDamageAndLossWidget->setObjectName("DamageMeasures");
-
-    //theDecisionVariableWidget->setObjectName("DecisionVariables");
-    //theRegionalMappingWidget->setObjectName("RegionalMapping");
-    //theEngDemandParamWidget->setObjectName("EngDemandParams");
 
     theComponentSelection->addComponent(tr("VIZ"), theVisualizationWidget);
     theComponentSelection->addComponent(tr("GI"), theGeneralInformationWidget);
