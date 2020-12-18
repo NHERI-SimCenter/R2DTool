@@ -421,5 +421,8 @@ bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 
 bool ComponentInputWidget::copyFiles(QString &destName)
 {
-
+    QFileInfo componentFile(componentFileLineEdit->text());
+    if (componentFile.exists()) {
+        return this->copyFile(componentFileLineEdit->text(), destName);
+    }
 }
