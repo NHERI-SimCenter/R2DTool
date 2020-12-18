@@ -73,17 +73,17 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     ComponentInputWidget *csvBuildingInventory = new ComponentInputWidget(this, "Buildings");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
-
     pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
     ComponentInputWidget *csvPipelineWidget = new ComponentInputWidget(this, "Gas Network");
 
     visualizationWidget->setBuildingWidget(csvBuildingInventory);
     visualizationWidget->setPipelineWidget(csvPipelineWidget);
 
-//    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-//    csvPipelineWidget->testFileLoad(pathToPipelineInfoFile);
+    //    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
+    //    csvPipelineWidget->testFileLoad(pathToPipelineInfoFile);
 
-//    QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/BuildingInventory.csv";
+    QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/BuildingInventory.csv";
+    csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
