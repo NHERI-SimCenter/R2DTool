@@ -150,7 +150,6 @@ QGroupBox* ComponentInputWidget::getComponentsWidget(void)
 
 void ComponentInputWidget::createComponentsBox(void)
 {
-
     componentGroupBox = new QGroupBox(componentType);
     componentGroupBox->setFlat(true);
 
@@ -387,6 +386,9 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     if (componentFile.exists()) {
         data["sourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
+        QString filterData = selectComponentsLineEdit->text();
+        filterData.replace(" ","");
+        data["filter"] = filterData;
     } else {
         data["sourceFile"]=QString("None");
         data["pathToSource"]=QString("");
@@ -419,5 +421,8 @@ bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 
 bool ComponentInputWidget::copyFiles(QString &destName)
 {
-
+    QFileInfo componentFile(componentFileLineEdit->text());
+    if (componentFile.exists()) {
+        return this->copyFile(componentFileLineEdit->text(), destName);
+    }
 }

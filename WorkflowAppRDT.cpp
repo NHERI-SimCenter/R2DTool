@@ -304,6 +304,17 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     theHazardToAssetWidget->outputAppDataToJSON(apps);
     theDamageAndLossWidget->outputAppDataToJSON(apps);
 
+    //
+    // hard copde for now .. EDP's coming out D&L to provide
+    //
+
+    QJsonObject edpData;
+    edpData["Application"]="StandardEarthquakeEDP_R";
+    QJsonObject edpAppData;
+    edpData["appData"] = edpAppData;
+    apps["EDP"] = edpData;
+
+
     jsonObjectTop.insert("Applications",apps);
 
     //  output regular data
