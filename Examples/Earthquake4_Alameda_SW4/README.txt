@@ -1,0 +1,1 @@
+This example uses simulated ground motion time histories from the Lawrence Livermore National Lab. Due to size constraints, the time histories are not bundled with RDT, but they are available at box_link_will_be_plugged_in_here. After downloading the zip file, extract its contents to the SW4 folder under input_data.
