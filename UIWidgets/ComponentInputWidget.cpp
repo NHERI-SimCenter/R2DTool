@@ -378,13 +378,12 @@ void ComponentInputWidget::testFileLoad(QString& path)
 
 bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-   qDebug() << "Component OutputAPPDATAtoJSON";
     jsonObject["Application"]=componentType;
 
     QJsonObject data;
     QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()) {
-        data["sourceFile"]=componentFile.fileName();
+        data["buildingSourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
         QString filterData = selectComponentsLineEdit->text();
         filterData.replace(" ","");

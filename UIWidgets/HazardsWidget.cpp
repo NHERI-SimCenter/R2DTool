@@ -132,6 +132,8 @@ void HazardsWidget::createWidget(void)
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
 
     connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
+    connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString)), this,  SLOT(gridFileChangedSlot(QString)));
+    connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString)), this,  SLOT(gridFileChangedSlot(QString)));
 
     theRootStackedWidget->addWidget(theEQSSWidget);
     theRootStackedWidget->addWidget(theShakeMapWidget->getShakeMapWidget());
@@ -168,3 +170,11 @@ void HazardsWidget::handleEQTypeSelection(const QString& selection)
     else if(selection == "User Specified Ground Motions")
         theRootStackedWidget->setCurrentWidget(theUserInputGMWidget->getUserInputGMWidget());
 }
+
+
+void HazardsWidget::gridFileChangedSlot(QString newPath)
+{
+    qDebug() << "HazardsWidget = SLOT " << newPath;
+    emit gridFileChangedSignal(newPath);
+}
+

@@ -30,10 +30,15 @@ public:
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
 
+signals:
+    void gridFileChangedSignal(QString newPath);
+
 private slots:
 
     void handleEQTypeSelection(const QString& selection);
     void shakeMapLoadingFinished(const bool value);
+    void gridFileChangedSlot(QString newPath);
+
 
 private:
 
