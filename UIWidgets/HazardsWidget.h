@@ -2,7 +2,6 @@
 #define HAZARDS_WIDGET_H
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
 
 #include "SimCenterAppWidget.h"
 
@@ -24,8 +23,6 @@ class HazardsWidget : public  SimCenterAppWidget
 public:
     HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
     ~HazardsWidget();
-
-    // QWidget* getEarthquakesWidget(void);
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);

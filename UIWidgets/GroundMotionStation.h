@@ -17,13 +17,13 @@ public:
 
     QString getStationFilePath() const;
 
-    int importGroundMotions(void);
+    void importGroundMotions(void);
 
     QVector<GroundMotionTimeHistory> getStationGroundMotions() const;
 
 private:
 
-    int importGroundMotionTimeHistory(const QString& filePath, const double scalingFactor);
+    void importGroundMotionTimeHistory(const QString& filePath, const double scalingFactor);
 
     QString stationFilePath;
 

@@ -33,16 +33,6 @@ HazardsWidget::~HazardsWidget()
 }
 
 
-/*
-QWidget* HazardsWidget::getEarthquakesWidget(void)
-{
-    if(theEQWidget == nullptr)
-        this->createEarthquakesWidget();
-
-    return theEQWidget;
-}
-*/
-
 bool HazardsWidget::outputToJSON(QJsonObject &jsonObj)
 {
     if(includeHazardCheckBox->isChecked() == false)
@@ -93,8 +83,6 @@ bool HazardsWidget::inputFromJSON(QJsonObject &jsonObject)
 
 void HazardsWidget::createWidget(void)
 {
-  //    theEQWidget = new QWidget(this);
-
     QGridLayout* gridLayout = new QGridLayout(this);
 
     auto smallVSpacer = new QSpacerItem(0,10);
@@ -154,7 +142,7 @@ void HazardsWidget::shakeMapLoadingFinished(const bool value)
     if(!mainWindowWidget)
         return;
 
-    mainWindowWidget->setActiveWidget(theVisualizationWidget);
+//    mainWindowWidget->setActiveWidget(theVisualizationWidget);
 
 }
 

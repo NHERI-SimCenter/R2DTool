@@ -8,10 +8,11 @@ class NGAW2Converter
 public:
     NGAW2Converter();
 
-    int convertToSimCenterEvent(const QString& pathToOutputDirectory, QString& errorMsg, QJsonObject* createdRecords);
+    int convertToSimCenterEvent(const QString& pathToOutputDirectory, const QJsonObject& NGA2Results, QString& errorMsg, QJsonObject* createdRecords);
+
+    int parseNGAW2SearchResults(const QString& filesDirectoryPath, QJsonObject& resultsJson, QString& errorMsg);
 
 private:
-    int parseNGAW2SearchResults(const QString& filesDirectoryPath, QJsonObject& resultsJson, QString& errorMsg);
     int convertRecordToJson(const QString& inputFile, QJsonObject& recordJson, QString& errorMsg);
 
     double getPGA(const QJsonArray* timeHistory);
