@@ -69,7 +69,7 @@ private slots:
 
 private:
 
-    QString DVApp = "Pelicun";
+    QString DVApp;
     QLineEdit* exportPathLineEdit;
     AssetInputDelegate* selectComponentsLineEdit;
 

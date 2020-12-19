@@ -63,6 +63,8 @@ using namespace Esri::ArcGISRuntime;
 
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    DVApp = "Pelicun";
+
     mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(5,0,0,0);
 
@@ -131,8 +133,6 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     mainLayout->addStretch(1);
 
     this->setMinimumWidth(640);
-
-    this->processResults();
 }
 
 
@@ -159,9 +159,7 @@ int ResultsWidget::processResults()
 
     auto SCPrefs = SimCenterPreferences::getInstance();
 
-//    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
-
-    QString resultsDirectory = "/Users/steve/Desktop/untitledfolder/";
+    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
 
     try
     {
