@@ -384,7 +384,7 @@ void VisualizationWidget::loadBuildingData(void)
     // Select a column that will define the building layers
     int columnToMapLayers = 0;
 
-    QString columnFilter = "occupancy";
+    QString columnFilter = "OccupancyClass";
 
     // Set the table headers as fields in the table
     for(int i =0; i<buildingTableWidget->columnCount(); ++i)
