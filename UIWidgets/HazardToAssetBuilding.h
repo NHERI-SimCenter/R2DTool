@@ -58,12 +58,15 @@ public:
 
     bool outputAppDataToJSON(QJsonObject &arrayObject);
     bool inputAppDataFromJSON(QJsonObject &arrayObject);
+    bool copyFiles(QString &destName);
 
     QString getAnalysisName(void);
 
 public slots:
+    void hazardGridFileChangedSlot(QString newPath);
 
 signals:
+
 
 private:
     RegionalMappingWidget *theRegionalMapping;

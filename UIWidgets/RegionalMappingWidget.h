@@ -53,6 +53,7 @@ public:
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool copyFiles(QString &destName);
 
 public slots:
 

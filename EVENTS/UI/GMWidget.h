@@ -6,6 +6,7 @@
 #include "PeerNgaWest2Client.h"
 
 #include <QProcess>
+#include <QJsonObject>
 
 class GmAppConfig;
 class IntensityMeasureWidget;
@@ -71,6 +72,9 @@ public slots:
     // Download records once selected
     int downloadRecords(void);
 
+    // Download records once selected
+    void downloadRecordBatch(void);
+
     // Process the outfile files once the hazard simulation is complete
     int parseDownloadedRecords(QString);
 
@@ -114,7 +118,8 @@ private:
 
     int numDownloaded;
     bool downloadComplete;
-    QStringList recordsList;
+    QStringList recordsListToDownload;
+    QJsonObject NGA2Results;
 };
 
 #endif // GMWIDGET_H

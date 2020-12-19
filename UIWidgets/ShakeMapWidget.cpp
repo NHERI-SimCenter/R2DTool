@@ -33,8 +33,6 @@ ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent) 
     progressLabel = nullptr;
     pathToShakeMapDirectory = "NULL";
 
-
-    //    this->loadComponentData();
 }
 
 ShakeMapWidget::~ShakeMapWidget()
@@ -144,6 +142,9 @@ QStackedWidget* ShakeMapWidget::getShakeMapWidget(void)
     shakeMapStackedWidget->setWindowTitle("Select folder containing ShakeMap files");
     shakeMapStackedWidget->setMinimumWidth(400);
     shakeMapStackedWidget->setMinimumHeight(150);
+
+    //    pathToShakeMapDirectory="/Users/steve/Desktop/SimCenter/Examples/ShakeMaps/SanAndreas/";
+    //    this->loadShakeMapData();
 
     return shakeMapStackedWidget.get();
 }

@@ -268,6 +268,7 @@ void UserInputGMWidget::loadUserGMData(void)
     QList<Field> tableFields;
     tableFields.append(Field::createText("AssetType", "NULL",4));
     tableFields.append(Field::createText("TabName", "NULL",4));
+    tableFields.append(Field::createText("Station Name", "NULL",4));
     tableFields.append(Field::createText("Latitude", "NULL",8));
     tableFields.append(Field::createText("Longitude", "NULL",9));
     tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
@@ -339,62 +340,65 @@ void UserInputGMWidget::loadUserGMData(void)
 
         GroundMotionStation GMStation(stationPath,lat,lon);
 
-        auto res = GMStation.importGroundMotions();
-
-        if(res == 0)
+        try
         {
-            stationList.push_back(GMStation);
-
-            // create the feature attributes
-            QMap<QString, QVariant> featureAttributes;
-
-            //            auto attrbText = GMStation.
-            //            auto attrbVal = pointData[i];
-            //            featureAttributes.insert(attrbText,attrbVal);
-
-            auto vecGMs = GMStation.getStationGroundMotions();
-            featureAttributes.insert("Number of Ground Motions", vecGMs.size());
-
-
-            QString GMNames;
-            for(int i = 0; i<vecGMs.size(); ++i)
-            {
-                auto GMName = vecGMs.at(i).getName();
-
-                GMNames.append(GMName);
-
-                if(i != vecGMs.size()-1)
-                    GMNames.append(", ");
-
-            }
-
-            featureAttributes.insert("Ground Motions", GMNames);
-            featureAttributes.insert("AssetType", "GroundMotionGridPoint");
-            featureAttributes.insert("TabName", "Ground Motion Grid Point");
-
-            auto latitude = GMStation.getLatitude();
-            auto longitude = GMStation.getLongitude();
-
-            featureAttributes.insert("Latitude", latitude);
-            featureAttributes.insert("Longitude", longitude);
-
-            // Create the point and add it to the feature table
-            Point point(longitude,latitude);
-            Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
-
-            gridFeatureCollectionTable->addFeature(feature);
-
+            GMStation.importGroundMotions();
         }
-        else
+        catch(QString msg)
         {
-            QString errMsg = "Error importing ground motion " + stationName;
-            this->userMessageDialog(errMsg);
+
+            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
+
+            this->userMessageDialog(errorMessage);
 
             userGMStackedWidget->setCurrentWidget(fileInputWidget);
             progressBarWidget->setVisible(false);
 
             return;
         }
+
+        stationList.push_back(GMStation);
+
+        // create the feature attributes
+        QMap<QString, QVariant> featureAttributes;
+
+        //            auto attrbText = GMStation.
+        //            auto attrbVal = pointData[i];
+        //            featureAttributes.insert(attrbText,attrbVal);
+
+        auto vecGMs = GMStation.getStationGroundMotions();
+        featureAttributes.insert("Number of Ground Motions", vecGMs.size());
+
+
+        QString GMNames;
+        for(int i = 0; i<vecGMs.size(); ++i)
+        {
+            auto GMName = vecGMs.at(i).getName();
+
+            GMNames.append(GMName);
+
+            if(i != vecGMs.size()-1)
+                GMNames.append(", ");
+
+        }
+
+        featureAttributes.insert("Station Name", stationName);
+        featureAttributes.insert("Ground Motions", GMNames);
+        featureAttributes.insert("AssetType", "GroundMotionGridPoint");
+        featureAttributes.insert("TabName", "Ground Motion Grid Point");
+
+        auto latitude = GMStation.getLatitude();
+        auto longitude = GMStation.getLongitude();
+
+        featureAttributes.insert("Latitude", latitude);
+        featureAttributes.insert("Longitude", longitude);
+
+        // Create the point and add it to the feature table
+        Point point(longitude,latitude);
+        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+
+        gridFeatureCollectionTable->addFeature(feature);
+
 
         ++count;
         progressLabel->clear();

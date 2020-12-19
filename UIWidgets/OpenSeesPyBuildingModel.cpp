@@ -143,33 +143,7 @@ void OpenSeesPyBuildingModel::clear(void)
 bool
 OpenSeesPyBuildingModel::outputToJSON(QJsonObject &jsonObject)
 {
-    filePath = "/Users/steve/Desktop/SimCenter/Examples/rWhaleExample/input_data_rdt/model/cantilever.py";
 
-    // just need to send the class type here.. type needed in object in case user screws up
-    jsonObject["Application"]="OpenSeesPyInput";
-
-    QJsonObject appData;
-
-    appData["dofMap"]=responseNodes->text();
-    appData["ndm"]=ndm->text().toInt();
-
-    QFileInfo modelPath(filePath);
-
-    appData["mainScript"] = modelPath.fileName();
-    appData["modelPath"] = modelPath.absolutePath() +"/";
-
-//    QJsonArray rvArray;
-//    for (int i=0; i<varNamesAndValues.size()-1; i+=2) {
-//        QJsonObject rvObject;
-//        QString name = varNamesAndValues.at(i);
-//        rvObject["name"]=name;
-//        rvObject["value"]=QString("RV.")+name;
-//        rvArray.append(rvObject);
-//    }
-
-//    appData["randomVar"]=rvArray;
-
-    jsonObject["ApplicationData"] = appData;
 
     return true;
 }
@@ -178,55 +152,6 @@ OpenSeesPyBuildingModel::outputToJSON(QJsonObject &jsonObject)
 bool
 OpenSeesPyBuildingModel::inputFromJSON(QJsonObject &jsonObject)
 {
-    varNamesAndValues.clear();
-
-    this->clear();
-
-    if (jsonObject.contains("responseNodes")) {
-        QString stringResponseNodes;
-        QJsonArray nodeResponseTags = jsonObject["responseNodes"].toArray();
-        foreach (const QJsonValue & value, nodeResponseTags) {
-            int tag = value.toInt();
-            stringResponseNodes = stringResponseNodes + " " +  QString::number(tag);
-        }
-        responseNodes->setText(stringResponseNodes);
-    }
-
-    // backward compatability .. response nodes used to be nodes
-    if (jsonObject.contains("nodes")) {
-        QString stringResponseNodes;
-        QJsonArray nodeResponseTags = jsonObject["nodes"].toArray();
-        foreach (const QJsonValue & value, nodeResponseTags) {
-            int tag = value.toInt();
-            stringResponseNodes = stringResponseNodes + " " +  QString::number(tag);
-        }
-        responseNodes->setText(stringResponseNodes);
-    }
-
-    if (jsonObject.contains("randomVar")) {
-        QJsonArray randomVars = jsonObject["randomVar"].toArray();
-        foreach (const QJsonValue & value, randomVars) {
-            QJsonObject theRV = value.toObject();
-            QString name = theRV["name"].toString();
-            QString zero = "0";
-            varNamesAndValues.append(name);
-            varNamesAndValues.append(zero);
-        }
-    }
-
-    int theNDM = jsonObject["ndm"].toInt();
-    int theNDF = 1;
-    if (theNDM == 2)
-        theNDF = 3;
-    else if (theNDM == 3)
-        theNDF = 6;
-
-    if (jsonObject.contains("ndf")) {
-        theNDF = jsonObject["ndf"].toInt();
-    }
-
-    ndm->setText(QString::number(theNDM));
-    ndf->setText(QString::number(theNDF));
 
     return true;
 }
@@ -235,6 +160,8 @@ OpenSeesPyBuildingModel::inputFromJSON(QJsonObject &jsonObject)
 bool
 OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
 
+    bool res = true;
+
     //
     // per API, need to add name of application to be called in AppLication
     // and all data to be used in ApplicationDate
@@ -242,52 +169,37 @@ OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     jsonObject["Application"] = "OpenSeesPyInput";
     QJsonObject dataObj;
+
     QString fileName = filePathLineEdit->text();
     QFileInfo fileInfo(fileName);
 
-    dataObj["fileName"]= fileInfo.fileName();
-    dataObj["filePath"]=fileInfo.path();
+
+    dataObj["dofMap"]=responseNodes->text();
+    dataObj["ndm"]=ndm->text().toInt();
+    dataObj["modelPath"] = "";
+
+    QFileInfo theModelFile(filePath);
+    if (theModelFile.exists()) {
+        dataObj["mainScript"] = theModelFile.fileName();
+        dataObj["filePath"] = theModelFile.absolutePath();
+    } else {
+        QString errorMessage("OpenSeesPyBuilding Model Generator - no modeling script set");
+        emit sendErrorMessage(errorMessage);
+        dataObj["mainScript"] = "None";
+        dataObj["filePath"] = "";
+        res = false;
+    }
 
     jsonObject["ApplicationData"] = dataObj;
 
-    return true;
+    return res;
 }
 
 
 bool
 OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
-    //
-    // from ApplicationData
-    //
 
-    if (jsonObject.contains("ApplicationData")) {
-        QJsonObject dataObject = jsonObject["ApplicationData"].toObject();
-
-        //
-        // retrieve filename and path, set the QLIne Edit
-        //
-
-        QString fileName;
-        QString filePath;
-
-        if (dataObject.contains("fileName")) {
-            QJsonValue theName = dataObject["fileName"];
-            fileName = theName.toString();
-        } else
-            return false;
-
-        if (dataObject.contains("filePath")) {
-            QJsonValue theName = dataObject["filePath"];
-            filePath = theName.toString();
-        } else
-            return false;
-
-        filePathLineEdit->setText(QDir(filePath).filePath(fileName));
-
-    } else {
-        return false;
-    }
     return true;
 }
 
@@ -347,24 +259,11 @@ bool
 OpenSeesPyBuildingModel::copyFiles(QString &dirName) {
 
     QString fileName = filePathLineEdit->text();
-
-    if (fileName.isEmpty()) {
-        emit sendErrorMessage("OpenSeesInput - no file set");
-        return false;
-    }
     QFileInfo fileInfo(fileName);
 
-    QString theFile = fileInfo.fileName();
-    QString thePath = fileInfo.path();
-
-    SimCenterAppWidget::copyPath(thePath, dirName, false);
-
-    QStringList varNames = theRandomVariablesContainer->getRandomVariableNames();
-
-    // now create special copy of original main script that handles the RV
-    OpenSeesParser theParser;
-    QString copiedFile = dirName + QDir::separator() + theFile;
-    theParser.writeFile(fileName, copiedFile, varNames);
+    if (fileInfo.exists()) {
+        return this->copyFile(fileName, dirName);
+    }
 
     return true;
 }
