@@ -32,9 +32,7 @@
     "Events": [{
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
-      "ApplicationData": {
-        "pathEventData": "IMs/"
-      }
+      "ApplicationData": {}
     }],
     "Simulation": {
        "Application": "IMasEDP",
