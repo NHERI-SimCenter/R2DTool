@@ -339,7 +339,7 @@ int NGAW2Converter::convertRecordToJson(const QString& inputFile, QJsonObject& r
         // Get the fourth line - number of points and time step (Dt)
         auto fourthLine = QString::fromLocal8Bit(theRecordFile.readLine()).trimmed();
 
-        QRegExp rx = QRegExp("NPTS=\\s*([1-9][0-9]*)\\s*,\\s*DT=\\s+(\\d*\\.\\d+)\\s+SEC");
+        QRegExp rx = QRegExp("NPTS=\\s*([1-9][0-9]*)\\s*,\\s*DT=\\s*(\\d*\\.\\d+)\\s*SEC");
 
         rx.indexIn(fourthLine);
 

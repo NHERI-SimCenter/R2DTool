@@ -268,6 +268,7 @@ void UserInputGMWidget::loadUserGMData(void)
     QList<Field> tableFields;
     tableFields.append(Field::createText("AssetType", "NULL",4));
     tableFields.append(Field::createText("TabName", "NULL",4));
+    tableFields.append(Field::createText("Station Name", "NULL",4));
     tableFields.append(Field::createText("Latitude", "NULL",8));
     tableFields.append(Field::createText("Longitude", "NULL",9));
     tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
@@ -381,6 +382,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
         }
 
+        featureAttributes.insert("Station Name", stationName);
         featureAttributes.insert("Ground Motions", GMNames);
         featureAttributes.insert("AssetType", "GroundMotionGridPoint");
         featureAttributes.insert("TabName", "Ground Motion Grid Point");
