@@ -89,7 +89,7 @@ void HazardsWidget::createWidget(void)
 
     hazardSelectionCombo = new QComboBox();
     hazardSelectionCombo->addItem("Earthquake Scenario Simulation");
-    hazardSelectionCombo->addItem("Earthquake ShakeMap");
+    //hazardSelectionCombo->addItem("Earthquake ShakeMap");
     hazardSelectionCombo->addItem("User Specified Ground Motions");
     hazardSelectionCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -112,12 +112,12 @@ void HazardsWidget::createWidget(void)
     theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
 
-    connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
+    //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
     connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString)), this,  SLOT(gridFileChangedSlot(QString)));
     connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString)), this,  SLOT(gridFileChangedSlot(QString)));
 
     theRootStackedWidget->addWidget(theEQSSWidget);
-    theRootStackedWidget->addWidget(theShakeMapWidget->getShakeMapWidget());
+    //theRootStackedWidget->addWidget(theShakeMapWidget->getShakeMapWidget());
     theRootStackedWidget->addWidget(theUserInputGMWidget->getUserInputGMWidget());
 
     theRootStackedWidget->setCurrentWidget(theEQSSWidget);
