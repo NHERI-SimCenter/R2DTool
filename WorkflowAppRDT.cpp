@@ -169,7 +169,6 @@ void WorkflowAppRDT::initialize(void)
     exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadAlamedaExample);
 
     // Create the various widgets
-    //theRegionalMappingWidget = new RegionalMappingWidget(this);
     theGeneralInformationWidget = new GeneralInformationWidget(this);
     theRVs = new RandomVariablesContainer();
     theVisualizationWidget = new VisualizationWidget(this);
@@ -185,6 +184,7 @@ void WorkflowAppRDT::initialize(void)
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
+    connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString)));
 
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
@@ -199,21 +199,6 @@ void WorkflowAppRDT::initialize(void)
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(20,60);
     theComponentSelection->layout()->setSpacing(0);
-
-    theGeneralInformationWidget->setObjectName("GeneralInformation");
-    theAssetsWidget->setObjectName("Assets");
-    theModelingWidget->setObjectName("Modeling");
-    theHazardsWidget->setObjectName("Hazards");
-    theHazardToAssetWidget->setObjectName("HazardToAsset");
-    theUQWidget->setObjectName("UncertaintyQuantification");
-    theAnalysisWidget->setObjectName("Analysis");
-    theResultsWidget->setObjectName("Results");
-    theVisualizationWidget->setObjectName("Visualization");   
-    theDamageAndLossWidget->setObjectName("DamageMeasures");
-
-    //theDecisionVariableWidget->setObjectName("DecisionVariables");
-    //theRegionalMappingWidget->setObjectName("RegionalMapping");
-    //theEngDemandParamWidget->setObjectName("EngDemandParams");
 
     theComponentSelection->addComponent(tr("VIZ"), theVisualizationWidget);
     theComponentSelection->addComponent(tr("GI"), theGeneralInformationWidget);
@@ -311,7 +296,7 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     QJsonObject edpData;
     edpData["Application"]="StandardEarthquakeEDP_R";
     QJsonObject edpAppData;
-    edpData["appData"] = edpAppData;
+    edpData["ApplicationData"] = edpAppData;
     apps["EDP"] = edpData;
 
 
@@ -522,7 +507,6 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     *********************************************** */
 
     QString tmpDirName = QString("tmp.SimCenter");
-    qDebug() << "TMP_DIR: " << tmpDirName;
     QDir workDir(workingDir);
 
     QString tmpDirectory = workDir.absoluteFilePath(tmpDirName);
@@ -543,6 +527,13 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     //    theEventSelection->copyFiles(templateDirectory);
     //    theAnalysisSelection->copyFiles(templateDirectory);
     theUQWidget->copyFiles(templateDirectory);
+    theModelingWidget->copyFiles(templateDirectory);
+    theAssetsWidget->copyFiles(templateDirectory);
+    //theHazardsWidget->outputAppDataToJSON(apps);
+    theAnalysisWidget->copyFiles(templateDirectory);
+    theDamageAndLossWidget->copyFiles(templateDirectory);
+    theHazardToAssetWidget->copyFiles(templateDirectory);
+    theDamageAndLossWidget->copyFiles(templateDirectory);
     //    theEDP_Selection->copyFiles(templateDirectory);
 
     //

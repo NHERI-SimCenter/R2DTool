@@ -1,4 +1,4 @@
-﻿#include "GMWidget.h"
+#include "GMWidget.h"
 #include "SiteWidget.h"
 #include "RegionalMappingWidget.h"
 #include "NGAW2Converter.h"
@@ -105,6 +105,16 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
 
     setupConnections();
 
+    //Test
+    //    // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
+    //    QString userName = getPEERUserName();
+    //    QString password = getPEERPassWord();
+
+    //    peerClient.signIn(userName, password);
+    //    this->showInfoDialog();
+
+    //    this->handleProcessFinished(0,QProcess::NormalExit);
+
 }
 
 
@@ -171,8 +181,6 @@ void GMWidget::setupConnections()
         this->parseDownloadedRecords(zipFile);
     });
 
-//    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
-//    connect(this,&GMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 }
 
 
@@ -181,8 +189,8 @@ void GMWidget::initAppConfig()
 
     m_appConfig = new GmAppConfig(this);
 
-//    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
-//    connect(m_appConfig,&GmAppConfig::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
+    //    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
+    //    connect(m_appConfig,&GmAppConfig::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 
     //First, We will look into settings
     QSettings settings;
@@ -515,8 +523,8 @@ void GMWidget::runHazardSimulation(void)
     auto pythonPath = SimCenterPreferences::getInstance()->getPython();
 
     // TODO: make this a relative link once we figure out the folder structure
-    //auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
-    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
+    auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
+    //    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
 
     QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
 
@@ -553,6 +561,8 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
 
     numDownloaded = 0;
     downloadComplete = false;
+    recordsListToDownload.clear();
+    NGA2Results = QJsonObject();
 
     auto res = this->downloadRecords();
 
@@ -561,21 +571,8 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         QString errText("Error downloading the ground motion records");
         this->handleErrorMessage(errText);
         progressBar->hide();
-
-        return;
     }
 
-    progressTextEdit->appendPlainText("Download and parsing of ground motion records complete.\n");
-
-    progressBar->hide();
-
-    progressTextEdit->appendPlainText("Earthquake hazard simulation complete.\n");
-
-    simulationComplete = true;
-
-    auto pathToEventGridFolder = m_appConfig->getOutputDirectoryPath() + QDir::separator();
-
-    emit outputDirectoryPathChanged(pathToEventGridFolder + "EventGrid.csv");
 
 }
 
@@ -602,37 +599,35 @@ int GMWidget::downloadRecords(void)
 {
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
-    // read file of selected record and crate a list containing records to download
-    if (numDownloaded == 0) {
+    // read file of selected record and create a list containing records to download
+    recordsListToDownload.clear();
 
-        recordsList.empty();
+    QStringList recordsToDownload;
 
-        QString recordsListFilename = QString(pathToGMFilesDirectory + QString("RSN.csv"));
-        QFile theRecordsListFile = QFile(recordsListFilename);
+    QString recordsListFilename = QString(pathToGMFilesDirectory + QString("RSN.csv"));
+    QFile theRecordsListFile = QFile(recordsListFilename);
 
-        if (!theRecordsListFile.exists())
-        {
-            QString errorMessage = QString("GMWidget::Record selection failed, no file ") +  recordsListFilename + QString(" exists");
-            emit sendErrorMessage(errorMessage);
-            return -1;
-        }
-
-        if (theRecordsListFile.open(QIODevice::ReadOnly))
-        {
-            //file opened successfully, parse csv file for records
-            while (!theRecordsListFile.atEnd())
-            {
-                QByteArray line = theRecordsListFile.readLine();
-                foreach (const QByteArray &item, line.split(','))
-                {
-                    recordsList.append(QString::fromLocal8Bit(item).trimmed()); // Assuming local 8-bit.
-                }
-            }
-        }
-
-        theRecordsListFile.close();
+    if (!theRecordsListFile.exists())
+    {
+        QString errorMessage = QString("GMWidget::Record selection failed, no file ") +  recordsListFilename + QString(" exists");
+        emit sendErrorMessage(errorMessage);
+        return -1;
     }
 
+    if (theRecordsListFile.open(QIODevice::ReadOnly))
+    {
+        //file opened successfully, parse csv file for records
+        while (!theRecordsListFile.atEnd())
+        {
+            QByteArray line = theRecordsListFile.readLine();
+            foreach (const QByteArray &item, line.split(','))
+            {
+                recordsToDownload.append(QString::fromLocal8Bit(item).trimmed()); // Assuming local 8-bit.
+            }
+        }
+    }
+
+    theRecordsListFile.close();
 
     // Check if any of the records exist, do not need to download them again
     const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
@@ -641,56 +636,51 @@ int GMWidget::downloadRecords(void)
     QStringList acceptableFileExtensions = {"*.json"};
     QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
 
-    QStringList recordsToDownload;
-
-    //int firstRecord = numDownloaded;
-    //int lastRecordCanDownload = numDownloaded+100;
-
-    /*
     if(!existingFiles.empty())
     {
-        for(auto&& it : recordsList)
+        for(auto&& it : recordsToDownload)
         {
             auto fileToCheck = "RSN" + it + ".json";
             if(!existingFiles.contains(fileToCheck))
-                recordsToDownload.append(it);
+                recordsListToDownload.append(it);
         }
     }
     else
     {
-        recordsToDownload = recordsList;
-    }
-    */
-
-    // loop over records, at to list those not downloaded, break at 100 as limit in one download
-    int firstRecord = numDownloaded;
-    int numToDownload = 0;
-    for (int i=firstRecord; i<recordsList.size(); i++) {
-        QString it = recordsList.at(i);
-        QString fileToCheck = "RSN" + it + ".json";
-        if(!existingFiles.contains(fileToCheck)) {
-            recordsToDownload.append(it);
-            numToDownload++;
-            numDownloaded++;
-            if (numToDownload == 100) {
-                i = recordsList.size();
-            }
-        } else
-            numDownloaded++;
+        recordsListToDownload = recordsToDownload;
     }
 
-    static QString errorMessage;
-    errorMessage = "";
-    if (numToDownload == 0) {
-        downloadComplete = true;
-        processDownloadedRecords(errorMessage);
-    } else {
-        if (numDownloaded == recordsList.size())
-            downloadComplete = true; // at least it will be when download the records!
-        peerClient.selectRecords(recordsToDownload);
-    }
+
+    this->downloadRecordBatch();
 
     return 0;
+}
+
+
+void GMWidget::downloadRecordBatch(void)
+{
+    if(recordsListToDownload.empty())
+        return;
+
+    auto maxBatchSize = 100;
+
+    if(recordsListToDownload.size() < maxBatchSize)
+    {
+        peerClient.selectRecords(recordsListToDownload);
+        numDownloaded = recordsListToDownload.size();
+
+        recordsListToDownload.clear();
+    }
+    else
+    {
+        auto recordsBatch = recordsListToDownload.mid(0,maxBatchSize-1);
+
+        numDownloaded += recordsBatch.size();
+
+        peerClient.selectRecords(recordsBatch);
+
+        recordsListToDownload = recordsListToDownload.mid(maxBatchSize-1,recordsListToDownload.size()-1);
+    }
 }
 
 
@@ -743,6 +733,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     QList<Field> tableFields;
     tableFields.append(Field::createText("AssetType", "NULL",4));
     tableFields.append(Field::createText("TabName", "NULL",4));
+    tableFields.append(Field::createText("Station Name", "NULL",4));
     tableFields.append(Field::createText("Latitude", "NULL",8));
     tableFields.append(Field::createText("Longitude", "NULL",9));
     tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
@@ -807,53 +798,55 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
         GroundMotionStation GMStation(stationPath,lat,lon);
 
-        auto res = GMStation.importGroundMotions();
-
-        if(res == 0)
+        try
         {
-            stationList.push_back(GMStation);
-
-            // create the feature attributes
-            QMap<QString, QVariant> featureAttributes;
-
-            auto vecGMs = GMStation.getStationGroundMotions();
-            featureAttributes.insert("Number of Ground Motions", vecGMs.size());
-
-            QString GMNames;
-            for(int i = 0; i<vecGMs.size(); ++i)
-            {
-                auto GMName = vecGMs.at(i).getName();
-
-                GMNames.append(GMName);
-
-                if(i != vecGMs.size()-1)
-                    GMNames.append(", ");
-
-            }
-
-            featureAttributes.insert("Ground Motions", GMNames);
-            featureAttributes.insert("AssetType", "GroundMotionGridPoint");
-            featureAttributes.insert("TabName", "Ground Motion Grid Point");
-
-            auto latitude = GMStation.getLatitude();
-            auto longitude = GMStation.getLongitude();
-
-            featureAttributes.insert("Latitude", latitude);
-            featureAttributes.insert("Longitude", longitude);
-
-            // Create the point and add it to the feature table
-            Point point(longitude,latitude);
-            Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
-
-            gridFeatureCollectionTable->addFeature(feature);
-
+            GMStation.importGroundMotions();
         }
-        else
+        catch(QString msg)
         {
-            errorMessage = "Error importing ground motion file: " + stationName;
+            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
+
+            this->handleErrorMessage(errorMessage);
+
             return -1;
         }
 
+        stationList.push_back(GMStation);
+
+        // create the feature attributes
+        QMap<QString, QVariant> featureAttributes;
+
+        auto vecGMs = GMStation.getStationGroundMotions();
+        featureAttributes.insert("Number of Ground Motions", vecGMs.size());
+
+        QString GMNames;
+        for(int i = 0; i<vecGMs.size(); ++i)
+        {
+            auto GMName = vecGMs.at(i).getName();
+
+            GMNames.append(GMName);
+
+            if(i != vecGMs.size()-1)
+                GMNames.append(", ");
+
+        }
+
+        featureAttributes.insert("Station Name", stationName);
+        featureAttributes.insert("Ground Motions", GMNames);
+        featureAttributes.insert("AssetType", "GroundMotionGridPoint");
+        featureAttributes.insert("TabName", "Ground Motion Grid Point");
+
+        auto latitude = GMStation.getLatitude();
+        auto longitude = GMStation.getLongitude();
+
+        featureAttributes.insert("Latitude", latitude);
+        featureAttributes.insert("Longitude", longitude);
+
+        // Create the point and add it to the feature table
+        Point point(longitude,latitude);
+        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+
+        gridFeatureCollectionTable->addFeature(feature);
     }
 
     // Create a new layer
@@ -887,15 +880,26 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
         return -1;
     }
 
-    // if more records to download due to 100 record limit .. go dowenload them
-    if (downloadComplete == false)
-        this->downloadRecords();
-
     NGAW2Converter tool;
 
-    QJsonObject createdRecords;
+    // Import the search results overview file provided by the PEER Ground Motion Database for this batch - this file will get overwritten on the next batch
     QString errMsg;
-    auto res = tool.convertToSimCenterEvent(pathToOutputDirectory + QDir::separator(), errMsg, &createdRecords);
+    auto res1 = tool.parseNGAW2SearchResults(pathToOutputDirectory,NGA2Results,errMsg);
+    if(res1 != 0)
+    {
+        return -1;
+        this->handleErrorMessage(errMsg);
+    }
+
+    // if more records to download due to 100 record limit .. go download them
+    if (!recordsListToDownload.empty())
+    {
+        this->downloadRecordBatch();
+        return 0;
+    }
+
+    QJsonObject createdRecords;
+    auto res = tool.convertToSimCenterEvent(pathToOutputDirectory + QDir::separator(), NGA2Results, errMsg, &createdRecords);
     if(res != 0)
     {
         if(res == -2)
@@ -914,7 +918,19 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
         return res2;
     }
 
+    progressTextEdit->appendPlainText("Download and parsing of ground motion records complete.\n");
+
+    progressBar->hide();
+
     progressTextEdit->appendPlainText("The folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n");
+
+    progressTextEdit->appendPlainText("Earthquake hazard simulation complete.\n");
+
+    simulationComplete = true;
+
+    auto pathToEventGridFolder = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+
+    emit outputDirectoryPathChanged(pathToEventGridFolder + "EventGrid.csv");
 
     return 0;
 }

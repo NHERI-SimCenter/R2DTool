@@ -56,6 +56,14 @@ public:
 
     void clear(void);
 
+
+signals:
+    void hazardGridFileChangedSignal(QString newPath);
+
+private slots:
+    void hazardGridFileChangedSlot(QString newPath);
+
+
 private:
     SimCenterAppWidget *buildingWidget;
     SimCenterAppSelection *pipelineWidget;

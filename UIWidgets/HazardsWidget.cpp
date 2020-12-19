@@ -21,7 +21,6 @@ HazardsWidget::HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, Ra
     theEQSSWidget = nullptr;
     theUserInputGMWidget = nullptr;
     hazardSelectionCombo = nullptr;
-    includeHazardCheckBox = nullptr;
 
     this->createWidget();
 }
@@ -33,20 +32,8 @@ HazardsWidget::~HazardsWidget()
 }
 
 
-/*
-QWidget* HazardsWidget::getEarthquakesWidget(void)
-{
-    if(theEQWidget == nullptr)
-        this->createEarthquakesWidget();
-
-    return theEQWidget;
-}
-*/
-
 bool HazardsWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    if(includeHazardCheckBox->isChecked() == false)
-        return false;
 
     QJsonArray arrayEvents;
     QJsonObject EQObj;
@@ -93,17 +80,12 @@ bool HazardsWidget::inputFromJSON(QJsonObject &jsonObject)
 
 void HazardsWidget::createWidget(void)
 {
-  //    theEQWidget = new QWidget(this);
-
     QGridLayout* gridLayout = new QGridLayout(this);
 
     auto smallVSpacer = new QSpacerItem(0,10);
 
     QLabel* selectionText = new QLabel();
     selectionText->setText("Hazard Type:");
-
-    includeHazardCheckBox = new QCheckBox("Include earthquake hazard in analysis");
-    includeHazardCheckBox->setChecked(true);
 
     hazardSelectionCombo = new QComboBox();
     hazardSelectionCombo->addItem("Earthquake Scenario Simulation");
@@ -122,7 +104,6 @@ void HazardsWidget::createWidget(void)
     gridLayout->addItem(smallVSpacer,0,0);
     gridLayout->addWidget(selectionText,1,0);
     gridLayout->addWidget(hazardSelectionCombo,1,1);
-    gridLayout->addWidget(includeHazardCheckBox,1,2);
     gridLayout->addItem(hspacer,1,3);
     gridLayout->addWidget(theRootStackedWidget,2,0,1,3);
     gridLayout->addItem(vspacer, 3, 0,1,3);
@@ -132,6 +113,8 @@ void HazardsWidget::createWidget(void)
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
 
     connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
+    connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString)), this,  SLOT(gridFileChangedSlot(QString)));
+    connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString)), this,  SLOT(gridFileChangedSlot(QString)));
 
     theRootStackedWidget->addWidget(theEQSSWidget);
     theRootStackedWidget->addWidget(theShakeMapWidget->getShakeMapWidget());
@@ -154,7 +137,7 @@ void HazardsWidget::shakeMapLoadingFinished(const bool value)
     if(!mainWindowWidget)
         return;
 
-    mainWindowWidget->setActiveWidget(theVisualizationWidget);
+//    mainWindowWidget->setActiveWidget(theVisualizationWidget);
 
 }
 
@@ -168,3 +151,11 @@ void HazardsWidget::handleEQTypeSelection(const QString& selection)
     else if(selection == "User Specified Ground Motions")
         theRootStackedWidget->setCurrentWidget(theUserInputGMWidget->getUserInputGMWidget());
 }
+
+
+void HazardsWidget::gridFileChangedSlot(QString newPath)
+{
+    qDebug() << "HazardsWidget = SLOT " << newPath;
+    emit gridFileChangedSignal(newPath);
+}
+

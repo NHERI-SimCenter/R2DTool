@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
 
 #include "WorkflowAppWidget.h"
 
@@ -68,7 +67,6 @@ class ResultsWidget;
 class RunLocalWidget;
 class RunWidget;
 
-//class RegionalMappingWidget;
 class SimCenterComponentSelection;
 class UQOptions;
 class UQ_Results;
@@ -145,7 +143,6 @@ private:
     //
 
     // DecisionVariableWidget* theDecisionVariableWidget;
-    // RegionalMappingWidget* theRegionalMappingWidget;
 
     //
     // Objects for running the workflow and obtaining results

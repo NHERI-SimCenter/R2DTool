@@ -2,7 +2,6 @@
 #define HAZARDS_WIDGET_H
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
 
 #include "SimCenterAppWidget.h"
 
@@ -14,7 +13,6 @@ class VisualizationWidget;
 
 class QGroupBox;
 class QStackedWidget;
-class QCheckBox;
 class QComboBox;
 
 class HazardsWidget : public  SimCenterAppWidget
@@ -25,22 +23,24 @@ public:
     HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
     ~HazardsWidget();
 
-    // QWidget* getEarthquakesWidget(void);
-
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
+
+signals:
+    void gridFileChangedSignal(QString newPath);
 
 private slots:
 
     void handleEQTypeSelection(const QString& selection);
     void shakeMapLoadingFinished(const bool value);
+    void gridFileChangedSlot(QString newPath);
+
 
 private:
 
     void createWidget(void);
 
     QStackedWidget* theRootStackedWidget;
-    QCheckBox* includeHazardCheckBox;
     QComboBox* hazardSelectionCombo;
 
     RandomVariablesContainer* theRandomVariablesContainer;

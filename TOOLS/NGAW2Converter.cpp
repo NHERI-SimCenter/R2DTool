@@ -16,7 +16,7 @@ NGAW2Converter::NGAW2Converter()
 }
 
 
-int NGAW2Converter::convertToSimCenterEvent(const QString& pathToOutputDirectory, QString& errorMsg, QJsonObject* createdRecords)
+int NGAW2Converter::convertToSimCenterEvent(const QString& pathToOutputDirectory, const QJsonObject& NGA2Results, QString& errorMsg, QJsonObject* createdRecords)
 {
 
     const QFileInfo inputFilesInfo(pathToOutputDirectory);
@@ -44,12 +44,6 @@ int NGAW2Converter::convertToSimCenterEvent(const QString& pathToOutputDirectory
         return -1;
     }
 
-    // Import the search results overview file provided by the PEER Ground Motion Database
-    QJsonObject NGA2Results;
-    auto res1 = parseNGAW2SearchResults(pathToOutputDirectory,NGA2Results,errorMsg);
-
-    if(res1 != 0)
-        return -1;
 
     // Get the file names for the various component-directions
     auto metaData = NGA2Results.value("-- Summary of Metadata of Selected Records --").toObject();
@@ -262,8 +256,7 @@ int NGAW2Converter::parseNGAW2SearchResults(const QString& filesDirectoryPath, Q
     resultsJson.insert(data.at(4).first(),summaryObj);
 
     // Meta data of records
-
-    QJsonObject recordsObj;
+    QJsonObject recordsObj = resultsJson.value(data.at(32).first()).toObject();
 
     auto columnHeadings = data.at(33);
 
@@ -291,7 +284,7 @@ int NGAW2Converter::parseNGAW2SearchResults(const QString& filesDirectoryPath, Q
             resultObj.insert(key,value);
         }
 
-        recordsObj.insert(rowData.at(0),std::move(resultObj));
+        recordsObj.insert(rowData.at(2),std::move(resultObj));
     }
 
     resultsJson.insert(data.at(32).first(),recordsObj);
@@ -346,7 +339,7 @@ int NGAW2Converter::convertRecordToJson(const QString& inputFile, QJsonObject& r
         // Get the fourth line - number of points and time step (Dt)
         auto fourthLine = QString::fromLocal8Bit(theRecordFile.readLine()).trimmed();
 
-        QRegExp rx = QRegExp("NPTS=\\s*([1-9][0-9]*)\\s*,\\s*DT=\\s+(\\d*\\.\\d+)\\s+SEC");
+        QRegExp rx = QRegExp("NPTS=\\s*([1-9][0-9]*)\\s*,\\s*DT=\\s*(\\d*\\.\\d+)\\s*SEC");
 
         rx.indexIn(fourthLine);
 
