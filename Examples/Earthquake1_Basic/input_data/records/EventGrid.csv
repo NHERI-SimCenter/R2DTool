@@ -1,4 +1,4 @@
-sta,lon,lat
+GP_file,Longitude,Latitude
 site0.csv,-122.18,37.42
 site1.csv,-122.19,37.42
 site2.csv,-122.2,37.42
