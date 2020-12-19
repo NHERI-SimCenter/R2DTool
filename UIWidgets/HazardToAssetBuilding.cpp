@@ -139,5 +139,17 @@ bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObject){
 
 
 
+ void
+ HazardToAssetBuilding::hazardGridFileChangedSlot(QString newPath)
+ {
+     qDebug() << "HazardsToBuilding - nePAth: " << newPath;
+     theRegionalMapping->handleFileNameChanged(newPath);
+ }
 
 
+  bool
+  HazardToAssetBuilding::copyFiles(QString &destName)
+  {
+      theRegionalMapping->copyFiles(destName);
+      theLocalMapping->copyFiles(destName);
+  }

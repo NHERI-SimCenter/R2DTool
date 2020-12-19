@@ -104,7 +104,20 @@ bool RegionalMappingWidget::outputAppDataToJSON(QJsonObject &jsonObj)
 
     nearestNeigborObj.insert("samples",samplesLineEdit->text().toInt());
     nearestNeigborObj.insert("neighbors",neighborsLineEdit->text().toInt());
-    nearestNeigborObj.insert("filenameEVENTgrid",eventGridPath);
+
+
+    QJsonObject data;
+    QFileInfo theFile(eventGridPath);
+    if (theFile.exists()) {
+        nearestNeigborObj["filenameEVENTgrid"]=theFile.fileName();
+        nearestNeigborObj["pathToEventFile"]=theFile.path();
+
+    } else {
+         nearestNeigborObj.insert("filenameEVENTgrid",eventGridPath);
+         nearestNeigborObj["filenameEVENTgrid"]="None";
+         nearestNeigborObj["pathToEventFile"]="";
+        return false;
+    }
 
     regionalMapObj.insert("ApplicationData",nearestNeigborObj);
 
@@ -127,5 +140,11 @@ void RegionalMappingWidget::handleFileNameChanged(const QString &value)
 }
 
 
-
+bool RegionalMappingWidget::copyFiles(QString &destName)
+{
+    QFileInfo theFile(eventGridPath);
+    if (theFile.exists()) {
+        return this->copyPath(theFile.path(), destName, false);
+    }
+}
 

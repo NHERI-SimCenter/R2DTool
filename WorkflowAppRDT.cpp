@@ -184,6 +184,7 @@ void WorkflowAppRDT::initialize(void)
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
+    connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString)));
 
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
@@ -295,7 +296,7 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     QJsonObject edpData;
     edpData["Application"]="StandardEarthquakeEDP_R";
     QJsonObject edpAppData;
-    edpData["appData"] = edpAppData;
+    edpData["ApplicationData"] = edpAppData;
     apps["EDP"] = edpData;
 
 
@@ -506,7 +507,6 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     *********************************************** */
 
     QString tmpDirName = QString("tmp.SimCenter");
-    qDebug() << "TMP_DIR: " << tmpDirName;
     QDir workDir(workingDir);
 
     QString tmpDirectory = workDir.absoluteFilePath(tmpDirName);
@@ -527,6 +527,13 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     //    theEventSelection->copyFiles(templateDirectory);
     //    theAnalysisSelection->copyFiles(templateDirectory);
     theUQWidget->copyFiles(templateDirectory);
+    theModelingWidget->copyFiles(templateDirectory);
+    theAssetsWidget->copyFiles(templateDirectory);
+    //theHazardsWidget->outputAppDataToJSON(apps);
+    theAnalysisWidget->copyFiles(templateDirectory);
+    theDamageAndLossWidget->copyFiles(templateDirectory);
+    theHazardToAssetWidget->copyFiles(templateDirectory);
+    theDamageAndLossWidget->copyFiles(templateDirectory);
     //    theEDP_Selection->copyFiles(templateDirectory);
 
     //
