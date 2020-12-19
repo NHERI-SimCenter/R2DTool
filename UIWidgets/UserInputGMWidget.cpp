@@ -36,7 +36,8 @@ UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *pa
     progressBarWidget = nullptr;
     userGMStackedWidget = nullptr;
     progressLabel = nullptr;
-    pathToUserGMFile = "NULL";
+    eventFile = "";
+    motionDir = "";
 
 }
 
@@ -48,27 +49,8 @@ UserInputGMWidget::~UserInputGMWidget()
 
 bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-
-    auto pathToEventGrid = filePathLineEdit->text() + "EventGrid.csv";
-
-    if(pathToEventGrid.isEmpty())
-    {
-        QString msg = "Please specify the location of the ground motion input file";
-        this->userMessageDialog(msg);
-        return false;
-    }
-
-
-    const QFileInfo inputFile(pathToEventGrid);
-
-    if (!inputFile.exists() )
-    {
-        QString errMsg ="A File does not exist at the path: "+pathToEventGrid;
-        this->userMessageDialog(errMsg);
-        return false;
-    }
-
-    jsonObj.insert("pathEventData", inputFile.dir().absolutePath());
+    jsonObj["eventFile"] = eventFile;
+    jsonObj["motionDir"] = motionDir;
 
     return true;
 }
@@ -120,9 +102,40 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
 
     userGMStackedWidget = std::make_unique<QStackedWidget>();
 
+    //
+    // file and dir input
+    //
+
     fileInputWidget = new QWidget(this);
-    auto inputLayout = new QHBoxLayout(fileInputWidget);
-    fileInputWidget->setLayout(inputLayout);
+    QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
+    fileInputWidget->setLayout(fileLayout);
+
+
+    QLabel* selectComponentsText = new QLabel("Event File Listing Motions");
+    eventFileLineEdit = new QLineEdit();
+    QPushButton *browseFileButton = new QPushButton("Browse");
+
+    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
+
+    fileLayout->addWidget(selectComponentsText, 0,0);
+    fileLayout->addWidget(eventFileLineEdit,    0,1);
+    fileLayout->addWidget(browseFileButton,     0,2);
+
+    QLabel* selectFolderText = new QLabel("Folder Containing Motions");
+    motionDirLineEdit = new QLineEdit();
+    QPushButton *browseFolderButton = new QPushButton("Browse");
+
+    connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
+
+    fileLayout->addWidget(selectFolderText,   1,0);
+    fileLayout->addWidget(motionDirLineEdit, 1,1);
+    fileLayout->addWidget(browseFolderButton, 1,2);
+    fileLayout->setRowStretch(2,1);
+
+
+    //
+    // progress bar
+    //
 
     progressBarWidget = new QWidget(this);
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
@@ -140,42 +153,18 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     progressBarLayout->addItem(vspacer);
     progressBarLayout->addStretch(1);
 
+    //
+    // add file and progress widgets to stacked widgets, then set defaults
+    //
+
     userGMStackedWidget->addWidget(fileInputWidget);
     userGMStackedWidget->addWidget(progressBarWidget);
 
     userGMStackedWidget->setCurrentWidget(fileInputWidget);
 
-    QLabel* selectComponentsText = new QLabel();
-    selectComponentsText->setText("Select a folder containing earthquake ground motions");
-
-    filePathLineEdit = new QLineEdit();
-    filePathLineEdit->setMaximumWidth(750);
-    filePathLineEdit->setMinimumWidth(400);
-    filePathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-    QPushButton *browseFileButton = new QPushButton();
-    browseFileButton->setText(tr("Browse"));
-    browseFileButton->setMaximumWidth(150);
-
-    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseUserFileDialog()));
-
-    inputLayout->addStretch(0);
-    inputLayout->addWidget(selectComponentsText);
-    inputLayout->addWidget(filePathLineEdit);
-    inputLayout->addWidget(browseFileButton);
-    inputLayout->addStretch(0);
-
     userGMStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
     userGMStackedWidget->setMinimumWidth(400);
     userGMStackedWidget->setMinimumHeight(150);
-
-    /*
-    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
-    connect(this,&UserInputGMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
-    */
-
-    //    pathToUserGMFile = "/Users/steve/Documents/RDT/LocalWorkDir/HazardSimulation/Output/";
-    //    this->loadUserGMData();
 
     return userGMStackedWidget.get();
 }
@@ -197,6 +186,7 @@ void UserInputGMWidget::showUserGMSelectDialog(void)
 
 void UserInputGMWidget::loadUserGMData(void)
 {
+    /*
     // Set file name & entry in line edit
     filePathLineEdit->setText(pathToUserGMFile);
 
@@ -219,6 +209,7 @@ void UserInputGMWidget::loadUserGMData(void)
         return;
     }
 
+
     QStringList acceptableFileExtensions = {"*.json", "*.csv"};
 
     QStringList inputFiles = inputFile.dir().entryList(acceptableFileExtensions,QDir::Files);
@@ -239,12 +230,12 @@ void UserInputGMWidget::loadUserGMData(void)
 
 
     QString fileName = pathToUserGMFile + "EventGrid.csv";
-
+    */
 
     CSVReaderWriter csvTool;
 
     QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(fileName,err);
+    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
 
     if(!err.isEmpty())
     {
@@ -260,7 +251,8 @@ void UserInputGMWidget::loadUserGMData(void)
 
     QApplication::processEvents();
 
-    progressBar->setRange(0,inputFiles.size());
+    //progressBar->setRange(0,inputFiles.size());
+    progressBar->setRange(0, data.count());
 
     progressBar->setValue(0);
 
@@ -309,7 +301,7 @@ void UserInputGMWidget::loadUserGMData(void)
         auto stationName = rowStr[0];
 
         // Path to station files, e.g., site0.csv
-        auto stationPath = inputFile.dir().absolutePath() + QDir::separator() + stationName;
+        auto stationPath = motionDir + QDir::separator() + stationName;
 
         bool ok;
         auto lon = rowStr[1].toDouble(&ok);
@@ -419,7 +411,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
 
     // Add the event layer to the layer tree
-    auto eventItem = layersTreeView->addItemToTree(fileName, QString(), userInputTreeItem);
+    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
 
     progressLabel->setVisible(false);
 
@@ -435,12 +427,12 @@ void UserInputGMWidget::loadUserGMData(void)
 
     emit loadingComplete(true);
 
-    emit outputDirectoryPathChanged(pathToUserGMFile + "EventGrid.csv");
+    emit outputDirectoryPathChanged(eventFile);
 
     return;
 }
 
-
+/*
 void UserInputGMWidget::chooseUserFileDialog(void)
 {
 
@@ -454,6 +446,123 @@ void UserInputGMWidget::chooseUserFileDialog(void)
 
     dialog.close();
 
+    this->loadUserGMData();
+
+    return;
+}
+*/
+
+void UserInputGMWidget::chooseEventFileDialog(void)
+{
+
+    QFileDialog dialog(this);
+    QString newEventFile = QFileDialog::getOpenFileName(this,tr("Event Grid File"));
+    dialog.close();
+
+    // Return if the user cancels or enters same file
+    if(newEventFile.isEmpty() || newEventFile == eventFile)
+    {
+        return;
+    }
+
+    // Set file name & entry in qLine edit
+
+
+    // if file
+    //    check valid
+    //    set motionDir if file in dir that contains all the motions
+    //    invoke loadUserGMData
+
+    QFileInfo eventFilInfo(newEventFile);
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(newEventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->userMessageDialog(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    eventFile = newEventFile;
+    eventFileLineEdit->setText(eventFile);
+
+    // check if file in dir with all motions, if so set motionDir
+    // Pop off the row that contains the header information
+    data.pop_front();
+    auto numRows = data.size();
+    int count = 0;
+    QFileInfo eventFileInfo(eventFile);
+    QDir fileDir(eventFileInfo.absolutePath());
+    QStringList filesInDir = fileDir.entryList(QStringList() << "*", QDir::Files);
+
+    // check all files are there
+    bool allThere = true;
+    for(int i = 0; i<numRows; ++i) {
+        auto rowStr = data.at(i);
+        auto stationName = rowStr[0];
+        if (!filesInDir.contains(stationName)) {
+            allThere = false;
+            i=numRows;
+        }
+    }
+
+    if (allThere == true) {
+        motionDir = fileDir.path();
+        motionDirLineEdit->setText(fileDir.path());
+        this->loadUserGMData();
+    } else {
+        QDir motionDirDir(motionDir);
+        if (motionDirDir.exists()) {
+            QStringList filesInDir = motionDirDir.entryList(QStringList() << "*", QDir::Files);
+            bool allThere = true;
+            for(int i = 0; i<numRows; ++i) {
+                auto rowStr = data.at(i);
+                auto stationName = rowStr[0];
+                if (!filesInDir.contains(stationName)) {
+                    allThere = false;
+                    i=numRows;
+                }
+            }
+            if (allThere == true)
+                this->loadUserGMData();
+        }
+    }
+
+    return;
+}
+
+void UserInputGMWidget::chooseMotionDirDialog(void)
+{
+
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::Directory);
+    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing specified motions"));
+    dialog.close();
+
+    // Return if the user cancels or enters same dir
+    if(newPath.isEmpty() || newPath == motionDir)
+    {
+        return;
+    }
+
+    motionDir = newPath;
+    motionDirLineEdit->setText(motionDir);
+
+    // check if dir contains EventGrid.csv file, if it does set the file
+    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
+    if (eventFileInfo.exists()) {
+        eventFile = newPath + "/EventGrid.csv";
+        eventFileLineEdit->setText(eventFile);
+    }
+
+    // could check files exist if eventFile set, but need something to give an error if not all there
     this->loadUserGMData();
 
     return;
