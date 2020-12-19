@@ -74,10 +74,11 @@ AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRV
   buildingWidget = new SimCenterAppSelection(QString("Building Analysis Engine"), QString("Simulation"), this);
 
   SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(theRVContainer);
-  SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);
+  //SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);
+  SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
   SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMtoEDP"));
 
-  buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees"), openSees);
+  buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation_R"), openSees);
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPyInput"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
 
