@@ -105,18 +105,15 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
 
     setupConnections();
 
-
     //Test
-    // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
-    QString userName = getPEERUserName();
-    QString password = getPEERPassWord();
+    //    // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
+    //    QString userName = getPEERUserName();
+    //    QString password = getPEERPassWord();
 
-    peerClient.signIn(userName, password);
-    this->showInfoDialog();
+    //    peerClient.signIn(userName, password);
+    //    this->showInfoDialog();
 
-    this->handleProcessFinished(0,QProcess::NormalExit);
-
-    //    this->parseDownloadedRecords("NULL");
+    //    this->handleProcessFinished(0,QProcess::NormalExit);
 
 }
 
@@ -184,8 +181,6 @@ void GMWidget::setupConnections()
         this->parseDownloadedRecords(zipFile);
     });
 
-    //    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
-    //    connect(this,&GMWidget::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 }
 
 
@@ -540,25 +535,25 @@ void GMWidget::runHazardSimulation(void)
 
 void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    //    this->m_runButton->setEnabled(true);
+    this->m_runButton->setEnabled(true);
 
-    //    if(exitStatus == QProcess::ExitStatus::CrashExit)
-    //    {
-    //        QString errText("Error, the process running the hazard simulation script crashed");
-    //        this->handleErrorMessage(errText);
-    //        progressBar->hide();
+    if(exitStatus == QProcess::ExitStatus::CrashExit)
+    {
+        QString errText("Error, the process running the hazard simulation script crashed");
+        this->handleErrorMessage(errText);
+        progressBar->hide();
 
-    //        return;
-    //    }
+        return;
+    }
 
-    //    if(exitCode != 0)
-    //    {
-    //        QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
-    //        this->handleErrorMessage(errText);
-    //        progressBar->hide();
+    if(exitCode != 0)
+    {
+        QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
+        this->handleErrorMessage(errText);
+        progressBar->hide();
 
-    //        return;
-    //    }
+        return;
+    }
 
     progressTextEdit->appendPlainText("Contacting PEER server to download ground motion records.\n");
 
@@ -634,7 +629,6 @@ int GMWidget::downloadRecords(void)
 
     theRecordsListFile.close();
 
-
     // Check if any of the records exist, do not need to download them again
     const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
 
@@ -665,6 +659,9 @@ int GMWidget::downloadRecords(void)
 
 void GMWidget::downloadRecordBatch(void)
 {
+    if(recordsListToDownload.empty())
+        return;
+
     auto maxBatchSize = 100;
 
     if(recordsListToDownload.size() < maxBatchSize)

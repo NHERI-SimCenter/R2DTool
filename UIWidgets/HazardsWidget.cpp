@@ -21,7 +21,6 @@ HazardsWidget::HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, Ra
     theEQSSWidget = nullptr;
     theUserInputGMWidget = nullptr;
     hazardSelectionCombo = nullptr;
-    includeHazardCheckBox = nullptr;
 
     this->createWidget();
 }
@@ -35,8 +34,6 @@ HazardsWidget::~HazardsWidget()
 
 bool HazardsWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    if(includeHazardCheckBox->isChecked() == false)
-        return false;
 
     QJsonArray arrayEvents;
     QJsonObject EQObj;
@@ -90,9 +87,6 @@ void HazardsWidget::createWidget(void)
     QLabel* selectionText = new QLabel();
     selectionText->setText("Hazard Type:");
 
-    includeHazardCheckBox = new QCheckBox("Include earthquake hazard in analysis");
-    includeHazardCheckBox->setChecked(true);
-
     hazardSelectionCombo = new QComboBox();
     hazardSelectionCombo->addItem("Earthquake Scenario Simulation");
     hazardSelectionCombo->addItem("Earthquake ShakeMap");
@@ -110,7 +104,6 @@ void HazardsWidget::createWidget(void)
     gridLayout->addItem(smallVSpacer,0,0);
     gridLayout->addWidget(selectionText,1,0);
     gridLayout->addWidget(hazardSelectionCombo,1,1);
-    gridLayout->addWidget(includeHazardCheckBox,1,2);
     gridLayout->addItem(hspacer,1,3);
     gridLayout->addWidget(theRootStackedWidget,2,0,1,3);
     gridLayout->addItem(vspacer, 3, 0,1,3);

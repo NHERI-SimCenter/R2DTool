@@ -13,7 +13,6 @@ class VisualizationWidget;
 
 class QGroupBox;
 class QStackedWidget;
-class QCheckBox;
 class QComboBox;
 
 class HazardsWidget : public  SimCenterAppWidget
@@ -37,7 +36,6 @@ private:
     void createWidget(void);
 
     QStackedWidget* theRootStackedWidget;
-    QCheckBox* includeHazardCheckBox;
     QComboBox* hazardSelectionCombo;
 
     RandomVariablesContainer* theRandomVariablesContainer;

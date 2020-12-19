@@ -12,7 +12,6 @@
 
 GroundMotionStation::GroundMotionStation(QString path, double lat, double lon) : stationFilePath(path), latitude(lat), longitude(lon)
 {
-
 }
 
 
@@ -51,33 +50,37 @@ void GroundMotionStation::importGroundMotions(void)
     auto numRows = data.size();
     auto numCols = tableHeadings.size();
 
-    if(numCols != 2)
-        throw "The number of header columns in the file " + stationFilePath + " should be 2";
-
-    QFileInfo stationInfo(stationFilePath);
-
-    auto baseDir = stationInfo.dir().absolutePath();
-
-    // Get the data
-    for(int i = 0; i<numRows; ++i)
+    if(tableHeadings.at(0).compare("GM_file") == 0)
     {
-        auto rowStringList = data[i];
+        if(numCols != 2)
+            throw "The number of columns in the header should be 2";
 
-        if(rowStringList.size() != 2)
-            throw "The number of columns in the row " + QString::number(i) + " should be 2";
+        QFileInfo stationInfo(stationFilePath);
 
-        auto GMFile = rowStringList[0];
+        auto baseDir = stationInfo.dir().absolutePath();
 
-        bool ok;
-        auto factor = rowStringList[1].toDouble(&ok);
+        // Get the data
+        for(int i = 0; i<numRows; ++i)
+        {
+            auto rowStringList = data[i];
 
-        if(!ok)
-            throw "Error converting the string " + rowStringList[1] + " to a double";
+            if(rowStringList.size() != numCols)
+                throw "The number of columns in the row " + QString::number(i) + " should be " + QString::number(numCols);
 
-        auto GMFilePath = baseDir + QDir::separator() + GMFile + ".json";
+            auto GMFile = rowStringList[0];
 
-        this->importGroundMotionTimeHistory(GMFilePath, factor);
+            bool ok;
+            auto factor = rowStringList[1].toDouble(&ok);
+
+            if(!ok)
+                throw "Error converting the string " + rowStringList[1] + " to a double";
+
+            auto GMFilePath = baseDir + QDir::separator() + GMFile + ".json";
+
+            this->importGroundMotionTimeHistory(GMFilePath, factor);
+        }
     }
+
 }
 
 
