@@ -497,15 +497,6 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     // and copy all files needed to this directory by invoking copyFiles() on app widgets
     //
 
-    // designsafe will need a unique name
-    /* *********************************************
-    will let ParallelApplication rename dir
-    QUuid uniqueName = QUuid::createUuid();
-    QString strUnique = uniqueName.toString();
-    strUnique = strUnique.mid(1,36);
-    QString tmpDirName = QString("tmp.SimCenter") + strUnique;
-    *********************************************** */
-
     QString tmpDirName = QString("tmp.SimCenter");
     QDir workDir(workingDir);
 
@@ -518,6 +509,10 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     }
     else
         destinationDirectory.mkpath(tmpDirectory);
+
+
+    qDebug() << "WorkflowAppRDT is changinging subDir to input_data";
+    subDir = "input_data";
 
     QString templateDirectory  = destinationDirectory.absoluteFilePath(subDir);
     destinationDirectory.mkpath(templateDirectory);
@@ -541,7 +536,8 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
     // NOTE: we append object workingDir to this which points to template dir
     //
 
-    QString inputFile = templateDirectory + QDir::separator() + tr("dakota.json");
+    //QString inputFile = templateDirectory + QDir::separator() + tr("inputRWHALE.json");
+    QString inputFile = tmpDirectory + QDir::separator() + tr("inputRWHALE.json");
 
     QFile file(inputFile);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
