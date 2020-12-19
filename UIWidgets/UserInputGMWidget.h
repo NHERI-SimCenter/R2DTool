@@ -49,7 +49,11 @@ public slots:
 private slots:
 
     void loadUserGMData(void);
-    void chooseUserFileDialog(void);
+    //void chooseUserFileDialog(void);
+    void chooseEventFileDialog(void);
+    void chooseMotionDirDialog(void);
+  
+
 
 signals:
     void outputDirectoryPathChanged(QString newPath);
@@ -60,12 +64,18 @@ private:
     std::unique_ptr<QStackedWidget> userGMStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
-    QLineEdit *filePathLineEdit;
+
+    QString eventFile;
+    QString motionDir;
+
+    QLineEdit *eventFileLineEdit;
+    QLineEdit *motionDirLineEdit;
+
     QLabel* progressLabel;
     QWidget* progressBarWidget;
     QWidget* fileInputWidget;
     QProgressBar* progressBar;
-    QString pathToUserGMFile;
+
     QVector<GroundMotionStation> stationList;
 
 };
