@@ -92,16 +92,19 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     userGrid->setGMSiteConfig(m_siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
 
-    toolsGridLayout->addWidget(this->m_siteConfigWidget,0,0,1,3);
-    toolsGridLayout->addWidget(this->spatialCorrWidget,0,3);
-    toolsGridLayout->addWidget(this->m_ruptureWidget,1,0,2,3);
-    toolsGridLayout->addWidget(this->m_selectionWidget,1,3);
-    toolsGridLayout->addWidget(this->m_gmpeWidget,2,3);
+    toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,1,3);
+    toolsGridLayout->addWidget(this->spatialCorrWidget,  0,3);
+    toolsGridLayout->addWidget(this->m_ruptureWidget,    1,0,2,3);
+    toolsGridLayout->addWidget(this->m_selectionWidget,  1,3);
+    toolsGridLayout->addWidget(this->m_gmpeWidget,        2,3);
     toolsGridLayout->addWidget(this->m_intensityMeasureWidget,3,0,1,4);
     toolsGridLayout->addWidget(this->m_settingButton, 4,0,1,2);
-    toolsGridLayout->addWidget(this->m_runButton,4,2,1,2);
+    toolsGridLayout->addWidget(this->m_runButton,     4,2,1,2);
 
+    toolsGridLayout->setHorizontalSpacing(5);
+    toolsGridLayout->setColumnStretch(4,1);
     this->setLayout(toolsGridLayout);
+
 
     setupConnections();
 
@@ -946,7 +949,7 @@ void GMWidget::showInfoDialog(void)
         progressDialog->setLayout(progressBarLayout);
 
         progressDialog->setMinimumHeight(640);
-        progressDialog->setMinimumWidth(750);
+        //progressDialog->setMinimumWidth(750);
 
         progressTextEdit = new QPlainTextEdit(this);
         progressTextEdit->setWordWrapMode(QTextOption::WrapMode::WordWrap);
