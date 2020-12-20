@@ -31,9 +31,7 @@
     "Events": [{
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
-      "ApplicationData": {
-        "pathEventData": "records/"
-      }
+      "ApplicationData": {}
     }],
     "Modeling": {
       "Application": "MDOF-LU",

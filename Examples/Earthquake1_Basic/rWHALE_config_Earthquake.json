@@ -16,7 +16,7 @@
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
-        "filter": "13-19",
+        "filter": "13-14",
         "buildingSourceFile":"input_params.csv"
       }
     },
@@ -32,7 +32,7 @@
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
       "ApplicationData": {
-        "pathEventData": "records/"
+        "testArg": 19
       }
     }],
     "Modeling": {
