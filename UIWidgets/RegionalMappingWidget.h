@@ -57,13 +57,15 @@ public:
 
 public slots:
 
-    void handleFileNameChanged(const QString &value);
+    void handleFileNameChanged(QString &motionDir, QString &eventFile);
 
 signals:
 
 private:
 
     QString eventGridPath;
+    QString motionDirPath;
+
     QLineEdit* samplesLineEdit;
     QLineEdit* neighborsLineEdit;
 //    QLineEdit* filenameLineEdit;

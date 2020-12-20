@@ -63,7 +63,7 @@ public:
     QString getAnalysisName(void);
 
 public slots:
-    void hazardGridFileChangedSlot(QString newPath);
+    void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
 
 signals:
 

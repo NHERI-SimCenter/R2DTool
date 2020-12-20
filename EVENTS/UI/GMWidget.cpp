@@ -102,7 +102,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     toolsGridLayout->addWidget(this->m_runButton,     4,2,1,2);
 
     toolsGridLayout->setHorizontalSpacing(5);
-    toolsGridLayout->setColumnStretch(4,1);
+    //toolsGridLayout->setColumnStretch(4,1);
     this->setLayout(toolsGridLayout);
 
 
@@ -931,9 +931,9 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
 
     simulationComplete = true;
 
-    auto pathToEventGridFolder = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+    auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
 
-    emit outputDirectoryPathChanged(pathToEventGridFolder + "EventGrid.csv");
+    emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
 
     return 0;
 }
