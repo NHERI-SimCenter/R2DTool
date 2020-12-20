@@ -58,10 +58,10 @@ public:
 
 
 signals:
-    void hazardGridFileChangedSignal(QString newPath);
+    void hazardGridFileChangedSignal(QString motionDir, QString eventFile);
 
 private slots:
-    void hazardGridFileChangedSlot(QString newPath);
+    void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
 
 
 private:

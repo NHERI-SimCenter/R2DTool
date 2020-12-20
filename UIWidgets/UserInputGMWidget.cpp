@@ -427,7 +427,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
     emit loadingComplete(true);
 
-    emit outputDirectoryPathChanged(eventFile);
+    emit outputDirectoryPathChanged(motionDir, eventFile);
 
     return;
 }

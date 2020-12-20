@@ -184,7 +184,7 @@ void WorkflowAppRDT::initialize(void)
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
-    connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString)));
+    connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
 
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();

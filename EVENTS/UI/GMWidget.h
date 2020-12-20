@@ -52,7 +52,7 @@ signals:
     void locationsChanged(void);
     void sceneViewChanged(void);
     void mapViewChanged(void);
-    void outputDirectoryPathChanged(QString newPath);
+    void outputDirectoryPathChanged(QString folderPath, QString gridFile);
 
 public slots:
     void setAppConfig(void);

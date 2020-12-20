@@ -140,10 +140,9 @@ bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObject){
 
 
  void
- HazardToAssetBuilding::hazardGridFileChangedSlot(QString newPath)
+ HazardToAssetBuilding::hazardGridFileChangedSlot(QString motionDir, QString eventFile)
  {
-     qDebug() << "HazardsToBuilding - nePAth: " << newPath;
-     theRegionalMapping->handleFileNameChanged(newPath);
+     theRegionalMapping->handleFileNameChanged(motionDir, eventFile);
  }
 
 

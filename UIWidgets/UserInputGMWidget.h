@@ -56,7 +56,7 @@ private slots:
 
 
 signals:
-    void outputDirectoryPathChanged(QString newPath);
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
     void loadingComplete(const bool value);
 
 private:
