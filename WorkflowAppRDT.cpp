@@ -283,11 +283,10 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     theModelingWidget->outputAppDataToJSON(apps);
     theUQWidget->outputAppDataToJSON(apps);
     theAssetsWidget->outputAppDataToJSON(apps);
-    //theHazardsWidget->outputAppDataToJSON(apps);
+    theHazardsWidget->outputAppDataToJSON(apps);
     theAnalysisWidget->outputAppDataToJSON(apps);
     theDamageAndLossWidget->outputAppDataToJSON(apps);
     theHazardToAssetWidget->outputAppDataToJSON(apps);
-    theDamageAndLossWidget->outputAppDataToJSON(apps);
 
     //
     // hard copde for now .. EDP's coming out D&L to provide
@@ -303,24 +302,23 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     jsonObjectTop.insert("Applications",apps);
 
     //  output regular data
-    /*
+
     theRunWidget->outputToJSON(jsonObjectTop);
-    theModelingWidget->outputToJSON(jsonObjectTop);
+    //theModelingWidget->outputToJSON(jsonObjectTop);
     theHazardsWidget->outputToJSON(jsonObjectTop);
-    theAnalysisWidget->outputToJSON(jsonObjectTop);
-    theDamageAndLossWidget->outputToJSON(jsonObjectTop);
-    theHazardToAssetWidget->outputToJSON(jsonObjectTop);
-    theUQWidget->outputToJSON(jsonObjectTop);
-    theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
+    //theAnalysisWidget->outputToJSON(jsonObjectTop);
+    //theDamageAndLossWidget->outputToJSON(jsonObjectTop);
+    //theHazardToAssetWidget->outputToJSON(jsonObjectTop);
+    //theUQWidget->outputToJSON(jsonObjectTop);
+    //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
-*/
+
     return true;
 }
 
 
 void WorkflowAppRDT::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/, QString /*inputFile*/)
 {
-
     theResultsWidget->processResults();
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
@@ -358,11 +356,10 @@ bool WorkflowAppRDT::inputFromJSON(QJsonObject &jsonObject)
         theModelingWidget->inputAppDataFromJSON(apps);
         theUQWidget->inputAppDataFromJSON(apps);
         theAssetsWidget->inputAppDataFromJSON(apps);
-        //theHazardsWidget->inputAppDataFromJSON(apps);
+        theHazardsWidget->inputAppDataFromJSON(apps);
         theAnalysisWidget->inputAppDataFromJSON(apps);
         theDamageAndLossWidget->inputAppDataFromJSON(apps);
         theHazardToAssetWidget->inputAppDataFromJSON(apps);
-        theDamageAndLossWidget->inputAppDataFromJSON(apps);
 
     } else
         return false;
@@ -372,6 +369,15 @@ bool WorkflowAppRDT::inputFromJSON(QJsonObject &jsonObject)
     */
 
     theRunWidget->inputFromJSON(jsonObject);
+    //theModelingWidget->outputToJSON(jsonObjectTop);
+    theHazardsWidget->inputFromJSON(jsonObject);
+    //theAnalysisWidget->outputToJSON(jsonObjectTop);
+    //theDamageAndLossWidget->outputToJSON(jsonObjectTop);
+    //theHazardToAssetWidget->outputToJSON(jsonObjectTop);
+    //theUQWidget->outputToJSON(jsonObjectTop);
+    //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
+    theRVs->inputFromJSON(jsonObject);
+
 
 
     return true;
