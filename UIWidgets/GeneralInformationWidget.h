@@ -73,6 +73,8 @@ public:
     Q_ENUM(TemperatureUnit)
 
     bool setAssetTypeState(QString assetType, bool);
+    QString getLengthUnit();
+    QString getForceUnit();
 
 public slots:
 
