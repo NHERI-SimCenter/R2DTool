@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RegionalMappingWidget.h"
 #include <SimCenterAppEventSelection.h>
 #include <NoArgSimCenterApp.h>
+#include "SimCenterEventRegional.h"
 
 #include <QFormLayout>
 #include <QGridLayout>
@@ -83,7 +84,7 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     mainLayout->addWidget(regionalMappingGroupBox);
 
     theLocalMapping = new SimCenterAppEventSelection(QString("Local Event Type"), QString("Events"), this);
-    SimCenterAppWidget *simcenterEvent = new NoArgSimCenterApp(QString("SimCenterEvent"));
+    SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
     SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
 
     theLocalMapping->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
@@ -123,7 +124,6 @@ bool HazardToAssetBuilding::inputFromJSON(QJsonObject &jsonObject){
 
 bool HazardToAssetBuilding::outputAppDataToJSON(QJsonObject &jsonObj)
 {
-    qDebug() << "HazardToAss ;; ouputAppData";
 
     theRegionalMapping->outputAppDataToJSON(jsonObj);
     theLocalMapping->outputAppDataToJSON(jsonObj);
