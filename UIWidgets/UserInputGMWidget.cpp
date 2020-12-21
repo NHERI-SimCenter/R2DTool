@@ -64,7 +64,7 @@ UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    qDebug() << "USER GM outputPLAIN";
+   // qDebug() << "USER GM outputPLAIN";
 
     QFileInfo theFile(eventFile);
     if (theFile.exists()) {
@@ -90,14 +90,10 @@ bool UserInputGMWidget::inputFromJSON(QJsonObject &jsonObj)
     QString fileName;
     QString pathToFile;
 
-    qDebug() << jsonObj;
-
     if (jsonObj.contains("eventFile"))
         fileName = jsonObj["eventFile"].toString();
     if (jsonObj.contains("eventFileDir"))
         pathToFile = jsonObj["eventFileDir"].toString();
-
-    qDebug() << "USERGM: " << fileName << " " << pathToFile;;
 
     eventFile = pathToFile + QDir::separator() + fileName;
     eventFileLineEdit->setText(eventFile);
