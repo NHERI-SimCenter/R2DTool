@@ -18,19 +18,19 @@ EarthquakeRuptureForecastWidget::EarthquakeRuptureForecastWidget(QWidget *parent
     this->m_magnitudeMinBox->setRange(4.5, 9.0);
     this->m_magnitudeMinBox->setDecimals(2);
     this->m_magnitudeMinBox->setSingleStep(0.1);
-    this->m_magnitudeMinBox->setMinimumWidth(250);
+    //FMK this->m_magnitudeMinBox->setMinimumWidth(250);
 
     this->m_magnitudeMaxBox = new QDoubleSpinBox(this);
     this->m_magnitudeMaxBox->setRange(4.5, 9.0);
     this->m_magnitudeMaxBox->setDecimals(2);
     this->m_magnitudeMaxBox->setSingleStep(0.1);
-    this->m_magnitudeMaxBox->setMinimumWidth(250);
+    //FMK this->m_magnitudeMaxBox->setMinimumWidth(250);
 
     this->m_maxDistanceBox = new QDoubleSpinBox(this);
     this->m_maxDistanceBox->setRange(0, 1000.0);
     this->m_maxDistanceBox->setDecimals(1);
     this->m_maxDistanceBox->setSingleStep(1.0);
-    this->m_maxDistanceBox->setMinimumWidth(250);
+    //FMK this->m_maxDistanceBox->setMinimumWidth(250);
 
     QLabel* magMinLabel = new QLabel(tr("Minimum Magnitude:"),this);
     QLabel* magMaxLabel = new QLabel(tr("Maximum Magnitude:"),this);

@@ -15,8 +15,8 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     QGroupBox* spatCorrGroupBox = new QGroupBox(this);
     spatCorrGroupBox->setTitle("Spatial Correlation and Scaling");
     spatCorrGroupBox->setContentsMargins(0,0,0,0);
-    spatCorrGroupBox->setMinimumWidth(400);
-    spatCorrGroupBox->setMaximumWidth(500);
+    //FMK spatCorrGroupBox->setMinimumWidth(400);
+    //FMK spatCorrGroupBox->setMaximumWidth(500);
 
     QGridLayout* gridLayout = new QGridLayout(spatCorrGroupBox);
     spatCorrGroupBox->setLayout(gridLayout);

@@ -55,7 +55,7 @@ BuildingEDPEQWidget::BuildingEDPEQWidget(RandomVariablesContainer *theRandomVari
 
 
     edpSelection->setCurrentText("User Defined");
-    theUserDefinedEDPs->setEDPSpecsFile("/Users/steve/Desktop/SimCenter/Examples/rWhaleExample/input_data_rdt/EDP_specs.json");
+    //    theUserDefinedEDPs->setEDPSpecsFile("/Users/steve/Desktop/SimCenter/Examples/rWhaleExample/input_data_rdt/EDP_specs.json");
 }
 
 

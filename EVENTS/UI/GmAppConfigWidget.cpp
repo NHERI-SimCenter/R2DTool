@@ -30,7 +30,7 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
     QHBoxLayout* workDirLayout = new QHBoxLayout();
     workDirectoryBox = new QLineEdit(this);
 
-    workDirectoryBox->setMinimumWidth(600);
+    //FMK workDirectoryBox->setMinimumWidth(600);
     workDirLayout->addWidget(workDirectoryBox, 1);
     workDirectoryButton = new QPushButton(tr("Browse..."), this);
     workDirLayout->addWidget(workDirectoryButton, 0);
@@ -38,7 +38,7 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
 
     QHBoxLayout* inputDirLayout = new QHBoxLayout();
     inputDirectoryBox = new QLineEdit(this);
-    inputDirectoryBox->setMinimumWidth(600);
+    //FMK inputDirectoryBox->setMinimumWidth(600);
     inputDirLayout->addWidget(inputDirectoryBox, 1);
     inputDirectoryButton = new QPushButton(tr("Browse..."), this);
     inputDirLayout->addWidget(inputDirectoryButton, 0);
@@ -46,7 +46,7 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
 
     QHBoxLayout* outputDirLayout = new QHBoxLayout();
     outputDirectoryBox = new QLineEdit(this);
-    outputDirectoryBox->setMinimumWidth(600);
+    //FMK outputDirectoryBox->setMinimumWidth(600);
     outputDirLayout->addWidget(outputDirectoryBox, 1);
     outputDirectoryButton = new QPushButton(tr("Browse..."), this);
     outputDirLayout->addWidget(outputDirectoryButton, 0);
@@ -60,19 +60,19 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
 
     QHBoxLayout* DBUserLayout = new QHBoxLayout();
     usernameBox = new QLineEdit(this);
-    usernameBox->setMinimumWidth(250);
+    //FMK usernameBox->setMinimumWidth(250);
     DBUserLayout->addWidget(usernameBox, 1);
     dbsFormLayout->addRow("Username:", DBUserLayout);
 
     QHBoxLayout* DBPassLayout = new QHBoxLayout();
     passwordBox = new QLineEdit(this);
-    passwordBox->setMinimumWidth(250);
+    //FMK passwordBox->setMinimumWidth(250);
     passwordBox->setEchoMode(QLineEdit::EchoMode::Password);
     DBPassLayout->addWidget(passwordBox, 1);
     dbsFormLayout->addRow("Password:", DBPassLayout);
 
     closeButton = new QPushButton(tr("Close"), this);
-    closeButton->setMinimumWidth(250);
+    //FMK closeButton->setMinimumWidth(250);
     layout->addWidget(closeButton);
     layout->setAlignment(closeButton,Qt::AlignHCenter);
 
@@ -83,7 +83,7 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
     usernameBox->setText(appConfig->getUsername());
     passwordBox->setText(appConfig->getPassword());
 
-    this->setMinimumWidth(600);
+    //FMK this->setMinimumWidth(600);
     setupConnections();
 }
 

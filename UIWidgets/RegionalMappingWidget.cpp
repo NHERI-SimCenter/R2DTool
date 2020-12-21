@@ -134,9 +134,10 @@ bool RegionalMappingWidget::inputAppDataFromJSON(QJsonObject &jsonObject){
 }
 
 
-void RegionalMappingWidget::handleFileNameChanged(const QString &value)
+void RegionalMappingWidget::handleFileNameChanged(QString &motionDir, QString &eventFile)
 {
-    eventGridPath = value;
+    eventGridPath = eventFile;
+    motionDirPath = motionDir;
 }
 
 

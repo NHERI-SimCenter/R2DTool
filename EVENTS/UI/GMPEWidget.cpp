@@ -22,8 +22,8 @@ GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): QWidget(parent), m_gmpe(gmp
 //    formLayout->addStretch(1);
 
     gmpeGroupBox->setLayout(formLayout);
-    gmpeGroupBox->setMinimumWidth(400);
-    gmpeGroupBox->setMaximumWidth(500);
+    //FMK gmpeGroupBox->setMinimumWidth(400);
+    //FMK gmpeGroupBox->setMaximumWidth(500);
 
     layout->addWidget(gmpeGroupBox);
     this->setLayout(layout);
