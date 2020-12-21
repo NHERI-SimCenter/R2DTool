@@ -403,18 +403,44 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
+    //jsonObject["Application"]=componentType;
+    if (jsonObject.contains("Application")) {
+        if (componentType != jsonObject["Application"].toString()) {
+            emit sendErrorMessage("ComponentINputWidget::inputFRommJSON app name conflict");
+            return false;
+        }
+    }
+
+
+    if (jsonObject.contains("ApplicationData")) {
+        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+        QString fileName;
+        QString pathToFile;
+        if (appData.contains("filter"))
+            selectComponentsLineEdit->setText(appData["filter"].toString());
+
+        if (appData.contains("buildingSourceFile"))
+            fileName = appData["buildingSourceFile"].toString();
+        if (appData.contains("pathToSource"))
+            pathToFile = appData["pathToSource"].toString();
+        componentFileLineEdit->setText(pathToFile + QDir::separator() + fileName);
+    }
+
+    return true;
+
 }
 
 
 bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 {
-
+    return true;
 }
 
 
 bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
-
+  return true;
 }
 
 

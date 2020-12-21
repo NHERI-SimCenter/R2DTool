@@ -96,17 +96,22 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     auto runDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
     auto appDir = SimCenterPreferences::getInstance()->getAppDir();
 
-    jsonObj.insert("Name", "rWHALE_");
-    jsonObj.insert("Author", nameEdit->text());
+    jsonObj.insert("Name", nameEdit->text());
+    jsonObj.insert("Author", "SimCenter");
     jsonObj.insert("WorkflowType", "Parametric Study");
     jsonObj.insert("runDir", runDir);
     jsonObj.insert("localAppDir", appDir);
 
     QJsonObject unitsObj;
-    unitsObj.insert("force", "kips"/*unitsForceCombo->currentText()*/);
-    unitsObj.insert("length", "in" /*unitsLengthCombo->currentText()*/);
-    unitsObj.insert("time", "sec"/*unitsTimeCombo->currentText()*/);
-//    unitsObj.insert("temperature", unitsTemperatureCombo->currentText());
+ //   unitsObj.insert("force", "kips"/*unitsForceCombo->currentText()*/);
+ //   unitsObj.insert("length", "in" /*unitsLengthCombo->currentText()*/);
+ //   unitsObj.insert("time", "sec"/*unitsTimeCombo->currentText()*/);
+ //    unitsObj.insert("temperature", unitsTemperatureCombo->currentText());
+
+    unitsObj["force"] = unitEnumToString(unitsForceCombo->currentData().value<ForceUnit>());
+    unitsObj["length"] = unitEnumToString(unitsLengthCombo->currentData().value<LengthUnit>());
+    unitsObj["time"] = unitEnumToString(unitsTimeCombo->currentData().value<TimeUnit>());
+    unitsObj["temperature"] = unitEnumToString(unitsTemperatureCombo->currentData().value<TemperatureUnit>());
 
     QJsonObject outputsObj;
     outputsObj.insert("EDP", EDPCheckBox->isChecked());
@@ -114,8 +119,17 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     outputsObj.insert("DV", DVCheckBox->isChecked());
     outputsObj.insert("every_realization", realizationCheckBox->isChecked());
 
+    QJsonObject assetsObj;
+    assetsObj.insert("buildings", buildingsCheckBox->isChecked());
+    assetsObj.insert("soil", soilCheckBox->isChecked());
+    assetsObj.insert("gas", gasCheckBox->isChecked());
+    assetsObj.insert("water", waterCheckBox->isChecked());
+    assetsObj.insert("waste", sewerCheckBox->isChecked());
+    assetsObj.insert("transportation", transportationCheckBox->isChecked());
+
     jsonObj.insert("units",unitsObj);
     jsonObj.insert("outputs",outputsObj);
+    jsonObj.insert("assets",assetsObj);
 
     return true;
 }
@@ -123,6 +137,47 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
 
 bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
 
+    if (jsonObject.contains("Name"))
+        nameEdit->setText(jsonObject["Name"].toString());
+
+    if (jsonObject.contains("units")) {
+        QJsonObject unitsObj=jsonObject["units"].toObject();
+
+        QJsonValue unitsForceValue = unitsObj["force"];
+        ForceUnit forceUnit = unitStringToEnum<ForceUnit>(unitsForceValue.toString());
+        int forceUnitIndex = unitsForceCombo->findData(forceUnit);
+        unitsForceCombo->setCurrentIndex(forceUnitIndex);
+
+        QJsonValue unitsLengthValue = unitsObj["length"];
+        LengthUnit lengthUnit = unitStringToEnum<LengthUnit>(unitsLengthValue.toString());
+        int lengthUnitIndex = unitsLengthCombo->findData(lengthUnit);
+        unitsLengthCombo->setCurrentIndex(lengthUnitIndex);
+
+        QJsonValue unitsTimeValue = unitsObj["time"];
+        TimeUnit timeUnit = unitStringToEnum<TimeUnit>(unitsTimeValue.toString());
+        int timeUnitIndex = unitsTimeCombo->findData(timeUnit);
+        unitsTimeCombo->setCurrentIndex(timeUnitIndex);
+    }
+
+    if (jsonObject.contains("outputs")) {
+        QJsonObject outObj=jsonObject["outputs"].toObject();
+
+        EDPCheckBox->setChecked(outObj["EDP"].toBool());
+        DMCheckBox->setChecked(outObj["DM"].toBool());
+        DVCheckBox->setChecked(outObj["DV"].toBool());
+        realizationCheckBox->setChecked(outObj["every_relization"].toBool());
+    }
+
+    if (jsonObject.contains("assets")) {
+        QJsonObject outObj=jsonObject["assets"].toObject();
+
+        buildingsCheckBox->setChecked(outObj["buildings"].toBool());
+        soilCheckBox->setChecked(outObj["soil"].toBool());
+        gasCheckBox->setChecked(outObj["gas"].toBool());
+        waterCheckBox->setChecked(outObj["water"].toBool());
+        sewerCheckBox->setChecked(outObj["waste"].toBool());
+        transportationCheckBox->setChecked(outObj["transportation"].toBool());
+    }
 
     return true;
 }
@@ -271,4 +326,28 @@ bool
 GeneralInformationWidget::setAssetTypeState(QString assetType, bool checkedStatus){
     if (assetType == "Buildings")
         buildingsCheckBox->setChecked(checkedStatus);
+}
+
+template<typename UnitEnum>
+QString GeneralInformationWidget::unitEnumToString(UnitEnum enumValue)
+{
+    return QString(QMetaEnum::fromType<UnitEnum>().valueToKey(enumValue));
+}
+
+template<typename UnitEnum>
+UnitEnum GeneralInformationWidget::unitStringToEnum(QString unitString)
+{
+    return (UnitEnum)QMetaEnum::fromType<UnitEnum>().keyToValue(unitString.toStdString().c_str());
+}
+
+QString
+GeneralInformationWidget::getLengthUnit()
+{
+    return unitEnumToString(unitsLengthCombo->currentData().value<LengthUnit>());
+}
+
+QString
+GeneralInformationWidget::getForceUnit()
+{
+   return unitEnumToString(unitsForceCombo->currentData().value<ForceUnit>());
 }

@@ -152,6 +152,23 @@ MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool
 MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
+
+    if (jsonObject.contains("ApplicationData")) {
+        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+
+        QString fileName;
+        QString pathToFile;
+        if (appData.contains("stdStiffness"))
+            stdStiffness->setText(QString::number(appData["stdStiffness"].toDouble()));
+        if (appData.contains("stdDamping"))
+            stdStiffness->setText(QString::number(appData["stdDamping"].toDouble()));
+        if (appData.contains("hazusData"))
+            fileName = appData["hazusData"].toString();
+        if (appData.contains("pathToHazusFile"))
+            pathToFile = appData["pathToHazusFile"].toString();
+        hazusDataFile->setText(pathToFile + QDir::separator() + fileName);
+    }
     return true;
 }
 
