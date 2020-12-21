@@ -201,13 +201,13 @@ void WorkflowAppRDT::initialize(void)
     theComponentSelection->layout()->setSpacing(0);
 
     theComponentSelection->addComponent(tr("VIZ"), theVisualizationWidget);
-    theComponentSelection->addComponent(tr("GI"), theGeneralInformationWidget);
+    theComponentSelection->addComponent(tr("GI"),  theGeneralInformationWidget);
     theComponentSelection->addComponent(tr("HAZ"), theHazardsWidget);
     theComponentSelection->addComponent(tr("ASD"), theAssetsWidget);
     theComponentSelection->addComponent(tr("HTA"), theHazardToAssetWidget);
     theComponentSelection->addComponent(tr("MOD"), theModelingWidget);
     theComponentSelection->addComponent(tr("ANA"), theAnalysisWidget);
-    theComponentSelection->addComponent(tr("DL"), theDamageAndLossWidget);
+    theComponentSelection->addComponent(tr("DL"),  theDamageAndLossWidget);
     //theComponentSelection->addComponent(tr("EDP"), theEngDemandParamWidget);  // EDP from DL
     //theComponentSelection->addComponent(tr("DV"), theDecisionVariableWidget); // removed
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
@@ -346,94 +346,33 @@ bool WorkflowAppRDT::inputFromJSON(QJsonObject &jsonObject)
     // get each of the main widgets to input themselves
     //
 
-    if (jsonObject.contains("GeneralInformation")) {
-        QJsonObject jsonObjGeneralInformation = jsonObject["GeneralInformation"].toObject();
-        //        if (theGI->inputFromJSON(jsonObjGeneralInformation) == false) {
-        //            emit errorMessage("EE_UQ: failed to read GeneralInformation");
-        //        }
-    } else {
-        emit errorMessage("EE_UQ: failed to find GeneralInformation");
-        return false;
+    if (theGeneralInformationWidget->inputFromJSON(jsonObject) == false) {
+        emit errorMessage("RDT: failed to read GeneralInformation");
     }
+
 
     if (jsonObject.contains("Applications")) {
 
-        QJsonObject theApplicationObject = jsonObject["Applications"].toObject();
+        QJsonObject apps = jsonObject["Applications"].toObject();
 
-        if (theApplicationObject.contains("Modeling")) {
-            QJsonObject theObject = theApplicationObject["Modeling"].toObject();
-            //            if (theSIM->inputAppDataFromJSON(theObject) == false) {
-            //                emit errorMessage("EE_UQ: failed to read Modeling Application");
-            //            }
-        } else {
-            emit errorMessage("EE_UQ: failed to find Modeling Application");
-            return false;
-        }
-
-        // note: Events is different because the object is an Array
-        if (theApplicationObject.contains("Events")) {
-            //  QJsonObject theObject = theApplicationObject["Events"].toObject(); it is null object, actually an array
-            //            if (theEventSelection->inputAppDataFromJSON(theApplicationObject) == false) {
-            //                emit errorMessage("EE_UQ: failed to read Event Application");
-            //            }
-
-        } else {
-            emit errorMessage("EE_UQ: failed to find Event Application");
-            return false;
-        }
-
-        if (theUQWidget->inputAppDataFromJSON(theApplicationObject) == false)
-            emit errorMessage("EE_UQ: failed to read UQ application");
-
-        //        if (theAnalysisSelection->inputAppDataFromJSON(theApplicationObject) == false)
-        //            emit errorMessage("EE_UQ: failed to read FEM application");
-
-        if (theApplicationObject.contains("EDP")) {
-            QJsonObject theObject = theApplicationObject["EDP"].toObject();
-            //            if (theEDP_Selection->inputAppDataFromJSON(theObject) == false) {
-            //                emit errorMessage("EE_UQ: failed to read EDP application");
-            //            }
-        } else {
-            emit errorMessage("EE_UQ: failed to find EDP application");
-            return false;
-        }
+        theModelingWidget->inputAppDataFromJSON(apps);
+        theUQWidget->inputAppDataFromJSON(apps);
+        theAssetsWidget->inputAppDataFromJSON(apps);
+        //theHazardsWidget->inputAppDataFromJSON(apps);
+        theAnalysisWidget->inputAppDataFromJSON(apps);
+        theDamageAndLossWidget->inputAppDataFromJSON(apps);
+        theHazardToAssetWidget->inputAppDataFromJSON(apps);
+        theDamageAndLossWidget->inputAppDataFromJSON(apps);
 
     } else
         return false;
 
     /*
-    ** Note to me - RVs and Events treated differently as both use arrays .. rethink API!
+    ** Note to me - others
     */
 
-    //    theEventSelection->inputFromJSON(jsonObject);
-    //    theRVs->inputFromJSON(jsonObject);
     theRunWidget->inputFromJSON(jsonObject);
 
-    if (jsonObject.contains("StructuralInformation")) {
-        QJsonObject jsonObjStructuralInformation = jsonObject["StructuralInformation"].toObject();
-        //        if (theSIM->inputFromJSON(jsonObjStructuralInformation) == false) {
-        //            emit errorMessage("EE_UQ: failed to read StructuralInformation");
-        //        }
-    } else {
-        emit errorMessage("EE_UQ: failed to find StructuralInformation");
-        return false;
-    }
-
-    if (jsonObject.contains("EDP")) {
-        QJsonObject edpObj = jsonObject["EDP"].toObject();
-        //        if (theEDP_Selection->inputFromJSON(edpObj) == false)
-        //            emit errorMessage("EE_UQ: failed to read EDP data");
-    } else {
-        emit errorMessage("EE_UQ: failed to find EDP data");
-        return false;
-    }
-
-
-    if (theUQWidget->inputFromJSON(jsonObject) == false)
-        emit errorMessage("EE_UQ: failed to read UQ Method data");
-
-    //    if (theAnalysisSelection->inputFromJSON(jsonObject) == false)
-    //        emit errorMessage("EE_UQ: failed to read FEM Method data");
 
     return true;
 }
