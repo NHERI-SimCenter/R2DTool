@@ -39,6 +39,11 @@ UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *pa
     eventFile = "";
     motionDir = "";
 
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(this->getUserInputGMWidget());
+    layout->addStretch();
+    this->setLayout(layout);
+
 }
 
 UserInputGMWidget::~UserInputGMWidget()
@@ -46,15 +51,63 @@ UserInputGMWidget::~UserInputGMWidget()
 
 }
 
+bool
+UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
-bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
-{
-    jsonObj["eventFile"] = eventFile;
-    jsonObj["motionDir"] = motionDir;
+    jsonObject["Application"] = "UserInputGM";
+
+    QJsonObject appData;
+    jsonObject["ApplicationData"]=appData;
 
     return true;
 }
 
+bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
+{
+    qDebug() << "USER GM outputPLAIN";
+
+    QFileInfo theFile(eventFile);
+    if (theFile.exists()) {
+        jsonObj["eventFile"]=theFile.fileName();
+        jsonObj["eventFileDir"]=theFile.path();
+    } else {
+        jsonObj["eventFile"]=eventFile; // may be valid on others computer
+        jsonObj["eventFileDir"]=QString("");
+    }
+    QFileInfo theDir(motionDir);
+    if (theDir.exists()) {
+        jsonObj["motionDir"]=theDir.absoluteFilePath();
+    } else {
+        jsonObj["motionDir"]=QString("None");
+    }
+
+    return true;
+}
+
+
+bool UserInputGMWidget::inputFromJSON(QJsonObject &jsonObj)
+{
+    QString fileName;
+    QString pathToFile;
+
+    qDebug() << jsonObj;
+
+    if (jsonObj.contains("eventFile"))
+        fileName = jsonObj["eventFile"].toString();
+    if (jsonObj.contains("eventFileDir"))
+        pathToFile = jsonObj["eventFileDir"].toString();
+
+    qDebug() << "USERGM: " << fileName << " " << pathToFile;;
+
+    eventFile = pathToFile + QDir::separator() + fileName;
+    eventFileLineEdit->setText(eventFile);
+
+    if (jsonObj.contains("motionDir"))
+        motionDir = jsonObj["motionDir"].toString();
+    motionDirLineEdit->setText(motionDir);
+
+    return true;
+}
 
 void UserInputGMWidget::showUserGMLayers(bool state)
 {
@@ -95,7 +148,8 @@ void UserInputGMWidget::showUserGMLayers(bool state)
 }
 
 
-QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
+QStackedWidget*
+UserInputGMWidget::getUserInputGMWidget(void)
 {
     if (userGMStackedWidget)
         return userGMStackedWidget.get();
