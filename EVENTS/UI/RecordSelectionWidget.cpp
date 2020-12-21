@@ -8,8 +8,8 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
     selectionGroupBox->setTitle("Record Selection");
     selectionGroupBox->setContentsMargins(0,0,0,0);
 
-    selectionGroupBox->setMinimumWidth(400);
-    selectionGroupBox->setMaximumWidth(500);
+    //selectionGroupBox->setMinimumWidth(400);
+    //selectionGroupBox->setMaximumWidth(500);
 
     QGridLayout* formLayout = new QGridLayout(selectionGroupBox);
 
@@ -39,7 +39,9 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
     selectionGroupBox->setLayout(formLayout);
 
     layout->addWidget(selectionGroupBox);
+
     this->setLayout(layout);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
 }
 

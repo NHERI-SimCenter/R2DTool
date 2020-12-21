@@ -9,7 +9,7 @@ PointSourceRuptureWidget::PointSourceRuptureWidget(QWidget *parent, Qt::Orientat
     this->m_magnitudeBox->setRange(4.5, 9.0);
     this->m_magnitudeBox->setDecimals(3);
     this->m_magnitudeBox->setSingleStep(0.001);
-    this->m_magnitudeBox->setMinimumWidth(200);
+    //FMK this->m_magnitudeBox->setMinimumWidth(200);
 
     QVBoxLayout* siteBoxLayout = new QVBoxLayout(this);
     siteBoxLayout->setContentsMargins(0,0,0,0);

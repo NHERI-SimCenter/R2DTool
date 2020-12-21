@@ -19,7 +19,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     imGroupBox->setTitle("Intensity Measure");
     imGroupBox->setContentsMargins(0,0,0,0);
 
-    imGroupBox->setMinimumWidth(400);
+    //imGroupBox->setMinimumWidth(400);
 
     QGridLayout* gridLayout = new QGridLayout(imGroupBox);
     imGroupBox->setLayout(gridLayout);
@@ -31,7 +31,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     m_typeBox->addItem("Peak Ground Acceleration (PGA)", "PGA");
     im.setType("Spectral Accelerations (SA)");
     m_typeBox->setCurrentIndex(0);
-    m_typeBox->setMaximumWidth(450);
+    //m_typeBox->setMaximumWidth(450);
     m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     QLabel* periodLabel = new QLabel(tr("Periods:"),this);
