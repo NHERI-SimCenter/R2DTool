@@ -324,11 +324,12 @@ void GMWidget::showGISWindow(void)
 }
 
 
-bool GMWidget::outputAppDataToJson(QJsonObject &objData) {
-    jsonObject["Application"] = "EQSS";
+bool
+GMWidget::outputAppDataToJSON(QJsonObject &jsonObj) {
+    jsonObj["Application"] = "EQSS";
 
     QJsonObject appData;
-    jsonObject["ApplicationData"]=appData;
+    jsonObj["ApplicationData"]=appData;
 
     return true;
 }
