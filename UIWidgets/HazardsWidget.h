@@ -27,13 +27,13 @@ public:
     bool inputFromJSON(QJsonObject &jsonObject);
 
 signals:
-    void gridFileChangedSignal(QString newPath);
+    void gridFileChangedSignal(QString motionDir, QString eventFile);
 
 private slots:
 
     void handleEQTypeSelection(const QString& selection);
     void shakeMapLoadingFinished(const bool value);
-    void gridFileChangedSlot(QString newPath);
+    void gridFileChangedSlot(QString motionDir, QString eventFile);
 
 
 private:

@@ -115,7 +115,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     mainLayout->addWidget(visWidget);
 
     this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
+    //this->setMinimumWidth(640);
 
     // Popup stuff
     // Once map is set, connect to MapQuickView mouse clicked signal

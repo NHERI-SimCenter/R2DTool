@@ -1,6 +1,3 @@
-﻿#ifndef HazardToAssetWidget_H
-#define HazardToAssetWidget_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,36 +34,83 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
-// Latest revision: 12.2020
+// Written: fmckenna
 
-#include "MultiComponentRDT.h"
+#include "SimCenterEventRegional.h"
+#include <RandomVariablesContainer.h>
 
-class VisualizationWidget;
-class SimCenterAppSelection;
-class SimCenterAppWidget;
+//#include <InputWidgetParameters.h>
 
-class HazardToAssetWidget : public  MultiComponentRDT
+SimCenterEventRegional::SimCenterEventRegional(QWidget *parent)
+  :SimCenterAppWidget(parent), eventType("Earthquake")
 {
-    Q_OBJECT
 
-public:
-    explicit HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~HazardToAssetWidget();
+}
 
-    void clear(void);
+SimCenterEventRegional::~SimCenterEventRegional()
+{
 
-
-signals:
-    void hazardGridFileChangedSignal(QString motionDir, QString eventFile);
-
-private slots:
-    void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
+}
 
 
-private:
-    SimCenterAppWidget *buildingWidget;
-    SimCenterAppSelection *pipelineWidget;
-};
+void
+SimCenterEventRegional::clear(void)
+{
 
-#endif // HazardToAssetWidget_H
+}
+
+
+
+bool
+SimCenterEventRegional::outputToJSON(QJsonObject &jsonObject)
+{
+    // just need to send the class type here.. type needed in object in case user screws up
+    jsonObject["type"]= eventType;
+
+    return true;
+}
+
+
+bool
+SimCenterEventRegional::inputFromJSON(QJsonObject &jsonObject)
+{
+    Q_UNUSED(jsonObject);
+
+    return true;
+}
+
+
+bool
+SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject) {
+
+    //
+    // per API, need to add name of application to be called in AppLication
+    // and all data to be used in ApplicationDate
+    //
+
+    jsonObject["Application"] = "SimCenterEvent";
+    jsonObject["EventClassification"] = eventType;    
+    QJsonObject dataObj;
+    jsonObject["ApplicationData"] = dataObj;
+
+    return true;
+}
+bool
+SimCenterEventRegional::inputAppDataFromJSON(QJsonObject &jsonObject) {
+    Q_UNUSED(jsonObject);
+    return true;
+}
+
+
+bool
+SimCenterEventRegional::copyFiles(QString &dirName) {
+    Q_UNUSED(dirName);
+    return true;
+}
+
+void
+SimCenterEventRegional::setEventType(QString newType) {
+    eventType = newType;
+
+}
+

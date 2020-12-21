@@ -69,8 +69,8 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentRDT(parent), visualizationWidget(visWidget)
 {
 
-    buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("CSV_to_BIM"), this);
-    ComponentInputWidget *csvBuildingInventory = new ComponentInputWidget(this, "Buildings");
+    buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Building"), this);
+    ComponentInputWidget *csvBuildingInventory = new ComponentInputWidget(this, "CSV_to_BIM");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
     pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
