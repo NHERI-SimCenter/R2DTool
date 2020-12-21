@@ -58,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMessageBox>
 #include <QDebug>
 #include <QDir>
+#include <QStandardPaths>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -85,15 +86,16 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(parent,theVisualizationWidget);
 
     // Export layout and objects
-    QHBoxLayout *theExportLayout = new QHBoxLayout();
+    QGridLayout *theExportLayout = new QGridLayout();
     QLabel* exportLabel = new QLabel("Export folder:", this);
 
     exportPathLineEdit = new QLineEdit(this);
-    exportPathLineEdit->setMaximumWidth(1000);
-    exportPathLineEdit->setMinimumWidth(400);
+    //exportPathLineEdit->setMaximumWidth(1000);
+    // exportPathLineEdit->setMinimumWidth(400);
     exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    exportPathLineEdit->setText("/Users/steve/Desktop/Results.pdf");
+    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
+    exportPathLineEdit->setText(defaultOutput);
 
     QPushButton *exportBrowseFileButton = new QPushButton(this);
     exportBrowseFileButton->setText(tr("Browse"));
@@ -101,7 +103,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     QPushButton *exportFileButton = new QPushButton(this);
     exportFileButton->setText(tr("Export to PDF"));
-    exportFileButton->setMaximumWidth(150);
+    //exportFileButton->setMaximumWidth(150);
 
     connect(exportFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
@@ -116,16 +118,18 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
 
-    theExportLayout->addStretch();
-    theExportLayout->addWidget(selectComponentsText);
-    theExportLayout->addWidget(selectComponentsLineEdit);
-    theExportLayout->addWidget(selectComponentsButton);
-    theExportLayout->addStretch();
-    theExportLayout->addWidget(exportLabel);
-    theExportLayout->addWidget(exportPathLineEdit);
-    theExportLayout->addWidget(exportBrowseFileButton);
-    theExportLayout->addWidget(exportFileButton);
-    theExportLayout->addStretch();
+    // theExportLayout->addStretch();
+    theExportLayout->addWidget(selectComponentsText,     0,0);
+    theExportLayout->addWidget(selectComponentsLineEdit, 0,1);
+    theExportLayout->addWidget(selectComponentsButton,   0,2);
+   // theExportLayout->addStretch();
+    theExportLayout->addWidget(exportLabel,            1,0);
+    theExportLayout->addWidget(exportPathLineEdit,     1,1);
+    theExportLayout->addWidget(exportBrowseFileButton, 1,2);
+    theExportLayout->addWidget(exportFileButton,       2,0,1,3);
+
+   // theExportLayout->addStretch();
+   theExportLayout->setRowStretch(3,1);
 
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addWidget(resultsPageWidget);
@@ -159,7 +163,7 @@ int ResultsWidget::processResults()
 
     auto SCPrefs = SimCenterPreferences::getInstance();
 
-    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "Results";
+    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
 
     try
     {

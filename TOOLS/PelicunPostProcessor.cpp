@@ -195,18 +195,25 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 
 void PelicunPostProcessor::importResults(const QString& pathToResults)
 {
+    qDebug() << "PelicunPostProcessor: " << pathToResults;
 
     // Remove old csv files in the output pathToResults
+    QDir resultsDir(pathToResults);
+
     const QFileInfo existingFilesInfo(pathToResults);
 
     // Get the existing files in the folder to see if we already have the record
+
     QStringList acceptableFileExtensions = {"*.csv"};
-    QStringList existingCSVFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+    QStringList existingCSVFiles = resultsDir.entryList(acceptableFileExtensions, QDir::Files);
 
     QString errMsg;
 
     if(existingCSVFiles.empty())
     {
+        QStringList acceptableFileExtensions = {"*.*"};
+        QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+        qDebug() << "FILES IN FOLDER: " << existingFiles;
         errMsg = "The results folder is empty";
         throw errMsg;
     }
@@ -227,15 +234,15 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
 
     CSVReaderWriter csvTool;
 
-    DMdata = csvTool.parseCSVFile(pathToResults + DMResultsSheet,errMsg);
+    DMdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + DMResultsSheet,errMsg);
     if(!errMsg.isEmpty())
         throw errMsg;
 
-    DVdata = csvTool.parseCSVFile(pathToResults + DVResultsSheet,errMsg);
+    DVdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + DVResultsSheet,errMsg);
     if(!errMsg.isEmpty())
         throw errMsg;
 
-    EDPdata = csvTool.parseCSVFile(pathToResults + EDPreultsSheet,errMsg);
+    EDPdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + EDPreultsSheet,errMsg);
     if(!errMsg.isEmpty())
         throw errMsg;
 
