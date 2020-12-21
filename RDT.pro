@@ -12,7 +12,7 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 CONFIG += c++17
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -86,6 +86,8 @@ SOURCES +=  main.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/AnalysisWidget.cpp \
             UIWidgets/ModelWidget.cpp \
+            UIWidgets/MDOF_LU.cpp \
+            UIWidgets/SimCenterEventRegional.cpp \            
             UIWidgets/HazardToAssetWidget.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
             UIWidgets/AssetsModelWidget.cpp \
@@ -164,6 +166,8 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/ResultsWidget.h \
             UIWidgets/AssetsWidget.h \
             UIWidgets/ModelWidget.h \
+            UIWidgets/MDOF_LU.h \
+            UIWidgets/SimCenterEventRegional.h \              
             UIWidgets/AnalysisWidget.h \
             UIWidgets/UQWidget.h \
             UIWidgets/HazardToAssetWidget.h \

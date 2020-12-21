@@ -64,13 +64,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppSelection.h"
 #include "NoArgSimCenterApp.h"
 #include "OpenSeesPyBuildingModel.h"
+#include <MDOF_LU.h>
 
 ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
     : MultiComponentRDT(parent)
 {
 
   buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Modeling"), this);
-  SimCenterAppWidget *mdofLU = new NoArgSimCenterApp(QString("MDOF-LU"));
+  SimCenterAppWidget *mdofLU = new MDOF_LU(theRVContainer);
   SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(theRVContainer,this);
 
   buildingWidget->addComponent(QString("MDOF-LU"), QString("MDOF-LU"), mdofLU);
