@@ -67,7 +67,6 @@ PelicunDLWidget::PelicunDLWidget(QWidget *parent): SimCenterAppWidget(parent)
 bool PelicunDLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
-
     jsonObject.insert("Application","pelicun");
 
     QJsonObject appDataObj;
@@ -81,6 +80,39 @@ bool PelicunDLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
 
     jsonObject.insert("ApplicationData",appDataObj);
+
+    return true;
+}
+
+
+bool PelicunDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+{
+    if (jsonObject.contains("ApplicationData"))
+    {
+        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+        if (appData.contains("DL_Method"))
+            DLTypeComboBox->setCurrentText(appData["DL_Method"].toString());
+
+        if (appData.contains("Realizations"))
+            realizationsLineEdit->setText(QString::number(appData["Realizations"].toInt()));
+
+        if (appData.contains("coupled_EDP"))
+            coupledEDPCheckBox->setChecked(appData["coupled_EDP"].toBool());
+
+        if (appData.contains("detailed_results"))
+            detailedResultsCheckBox->setChecked(appData["detailed_results"].toBool());
+
+        if (appData.contains("ground_failure"))
+            groundFailureCheckBox->setChecked(appData["ground_failure"].toBool());
+
+        if (appData.contains("log_file"))
+            logFileCheckBox->setChecked(appData["log_file"].toBool());
+
+        if (appData.contains("event_time"))
+            eventTimeComboBox->setCurrentText(appData["event_time"].toString());
+
+    }
 
     return true;
 }

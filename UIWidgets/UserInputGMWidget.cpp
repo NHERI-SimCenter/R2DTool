@@ -46,13 +46,14 @@ UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *pa
 
 }
 
+
 UserInputGMWidget::~UserInputGMWidget()
 {
 
 }
 
-bool
-UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
+
+bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     jsonObject["Application"] = "UserInputGM";
 
@@ -62,9 +63,10 @@ UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     return true;
 }
 
+
 bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-   // qDebug() << "USER GM outputPLAIN";
+    // qDebug() << "USER GM outputPLAIN";
 
     QFileInfo theFile(eventFile);
     if (theFile.exists()) {
@@ -102,8 +104,11 @@ bool UserInputGMWidget::inputFromJSON(QJsonObject &jsonObj)
         motionDir = jsonObj["motionDir"].toString();
     motionDirLineEdit->setText(motionDir);
 
+    this->loadUserGMData();
+
     return true;
 }
+
 
 void UserInputGMWidget::showUserGMLayers(bool state)
 {
@@ -125,27 +130,10 @@ void UserInputGMWidget::showUserGMLayers(bool state)
     if(shakeMapTreeItem == nullptr)
         shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",QString());
 
-
-    //    for(auto&& it : shakeMapContainer)
-    //    {
-    //        auto eventName = it->eventLayer->name();
-    //        auto eventID = it->eventLayer->layerId();
-    //        auto eventItem = layersTreeView->addItemToTree(eventName, eventID, shakeMapTreeItem);
-
-    //        auto layers = it->getAllActiveSubLayers();
-    //        for(auto&& layer : layers)
-    //        {
-    //            auto layerName = layer->name();
-    //            auto layerID = layer->layerId();
-
-    //            layersTreeView->addItemToTree(layerName, layerID, eventItem);
-    //        }
-    //    }
 }
 
 
-QStackedWidget*
-UserInputGMWidget::getUserInputGMWidget(void)
+QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
 {
     if (userGMStackedWidget)
         return userGMStackedWidget.get();
@@ -213,8 +201,6 @@ UserInputGMWidget::getUserInputGMWidget(void)
     userGMStackedWidget->setCurrentWidget(fileInputWidget);
 
     userGMStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
-//    userGMStackedWidget->setMinimumWidth(400);
-//    userGMStackedWidget->setMinimumHeight(150);
 
     return userGMStackedWidget.get();
 }
@@ -236,51 +222,6 @@ void UserInputGMWidget::showUserGMSelectDialog(void)
 
 void UserInputGMWidget::loadUserGMData(void)
 {
-    /*
-    // Set file name & entry in line edit
-    filePathLineEdit->setText(pathToUserGMFile);
-
-    // Return if the user cancels
-    if(pathToUserGMFile.isEmpty() || pathToUserGMFile == QDir::currentPath())
-    {
-        pathToUserGMFile.clear();
-        filePathLineEdit->clear();
-        return;
-    }
-
-    const QFileInfo inputFile(pathToUserGMFile);
-
-    if (!inputFile.exists() || inputFile.isFile())
-    {
-        QString errMsg ="A folder does not exist at the path: "+pathToUserGMFile;
-        this->userMessageDialog(errMsg);
-        pathToUserGMFile.clear();
-        filePathLineEdit->clear();
-        return;
-    }
-
-
-    QStringList acceptableFileExtensions = {"*.json", "*.csv"};
-
-    QStringList inputFiles = inputFile.dir().entryList(acceptableFileExtensions,QDir::Files);
-
-    if(inputFiles.empty())
-    {
-        QString errMsg ="No files with .csv extensions were found at the path: "+pathToUserGMFile;
-        this->userMessageDialog(errMsg);
-        return;
-    }
-
-    if(!inputFiles.contains("EventGrid.csv"))
-    {
-        QString errMsg ="No EventGrid.csv file was found at the path: "+pathToUserGMFile;
-        this->userMessageDialog(errMsg);
-        return;
-    }
-
-
-    QString fileName = pathToUserGMFile + "EventGrid.csv";
-    */
 
     CSVReaderWriter csvTool;
 
@@ -334,7 +275,7 @@ void UserInputGMWidget::loadUserGMData(void)
     gridFeatureCollectionTable->setRenderer(renderer);
 
     // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
-    //    gridLayer->setMinScale(80000);
+    // gridLayer->setMinScale(80000);
 
     // Pop off the row that contains the header information
     data.pop_front();
@@ -404,9 +345,9 @@ void UserInputGMWidget::loadUserGMData(void)
         // create the feature attributes
         QMap<QString, QVariant> featureAttributes;
 
-        //            auto attrbText = GMStation.
-        //            auto attrbVal = pointData[i];
-        //            featureAttributes.insert(attrbText,attrbVal);
+        //  auto attrbText = GMStation.
+        //  auto attrbVal = pointData[i];
+        //  featureAttributes.insert(attrbText,attrbVal);
 
         auto vecGMs = GMStation.getStationGroundMotions();
         featureAttributes.insert("Number of Ground Motions", vecGMs.size());
@@ -482,25 +423,6 @@ void UserInputGMWidget::loadUserGMData(void)
     return;
 }
 
-/*
-void UserInputGMWidget::chooseUserFileDialog(void)
-{
-
-    QFileDialog dialog(this);
-
-    dialog.setFileMode(QFileDialog::Directory);
-
-    pathToUserGMFile = dialog.getExistingDirectory(this, tr("File with user specified ground motions"));
-
-    pathToUserGMFile.append("/");
-
-    dialog.close();
-
-    this->loadUserGMData();
-
-    return;
-}
-*/
 
 void UserInputGMWidget::chooseEventFileDialog(void)
 {
@@ -517,13 +439,10 @@ void UserInputGMWidget::chooseEventFileDialog(void)
 
     // Set file name & entry in qLine edit
 
-
     // if file
     //    check valid
     //    set motionDir if file in dir that contains all the motions
     //    invoke loadUserGMData
-
-    QFileInfo eventFilInfo(newEventFile);
 
     CSVReaderWriter csvTool;
 
@@ -586,6 +505,7 @@ void UserInputGMWidget::chooseEventFileDialog(void)
 
     return;
 }
+
 
 void UserInputGMWidget::chooseMotionDirDialog(void)
 {

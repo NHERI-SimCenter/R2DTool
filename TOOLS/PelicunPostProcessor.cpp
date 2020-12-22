@@ -265,7 +265,12 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         throw msg;
     }
 
+    bool withNSLosses = true;
+
     auto numHeaderColumns = DVResults.at(0).size();
+
+    if(numHeaderColumns == 38)
+        withNSLosses = false;
 
     QVector<QString> headerStrings(numHeaderColumns);
 
@@ -323,7 +328,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         }
 
         // Defaults to 1.0 if no replacement cost is given, i.e., it assumes the repair cost is the loss ratio
-        auto replacementCostVar = building.buildingAttributes.value("replacementCost",QVariant(1.0));
+        auto replacementCostVar = building.buildingAttributes.value("ReplacementCost",QVariant(1.0));
 
         auto replacementCost = objectToDouble(replacementCostVar);
 
@@ -335,9 +340,20 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         auto IDStr = inputRow.at(0);            // ID
         auto totalRepairCost = inputRow.at(1);  // Aggregate repair cost (mean)
         auto replaceMentProb = inputRow.at(6);  // Replacement probability, i.e., repair impractical probability
-        auto repairTime = inputRow.at(28);      // Aggregate repair time (mean)
 
-        cumulativeRepairTime += objectToDouble(repairTime);
+        auto repairTime = 0.0;
+        auto fatalities = 0.0;
+        auto injSevLvl1 = 0.0;
+        auto injSevLvl2 = 0.0;
+        auto injSevLvl3 = 0.0;
+
+        // Aggregate repair time (mean)
+        if(withNSLosses)
+            repairTime = objectToDouble(inputRow.at(28));
+        else
+            repairTime= objectToDouble(inputRow.at(13));
+
+        cumulativeRepairTime += repairTime;
 
         auto StructDS1 = objectToDouble(inputRow.at(8));    // Structural losses damage state 1 (mean)
         auto StructDS2 = objectToDouble(inputRow.at(9));    // Structural losses damage state 2 (mean)
@@ -349,30 +365,40 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         cumulativeStructDS3 += StructDS3;
         cumulativeStructDS4 += StructDS4;
 
-        auto NSAccDS1 = objectToDouble(inputRow.at(19));    // Non-structural acceleration sensitive losses damage state 1 (mean)
-        auto NSAccDS2 = objectToDouble(inputRow.at(20));    // Non-structural acceleration sensitive losses damage state 2 (mean)
-        auto NSAccDS3 = objectToDouble(inputRow.at(21));    // Non-structural acceleration sensitive losses damage state 3 (mean)
-        auto NSAccDS4 = objectToDouble(inputRow.at(22));    // Non-structural acceleration sensitive losses damage state 4 (mean)
+        if(withNSLosses)
+        {
+            auto NSAccDS1 = objectToDouble(inputRow.at(19));    // Non-structural acceleration sensitive losses damage state 1 (mean)
+            auto NSAccDS2 = objectToDouble(inputRow.at(20));    // Non-structural acceleration sensitive losses damage state 2 (mean)
+            auto NSAccDS3 = objectToDouble(inputRow.at(21));    // Non-structural acceleration sensitive losses damage state 3 (mean)
+            auto NSAccDS4 = objectToDouble(inputRow.at(22));    // Non-structural acceleration sensitive losses damage state 4 (mean)
 
-        cumulativeNSAccDS1 += NSAccDS1;
-        cumulativeNSAccDS2 += NSAccDS2;
-        cumulativeNSAccDS3 += NSAccDS3;
-        cumulativeNSAccDS4 += NSAccDS4;
+            cumulativeNSAccDS1 += NSAccDS1;
+            cumulativeNSAccDS2 += NSAccDS2;
+            cumulativeNSAccDS3 += NSAccDS3;
+            cumulativeNSAccDS4 += NSAccDS4;
 
-        auto NSDriftDS1 = objectToDouble(inputRow.at(24));  // Non-structural drift sensitive losses damage state 1 (mean)
-        auto NSDriftDS2 = objectToDouble(inputRow.at(25));  // Non-structural drift sensitive losses damage state 2 (mean)
-        auto NSDriftDS3 = objectToDouble(inputRow.at(26));  // Non-structural drift sensitive losses damage state 3 (mean)
-        auto NSDriftDS4 = objectToDouble(inputRow.at(27));  // Non-structural drift sensitive losses damage state 4 (mean)
+            auto NSDriftDS1 = objectToDouble(inputRow.at(24));  // Non-structural drift sensitive losses damage state 1 (mean)
+            auto NSDriftDS2 = objectToDouble(inputRow.at(25));  // Non-structural drift sensitive losses damage state 2 (mean)
+            auto NSDriftDS3 = objectToDouble(inputRow.at(26));  // Non-structural drift sensitive losses damage state 3 (mean)
+            auto NSDriftDS4 = objectToDouble(inputRow.at(27));  // Non-structural drift sensitive losses damage state 4 (mean)
 
-        cumulativeNSDriftDS1 += NSDriftDS1;
-        cumulativeNSDriftDS2 += NSDriftDS2;
-        cumulativeNSDriftDS3 += NSDriftDS3;
-        cumulativeNSDriftDS4 += NSDriftDS4;
+            cumulativeNSDriftDS1 += NSDriftDS1;
+            cumulativeNSDriftDS2 += NSDriftDS2;
+            cumulativeNSDriftDS3 += NSDriftDS3;
+            cumulativeNSDriftDS4 += NSDriftDS4;
 
-        auto injSevLvl1 = objectToDouble(inputRow.at(33));  // Injuries severity level 1 (mean)
-        auto injSevLvl2 = objectToDouble(inputRow.at(38));  // Injuries severity level 2 (mean)
-        auto injSevLvl3 = objectToDouble(inputRow.at(43));  // Injuries severity level 3 (mean)
-        auto fatalities = objectToDouble(inputRow.at(48));  // Injuries severity level 4 (mean)
+            injSevLvl1 = objectToDouble(inputRow.at(33));  // Injuries severity level 1 (mean)
+            injSevLvl2 = objectToDouble(inputRow.at(38));  // Injuries severity level 2 (mean)
+            injSevLvl3 = objectToDouble(inputRow.at(43));  // Injuries severity level 3 (mean)
+            fatalities = objectToDouble(inputRow.at(48));  // Injuries severity level 4 (mean)
+        }
+        else
+        {
+            injSevLvl1 = objectToDouble(inputRow.at(18));  // Injuries severity level 1 (mean)
+            injSevLvl2 = objectToDouble(inputRow.at(23));  // Injuries severity level 2 (mean)
+            injSevLvl3 = objectToDouble(inputRow.at(28));  // Injuries severity level 3 (mean)
+            fatalities = objectToDouble(inputRow.at(33));  // Injuries severity level 4 (mean)
+        }
 
         cumulativeinjSevLvl1 += injSevLvl1;
         cumulativeinjSevLvl2 += injSevLvl2;
@@ -388,7 +414,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         auto RepCostItem = new QTableWidgetItem(totalRepairCost);
         auto RepProbItem = new QTableWidgetItem(replaceMentProb);
         auto RepairTimeItem = new QTableWidgetItem(repairTime);
-        auto fatalitiesItem = new QTableWidgetItem(inputRow.at(48));
+        auto fatalitiesItem = new QTableWidgetItem(QString::number(fatalities));
         auto lossRatioItem = new QTableWidgetItem(QString::number(lossRatio));
 
         pelicunResultsTableWidget->setItem(count,0, IDItem);

@@ -13,8 +13,6 @@ class UserInputGMWidget;
 class VisualizationWidget;
 
 class QGroupBox;
-//class QStackedWidget;
-//class QComboBox;
 
 class HazardsWidget : public  SimCenterAppSelection
 {
@@ -24,23 +22,15 @@ public:
     HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
     ~HazardsWidget();
 
-
 signals:
     void gridFileChangedSignal(QString motionDir, QString eventFile);
 
 private slots:
 
-   // void handleEQTypeSelection(const QString& selection);
     void shakeMapLoadingFinished(const bool value);
     void gridFileChangedSlot(QString motionDir, QString eventFile);
 
-
 private:
-
-    //void createWidget(void);
-
-   // QStackedWidget* theRootStackedWidget;
-   // QComboBox* hazardSelectionCombo;
 
     RandomVariablesContainer* theRandomVariablesContainer;
 

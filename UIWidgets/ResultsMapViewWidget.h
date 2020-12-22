@@ -20,6 +20,8 @@ protected:
     // Custom zoom implementation to get around a bug in the wheel event causing zoom to occur only in one direction
     void wheelEvent(QWheelEvent *event) override;
 
+    void mousePressEvent(QMouseEvent *event) override;
+
     void mouseReleaseEvent(QMouseEvent *event) override;
 
     // Override widget events
@@ -33,6 +35,8 @@ private:
 
     double zoomFactor;
     bool m_initDraw = false;
+
+    QPoint mousePos;
 };
 
 #endif // ResultsMapViewWidget_H
