@@ -21,6 +21,7 @@ PelicunDLWidget::PelicunDLWidget(QWidget *parent): SimCenterAppWidget(parent)
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
     DLTypeComboBox->addItem("HAZUS MH EQ");
+    DLTypeComboBox->addItem("HAZUS MH EQ IM");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     QLabel* realizationsLabel = new QLabel(tr("Number of realizations:"),this);

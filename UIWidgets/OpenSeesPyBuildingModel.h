@@ -82,6 +82,7 @@ private:
     QLineEdit *responseNodes;
     QLineEdit *ndm;
     QLineEdit *ndf;
+    QLineEdit *columnLine;
     RandomVariablesContainer *theRandomVariablesContainer;
     QStringList varNamesAndValues;
 };

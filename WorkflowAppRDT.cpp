@@ -298,7 +298,6 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     edpData["ApplicationData"] = edpAppData;
     apps["EDP"] = edpData;
 
-
     jsonObjectTop.insert("Applications",apps);
 
     //  output regular data
