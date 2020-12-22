@@ -99,7 +99,7 @@ FeatureCollectionLayer* XMLAdaptor::parseXMLFile(const QString& filePath, QStrin
     auto gridData =  gridDataElements.at(0).toElement().text();
 
     // Each grid point is separated by a newline
-    auto gridPoints = gridData.split("\n",Qt::SkipEmptyParts);
+    auto gridPoints = gridData.split("\n",QString::SkipEmptyParts);
 
     if(gridPoints.size() == 0)
         return nullptr;

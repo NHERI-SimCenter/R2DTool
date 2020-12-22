@@ -52,7 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QTableWidget>
-#include <QColorTransform>
+//#include <QColorTransform>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QDebug>
