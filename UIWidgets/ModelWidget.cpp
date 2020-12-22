@@ -72,7 +72,7 @@ ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContai
     buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Modeling"), this);
     SimCenterAppWidget *mdofLU = new MDOF_LU(theRVContainer);
     SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(theRVContainer,this);
-    SimCenterAppWidget *noneWidget = new NoneWidget();
+    SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
     buildingWidget->addComponent(QString("MDOF-LU"), QString("MDOF-LU"), mdofLU);
     buildingWidget->addComponent(QString("OpenSeesPy Script Generator"), QString("OpenSeesPyInput"), openSeesPy);

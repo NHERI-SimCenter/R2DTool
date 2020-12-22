@@ -8,7 +8,7 @@
 class NoneWidget : public  SimCenterAppWidget
 {
 public:
-    NoneWidget();
+    NoneWidget(QWidget *parent = nullptr);
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
 };
