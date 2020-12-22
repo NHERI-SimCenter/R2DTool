@@ -463,4 +463,5 @@ bool ComponentInputWidget::copyFiles(QString &destName)
     if (componentFile.exists()) {
         return this->copyFile(componentFileLineEdit->text(), destName);
     }
+    return true;
 }
