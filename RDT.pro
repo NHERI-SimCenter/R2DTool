@@ -11,6 +11,12 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 # C++17 support
 CONFIG += c++17
 
+win32:DEFINES +=  CURL_STATICLIB
+
+include($$PWD/ConanHelper.pri)
+win32::LIBS+=Advapi32.lib
+
+
 # Specify the path to the Simcenter common directory
 PATH_TO_COMMON=../SimCenterCommon
 
@@ -237,8 +243,8 @@ DISTFILES += \
 
 # External libraries
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
-win32:INCLUDEPATH += "c:\Users\SimCenter\libCurl-7.59.0\include"
-win32:LIBS += C:\Users\SimCenter\libCurl-7.59.0/lib/libcurl.lib
+#win32:INCLUDEPATH += "c:\Users\SimCenter\libCurl-7.59.0\include"
+#win32:LIBS += C:\Users\SimCenter\libCurl-7.59.0/lib/libcurl.lib
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
 #win32:INCLUDEPATH += "..\jansson\build\include"
