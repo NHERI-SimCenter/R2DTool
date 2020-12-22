@@ -127,8 +127,19 @@ bool RegionalMappingWidget::outputAppDataToJSON(QJsonObject &jsonObj)
 }
 
 
-bool RegionalMappingWidget::inputAppDataFromJSON(QJsonObject &jsonObject){
+bool RegionalMappingWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+{
 
+    if (jsonObject.contains("ApplicationData"))
+    {
+        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+        if (appData.contains("neighbors"))
+            neighborsLineEdit->setText(QString::number(appData["neighbors"].toInt()));
+
+        if (appData.contains("samples"))
+            samplesLineEdit->setText(QString::number(appData["samples"].toInt()));
+    }
 
     return true;
 }

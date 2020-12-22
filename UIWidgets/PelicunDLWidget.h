@@ -16,6 +16,8 @@ public:
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
 
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+
 signals:
 
 public slots:

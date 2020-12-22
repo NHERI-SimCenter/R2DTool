@@ -59,12 +59,25 @@ void ResultsMapViewWidget::wheelEvent(QWheelEvent* wheelEvent)
 
 }
 
+void  ResultsMapViewWidget::mousePressEvent(QMouseEvent *event)
+{
+    mousePos = event->globalPos();
+
+    QGraphicsView::mousePressEvent(event);
+}
+
 
 void ResultsMapViewWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     auto globalPoint = event->globalPos();
 
-    emit mouseClick(globalPoint);
+    auto diff = mousePos - globalPoint;
+
+    auto dist = diff.manhattanLength();
+
+    if(dist < 10)
+        emit mouseClick(globalPoint);
+
 }
 
 

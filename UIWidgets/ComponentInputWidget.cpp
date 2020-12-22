@@ -371,6 +371,7 @@ void ComponentInputWidget::testFileLoad(QString& path)
 
 }
 
+
 bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     jsonObject["Application"]=componentType;
@@ -395,7 +396,7 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
             auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toString();
 
-           filterData =  firstID + "-" + lastID;
+            filterData =  firstID + "-" + lastID;
         }
 
         filterData.replace(" ","");
@@ -430,14 +431,18 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         QString fileName;
         QString pathToFile;
-        if (appData.contains("filter"))
-            selectComponentsLineEdit->setText(appData["filter"].toString());
-
         if (appData.contains("buildingSourceFile"))
             fileName = appData["buildingSourceFile"].toString();
         if (appData.contains("pathToSource"))
             pathToFile = appData["pathToSource"].toString();
-        componentFileLineEdit->setText(pathToFile + QDir::separator() + fileName);
+        pathToComponentInfoFile = pathToFile + QDir::separator() + fileName;
+        componentFileLineEdit->setText(pathToComponentInfoFile);
+        this->loadComponentData();
+
+        if (appData.contains("filter"))
+            selectComponentsLineEdit->setText(appData["filter"].toString());
+
+        selectComponentsLineEdit->selectComponents();
     }
 
     return true;
@@ -447,13 +452,15 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 {
+    Q_UNUSED(rvObject);
     return true;
 }
 
 
 bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
-  return true;
+    Q_UNUSED(rvObject);
+    return true;
 }
 
 

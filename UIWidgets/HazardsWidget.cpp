@@ -25,7 +25,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     theUserInputGMWidget = nullptr;
 
     theEQSSWidget = new GMWidget(this, theVisualizationWidget);
-//    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
+    // theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
@@ -44,9 +44,6 @@ HazardsWidget::~HazardsWidget()
 }
 
 
-
-
-
 void HazardsWidget::shakeMapLoadingFinished(const bool value)
 {
     if(!value)
@@ -58,7 +55,7 @@ void HazardsWidget::shakeMapLoadingFinished(const bool value)
     if(!mainWindowWidget)
         return;
 
-//    mainWindowWidget->setActiveWidget(theVisualizationWidget);
+    // mainWindowWidget->setActiveWidget(theVisualizationWidget);
 
 }
 
