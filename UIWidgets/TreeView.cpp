@@ -136,7 +136,7 @@ void TreeView::runAction()
 
     if(!ok)
     {
-        qCritical()<<"Something went wrong in "<<__PRETTY_FUNCTION__;
+        qCritical()<<"Something went wrong in "<<__FUNCTION__;
     }
 }
 

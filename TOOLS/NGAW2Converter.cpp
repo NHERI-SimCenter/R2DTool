@@ -6,6 +6,7 @@
 #include <QJsonArray>
 #include <QFile>
 #include <QFileInfo>
+#include <QVariant>
 
 
 NGAW2Converter::NGAW2Converter()
@@ -377,7 +378,7 @@ int NGAW2Converter::convertRecordToJson(const QString& inputFile, QJsonObject& r
         {
             auto line =  QString::fromLocal8Bit(theRecordFile.readLine()).trimmed();
 
-            foreach (const QString &item, line.split(delim, Qt::SkipEmptyParts))
+            foreach (const QString &item, line.split(delim, QString::SkipEmptyParts))
             {
                 bool OK = true;
                 auto dataPointValue = item.toDouble(&OK);

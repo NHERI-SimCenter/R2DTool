@@ -77,7 +77,7 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(RandomVariablesContainer *theRa
     layout->addWidget(chooseFile1,0,2);
 
     QLabel *label2 = new QLabel();
-    label2->setText("Response Nodes:");
+    label2->setText("Model Response DOF:");
     responseNodes = new QLineEdit;
     responseNodes->setText("1,2,3");
 
@@ -102,7 +102,7 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(RandomVariablesContainer *theRa
     layout->addWidget(ndm,2,1);
 
     QLabel *label4 = new QLabel();
-    label4->setText("Number of degrees-of-freedom at nodes:");
+    label4->setText("Number Nodal DOF:");
     ndf = new QLineEdit();
 
     QRegExp LERegExp3 ("[1-9]");
@@ -113,6 +113,12 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(RandomVariablesContainer *theRa
     ndf->setMaximumWidth(50);
     layout->addWidget(label4,3,0);
     layout->addWidget(ndf,3,1);
+
+
+
+    columnLine = new QLineEdit();
+    layout->addWidget(new QLabel("Column Line Nodes:"), 4, 0);
+    layout->addWidget(columnLine);
 
     QWidget *dummyR = new QWidget();
     layout->addWidget(dummyR,4,0);
