@@ -325,7 +325,8 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
 bool
 GeneralInformationWidget::setAssetTypeState(QString assetType, bool checkedStatus){
     if (assetType == "Buildings")
-        buildingsCheckBox->setChecked(checkedStatus);
+       buildingsCheckBox->setChecked(checkedStatus);
+    return true;
 }
 
 template<typename UnitEnum>
