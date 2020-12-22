@@ -44,6 +44,7 @@ public:
     explicit GMWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~GMWidget();
 
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
     void saveAppSettings();

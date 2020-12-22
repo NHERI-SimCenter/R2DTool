@@ -41,6 +41,8 @@ public:
     QStackedWidget* getUserInputGMWidget(void);
 
     bool outputToJSON(QJsonObject &jsonObj);
+    bool inputFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
 
 public slots:
 

@@ -25,7 +25,7 @@
       "ApplicationData": {
         "filenameEVENTgrid": "records/EventGrid.csv",
         "samples": 5,
-        "neighbors": 4
+        "neighbors": 1
       }
     },
     "Events": [{
@@ -36,11 +36,8 @@
     "Modeling": {
       "Application": "OpenSeesPyInput",
       "ApplicationData": {
-        "mainScript": "cantilever_light.py",
-        "modelPath": "model/",
-        "ndm": 3,
-        "dofMap": "1,2,3",
-        "columnLine": "0, 1"
+        "mainScript": "cantilever.py",
+        "modelPath": "model/"
       }
     },
     "EDP": {

@@ -25,33 +25,32 @@
       "ApplicationData": {
         "filenameEVENTgrid": "records/EventGrid.csv",
         "samples": 5,
-        "neighbors": 4
+        "neighbors": 1
       }
     },
     "Events": [{
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
-      "ApplicationData": {}
+      "ApplicationData": {
+        "testArg": 19
+      }
     }],
     "Modeling": {
       "Application": "OpenSeesPyInput",
       "ApplicationData": {
-        "mainScript": "cantilever_light.py",
+        "mainScript": "cantilever.py",
         "modelPath": "model/",
-        "ndm": 3,
-        "dofMap": "1,2,3",
-        "columnLine": "0, 1"
+        "columnLine": "10000, 10001"
       }
     },
     "EDP": {
-      "Application": "UserDefinedEDP_R",
-      "ApplicationData": {
-        "EDPspecs": "EDP_specs.json"
-      }
+      "Application": "StandardEarthquakeEDP_R",
+      "ApplicationData": {}
     },
     "Simulation": {
        "Application": "OpenSeesPy-Simulation",
-       "ApplicationData": {}
+       "ApplicationData": {
+       }
     },
     "UQ": {
        "Application": "Dakota-UQ",
