@@ -1,0 +1,78 @@
+{
+  "Name": "rWHALE_",
+  "Author": "Adam Zsarnóczay",
+  "units": {
+      "force": "kips",
+      "length": "in",
+      "time": "sec"
+   },
+   "outputs": {
+    "EDP": true,
+    "DM": true,
+    "DV": true,
+    "every_realization": true
+  },
+  "Applications": {
+    "Building": {
+      "Application": "CSV_to_BIM",
+      "ApplicationData": {
+        "filter": "13-14",
+        "buildingSourceFile":"input_params.csv"
+      }
+    },
+    "RegionalMapping": {
+      "Application": "NearestNeighborEvents",
+      "ApplicationData": {
+        "filenameEVENTgrid": "records/EventGrid.csv",
+        "samples": 5,
+        "neighbors": 1
+      }
+    },
+    "Events": [{
+      "EventClassification": "Earthquake",
+      "Application": "SimCenterEvent",
+      "ApplicationData": {
+        "testArg": 19
+      }
+    }],
+    "Modeling": {
+      "Application": "OpenSeesPyInput",
+      "ApplicationData": {
+        "mainScript": "cantilever.py",
+        "modelPath": "model/",
+        "columnLine": "10000, 10001"
+      }
+    },
+    "EDP": {
+      "Application": "StandardEarthquakeEDP_R",
+      "ApplicationData": {}
+    },
+    "Simulation": {
+       "Application": "OpenSeesPy-Simulation",
+       "ApplicationData": {
+       }
+    },
+    "UQ": {
+       "Application": "Dakota-UQ",
+       "ApplicationData": {
+          "method": "LHS",
+          "samples": 5,
+          "type": "UQ",
+          "concurrency": 1,
+          "keepSamples": true
+       }
+    },
+    "DL": {
+            "Application": "pelicun",
+            "ApplicationData": {
+                "DL_Method": "HAZUS MH EQ",
+                "Realizations": 5,
+                "detailed_results": false,
+                "log_file": true,
+                "coupled_EDP": true,
+                "event_time": "off",
+                "ground_failure": false
+            }
+        }
+    }
+}

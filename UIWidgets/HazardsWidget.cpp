@@ -20,6 +20,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     : SimCenterAppSelection(QString("Hazard Selection"),QString("Hazard"), parent),
       theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
+
     theEQSSWidget = new GMWidget(this, theVisualizationWidget);
     theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
@@ -35,11 +36,13 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 }
 
 
-
 HazardsWidget::~HazardsWidget()
 {
 
 }
+
+
+
 
 
 void HazardsWidget::shakeMapLoadingFinished(const bool value)

@@ -336,11 +336,7 @@ void VisualizationWidget::convexHullPointSelector(QMouseEvent& e)
 {
     e.accept();
 
-    qDebug()<<"Viz Widget Mouse: "<<e.x()<<","<< e.y();
-
     const Point clickedPoint = mapViewWidget->screenToLocation(e.x(), e.y());
-
-    qDebug()<<"Viz Widget Point: "<<clickedPoint.x()<<","<< clickedPoint.y();
 
     m_multipointBuilder->points()->addPoint(clickedPoint);
     m_inputsGraphic->setGeometry(m_multipointBuilder->toGeometry());
@@ -378,6 +374,7 @@ void VisualizationWidget::loadBuildingData(void)
 
     QList<Field> fields;
     fields.append(Field::createDouble("LossRatio", "0.0"));
+    fields.append(Field::createText("ID", "NULL",4));
     fields.append(Field::createText("AssetType", "NULL",4));
     fields.append(Field::createText("TabName", "NULL",4));
 
@@ -388,7 +385,7 @@ void VisualizationWidget::loadBuildingData(void)
     QString columnFilter = "OccupancyClass";
 
     // Set the table headers as fields in the table
-    for(int i =0; i<buildingTableWidget->columnCount(); ++i)
+    for(int i = 1; i<buildingTableWidget->columnCount(); ++i)
     {
         auto headerItem = buildingTableWidget->horizontalHeaderItem(i);
 
@@ -459,14 +456,16 @@ void VisualizationWidget::loadBuildingData(void)
         // Create a new building
         Building building;
 
-        int buildingID = buildingTableWidget->item(i,0)->data(0).toInt();
+        QString buildingIDStr = buildingTableWidget->item(i,0)->data(0).toString();
+
+        int buildingID = buildingIDStr.toInt();
 
         building.ID = buildingID;
 
         QMap<QString, QVariant> buildingAttributeMap;
 
         // The feature attributes are the columns from the table
-        for(int j = 0; j<buildingTableWidget->columnCount(); ++j)
+        for(int j = 1; j<buildingTableWidget->columnCount(); ++j)
         {
             auto attrbText = buildingTableWidget->horizontalHeaderItem(j)->text();
             auto attrbVal = buildingTableWidget->item(i,j)->data(0);
@@ -478,9 +477,10 @@ void VisualizationWidget::loadBuildingData(void)
 
         building.buildingAttributes = buildingAttributeMap;
 
+        featureAttributes.insert("ID", buildingIDStr);
         featureAttributes.insert("LossRatio", 0.0);
         featureAttributes.insert("AssetType", "BUILDING");
-        featureAttributes.insert("TabName", buildingTableWidget->item(i,0)->data(0).toString());
+        featureAttributes.insert("TabName", buildingIDStr);
 
         auto latitude = buildingTableWidget->item(i,1)->data(0).toDouble();
         auto longitude = buildingTableWidget->item(i,2)->data(0).toDouble();

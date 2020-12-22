@@ -35,7 +35,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
 
 #include "ResultsWidget.h"
 #include "sectiontitle.h"
@@ -107,7 +106,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     connect(exportFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
-    QLabel* selectComponentsText = new QLabel("Select a subset of components to display the results:",this);
+    QLabel* selectComponentsText = new QLabel("Select a subset of buildings to display the results:",this);
     selectComponentsLineEdit = new AssetInputDelegate();
 
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);

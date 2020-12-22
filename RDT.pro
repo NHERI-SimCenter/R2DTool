@@ -18,7 +18,7 @@ win32::LIBS+=Advapi32.lib
 
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -47,6 +47,7 @@ INCLUDEPATH += $$PWD/Utils \
 
 
 SOURCES +=  main.cpp \
+            NoneWidget.cpp \
             TOOLS/AssetInputDelegate.cpp \
             TOOLS/NGAW2Converter.cpp \
             TOOLS/PelicunPostProcessor.cpp \
@@ -140,6 +141,7 @@ SOURCES +=  main.cpp \
 
 
 HEADERS +=  WorkflowAppRDT.h\
+            NoneWidget.h \
             RDTUserPass.h \
             RunWidget.h \
             TOOLS/AssetInputDelegate.h \
