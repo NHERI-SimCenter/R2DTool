@@ -426,7 +426,7 @@ InputWidgetOpenSeesPyAnalysis::inputFromJSON(QJsonObject &jsonObject)
 bool
 InputWidgetOpenSeesPyAnalysis::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    jsonObject["Application"] = "OpenSees-Simulation";
+    jsonObject["Application"] = "OpenSeesPy-Simulation";
     QJsonObject dataObj;
     jsonObject["ApplicationData"] = dataObj;
 
