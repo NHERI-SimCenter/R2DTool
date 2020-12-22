@@ -15,8 +15,8 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     QGroupBox* spatCorrGroupBox = new QGroupBox(this);
     spatCorrGroupBox->setTitle("Spatial Correlation and Scaling");
     spatCorrGroupBox->setContentsMargins(0,0,0,0);
-    //FMK spatCorrGroupBox->setMinimumWidth(400);
-    //FMK spatCorrGroupBox->setMaximumWidth(500);
+
+    this->setMinimumWidth(375);
 
     QGridLayout* gridLayout = new QGridLayout(spatCorrGroupBox);
     spatCorrGroupBox->setLayout(gridLayout);
@@ -25,7 +25,6 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
 
     m_correlationBoxInter = new QComboBox(this);
     m_correlationBoxInter->addItem("Baker & Jayaram (2008)");
-
     m_correlationBoxInter->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     QLabel* spatialCorrelationIntraLabel = new QLabel(tr("Intra-event\nSpatial Correlation Model:"),this);
