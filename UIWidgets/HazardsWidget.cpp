@@ -98,19 +98,20 @@ void HazardsWidget::createWidget(void)
     theRootStackedWidget = new QStackedWidget();
 
     // Add a vertical spacer at the bottom to push everything up
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
+    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
+//    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     gridLayout->addItem(smallVSpacer,0,0);
     gridLayout->addWidget(selectionText,1,0);
     gridLayout->addWidget(hazardSelectionCombo,1,1);
-    gridLayout->addItem(hspacer,1,3);
+//    gridLayout->addItem(hspacer,1,3);
     gridLayout->addWidget(theRootStackedWidget,2,0,1,3);
     gridLayout->addItem(vspacer, 3, 0,1,3);
 
     theEQSSWidget = new GMWidget(this, theVisualizationWidget);
-    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
+//    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
+
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
     connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));

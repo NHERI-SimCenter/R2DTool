@@ -41,6 +41,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
 #include "SecondaryComponentSelection.h"
+#include "SimCenterAppSelection.h"
+#include "InputWidgetOpenSeesAnalysis.h"
+#include "InputWidgetOpenSeesPyAnalysis.h"
+#include "NoArgSimCenterApp.h"
+#include "NoneWidget.h"
 
 // Qt headers
 #include <QHBoxLayout>
@@ -61,11 +66,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QCheckBox>
 
-#include "SimCenterAppSelection.h"
-#include <InputWidgetOpenSeesAnalysis.h>
-#include <InputWidgetOpenSeesPyAnalysis.h>
-#include <NoArgSimCenterApp.h>
-
 
 AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
     : MultiComponentRDT(parent)
@@ -76,11 +76,14 @@ AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRV
   SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(theRVContainer);
   //SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);
   SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
-  SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMtoEDP"));
+  SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMasEDP"));
+
+  SimCenterAppWidget *noneWidget = new NoneWidget();
 
   buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation_R"), openSees);
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPyInput"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
+  buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
   pipelineWidget = new SimCenterAppSelection(QString("Pipeline Analysising"), QString("PipelineSimulation"), this);
 

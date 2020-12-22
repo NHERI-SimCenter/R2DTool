@@ -129,6 +129,8 @@ void ComponentInputWidget::chooseComponentInfoFileDialog(void)
     // Set file name & entry in qLine edit
     componentFileLineEdit->setText(pathToComponentInfoFile);
 
+    this->loadComponentData();
+
     return;
 }
 
@@ -173,12 +175,7 @@ void ComponentInputWidget::createComponentsBox(void)
     browseFileButton->setText(tr("Browse"));
     browseFileButton->setMaximumWidth(150);
 
-    QPushButton *loadFileButton = new QPushButton();
-    loadFileButton->setText(tr("Load File"));
-    loadFileButton->setMaximumWidth(150);
-
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));
-    connect(loadFileButton,SIGNAL(clicked()),this,SLOT(loadComponentData()));
 
     // Add a horizontal spacer after the browse and load buttons
     auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -222,18 +219,15 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addWidget(pathText,2,0);
     gridLayout->addWidget(componentFileLineEdit,2,1);
     gridLayout->addWidget(browseFileButton,2,2);
-    gridLayout->addWidget(loadFileButton,2,3);
     gridLayout->addItem(hspacer, 2, 4);
     gridLayout->addWidget(selectComponentsText, 3, 0, 1, 4);
     gridLayout->addWidget(selectComponentsLineEdit, 4, 0, 1, 2);
     gridLayout->addWidget(selectComponentsButton, 4, 2);
     gridLayout->addWidget(clearSelectionButton, 4, 3);
-
     gridLayout->addItem(smallVSpacer,5,0,1,5);
     gridLayout->addWidget(componentInfoText,6,0,1,5,Qt::AlignCenter);
     gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5);
     gridLayout->setRowStretch(8, 1);
-    //    gridLayout->addItem(vspacer, 8, 0);
     this->setLayout(gridLayout);
 }
 
@@ -288,6 +282,7 @@ void ComponentInputWidget::handleComponentSelection(void)
         {
             QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
             this->userMessageDialog(msg);
+            selectComponentsLineEdit->clear();
             return;
         }
     }
@@ -316,7 +311,7 @@ void ComponentInputWidget::clearComponentSelection(void)
         componentTableWidget->setRowHidden(i,false);
     }
 
-    componentFileLineEdit->clear();
+    selectComponentsLineEdit->clear();
 }
 
 
@@ -386,7 +381,25 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
         data["buildingSourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
         QString filterData = selectComponentsLineEdit->text();
+
+        if(filterData.isEmpty())
+        {
+            auto nRows = componentTableWidget->rowCount();
+
+            if(nRows == 0)
+                return false;
+
+            // Get the ID of the first and last component
+            auto firstID = componentTableWidget->item(0,0)->data(0).toString();
+
+
+            auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toString();
+
+           filterData =  firstID + "-" + lastID;
+        }
+
         filterData.replace(" ","");
+
         data["filter"] = filterData;
     } else {
         data["sourceFile"]=QString("None");
