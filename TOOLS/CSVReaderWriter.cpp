@@ -105,7 +105,7 @@ QVector<QStringList> CSVReaderWriter::parseCSVFile(const QString &pathToFile, QS
     auto numRows = rowLines.size();
     if(numRows == 0)
     {
-        err = "Error in parsing the .csv file " + pathToFile + " in " + __PRETTY_FUNCTION__;
+        err = "Error in parsing the .csv file " + pathToFile + " in CVSReaderWriter::parseCSVFile";
         return returnVec;
     }
 
