@@ -8,7 +8,8 @@
 #include <QGridLayout>
 #include <QDebug>
 
-BuildingSimulationWidget::BuildingSimulationWidget(QWidget *parent, RandomVariablesContainer* RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
+BuildingSimulationWidget::BuildingSimulationWidget(QWidget *parent, RandomVariablesContainer* RVContainer)
+    : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
 {
     buildingSIMSelectCombo = new QComboBox(this);
     buildingSIMSelectCombo->addItem("OpenSees Simulation");

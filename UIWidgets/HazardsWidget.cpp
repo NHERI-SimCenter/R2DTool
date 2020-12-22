@@ -14,7 +14,11 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-HazardsWidget::HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
+HazardsWidget::HazardsWidget(QWidget *parent,
+                             VisualizationWidget* visWidget,
+                             RandomVariablesContainer * RVContainer)
+    : SimCenterAppSelection(QString("Hazard Selection"),QString("Hazard"), parent),
+      theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
     theRootStackedWidget = nullptr;
     theShakeMapWidget = nullptr;
@@ -112,18 +116,20 @@ void HazardsWidget::createWidget(void)
 //    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
 
+    this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
+    this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
     connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
 
-    theRootStackedWidget->addWidget(theEQSSWidget);
-    //theRootStackedWidget->addWidget(theShakeMapWidget->getShakeMapWidget());
-    theRootStackedWidget->addWidget(theUserInputGMWidget->getUserInputGMWidget());
+}
 
-    theRootStackedWidget->setCurrentWidget(theEQSSWidget);
 
-    hazardSelectionCombo->setCurrentText("Earthquake Scenario Simulation");
+
+HazardsWidget::~HazardsWidget()
+{
+
 }
 
 
@@ -142,16 +148,6 @@ void HazardsWidget::shakeMapLoadingFinished(const bool value)
 
 }
 
-
-void HazardsWidget::handleEQTypeSelection(const QString& selection)
-{
-    if(selection == "Earthquake Scenario Simulation")
-        theRootStackedWidget->setCurrentWidget(theEQSSWidget);
-    else if(selection == "Earthquake ShakeMap")
-        theRootStackedWidget->setCurrentWidget(theShakeMapWidget->getShakeMapWidget());
-    else if(selection == "User Specified Ground Motions")
-        theRootStackedWidget->setCurrentWidget(theUserInputGMWidget->getUserInputGMWidget());
-}
 
 
 void HazardsWidget::gridFileChangedSlot(QString motionD, QString eventF)

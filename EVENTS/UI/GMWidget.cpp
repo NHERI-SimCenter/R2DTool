@@ -324,23 +324,34 @@ void GMWidget::showGISWindow(void)
 }
 
 
+bool
+GMWidget::outputAppDataToJSON(QJsonObject &jsonObj) {
+    jsonObj["Application"] = "EQSS";
+
+    QJsonObject appData;
+    jsonObj["ApplicationData"]=appData;
+
+    return true;
+}
+
 bool GMWidget::outputToJSON(QJsonObject &jsonObj)
 {
+    /*
     if(simulationComplete == false)
     {
-        return false;
+        return true;
     }
 
     auto pathToEventGridFolder = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
     jsonObj.insert("pathEventData", pathToEventGridFolder);
+    */
 
     return true;
 }
 
 
 bool GMWidget::inputFromJSON(QJsonObject &jsonObject){
-
 
     return true;
 }
