@@ -31,17 +31,16 @@
     "Events": [{
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
-      "ApplicationData": {
-        "testArg": 19
-      }
+      "ApplicationData": {}
     }],
     "Modeling": {
       "Application": "OpenSeesPyInput",
       "ApplicationData": {
-        "mainScript": "cantilever.py",
+        "mainScript": "cantilever_light.py",
         "modelPath": "model/",
         "ndm": 3,
-        "dofMap": "1,2,3"
+        "dofMap": "1,2,3",
+        "columnLine": "0, 1"
       }
     },
     "EDP": {
@@ -52,8 +51,7 @@
     },
     "Simulation": {
        "Application": "OpenSeesPy-Simulation",
-       "ApplicationData": {
-       }
+       "ApplicationData": {}
     },
     "UQ": {
        "Application": "Dakota-UQ",
