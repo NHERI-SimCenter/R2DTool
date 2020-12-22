@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: fmk
-// Latest revision: 12.2020
 
 #include "MultiComponentRDT.h"
 

@@ -177,7 +177,7 @@ void WorkflowAppRDT::initialize(void)
     theModelingWidget = new ModelWidget(this, theRVs);
     theAnalysisWidget = new AnalysisWidget(this, theRVs);
     theHazardsWidget = new HazardsWidget(this, theVisualizationWidget, theRVs);
-    theEngDemandParamWidget = new EngDemandParameterWidget(this);
+    //    theEngDemandParamWidget = new EngDemandParameterWidget(this);
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
     //theDecisionVariableWidget = new DecisionVariableWidget(this);
     theUQWidget = new UQWidget(this, theRVs);
@@ -289,7 +289,7 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     theHazardToAssetWidget->outputAppDataToJSON(apps);
 
     //
-    // hard copde for now .. EDP's coming out D&L to provide
+    // hard code for now .. EDP's coming out D&L to provide
     //
 
     QJsonObject edpData;
@@ -323,6 +323,7 @@ void WorkflowAppRDT::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
 
+    statusMessage("Analysis complete");
 }
 
 
@@ -423,7 +424,7 @@ void WorkflowAppRDT::onRemoteGetButtonClicked(){
         theJobManager->show();
 
     } else {
-        errorMessage("ERROR - You Need to Login");
+        errorMessage("ERROR - You need to Login");
     }
 }
 
@@ -552,7 +553,7 @@ void WorkflowAppRDT::assetSelectionChanged(QString text, bool value)
         theHazardToAssetWidget->show(text);
         theModelingWidget->show(text);
         theAnalysisWidget->show(text);
-        theEngDemandParamWidget->show(text);
+        // theEngDemandParamWidget->show(text);
         theDamageAndLossWidget->show(text);
         theUQWidget->show(text);
         //theDecisionVariableWidget->show(text);
@@ -563,7 +564,7 @@ void WorkflowAppRDT::assetSelectionChanged(QString text, bool value)
         theHazardToAssetWidget->hide(text);
         theModelingWidget->hide(text);
         theAnalysisWidget->hide(text);
-        theEngDemandParamWidget->hide(text);
+        // theEngDemandParamWidget->hide(text);
         theDamageAndLossWidget->hide(text);
         theUQWidget->hide(text);
         //theDecisionVariableWidget->hide(text);

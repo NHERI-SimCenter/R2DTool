@@ -136,13 +136,7 @@ private:
     UQWidget* theUQWidget;
     RandomVariablesContainer* theRVs;
     ResultsWidget* theResultsWidget;
-    EngDemandParameterWidget* theEngDemandParamWidget;
-
-    //
-    // gone but not forgotten
-    //
-
-    // DecisionVariableWidget* theDecisionVariableWidget;
+    // EngDemandParameterWidget* theEngDemandParamWidget;
 
     //
     // Objects for running the workflow and obtaining results
