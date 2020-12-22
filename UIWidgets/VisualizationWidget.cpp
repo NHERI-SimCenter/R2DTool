@@ -39,12 +39,13 @@
 #include "GeographicTransformation.h"
 #include "TransformationCatalog.h"
 #include "ArcGISMapImageLayer.h"
-
+#include <utility>
 // Convex Hull
 #include "SimpleFillSymbol.h"
 #include "SimpleLineSymbol.h"
 #include "GeometryEngine.h"
 #include "MultipointBuilder.h"
+#include <utility>
 
 #include <QGroupBox>
 #include <QComboBox>
@@ -748,7 +749,7 @@ void VisualizationWidget::getItemsInConvexHull()
                     auto taskWatcher = table->queryFeatures(queryParams);
 
                     if (!taskWatcher.isValid())
-                        qDebug() <<"Error, task not valid in "<<__PRETTY_FUNCTION__;
+                        qDebug() <<"Error, task not valid in "<<__FUNCTION__;
                     else
                         taskIDMap[taskWatcher.taskId()] = taskIDMap[taskWatcher.taskId()] = taskWatcher.description();
                 }
@@ -836,7 +837,7 @@ void VisualizationWidget::handleLayerSelection(TreeItem* item)
     auto res = layerIterator(layersList);
 
     if(res == false)
-        qDebug()<<"Warning, layer "<<item->getName()<<" not found in map layers in "<<__PRETTY_FUNCTION__;
+        qDebug()<<"Warning, layer "<<item->getName()<<" not found in map layers in "<<__FUNCTION__;
 
 }
 
@@ -1162,7 +1163,7 @@ void VisualizationWidget::onMouseClicked(QMouseEvent& mouseEvent)
     auto taskWatcher =  mapViewWidget->identifyLayers(mouseEvent.x(), mouseEvent.y(), tolerance, returnPopups, maxResults);
 
     if (!taskWatcher.isValid())
-        qDebug() <<"Error, task not valid in "<<__PRETTY_FUNCTION__;
+        qDebug() <<"Error, task not valid in "<<__FUNCTION__;
     else
         taskIDMap[taskWatcher.taskId()] = taskWatcher.description();
 }
@@ -1180,7 +1181,7 @@ void VisualizationWidget::onMouseClickedGlobal(QPoint pos)
     auto taskWatcher =  mapViewWidget->identifyLayers(localPos.x(), localPos.y(), tolerance, returnPopups, maxResults);
 
     if (!taskWatcher.isValid())
-        qDebug() <<"Error, task not valid in "<<__PRETTY_FUNCTION__;
+        qDebug() <<"Error, task not valid in "<<__FUNCTION__;
     else
         taskIDMap[taskWatcher.taskId()] = taskWatcher.description();
 }

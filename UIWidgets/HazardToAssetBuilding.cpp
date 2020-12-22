@@ -151,4 +151,5 @@ bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObject){
   {
       theRegionalMapping->copyFiles(destName);
       theLocalMapping->copyFiles(destName);
+      return true;
   }

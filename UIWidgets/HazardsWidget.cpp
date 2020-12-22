@@ -20,16 +20,14 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     : SimCenterAppSelection(QString("Hazard Selection"),QString("Hazard"), parent),
       theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
-    theShakeMapWidget = nullptr;
-    theEQSSWidget = nullptr;
-    theUserInputGMWidget = nullptr;
 
     theEQSSWidget = new GMWidget(this, theVisualizationWidget);
-//    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
+    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
     this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);
+
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
     connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));

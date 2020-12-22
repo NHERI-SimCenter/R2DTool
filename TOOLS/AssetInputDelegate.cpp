@@ -20,7 +20,7 @@ AssetInputDelegate::AssetInputDelegate()
 
 int AssetInputDelegate::size()
 {
-    selectedComponentIDs.size();
+    return selectedComponentIDs.size();
 }
 
 
