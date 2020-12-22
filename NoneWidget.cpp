@@ -1,6 +1,6 @@
 #include "NoneWidget.h"
 
-NoneWidget::NoneWidget() : SimCenterAppWidget()
+NoneWidget::NoneWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
 
 }
