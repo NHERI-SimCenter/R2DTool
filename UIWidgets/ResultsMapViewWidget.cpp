@@ -37,8 +37,8 @@ void ResultsMapViewWidget::wheelEvent(QWheelEvent* wheelEvent)
     auto hThis = this->geometry().height();
     auto wThis =this->geometry().width();
 
-    auto hThat =mainViewWidget->geometry().height();
-    auto wThat =mainViewWidget->geometry().width();
+    auto hThat = mainViewWidget->geometry().height();
+    auto wThat = mainViewWidget->geometry().width();
 
     auto mousePos = wheelEvent->position().toPoint();
 

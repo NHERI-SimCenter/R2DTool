@@ -322,7 +322,8 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
             building.ResultsValues.insert(headerStrings.at(j),inputRow.at(j).toDouble());
         }
 
-        auto replacementCostVar = building.buildingAttributes.value("replacementCost",QVariant(0.0));
+        // Defaults to 1.0 if no replacement cost is given, i.e., it assumes the repair cost is the loss ratio
+        auto replacementCostVar = building.buildingAttributes.value("replacementCost",QVariant(1.0));
 
         auto replacementCost = objectToDouble(replacementCostVar);
 
