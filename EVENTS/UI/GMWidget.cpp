@@ -537,8 +537,11 @@ void GMWidget::runHazardSimulation(void)
     auto pythonPath = SimCenterPreferences::getInstance()->getPython();
 
     // TODO: make this a relative link once we figure out the folder structure
-    auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
+    // auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
     //    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
+    QString pathToHazardSimScript = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+            + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
+            + "regionalGroundMotion" + QDir::separator() + "HazardSimulation.py";
 
     QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
 
