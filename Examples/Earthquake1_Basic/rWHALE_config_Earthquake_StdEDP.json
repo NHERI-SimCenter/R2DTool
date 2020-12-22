@@ -44,10 +44,8 @@
       }
     },
     "EDP": {
-      "Application": "UserDefinedEDP_R",
-      "ApplicationData": {
-        "EDPspecs": "EDP_specs.json"
-      }
+      "Application": "StandardEarthquakeEDP_R",
+      "ApplicationData": {}
     },
     "Simulation": {
        "Application": "OpenSeesPy-Simulation",
