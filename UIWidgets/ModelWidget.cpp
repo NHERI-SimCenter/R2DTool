@@ -34,8 +34,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
-
 #include "ModelWidget.h"
 #include "ComponentInputWidget.h"
 #include "VisualizationWidget.h"
@@ -64,24 +62,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppSelection.h"
 #include "NoArgSimCenterApp.h"
 #include "OpenSeesPyBuildingModel.h"
+#include "NoneWidget.h"
 #include <MDOF_LU.h>
 
 ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
     : MultiComponentRDT(parent)
 {
 
-  buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Modeling"), this);
-  SimCenterAppWidget *mdofLU = new MDOF_LU(theRVContainer);
-  SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(theRVContainer,this);
+    buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Modeling"), this);
+    SimCenterAppWidget *mdofLU = new MDOF_LU(theRVContainer);
+    SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(theRVContainer,this);
+    SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
-  buildingWidget->addComponent(QString("MDOF-LU"), QString("MDOF-LU"), mdofLU);
-  buildingWidget->addComponent(QString("OpenSeesPy Script Generator"), QString("OpenSeesPyInput"), openSeesPy);
+    buildingWidget->addComponent(QString("MDOF-LU"), QString("MDOF-LU"), mdofLU);
+    buildingWidget->addComponent(QString("OpenSeesPy Script Generator"), QString("OpenSeesPyInput"), openSeesPy);
+    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-  pipelineWidget = new SimCenterAppSelection(QString("Pipeline Modeling"), QString("PipelineModeling"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Pipeline Modeling"), QString("PipelineModeling"), this);
 
-  this->addComponent("Buildings", buildingWidget);
-  this->addComponent("Gas Network",pipelineWidget);
-  this->hideAll();
+    this->addComponent("Buildings", buildingWidget);
+    this->addComponent("Gas Network",pipelineWidget);
+    this->hideAll();
 }
 
 

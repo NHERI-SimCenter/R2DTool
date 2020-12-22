@@ -41,6 +41,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
 #include "SecondaryComponentSelection.h"
+#include "DakotaInputSampling.h"
+#include "SimCenterAppSelection.h"
+#include "NoneWidget.h"
 
 // Qt headers
 #include <QHBoxLayout>
@@ -60,10 +63,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPointer>
 #include <QPushButton>
 #include <QCheckBox>
-#include <DakotaInputSampling.h>
-
-#include "SimCenterAppSelection.h"
-
 
 UQWidget::UQWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
     : MultiComponentRDT(parent)
@@ -72,9 +71,13 @@ UQWidget::UQWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
   buildingWidget = new SimCenterAppSelection(QString("UQ Application"), QString("UQ"), this);
   SimCenterAppWidget *dakota = new DakotaInputSampling(theRVContainer, this);
 
+  SimCenterAppWidget *noneWidget = new NoneWidget(this);
+
   buildingWidget->addComponent(QString("Dakota"), QString("Dakota-UQ"), dakota);
+  buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
   pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("PipelineUQ"), this);
+
 
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",pipelineWidget);

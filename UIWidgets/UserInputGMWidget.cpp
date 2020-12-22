@@ -213,8 +213,8 @@ UserInputGMWidget::getUserInputGMWidget(void)
     userGMStackedWidget->setCurrentWidget(fileInputWidget);
 
     userGMStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
-    userGMStackedWidget->setMinimumWidth(400);
-    userGMStackedWidget->setMinimumHeight(150);
+//    userGMStackedWidget->setMinimumWidth(400);
+//    userGMStackedWidget->setMinimumHeight(150);
 
     return userGMStackedWidget.get();
 }

@@ -85,10 +85,6 @@ def build_model(model_params):
 	loadConst('-time', 0.0)
 
 
-
-
-
-
 # FUNCTION: PeakDriftRecorder --------------------------------------------------
 # saves envelope of interstory drift ratio for each story at one analysis step
 # ------------------------------------------------------------------------------
@@ -97,7 +93,6 @@ def PeakDriftRecorder(EDP_specs, envDict):
     # inputs:
     # EDP_specs = dictionary of EDP type, location, direction
     # envDict = dictionary of envelope values
-
 
     for loc in EDP_specs['PID']:
         pos = 0
