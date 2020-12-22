@@ -2,8 +2,9 @@
 #define HAZARDS_WIDGET_H
 
 // Written by: Stevan Gavrilovic
+// modified: fmk
 
-#include "SimCenterAppWidget.h"
+#include "SimCenterAppSelection.h"
 
 class RandomVariablesContainer;
 class GMWidget;
@@ -12,10 +13,10 @@ class UserInputGMWidget;
 class VisualizationWidget;
 
 class QGroupBox;
-class QStackedWidget;
-class QComboBox;
+//class QStackedWidget;
+//class QComboBox;
 
-class HazardsWidget : public  SimCenterAppWidget
+class HazardsWidget : public  SimCenterAppSelection
 {
     Q_OBJECT
 
@@ -23,25 +24,26 @@ public:
     HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
     ~HazardsWidget();
 
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
+
+   // bool outputToJSON(QJsonObject &jsonObject);
+   // bool inputFromJSON(QJsonObject &jsonObject);
 
 signals:
     void gridFileChangedSignal(QString motionDir, QString eventFile);
 
 private slots:
 
-    void handleEQTypeSelection(const QString& selection);
+   // void handleEQTypeSelection(const QString& selection);
     void shakeMapLoadingFinished(const bool value);
     void gridFileChangedSlot(QString motionDir, QString eventFile);
 
 
 private:
 
-    void createWidget(void);
+    //void createWidget(void);
 
-    QStackedWidget* theRootStackedWidget;
-    QComboBox* hazardSelectionCombo;
+   // QStackedWidget* theRootStackedWidget;
+   // QComboBox* hazardSelectionCombo;
 
     RandomVariablesContainer* theRandomVariablesContainer;
 
