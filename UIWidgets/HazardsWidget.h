@@ -25,9 +25,6 @@ public:
     ~HazardsWidget();
 
 
-   // bool outputToJSON(QJsonObject &jsonObject);
-   // bool inputFromJSON(QJsonObject &jsonObject);
-
 signals:
     void gridFileChangedSignal(QString motionDir, QString eventFile);
 
