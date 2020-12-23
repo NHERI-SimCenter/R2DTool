@@ -77,7 +77,7 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(RandomVariablesContainer *theRa
     layout->addWidget(chooseFile1,0,2);
 
     QLabel *label2 = new QLabel();
-    label2->setText("Model Response DOF:");
+    label2->setText("DOF Mapping:");
     responseNodes = new QLineEdit;
     responseNodes->setText("1,2,3");
 
@@ -113,7 +113,6 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(RandomVariablesContainer *theRa
     ndf->setMaximumWidth(50);
     layout->addWidget(label4,3,0);
     layout->addWidget(ndf,3,1);
-
 
 
     columnLine = new QLineEdit();
@@ -183,6 +182,7 @@ OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
     dataObj["dofMap"]=responseNodes->text();
     dataObj["ndm"]=ndm->text().toInt();
     dataObj["modelPath"] = "";
+    dataObj["columnLine"]=columnLine->text();
 
     QFileInfo theModelFile(filePath);
     if (theModelFile.exists()) {
@@ -205,6 +205,25 @@ OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
 bool
 OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
+    if (jsonObject.contains("ApplicationData")) {
+        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+
+        QString fileName;
+        QString pathToFile;
+        if (appData.contains("dofMap"))
+            responseNodes->setText(appData["dofMap"].toString());
+        if (appData.contains("ndm"))
+            ndm->setText(appData["ndm"].toString());
+        if (appData.contains("columnLine"))
+            columnLine->setText(appData["columnLine"].toString());
+
+        if (appData.contains("mainScript"))
+            fileName = appData["mainScript"].toString();
+        if (appData.contains("filePath"))
+            pathToFile = appData["filePath"].toString();
+        filePathLineEdit->setText(pathToFile + QDir::separator() + fileName);
+    }
 
     return true;
 }
