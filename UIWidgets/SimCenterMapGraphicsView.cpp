@@ -58,7 +58,7 @@ SimCenterMapGraphicsView::getInstance() {
 
 SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj)
 {
-
+    theCurrentLayout = nullptr;
 }
 
 SimCenterMapGraphicsView::~SimCenterMapGraphicsView()
