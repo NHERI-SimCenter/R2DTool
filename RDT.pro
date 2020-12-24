@@ -13,12 +13,12 @@ CONFIG += c++17
 
 win32:DEFINES +=  CURL_STATICLIB
 
-include($$PWD/ConanHelper.pri)
+# win32::include($$PWD/ConanHelper.pri)
 win32::LIBS+=Advapi32.lib
 
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -55,6 +55,7 @@ SOURCES +=  main.cpp \
             UIWidgets/BuildingDatabase.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
+            UIWidgets/SimCenterMapGraphicsView.cpp \
             WorkflowAppRDT.cpp \
             RunWidget.cpp \
             TOOLS/XMLAdaptor.cpp \
@@ -156,7 +157,8 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/GroundMotionStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/SecondaryComponentSelection.h \
-            UIWidgets/MultiComponentRDT.h \            
+            UIWidgets/MultiComponentRDT.h \             \
+            UIWidgets/SimCenterMapGraphicsView.h \
             UIWidgets/CustomGraphicsScene.h \
             UIWidgets/CustomGraphicsView.h \
             UIWidgets/GridNode.h \

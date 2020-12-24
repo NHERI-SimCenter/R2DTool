@@ -4,6 +4,7 @@
 #include "TreeItem.h"
 #include "PopUpWidget.h"
 #include "ComponentInputWidget.h"
+#include <QThread>
 
 //Test
 #include "XMLAdaptor.h"
@@ -58,12 +59,12 @@
 #include <QHeaderView>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <SimCenterMapGraphicsView.h>
 
 using namespace Esri::ArcGISRuntime;
 
 VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {    
-
     visWidget = nullptr;
     this->setContentsMargins(0,0,0,0);
 
@@ -88,7 +89,14 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     pipelineWidget = nullptr;
 
     // Create the Widget view
-    mapViewWidget = new MapGraphicsView(this);
+    //mapViewWidget = new MapGraphicsView(this);
+    mapViewLayout = new QVBoxLayout();
+
+
+    mapViewWidget = SimCenterMapGraphicsView::getInstance();
+
+    mapViewWidget->setCurrentLayout(mapViewLayout);
+
     mapViewWidget->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     // Create a map using the topographic Basemap
@@ -113,20 +121,21 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     // Create the visualization widget and set it to the main layout
     this->createVisualizationWidget();
+
     mainLayout->addWidget(visWidget);
 
     this->setLayout(mainLayout);
     //this->setMinimumWidth(640);
 
     // Popup stuff
+
     // Once map is set, connect to MapQuickView mouse clicked signal
     connect(mapViewWidget, &MapGraphicsView::mouseClicked, this, &VisualizationWidget::onMouseClicked);
-
     // Connect to MapQuickView::identifyLayerCompleted signal
     connect(mapViewWidget, &MapGraphicsView::identifyLayersCompleted, this, &VisualizationWidget::identifyLayersCompleted);
-
     // Connect to the exportImageCompleted signal
     connect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
+
 
     // Test
     //    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
@@ -154,7 +163,32 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
 VisualizationWidget::~VisualizationWidget()
 {
+  qDebug() << "VIS WIDGET - DESTRUCTOR\n";
+  mapViewWidget->setCurrentLayout(0);
+}
 
+void
+VisualizationWidget::setCurrentlyViewable(bool status)
+{
+    if (status == true) {
+        emit sendErrorMessage("SWAPPING Visaulizatytion Widget");
+        mapViewWidget->setCurrentLayout(mapViewLayout);
+        this->update();
+        qApp->processEvents();
+        QThread::msleep(100);
+        emit sendErrorMessage("");
+    }
+
+    /*
+        connect(mapViewWidget, &MapGraphicsView::mouseClicked, this, &VisualizationWidget::onMouseClicked);
+        connect(mapViewWidget, &MapGraphicsView::identifyLayersCompleted, this, &VisualizationWidget::identifyLayersCompleted);
+        connect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
+    } else {
+        disconnect(mapViewWidget, &MapGraphicsView::mouseClicked, this, &VisualizationWidget::onMouseClicked);
+        disconnect(mapViewWidget, &MapGraphicsView::identifyLayersCompleted, this, &VisualizationWidget::identifyLayersCompleted);
+        disconnect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
+    }
+    */
 }
 
 
@@ -226,7 +260,8 @@ void VisualizationWidget::createVisualizationWidget(void)
     layout->addItem(vspacer,10,0,1,1);
 
 
-    layout->addWidget(mapViewWidget,0,1,12,2);
+    //layout->addWidget(mapViewWidget,0,1,12,2);
+    layout->addLayout(mapViewLayout,0,1,12,2);
 }
 
 BuildingDatabase* VisualizationWidget::getBuildingDatabase()
