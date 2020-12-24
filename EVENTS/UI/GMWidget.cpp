@@ -84,8 +84,10 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     m_settingButton = new QPushButton(tr("&Settings"));
 
     // Create a map view that will be used for selecting the grid points
-    mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
-    mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr,mapViewMainWidget);
+
+    // mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
+
+    mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr);
 
     auto userGrid = mapViewSubWidget->getGrid();
     userGrid->createGrid();
@@ -312,10 +314,12 @@ void GMWidget::saveAppSettings()
 
 void GMWidget::showGISWindow(void)
 {
+    /*
     auto scene = mapViewMainWidget->scene();
     auto sceneRect = scene->sceneRect();
     if(sceneRect.isNull())
         return;
+    */
 
     mapViewSubWidget->show();
     mapViewSubWidget->addGridToScene();
@@ -999,3 +1003,8 @@ void GMWidget::handleErrorMessage(const QString& errorMessage)
     progressTextEdit->appendPlainText("\n");
 }
 
+void GMWidget::setCurrentlyViewable(bool status){
+
+    if (status == true)
+        mapViewSubWidget->setCurrentlyViewable(status);
+}

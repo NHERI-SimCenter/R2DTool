@@ -12,47 +12,75 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDebug>
+#include <SimCenterMapGraphicsView.h>
 
-MapViewSubWidget::MapViewSubWidget(QWidget* parent, MapGraphicsView* mainView) : MapGraphicsView(parent), mainViewWidget(mainView)
+
+MapViewSubWidget::MapViewSubWidget(QWidget* parent)
+    :QDialog(parent)
 {
     displayText = nullptr;
     zoomFactor = 1.005;
 
-    this->setAcceptDrops(true);
-    this->setObjectName("MapSubwindow");
+    theViewLayout = new QVBoxLayout();
 
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    this->setLayout(theViewLayout);
 
-    this->setScene(mainViewWidget->scene());
+    theNewView = SimCenterMapGraphicsView::getInstance();
+    theNewView->setAcceptDrops(true);
+    //theNewView->setObjectName("MapSubwindow");
 
-    grid = std::make_unique<RectangleGrid>(this);
+    theNewView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    theNewView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    theNewView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    //theNewView->setScene(theNewView->scene());
 
-    connect(this, &Esri::ArcGISRuntime::MapGraphicsView::viewpointChanged, this, [this]
+    grid = std::make_unique<RectangleGrid>(theNewView);
+
+    connect(theNewView,SIGNAL(wheelEvent()), this, SLOT(wheelEvent()));
+
+    /*
+    connect(theNewView, &Esri::ArcGISRuntime::MapGraphicsView::viewpointChanged, theNewView, [theNewView]
     {
-        if (this->isNavigating())
-            mainViewWidget->setViewpoint(this->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
+        if (theNewView->isNavigating())
+            theNewView->setViewpoint(theNewView->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
 
     }, Qt::UniqueConnection);
 
-    connect(mainViewWidget, &Esri::ArcGISRuntime::MapGraphicsView::viewpointChanged, this, [this]
+    connect(theNewView, &Esri::ArcGISRuntime::MapGraphicsView::viewpointChanged, theNewView, [theNewView]
     {
-        if (mainViewWidget->isNavigating())
-            this->setViewpoint(mainViewWidget->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
+        if (theNewView->isNavigating())
+            theNewView->setViewpoint(theNewView->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
 
     }, Qt::UniqueConnection);
 
-    connect(mainViewWidget,&MapGraphicsView::rectChanged,this,&MapViewSubWidget::resizeParent);
+    connect(theNewView,&MapGraphicsView::rectChanged,theNewView,&MapViewSubWidget::resizeParent);
+    */
 
+}
+
+/*
+void MapViewSubWidget::MapViewSubWQidget::viewPortChanged(void) {
+
+    if (theNewView->isNavigating())
+        theNewView->setViewpoint(theNewView->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
+}
+*/
+
+void MapViewSubWidget::setCurrentlyViewable(bool status)
+{
+    if (status == true)
+        theNewView->setCurrentLayout(theViewLayout);
+    else {
+        this->hide();
+    }
 }
 
 
 void MapViewSubWidget::addGridToScene(void)
 {
-    auto scene = mainViewWidget->scene();
+    auto scene = theNewView->scene();
 
     auto sceneRect = scene->sceneRect();
 
@@ -127,42 +155,46 @@ void MapViewSubWidget::wheelEvent(QWheelEvent* wheelEvent)
     auto mousePos = wheelEvent->position();
 
     // Get the point of the mouse
-    Esri::ArcGISRuntime::Point mapPoint = mainViewWidget->screenToLocation(mousePos.x(), mousePos.y());
+    Esri::ArcGISRuntime::Point mapPoint = theNewView->screenToLocation(mousePos.x(), mousePos.y());
 
     auto angle = -1*wheelEvent->angleDelta().ry();
 
     double scaleFactor = pow(zoomFactor, angle);
 
-    auto currentScale = mainViewWidget->mapScale();
+    auto currentScale = theNewView->mapScale();
 
-    mainViewWidget->setViewpoint(Esri::ArcGISRuntime::Viewpoint(mapPoint, currentScale*scaleFactor));
+    theNewView->setViewpoint(Esri::ArcGISRuntime::Viewpoint(mapPoint, currentScale*scaleFactor));
 
 }
 
 
 void MapViewSubWidget::resizeEvent(QResizeEvent *event)
 {
-    auto mapWidth = mainViewWidget->mapWidth();
-    auto mapHeight = mainViewWidget->mapHeight();
+    /*
+    auto mapWidth = theNewView->mapWidth();
+    auto mapHeight = theNewView->mapHeight();
 
-    this->setMaximumWidth(mapWidth);
-    this->setMaximumHeight(mapHeight);
+    theNewView->setMaximumWidth(mapWidth);
+    theNewView->setMaximumHeight(mapHeight);
+    */
 
-    QAbstractScrollArea::resizeEvent(event);
+   // this->QAbstractScrollArea::resizeEvent(event);
 }
 
 
 void MapViewSubWidget::showEvent(QShowEvent *event)
 {
-    auto width = mainViewWidget->width();
-    auto height = mainViewWidget->height();
+    /*
+    auto width = theNewView->width();
+    auto height = theNewView->height();
 
     this->setMaximumWidth(width);
     this->setMaximumHeight(height);
+    */
 
-    QAbstractScrollArea::showEvent(event);
+    this->QAbstractScrollArea::showEvent(event);
 
-    //    auto displayText = this->scene()->addSimpleText("Test");
+    //    auto displayText = theNewView->scene()->addSimpleText("Test");
     //    QFont sansFont("Helvetica [Cronyx]", 24);
     //    displayText->setFont(sansFont);
 }
@@ -172,7 +204,7 @@ void MapViewSubWidget::closeEvent(QCloseEvent *event)
 {
     this->removeGridFromScene();
 
-    QAbstractScrollArea::closeEvent(event);
+    this->QAbstractScrollArea::closeEvent(event);
 }
 
 
@@ -181,10 +213,10 @@ void MapViewSubWidget::resizeParent(QRectF rect)
     auto width = rect.width();
     auto height = rect.height();
 
-    this->setMaximumWidth(width);
-    this->setMaximumHeight(height);
+    theNewView->setMaximumWidth(width);
+    theNewView->setMaximumHeight(height);
 
-    this->resize(width,height);
+    theNewView->resize(width,height);
 
 //    if(displayText != nullptr)
 //    {

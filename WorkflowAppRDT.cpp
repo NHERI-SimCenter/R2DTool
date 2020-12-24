@@ -183,6 +183,10 @@ void WorkflowAppRDT::initialize(void)
     theUQWidget = new UQWidget(this, theRVs);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
+    connect(theVisualizationWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
+    connect(theVisualizationWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
+    connect(theVisualizationWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
+
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
 

@@ -22,6 +22,8 @@ public:
     HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
     ~HazardsWidget();
 
+    void setCurrentlyViewable(bool status);
+
 signals:
     void gridFileChangedSignal(QString motionDir, QString eventFile);
 

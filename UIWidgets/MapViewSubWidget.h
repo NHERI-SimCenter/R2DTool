@@ -5,18 +5,23 @@
 
 #include "RectangleGrid.h"
 #include "MapGraphicsView.h"
+#include <QDialog>
 
 class RectangleGrid;
-
+class SimCenterMapGraphicsView;
 class QGraphicsSimpleTextItem;
+class QVBoxLayout;
 
-class MapViewSubWidget : public Esri::ArcGISRuntime::MapGraphicsView
+//class MapViewSubWidget : public Esri::ArcGISRuntime::MapGraphicsView
+class MapViewSubWidget: public QDialog
 {
     Q_OBJECT
 public:
-    MapViewSubWidget(QWidget* parent, MapGraphicsView* mainView);
+    MapViewSubWidget(QWidget* parent);
 
     RectangleGrid* getGrid(void);
+
+    void setCurrentlyViewable(bool status);
 
 public slots:
 
@@ -49,6 +54,9 @@ private:
 
     double zoomFactor;
     bool m_initDraw = false;
+
+    SimCenterMapGraphicsView *theNewView;
+    QVBoxLayout *theViewLayout;
 };
 
 #endif // MAPVIEWSUBWIDGET_H

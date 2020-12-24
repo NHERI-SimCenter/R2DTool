@@ -47,6 +47,9 @@ class QGroupBox;
 class QComboBox;
 class QTreeView;
 
+class SimCenterMapGraphicsView;
+class QVBoxLayout;
+
 class VisualizationWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
@@ -143,6 +146,8 @@ private slots:
     void getItemsInConvexHull();
     void convexHullPointSelector(QMouseEvent& e);
 
+    void setCurrentlyViewable(bool status);
+
 private:
 
     TreeView* layersTree;
@@ -156,7 +161,10 @@ private:
     void runFieldQuery(Esri::ArcGISRuntime::FeatureTable* table, const QString& fieldName, const QString& searchText);
 
     Esri::ArcGISRuntime::Map*             mapGIS = nullptr;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
+    //FMK Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
+    SimCenterMapGraphicsView *mapViewWidget = nullptr;
+    QVBoxLayout *mapViewLayout;
+
     QList<Esri::ArcGISRuntime::FeatureQueryResult*>  selectedFeaturesList;
 
     QMap<QUuid,QString> taskIDMap;
