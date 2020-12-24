@@ -192,7 +192,7 @@ void MapViewSubWidget::showEvent(QShowEvent *event)
     this->setMaximumHeight(height);
     */
 
-    this->QAbstractScrollArea::showEvent(event);
+    this->QDialog::showEvent(event);
 
     //    auto displayText = theNewView->scene()->addSimpleText("Test");
     //    QFont sansFont("Helvetica [Cronyx]", 24);
@@ -204,7 +204,7 @@ void MapViewSubWidget::closeEvent(QCloseEvent *event)
 {
     this->removeGridFromScene();
 
-    this->QAbstractScrollArea::closeEvent(event);
+    this->QDialog::closeEvent(event);
 }
 
 
