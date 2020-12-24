@@ -66,6 +66,5 @@ void HazardsWidget::gridFileChangedSlot(QString motionD, QString eventF)
 }
 
 void HazardsWidget::setCurrentlyViewable(bool status) {
-    qDebug() << "hazardsWidget::setCurrentlyViewable: " << status;
     this->SimCenterAppSelection::setCurrentlyViewable(status);
 }
