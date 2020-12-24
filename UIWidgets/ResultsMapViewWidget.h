@@ -2,41 +2,30 @@
 #define ResultsMapViewWidget_H
 
 #include <QObject>
+#include <QWidget>
 
-#include "MapGraphicsView.h"
+class SimCenterMapGraphicsView;
+class QGraphicsSimpleTextItem;
+class QVBoxLayout;
 
-class ResultsMapViewWidget : public Esri::ArcGISRuntime::MapGraphicsView
+class ResultsMapViewWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ResultsMapViewWidget(QWidget* parent, MapGraphicsView* mainView);
+    ResultsMapViewWidget(QWidget* parent);
 
-signals:
+    void setCurrentlyViewable(bool status);
 
-    void mouseClick(QPoint pos);
+public slots:
 
-protected:
-
-    // Custom zoom implementation to get around a bug in the wheel event causing zoom to occur only in one direction
-    void wheelEvent(QWheelEvent *event) override;
-
-    void mousePressEvent(QMouseEvent *event) override;
-
-    void mouseReleaseEvent(QMouseEvent *event) override;
-
-    // Override widget events
-    void resizeEvent(QResizeEvent *event) override;
-    void showEvent(QShowEvent *event) override;
-    void closeEvent(QCloseEvent *event) override;
+    void resizeParent(QRectF rect);
 
 private:
 
-    Esri::ArcGISRuntime::MapGraphicsView* mainViewWidget;
+    QGraphicsSimpleTextItem* displayText;
 
-    double zoomFactor;
-    bool m_initDraw = false;
-
-    QPoint mousePos;
+    SimCenterMapGraphicsView *theNewView;
+    QVBoxLayout *theViewLayout;
 };
 
 #endif // ResultsMapViewWidget_H

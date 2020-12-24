@@ -214,15 +214,17 @@ OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
         if (appData.contains("dofMap"))
             responseNodes->setText(appData["dofMap"].toString());
         if (appData.contains("ndm"))
-            ndm->setText(appData["ndm"].toString());
+            ndm->setText(QString::number(appData["ndm"].toInt()));
         if (appData.contains("columnLine"))
             columnLine->setText(appData["columnLine"].toString());
 
         if (appData.contains("mainScript"))
             fileName = appData["mainScript"].toString();
         if (appData.contains("filePath"))
+        {
             pathToFile = appData["filePath"].toString();
-        filePathLineEdit->setText(pathToFile + QDir::separator() + fileName);
+            setFilename1(pathToFile + QDir::separator() + fileName);
+        }
     }
 
     return true;
