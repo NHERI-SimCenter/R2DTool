@@ -19,7 +19,7 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
     connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
     m_dbBox->setCurrentText("PEER NGA West 2");
     m_selectionConfig.setDatabase("PEER NGA West 2");
-    m_dbBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    m_dbBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
 //    m_errorBox = new QComboBox(this);
 

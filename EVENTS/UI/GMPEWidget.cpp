@@ -13,7 +13,7 @@ GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): QWidget(parent), m_gmpe(gmp
     QHBoxLayout* formLayout = new QHBoxLayout(gmpeGroupBox);
     m_typeBox = new QComboBox(this);
 
-    m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     QLabel* typeLabel = new QLabel(tr("Type:"),this);
 
