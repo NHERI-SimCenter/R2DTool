@@ -48,6 +48,7 @@ SimCenterMapGraphicsView *SimCenterMapGraphicsView::theInstance(0);
 
 SimCenterMapGraphicsView *
 SimCenterMapGraphicsView::getInstance() {
+
     if (theInstance == 0)
         theInstance = new SimCenterMapGraphicsView(nullptr);
 
@@ -57,6 +58,7 @@ SimCenterMapGraphicsView::getInstance() {
 
 
 SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj)
+    :theCurrentLayout(nullptr)
 {
     theCurrentLayout = nullptr;
 }
@@ -69,30 +71,15 @@ SimCenterMapGraphicsView::~SimCenterMapGraphicsView()
 void
 SimCenterMapGraphicsView::setCurrentLayout(QVBoxLayout *layout)
 {
-
     if (theCurrentLayout != 0) {
         theCurrentLayout->removeWidget(theInstance);
-    } else {
-       ;// this->hide();
     }
 
     theCurrentLayout = layout;
 
     if (theCurrentLayout != 0) {
         theCurrentLayout->addWidget(theInstance);
-        //QThread::msleep (10);
-        //this->show();
-        //this->update();
-        auto displayText = this->scene()->addSimpleText("");
-        //qApp->processEvents();
-        //this->show();
-
+        this->scene()->addSimpleText("");
+        qApp->processEvents();
     }
 }
-
-
-
-
-
-
-
