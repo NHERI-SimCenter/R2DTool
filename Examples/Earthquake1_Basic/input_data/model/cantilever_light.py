@@ -47,10 +47,10 @@ from math import pi, sqrt
 
 if platform == "darwin":  # MACOS
     import openseespymac.opensees as ops
+    from openseespymac.opensees import *
 else:
     import openseespy.opensees as ops
-
-from openseespy.opensees import *
+    from openseespy.opensees import *
 
 # constants
 node_tags = [0, 1]

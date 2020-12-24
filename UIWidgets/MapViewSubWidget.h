@@ -1,10 +1,7 @@
 #ifndef MAPVIEWSUBWIDGET_H
 #define MAPVIEWSUBWIDGET_H
 
-#include <QObject>
-
 #include "RectangleGrid.h"
-#include "MapGraphicsView.h"
 #include <QDialog>
 
 class RectangleGrid;
@@ -12,7 +9,6 @@ class SimCenterMapGraphicsView;
 class QGraphicsSimpleTextItem;
 class QVBoxLayout;
 
-//class MapViewSubWidget : public Esri::ArcGISRuntime::MapGraphicsView
 class MapViewSubWidget: public QDialog
 {
     Q_OBJECT
@@ -33,7 +29,6 @@ public slots:
 protected:
 
     // Custom zoom implementation to get around a bug in the wheel event causing zoom to occur only in one direction
-    void wheelEvent(QWheelEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
@@ -47,14 +42,7 @@ protected:
 private:
 
     QGraphicsSimpleTextItem* displayText;
-
     std::unique_ptr<RectangleGrid> grid;
-
-    Esri::ArcGISRuntime::MapGraphicsView* mainViewWidget;
-
-    double zoomFactor;
-    bool m_initDraw = false;
-
     SimCenterMapGraphicsView *theNewView;
     QVBoxLayout *theViewLayout;
 };

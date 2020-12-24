@@ -157,6 +157,13 @@ bool ResultsWidget::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
+void ResultsWidget::setCurrentlyViewable(bool status){
+
+    if (status == true)
+        thePelicunPostProcessor->setCurrentlyViewable(status);
+}
+
+
 int ResultsWidget::processResults()
 {
 

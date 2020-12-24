@@ -1,7 +1,6 @@
 #include "MapViewSubWidget.h"
 #include "NodeHandle.h"
-
-#include "Map.h"
+#include "SimCenterMapGraphicsView.h"
 
 #include <QScrollBar>
 #include <QCoreApplication>
@@ -12,14 +11,11 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDebug>
-#include <SimCenterMapGraphicsView.h>
-
 
 MapViewSubWidget::MapViewSubWidget(QWidget* parent)
     :QDialog(parent)
 {
     displayText = nullptr;
-    zoomFactor = 1.005;
 
     theViewLayout = new QVBoxLayout();
 
@@ -40,33 +36,7 @@ MapViewSubWidget::MapViewSubWidget(QWidget* parent)
 
     connect(theNewView,SIGNAL(wheelEvent()), this, SLOT(wheelEvent()));
 
-    /*
-    connect(theNewView, &Esri::ArcGISRuntime::MapGraphicsView::viewpointChanged, theNewView, [theNewView]
-    {
-        if (theNewView->isNavigating())
-            theNewView->setViewpoint(theNewView->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
-
-    }, Qt::UniqueConnection);
-
-    connect(theNewView, &Esri::ArcGISRuntime::MapGraphicsView::viewpointChanged, theNewView, [theNewView]
-    {
-        if (theNewView->isNavigating())
-            theNewView->setViewpoint(theNewView->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
-
-    }, Qt::UniqueConnection);
-
-    connect(theNewView,&MapGraphicsView::rectChanged,theNewView,&MapViewSubWidget::resizeParent);
-    */
-
 }
-
-/*
-void MapViewSubWidget::MapViewSubWQidget::viewPortChanged(void) {
-
-    if (theNewView->isNavigating())
-        theNewView->setViewpoint(theNewView->currentViewpoint(Esri::ArcGISRuntime::ViewpointType::CenterAndScale), 0);
-}
-*/
 
 void MapViewSubWidget::setCurrentlyViewable(bool status)
 {
@@ -134,69 +104,21 @@ void MapViewSubWidget::dragLeaveEvent(QDragLeaveEvent *event)
 }
 
 
-void MapViewSubWidget::dropEvent(QDropEvent *event)
+void MapViewSubWidget::dropEvent(QDropEvent */*event*/)
 {
-
-    //    qDebug()<<"yes";
-
-    //    auto dropPos = event->pos();
-    //    qDebug()<<dropPos.x();
-    //    qDebug()<<dropPos.y();
-
-    //    test->setPos(dropPos);
-
-    //    event->accept();
-}
-
-
-void MapViewSubWidget::wheelEvent(QWheelEvent* wheelEvent)
-{
-
-    auto mousePos = wheelEvent->position();
-
-    // Get the point of the mouse
-    Esri::ArcGISRuntime::Point mapPoint = theNewView->screenToLocation(mousePos.x(), mousePos.y());
-
-    auto angle = -1*wheelEvent->angleDelta().ry();
-
-    double scaleFactor = pow(zoomFactor, angle);
-
-    auto currentScale = theNewView->mapScale();
-
-    theNewView->setViewpoint(Esri::ArcGISRuntime::Viewpoint(mapPoint, currentScale*scaleFactor));
 
 }
 
 
 void MapViewSubWidget::resizeEvent(QResizeEvent *event)
 {
-    /*
-    auto mapWidth = theNewView->mapWidth();
-    auto mapHeight = theNewView->mapHeight();
-
-    theNewView->setMaximumWidth(mapWidth);
-    theNewView->setMaximumHeight(mapHeight);
-    */
-
-   // this->QAbstractScrollArea::resizeEvent(event);
+    this->QDialog::resizeEvent(event);
 }
 
 
 void MapViewSubWidget::showEvent(QShowEvent *event)
 {
-    /*
-    auto width = theNewView->width();
-    auto height = theNewView->height();
-
-    this->setMaximumWidth(width);
-    this->setMaximumHeight(height);
-    */
-
     this->QDialog::showEvent(event);
-
-    //    auto displayText = theNewView->scene()->addSimpleText("Test");
-    //    QFont sansFont("Helvetica [Cronyx]", 24);
-    //    displayText->setFont(sansFont);
 }
 
 
@@ -217,12 +139,6 @@ void MapViewSubWidget::resizeParent(QRectF rect)
     theNewView->setMaximumHeight(height);
 
     theNewView->resize(width,height);
-
-//    if(displayText != nullptr)
-//    {
-//        displayText->setX(width*0.05);
-//        displayText->setY(height*0.80);
-//    }
 }
 
 

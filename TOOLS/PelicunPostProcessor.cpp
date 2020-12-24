@@ -170,11 +170,11 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
-    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr, mapViewMainWidget);
+    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr);
 
     // Popup stuff
     // Once map is set, connect to MapQuickView mouse clicked signal
-    connect(mapViewSubWidget.get(), &ResultsMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
+//    connect(mapViewSubWidget.get(), &ResultsMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
 
     mapViewSubWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
@@ -1002,5 +1002,12 @@ void PelicunPostProcessor::sortTable(int index)
 void PelicunPostProcessor::restoreUI(void)
 {
     this->restoreState(uiState);
+}
+
+
+void PelicunPostProcessor::setCurrentlyViewable(bool status){
+
+    if (status == true)
+        mapViewSubWidget->setCurrentlyViewable(status);
 }
 

@@ -61,6 +61,8 @@ public:
 
     virtual int processResults();
 
+    void setCurrentlyViewable(bool status);
+
 private slots:
 
     int printToPDF(void);

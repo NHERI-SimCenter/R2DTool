@@ -86,6 +86,8 @@ public:
 
     void processResultsSubset(const std::set<int>& selectedComponentIDs);
 
+    void setCurrentlyViewable(bool status);
+
 private slots:
 
     int assemblePDF(QImage screenShot);

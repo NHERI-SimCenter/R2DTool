@@ -81,7 +81,7 @@ AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRV
   SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
   buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation_R"), openSees);
-  buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPyInput"), openSeesPy);
+  buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
   buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 

@@ -65,6 +65,7 @@ void HazardsWidget::gridFileChangedSlot(QString motionD, QString eventF)
     emit gridFileChangedSignal(motionD, eventF);
 }
 
+
 void HazardsWidget::setCurrentlyViewable(bool status) {
     this->SimCenterAppSelection::setCurrentlyViewable(status);
 }

@@ -1,6 +1,10 @@
 import numpy as np
 from math import pi, sqrt
-from openseespy.opensees import *
+from sys import platform
+if platform == "darwin": # MACOS
+    from openseespymac.opensees import *
+else:
+    from openseespy.opensees import *
 import os
 
 
