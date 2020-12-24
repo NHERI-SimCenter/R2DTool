@@ -25,7 +25,7 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
 
     m_correlationBoxInter = new QComboBox(this);
     m_correlationBoxInter->addItem("Baker & Jayaram (2008)");
-    m_correlationBoxInter->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    m_correlationBoxInter->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     QLabel* spatialCorrelationIntraLabel = new QLabel(tr("Intra-event\nSpatial Correlation Model:"),this);
 
@@ -33,7 +33,7 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     m_correlationBoxIntra->addItem("Markhvida et al. (2017)");
     m_correlationBoxIntra->addItem("Jayaram & Baker (2009)");
     m_correlationBoxIntra->addItem("Loth & Baker (2013)");
-    m_correlationBoxIntra->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    m_correlationBoxIntra->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     QLabel* minScalingLabel = new QLabel(tr("Minimum Scaling Factor:"),this);
     QLabel* maxScalingLabel = new QLabel(tr("Maximum Scaling Factor:"),this);
