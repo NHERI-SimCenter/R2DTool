@@ -92,7 +92,6 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //mapViewWidget = new MapGraphicsView(this);
     mapViewLayout = new QVBoxLayout();
 
-
     mapViewWidget = SimCenterMapGraphicsView::getInstance();
 
     mapViewWidget->setCurrentLayout(mapViewLayout);
@@ -163,8 +162,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
 VisualizationWidget::~VisualizationWidget()
 {
-  qDebug() << "VIS WIDGET - DESTRUCTOR\n";
-  mapViewWidget->setCurrentLayout(0);
+  mapViewWidget->setCurrentLayout(nullptr);
 }
 
 void
@@ -172,11 +170,15 @@ VisualizationWidget::setCurrentlyViewable(bool status)
 {
     if (status == true) {
         emit sendErrorMessage("SWAPPING Visaulizatytion Widget");
+        QWidget *tmp = new QWidget();
+        mapViewLayout->addWidget(tmp);
         mapViewWidget->setCurrentLayout(mapViewLayout);
-       // this->update();
+        mapViewLayout->removeWidget(tmp);
+        delete tmp;
+        //this->update();
         //qApp->processEvents();
-       // QThread::msleep(100);
-       emit sendErrorMessage("");
+        // QThread::msleep(100);
+        emit sendErrorMessage("");
     }
 
     /*
