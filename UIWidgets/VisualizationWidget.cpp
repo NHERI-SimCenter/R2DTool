@@ -173,10 +173,10 @@ VisualizationWidget::setCurrentlyViewable(bool status)
     if (status == true) {
         emit sendErrorMessage("SWAPPING Visaulizatytion Widget");
         mapViewWidget->setCurrentLayout(mapViewLayout);
-        this->update();
-        qApp->processEvents();
-        QThread::msleep(100);
-        emit sendErrorMessage("");
+       // this->update();
+        //qApp->processEvents();
+       // QThread::msleep(100);
+       emit sendErrorMessage("");
     }
 
     /*
