@@ -20,7 +20,7 @@ win32::LIBS+=Advapi32.lib
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -106,7 +106,7 @@ SOURCES +=  main.cpp \
             UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
-            UIWidgets/RegionalMappingWidget.cpp \
+            UIWidgets/NearestNeighbourMapping.cpp \
             UIWidgets/ResultsMapViewWidget.cpp \
             UIWidgets/ShakeMapWidget.cpp \
             UIWidgets/UserInputGMWidget.cpp \
@@ -201,7 +201,7 @@ HEADERS +=  WorkflowAppRDT.h\
             UIWidgets/PelicunDLWidget.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
-            UIWidgets/RegionalMappingWidget.h \
+            UIWidgets/NearestNeighbourMapping.h \
             UIWidgets/ResultsMapViewWidget.h \
             UIWidgets/ShakeMapWidget.h \
             UIWidgets/UserInputGMWidget.h \
