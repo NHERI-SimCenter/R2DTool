@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 09.30.2020
 
-#include "RegionalMappingWidget.h"
+#include "NearestNeighbourMapping.h"
 #include "SimCenterPreferences.h"
 
 #include <QGridLayout>
@@ -50,17 +50,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QIntValidator>
 #include <QDir>
 
-RegionalMappingWidget::RegionalMappingWidget(QWidget *parent) : SimCenterAppWidget(parent)
+NearestNeighbourMapping::NearestNeighbourMapping(QWidget *parent) : SimCenterAppWidget(parent)
 {
     QGridLayout* regionalMapLayout = new QGridLayout(this);
 
-    QLabel* appLabel = new QLabel("Application",this);
-    QComboBox* appSelectCombo = new QComboBox(this);
-    appSelectCombo->addItem("Nearest Neighbour Event");
-
     QLabel* samplesLabel = new QLabel("Number of samples",this);
     QLabel* neighborsLabel = new QLabel("Number of neighbors",this);\
-//    QLabel* eventGridLabel = new QLabel("Filename of event grid",this);
 
     QIntValidator *validator = new QIntValidator(this);
     validator->setBottom(1);
@@ -73,38 +68,27 @@ RegionalMappingWidget::RegionalMappingWidget(QWidget *parent) : SimCenterAppWidg
     samplesLineEdit->setValidator(validator);
     neighborsLineEdit->setValidator(validator);
 
-//    filenameLineEdit = new QLineEdit(this);
-//    filenameLineEdit->setText("EventGrid");
-
-    regionalMapLayout->addWidget(appLabel,0, 0);
-    regionalMapLayout->addWidget(appSelectCombo, 0, 1);
-    regionalMapLayout->addWidget(samplesLabel, 1, 0);
-    regionalMapLayout->addWidget(samplesLineEdit, 1, 1);
-    regionalMapLayout->addWidget(neighborsLabel, 2, 0);
-    regionalMapLayout->addWidget(neighborsLineEdit, 2, 1);
-//    regionalMapLayout->addWidget(eventGridLabel, 3, 0);
-//    regionalMapLayout->addWidget(filenameLineEdit, 3, 1);
+    regionalMapLayout->addWidget(samplesLabel, 0, 0);
+    regionalMapLayout->addWidget(samplesLineEdit, 0, 1);
+    regionalMapLayout->addWidget(neighborsLabel, 1, 0);
+    regionalMapLayout->addWidget(neighborsLineEdit, 1, 1);
 }
 
 
-RegionalMappingWidget::~RegionalMappingWidget()
+NearestNeighbourMapping::~NearestNeighbourMapping()
 {
 
 }
 
 
-bool RegionalMappingWidget::outputAppDataToJSON(QJsonObject &jsonObj)
+bool NearestNeighbourMapping::outputAppDataToJSON(QJsonObject &jsonObj)
 {
-
-    QJsonObject regionalMapObj;
-
-    regionalMapObj.insert("Application","NearestNeighborEvents");
+    jsonObj["Application"] = QString("NearestNeighborEvents");
 
     QJsonObject nearestNeigborObj;
 
     nearestNeigborObj.insert("samples",samplesLineEdit->text().toInt());
     nearestNeigborObj.insert("neighbors",neighborsLineEdit->text().toInt());
-
 
     QJsonObject data;
     QFileInfo theFile(eventGridPath);
@@ -119,16 +103,17 @@ bool RegionalMappingWidget::outputAppDataToJSON(QJsonObject &jsonObj)
         return false;
     }
 
-    regionalMapObj.insert("ApplicationData",nearestNeigborObj);
+    jsonObj.insert("ApplicationData",nearestNeigborObj);
 
-    jsonObj.insert("RegionalMapping", regionalMapObj);
 
     return true;
 }
 
 
-bool RegionalMappingWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool NearestNeighbourMapping::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
+
+    //qDebug() << __PRETTY_FUNCTION__ << jsonObject;
 
     if (jsonObject.contains("ApplicationData"))
     {
@@ -139,20 +124,31 @@ bool RegionalMappingWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         if (appData.contains("samples"))
             samplesLineEdit->setText(QString::number(appData["samples"].toInt()));
+
+        QString filePath;
+
+        if (appData.contains("pathToEventFile")) {
+            filePath = appData["pathToEventFile"].toString();
+            if (filePath != "")
+             eventGridPath = filePath + QDir::separator();
+        }
+
+        if (appData.contains("filenameEVENTgrid"))
+            eventGridPath += appData["filenameEVENTgrid"].toString();
     }
 
     return true;
 }
 
 
-void RegionalMappingWidget::handleFileNameChanged(QString &motionDir, QString &eventFile)
+void NearestNeighbourMapping::handleFileNameChanged(QString motionDir, QString eventFile)
 {
     eventGridPath = eventFile;
     motionDirPath = motionDir;
 }
 
 
-bool RegionalMappingWidget::copyFiles(QString &destName)
+bool NearestNeighbourMapping::copyFiles(QString &destName)
 {
     QFileInfo theFile(eventGridPath);
     if (theFile.exists()) {

@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterAppWidget.h>
 
-class RegionalMappingWidget;
+class SimCenterAppSelection;
 class SimCenterAppEventSelection;
 
 class HazardToAssetBuilding : public SimCenterAppWidget
@@ -66,10 +66,11 @@ public slots:
     void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
 
 signals:
+    void hazardGridFileChangedSIGNAL(QString motionDir, QString eventFile);
 
 
 private:
-    RegionalMappingWidget *theRegionalMapping;
+    SimCenterAppSelection *theRegionalMapping;
     SimCenterAppEventSelection *theLocalMapping;
 };
 
