@@ -40,10 +40,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "HazardToAssetBuilding.h"
 #include "SimCenterPreferences.h"
 #include "sectiontitle.h"
-#include "RegionalMappingWidget.h"
+
 #include <SimCenterAppEventSelection.h>
+#include <SimCenterAppSelection.h>
 #include <NoArgSimCenterApp.h>
 #include "SimCenterEventRegional.h"
+#include <NearestNeighbourMapping.h>
 
 #include <QFormLayout>
 #include <QGridLayout>
@@ -73,15 +75,27 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     QSpacerItem *spacer = new QSpacerItem(50,10);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
-
     mainLayout->addLayout(theHeaderLayout);
 
+    //
+    // regional mapping to building box
+    //
 
-    theRegionalMapping = new RegionalMappingWidget(this);
+    theRegionalMapping = new SimCenterAppSelection(QString("Mapping Application"), QString("RegionalMapping"),this);
     QGroupBox* regionalMappingGroupBox = new QGroupBox("Regional Mapping", this);
     regionalMappingGroupBox->setContentsMargins(0,5,0,0);
     regionalMappingGroupBox->setLayout(theRegionalMapping->layout());
     mainLayout->addWidget(regionalMappingGroupBox);
+
+    NearestNeighbourMapping *theNNMap = new NearestNeighbourMapping();
+    theRegionalMapping->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMap);
+
+    // NOTE: if adding something new, need to redo as only want to call this on currently selected item in appSelection
+    connect(this,SIGNAL(hazardGridFileChangedSIGNAL(QString, QString)), theNNMap, SLOT(handleFileNameChanged(QString, QString)));
+
+    //
+    // local mapping hazard to building
+    //
 
     theLocalMapping = new SimCenterAppEventSelection(QString("Local Event Type"), QString("Events"), this);
     SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
@@ -110,31 +124,49 @@ HazardToAssetBuilding::~HazardToAssetBuilding()
 
 bool HazardToAssetBuilding::outputToJSON(QJsonObject &jsonObj)
 {
-    theRegionalMapping->outputToJSON(jsonObj);
-    theLocalMapping->outputToJSON(jsonObj);
+    bool result = true;
+    if (theRegionalMapping->outputToJSON(jsonObj)  != true)
+        result = false;
+    if (theLocalMapping->outputToJSON(jsonObj)  != true)
+        result = false;
 
-    return true;
+    return result;
 }
 
 
-bool HazardToAssetBuilding::inputFromJSON(QJsonObject &jsonObject){
+bool HazardToAssetBuilding::inputFromJSON(QJsonObject &jsonObj){
 
-    return true;
+    bool result = true;
+    if (theRegionalMapping->inputFromJSON(jsonObj) != true)
+        result = false;
+
+    if (theLocalMapping->inputFromJSON(jsonObj) != true)
+        result = false;
+    
+    return result;
 }
 
 bool HazardToAssetBuilding::outputAppDataToJSON(QJsonObject &jsonObj)
 {
+     bool result = true;
+    if (theRegionalMapping->outputAppDataToJSON(jsonObj) != true)
+        result = false;
+    if (theLocalMapping->outputAppDataToJSON(jsonObj) != true)
+        result = false;
 
-    theRegionalMapping->outputAppDataToJSON(jsonObj);
-    theLocalMapping->outputAppDataToJSON(jsonObj);
-
-    return true;
+    return result;
 }
 
 
-bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObject){
+bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObj){
 
-    return true;
+    bool result = true;
+    if (theRegionalMapping->inputAppDataFromJSON(jsonObj) != true)
+        result = false;
+    if (theLocalMapping->inputAppDataFromJSON(jsonObj) != true)
+        result = false;
+    
+    return result;
 }
 
 
@@ -142,14 +174,19 @@ bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObject){
  void
  HazardToAssetBuilding::hazardGridFileChangedSlot(QString motionDir, QString eventFile)
  {
-     theRegionalMapping->handleFileNameChanged(motionDir, eventFile);
+     emit hazardGridFileChangedSIGNAL(motionDir, eventFile);
  }
 
 
   bool
   HazardToAssetBuilding::copyFiles(QString &destName)
   {
-      theRegionalMapping->copyFiles(destName);
-      theLocalMapping->copyFiles(destName);
-      return true;
+      bool result = true;
+
+      if (theRegionalMapping->copyFiles(destName) != true)
+              result = false;
+      if (theLocalMapping->copyFiles(destName) != true)
+              result = false;
+
+      return result;
   }

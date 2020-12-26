@@ -1,5 +1,5 @@
-#ifndef RegionalMappingWidget_H
-#define RegionalMappingWidget_H
+#ifndef NearestNeighbourMapping_H
+#define NearestNeighbourMapping_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -43,21 +43,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QLineEdit;
 
-class RegionalMappingWidget : public SimCenterAppWidget
+class NearestNeighbourMapping : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit RegionalMappingWidget(QWidget *parent = nullptr);
-    ~RegionalMappingWidget();
+    explicit NearestNeighbourMapping(QWidget *parent = nullptr);
+    ~NearestNeighbourMapping();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool copyFiles(QString &destName);
 
 public slots:
-
-    void handleFileNameChanged(QString &motionDir, QString &eventFile);
+    void handleFileNameChanged(QString motionDir, QString eventFile);
 
 signals:
 
@@ -68,9 +67,7 @@ private:
 
     QLineEdit* samplesLineEdit;
     QLineEdit* neighborsLineEdit;
-//    QLineEdit* filenameLineEdit;
-
 };
 
 
-#endif // RegionalMappingWidget_H
+#endif // NearestNeighbourMapping_H
