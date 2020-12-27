@@ -1,7 +1,7 @@
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
 #include "TreeView.h"
-#include "RegionalMappingWidget.h"
+//#include "RegionalMappingWidget.h"
 #include "WorkflowAppRDT.h"
 #include "CSVReaderWriter.h"
 
