@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GeneralInformationWidget.h"
 #include "SimCenterPreferences.h"
 #include "sectiontitle.h"
-#include "RegionalMappingWidget.h"
+//#include "RegionalMappingWidget.h"
 
 #include <QFormLayout>
 #include <QGridLayout>
