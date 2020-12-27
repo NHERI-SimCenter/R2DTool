@@ -1,6 +1,6 @@
 #include "GMWidget.h"
 #include "SiteWidget.h"
-#include "RegionalMappingWidget.h"
+//#include "RegionalMappingWidget.h"
 #include "NGAW2Converter.h"
 #include "WorkflowAppRDT.h"
 #include "IntensityMeasureWidget.h"
