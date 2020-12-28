@@ -35,32 +35,29 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
 
-#include "DecisionVariableWidget.h"
 #include "BuildingModelingWidget.h"
-#include "VisualizationWidget.h"
+#include "DecisionVariableWidget.h"
 #include "sectiontitle.h"
+#include "VisualizationWidget.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
+#include <QCheckBox>
 #include <QColorTransform>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
-#include <QCheckBox>
-
+#include <QTableWidget>
+#include <QVBoxLayout>
 
 DecisionVariableWidget::DecisionVariableWidget(QWidget *parent) : MultiComponentRDT(parent)
 {

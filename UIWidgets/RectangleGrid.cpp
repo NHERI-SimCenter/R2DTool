@@ -1,23 +1,61 @@
-#include "RectangleGrid.h"
-#include "NodeHandle.h"
-#include "GridNode.h"
-#include "SiteConfig.h"
-#include "Site.h"
-#include "VisualizationWidget.h"
-#include "RuptureWidget.h"
+/* *****************************************************************************
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+All rights reserved.
 
-#include <QObject>
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Stevan Gavrilovic
+
+#include "GridNode.h"
+#include "NodeHandle.h"
+#include "RectangleGrid.h"
+#include "RuptureWidget.h"
+#include "Site.h"
+#include "SiteConfig.h"
+#include "VisualizationWidget.h"
+
+#include <QApplication>
+#include <QBitmap>
+#include <QCursor>
+#include <QDebug>
 #include <QDrag>
+#include <QGraphicsSceneMouseEvent>
 #include <QMimeData>
+#include <QObject>
 #include <QPainter>
 #include <QPixmap>
-#include <QCursor>
-#include <QGraphicsSceneMouseEvent>
-#include <QApplication>
 #include <QRandomGenerator>
-#include <QBitmap>
 #include <QWidget>
-#include <QDebug>
 
 RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
 {
@@ -122,14 +160,15 @@ void RectangleGrid::updateGeometry(void)
         GMSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
         GMSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
 
-//        auto centerPointLat = theVisWidget->getLatFromScreenPoint(centerPnt);
-//        auto centerPointLong = theVisWidget->getLongFromScreenPoint(centerPnt);
+        //        auto centerPointLat = theVisWidget->getLatFromScreenPoint(centerPnt);
+        //        auto centerPointLong = theVisWidget->getLongFromScreenPoint(centerPnt);
 
-//        theRuptureWidget->setLocation(centerPointLat,centerPointLong);
+        //        theRuptureWidget->setLocation(centerPointLat,centerPointLong);
     }
 
     emit geometryChanged();
 }
+
 
 QVector<GridNode *> RectangleGrid::getGridNodeVec() const
 {
@@ -159,15 +198,6 @@ void RectangleGrid::setNumDivisionsHoriz(const size_t &value)
 {
     numDivisionsHoriz = value;
 }
-
-
-//void RectangleGrid::setRuptureWidget(RuptureWidget *value)
-//{
-//    theRuptureWidget = value;
-    
-//    connect(&theRuptureWidget->getRuptureSource().location(), &RuptureLocation::latitudeChanged, this, &RectangleGrid::handleRuptureLocationChanged);
-//    connect(&theRuptureWidget->getRuptureSource().location(), &RuptureLocation::longitudeChanged, this, &RectangleGrid::handleRuptureLocationChanged);
-//}
 
 
 void RectangleGrid::setVisualizationWidget(VisualizationWidget *value)
@@ -489,14 +519,4 @@ void RectangleGrid::handleLatLonChanged(void)
     }
 }
 
-
-//void RectangleGrid::handleRuptureLocationChanged(void)
-//{
-//    updateConnectedWidgets = false;
-//    auto lat = theRuptureWidget->getRuptureSource().location().latitude();
-//    auto lon = theRuptureWidget->getRuptureSource().location().longitude();
-//    this->setCenterNode(lat,lon);
-//    updateConnectedWidgets = true;
-
-//}
 

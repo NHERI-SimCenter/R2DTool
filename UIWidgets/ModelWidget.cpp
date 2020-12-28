@@ -17,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,36 +34,36 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-#include "ModelWidget.h"
+// Written by: Frank McKenna
+
 #include "ComponentInputWidget.h"
+#include "MDOF_LU.h"
+#include "ModelWidget.h"
+#include "NoArgSimCenterApp.h"
+#include "NoneWidget.h"
+#include "OpenSeesPyBuildingModel.h"
+#include "SecondaryComponentSelection.h"
+#include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SecondaryComponentSelection.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
+#include <QCheckBox>
 #include <QColorTransform>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
-#include <QCheckBox>
-
-#include "SimCenterAppSelection.h"
-#include "NoArgSimCenterApp.h"
-#include "OpenSeesPyBuildingModel.h"
-#include "NoneWidget.h"
-#include <MDOF_LU.h>
+#include <QTableWidget>
+#include <QVBoxLayout>
 
 ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
     : MultiComponentRDT(parent)

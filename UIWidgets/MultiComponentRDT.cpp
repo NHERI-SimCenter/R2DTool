@@ -17,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,37 +34,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
-// Latest revision: 10.08.2020
+// Written by: Frank McKenna
 
-#include "MultiComponentRDT.h"
 #include "ComponentInputWidget.h"
-#include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include "MultiComponentRDT.h"
 #include "SecondaryComponentSelection.h"
+#include "sectiontitle.h"
+#include "VisualizationWidget.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
-//#include <QColorTransform>
-#include <QLineEdit>
-#include <QListWidget>
+#include <QCheckBox>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
-#include <QCheckBox>
-#include "SecondaryComponentSelection.h"
+#include <QPushButton>
 #include <QStackedLayout>
 #include <QStackedWidget>
-
+#include <QTableWidget>
+#include <QVBoxLayout>
 
 // A class acting for secondary level RDT menu items
 // whose display is dependent on the selection in GI
@@ -79,16 +75,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 MultiComponentRDT::MultiComponentRDT(QWidget *parent)
     :SimCenterAppWidget(parent), currentIndex(-1), numHidden(0)
 {
-    /*
-  QVBoxLayout *mainLayout = new QVBoxLayout();
-  mainLayout->setMargin(0);
-  
-  theSelection = new SecondaryComponentSelection(this);
-  mainLayout->addWidget(theSelection);
-
-  theSelection->setWidth(120);
-  this->setLayout(mainLayout);
-  */
 
     // HBox Layout for widget
 
@@ -200,7 +186,6 @@ bool MultiComponentRDT::outputAppDataToJSON(QJsonObject &jsonObject)
 
 
 bool MultiComponentRDT::inputAppDataFromJSON(QJsonObject &jsonObject)
-
 {
     bool res = true;
     int length = theNames.length();
@@ -216,7 +201,6 @@ bool MultiComponentRDT::inputAppDataFromJSON(QJsonObject &jsonObject)
     }
     return res;
 }
-
 
 
 bool MultiComponentRDT::copyFiles(QString &destDir)
@@ -237,8 +221,7 @@ bool MultiComponentRDT::copyFiles(QString &destDir)
 }
 
 
-bool
-MultiComponentRDT::addComponent(QString text, SimCenterAppWidget *theComponent)
+bool MultiComponentRDT::addComponent(QString text, SimCenterAppWidget *theComponent)
 {
     if (theNames.indexOf(text) == -1) {
 
@@ -270,14 +253,15 @@ MultiComponentRDT::addComponent(QString text, SimCenterAppWidget *theComponent)
     return false;
 }
 
-SimCenterAppWidget *
-MultiComponentRDT::getComponent(QString text)
+
+SimCenterAppWidget * MultiComponentRDT::getComponent(QString text)
 {
     if (theNames.indexOf(text) != -1)
         return theComponents.at(theNames.indexOf(text));
     else
         return NULL;
 }
+
 
 void MultiComponentRDT::hideAll()
 {
@@ -291,8 +275,8 @@ void MultiComponentRDT::hideAll()
     theStackedWidget->setHidden(true);
 }
 
-bool
-MultiComponentRDT::hide(QString text) {
+
+bool MultiComponentRDT::hide(QString text) {
     // find index
     int index = theNames.indexOf(text);
 
@@ -329,8 +313,8 @@ MultiComponentRDT::hide(QString text) {
     return true;
 }
 
-bool
-MultiComponentRDT::show(QString text) {
+
+bool MultiComponentRDT::show(QString text) {
     // find index
     int index = theNames.indexOf(text);
 
@@ -355,8 +339,8 @@ MultiComponentRDT::show(QString text) {
     return true;
 }
 
-bool
-MultiComponentRDT::displayComponent(QString text)
+
+bool MultiComponentRDT::displayComponent(QString text)
 {
     //
     // find index of text in list and display corresponding widget if index found
@@ -381,8 +365,8 @@ MultiComponentRDT::displayComponent(QString text)
     return false;
 }
 
-void
-MultiComponentRDT::selectionChangedSlot(const QString &selectedText)
+
+void MultiComponentRDT::selectionChangedSlot(const QString &selectedText)
 {
     //
     // find text in list

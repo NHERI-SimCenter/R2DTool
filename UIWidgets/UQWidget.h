@@ -1,6 +1,5 @@
 ﻿#ifndef UQWidget_H
 #define UQWidget_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,8 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
-// Latest revision: 12.2020
+// Written by: Frank McKenna
 
 #include "MultiComponentRDT.h"
 

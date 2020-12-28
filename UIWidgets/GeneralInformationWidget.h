@@ -36,11 +36,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
+// Written by: Stevan Gavrilovic, Frank McKenna
 
 #include <SimCenterWidget.h>
-
 
 class QLineEdit;
 class QGridLayout;
@@ -49,8 +47,8 @@ class QCheckBox;
 
 class GeneralInformationWidget : public SimCenterWidget
 {
-    Q_OBJECT
 
+    Q_OBJECT
 public:
     explicit GeneralInformationWidget(QWidget *parent);
     ~GeneralInformationWidget();
@@ -75,8 +73,6 @@ public:
     bool setAssetTypeState(QString assetType, bool);
     QString getLengthUnit();
     QString getForceUnit();
-
-public slots:
 
 signals:
     void assetChanged(QString name, bool checked);

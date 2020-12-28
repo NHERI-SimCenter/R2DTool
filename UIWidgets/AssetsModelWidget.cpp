@@ -35,33 +35,30 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
 
 #include "AssetsModelWidget.h"
 #include "BuildingModelingWidget.h"
+#include "SimCenterComponentSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SimCenterComponentSelection.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
+#include <QCheckBox>
 #include <QColorTransform>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
-#include <QCheckBox>
-
+#include <QTableWidget>
+#include <QVBoxLayout>
 
 AssetsModelWidget::AssetsModelWidget(QWidget *parent, RandomVariablesContainer* RVContainer)
     :MultiComponentRDT(parent), theRandomVariablesContainer(RVContainer)
@@ -73,7 +70,6 @@ AssetsModelWidget::AssetsModelWidget(QWidget *parent, RandomVariablesContainer* 
     this->addComponent("Gas Network",pipelineInfoBox);
     this->hideAll();
 }
-
 
 
 AssetsModelWidget::~AssetsModelWidget()

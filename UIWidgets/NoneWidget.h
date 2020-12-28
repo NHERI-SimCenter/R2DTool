@@ -1,5 +1,5 @@
-#ifndef UserInputGMWidget_H
-#define UserInputGMWidget_H
+#ifndef NONEWIDGET_H
+#define NONEWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,84 +36,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "GroundMotionStation.h"
 #include "SimCenterAppWidget.h"
 
-#include <memory>
+#include <QJsonObject>
 
-#include <QMap>
-
-class VisualizationWidget;
-
-class QStackedWidget;
-class QLineEdit;
-class QProgressBar;
-class QLabel;
-
-namespace Esri
+class NoneWidget : public  SimCenterAppWidget
 {
-namespace ArcGISRuntime
-{
-class ArcGISMapImageLayer;
-class GroupLayer;
-class FeatureCollectionLayer;
-class KmlLayer;
-class Layer;
-}
-}
-
-
-class UserInputGMWidget : public SimCenterAppWidget
-{
-    Q_OBJECT
-
 public:
-    UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~UserInputGMWidget();
+    NoneWidget(QWidget *parent = nullptr);
 
-    void showUserGMLayers(bool state);
-
-    QStackedWidget* getUserInputGMWidget(void);
-
-    bool outputToJSON(QJsonObject &jsonObj);
-    bool inputFromJSON(QJsonObject &jsonObj);
-    bool outputAppDataToJSON(QJsonObject &jsonObj);
-
-public slots:
-
-    void showUserGMSelectDialog(void);
-
-private slots:
-
-    void loadUserGMData(void);
-    void chooseEventFileDialog(void);
-    void chooseMotionDirDialog(void);
-
-signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
-    void loadingComplete(const bool value);
-
-private:
-
-    std::unique_ptr<QStackedWidget> userGMStackedWidget;
-
-    VisualizationWidget* theVisualizationWidget;
-
-    QString eventFile;
-    QString motionDir;
-
-    QLineEdit *eventFileLineEdit;
-    QLineEdit *motionDirLineEdit;
-
-    QLabel* progressLabel;
-    QWidget* progressBarWidget;
-    QWidget* fileInputWidget;
-    QProgressBar* progressBar;
-
-    QVector<GroundMotionStation> stationList;
-
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
 };
 
-#endif // UserInputGMWidget_H
+#endif // NONEWIDGET_H

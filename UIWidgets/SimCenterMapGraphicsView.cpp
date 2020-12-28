@@ -17,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,20 +34,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
+// Written by: Frank McKenna
 
 #include "SimCenterMapGraphicsView.h"
-#include <QApplication>
 
 // Qt headers
-#include <QVBoxLayout>
+#include <QApplication>
 #include <QPushButton>
 #include <QThread>
+#include <QVBoxLayout>
 
 SimCenterMapGraphicsView *SimCenterMapGraphicsView::theInstance(0);
 
-SimCenterMapGraphicsView *
-SimCenterMapGraphicsView::getInstance() {
+
+SimCenterMapGraphicsView * SimCenterMapGraphicsView::getInstance() {
 
     if (theInstance == 0)
         theInstance = new SimCenterMapGraphicsView(nullptr);
@@ -56,20 +56,19 @@ SimCenterMapGraphicsView::getInstance() {
 }
 
 
-
-SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj)
-    :theCurrentLayout(nullptr)
+SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj) :theCurrentLayout(nullptr)
 {
     theCurrentLayout = nullptr;
 }
+
 
 SimCenterMapGraphicsView::~SimCenterMapGraphicsView()
 {
 
 }
 
-void
-SimCenterMapGraphicsView::setCurrentLayout(QVBoxLayout *layout)
+
+void SimCenterMapGraphicsView::setCurrentLayout(QVBoxLayout *layout)
 {
     if (theCurrentLayout != 0) {
         theCurrentLayout->removeWidget(theInstance);

@@ -1,6 +1,5 @@
 #ifndef HAZARD_TO_ASSET_BUILDING_H
 #define HAZARD_TO_ASSET_BUILDING_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,7 +37,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
 
 #include <SimCenterAppWidget.h>
 
@@ -47,8 +45,8 @@ class SimCenterAppEventSelection;
 
 class HazardToAssetBuilding : public SimCenterAppWidget
 {
-    Q_OBJECT
 
+    Q_OBJECT
 public:
     explicit HazardToAssetBuilding(QWidget *parent);
     ~HazardToAssetBuilding();
@@ -68,11 +66,9 @@ public slots:
 signals:
     void hazardGridFileChangedSIGNAL(QString motionDir, QString eventFile);
 
-
 private:
     SimCenterAppSelection *theRegionalMapping;
     SimCenterAppEventSelection *theLocalMapping;
 };
-
 
 #endif // HAZARD_TO_ASSET_BUILDING_H

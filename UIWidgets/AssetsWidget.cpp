@@ -34,36 +34,32 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
+// Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "AssetsWidget.h"
 #include "ComponentInputWidget.h"
+#include "SecondaryComponentSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SecondaryComponentSelection.h"
+#include "SimCenterAppSelection.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
+#include <QCheckBox>
 #include <QColorTransform>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
-#include <QCheckBox>
-
-#include "SimCenterAppSelection.h"
-#include "ComponentInputWidget.h"
+#include <QTableWidget>
+#include <QVBoxLayout>
 
 AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentRDT(parent), visualizationWidget(visWidget)

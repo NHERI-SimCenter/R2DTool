@@ -35,20 +35,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
 
 #include "NearestNeighbourMapping.h"
 #include "SimCenterPreferences.h"
 
-#include <QGridLayout>
-#include <QGroupBox>
-#include <QJsonObject>
 #include <QComboBox>
 #include <QDebug>
+#include <QDir>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QIntValidator>
+#include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
-#include <QIntValidator>
-#include <QDir>
 
 NearestNeighbourMapping::NearestNeighbourMapping(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -97,9 +96,9 @@ bool NearestNeighbourMapping::outputAppDataToJSON(QJsonObject &jsonObj)
         nearestNeigborObj["pathToEventFile"]=theFile.path();
 
     } else {
-         nearestNeigborObj.insert("filenameEVENTgrid",eventGridPath);
-         nearestNeigborObj["filenameEVENTgrid"]="None";
-         nearestNeigborObj["pathToEventFile"]="";
+        nearestNeigborObj.insert("filenameEVENTgrid",eventGridPath);
+        nearestNeigborObj["filenameEVENTgrid"]="None";
+        nearestNeigborObj["pathToEventFile"]="";
         return false;
     }
 
@@ -130,7 +129,7 @@ bool NearestNeighbourMapping::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (appData.contains("pathToEventFile")) {
             filePath = appData["pathToEventFile"].toString();
             if (filePath != "")
-             eventGridPath = filePath + QDir::separator();
+                eventGridPath = filePath + QDir::separator();
         }
 
         if (appData.contains("filenameEVENTgrid"))

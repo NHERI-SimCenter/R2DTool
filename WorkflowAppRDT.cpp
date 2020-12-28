@@ -2,7 +2,7 @@
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -26,49 +26,41 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
+// Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "AssetsWidget.h"
 #include "AnalysisWidget.h"
-#include "ModelWidget.h"
-#include "HazardsWidget.h"
-#include "HazardToAssetWidget.h"
-#include "VisualizationWidget.h"
-#include "ResultsWidget.h"
-#include "EngDemandParameterWidget.h"
+#include "AssetsWidget.h"
+#include "CustomizedItemModel.h"
 #include "DLWidget.h"
-
-//#include "DamageMeasureWidget.h"
-//#include "DecisionVariableWidget.h"
-#include "WorkflowAppRDT.h"
+#include "DakotaResultsSampling.h"
+#include "EngDemandParameterWidget.h"
+#include "GeneralInformationWidget.h"
+#include "GoogleAnalytics.h"
+#include "HazardToAssetWidget.h"
+#include "HazardsWidget.h"
+#include "InputWidgetSampling.h"
 #include "LocalApplication.h"
+#include "MainWindowWorkflowApp.h"
+#include "ModelWidget.h"
+#include "RandomVariablesContainer.h"
 #include "RemoteApplication.h"
 #include "RemoteJobManager.h"
-#include "RunWidget.h"
-//#include "InputWidgetUQ.h"
-#include "RunLocalWidget.h"
 #include "RemoteService.h"
+#include "ResultsWidget.h"
+#include "RunLocalWidget.h"
+#include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
-//#include "RegionalMappingWidget.h"
-#include "GeneralInformationWidget.h"
-#include "MainWindowWorkflowApp.h"
-#include "RandomVariablesContainer.h"
-#include "InputWidgetSampling.h"
-#include "DakotaResultsSampling.h"
-#include "CustomizedItemModel.h"
-#include "GoogleAnalytics.h"
 #include "UQWidget.h"
-
-#include <DLWidget.h>
+#include "VisualizationWidget.h"
+#include "WorkflowAppRDT.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -80,8 +72,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
-#include <QMessageBox>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QProcess>
 #include <QPushButton>
 #include <QScrollArea>
@@ -101,10 +93,12 @@ int getNumParallelTasks()
     return theApp->getMaxNumParallelTasks();
 }
 
+
 WorkflowAppRDT* WorkflowAppRDT::getInstance()
 {
     return theInstance;
 }
+
 
 WorkflowAppRDT *WorkflowAppRDT::theInstance = nullptr;
 
@@ -225,36 +219,23 @@ void WorkflowAppRDT::initialize(void)
 }
 
 
-
 WorkflowAppRDT::~WorkflowAppRDT()
 {
 
 }
+
 
 void WorkflowAppRDT::replyFinished(QNetworkReply *pReply)
 {
     return;
 }
 
-/*
-DLWidget *WorkflowAppRDT::gettheDamageAndLossWidget() const
-{
-    return theDamageAndLossWidget;
-}
-
-
-
-
-HazardsWidget *WorkflowAppRDT::getHazardsWidget() const
-{
-    return theHazardsWidget;
-}
-*/
 
 GeneralInformationWidget *WorkflowAppRDT::getGeneralInformationWidget() const
 {
     return theGeneralInformationWidget;
 }
+
 
 AssetsWidget *WorkflowAppRDT::getAssetsWidget() const
 {
@@ -555,6 +536,7 @@ void WorkflowAppRDT::loadFile(const QString fileName){
 int WorkflowAppRDT::getMaxNumParallelTasks() {
     return theUQWidget->getNumParallelTasks();
 }
+
 
 void WorkflowAppRDT::assetSelectionChanged(QString text, bool value)
 {

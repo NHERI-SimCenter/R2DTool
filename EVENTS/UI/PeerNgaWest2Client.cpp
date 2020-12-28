@@ -1,8 +1,44 @@
+/* *****************************************************************************
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Frank McKenna
+
 #include "PeerNgaWest2Client.h"
 
 #include <QDebug>
-
-
 #include <QRegularExpression>
 #include <QFile>
 #include <QStandardPaths>
@@ -10,7 +46,7 @@
 #include <QApplication>
 #include <QStatusBar>
 #include <QDir>
-#include<QHttpMultiPart>
+#include <QHttpMultiPart>
 #include <QSslConfiguration>
 
 PeerNgaWest2Client::PeerNgaWest2Client(QObject *parent) : QObject(parent),
@@ -30,6 +66,7 @@ bool PeerNgaWest2Client::loggedIn()
     return this->isLoggedIn;
 }
 
+
 void PeerNgaWest2Client::signIn(QString username, QString password)
 {
     emit statusUpdated("Logging in to PEER NGA West 2 Database");
@@ -41,6 +78,7 @@ void PeerNgaWest2Client::signIn(QString username, QString password)
     QNetworkRequest peerSignInPageRequest(QUrl("https://ngawest2.berkeley.edu/users/sign_in"));
     signInPageReply = networkManager.get(peerSignInPageRequest);
 }
+
 
 void PeerNgaWest2Client::selectRecords(QList<QPair<double, double>> spectrum, int nRecords, QVariant magnitudeRange, QVariant distanceRange, QVariant vs30Range)
 {
@@ -87,6 +125,7 @@ void PeerNgaWest2Client::selectRecords(QList<QPair<double, double>> spectrum, in
     uploadFileReply = networkManager.post(uploadFileRequest, multiPart);
 }
 
+
 void PeerNgaWest2Client::selectRecords(double sds, double sd1, double tl, int nRecords, QVariant magnitudeRange, QVariant distanceRange, QVariant vs30Range)
 {
     emit selectionStarted();
@@ -122,6 +161,7 @@ void PeerNgaWest2Client::selectRecords(double sds, double sd1, double tl, int nR
     postSpectraReply = networkManager.post(postSpectraRequest, postSpectraParameters.query().toUtf8());
 }
 
+
 void PeerNgaWest2Client::selectRecords(QStringList records)
 {
     emit selectionStarted();
@@ -148,10 +188,12 @@ void PeerNgaWest2Client::selectRecords(QStringList records)
     postSpectraReply = networkManager.post(postSpectraRequest, postSpectraParameters.query().toUtf8());
 }
 
+
 void PeerNgaWest2Client::setupConnection()
 {
     QObject::connect(&networkManager, &QNetworkAccessManager::finished, this, &PeerNgaWest2Client::processNetworkReply);
 }
+
 
 void PeerNgaWest2Client::processNetworkReply(QNetworkReply *reply)
 {    
@@ -192,6 +234,7 @@ void PeerNgaWest2Client::processNetworkReply(QNetworkReply *reply)
         qDebug() << reply->readAll();
 
 }
+
 
 void PeerNgaWest2Client::processSignInPageReply()
 {
@@ -253,6 +296,7 @@ static void debugRequest(QNetworkRequest request, QByteArray data = QByteArray()
   qDebug() << data;
 }
 
+
 void PeerNgaWest2Client::processSignInReply()
 {
     if(signInReply->error() == QNetworkReply::NoError)
@@ -285,6 +329,7 @@ void PeerNgaWest2Client::processSignInReply()
 
 }
 
+
 void PeerNgaWest2Client::processUploadFileReply()
 {
 
@@ -313,6 +358,7 @@ void PeerNgaWest2Client::processUploadFileReply()
     //debugRequest(postSpectraRequest, postSpectraParameters.query().toUtf8());
     postSpectraReply = networkManager.post(postSpectraRequest, postSpectraParameters.query().toUtf8());
 }
+
 
 void PeerNgaWest2Client::processPostSpectrumReply()
 {
@@ -433,6 +479,7 @@ void PeerNgaWest2Client::processPostSpectrumReply()
     }
 }
 
+
 void PeerNgaWest2Client::processPostSearchReply()
 {
     emit statusUpdated("Retrieving Record Selection Results from PEER NGA West 2 Database");
@@ -447,6 +494,7 @@ void PeerNgaWest2Client::processPostSearchReply()
     }
     getRecordsReply = networkManager.get(getRecordsRequest);
 }
+
 
 void PeerNgaWest2Client::processGetRecordsReply()
 {
@@ -488,6 +536,7 @@ void PeerNgaWest2Client::processDownloadRecordsReply()
     emit recordsDownloaded(recordsPath);
 }
 
+
 void PeerNgaWest2Client::retryPostSpectra()
 {
     postSpectraParameters.removeQueryItem("authenticity_token");
@@ -495,11 +544,13 @@ void PeerNgaWest2Client::retryPostSpectra()
     postSpectraReply = networkManager.post(postSpectraRequest, postSpectraParameters.query().toUtf8());
 }
 
+
 void PeerNgaWest2Client::retrySignIn()
 {
     QNetworkRequest peerSignInPageRequest(QUrl("https://ngawest2.berkeley.edu/users/sign_in"));
     signInPageReply = networkManager.get(peerSignInPageRequest);
 }
+
 
 void PeerNgaWest2Client::retry()
 {

@@ -34,38 +34,36 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
+// Written by: Frank McKenna
 
 #include "AnalysisWidget.h"
 #include "ComponentInputWidget.h"
-#include "VisualizationWidget.h"
-#include "sectiontitle.h"
-#include "SecondaryComponentSelection.h"
-#include "SimCenterAppSelection.h"
 #include "InputWidgetOpenSeesAnalysis.h"
 #include "InputWidgetOpenSeesPyAnalysis.h"
 #include "NoArgSimCenterApp.h"
 #include "NoneWidget.h"
+#include "SecondaryComponentSelection.h"
+#include "SimCenterAppSelection.h"
+#include "VisualizationWidget.h"
+#include "sectiontitle.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
+#include <QCheckBox>
 #include <QColorTransform>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
-#include <QCheckBox>
-
+#include <QTableWidget>
+#include <QVBoxLayout>
 
 AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
     : MultiComponentRDT(parent)

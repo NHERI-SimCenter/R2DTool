@@ -36,28 +36,28 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ResultsWidget.h"
-#include "sectiontitle.h"
-#include "PelicunPostProcessor.h"
-#include "VisualizationWidget.h"
-#include "SimCenterPreferences.h"
-#include "WorkflowAppRDT.h"
-#include "GeneralInformationWidget.h"
 #include "AssetInputDelegate.h"
+#include "GeneralInformationWidget.h"
+#include "PelicunPostProcessor.h"
+#include "ResultsWidget.h"
+#include "SimCenterPreferences.h"
+#include "VisualizationWidget.h"
+#include "WorkflowAppRDT.h"
+#include "sectiontitle.h"
 
-#include <QPaintEngine>
-#include <QGridLayout>
-#include <QListWidget>
-#include <QVBoxLayout>
-#include <QGroupBox>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QJsonObject>
 #include <QCheckBox>
-#include <QMessageBox>
 #include <QDebug>
 #include <QDir>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QMessageBox>
+#include <QPaintEngine>
+#include <QPushButton>
 #include <QStandardPaths>
+#include <QVBoxLayout>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -145,13 +145,13 @@ ResultsWidget::~ResultsWidget()
 }
 
 
-bool ResultsWidget::outputToJSON(QJsonObject &jsonObject)
+bool ResultsWidget::outputToJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
 
 
-bool ResultsWidget::inputFromJSON(QJsonObject &jsonObject)
+bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }

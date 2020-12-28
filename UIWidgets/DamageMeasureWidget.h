@@ -36,8 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 11.20.2020
+// Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "MultiComponentRDT.h"
 

@@ -34,54 +34,53 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
+// Written by: Frank McKenna
 
-#include "UQWidget.h"
 #include "ComponentInputWidget.h"
+#include "DakotaInputSampling.h"
+#include "NoneWidget.h"
+#include "SecondaryComponentSelection.h"
+#include "SimCenterAppSelection.h"
+#include "UQWidget.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SecondaryComponentSelection.h"
-#include "DakotaInputSampling.h"
-#include "SimCenterAppSelection.h"
-#include "NoneWidget.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
+#include <QCheckBox>
 #include <QColorTransform>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
-#include <QCheckBox>
+#include <QTableWidget>
+#include <QVBoxLayout>
 
 UQWidget::UQWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
     : MultiComponentRDT(parent)
 {
 
-  buildingWidget = new SimCenterAppSelection(QString("UQ Application"), QString("UQ"), this);
-  SimCenterAppWidget *dakota = new DakotaInputSampling(theRVContainer, this);
+    buildingWidget = new SimCenterAppSelection(QString("UQ Application"), QString("UQ"), this);
+    SimCenterAppWidget *dakota = new DakotaInputSampling(theRVContainer, this);
 
-  SimCenterAppWidget *noneWidget = new NoneWidget(this);
+    SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
-  buildingWidget->addComponent(QString("Dakota"), QString("Dakota-UQ"), dakota);
-  buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
+    buildingWidget->addComponent(QString("Dakota"), QString("Dakota-UQ"), dakota);
+    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-  pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("PipelineUQ"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("PipelineUQ"), this);
 
 
-  this->addComponent("Buildings", buildingWidget);
-  this->addComponent("Gas Network",pipelineWidget);
-  this->hideAll();
+    this->addComponent("Buildings", buildingWidget);
+    this->addComponent("Gas Network",pipelineWidget);
+    this->hideAll();
 }
 
 
@@ -90,8 +89,8 @@ UQWidget::~UQWidget()
 
 }
 
-int
-UQWidget::getNumParallelTasks(void) {
+
+int UQWidget::getNumParallelTasks(void) {
     qDebug() << "UQWidget - getNumParallelTasks";
     return 1;
 }

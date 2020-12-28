@@ -34,103 +34,104 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: fmckenna
+// Written: Frank McKenna
 
-#include <SecondaryComponentSelection.h>
-#include <QHBoxLayout>
-#include <QTreeView>
-#include <QTreeView>
-#include <QStandardItemModel>
-#include <QItemSelectionModel>
-#include <CustomizedItemModel.h>
-#include <QModelIndex>
-#include <QStackedWidget>
+#include "CustomizedItemModel.h"
+#include "SecondaryComponentSelection.h"
+
 #include <QDebug>
-#include <QPushButton>
-#include <QVBoxLayout>
 #include <QFrame>
+#include <QHBoxLayout>
+#include <QItemSelectionModel>
+#include <QModelIndex>
+#include <QPushButton>
 #include <QSpacerItem>
+#include <QStackedWidget>
+#include <QStandardItemModel>
+#include <QTreeView>
+#include <QTreeView>
+#include <QVBoxLayout>
 
 SecondaryComponentSelection::SecondaryComponentSelection(QWidget *parent)
     :QWidget(parent), currentIndex(-1), numHidden(0)
 {
-  QHBoxLayout *horizontalLayout = new QHBoxLayout();
-  theSelectionWidget = new QFrame();
-  theSelectionLayout = new QVBoxLayout();
+    QHBoxLayout *horizontalLayout = new QHBoxLayout();
+    theSelectionWidget = new QFrame();
+    theSelectionLayout = new QVBoxLayout();
 
-  theSelectionWidget->setObjectName("SCS");
-  const QString STYLE_SHEET = "QFrame#SCS {\n"
-                              "    background-color: whitesmoke;\n"
-                              "    border: 1px solid gray;\n"
-                              "    border-left: 0px;\n"
-                              "    border-right: 1px solid black;\n"
-                              "    border-top: 0px solid black;\n"
-                              "    border-bottom: 0px solid blacj;\n"
-                              "    border-radius: 0px;\n"
-                              "}\n";
-  theSelectionWidget->setStyleSheet(STYLE_SHEET);
+    theSelectionWidget->setObjectName("SCS");
+    const QString STYLE_SHEET = "QFrame#SCS {\n"
+                                "    background-color: whitesmoke;\n"
+                                "    border: 1px solid gray;\n"
+                                "    border-left: 0px;\n"
+                                "    border-right: 1px solid black;\n"
+                                "    border-top: 0px solid black;\n"
+                                "    border-bottom: 0px solid blacj;\n"
+                                "    border-radius: 0px;\n"
+                                "}\n";
+    theSelectionWidget->setStyleSheet(STYLE_SHEET);
 
-  horizontalLayout->setContentsMargins(0,5,5,5);
-  horizontalLayout->setSpacing(0);
+    horizontalLayout->setContentsMargins(0,5,5,5);
+    horizontalLayout->setSpacing(0);
 
 
-  theSelectionWidget->setLayout(theSelectionLayout);
-  QSpacerItem *spacer = new QSpacerItem(10,10);
-  theSelectionLayout->addSpacerItem(spacer);
-  theSelectionLayout->addStretch();
+    theSelectionWidget->setLayout(theSelectionLayout);
+    QSpacerItem *spacer = new QSpacerItem(10,10);
+    theSelectionLayout->addSpacerItem(spacer);
+    theSelectionLayout->addStretch();
 
-  horizontalLayout->setMargin(0);
-  theStackedWidget = new QStackedWidget();
+    horizontalLayout->setMargin(0);
+    theStackedWidget = new QStackedWidget();
 
-  horizontalLayout->addWidget(theSelectionWidget);
-  horizontalLayout->addWidget(theStackedWidget);
+    horizontalLayout->addWidget(theSelectionWidget);
+    horizontalLayout->addWidget(theStackedWidget);
 
-  this->setLayout(horizontalLayout);
+    this->setLayout(horizontalLayout);
 
-  // nothing added, do not display
-  theSelectionWidget->setHidden(true);
-  this->setHidden(true);
+    // nothing added, do not display
+    theSelectionWidget->setHidden(true);
+    this->setHidden(true);
 }
+
 
 SecondaryComponentSelection::~SecondaryComponentSelection()
 {
- QLayout *layout = this->layout();
- layout->removeWidget(theStackedWidget);
- theStackedWidget->setParent(NULL);
+    QLayout *layout = this->layout();
+    layout->removeWidget(theStackedWidget);
+    theStackedWidget->setParent(NULL);
 }
 
 
-bool
-SecondaryComponentSelection::addComponent(QString text, QWidget *theWidget)
+bool SecondaryComponentSelection::addComponent(QString text, QWidget *theWidget)
 {
     if (textIndices.indexOf(text) == -1) {
-      QPushButton *theItem = new QPushButton();
-      theItem->setText(text);
-      theSelectionLayout->insertWidget(textIndices.length()+1, theItem); // 1 is for spacer, spacer is because top push not always working!
-      theStackedWidget->addWidget(theWidget);
-      textIndices.append(text);
-      thePushButtons.append(theItem);
+        QPushButton *theItem = new QPushButton();
+        theItem->setText(text);
+        theSelectionLayout->insertWidget(textIndices.length()+1, theItem); // 1 is for spacer, spacer is because top push not always working!
+        theStackedWidget->addWidget(theWidget);
+        textIndices.append(text);
+        thePushButtons.append(theItem);
 
-      // check if can display self and component selection
-      int numButtons = thePushButtons.length();
-      if (numButtons == 1)
-          this->setHidden(false);
-      else if (numButtons > 1)
-          theSelectionWidget->setHidden(false);
+        // check if can display self and component selection
+        int numButtons = thePushButtons.length();
+        if (numButtons == 1)
+            this->setHidden(false);
+        else if (numButtons > 1)
+            theSelectionWidget->setHidden(false);
 
-      connect(theItem, &QPushButton::clicked, this, [=](){
-           this->displayComponent(text);
-       });
+        connect(theItem, &QPushButton::clicked, this, [=](){
+            this->displayComponent(text);
+        });
 
-      return true;
+        return true;
     } else
-      qDebug() << "ComponentSelection: text: " << text << " option already exists";
+        qDebug() << "ComponentSelection: text: " << text << " option already exists";
 
     return false;
 }
 
-void
-SecondaryComponentSelection::selectionChangedSlot(const QString &selectedText)
+
+void SecondaryComponentSelection::selectionChangedSlot(const QString &selectedText)
 {
     //
     // find text in list
@@ -146,8 +147,8 @@ SecondaryComponentSelection::selectionChangedSlot(const QString &selectedText)
         theStackedWidget->setCurrentIndex(stackIndex);
 }
 
-QWidget *
-SecondaryComponentSelection::swapComponent(QString text, QWidget *theWidget)
+
+QWidget * SecondaryComponentSelection::swapComponent(QString text, QWidget *theWidget)
 {
     QWidget *theRes = NULL;
 
@@ -165,13 +166,13 @@ SecondaryComponentSelection::swapComponent(QString text, QWidget *theWidget)
         if (theRes != NULL) {
             theStackedWidget->removeWidget(theRes);
         }
-       theStackedWidget->insertWidget(index, theWidget);
+        theStackedWidget->insertWidget(index, theWidget);
     }
     return theRes;
 }
 
-bool
-SecondaryComponentSelection::displayComponent(QString text)
+
+bool SecondaryComponentSelection::displayComponent(QString text)
 {
     //
     // find index of text in list and display corresponding widget if index found
@@ -196,15 +197,15 @@ SecondaryComponentSelection::displayComponent(QString text)
     return false;
 }
 
-void
-SecondaryComponentSelection::setWidth(const int width)
+
+void SecondaryComponentSelection::setWidth(const int width)
 {
     theSelectionWidget->setMaximumWidth(width);
     theSelectionWidget->setMinimumWidth(width);
 }
 
-void
-SecondaryComponentSelection::setItemWidthHeight(const int width, const int height)
+
+void SecondaryComponentSelection::setItemWidthHeight(const int width, const int height)
 {
     /*
      *
@@ -217,8 +218,8 @@ SecondaryComponentSelection::setItemWidthHeight(const int width, const int heigh
     */
 }
 
-void
-SecondaryComponentSelection::hideAll(){
+
+void SecondaryComponentSelection::hideAll(){
     int length = thePushButtons.length();
     numHidden = length;
     for (int i=0; i<length; i++) {
@@ -229,47 +230,47 @@ SecondaryComponentSelection::hideAll(){
     this->setHidden(true);
 }
 
-bool
-SecondaryComponentSelection::hide(QString text){
 
-     // find index
-     int index = textIndices.indexOf(text);
+bool SecondaryComponentSelection::hide(QString text){
 
-     // if not 0, hide it
-     if (index != -1) {
+    // find index
+    int index = textIndices.indexOf(text);
 
-         QPushButton *theButton = thePushButtons.at(index);
-         if (theButton->isHidden() == false) {
-             theButton->setHidden(true);
-             numHidden++;
-         }
+    // if not 0, hide it
+    if (index != -1) {
 
-         int numButtons = thePushButtons.length();
+        QPushButton *theButton = thePushButtons.at(index);
+        if (theButton->isHidden() == false) {
+            theButton->setHidden(true);
+            numHidden++;
+        }
 
-         // if currently displayed, show something else or nothing if all hidden!
-         if (currentIndex == index) {
+        int numButtons = thePushButtons.length();
 
-             if (numHidden = thePushButtons.length()) {
-                 this->setHidden(true);
-             } else {
-                 for (int i = 0; i<numButtons; i++) {
-                     if (thePushButtons.at(i)->isHidden() == false) {
-                         this->displayComponent(textIndices.at(i));
-                         i = numButtons;
-                     }
-                 }
-             }
-         }
+        // if currently displayed, show something else or nothing if all hidden!
+        if (currentIndex == index) {
 
-         if ((numButtons - numHidden) == 1) {
-             theSelectionWidget->hide();
-         }
-     }
-     return true;
+            if (numHidden = thePushButtons.length()) {
+                this->setHidden(true);
+            } else {
+                for (int i = 0; i<numButtons; i++) {
+                    if (thePushButtons.at(i)->isHidden() == false) {
+                        this->displayComponent(textIndices.at(i));
+                        i = numButtons;
+                    }
+                }
+            }
+        }
+
+        if ((numButtons - numHidden) == 1) {
+            theSelectionWidget->hide();
+        }
+    }
+    return true;
 }
 
-bool
-SecondaryComponentSelection::show(QString text)
+
+bool SecondaryComponentSelection::show(QString text)
 {
     // find index
     int index = textIndices.indexOf(text);

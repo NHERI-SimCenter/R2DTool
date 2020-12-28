@@ -1,6 +1,5 @@
 ﻿#ifndef AnalysisWidget_H
 #define AnalysisWidget_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,11 +36,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
+// Written by: Frank McKenna
 
 #include "MultiComponentRDT.h"
 
-//class ComponentInputWidget;
 class SimCenterAppSelection;
 class RandomVariablesContainer;
 
