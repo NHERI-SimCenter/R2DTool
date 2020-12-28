@@ -1,7 +1,7 @@
 #ifndef SIM_CENTER_EVENT_REGIONAL_APP_H
 #define SIM_CENTER_EVENT_REGIONAL_APP_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

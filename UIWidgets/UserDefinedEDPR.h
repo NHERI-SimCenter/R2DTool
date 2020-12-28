@@ -1,7 +1,7 @@
 #ifndef USER_DEFINED_EDP_H
 #define USER_DEFINED_EDP_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
