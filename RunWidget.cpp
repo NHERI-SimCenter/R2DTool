@@ -34,35 +34,32 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-
 // Written: fmckenna
 
 // Purpose: a widget for managing submiited jobs by uqFEM tool
 //  - allow for refresh of status, deletion of submitted jobs, and download of results from finished job
 
+#include "Application.h"
 #include "RunWidget.h"
-#include <Application.h>
 
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include <QCoreApplication>
+#include <QDebug>
+#include <QDir>
 #include <QGridLayout>
+#include <QHBoxLayout>
+#include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QJsonObject>
-#include <QStandardPaths>
-#include <QCoreApplication>
-
-//#include <AgaveInterface.h>
-#include <QDebug>
-#include <QDir>
-
 #include <QStackedWidget>
+#include <QStandardPaths>
+#include <QVBoxLayout>
 
 extern int getNumParallelTasks();
 
+
 RunWidget::RunWidget(Application *localA, Application *remoteA, SimCenterWidget **theWidgets, int numWidget, QWidget *parent)
-: SimCenterWidget(parent), localApp(localA), remoteApp(remoteA), theCurrentApplication(0)
+    : SimCenterWidget(parent), localApp(localA), remoteApp(remoteA), theCurrentApplication(0)
 {
     theStackedWidget = new QStackedWidget();
     theStackedWidget->addWidget(localApp);
@@ -79,20 +76,18 @@ RunWidget::RunWidget(Application *localA, Application *remoteA, SimCenterWidget 
     this->setLayout(layout);
 }
 
-bool
-RunWidget::outputToJSON(QJsonObject &jsonObject) {
+
+bool RunWidget::outputToJSON(QJsonObject &jsonObject) {
     return theCurrentApplication->outputToJSON(jsonObject);
 }
 
 
-bool
-RunWidget::inputFromJSON(QJsonObject &jsonObject){
+bool RunWidget::inputFromJSON(QJsonObject &jsonObject){
     return theCurrentApplication->inputFromJSON(jsonObject);
 }
 
 
-void
-RunWidget::showLocalApplication(void) {
+void RunWidget::showLocalApplication(void) {
     theStackedWidget->setCurrentIndex(0);
     theCurrentApplication = localApp;
 
@@ -101,20 +96,19 @@ RunWidget::showLocalApplication(void) {
 }
 
 
-void
-RunWidget::showRemoteApplication(void) {
+void RunWidget::showRemoteApplication(void) {
     int numTasks = getNumParallelTasks();
     remoteApp->setNumTasks(numTasks);
 
-    theStackedWidget->setCurrentIndex(1);    
+    theStackedWidget->setCurrentIndex(1);
     theCurrentApplication = remoteApp;
 
     this->show();
     theCurrentApplication->displayed();
 }
 
-void
-RunWidget::setupForRunApplicationDone(QString &tmpDirectory, QString &inputFile) {
+
+void RunWidget::setupForRunApplicationDone(QString &tmpDirectory, QString &inputFile) {
     qDebug() << "RunWidget::setupForRunApplicationDone";
     //this->hide();
     theCurrentApplication->setupDoneRunApplication(tmpDirectory, inputFile);

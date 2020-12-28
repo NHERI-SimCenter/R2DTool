@@ -37,20 +37,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
 
-#include <SimCenterAppWidget.h>
+#include "SimCenterAppWidget.h"
 
-class VisualizationWidget;
+class AssetInputDelegate;
 class PelicunPostProcessor;
+class VisualizationWidget;
+
 class QVBoxLayout;
 class QLineEdit;
-class AssetInputDelegate;
 
 class ResultsWidget : public SimCenterAppWidget
 {
-    Q_OBJECT
 
+    Q_OBJECT
 public:
 
     explicit ResultsWidget(QWidget *parent, VisualizationWidget* visWidget);
@@ -73,16 +73,13 @@ private:
 
     QString DVApp;
     QLineEdit* exportPathLineEdit;
-    AssetInputDelegate* selectComponentsLineEdit;
-
     QVBoxLayout* mainLayout;
-
     QWidget* resultsPageWidget;
 
+    AssetInputDelegate* selectComponentsLineEdit;
     VisualizationWidget* theVisualizationWidget;
 
     std::unique_ptr<PelicunPostProcessor> thePelicunPostProcessor;
-
 
 };
 

@@ -35,32 +35,29 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
 
 #include "HazardToAssetBuilding.h"
+#include "NearestNeighbourMapping.h"
+#include "NoArgSimCenterApp.h"
+#include "SimCenterAppEventSelection.h"
+#include "SimCenterAppSelection.h"
+#include "SimCenterEventRegional.h"
 #include "SimCenterPreferences.h"
 #include "sectiontitle.h"
 
-#include <SimCenterAppEventSelection.h>
-#include <SimCenterAppSelection.h>
-#include <NoArgSimCenterApp.h>
-#include "SimCenterEventRegional.h"
-#include <NearestNeighbourMapping.h>
-
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDebug>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QJsonArray>
-#include <QPushButton>
-#include <QCheckBox>
 #include <QJsonObject>
-#include <QComboBox>
-#include <QDebug>
-#include <QList>
 #include <QLabel>
 #include <QLineEdit>
+#include <QList>
 #include <QMetaEnum>
-
+#include <QPushButton>
 
 HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     : SimCenterAppWidget(parent)
@@ -146,9 +143,10 @@ bool HazardToAssetBuilding::inputFromJSON(QJsonObject &jsonObj){
     return result;
 }
 
+
 bool HazardToAssetBuilding::outputAppDataToJSON(QJsonObject &jsonObj)
 {
-     bool result = true;
+    bool result = true;
     if (theRegionalMapping->outputAppDataToJSON(jsonObj) != true)
         result = false;
     if (theLocalMapping->outputAppDataToJSON(jsonObj) != true)
@@ -170,23 +168,20 @@ bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObj){
 }
 
 
-
- void
- HazardToAssetBuilding::hazardGridFileChangedSlot(QString motionDir, QString eventFile)
- {
-     emit hazardGridFileChangedSIGNAL(motionDir, eventFile);
- }
+void HazardToAssetBuilding::hazardGridFileChangedSlot(QString motionDir, QString eventFile)
+{
+    emit hazardGridFileChangedSIGNAL(motionDir, eventFile);
+}
 
 
-  bool
-  HazardToAssetBuilding::copyFiles(QString &destName)
-  {
-      bool result = true;
+bool HazardToAssetBuilding::copyFiles(QString &destName)
+{
+    bool result = true;
 
-      if (theRegionalMapping->copyFiles(destName) != true)
-              result = false;
-      if (theLocalMapping->copyFiles(destName) != true)
-              result = false;
+    if (theRegionalMapping->copyFiles(destName) != true)
+        result = false;
+    if (theLocalMapping->copyFiles(destName) != true)
+        result = false;
 
-      return result;
-  }
+    return result;
+}

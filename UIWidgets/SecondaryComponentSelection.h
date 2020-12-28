@@ -1,6 +1,5 @@
 #ifndef SECONDARY_COMPONENT_SELECTION_H
 #define SECONDARY_COMPONENT_SELECTION_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -48,17 +47,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  * selection widgets that provide the user a choice of options and display a window based on that * choice. They are used in workflow applications. Functionality used in many SimCenter clases.
  */
 
-#include <QWidget>
-#include <QModelIndex>
 #include <QList>
+#include <QModelIndex>
 #include <QString>
+#include <QWidget>
 
 class QStackedWidget;
 class QVBoxLayout;
 class QFrame;
 class QPushButton;
-
-
 
 class SecondaryComponentSelection : public QWidget
 {
@@ -116,8 +113,6 @@ public:
      *   @param int height of a treeview item
      */
     void setItemWidthHeight(const int width, const int height);
-
-signals:
 
 public slots:
     /*

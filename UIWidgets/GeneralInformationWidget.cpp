@@ -34,34 +34,30 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
+// Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "GeneralInformationWidget.h"
-#include "SimCenterPreferences.h"
 #include "sectiontitle.h"
-//#include "RegionalMappingWidget.h"
+#include "SimCenterPreferences.h"
 
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDebug>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QJsonArray>
-#include <QPushButton>
-#include <QCheckBox>
 #include <QJsonObject>
-#include <QComboBox>
-#include <QDebug>
-#include <QList>
 #include <QLabel>
 #include <QLineEdit>
+#include <QList>
 #include <QMetaEnum>
-
+#include <QPushButton>
 
 GeneralInformationWidget::GeneralInformationWidget(QWidget *parent)
     : SimCenterWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-//    mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
@@ -103,10 +99,10 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     jsonObj.insert("localAppDir", appDir);
 
     QJsonObject unitsObj;
- //   unitsObj.insert("force", "kips"/*unitsForceCombo->currentText()*/);
- //   unitsObj.insert("length", "in" /*unitsLengthCombo->currentText()*/);
- //   unitsObj.insert("time", "sec"/*unitsTimeCombo->currentText()*/);
- //    unitsObj.insert("temperature", unitsTemperatureCombo->currentText());
+    //   unitsObj.insert("force", "kips"/*unitsForceCombo->currentText()*/);
+    //   unitsObj.insert("length", "in" /*unitsLengthCombo->currentText()*/);
+    //   unitsObj.insert("time", "sec"/*unitsTimeCombo->currentText()*/);
+    //    unitsObj.insert("temperature", unitsTemperatureCombo->currentText());
 
     unitsObj["force"] = unitEnumToString(unitsForceCombo->currentData().value<ForceUnit>());
     unitsObj["length"] = unitEnumToString(unitsLengthCombo->currentData().value<LengthUnit>());
@@ -248,23 +244,23 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     transportationCheckBox = new QCheckBox("Transportation Network",this);
 
     connect(buildingsCheckBox, &QCheckBox::stateChanged, this, [=](){
-         emit(assetChanged("Buildings",buildingsCheckBox->isChecked()));
-     });
+        emit(assetChanged("Buildings",buildingsCheckBox->isChecked()));
+    });
     connect(soilCheckBox, &QCheckBox::stateChanged, this, [=](){
-         emit(assetChanged("Soil",soilCheckBox->isChecked()));
-     });
+        emit(assetChanged("Soil",soilCheckBox->isChecked()));
+    });
     connect(gasCheckBox, &QCheckBox::stateChanged, this, [=](){
-         emit(assetChanged("Gas Network",gasCheckBox->isChecked()));
-     });
+        emit(assetChanged("Gas Network",gasCheckBox->isChecked()));
+    });
     connect(waterCheckBox, &QCheckBox::stateChanged, this, [=](){
-         emit(assetChanged("Water Network",waterCheckBox->isChecked()));
-     });
+        emit(assetChanged("Water Network",waterCheckBox->isChecked()));
+    });
     connect(sewerCheckBox, &QCheckBox::stateChanged, this, [=](){
-         this->assetChanged("Water Network",sewerCheckBox->isChecked());
-     });
+        this->assetChanged("Water Network",sewerCheckBox->isChecked());
+    });
     connect(transportationCheckBox, &QCheckBox::stateChanged, this, [=](){
-         emit(assetChanged("TransportationNetwork",transportationCheckBox->isChecked()));
-     });
+        emit(assetChanged("TransportationNetwork",transportationCheckBox->isChecked()));
+    });
 
 
     QGroupBox* assetGroupBox = new QGroupBox("Asset Layers", this);
@@ -275,7 +271,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     assetLayout->addWidget(gasCheckBox);
     assetLayout->addWidget(waterCheckBox);
     assetLayout->addWidget(sewerCheckBox);
-    assetLayout->addWidget(transportationCheckBox);            
+    assetLayout->addWidget(transportationCheckBox);
     
     // Outputs
     EDPCheckBox = new QCheckBox("Engineering demand parameters (EDP)",this);
@@ -314,7 +310,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     layout->addWidget(unitsGroupBox,2,0);
     layout->addItem(spacer,3,0);
     layout->addWidget(assetGroupBox,4,0);
-    layout->addItem(spacer,5,0);    
+    layout->addItem(spacer,5,0);
     layout->addWidget(outputGroupBox,6,0);
     layout->addItem(spacer,7,0);
     //layout->addWidget(regionalMappingGroupBox,8,0);
@@ -322,33 +318,33 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     return layout;
 }
 
-bool
-GeneralInformationWidget::setAssetTypeState(QString assetType, bool checkedStatus){
+
+bool GeneralInformationWidget::setAssetTypeState(QString assetType, bool checkedStatus){
     if (assetType == "Buildings")
-       buildingsCheckBox->setChecked(checkedStatus);
+        buildingsCheckBox->setChecked(checkedStatus);
     return true;
 }
 
-template<typename UnitEnum>
-QString GeneralInformationWidget::unitEnumToString(UnitEnum enumValue)
+
+template<typename UnitEnum> QString GeneralInformationWidget::unitEnumToString(UnitEnum enumValue)
 {
     return QString(QMetaEnum::fromType<UnitEnum>().valueToKey(enumValue));
 }
 
-template<typename UnitEnum>
-UnitEnum GeneralInformationWidget::unitStringToEnum(QString unitString)
+
+template<typename UnitEnum> UnitEnum GeneralInformationWidget::unitStringToEnum(QString unitString)
 {
     return (UnitEnum)QMetaEnum::fromType<UnitEnum>().keyToValue(unitString.toStdString().c_str());
 }
 
-QString
-GeneralInformationWidget::getLengthUnit()
+
+QString GeneralInformationWidget::getLengthUnit()
 {
     return unitEnumToString(unitsLengthCombo->currentData().value<LengthUnit>());
 }
 
-QString
-GeneralInformationWidget::getForceUnit()
+
+QString GeneralInformationWidget::getForceUnit()
 {
-   return unitEnumToString(unitsForceCombo->currentData().value<ForceUnit>());
+    return unitEnumToString(unitsForceCombo->currentData().value<ForceUnit>());
 }

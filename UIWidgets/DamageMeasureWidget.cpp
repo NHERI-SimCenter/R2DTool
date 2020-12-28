@@ -34,13 +34,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
+// Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "DamageMeasureWidget.h"
 #include "BuildingDMWidget.h"
-#include "VisualizationWidget.h"
+#include "DamageMeasureWidget.h"
 #include "sectiontitle.h"
+#include "VisualizationWidget.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -48,7 +47,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QLineEdit>
 #include <QDebug>
-
 
 DamageMeasureWidget::DamageMeasureWidget(QWidget *parent) : MultiComponentRDT(parent)
 {

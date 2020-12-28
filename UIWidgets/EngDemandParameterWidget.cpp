@@ -35,22 +35,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
 
-#include "EngDemandParameterWidget.h"
 #include "BuildingEDPWidget.h"
+#include "EngDemandParameterWidget.h"
+#include "SecondaryComponentSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SecondaryComponentSelection.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include <QDebug>
 #include <QGroupBox>
+#include <QHBoxLayout>
 #include <QJsonObject>
 #include <QLineEdit>
-#include <QDebug>
-
+#include <QVBoxLayout>
 
 EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent) : MultiComponentRDT(parent)
 {

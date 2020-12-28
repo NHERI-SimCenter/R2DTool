@@ -1,65 +1,100 @@
-﻿#include "VisualizationWidget.h"
+﻿/* *****************************************************************************
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+All rights reserved.
 
-#include "TreeView.h"
-#include "TreeItem.h"
-#include "PopUpWidget.h"
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Stevan Gavrilovic, Frank McKenna
+
 #include "ComponentInputWidget.h"
-#include <QThread>
-
-//Test
+#include "PopUpWidget.h"
+#include "SimCenterMapGraphicsView.h"
+#include "TreeItem.h"
+#include "TreeView.h"
+#include "VisualizationWidget.h"
 #include "XMLAdaptor.h"
 
 // GIS headers
+#include "ArcGISMapImageLayer.h"
 #include "Basemap.h"
-#include "Map.h"
-#include "MapGraphicsView.h"
-#include "SimpleMarkerSymbol.h"
-#include "PictureMarkerSymbol.h"
-#include "PictureMarkerSymbolLayer.h"
-#include "FeatureCollectionLayer.h"
-#include "FeatureLayer.h"
-#include "FeatureCollection.h"
-#include "FeatureCollectionTable.h"
-#include "SimpleRenderer.h"
 #include "ClassBreaksRenderer.h"
-#include "LayerContent.h"
-#include "IdentifyLayerResult.h"
-#include "PopupManager.h"
-#include "GroupLayer.h"
-#include "RasterLayer.h"
-#include "ShapefileFeatureTable.h"
-#include "KmlDataset.h"
-#include "KmlLayer.h"
-#include "sectiontitle.h"
-#include "PolylineBuilder.h"
-#include "LineSegment.h"
 #include "CoordinateFormatter.h"
+#include "FeatureCollection.h"
+#include "FeatureCollectionLayer.h"
+#include "FeatureCollectionTable.h"
+#include "FeatureLayer.h"
 #include "Geodatabase.h"
 #include "GeodatabaseFeatureTable.h"
-#include "GeographicTransformationStep.h"
 #include "GeographicTransformation.h"
+#include "GeographicTransformationStep.h"
+#include "GroupLayer.h"
+#include "IdentifyLayerResult.h"
+#include "KmlDataset.h"
+#include "KmlLayer.h"
+#include "LayerContent.h"
+#include "LineSegment.h"
+#include "Map.h"
+#include "MapGraphicsView.h"
+#include "PictureMarkerSymbol.h"
+#include "PictureMarkerSymbolLayer.h"
+#include "PolylineBuilder.h"
+#include "PopupManager.h"
+#include "RasterLayer.h"
+#include "ShapefileFeatureTable.h"
+#include "SimpleMarkerSymbol.h"
+#include "SimpleRenderer.h"
 #include "TransformationCatalog.h"
-#include "ArcGISMapImageLayer.h"
-#include <utility>
+#include "sectiontitle.h"
 // Convex Hull
-#include "SimpleFillSymbol.h"
-#include "SimpleLineSymbol.h"
 #include "GeometryEngine.h"
 #include "MultipointBuilder.h"
-#include <utility>
+#include "SimpleFillSymbol.h"
+#include "SimpleLineSymbol.h"
 
-#include <QGroupBox>
 #include <QComboBox>
-#include <QString>
+#include <QCoreApplication>
+#include <QFileInfo>
 #include <QGridLayout>
-#include <QTreeView>
+#include <QGroupBox>
+#include <QHeaderView>
 #include <QLabel>
 #include <QPushButton>
+#include <QString>
 #include <QTableWidget>
-#include <QHeaderView>
-#include <QFileInfo>
-#include <QCoreApplication>
-#include <SimCenterMapGraphicsView.h>
+#include <QThread>
+#include <QTreeView>
+
+#include <utility>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -162,11 +197,11 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
 VisualizationWidget::~VisualizationWidget()
 {
-  mapViewWidget->setCurrentLayout(nullptr);
+    mapViewWidget->setCurrentLayout(nullptr);
 }
 
-void
-VisualizationWidget::setCurrentlyViewable(bool status)
+
+void VisualizationWidget::setCurrentlyViewable(bool status)
 {
     if (status == true) {
         emit sendErrorMessage("SWAPPING Visaulizatytion Widget");
@@ -197,7 +232,7 @@ VisualizationWidget::setCurrentlyViewable(bool status)
 void VisualizationWidget::createVisualizationWidget(void)
 {
     visWidget = new QWidget(this);
-    visWidget->setContentsMargins(0,0,0,0);    
+    visWidget->setContentsMargins(0,0,0,0);
 
     QGridLayout* layout = new QGridLayout(visWidget);
     visWidget->setLayout(layout);
@@ -265,6 +300,7 @@ void VisualizationWidget::createVisualizationWidget(void)
     //layout->addWidget(mapViewWidget,0,1,12,2);
     layout->addLayout(mapViewLayout,0,1,12,2);
 }
+
 
 BuildingDatabase* VisualizationWidget::getBuildingDatabase()
 {

@@ -2,7 +2,7 @@
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -17,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -26,32 +26,29 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: fmckenna
+// Written by: Frank McKenna
 
 #include "MDOF_LU.h"
-#include <QPushButton>
+#include "SimCenterPreferences.h"
+#include "RandomVariablesContainer.h"
+
+#include <QDebug>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QGridLayout>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
-#include <QDebug>
-#include <QFileDialog>
 #include <QPushButton>
-#include <QFileInfo>
-#include <QGridLayout>
-#include <SimCenterPreferences.h>
-
-#include <RandomVariablesContainer.h>
-
-//#include <InputWidgetParameters.h>
 
 MDOF_LU::MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
     : SimCenterAppWidget(parent), theRandomVariablesContainer(theRandomVariableIW)
@@ -95,6 +92,7 @@ MDOF_LU::MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
     this->setLayout(layout);
 }
 
+
 MDOF_LU::~MDOF_LU()
 {
 
@@ -107,23 +105,19 @@ void MDOF_LU::clear(void)
 }
 
 
-
-bool
-MDOF_LU::outputToJSON(QJsonObject &jsonObject)
+bool MDOF_LU::outputToJSON(QJsonObject &jsonObject)
 {
     return true;
 }
 
 
-bool
-MDOF_LU::inputFromJSON(QJsonObject &jsonObject)
+bool MDOF_LU::inputFromJSON(QJsonObject &jsonObject)
 {
     return true;
 }
 
 
-bool
-MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
+bool MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     bool res = true;
 
@@ -150,8 +144,7 @@ MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
 }
 
 
-bool
-MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
+bool MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
     if (jsonObject.contains("ApplicationData")) {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
@@ -173,16 +166,13 @@ MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
 }
 
 
-
-void
-MDOF_LU::chooseFileName1(void) {
+void MDOF_LU::chooseFileName1(void) {
     QString filePath=QFileDialog::getOpenFileName(this,tr("Open File"),"C://", "All Files (*.*)");
     hazusDataFile->setText(filePath);
 }
 
 
-bool
-MDOF_LU::copyFiles(QString &dirName) {
+bool MDOF_LU::copyFiles(QString &dirName) {
 
     QString fileName = hazusDataFile->text();
     QFileInfo fileInfo(fileName);

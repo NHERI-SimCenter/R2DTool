@@ -1,6 +1,5 @@
 #ifndef WORKFLOW_APP_RDT_H
 #define WORKFLOW_APP_RDT_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,26 +36,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "WorkflowAppWidget.h"
 
-class UQWidget;
-class DLWidget;
-class AssetsWidget;
-class HazardsWidget;
-class EngDemandParameterWidget;
-//class DamageMeasureWidget;
-//class DecisionVariableWidget;
-class VisualizationWidget;
-class GeneralInformationWidget;
-class ModelWidget;
 class AnalysisWidget;
-class HazardToAssetWidget;
-class SimCenterAppWidget;
-
 class Application;
+class AssetsWidget;
+class DLWidget;
+class EngDemandParameterWidget;
+class GeneralInformationWidget;
+class HazardToAssetWidget;
+class HazardsWidget;
 class InputWidgetUQ;
+class ModelWidget;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QStackedWidget;
@@ -66,10 +59,12 @@ class RemoteService;
 class ResultsWidget;
 class RunLocalWidget;
 class RunWidget;
-
+class SimCenterAppWidget;
 class SimCenterComponentSelection;
 class UQOptions;
+class UQWidget;
 class UQ_Results;
+class VisualizationWidget;
 
 class WorkflowAppRDT : public WorkflowAppWidget
 {
@@ -97,9 +92,7 @@ public:
 
     VisualizationWidget *getVisualizationWidget() const;
     AssetsWidget *getAssetsWidget() const;
-    //HazardsWidget *getHazardsWidget() const;
     GeneralInformationWidget *getGeneralInformationWidget() const;
-    //DLWidget *getTheDamageMeasureWidget() const;
 
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
@@ -136,7 +129,6 @@ private:
     UQWidget* theUQWidget;
     RandomVariablesContainer* theRVs;
     ResultsWidget* theResultsWidget;
-    // EngDemandParameterWidget* theEngDemandParamWidget;
 
     //
     // Objects for running the workflow and obtaining results

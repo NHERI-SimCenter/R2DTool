@@ -34,41 +34,35 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
-// Latest revision: 12.2020
+// Written by: Frank McKenna
 
-#include "HazardToAssetWidget.h"
-
+#include "ComponentInputWidget.h"
 #include "HazardToAssetBuilding.h"
-#include <SimCenterAppSelection.h>
-
+#include "HazardToAssetWidget.h"
+#include "SecondaryComponentSelection.h"
+#include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "SecondaryComponentSelection.h"
 
 // Qt headers
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTableWidget>
+#include <QCheckBox>
 #include <QColorTransform>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
-#include <QCheckBox>
+#include <QPushButton>
 #include <QString>
-
-#include <SimCenterAppSelection.h>
-#include "ComponentInputWidget.h"
-#include <HazardToAssetBuilding.h>
+#include <QTableWidget>
+#include <QVBoxLayout>
 
 HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentRDT(parent)
@@ -91,7 +85,6 @@ HazardToAssetWidget::~HazardToAssetWidget()
 }
 
 
-void
-HazardToAssetWidget::hazardGridFileChangedSlot(QString motionDir, QString eventFile){
+void HazardToAssetWidget::hazardGridFileChangedSlot(QString motionDir, QString eventFile){
     emit hazardGridFileChangedSignal(motionDir, eventFile);
 }

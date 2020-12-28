@@ -1,6 +1,5 @@
 ﻿#ifndef HazardToAssetWidget_H
 #define HazardToAssetWidget_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,8 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
-// Latest revision: 12.2020
+// Written by: Frank McKenna
 
 #include "MultiComponentRDT.h"
 
@@ -56,13 +54,11 @@ public:
 
     void clear(void);
 
-
 signals:
     void hazardGridFileChangedSignal(QString motionDir, QString eventFile);
 
 private slots:
     void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
-
 
 private:
     SimCenterAppWidget *buildingWidget;
