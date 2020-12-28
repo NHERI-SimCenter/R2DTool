@@ -1,5 +1,5 @@
 ﻿/* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -204,16 +204,13 @@ VisualizationWidget::~VisualizationWidget()
 void VisualizationWidget::setCurrentlyViewable(bool status)
 {
     if (status == true) {
-        emit sendErrorMessage("SWAPPING Visaulizatytion Widget");
+        // emit sendErrorMessage("SWAPPING Visaulizatytion Widget");
         QWidget *tmp = new QWidget();
         mapViewLayout->addWidget(tmp);
         mapViewWidget->setCurrentLayout(mapViewLayout);
         mapViewLayout->removeWidget(tmp);
         delete tmp;
-        //this->update();
-        //qApp->processEvents();
-        // QThread::msleep(100);
-        emit sendErrorMessage("");
+        // emit sendErrorMessage("");
     }
 
     /*
