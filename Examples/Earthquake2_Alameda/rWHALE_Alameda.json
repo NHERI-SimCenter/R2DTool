@@ -13,6 +13,13 @@
     "every_realization": true
   },
   "Applications": {
+    "Hazard": {
+        "Application": "UserInputGM",
+        "ApplicationData": {
+	    "eventFile": "/IMs/EventGrid.csv",
+	    "motionDir": "/IMs"
+	}
+    },	
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
