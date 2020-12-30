@@ -133,7 +133,11 @@ bool PelicunDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             DLTypeComboBox->setCurrentText(appData["DL_Method"].toString());
 
         if (appData.contains("Realizations"))
-            realizationsLineEdit->setText(QString::number(appData["Realizations"].toInt()));
+            if (appData["Realizations"].isString()){
+                realizationsLineEdit->setText(appData["Realizations"].toString());
+            } else {
+                realizationsLineEdit->setText(QString::number(appData["Realizations"].toInt()));
+            }
 
         if (appData.contains("coupled_EDP"))
             coupledEDPCheckBox->setChecked(appData["coupled_EDP"].toBool());
