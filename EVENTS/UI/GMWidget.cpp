@@ -583,6 +583,13 @@ void GMWidget::runHazardSimulation(void)
             + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
             + "regionalGroundMotion" + QDir::separator() + "HazardSimulation.py";
 
+    QFileInfo hazardFileInfo(pathToHazardSimScript);
+    if (!hazardFileInfo.exists()) {
+        QString errorMessage = QString("ERROR - hazardApp does not exist") + pathToHazardSimScript;
+        emit sendErrorMessage(errorMessage);
+        qDebug() << errorMessage;
+        return;
+    }
     QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
 
     process->start(pythonPath, args);
@@ -988,6 +995,7 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
 
     emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
+    progressDialog->hide();
 
     return 0;
 }
