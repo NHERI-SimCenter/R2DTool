@@ -67,8 +67,8 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
 
     QHBoxLayout* workDirLayout = new QHBoxLayout();
     workDirectoryBox = new QLineEdit(this);
-
-    //FMK workDirectoryBox->setMinimumWidth(600);
+    workDirectoryBox->setMinimumWidth(600);
+    workDirectoryBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     workDirLayout->addWidget(workDirectoryBox, 1);
     workDirectoryButton = new QPushButton(tr("Browse..."), this);
     workDirLayout->addWidget(workDirectoryButton, 0);
@@ -76,7 +76,8 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
 
     QHBoxLayout* inputDirLayout = new QHBoxLayout();
     inputDirectoryBox = new QLineEdit(this);
-    //FMK inputDirectoryBox->setMinimumWidth(600);
+    inputDirectoryBox->setMinimumWidth(600);
+    inputDirectoryBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     inputDirLayout->addWidget(inputDirectoryBox, 1);
     inputDirectoryButton = new QPushButton(tr("Browse..."), this);
     inputDirLayout->addWidget(inputDirectoryButton, 0);
@@ -84,33 +85,35 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
 
     QHBoxLayout* outputDirLayout = new QHBoxLayout();
     outputDirectoryBox = new QLineEdit(this);
-    //FMK outputDirectoryBox->setMinimumWidth(600);
+    outputDirectoryBox->setMinimumWidth(600);
+    outputDirectoryBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     outputDirLayout->addWidget(outputDirectoryBox, 1);
     outputDirectoryButton = new QPushButton(tr("Browse..."), this);
     outputDirLayout->addWidget(outputDirectoryButton, 0);
     appsFormLayout->addRow("Output Directory:", outputDirLayout);
 
-    QGroupBox* dbsBox = new QGroupBox("Records Database", this);
-    layout->addWidget(dbsBox);
-    dbsBox->setStyleSheet("QGroupBox {font-weight: bold}");
+    //    QGroupBox* dbsBox = new QGroupBox("Records Database", this);
+    //    layout->addWidget(dbsBox);
+    //    dbsBox->setStyleSheet("QGroupBox {font-weight: bold}");
 
-    QFormLayout* dbsFormLayout = new QFormLayout(dbsBox);
+    //    QFormLayout* dbsFormLayout = new QFormLayout(dbsBox);
 
-    QHBoxLayout* DBUserLayout = new QHBoxLayout();
-    usernameBox = new QLineEdit(this);
-    //FMK usernameBox->setMinimumWidth(250);
-    DBUserLayout->addWidget(usernameBox, 1);
-    dbsFormLayout->addRow("Username:", DBUserLayout);
+    //    QHBoxLayout* DBUserLayout = new QHBoxLayout();
+    //    usernameBox = new QLineEdit(this);
+    //    usernameBox->setMinimumWidth(600);
+    //    usernameBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    //    DBUserLayout->addWidget(usernameBox, 1);
+    //    dbsFormLayout->addRow("Username:", DBUserLayout);
 
-    QHBoxLayout* DBPassLayout = new QHBoxLayout();
-    passwordBox = new QLineEdit(this);
-    //FMK passwordBox->setMinimumWidth(250);
-    passwordBox->setEchoMode(QLineEdit::EchoMode::Password);
-    DBPassLayout->addWidget(passwordBox, 1);
-    dbsFormLayout->addRow("Password:", DBPassLayout);
+    //    QHBoxLayout* DBPassLayout = new QHBoxLayout();
+    //    passwordBox = new QLineEdit(this);
+    //    passwordBox->setMinimumWidth(600);
+    //    passwordBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    //    passwordBox->setEchoMode(QLineEdit::EchoMode::Password);
+    //    DBPassLayout->addWidget(passwordBox, 1);
+    //    dbsFormLayout->addRow("Password:", DBPassLayout);
 
     closeButton = new QPushButton(tr("Close"), this);
-    //FMK closeButton->setMinimumWidth(250);
     layout->addWidget(closeButton);
     layout->setAlignment(closeButton,Qt::AlignHCenter);
 
@@ -118,10 +121,9 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
     workDirectoryBox->setText(appConfig->getWorkDirectoryPath());
     inputDirectoryBox->setText(appConfig->getInputDirectoryPath());
     outputDirectoryBox->setText(appConfig->getOutputDirectoryPath());
-    usernameBox->setText(appConfig->getUsername());
-    passwordBox->setText(appConfig->getPassword());
+    //    usernameBox->setText(appConfig->getUsername());
+    //    passwordBox->setText(appConfig->getPassword());
 
-    //FMK this->setMinimumWidth(600);
     setupConnections();
 }
 
@@ -160,11 +162,11 @@ void GmAppConfigWidget::setupConnections()
 
     connect(appConfig, &GmAppConfig::outputDirectoryPathChanged, outputDirectoryBox, &QLineEdit::setText);
 
-    connect(usernameBox, &QLineEdit::textChanged, appConfig, &GmAppConfig::setUsername);
-    connect(passwordBox, &QLineEdit::textChanged, appConfig, &GmAppConfig::setPassword);
+//    connect(usernameBox, &QLineEdit::textChanged, appConfig, &GmAppConfig::setUsername);
+//    connect(passwordBox, &QLineEdit::textChanged, appConfig, &GmAppConfig::setPassword);
 
-    connect(appConfig, &GmAppConfig::usernamePathChanged, usernameBox, &QLineEdit::setText);
-    connect(appConfig, &GmAppConfig::passwordChanged, passwordBox, &QLineEdit::setText);
+//    connect(appConfig, &GmAppConfig::usernamePathChanged, usernameBox, &QLineEdit::setText);
+//    connect(appConfig, &GmAppConfig::passwordChanged, passwordBox, &QLineEdit::setText);
 
     connect(closeButton,&QAbstractButton::clicked,this, &QWidget::close);
     connect(closeButton,&QAbstractButton::clicked,this, &GmAppConfigWidget::saveConfig);

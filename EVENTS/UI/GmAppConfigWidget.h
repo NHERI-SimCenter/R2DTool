@@ -68,8 +68,8 @@ private:
     QLineEdit* outputDirectoryBox;
     QPushButton* outputDirectoryButton;
     QPushButton* closeButton;
-    QLineEdit* usernameBox;
-    QLineEdit* passwordBox;
+    //    QLineEdit* usernameBox;
+    //    QLineEdit* passwordBox;
 
     void setupConnections();
 };
