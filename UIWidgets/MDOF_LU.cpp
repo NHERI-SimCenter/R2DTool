@@ -150,19 +150,62 @@ bool MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
 
+        QFileInfo fileInfo;
         QString fileName;
         QString pathToFile;
         if (appData.contains("stdStiffness"))
-            stdStiffness->setText(appData["stdStiffness"].toString());
+            stdStiffness->setText(QString::number(appData["stdStiffness"].toDouble()));
         if (appData.contains("stdDamping"))
-            stdDamping->setText(appData["stdDamping"].toString());
+            stdDamping->setText(QString::number(appData["stdDamping"].toDouble()));
         if (appData.contains("hazusData"))
             fileName = appData["hazusData"].toString();
-        if (appData.contains("pathToHazusFile"))
-            pathToFile = appData["pathToHazusFile"].toString();
-        hazusDataFile->setText(pathToFile + QDir::separator() + fileName);
+
+        //
+        // hazus file .. a number of options
+        //  1 is user created input the full path can be specified
+        //  2 if user specified, it can be relative to current dir
+        //  3 if use specified it can be in input_Data
+        //  4 if RDT created the path is seperate
+
+        if (fileInfo.exists(fileName)) {
+
+            // option 1
+            hazusDataFile->setText(fileName);
+            return true;
+
+        } else {
+
+            if (appData.contains("pathToHazusFile"))
+                pathToFile = appData["pathToHazusFile"].toString();
+            else
+                pathToFile = QDir::currentPath();
+
+            QString hazusFile = pathToFile + QDir::separator() + fileName;
+
+            if (fileInfo.exists(hazusFile)) {
+
+                // option 2 or 4
+                hazusDataFile->setText(hazusFile);
+                return true;
+
+            } else {
+
+                // option 3
+                // adam .. adam .. adam
+                hazusFile = pathToFile + QDir::separator()
+                        + "input_data" + QDir::separator() + fileName;
+
+                if (fileInfo.exists(hazusFile)) {
+                    hazusDataFile->setText(hazusFile);
+                    return true;
+                }
+            }
+        }
+        emit sendErrorMessage("MDOF-LU could not find HazusData file");
+        return false;
     }
-    return true;
+    emit sendErrorMessage("MDOF-LU no ApplicationData section");
+    return false;
 }
 
 

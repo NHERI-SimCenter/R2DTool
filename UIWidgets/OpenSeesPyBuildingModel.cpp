@@ -205,8 +205,10 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
 
+        QFileInfo fileInfo;
         QString fileName;
         QString pathToFile;
+
         if (appData.contains("dofMap"))
             responseNodes->setText(appData["dofMap"].toString());
         if (appData.contains("ndm"))
@@ -214,15 +216,59 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
         if (appData.contains("columnLine"))
             columnLine->setText(appData["columnLine"].toString());
 
+        //
+        // mainScript file .. a number of options
+        //  1 is user created input the full path can be specified
+        //  2 if user specified, it can be relative to current dir
+        //  3 if use specified it can be in input_Data
+        //  4 if RDT created the path is seperate
+
+
         if (appData.contains("mainScript"))
             fileName = appData["mainScript"].toString();
-        if (appData.contains("filePath"))
-        {
-            pathToFile = appData["filePath"].toString();
-            setFilename1(pathToFile + QDir::separator() + fileName);
+        if (appData.contains("modelPath"))
+              pathToFile = appData["modelPath"].toString();
+
+        if (pathToFile != "")
+            fileName = pathToFile + QDir::separator() + fileName;
+
+        if (fileInfo.exists(fileName)) {
+            filePathLineEdit->setText(fileName);
+        } else  {
+
+            if (appData.contains("filePath"))
+                pathToFile = appData["filePath"].toString();
+            else
+                pathToFile = QDir::currentPath();
+
+            QString fullFile = pathToFile + QDir::separator() + fileName;
+
+            if (fileInfo.exists(fullFile)) {
+
+                // option 2 or 4
+                filePathLineEdit->setText(fullFile);
+                return true;
+
+            } else {
+
+                // option 3
+                // adam .. adam .. adam
+                fullFile = pathToFile + QDir::separator()
+                        + "input_data" + QDir::separator() + fileName;
+
+                 qDebug() << __PRETTY_FUNCTION__ << "path1 " << fullFile;
+
+                if (fileInfo.exists(fullFile)) {
+                    filePathLineEdit->setText(fullFile);;
+                    return true;
+                }
+            }
         }
+        emit sendErrorMessage("OpenSeesPyBuilder could not find script file");
+        return false;
     }
 
+    emit sendErrorMessage("OpenSeesPyBuilder no ApplicationData");
     return true;
 }
 

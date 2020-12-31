@@ -344,15 +344,7 @@ bool WorkflowAppRDT::inputFromJSON(QJsonObject &jsonObject)
         theHazardToAssetWidget->inputAppDataFromJSON(apps);
         theAssetsWidget->inputAppDataFromJSON(apps);
         theHazardsWidget->inputAppDataFromJSON(apps);
-
         theDamageAndLossWidget->inputAppDataFromJSON(apps);
-
-
-
-
-
-
-
 
     } else
         return false;
@@ -501,6 +493,17 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
 
 
 void WorkflowAppRDT::loadFile(const QString fileName){
+
+    // check file exists & set apps current dir of it does
+    QFileInfo fileInfo(fileName);
+    if (!fileInfo.exists()){
+        emit errorMessage(QString("File foes not exist: ") + fileName);
+        return;
+    }
+
+    QString dirPath = fileInfo.absoluteDir().absolutePath();
+    QDir::setCurrent(dirPath);
+    qDebug() << "WorkflowAppRDT: setting current dir" << dirPath;
 
     //
     // open file

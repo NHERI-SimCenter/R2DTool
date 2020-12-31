@@ -78,7 +78,6 @@ ComponentInputWidget::~ComponentInputWidget()
 
 void ComponentInputWidget::loadComponentData(void)
 {
-
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInfoFile.compare("NULL") == 0)
         this->chooseComponentInfoFileDialog();
@@ -91,6 +90,7 @@ void ComponentInputWidget::loadComponentData(void)
     if (!file.exists())
     {
         QString errMsg = "Cannot find the file: "+ pathToComponentInfoFile + "\n" +"Check your directory and try again.";
+        qDebug() << errMsg;
         this->userMessageDialog(errMsg);
         return;
     }
@@ -335,7 +335,8 @@ void ComponentInputWidget::handleComponentSelection(void)
 
     auto numAssets = selectedComponentIDs.size();
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
-    this->userMessageDialog(msg);
+    sendStatusMessage(msg);
+    //this->userMessageDialog(msg);
 }
 
 
@@ -467,23 +468,61 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     if (jsonObject.contains("ApplicationData")) {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
+        QFileInfo fileInfo;
         QString fileName;
         QString pathToFile;
+        bool foundFile = false;
         if (appData.contains("buildingSourceFile"))
             fileName = appData["buildingSourceFile"].toString();
-        if (appData.contains("pathToSource"))
-            pathToFile = appData["pathToSource"].toString();
-        pathToComponentInfoFile = pathToFile + QDir::separator() + fileName;
-        componentFileLineEdit->setText(pathToComponentInfoFile);
-        this->loadComponentData();
+
+        if (fileInfo.exists(fileName)) {
+
+            selectComponentsLineEdit->setText(fileName);
+            foundFile = true;
+            this->loadComponentData();
+            foundFile = true;
+
+        } else {
+
+            if (appData.contains("pathToSource"))
+                pathToFile = appData["pathToSource"].toString();
+            else
+                pathToFile=QDir::currentPath();
+
+            pathToComponentInfoFile = pathToFile + QDir::separator() + fileName;
+
+            if (fileInfo.exists(pathToComponentInfoFile)) {
+                componentFileLineEdit->setText(pathToComponentInfoFile);
+                foundFile = true;
+                this->loadComponentData();
+
+            } else {
+                // adam .. adam .. adam
+                pathToComponentInfoFile = pathToFile + QDir::separator()
+                        + "input_data" + QDir::separator() + fileName;
+                if (fileInfo.exists(pathToComponentInfoFile)) {
+                    componentFileLineEdit->setText(pathToComponentInfoFile);
+                    foundFile = true;
+                    this->loadComponentData();
+                }
+            }
+        }
 
         if (appData.contains("filter"))
             selectComponentsLineEdit->setText(appData["filter"].toString());
 
-        selectComponentsLineEdit->selectComponents();
+        if (foundFile == true)
+            selectComponentsLineEdit->selectComponents();
+        else {
+            QString errMessage = componentType + "no file found" + fileName;
+            emit sendErrorMessage(errMessage);
+            return false;
+        }
     }
 
-    return true;
+    QString errMessage = componentType + "no ApplicationDta found";
+    emit sendErrorMessage(errMessage);
+    return false;
 
 }
 

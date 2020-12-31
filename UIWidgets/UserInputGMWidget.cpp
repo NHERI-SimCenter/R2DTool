@@ -63,6 +63,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSpacerItem>
 #include <QStackedWidget>
 #include <QVBoxLayout>
+#include <QDir>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -97,6 +98,21 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     QJsonObject appData;
     jsonObject["ApplicationData"]=appData;
 
+    QFileInfo theFile(eventFile);
+    if (theFile.exists()) {
+        appData["eventFile"]=theFile.fileName();
+        appData["eventFileDir"]=theFile.path();
+    } else {
+        appData["eventFile"]=eventFile; // may be valid on others computer
+        appData["eventFileDir"]=QString("");
+    }
+    QFileInfo theDir(motionDir);
+    if (theDir.exists()) {
+        appData["motionDir"]=theDir.absoluteFilePath();
+    } else {
+        appData["motionDir"]=QString("None");
+    }
+
     return true;
 }
 
@@ -105,45 +121,66 @@ bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
     // qDebug() << "USER GM outputPLAIN";
 
-    QFileInfo theFile(eventFile);
-    if (theFile.exists()) {
-        jsonObj["eventFile"]=theFile.fileName();
-        jsonObj["eventFileDir"]=theFile.path();
-    } else {
-        jsonObj["eventFile"]=eventFile; // may be valid on others computer
-        jsonObj["eventFileDir"]=QString("");
-    }
-    QFileInfo theDir(motionDir);
-    if (theDir.exists()) {
-        jsonObj["motionDir"]=theDir.absoluteFilePath();
-    } else {
-        jsonObj["motionDir"]=QString("None");
-    }
-
     return true;
 }
 
 
-bool UserInputGMWidget::inputFromJSON(QJsonObject &jsonObj)
+bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
-    QString fileName;
-    QString pathToFile;
+    if (jsonObj.contains("ApplicationData")) {
+        QJsonObject appData = jsonObj["ApplicationData"].toObject();
 
-    if (jsonObj.contains("eventFile"))
-        fileName = jsonObj["eventFile"].toString();
-    if (jsonObj.contains("eventFileDir"))
-        pathToFile = jsonObj["eventFileDir"].toString();
+        QString fileName;
+        QString pathToFile;
 
-    eventFile = pathToFile + QDir::separator() + fileName;
-    eventFileLineEdit->setText(eventFile);
+        if (appData.contains("eventFile"))
+            fileName = appData["eventFile"].toString();
+        if (appData.contains("eventFileDir"))
+            pathToFile = appData["eventFileDir"].toString();
+        else
+            pathToFile=QDir::currentPath();
 
-    if (jsonObj.contains("motionDir"))
-        motionDir = jsonObj["motionDir"].toString();
-    motionDirLineEdit->setText(motionDir);
+        QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
-    this->loadUserGMData();
+        // adam .. adam .. adam
+        if (!QFileInfo::exists(fullFilePath)){
+            fullFilePath = pathToFile + QDir::separator()
+                    + "input_data" + QDir::separator() + fileName;
 
-    return true;
+            if (!QFile::exists(fullFilePath)) {
+                qDebug() << "UserInputGM - could not find event file";
+                return false;
+            }
+        }
+
+        eventFileLineEdit->setText(fullFilePath);
+        eventFile = fullFilePath;
+
+        if (appData.contains("motionDir"))
+            motionDir = appData["motionDir"].toString();
+
+        QDir motionD(motionDir);
+
+        if (!motionD.exists()){
+            QString trialDir = QDir::currentPath() +
+                    QDir::separator() + "input_data" + motionDir;
+            if (motionD.exists(trialDir)) {
+                motionDir = trialDir;
+                motionDirLineEdit->setText(trialDir);
+            } else {
+                qDebug() << "UserInputGM - could not find motion dir" << motionDir << " " << trialDir;
+                return false;
+            }
+        } else {
+            motionDirLineEdit->setText(motionDir);
+        }
+
+        qDebug() << __PRETTY_FUNCTION__ << "Event: " << eventFile;
+        this->loadUserGMData();
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -260,6 +297,7 @@ void UserInputGMWidget::showUserGMSelectDialog(void)
 void UserInputGMWidget::loadUserGMData(void)
 {
 
+    qDebug() << __PRETTY_FUNCTION__ << " event " << eventFile;
     CSVReaderWriter csvTool;
 
     QString err;
