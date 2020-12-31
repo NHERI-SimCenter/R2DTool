@@ -103,9 +103,9 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
     QCoreApplication::setApplicationName("RDT");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("2.1.0");
+    QCoreApplication::setApplicationVersion("1.0.0");
 
-    // GoogleAnalytics::SetTrackingId("UA-126303135-1");
+    // GoogleAnalytics::SetTrackingId("UA-186298856-1");
     // GoogleAnalytics::StartSession();
     // GoogleAnalytics::ReportStart();
 
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     theInputApp->initialize();
 
 
-    QString aboutTitle = "About the SimCenter EE-UQ Application"; // this is the title displayed in the on About dialog
+    QString aboutTitle = "About the SimCenter RDT Application"; // this is the title displayed in the on About dialog
     QString aboutSource = ":/resources/docs/textAboutRDT.html";  // this is an HTML file stored under resources
 
     w.setAbout(aboutTitle, aboutSource);
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
     QString citeText("TO DO RDT CITATION");
     w.setCite(citeText);
 
-    QString manualURL("https://nheri-simcenter.github.io/EE-UQ-Documentation/");
+    QString manualURL("https://nheri-simcenter.github.io/RDT-Documentation/");
     w.setDocumentationURL(manualURL);
 
     QString messageBoardURL("https://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=6.0");
