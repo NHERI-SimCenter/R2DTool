@@ -242,7 +242,7 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
                 pathToFile = QDir::currentPath();
 
             QString fullFile = pathToFile + QDir::separator() + fileName;
-    qDebug() << __PRETTY_FUNCTION__ << "path1 " << fullFile;
+
             if (fileInfo.exists(fullFile)) {
 
                 // option 2 or 4
