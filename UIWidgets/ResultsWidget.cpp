@@ -58,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QStandardPaths>
 #include <QVBoxLayout>
+#include <QFileDialog>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -100,11 +101,12 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     exportBrowseFileButton->setText(tr("Browse"));
     exportBrowseFileButton->setMaximumWidth(150);
 
-    QPushButton *exportFileButton = new QPushButton(this);
-    exportFileButton->setText(tr("Export to PDF"));
-    //exportFileButton->setMaximumWidth(150);
+    connect(exportBrowseFileButton,&QPushButton::clicked,this,&ResultsWidget::chooseResultsDirDialog);
 
-    connect(exportFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
+    QPushButton *exportPDFFileButton = new QPushButton(this);
+    exportPDFFileButton->setText(tr("Export to PDF"));
+
+    connect(exportPDFFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
     QLabel* selectComponentsText = new QLabel("Select a subset of buildings to display the results:",this);
     selectComponentsLineEdit = new AssetInputDelegate();
@@ -125,7 +127,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theExportLayout->addWidget(exportLabel,            1,0);
     theExportLayout->addWidget(exportPathLineEdit,     1,1);
     theExportLayout->addWidget(exportBrowseFileButton, 1,2);
-    theExportLayout->addWidget(exportFileButton,       2,0,1,3);
+    theExportLayout->addWidget(exportPDFFileButton,       2,0,1,3);
 
    // theExportLayout->addStretch();
    theExportLayout->setRowStretch(3,1);
@@ -250,6 +252,29 @@ void ResultsWidget::handleComponentSelection(void)
     {
         this->userMessageDialog(msg);
     }
+}
+
+
+void ResultsWidget::chooseResultsDirDialog(void)
+{
+
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::Directory);
+    QString newPath = dialog.getExistingDirectory(this, tr("Directory to Save Results PDF"));
+    dialog.close();
+
+    // Return if the user cancels or enters same dir
+    if(newPath.isEmpty())
+    {
+        return;
+    }
+
+    newPath += QDir::separator() + QString("Results.pdf");
+
+    exportPathLineEdit->setText(newPath);
+
+    return;
 }
 
 

@@ -36,6 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
+#include "SimCenterPreferences.h"
 #include "AnalysisWidget.h"
 #include "AssetsWidget.h"
 #include "CustomizedItemModel.h"
@@ -319,7 +320,11 @@ void WorkflowAppRDT::clear(void)
 
 void WorkflowAppRDT::loadAlamedaExample()
 {
-    this->loadFile("/Users/steve/Documents/RDT/Examples/Alameda/Alameda.json");
+
+    QString pathToExample = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+            + "Examples" + QDir::separator() + "Earthquake2_Alameda" + QDir::separator() + "rWHALE_Alameda.json";
+
+    this->loadFile(pathToExample);
 }
 
 

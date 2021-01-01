@@ -68,6 +68,7 @@ private slots:
     int printToPDF(void);
     void selectComponents(void);
     void handleComponentSelection(void);
+    void chooseResultsDirDialog(void);
 
 private:
 
