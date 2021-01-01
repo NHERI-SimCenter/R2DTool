@@ -451,7 +451,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         auto IDItem = new QTableWidgetItem(IDStr);
         auto RepCostItem = new QTableWidgetItem(totalRepairCost);
         auto RepProbItem = new QTableWidgetItem(replaceMentProb);
-        auto RepairTimeItem = new QTableWidgetItem(repairTime);
+        auto RepairTimeItem = new QTableWidgetItem(QString::number(repairTime));
         auto fatalitiesItem = new QTableWidgetItem(QString::number(fatalities));
         auto lossRatioItem = new QTableWidgetItem(QString::number(lossRatio));
 

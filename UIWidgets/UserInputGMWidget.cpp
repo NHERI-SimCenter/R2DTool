@@ -96,8 +96,6 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "UserInputGM";
 
     QJsonObject appData;
-    jsonObject["ApplicationData"]=appData;
-
     QFileInfo theFile(eventFile);
     if (theFile.exists()) {
         appData["eventFile"]=theFile.fileName();
@@ -112,6 +110,8 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     } else {
         appData["motionDir"]=QString("None");
     }
+
+    jsonObject["ApplicationData"]=appData;
 
     return true;
 }
