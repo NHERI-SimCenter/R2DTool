@@ -121,10 +121,6 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
 
     // connect signals and slots - error messages and signals
-    //    connect(theGI,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    //    connect(theGI,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    //    connect(theGI,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
     connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(theRunWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(theRunWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
@@ -160,8 +156,15 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
 void WorkflowAppRDT::initialize(void)
 {
+
+    // Load the examples
+    //    QString pathToExJson = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+    //            + "Examples" + QDir::separator() + "Examples.json";
+    QString pathToExJson = "/Users/steve/Desktop/SimCenter/RDT/RDT/Examples/Examples.json ";
+
+
     QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-    exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadAlamedaExample);
+    exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadExample);
 
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
@@ -318,7 +321,7 @@ void WorkflowAppRDT::clear(void)
 }
 
 
-void WorkflowAppRDT::loadAlamedaExample()
+void WorkflowAppRDT::loadExample()
 {
 
     QString pathToExample = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()

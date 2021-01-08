@@ -107,7 +107,7 @@ public slots:
     void assetSelectionChanged(QString, bool);
 
     // Examples
-    void loadAlamedaExample();
+    void loadExample();
 
 private:
 

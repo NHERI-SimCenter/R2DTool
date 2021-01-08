@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <memory>
 
+class CustomListWidget;
 class VisualizationWidget;
 
 class QStackedWidget;
@@ -110,7 +111,12 @@ public:
 
     void showShakeMapLayers(bool state);
 
-    QStackedWidget* getShakeMapWidget(void);
+    QWidget* getShakeMapWidget(void);
+
+    QStackedWidget* getStackedWidget(void);
+
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
 
 public slots:
 
@@ -129,6 +135,7 @@ private:
 
     std::unique_ptr<QStackedWidget> shakeMapStackedWidget;
 
+    CustomListWidget *listWidget;
     VisualizationWidget* theVisualizationWidget;
     QLineEdit *shakeMapDirectoryLineEdit;
     QLabel* progressLabel;

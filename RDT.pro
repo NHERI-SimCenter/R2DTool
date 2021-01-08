@@ -118,18 +118,19 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             RunWidget.cpp \
             TOOLS/AssetInputDelegate.cpp \
             TOOLS/CSVReaderWriter.cpp \
+            TOOLS/CustomListWidget.cpp \
             TOOLS/NGAW2Converter.cpp \
             TOOLS/PelicunPostProcessor.cpp \
             TOOLS/REmpiricalProbabilityDistribution.cpp \
             TOOLS/TablePrinter.cpp \
             TOOLS/XMLAdaptor.cpp \
             TOOLS/shakeMapClient.cpp \
+            TOOLS/BuildingDatabase.cpp \
             UIWidgets/AnalysisWidget.cpp \
             UIWidgets/AssetsModelWidget.cpp \
             UIWidgets/AssetsWidget.cpp \
             UIWidgets/BuildingDMEQWidget.cpp \
             UIWidgets/BuildingDMWidget.cpp \
-            UIWidgets/BuildingDatabase.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
@@ -213,18 +214,19 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             RunWidget.h \
             TOOLS/AssetInputDelegate.h \
             TOOLS/CSVReaderWriter.h \
+            TOOLS/CustomListWidget.h \
             TOOLS/NGAW2Converter.h \
             TOOLS/PelicunPostProcessor.h \
             TOOLS/REmpiricalProbabilityDistribution.h \
             TOOLS/TablePrinter.h \
             TOOLS/XMLAdaptor.h \
             TOOLS/shakeMapClient.h \
+            TOOLS/BuildingDatabase.h \
             UIWidgets/AnalysisWidget.h \
             UIWidgets/AssetsModelWidget.h \
             UIWidgets/AssetsWidget.h \
             UIWidgets/BuildingDMEQWidget.h \
             UIWidgets/BuildingDMWidget.h \
-            UIWidgets/BuildingDatabase.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \

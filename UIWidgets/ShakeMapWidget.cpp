@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "TreeView.h"
 #include "VisualizationWidget.h"
+#include "CustomListWidget.h"
 
 // GIS Layers
 #include "FeatureCollectionLayer.h"
@@ -57,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSpacerItem>
+#include <QSplitter>
 #include <QStackedWidget>
 #include <QVBoxLayout>
 
@@ -126,16 +128,28 @@ void ShakeMapWidget::showShakeMapLayers(bool state)
 }
 
 
-QStackedWidget* ShakeMapWidget::getShakeMapWidget(void)
+QWidget* ShakeMapWidget::getShakeMapWidget(void)
+{
+    QSplitter *splitter = new QSplitter(this);
+
+    listWidget = new CustomListWidget(this, "List of Imported ShakeMaps");
+
+    splitter->addWidget(this->getStackedWidget());
+    splitter->addWidget(listWidget);
+
+    return splitter;
+}
+
+
+QStackedWidget* ShakeMapWidget::getStackedWidget(void)
 {
     if (shakeMapStackedWidget)
         return shakeMapStackedWidget.get();
 
     shakeMapStackedWidget = std::make_unique<QStackedWidget>();
 
-    directoryInputWidget = new QWidget(this);
-    auto inputLayout = new QHBoxLayout(directoryInputWidget);
-    directoryInputWidget->setLayout(inputLayout);
+    directoryInputWidget = new QWidget(this);    
+    auto inputLayout = new QGridLayout(directoryInputWidget);
 
     progressBarWidget = new QWidget(this);
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
@@ -158,29 +172,42 @@ QStackedWidget* ShakeMapWidget::getShakeMapWidget(void)
 
     shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
 
-    QLabel* selectComponentsText = new QLabel();
-    selectComponentsText->setText("Select a folder containing ShakeMap files");
+    QLabel* selectComponentsText = new QLabel("To import ShakeMap files, please download the files from the ShakeMap website and place them in the folder specified below:", this);
+    selectComponentsText->setWordWrap(true);
 
-    shakeMapDirectoryLineEdit = new QLineEdit();
+    shakeMapDirectoryLineEdit = new QLineEdit(this);
     shakeMapDirectoryLineEdit->setMaximumWidth(750);
     shakeMapDirectoryLineEdit->setMinimumWidth(400);
     shakeMapDirectoryLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    QPushButton *browseFileButton = new QPushButton();
+    QPushButton *browseFileButton = new QPushButton(this);
     browseFileButton->setText(tr("Browse"));
     browseFileButton->setMaximumWidth(150);
 
+    QPushButton *loadButton = new QPushButton(this);
+    loadButton->setText(tr("Load"));
+    loadButton->setMaximumWidth(150);
+
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseShakeMapDirectoryDialog()));
 
-    inputLayout->addStretch(0);
-    inputLayout->addWidget(selectComponentsText);
-    inputLayout->addWidget(shakeMapDirectoryLineEdit);
-    inputLayout->addWidget(browseFileButton);
-    inputLayout->addStretch(0);
+    connect(loadButton,SIGNAL(clicked()),this,SLOT(loadShakeMapData()));
 
-    shakeMapStackedWidget->setWindowTitle("Select folder containing ShakeMap files");
-    shakeMapStackedWidget->setMinimumWidth(400);
-    shakeMapStackedWidget->setMinimumHeight(150);
+    QLabel* shakeMapText1 = new QLabel("At a minimum, the folder must contain the following files: 1) grid.xml, 2) uncertainty.xml, and 3) rupture.json", this);
+    shakeMapText1->setWordWrap(true);
+    QLabel* shakeMapText2 = new QLabel("Click 'Load' to load the ShakeMap. Multiple ShakeMaps can be added by selecting another folder containing a ShakeMap, and clicking 'Load' again.", this);
+    shakeMapText2->setWordWrap(true);
+    QLabel* shakeMapText3 = new QLabel("The list of loaded ShakeMaps will appear on the right.", this);
+    shakeMapText3->setWordWrap(true);
+
+    inputLayout->addItem(vspacer,0,0);
+    inputLayout->addWidget(selectComponentsText,1,0,1,3);
+    inputLayout->addWidget(shakeMapDirectoryLineEdit,2,0);
+    inputLayout->addWidget(browseFileButton,2,1);
+    inputLayout->addWidget(loadButton,2,2);
+    inputLayout->addWidget(shakeMapText1,3,0,1,3);
+    inputLayout->addWidget(shakeMapText2,4,0,1,3);
+    inputLayout->addWidget(shakeMapText3,5,0,1,3);
+    inputLayout->addItem(vspacer,6,0);
 
     //    pathToShakeMapDirectory="/Users/steve/Desktop/SimCenter/Examples/ShakeMaps/SanAndreas/";
     //    this->loadShakeMapData();
@@ -205,8 +232,6 @@ void ShakeMapWidget::showLoadShakeMapDialog(void)
 
 void ShakeMapWidget::loadShakeMapData(void)
 {
-    // Set file name & entry in line edit
-    shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
 
     // Return if the user cancels
     if(pathToShakeMapDirectory.isEmpty() || pathToShakeMapDirectory == QDir::currentPath())
@@ -359,6 +384,8 @@ void ShakeMapWidget::loadShakeMapData(void)
     // Insert the ShakeMap into its container
     shakeMapContainer.insert(eventName,inputShakeMap);
 
+    listWidget->addItem(eventName);
+
     // Add the event layer to the map
     theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
 
@@ -388,7 +415,28 @@ void ShakeMapWidget::chooseShakeMapDirectoryDialog(void)
 
     dialog.close();
 
-    this->loadShakeMapData();
+    // Set file name & entry in line edit
+    shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
 
     return;
+}
+
+
+bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
+{
+    jsonObject.insert("SourceForIM","ShakeMap");
+
+    QJsonObject sourceParamObj;
+
+    sourceParamObj.insert("Directory",pathToShakeMapDirectory);
+
+    jsonObject.insert("SourceParameters",sourceParamObj);
+
+    return true;
+}
+
+
+bool ShakeMapWidget::inputFromJSON(QJsonObject &jsonObject)
+{
+    return false;
 }
