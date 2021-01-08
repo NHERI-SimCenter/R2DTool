@@ -54,7 +54,7 @@ else:
 
 # constants
 node_tags = [0, 1]
-height = 240. # in
+height = 180. # in
 
 #TODO: relax the fixed units
 G = 386.1
@@ -81,7 +81,7 @@ def build_model(model_params):
     f_yield = model_params["f_yield"]
     T1 = model_params["T1"]
     m = W / G
-    #print("m: " + str(m))
+    K = m / (T1/(2*pi))**2.
 
     # set model dimensions and deg of freedom
     ops.model('basic', '-ndm', 3, '-ndf', 6)
@@ -97,7 +97,7 @@ def build_model(model_params):
     # define bilinear (elastic-perfectly plastic) material
     steel01_tag = 100
     rigid_tag = 110
-    K = m / (T1/(2*pi))**2.
+
     #print("K: " + str(K))
     ops.uniaxialMaterial('Steel01', steel01_tag, f_yield, K, 0.0001)
     ops.uniaxialMaterial('Elastic', rigid_tag, 1.e9)
