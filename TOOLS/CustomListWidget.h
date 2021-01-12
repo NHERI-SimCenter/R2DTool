@@ -12,8 +12,13 @@ public:
 
     void clear(void);
 
+    QStringList getListOfModels() const;
+
+    QVariantList getListOfWeights() const;
+
 public slots:
 
+    void addItem(const QString item, QString model, const double weight);
     void addItem(const QString item);
 
     void removeItem(const QString item);
@@ -22,6 +27,8 @@ public slots:
 
 private:
 
+    QStringList ListOfModels;
+    QVariantList ListOfWeights;
     QListWidget* theListWidget;
     QLabel* headerLabel;
 };
