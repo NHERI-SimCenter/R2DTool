@@ -1,16 +1,13 @@
 {
     "Examples": {
+        "Basic Earthquake": {
+            "InputFile": "Earthquake1_Basic/rWHALE_config_Earthquake_StdEDP.json"
+        },
         "Alameda Earthquake": {
             "InputFile": "Earthquake2_Alameda/rWHALE_Alameda.json"
         },
         "Anchorage Earthquake": {
             "InputFile": "Earthquake3_Anchorage/rWHALE_Anchorage.json"
-        },
-        "Basic Earthquake": {
-            "InputFile": "Earthquake1_Basic/rWHALE_config_Earthquake_StdEDP.json"
-        },
-        "Custom OSPy Earthquake": {
-            "InputFile": "Earthquake5_Custom_OSPy/rWHALE_config_Earthquake_StdEDP.json"
         }
     }
 }
