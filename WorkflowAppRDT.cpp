@@ -85,6 +85,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
+#include <SimCenterAppSelection.h>
+#include <NoArgSimCenterApp.h>
+
 // static pointer for global procedure set in constructor
 static WorkflowAppRDT *theApp = nullptr;
 
@@ -121,6 +124,10 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
 
     // connect signals and slots - error messages and signals
+    //    connect(theGI,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
+    //    connect(theGI,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
+    //    connect(theGI,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
+
     connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(theRunWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(theRunWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
@@ -156,15 +163,8 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
 void WorkflowAppRDT::initialize(void)
 {
-
-    // Load the examples
-    //    QString pathToExJson = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-    //            + "Examples" + QDir::separator() + "Examples.json";
-    QString pathToExJson = "/Users/steve/Desktop/SimCenter/RDT/RDT/Examples/Examples.json ";
-
-
     QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-    exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadExample);
+    exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadAlamedaExample);
 
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
@@ -271,6 +271,7 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 
     theHazardsWidget->outputAppDataToJSON(apps);
     theAssetsWidget->outputAppDataToJSON(apps);
+    theModelingWidget->outputAppDataToJSON(apps);
     theHazardToAssetWidget->outputAppDataToJSON(apps);
     theModelingWidget->outputAppDataToJSON(apps);
     theAnalysisWidget->outputAppDataToJSON(apps);
@@ -278,25 +279,36 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     theUQWidget->outputAppDataToJSON(apps);
 
     //
-    // hard code for now .. EDP's coming out D&L to provide
+    // hard code for now .. EDP's coming out D&L in future to provide this .. really ugly 2 dynamic casts!!
     //
 
-    QJsonObject edpData;
-    edpData["Application"]="StandardEarthquakeEDP_R";
-    QJsonObject edpAppData;
-    edpData["ApplicationData"] = edpAppData;
-    apps["EDP"] = edpData;
+    SimCenterAppWidget *theAnalysisBuildingComponent = theAnalysisWidget->getComponent("Buildings");
+    if (theAnalysisBuildingComponent != nullptr) {
+        SimCenterAppSelection *theAppSelection = dynamic_cast<SimCenterAppSelection *>(theAnalysisBuildingComponent);
+        if (theAppSelection != nullptr) {
+            SimCenterAppWidget *theCurrentSelection = theAppSelection->getCurrentSelection();
+
+            NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
+            if (theNoArgWidget == nullptr || theNoArgWidget->getAppName() != "IMasEDP") {
+                QJsonObject edpData;
+                edpData["Application"]="StandardEarthquakeEDP_R";
+                QJsonObject edpAppData;
+                edpData["ApplicationData"] = edpAppData;
+                apps["EDP"] = edpData;
+            }
+        }
+    }
 
     jsonObjectTop.insert("Applications",apps);
 
     //  output regular data
 
     theRunWidget->outputToJSON(jsonObjectTop);
-    //theModelingWidget->outputToJSON(jsonObjectTop);
+    theModelingWidget->outputToJSON(jsonObjectTop);
     theHazardsWidget->outputToJSON(jsonObjectTop);
-    //theAnalysisWidget->outputToJSON(jsonObjectTop);
-    //theDamageAndLossWidget->outputToJSON(jsonObjectTop);
-    //theHazardToAssetWidget->outputToJSON(jsonObjectTop);
+    theAnalysisWidget->outputToJSON(jsonObjectTop);
+    theDamageAndLossWidget->outputToJSON(jsonObjectTop);
+    theHazardToAssetWidget->outputToJSON(jsonObjectTop);
     //theUQWidget->outputToJSON(jsonObjectTop);
     //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
@@ -321,7 +333,7 @@ void WorkflowAppRDT::clear(void)
 }
 
 
-void WorkflowAppRDT::loadExample()
+void WorkflowAppRDT::loadAlamedaExample()
 {
 
     QString pathToExample = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()

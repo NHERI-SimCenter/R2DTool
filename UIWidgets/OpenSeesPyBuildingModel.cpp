@@ -181,7 +181,7 @@ bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
     dataObj["modelPath"] = "";
     dataObj["columnLine"]=columnLine->text();
 
-    QFileInfo theModelFile(filePath);
+    QFileInfo theModelFile(fileName);
     if (theModelFile.exists()) {
         dataObj["mainScript"] = theModelFile.fileName();
         dataObj["filePath"] = theModelFile.absolutePath();
@@ -255,8 +255,6 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
                 // adam .. adam .. adam
                 fullFile = pathToFile + QDir::separator()
                         + "input_data" + QDir::separator() + fileName;
-
-                 qDebug() << __PRETTY_FUNCTION__ << "path1 " << fullFile;
 
                 if (fileInfo.exists(fullFile)) {
                     filePathLineEdit->setText(fullFile);;

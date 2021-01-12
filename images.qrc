@@ -1,10 +1,10 @@
 <RCC>
     <qresource prefix="/">
         <file>resources/directivityParameters.png</file>
-        <file>icons/NHERI-RDT-Icon.icns</file>
-        <file>icons/NHERI-RDT-Icon.ico</file>
-        <file>icons/NHERI-RDT-Icon.png</file>
-        <file>resources/docs/textAboutRDT.html</file>
+        <file>icons/NHERI-R2D-Icon.icns</file>
+        <file>icons/NHERI-R2D-Icon.ico</file>
+        <file>icons/NHERI-R2D-Icon.png</file>
+        <file>resources/docs/textAboutR2D.html</file>
         <file>resources/SimCenter@1x.png</file>
     </qresource>
 </RCC>

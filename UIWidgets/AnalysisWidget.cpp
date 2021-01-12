@@ -75,15 +75,14 @@ AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRV
   //SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);
   SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
   SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMasEDP"));
-
   SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
   buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation_R"), openSees);
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
-  buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
+  //buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-  pipelineWidget = new SimCenterAppSelection(QString("Pipeline Analysising"), QString("PipelineSimulation"), this);
+  pipelineWidget = new SimCenterAppSelection(QString("Pipeline Analysis Engine"), QString("PipelineSimulation"), this);
 
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",pipelineWidget);

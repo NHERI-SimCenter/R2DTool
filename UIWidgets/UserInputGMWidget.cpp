@@ -175,7 +175,6 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             motionDirLineEdit->setText(motionDir);
         }
 
-        qDebug() << __PRETTY_FUNCTION__ << "Event: " << eventFile;
         this->loadUserGMData();
         return true;
     }
@@ -296,8 +295,6 @@ void UserInputGMWidget::showUserGMSelectDialog(void)
 
 void UserInputGMWidget::loadUserGMData(void)
 {
-
-    qDebug() << __PRETTY_FUNCTION__ << " event " << eventFile;
     CSVReaderWriter csvTool;
 
     QString err;

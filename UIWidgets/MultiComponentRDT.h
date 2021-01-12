@@ -70,16 +70,16 @@ public:
 public slots:
     void selectionChangedSlot(const QString &);
 
-  
-private:
-        virtual bool displayComponent(QString text);
 
-  int currentIndex;
-  int numHidden;
-  
-  QFrame *theSelectionWidget;
-  QVBoxLayout *theSelectionLayout;
-  QStackedWidget *theStackedWidget;  
+private:
+    virtual bool displayComponent(QString text);
+
+    int currentIndex;
+    int numHidden;
+
+    QFrame *theSelectionWidget;
+    QVBoxLayout *theSelectionLayout;
+    QStackedWidget *theStackedWidget;
 
   QList<QString> theNames;
   QList<QPushButton *>thePushButtons;  
