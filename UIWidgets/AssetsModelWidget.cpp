@@ -61,7 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 AssetsModelWidget::AssetsModelWidget(QWidget *parent, RandomVariablesContainer* RVContainer)
-    :MultiComponentRDT(parent), theRandomVariablesContainer(RVContainer)
+    :MultiComponentR2D(parent), theRandomVariablesContainer(RVContainer)
 {
     buildingWidget = new BuildingModelingWidget(this,theRandomVariablesContainer);
     SimCenterAppWidget* pipelineInfoBox = new SimCenterAppWidget(this);

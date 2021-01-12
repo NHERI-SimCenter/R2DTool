@@ -38,12 +38,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "MultiComponentRDT.h"
+#include "MultiComponentR2D.h"
 
 class SimCenterAppSelection;
 class RandomVariablesContainer;
 
-class AnalysisWidget : public  MultiComponentRDT
+class AnalysisWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 

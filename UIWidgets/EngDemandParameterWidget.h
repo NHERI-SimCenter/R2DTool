@@ -38,11 +38,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "MultiComponentRDT.h"
+#include "MultiComponentR2D.h"
 
 class BuildingEDPWidget;
 
-class EngDemandParameterWidget : public MultiComponentRDT
+class EngDemandParameterWidget : public MultiComponentR2D
 {
     Q_OBJECT
 

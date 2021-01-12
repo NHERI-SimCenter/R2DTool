@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>styles/menuBar.qss</file>
-        <file>styles/stylesheetRDT.qss</file>
+        <file>styles/stylesheetR2D.qss</file>
     </qresource>
 </RCC>

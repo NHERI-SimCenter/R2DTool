@@ -38,13 +38,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "MultiComponentRDT.h"
+#include "MultiComponentR2D.h"
 
 class VisualizationWidget;
 class SimCenterAppSelection;
 class SimCenterAppWidget;
 
-class HazardToAssetWidget : public  MultiComponentRDT
+class HazardToAssetWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 

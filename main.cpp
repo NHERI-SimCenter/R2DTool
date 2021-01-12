@@ -39,8 +39,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AgaveCurl.h"
 #include "GoogleAnalytics.h"
 #include "MainWindowWorkflowApp.h"
-#include "RDTUserPass.h"
-#include "WorkflowAppRDT.h"
+#include "R2DUserPass.h"
+#include "WorkflowAppR2D.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
 
     // Create the main window
-    WorkflowAppRDT *theInputApp = new WorkflowAppRDT(theRemoteService);
+    WorkflowAppR2D *theInputApp = new WorkflowAppR2D(theRemoteService);
     MainWindowWorkflowApp w(QString("R2D: Regional Resilience Determination Tool"), theInputApp, theRemoteService);
 
     // Create the  menu bar and actions to run the examples
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
     QString citeText("TO DO R2D CITATION");
     w.setCite(citeText);
 
-    QString manualURL("https://nheri-simcenter.github.io/RDT-Documentation/");
+    QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
     w.setDocumentationURL(manualURL);
 
     QString messageBoardURL("https://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=6.0");
@@ -209,19 +209,19 @@ int main(int argc, char *argv[])
     QFile commonStyleSheetFile(":/styleCommon/stylesheetMAC.qss");
 #endif
 
-    QFile RDTstyleSheetFile(":/styles/stylesheetRDT.qss");
+    QFile R2DstyleSheetFile(":/styles/stylesheetR2D.qss");
 
-    if(commonStyleSheetFile.open(QFile::ReadOnly) && RDTstyleSheetFile.open(QFile::ReadOnly))
+    if(commonStyleSheetFile.open(QFile::ReadOnly) && R2DstyleSheetFile.open(QFile::ReadOnly))
     {
         auto commonStyleSheet = commonStyleSheetFile.readAll();
-        auto RDTStyleSheet = RDTstyleSheetFile.readAll();
+        auto R2DStyleSheet = R2DstyleSheetFile.readAll();
 
-        // Append the RDT stylesheet to the common stylesheet
-        commonStyleSheet.append(RDTStyleSheet);
+        // Append the stylesheet to the common stylesheet
+        commonStyleSheet.append(R2DStyleSheet);
 
         a.setStyleSheet(commonStyleSheet);
         commonStyleSheetFile.close();
-        RDTstyleSheetFile.close();
+        R2DstyleSheetFile.close();
     }
     else
     {

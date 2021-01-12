@@ -38,9 +38,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "MultiComponentRDT.h"
+#include "MultiComponentR2D.h"
 
-class DecisionVariableWidget : public MultiComponentRDT
+class DecisionVariableWidget : public MultiComponentR2D
 {
     Q_OBJECT
 

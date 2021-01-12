@@ -63,7 +63,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentRDT(parent), visualizationWidget(visWidget)
+    : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
 
     buildingWidget = new SimCenterAppSelection(QString("Damage & Loss Application"), QString("DL"), this);

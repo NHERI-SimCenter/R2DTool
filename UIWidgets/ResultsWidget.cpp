@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppRDT.h"
+#include "WorkflowAppR2D.h"
 #include "sectiontitle.h"
 
 #include <QCheckBox>

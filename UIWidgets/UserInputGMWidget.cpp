@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "TreeView.h"
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppRDT.h"
+#include "WorkflowAppR2D.h"
 
 // GIS Layers
 #include "FeatureCollectionLayer.h"

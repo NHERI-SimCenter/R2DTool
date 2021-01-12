@@ -38,11 +38,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "MultiComponentRDT.h"
+#include "MultiComponentR2D.h"
 
 class BuildingDMWidget;
 
-class DamageMeasureWidget : public  MultiComponentRDT
+class DamageMeasureWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 

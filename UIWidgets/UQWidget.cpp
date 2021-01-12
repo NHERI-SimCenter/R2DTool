@@ -64,7 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 UQWidget::UQWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
-    : MultiComponentRDT(parent)
+    : MultiComponentR2D(parent)
 {
 
     buildingWidget = new SimCenterAppSelection(QString("UQ Application"), QString("UQ"), this);

@@ -58,7 +58,7 @@ win32::LIBS+=Advapi32.lib
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -117,7 +117,9 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             EVENTS/UI/SpatialCorrelationWidget.cpp \
             RunWidget.cpp \
             TOOLS/AssetInputDelegate.cpp \
+            TOOLS/BuildingDatabase.cpp \
             TOOLS/CSVReaderWriter.cpp \
+            TOOLS/CustomListWidget.cpp \
             TOOLS/NGAW2Converter.cpp \
             TOOLS/PelicunPostProcessor.cpp \
             TOOLS/REmpiricalProbabilityDistribution.cpp \
@@ -129,7 +131,6 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/AssetsWidget.cpp \
             UIWidgets/BuildingDMEQWidget.cpp \
             UIWidgets/BuildingDMWidget.cpp \
-            UIWidgets/BuildingDatabase.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
@@ -153,7 +154,7 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/MDOF_LU.cpp \
             UIWidgets/MapViewSubWidget.cpp \
             UIWidgets/ModelWidget.cpp \
-            UIWidgets/MultiComponentRDT.cpp \
+            UIWidgets/MultiComponentR2D.cpp \
             UIWidgets/NearestNeighbourMapping.cpp \
             UIWidgets/NodeHandle.cpp \
             UIWidgets/NoneWidget.cpp \
@@ -176,7 +177,7 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
             UIWidgets/UserInputGMWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
-            WorkflowAppRDT.cpp \
+            WorkflowAppR2D.cpp \
             main.cpp \
 
 
@@ -209,10 +210,12 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             EVENTS/UI/SiteGridWidget.h \
             EVENTS/UI/SiteWidget.h \
             EVENTS/UI/SpatialCorrelationWidget.h \
-            RDTUserPass.h \
+            R2DUserPass.h \
             RunWidget.h \
             TOOLS/AssetInputDelegate.h \
+            TOOLS/BuildingDatabase.h \
             TOOLS/CSVReaderWriter.h \
+            TOOLS/CustomListWidget.h \
             TOOLS/NGAW2Converter.h \
             TOOLS/PelicunPostProcessor.h \
             TOOLS/REmpiricalProbabilityDistribution.h \
@@ -224,7 +227,6 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             UIWidgets/AssetsWidget.h \
             UIWidgets/BuildingDMEQWidget.h \
             UIWidgets/BuildingDMWidget.h \
-            UIWidgets/BuildingDatabase.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
@@ -248,7 +250,7 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             UIWidgets/MDOF_LU.h \
             UIWidgets/MapViewSubWidget.h \
             UIWidgets/ModelWidget.h \
-            UIWidgets/MultiComponentRDT.h \             \
+            UIWidgets/MultiComponentR2D.h \             \
             UIWidgets/NearestNeighbourMapping.h \
             UIWidgets/NodeHandle.h \
             UIWidgets/NoneWidget.h \
@@ -271,7 +273,7 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             UIWidgets/UserDefinedEDPR.h \
             UIWidgets/UserInputGMWidget.h \
             UIWidgets/VisualizationWidget.h \
-            WorkflowAppRDT.h\
+            WorkflowAppR2D.h\
 
 
 RESOURCES += \
@@ -285,4 +287,19 @@ DISTFILES += \
 # External libraries
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
+
+# Copies over the examples folder into the build directory
+win32 {
+PATH_TO_BINARY=$$OUT_PWD
+} else {
+    mac {
+    PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS
+    }
+}
+
+copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
 

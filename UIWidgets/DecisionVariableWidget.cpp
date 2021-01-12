@@ -59,7 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-DecisionVariableWidget::DecisionVariableWidget(QWidget *parent) : MultiComponentRDT(parent)
+DecisionVariableWidget::DecisionVariableWidget(QWidget *parent) : MultiComponentR2D(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);

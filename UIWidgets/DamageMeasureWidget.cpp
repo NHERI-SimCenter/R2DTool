@@ -48,7 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QDebug>
 
-DamageMeasureWidget::DamageMeasureWidget(QWidget *parent) : MultiComponentRDT(parent)
+DamageMeasureWidget::DamageMeasureWidget(QWidget *parent) : MultiComponentR2D(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);

@@ -38,12 +38,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna, Stevan Gavrilovic
 
-#include "MultiComponentRDT.h"
+#include "MultiComponentR2D.h"
 
 class VisualizationWidget;
 class SimCenterAppSelection;
 
-class DLWidget : public  MultiComponentRDT
+class DLWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 

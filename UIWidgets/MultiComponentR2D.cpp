@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "ComponentInputWidget.h"
-#include "MultiComponentRDT.h"
+#include "MultiComponentR2D.h"
 #include "SecondaryComponentSelection.h"
 #include "sectiontitle.h"
 #include "VisualizationWidget.h"
@@ -62,17 +62,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-// A class acting for secondary level RDT menu items
+// A class acting for secondary level R2D menu items
 // whose display is dependent on the selection in GI
 // of assets selected. What is actually displayed? that
 // functionality is performed by the SecondaryComponentSelection object
 
 // NOTE: The GI interacts through the connection
-// of signals from checkboxes with slot in WorkflowAppRDT. 
-// That method calls each MultiComponentRDT with a show or a hide
+// of signals from checkboxes with slot in WorkflowAppR2D.
+// That method calls each MultiComponentR2D with a show or a hide
 
 
-MultiComponentRDT::MultiComponentRDT(QWidget *parent)
+MultiComponentR2D::MultiComponentR2D(QWidget *parent)
     :SimCenterAppWidget(parent), currentIndex(-1), numHidden(0)
 {
 
@@ -123,13 +123,13 @@ MultiComponentRDT::MultiComponentRDT(QWidget *parent)
 }
 
 
-MultiComponentRDT::~MultiComponentRDT()
+MultiComponentR2D::~MultiComponentR2D()
 {
 
 }
 
 
-bool MultiComponentRDT::outputToJSON(QJsonObject &jsonObject)
+bool MultiComponentR2D::outputToJSON(QJsonObject &jsonObject)
 { 
     bool res = true;
     int length = theNames.length();
@@ -147,7 +147,7 @@ bool MultiComponentRDT::outputToJSON(QJsonObject &jsonObject)
 }
 
 
-bool MultiComponentRDT::inputFromJSON(QJsonObject &jsonObject)
+bool MultiComponentR2D::inputFromJSON(QJsonObject &jsonObject)
 {
 
     bool res = true;
@@ -167,7 +167,7 @@ bool MultiComponentRDT::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-bool MultiComponentRDT::outputAppDataToJSON(QJsonObject &jsonObject)
+bool MultiComponentR2D::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     bool res = true;
     int length = theNames.length();
@@ -186,7 +186,7 @@ bool MultiComponentRDT::outputAppDataToJSON(QJsonObject &jsonObject)
 }
 
 
-bool MultiComponentRDT::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool MultiComponentR2D::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
     bool res = true;
     int length = theNames.length();
@@ -204,7 +204,7 @@ bool MultiComponentRDT::inputAppDataFromJSON(QJsonObject &jsonObject)
 }
 
 
-bool MultiComponentRDT::copyFiles(QString &destDir)
+bool MultiComponentR2D::copyFiles(QString &destDir)
 {
     bool res = true;
     int length = theNames.length();
@@ -222,7 +222,7 @@ bool MultiComponentRDT::copyFiles(QString &destDir)
 }
 
 
-bool MultiComponentRDT::addComponent(QString text, SimCenterAppWidget *theComponent)
+bool MultiComponentR2D::addComponent(QString text, SimCenterAppWidget *theComponent)
 {
     if (theNames.indexOf(text) == -1) {
 
@@ -255,7 +255,7 @@ bool MultiComponentRDT::addComponent(QString text, SimCenterAppWidget *theCompon
 }
 
 
-SimCenterAppWidget * MultiComponentRDT::getComponent(QString text)
+SimCenterAppWidget * MultiComponentR2D::getComponent(QString text)
 {
     if (theNames.indexOf(text) != -1)
         return theComponents.at(theNames.indexOf(text));
@@ -264,7 +264,7 @@ SimCenterAppWidget * MultiComponentRDT::getComponent(QString text)
 }
 
 
-void MultiComponentRDT::hideAll()
+void MultiComponentR2D::hideAll()
 {
     int length = thePushButtons.length();
     numHidden = length;
@@ -277,7 +277,7 @@ void MultiComponentRDT::hideAll()
 }
 
 
-bool MultiComponentRDT::hide(QString text) {
+bool MultiComponentR2D::hide(QString text) {
     // find index
     int index = theNames.indexOf(text);
 
@@ -315,7 +315,7 @@ bool MultiComponentRDT::hide(QString text) {
 }
 
 
-bool MultiComponentRDT::show(QString text) {
+bool MultiComponentR2D::show(QString text) {
     // find index
     int index = theNames.indexOf(text);
 
@@ -341,7 +341,7 @@ bool MultiComponentRDT::show(QString text) {
 }
 
 
-bool MultiComponentRDT::displayComponent(QString text)
+bool MultiComponentR2D::displayComponent(QString text)
 {
     //
     // find index of text in list and display corresponding widget if index found
@@ -367,7 +367,7 @@ bool MultiComponentRDT::displayComponent(QString text)
 }
 
 
-void MultiComponentRDT::selectionChangedSlot(const QString &selectedText)
+void MultiComponentR2D::selectionChangedSlot(const QString &selectedText)
 {
     //
     // find text in list

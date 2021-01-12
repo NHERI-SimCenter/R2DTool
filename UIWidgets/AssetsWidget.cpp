@@ -62,7 +62,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentRDT(parent), visualizationWidget(visWidget)
+    : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
 
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Building"), this);
@@ -76,7 +76,6 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     visualizationWidget->setPipelineWidget(csvPipelineWidget);
 
     // QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-    // QString pathToBuildingInfoFile =  "/Users/steve/Documents/RDT/Examples/Alameda/BuildingInventory.csv";
     // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);

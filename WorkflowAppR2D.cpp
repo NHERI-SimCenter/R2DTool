@@ -61,7 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterComponentSelection.h"
 #include "UQWidget.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppRDT.h"
+#include "WorkflowAppR2D.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -89,7 +89,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NoArgSimCenterApp.h>
 
 // static pointer for global procedure set in constructor
-static WorkflowAppRDT *theApp = nullptr;
+static WorkflowAppR2D *theApp = nullptr;
 
 // global procedure
 int getNumParallelTasks()
@@ -98,16 +98,16 @@ int getNumParallelTasks()
 }
 
 
-WorkflowAppRDT* WorkflowAppRDT::getInstance()
+WorkflowAppR2D* WorkflowAppR2D::getInstance()
 {
     return theInstance;
 }
 
 
-WorkflowAppRDT *WorkflowAppRDT::theInstance = nullptr;
+WorkflowAppR2D *WorkflowAppR2D::theInstance = nullptr;
 
 
-WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
+WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     : WorkflowAppWidget(theService, parent)
 {
     // Set static pointer for global procedure
@@ -115,8 +115,8 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 
     theInstance = this;
 
-    localApp = new LocalApplication("RDT_workflow.py");
-    remoteApp = new RemoteApplication("RDT_workflow.py", theService);
+    localApp = new LocalApplication("R2D_workflow.py");
+    remoteApp = new RemoteApplication("R2D_workflow.py", theService);
 
     theJobManager = new RemoteJobManager(theService);
 
@@ -161,10 +161,45 @@ WorkflowAppRDT::WorkflowAppRDT(RemoteService *theService, QWidget *parent)
 }
 
 
-void WorkflowAppRDT::initialize(void)
+WorkflowAppR2D::~WorkflowAppR2D()
 {
-    QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-    exampleMenu->addAction(tr("&Alameda Example"), this, &WorkflowAppRDT::loadAlamedaExample);
+
+}
+
+
+void WorkflowAppR2D::initialize(void)
+{
+    // Load the examples
+    auto pathToExamplesJson = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator() + "Examples.json";
+    // QString pathToExamplesJson = "/Users/steve/Desktop/SimCenter/RDT/RDT/Examples/";
+
+    QFile jsonFile(pathToExamplesJson);
+    jsonFile.open(QFile::ReadOnly);
+    QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
+
+    auto docObj = exDoc.object();
+
+    auto exContainerObj = docObj.value("Examples").toObject();
+
+    auto numEx = exContainerObj.count();
+
+    if(numEx > 0)
+    {
+        QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
+
+        for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
+        {
+            auto name = it.key();
+
+            auto exObj = exContainerObj.value(name).toObject();
+
+            auto inputFile = exObj.value("InputFile").toString();
+
+            // Set the path to the input file
+            auto action = exampleMenu->addAction(name, this, &WorkflowAppR2D::loadExamples);
+            action->setProperty("InputFile",inputFile);
+        }
+    }
 
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
@@ -175,16 +210,15 @@ void WorkflowAppRDT::initialize(void)
     theModelingWidget = new ModelWidget(this, theRVs);
     theAnalysisWidget = new AnalysisWidget(this, theRVs);
     theHazardsWidget = new HazardsWidget(this, theVisualizationWidget, theRVs);
-    //    theEngDemandParamWidget = new EngDemandParameterWidget(this);
+    // theEngDemandParamWidget = new EngDemandParameterWidget(this);
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
-    //theDecisionVariableWidget = new DecisionVariableWidget(this);
+    // theDecisionVariableWidget = new DecisionVariableWidget(this);
     theUQWidget = new UQWidget(this, theRVs);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
     connect(theVisualizationWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(theVisualizationWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(theVisualizationWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
 
@@ -223,37 +257,31 @@ void WorkflowAppRDT::initialize(void)
 }
 
 
-WorkflowAppRDT::~WorkflowAppRDT()
-{
-
-}
-
-
-void WorkflowAppRDT::replyFinished(QNetworkReply *pReply)
+void WorkflowAppR2D::replyFinished(QNetworkReply *pReply)
 {
     return;
 }
 
 
-GeneralInformationWidget *WorkflowAppRDT::getGeneralInformationWidget() const
+GeneralInformationWidget *WorkflowAppR2D::getGeneralInformationWidget() const
 {
     return theGeneralInformationWidget;
 }
 
 
-AssetsWidget *WorkflowAppRDT::getAssetsWidget() const
+AssetsWidget *WorkflowAppR2D::getAssetsWidget() const
 {
     return theAssetsWidget;
 }
 
 
-VisualizationWidget *WorkflowAppRDT::getVisualizationWidget() const
+VisualizationWidget *WorkflowAppR2D::getVisualizationWidget() const
 {
     return theVisualizationWidget;
 }
 
 
-void WorkflowAppRDT::setActiveWidget(SimCenterAppWidget* widget)
+void WorkflowAppR2D::setActiveWidget(SimCenterAppWidget* widget)
 {
     auto widgetName = widget->objectName();
 
@@ -261,7 +289,7 @@ void WorkflowAppRDT::setActiveWidget(SimCenterAppWidget* widget)
 }
 
 
-bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
+bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 {
     // get each of the main widgets to output themselves
     theGeneralInformationWidget->outputToJSON(jsonObjectTop);
@@ -317,7 +345,7 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppRDT::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/, QString /*inputFile*/)
+void WorkflowAppR2D::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/, QString /*inputFile*/)
 {
     theResultsWidget->processResults();
     theRunWidget->hide();
@@ -327,30 +355,35 @@ void WorkflowAppRDT::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/
 }
 
 
-void WorkflowAppRDT::clear(void)
+void WorkflowAppR2D::clear(void)
 {
 
 }
 
 
-void WorkflowAppRDT::loadAlamedaExample()
+void WorkflowAppR2D::loadExamples()
 {
+    auto pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator();
+    pathToExample += QObject::sender()->property("InputFile").toString();
 
-    QString pathToExample = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-            + "Examples" + QDir::separator() + "Earthquake2_Alameda" + QDir::separator() + "rWHALE_Alameda.json";
+    if(pathToExample.isNull())
+    {
+        qDebug()<<"Error loading example";
+        return;
+    }
 
     this->loadFile(pathToExample);
 }
 
 
-bool WorkflowAppRDT::inputFromJSON(QJsonObject &jsonObject)
+bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
 {
     //
     // get each of the main widgets to input themselves
     //
 
     if (theGeneralInformationWidget->inputFromJSON(jsonObject) == false) {
-        emit errorMessage("RDT: failed to read GeneralInformation");
+        emit errorMessage("R2D: failed to read GeneralInformation");
     }
 
 
@@ -389,7 +422,7 @@ bool WorkflowAppRDT::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-void WorkflowAppRDT::onRunButtonClicked() {
+void WorkflowAppR2D::onRunButtonClicked() {
     theRunWidget->hide();
     theRunWidget->setMinimumWidth(this->width()*0.5);
     theRunWidget->showLocalApplication();
@@ -397,7 +430,7 @@ void WorkflowAppRDT::onRunButtonClicked() {
 }
 
 
-void WorkflowAppRDT::onRemoteRunButtonClicked(){
+void WorkflowAppR2D::onRemoteRunButtonClicked(){
     emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
@@ -415,7 +448,7 @@ void WorkflowAppRDT::onRemoteRunButtonClicked(){
 }
 
 
-void WorkflowAppRDT::onRemoteGetButtonClicked(){
+void WorkflowAppR2D::onRemoteGetButtonClicked(){
 
     emit errorMessage("");
 
@@ -433,12 +466,12 @@ void WorkflowAppRDT::onRemoteGetButtonClicked(){
 }
 
 
-void WorkflowAppRDT::onExitButtonClicked(){
+void WorkflowAppR2D::onExitButtonClicked(){
 
 }
 
 
-void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir) {
+void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir) {
 
     errorMessage("");
 
@@ -461,7 +494,7 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
         destinationDirectory.mkpath(tmpDirectory);
 
 
-    qDebug() << "WorkflowAppRDT is changinging subDir to input_data";
+    qDebug() << "WorkflowAppR2D is changinging subDir to input_data";
     subDir = "input_data";
 
     QString templateDirectory  = destinationDirectory.absoluteFilePath(subDir);
@@ -512,7 +545,7 @@ void WorkflowAppRDT::setUpForApplicationRun(QString &workingDir, QString &subDir
 }
 
 
-void WorkflowAppRDT::loadFile(const QString fileName){
+void WorkflowAppR2D::loadFile(const QString fileName){
 
     // check file exists & set apps current dir of it does
     QFileInfo fileInfo(fileName);
@@ -523,7 +556,7 @@ void WorkflowAppRDT::loadFile(const QString fileName){
 
     QString dirPath = fileInfo.absoluteDir().absolutePath();
     QDir::setCurrent(dirPath);
-    qDebug() << "WorkflowAppRDT: setting current dir" << dirPath;
+    qDebug() << "WorkflowAppR2D: setting current dir" << dirPath;
 
     //
     // open file
@@ -556,12 +589,12 @@ void WorkflowAppRDT::loadFile(const QString fileName){
 }
 
 
-int WorkflowAppRDT::getMaxNumParallelTasks() {
+int WorkflowAppR2D::getMaxNumParallelTasks() {
     return theUQWidget->getNumParallelTasks();
 }
 
 
-void WorkflowAppRDT::assetSelectionChanged(QString text, bool value)
+void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
 {
     if (value == true)
     {

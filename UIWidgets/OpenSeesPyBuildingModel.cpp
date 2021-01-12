@@ -221,7 +221,7 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
         //  1 is user created input the full path can be specified
         //  2 if user specified, it can be relative to current dir
         //  3 if use specified it can be in input_Data
-        //  4 if RDT created the path is seperate
+        //  4 if R2D created the path is seperate
 
 
         if (appData.contains("mainScript"))

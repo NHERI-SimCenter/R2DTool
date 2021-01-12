@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "CSVtoBIMModelingWidget.h"
 #include "ComponentInputWidget.h"
-#include "WorkflowAppRDT.h"
+#include "WorkflowAppR2D.h"
 
 #include <QGridLayout>
 #include <QGroupBox>
@@ -82,7 +82,7 @@ bool CSVtoBIMModelingWidget::outputToJSON(QJsonObject &jsonObj)
 
     jsonObj.insert("Application", "CSV_to_BIM");
 
-    auto mainWindowWidget = WorkflowAppRDT::getInstance();
+    auto mainWindowWidget = WorkflowAppR2D::getInstance();
 
     auto assetsWidget = mainWindowWidget->getAssetsWidget();
 

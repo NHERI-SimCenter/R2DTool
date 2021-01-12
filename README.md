@@ -1,4 +1,4 @@
-# RDT
+# R2D
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3475642.svg)](https://doi.org/10.5281/zenodo.3475642)
 
@@ -13,7 +13,7 @@ user is required to characterize the uncertainties in the input. The
 application will after utilizing the selected sampling method, provide
 information that characterizes the uncertainties in the response
 measures. The computations to make these determinations can be
-prohibitively expensive. To overcome this impedement the user has the
+prohibitively expensive. To overcome this impediment the user has the
 option to perform the computations on the Stampede2
 supercomputer. Stampede2 is located at the Texas Advanced Computing
 Center and made available to the user through NHERI DesignSafe, the

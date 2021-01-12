@@ -50,7 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QVBoxLayout>
 
-EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent) : MultiComponentRDT(parent)
+EngDemandParameterWidget::EngDemandParameterWidget(QWidget *parent) : MultiComponentR2D(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);

@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "REmpiricalProbabilityDistribution.h"
 #include "TablePrinter.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppRDT.h"
+#include "WorkflowAppR2D.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
@@ -87,7 +87,7 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     Losseschart = nullptr;
 
     // Create a view menu for the dockable windows
-    auto mainWindow = WorkflowAppRDT::getInstance()->getTheMainWindow();
+    auto mainWindow = WorkflowAppR2D::getInstance()->getTheMainWindow();
     QMenu *viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
 
     viewMenu->addAction(tr("&Restore"), this, &PelicunPostProcessor::restoreUI);
@@ -807,7 +807,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertImage(imageFormatSimCenterLogo);
 
-    cursor.insertText("\nRegional Resilience Determination Tool (RDT)\n",titleFormat);
+    cursor.insertText("\nRegional Resilience Determination Tool (R2D)\n",titleFormat);
 
     cursor.insertText("Results Summary\n",boldFormat);
 
@@ -818,7 +818,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
     QString currentDT = "Timestamp: " + QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss") + "\n";
     cursor.insertText(currentDT,normalFormat);
 
-    auto workflowApp = WorkflowAppRDT::getInstance();
+    auto workflowApp = WorkflowAppR2D::getInstance();
     auto analysisName = workflowApp->getGeneralInformationWidget()->getAnalysisName();
 
     QString analysisNameLabel = "Analysis name: " + analysisName + "\n";

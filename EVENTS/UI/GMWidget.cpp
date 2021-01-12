@@ -46,7 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "IntensityMeasureWidget.h"
 #include "MapViewSubWidget.h"
 #include "NGAW2Converter.h"
-#include "RDTUserPass.h"
+#include "R2DUserPass.h"
 #include "RecordSelectionWidget.h"
 #include "RuptureWidget.h"
 #include "SimCenterPreferences.h"
@@ -56,7 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SpatialCorrelationWidget.h"
 #include "TreeView.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppRDT.h"
+#include "WorkflowAppR2D.h"
 
 // GIS includes
 #include "MapGraphicsView.h"
@@ -230,7 +230,7 @@ void GMWidget::initAppConfig()
 
     m_appConfig = new GmAppConfig(this);
 
-    //    auto regMapWidget = WorkflowAppRDT::getInstance()->getTheRegionalMappingWidget();
+    //    auto regMapWidget = WorkflowAppR2D::getInstance()->getTheRegionalMappingWidget();
     //    connect(m_appConfig,&GmAppConfig::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 
     //First, We will look into settings

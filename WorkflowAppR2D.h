@@ -1,5 +1,5 @@
-#ifndef WORKFLOW_APP_RDT_H
-#define WORKFLOW_APP_RDT_H
+#ifndef WORKFLOW_APP_R2D_H
+#define WORKFLOW_APP_R2D_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "WorkflowAppWidget.h"
 
+#include <QMap>
+
 class AnalysisWidget;
 class Application;
 class AssetsWidget;
@@ -66,15 +68,15 @@ class UQWidget;
 class UQ_Results;
 class VisualizationWidget;
 
-class WorkflowAppRDT : public WorkflowAppWidget
+class WorkflowAppR2D : public WorkflowAppWidget
 {
     Q_OBJECT
 public:
-    explicit WorkflowAppRDT(RemoteService *theService, QWidget *parent = 0);
-    ~WorkflowAppRDT();
-    static WorkflowAppRDT *theInstance;
+    explicit WorkflowAppR2D(RemoteService *theService, QWidget *parent = 0);
+    ~WorkflowAppR2D();
+    static WorkflowAppR2D *theInstance;
 
-    static WorkflowAppRDT *getInstance(void);
+    static WorkflowAppR2D *getInstance(void);
 
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
@@ -107,7 +109,7 @@ public slots:
     void assetSelectionChanged(QString, bool);
 
     // Examples
-    void loadExample();
+    void loadExamples();
 
 private:
 
@@ -141,6 +143,7 @@ private:
 
     QJsonObject *jsonObjOrig;
     QNetworkAccessManager *manager;
+
 };
 
-#endif // WORKFLOW_APP_RDT_H
+#endif // WORKFLOW_APP_R2D_H

@@ -5,8 +5,8 @@ class quoFEM(ConanFile):
     version = "0.0.9"
     license = "BSD"
     author = "NHERI SimCenter"
-    url = "https://github.com/NHERI-SimCenter/RDT"
-    description = "NHERI SimCenter RDT Tool"
+    url = "https://github.com/NHERI-SimCenter/R2D"
+    description = "NHERI SimCenter R2D Tool"
     settings = "os", "compiler", "build_type", "arch"
     generators = "qmake"
     requires = "jansson/2.11@bincrafters/stable", \

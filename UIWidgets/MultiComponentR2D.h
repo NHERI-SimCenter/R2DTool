@@ -1,5 +1,7 @@
+﻿#ifndef MultiComponentR2D_H
+#define MultiComponentR2D_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -17,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,72 +36,56 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 10.08.2020
+// Written by: Frank McKenna
 
-#include "DamageMeasureWidget.h"
-#include "BuildingDMWidget.h"
-#include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include "SimCenterAppWidget.h"
 
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QGroupBox>
-#include <QJsonObject>
-#include <QLineEdit>
-#include <QDebug>
+class SecondaryComponentSelection;
+class QFrame;
+class QStackedWidget;
+class QPushButton;
+class QVBoxLayout;
 
-
-DamageMeasureWidget::DamageMeasureWidget(QWidget *parent) : MultiComponentRDT(parent)
+class MultiComponentR2D : public  SimCenterAppWidget
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setMargin(0);
+    Q_OBJECT
 
-    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
-    SectionTitle *label = new SectionTitle();
-    label->setText(QString("Damage Measures (DM)"));
-    label->setMinimumWidth(150);
+public:
+    explicit MultiComponentR2D(QWidget *parent);
+    ~MultiComponentR2D();
 
-    theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theHeaderLayout->addItem(spacer);
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &rvObject);
+    bool inputFromJSON(QJsonObject &rvObject);
+    bool copyFiles(QString &destName);
 
-    theHeaderLayout->addStretch(1);
-    mainLayout->addLayout(theHeaderLayout);
+    void clear(void);
+    virtual void hideAll();
+    virtual bool hide(QString text);
+    virtual bool show(QString text);
+    bool addComponent(QString text, SimCenterAppWidget *);
+    SimCenterAppWidget *getComponent(QString text);
 
-    theBuildingDMWidget = new BuildingDMWidget(this);
-    thePipelineDMWidget = new BuildingDMWidget(this);
-
-
-    this->addComponent("Buildings", theBuildingDMWidget);
-    this->addComponent("Gas Network",thePipelineDMWidget);
-    this->hideAll();
-
-    this->setLayout(mainLayout);
-}
+public slots:
+    void selectionChangedSlot(const QString &);
 
 
-DamageMeasureWidget::~DamageMeasureWidget()
-{
+private:
+    virtual bool displayComponent(QString text);
 
-}
+    int currentIndex;
+    int numHidden;
 
+    QFrame *theSelectionWidget;
+    QVBoxLayout *theSelectionLayout;
+    QStackedWidget *theStackedWidget;
 
-bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
-{
+  QList<QString> theNames;
+  QList<QPushButton *>thePushButtons;  
+  QList<SimCenterAppWidget *> theComponents;
 
-    theBuildingDMWidget->outputToJSON(jsonObject);
+  //  SecondaryComponentSelection *theSelection;
+};
 
-    return true;
-}
-
-
-bool DamageMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
-{
-    return false;
-}
-
-
-
-
-
+#endif // MultiComponentR2D_H

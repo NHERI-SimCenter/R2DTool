@@ -66,7 +66,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
-    : MultiComponentRDT(parent)
+    : MultiComponentR2D(parent)
 {
 
   buildingWidget = new SimCenterAppSelection(QString("Building Analysis Engine"), QString("Simulation"), this);

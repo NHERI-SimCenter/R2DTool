@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppRDT.h"
+#include "WorkflowAppR2D.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -180,7 +180,7 @@ void EarthquakeInputWidget::shakeMapLoadingFinished(const bool value)
         return;
 
     // Shift the focus to the visualization widget
-    auto mainWindowWidget = qobject_cast<WorkflowAppRDT*>(this->parent());
+    auto mainWindowWidget = qobject_cast<WorkflowAppR2D*>(this->parent());
 
     if(!mainWindowWidget)
         return;

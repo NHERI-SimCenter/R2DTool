@@ -196,7 +196,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     analysisLayout->setAlignment(Qt::AlignLeft);
     analysisLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     analysisLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
-    nameEdit->setText("RDT Analysis");
+    nameEdit->setText("R2D Analysis");
 
     unitsForceCombo = new QComboBox(this);
     unitsForceCombo->addItem("Newtons", ForceUnit::N);

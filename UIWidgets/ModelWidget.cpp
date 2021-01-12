@@ -66,7 +66,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
-    : MultiComponentRDT(parent)
+    : MultiComponentR2D(parent)
 {
 
     buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Modeling"), this);

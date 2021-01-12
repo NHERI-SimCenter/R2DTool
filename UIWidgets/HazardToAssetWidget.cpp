@@ -65,7 +65,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentRDT(parent)
+    : MultiComponentR2D(parent)
 {
 
   buildingWidget = new HazardToAssetBuilding(this); 

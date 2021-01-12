@@ -38,12 +38,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "MultiComponentRDT.h"
+#include "MultiComponentR2D.h"
 
 class BuildingModelingWidget;
 class RandomVariablesContainer;
 
-class AssetsModelWidget : public  MultiComponentRDT
+class AssetsModelWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
