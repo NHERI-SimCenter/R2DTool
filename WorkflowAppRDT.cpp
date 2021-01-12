@@ -85,6 +85,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
+#include <SimCenterAppSelection.h>
+#include <NoArgSimCenterApp.h>
+
 // static pointer for global procedure set in constructor
 static WorkflowAppRDT *theApp = nullptr;
 
@@ -276,14 +279,25 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     theUQWidget->outputAppDataToJSON(apps);
 
     //
-    // hard code for now .. EDP's coming out D&L to provide
+    // hard code for now .. EDP's coming out D&L in future to provide this .. really ugly 2 dynamic casts!!
     //
 
-    QJsonObject edpData;
-    edpData["Application"]="StandardEarthquakeEDP_R";
-    QJsonObject edpAppData;
-    edpData["ApplicationData"] = edpAppData;
-    apps["EDP"] = edpData;
+    SimCenterAppWidget *theAnalysisBuildingComponent = theAnalysisWidget->getComponent("Buildings");
+    if (theAnalysisBuildingComponent != nullptr) {
+        SimCenterAppSelection *theAppSelection = dynamic_cast<SimCenterAppSelection *>(theAnalysisBuildingComponent);
+        if (theAppSelection != nullptr) {
+            SimCenterAppWidget *theCurrentSelection = theAppSelection->getCurrentSelection();
+
+            NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
+            if (theNoArgWidget == nullptr || theNoArgWidget->getAppName() != "IMasEDP") {
+                QJsonObject edpData;
+                edpData["Application"]="StandardEarthquakeEDP_R";
+                QJsonObject edpAppData;
+                edpData["ApplicationData"] = edpAppData;
+                apps["EDP"] = edpData;
+            }
+        }
+    }
 
     jsonObjectTop.insert("Applications",apps);
 
