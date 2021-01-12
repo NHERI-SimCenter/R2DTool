@@ -163,7 +163,7 @@ bool OpenSeesPyBuildingModel::inputFromJSON(QJsonObject &jsonObject)
 bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     bool res = true;
-   qDebug() << __PRETTY_FUNCTION__ ;
+
     //
     // per API, need to add name of application to be called in AppLication
     // and all data to be used in ApplicationDate
@@ -194,7 +194,6 @@ bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
     }
 
     jsonObject["ApplicationData"] = dataObj;
-  qDebug() << __PRETTY_FUNCTION__ << dataObj;
 
     return res;
 }
@@ -256,8 +255,6 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
                 // adam .. adam .. adam
                 fullFile = pathToFile + QDir::separator()
                         + "input_data" + QDir::separator() + fileName;
-
-                 qDebug() << __PRETTY_FUNCTION__ << "path1 " << fullFile;
 
                 if (fileInfo.exists(fullFile)) {
                     filePathLineEdit->setText(fullFile);;

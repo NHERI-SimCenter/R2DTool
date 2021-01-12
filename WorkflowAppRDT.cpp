@@ -268,6 +268,7 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
 
     theHazardsWidget->outputAppDataToJSON(apps);
     theAssetsWidget->outputAppDataToJSON(apps);
+    theModelingWidget->outputAppDataToJSON(apps);
     theHazardToAssetWidget->outputAppDataToJSON(apps);
     theModelingWidget->outputAppDataToJSON(apps);
     theAnalysisWidget->outputAppDataToJSON(apps);
@@ -289,11 +290,11 @@ bool WorkflowAppRDT::outputToJSON(QJsonObject &jsonObjectTop)
     //  output regular data
 
     theRunWidget->outputToJSON(jsonObjectTop);
-    //theModelingWidget->outputToJSON(jsonObjectTop);
+    theModelingWidget->outputToJSON(jsonObjectTop);
     theHazardsWidget->outputToJSON(jsonObjectTop);
-    //theAnalysisWidget->outputToJSON(jsonObjectTop);
-    //theDamageAndLossWidget->outputToJSON(jsonObjectTop);
-    //theHazardToAssetWidget->outputToJSON(jsonObjectTop);
+    theAnalysisWidget->outputToJSON(jsonObjectTop);
+    theDamageAndLossWidget->outputToJSON(jsonObjectTop);
+    theHazardToAssetWidget->outputToJSON(jsonObjectTop);
     //theUQWidget->outputToJSON(jsonObjectTop);
     //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
