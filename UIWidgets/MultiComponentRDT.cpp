@@ -176,6 +176,7 @@ bool MultiComponentRDT::outputAppDataToJSON(QJsonObject &jsonObject)
         if (theButton->isHidden() == false) {
             SimCenterAppWidget *theWidget = theComponents.at(i);
             bool res1 = theWidget->outputAppDataToJSON(jsonObject);
+            // qDebug() << __PRETTY_FUNCTION__ << jsonObject;
             if (res1 != true) {
                 res = false;
             }
