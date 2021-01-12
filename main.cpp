@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     // Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
-    QCoreApplication::setApplicationName("RDT");
+    QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("1.0.0");
 
@@ -153,28 +153,28 @@ int main(int argc, char *argv[])
     // create a remote interface
     QString tenant("designsafe");
     QString storage("agave://designsafe.storage.default/");
-    QString dirName("RDT");
+    QString dirName("R2D");
 
     AgaveCurl *theRemoteService = new AgaveCurl(tenant, storage, &dirName);
 
 
     // Create the main window
     WorkflowAppRDT *theInputApp = new WorkflowAppRDT(theRemoteService);
-    MainWindowWorkflowApp w(QString("RDT: Regional Resilience Determination Tool"), theInputApp, theRemoteService);
+    MainWindowWorkflowApp w(QString("R2D: Regional Resilience Determination Tool"), theInputApp, theRemoteService);
 
     // Create the  menu bar and actions to run the examples
     theInputApp->initialize();
 
 
-    QString aboutTitle = "About the SimCenter RDT Application"; // this is the title displayed in the on About dialog
-    QString aboutSource = ":/resources/docs/textAboutRDT.html";  // this is an HTML file stored under resources
+    QString aboutTitle = "About the SimCenter R2D Application"; // this is the title displayed in the on About dialog
+    QString aboutSource = ":/resources/docs/textAboutR2D.html";  // this is an HTML file stored under resources
 
     w.setAbout(aboutTitle, aboutSource);
 
     QString version("Version 1.0.0");
     w.setVersion(version);
 
-    QString citeText("TO DO RDT CITATION");
+    QString citeText("TO DO R2D CITATION");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/RDT-Documentation/");

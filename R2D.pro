@@ -41,7 +41,7 @@ QT += core gui charts concurrent network sql qml webenginewidgets webengine webc
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 # Information about the app
-TARGET = RDT
+TARGET = R2D
 TEMPLATE = app
 VERSION=1.0.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
@@ -58,14 +58,14 @@ win32::LIBS+=Advapi32.lib
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../SimCenterCommon
 
 # Application Icons
 win32 {
-    RC_ICONS = icons/NHERI-RDT-Icon.ico
+    RC_ICONS = icons/NHERI-R2D-Icon.ico
 } else {
     mac {
-    ICON = icons/NHERI-RDT-Icon.icns
+    ICON = icons/NHERI-R2D-Icon.icns
     }
 }
 
@@ -76,10 +76,10 @@ include($$PWD/arcgisruntime.pri)
 # Simcenter dependencies
 include($$PATH_TO_COMMON/Common/Common.pri)
 include($$PATH_TO_COMMON/RandomVariables/RandomVariables.pri)
-include(RDTCommon.pri)
+include(R2DCommon.pri)
 
 
-# RDT files
+# R2D files
 INCLUDEPATH += $$PWD/Utils \
                $$PWD/styles \
                $$PWD/UIWidgets \
@@ -280,7 +280,7 @@ RESOURCES += \
 
 
 DISTFILES += \
-    resources/docs/textAboutRDT.html
+    resources/docs/textAboutR2DT.html
 
 # External libraries
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
