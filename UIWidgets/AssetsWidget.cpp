@@ -66,11 +66,11 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 {
 
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Building"), this);
-    ComponentInputWidget *csvBuildingInventory = new ComponentInputWidget(this, "CSV_to_BIM");
+    ComponentInputWidget *csvBuildingInventory = new ComponentInputWidget(this,"Buildings" ,"CSV_to_BIM");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
     pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
-    ComponentInputWidget *csvPipelineWidget = new ComponentInputWidget(this, "Gas Network");
+    ComponentInputWidget *csvPipelineWidget = new ComponentInputWidget(this,"Gas Pipelines","Gas Network");
 
     visualizationWidget->setBuildingWidget(csvBuildingInventory);
     visualizationWidget->setPipelineWidget(csvPipelineWidget);

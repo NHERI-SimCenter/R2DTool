@@ -814,7 +814,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertImage(imageFormatSimCenterLogo);
 
-    cursor.insertText("\nRegional Resilience Determination Tool (R2D)\n",titleFormat);
+    cursor.insertText("\nRegional Resilience Determination (R2D) Tool\n",titleFormat);
 
     cursor.insertText("Results Summary\n",boldFormat);
 

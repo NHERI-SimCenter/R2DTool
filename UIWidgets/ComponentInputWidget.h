@@ -57,7 +57,7 @@ class ComponentInputWidget : public  SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit ComponentInputWidget(QWidget *parent, QString type);
+    explicit ComponentInputWidget(QWidget *parent, QString componentType, QString appType);
     virtual ~ComponentInputWidget();
 
     QGroupBox* getComponentsWidget(void);
@@ -107,6 +107,7 @@ private:
     QLabel* componentInfoText;
     QGroupBox* componentGroupBox;
 
+    QString appType;
     QString componentType;
     QString label1;
     QString label2;
