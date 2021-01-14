@@ -185,3 +185,10 @@ bool HazardToAssetBuilding::copyFiles(QString &destName)
 
     return result;
 }
+
+
+void HazardToAssetBuilding::clear(void)
+{
+    theRegionalMapping->clear();
+    theLocalMapping->clear();
+}

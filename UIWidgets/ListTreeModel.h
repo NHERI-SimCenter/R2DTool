@@ -1,3 +1,5 @@
+#ifndef ListTreeModel_H
+#define ListTreeModel_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -17,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,52 +38,56 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "AssetsModelWidget.h"
-#include "BuildingModelingWidget.h"
-#include "SimCenterComponentSelection.h"
-#include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include <QAbstractItemModel>
 
-// Qt headers
-#include <QCheckBox>
-#include <QColorTransform>
-#include <QDebug>
-#include <QFileDialog>
-#include <QGroupBox>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QVBoxLayout>
+class TreeItem;
 
-AssetsModelWidget::AssetsModelWidget(QWidget *parent, RandomVariablesContainer* RVContainer)
-    :MultiComponentR2D(parent), theRandomVariablesContainer(RVContainer)
+class ListTreeModel : public QAbstractItemModel
 {
-    buildingWidget = new BuildingModelingWidget(this,theRandomVariablesContainer);
-    SimCenterAppWidget* pipelineInfoBox = new SimCenterAppWidget(this);
+    Q_OBJECT
 
-    this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",pipelineInfoBox);
-    this->hideAll();
-}
+public:
+    explicit ListTreeModel(QString headerText, QObject *parent = nullptr);
+    ~ListTreeModel();
 
+    QVariant data(const QModelIndex &index, int role) const override;
 
-AssetsModelWidget::~AssetsModelWidget()
-{
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-}
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
 
-void AssetsModelWidget::clear(void)
-{
-    buildingWidget->clear();
-}
+    QModelIndex parent(const QModelIndex &index) const override;
 
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
+    int columnCount(const QModelIndex &parent) const override;
 
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+
+    TreeItem *getRootItem() const;
+
+    // If parent item is not provided, the item will get added to the root of the tree
+    TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
+
+    bool removeItemFromTree(const QString& itemName);
+
+    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
+    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
+
+    bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
+
+    bool clear(void);
+
+signals:
+
+    void itemValueChanged(TreeItem* item);
+
+    void rowPositionChanged(const int oldPos, const int newPos);
+
+private:
+    TreeItem *rootItem;
+};
+
+#endif // ListTreeModel_H

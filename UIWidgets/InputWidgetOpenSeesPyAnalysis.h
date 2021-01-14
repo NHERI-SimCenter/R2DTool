@@ -62,7 +62,7 @@ public:
 signals:
 
 public slots:
-   void clear(void);
+   void clear(void) override;
    void chooseFileName(void);
    void dampingEditingFinished();
    void toleranceEditingFinished();

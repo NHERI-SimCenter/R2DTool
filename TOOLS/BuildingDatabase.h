@@ -78,6 +78,8 @@ public:
 
     void addBuilding(int ID, Building& asset);
 
+    void clear(void);
+
 private:
 
     QMap<int,Building> buildingsDB;

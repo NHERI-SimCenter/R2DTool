@@ -141,7 +141,13 @@ OpenSeesPyBuildingModel::~OpenSeesPyBuildingModel()
 
 void OpenSeesPyBuildingModel::clear(void)
 {
-
+    filePath.clear();
+    filePathLineEdit->clear();
+    responseNodes->clear();
+    ndm->clear();
+    ndf->clear();
+    columnLine->clear();
+    varNamesAndValues.clear();
 }
 
 

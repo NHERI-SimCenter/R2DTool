@@ -60,3 +60,9 @@ Building& BuildingDatabase::getBuilding(const int ID)
 {
   return buildingsDB[ID];
 }
+
+
+void BuildingDatabase::clear(void)
+{
+    buildingsDB.clear();
+}

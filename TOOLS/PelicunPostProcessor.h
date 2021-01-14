@@ -125,6 +125,10 @@ public:
 
     void setCurrentlyViewable(bool status);
 
+    void clear(void);
+
+    void setIsVisible(const bool value);
+
 private slots:
 
     int assemblePDF(QImage screenShot);
@@ -142,6 +146,8 @@ private:
     QVector<QStringList> EDPdata;
 
     QString outputFilePath;
+
+    QMenu* viewMenu;
 
     QLabel* totalCasLabel;
     QLabel* totalLossLabel;

@@ -88,7 +88,7 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 
     // Create a view menu for the dockable windows
     auto mainWindow = WorkflowAppR2D::getInstance()->getTheMainWindow();
-    QMenu *viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
+    viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
 
     viewMenu->addAction(tr("&Restore"), this, &PelicunPostProcessor::restoreUI);
 
@@ -171,10 +171,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     pelicunResultsTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     pelicunResultsTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
-
-    pelicunResultsTableWidget->setColumnCount(tableHeadings.size());
-    pelicunResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
     pelicunResultsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     // Combo box to select how to sort the table
@@ -318,6 +314,11 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         headerStrings[i] = headerStr;
     }
+
+    QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
+
+    pelicunResultsTableWidget->setColumnCount(tableHeadings.size());
+    pelicunResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
 
     pelicunResultsTableWidget->setRowCount(DVResults.size()-numHeaderRows);
 
@@ -515,6 +516,12 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     chartsDock3->setWidget(lossesRFDiagram);
 
     return 0;
+}
+
+
+void PelicunPostProcessor::setIsVisible(const bool value)
+{
+    viewMenu->menuAction()->setVisible(value);
 }
 
 
@@ -1047,5 +1054,27 @@ void PelicunPostProcessor::setCurrentlyViewable(bool status){
 
     if (status == true)
         mapViewSubWidget->setCurrentlyViewable(status);
+}
+
+
+void PelicunPostProcessor::clear(void)
+{
+    DMdata.clear();
+    DVdata.clear();
+    EDPdata.clear();
+    buildingsVec.clear();
+
+    outputFilePath.clear();
+
+    totalCasValueLabel->clear();
+    totalLossValueLabel->clear();
+    totalRepairTimeValueLabel->clear();
+    totalFatalitiesValueLabel->clear();
+    structLossValueLabel->clear();
+    nonStructLossValueLabel->clear();
+
+    pelicunResultsTableWidget->clear();
+
+    sortComboBox->setCurrentIndex(0);
 }
 

@@ -1,5 +1,5 @@
-#ifndef TREEVIEW_H
-#define TREEVIEW_H
+#ifndef LayerTreeItem_H
+#define LayerTreeItem_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,40 +38,55 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QTreeView>
+#include "TreeItem.h"
 
-class TreeModel;
-class TreeItem;
-class VisualizationWidget;
+#include <QModelIndex>
+#include <QObject>
+#include <QVariant>
+#include <QVector>
 
-class TreeView : public QTreeView
+class QDialog;
+
+class LayerTreeItem : public TreeItem
 {
     Q_OBJECT
 
 public:
-    TreeView(QWidget *parent, VisualizationWidget* visWidget);
+    explicit LayerTreeItem(const QVector<QVariant> &data, const QString& ID = QString(), LayerTreeItem *parentItem = nullptr);
+    ~LayerTreeItem();
 
-    TreeModel *getLayersModel() const;
+    QStringList getActionList();
 
-    bool removeItemFromTree(const QString& itemName);
+    // 0 = unchecked
+    // 1 = partially checked
+    // 2 = checked
+    int getState() const;
 
-    TreeItem* addItemToTree(const QString itemText, const QString layerID, TreeItem* parent = nullptr);
+    void setState(int state);
 
-    TreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
+    QString getItemID() const;
 
 public slots:
-    // Shows the "right-click" menu
-    void showPopup(const QPoint &position);
 
-private slots:
-    // Runs the action that the user selects on the right-click menu
-    void runAction();
+    void changeOpacity();
+
+    void handleChangeOpacity(int value);
+
+signals:
+
+void opacityChanged(const QString& layerID, const double opacity);
 
 private:
+    QVector<LayerTreeItem*> vecChildItems;
+    QVector<QVariant> itemData;
+    LayerTreeItem* parentItem;
+    int currentState;
 
-    TreeModel* layersModel;
+    QString itemName;
+    QString itemID;
 
-    VisualizationWidget* theVisualizationWidget;
+    QDialog* opacityDialog;
 };
 
-#endif // TREEVIEW_H
+
+#endif // LayerTreeItem_H

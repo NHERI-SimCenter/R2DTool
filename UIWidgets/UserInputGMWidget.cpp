@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "CSVReaderWriter.h"
-#include "TreeView.h"
+#include "LayerTreeView.h"
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
@@ -196,7 +196,7 @@ void UserInputGMWidget::showUserGMLayers(bool state)
     }
 
 
-    // Check if there is a 'Shake Map' root item in the tree
+    // Check if there is a 'User Ground Motions' root item in the tree
     auto shakeMapTreeItem = layersTreeView->getTreeItem("User Ground Motions",nullptr);
 
     // If there is no item, create one
@@ -608,4 +608,16 @@ void UserInputGMWidget::chooseMotionDirDialog(void)
     this->loadUserGMData();
 
     return;
+}
+
+
+void UserInputGMWidget::clear(void)
+{
+    eventFile.clear();
+    motionDir.clear();
+
+    eventFileLineEdit->clear();
+    motionDirLineEdit->clear();
+
+    stationList.clear();
 }

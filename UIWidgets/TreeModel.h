@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QAbstractItemModel>
 
-class TreeItem;
+class LayerTreeItem;
 
 class TreeModel : public QAbstractItemModel
 {
@@ -66,15 +66,15 @@ public:
 
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
-    TreeItem *getRootItem() const;
+    LayerTreeItem *getRootItem() const;
 
     // If parent item is not provided, the item will get added to the root of the tree
-    TreeItem* addItemToTree(const QString itemText, const QString itemID, TreeItem* parent = nullptr);
+    LayerTreeItem* addItemToTree(const QString itemText, const QString itemID, LayerTreeItem* parent = nullptr);
 
     bool removeItemFromTree(const QString& itemName);
 
-    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
-    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
+    LayerTreeItem *getLayerTreeItem(const QString& itemName, const QString& parentName) const;
+    LayerTreeItem* getLayerTreeItem(const QString& itemName, const LayerTreeItem* parent) const;
 
     Qt::DropActions supportedDropActions() const override;
 
@@ -86,15 +86,16 @@ public:
 
     bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
 
+    bool clear(void);
 
 signals:
 
-    void itemValueChanged(TreeItem* item);
+    void itemValueChanged(LayerTreeItem* item);
 
     void rowPositionChanged(const int oldPos, const int newPos);
 
 private:
-    TreeItem *rootItem;
+    LayerTreeItem *rootItem;
 };
 
 #endif // TREEMODEL_H

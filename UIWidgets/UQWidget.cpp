@@ -90,6 +90,13 @@ UQWidget::~UQWidget()
 }
 
 
+void UQWidget::clear(void)
+{
+    buildingWidget->clear();
+    pipelineWidget->clear();
+}
+
+
 int UQWidget::getNumParallelTasks(void) {
     qDebug() << "UQWidget - getNumParallelTasks";
     return 1;

@@ -85,5 +85,11 @@ DLWidget::~DLWidget()
 }
 
 
+void DLWidget::clear(void)
+{
+    buildingWidget->clear();
+    pipelineWidget->clear();
+}
+
 
 

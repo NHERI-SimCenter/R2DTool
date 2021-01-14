@@ -88,3 +88,10 @@ HazardToAssetWidget::~HazardToAssetWidget()
 void HazardToAssetWidget::hazardGridFileChangedSlot(QString motionDir, QString eventFile){
     emit hazardGridFileChangedSignal(motionDir, eventFile);
 }
+
+
+void HazardToAssetWidget::clear(void)
+{
+    buildingWidget->clear();
+    pipelineWidget->clear();
+}

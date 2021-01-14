@@ -54,6 +54,8 @@ public:
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool copyFiles(QString &destName);
 
+    void clear(void);
+
 public slots:
     void handleFileNameChanged(QString motionDir, QString eventFile);
 

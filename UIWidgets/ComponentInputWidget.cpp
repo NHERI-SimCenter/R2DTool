@@ -549,3 +549,13 @@ bool ComponentInputWidget::copyFiles(QString &destName)
     }
     return true;
 }
+
+
+void ComponentInputWidget::clear(void)
+{
+    pathToComponentInfoFile.clear();
+    componentFileLineEdit->clear();
+    selectComponentsLineEdit->clear();
+    componentTableWidget->clear();
+    componentTableWidget->hide();
+}

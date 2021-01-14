@@ -1,5 +1,5 @@
-#ifndef TREEITEM_H
-#define TREEITEM_H
+#ifndef TreeItem_H
+#define TreeItem_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -50,7 +50,7 @@ class TreeItem : public QObject
     Q_OBJECT
 
 public:
-    explicit TreeItem(const QVector<QVariant> &data, const QString& ID = QString(), TreeItem *parentItem = nullptr);
+    explicit TreeItem(const QVector<QVariant> &data, TreeItem *parentItem = nullptr);
     ~TreeItem();
 
     void appendChild(TreeItem *child);
@@ -59,7 +59,7 @@ public:
 
     TreeItem* child(int row);
 
-    QStringList getActionList();
+    virtual QStringList getActionList();
 
     int childCount() const;
     int columnCount() const;
@@ -69,13 +69,6 @@ public:
 
     TreeItem* getParentItem();
 
-    // 0 = unchecked
-    // 1 = partially checked
-    // 2 = checked
-    int getState() const;
-
-    void setState(int state);
-
     QVector<TreeItem*> getChildItems() const;
 
     void moveChild(int sourceRow, int destinationRow);
@@ -84,29 +77,13 @@ public:
 
     QString getName() const;
 
-    QString getItemID() const;
-
-public slots:
-
-    void changeOpacity();
-
-    void handleChangeOpacity(int value);
-
-signals:
-
-void opacityChanged(const QString& layerID, const double opacity);
-
-private:
+protected:
     QVector<TreeItem*> vecChildItems;
     QVector<QVariant> itemData;
     TreeItem* parentItem;
-    int currentState;
 
     QString itemName;
-    QString itemID;
-
-    QDialog* opacityDialog;
 };
 
 
-#endif // TREEITEM_H
+#endif // TreeItem_H

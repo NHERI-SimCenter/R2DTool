@@ -54,7 +54,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SiteGridWidget.h"
 #include "SiteWidget.h"
 #include "SpatialCorrelationWidget.h"
-#include "TreeView.h"
+#include "LayerTreeView.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 

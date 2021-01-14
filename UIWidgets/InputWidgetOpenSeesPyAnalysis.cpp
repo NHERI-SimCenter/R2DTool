@@ -260,7 +260,8 @@ void InputWidgetOpenSeesPyAnalysis::changedDampingMethod(QString newMethod) {
 }
 
 
-void InputWidgetOpenSeesPyAnalysis::clear(void) {
+void InputWidgetOpenSeesPyAnalysis::clear(void)
+{
     theAnalysis->setText("Transient -numSubLevels 2 -numSubSteps 10");
     theIntegration->setText("Newmark 0.5 0.25");
     theSolver->setText("Umfpack");

@@ -85,6 +85,8 @@ public:
 
     QString getPathToComponentFile(void) const;
 
+    void clear(void);
+
 signals:
     void componentDataLoaded();
 

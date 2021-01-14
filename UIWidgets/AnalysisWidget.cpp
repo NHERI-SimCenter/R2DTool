@@ -96,6 +96,13 @@ AnalysisWidget::~AnalysisWidget()
 }
 
 
+void AnalysisWidget::clear(void)
+{
+    buildingWidget->clear();
+    pipelineWidget->clear();
+}
+
+
 
 
 

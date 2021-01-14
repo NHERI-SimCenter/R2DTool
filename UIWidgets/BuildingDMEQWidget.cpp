@@ -199,3 +199,9 @@ bool BuildingDMEQWidget::copyFiles(QString &destDir) {
 
     return false;
 }
+
+
+void BuildingDMEQWidget::clear(void)
+{
+    thePelicunDLWidget->clear();
+}

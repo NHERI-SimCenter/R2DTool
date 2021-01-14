@@ -37,7 +37,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ShakeMapWidget.h"
-#include "TreeView.h"
 #include "VisualizationWidget.h"
 #include "CustomListWidget.h"
 
@@ -46,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GroupLayer.h"
 #include "KmlLayer.h"
 #include "Layer.h"
+#include "LayerTreeView.h"
 #include "LayerListModel.h"
 
 #include <QApplication>
@@ -103,18 +103,18 @@ void ShakeMapWidget::showShakeMapLayers(bool state)
 
 
     // Check if there is a 'Shake Map' root item in the tree
-    auto shakeMapTreeItem = layersTreeView->getTreeItem("Shake Map",nullptr);
+    auto shakeMapLayerTreeItem = layersTreeView->getTreeItem("Shake Map",nullptr);
 
     // If there is no item, create one
-    if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("Shake Map",QString());
+    if(shakeMapLayerTreeItem == nullptr)
+        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map",QString());
 
 
     for(auto&& it : shakeMapContainer)
     {
         auto eventName = it->eventLayer->name();
         auto eventID = it->eventLayer->layerId();
-        auto eventItem = layersTreeView->addItemToTree(eventName, eventID, shakeMapTreeItem);
+        auto eventItem = layersTreeView->addItemToTree(eventName, eventID, shakeMapLayerTreeItem);
 
         auto layers = it->getAllActiveSubLayers();
         for(auto&& layer : layers)
@@ -274,15 +274,15 @@ void ShakeMapWidget::loadShakeMapData(void)
     auto layersTreeView = theVisualizationWidget->getLayersTree();
 
     // Check if there is a 'Shake Map' root item in the tree
-    auto shakeMapTreeItem = layersTreeView->getTreeItem("Shake Map", nullptr);
+    auto shakeMapLayerTreeItem = layersTreeView->getTreeItem("Shake Map", nullptr);
 
     // If there is no item, create one
-    if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("Shake Map", QString());
+    if(shakeMapLayerTreeItem == nullptr)
+        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map", QString());
 
 
     // Add the event layer to the layer tree
-    auto eventItem = layersTreeView->addItemToTree(eventName, QString(), shakeMapTreeItem);
+    auto eventItem = layersTreeView->addItemToTree(eventName, QString(), shakeMapLayerTreeItem);
 
     // Create the root event group layer
     inputShakeMap->eventLayer = new GroupLayer(QList<Layer*>{});

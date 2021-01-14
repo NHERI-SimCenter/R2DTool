@@ -81,6 +81,8 @@ public:
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
 
+    void clear(void);
+
 public slots:
 
     void showUserGMSelectDialog(void);

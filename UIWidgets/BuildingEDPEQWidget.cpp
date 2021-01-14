@@ -210,3 +210,10 @@ bool BuildingEDPEQWidget::copyFiles(QString &destDir) {
 
     return false;
 }
+
+
+void BuildingEDPEQWidget::clear(void)
+{
+    theStandardEarthquakeEDPs->clear();
+    theUserDefinedEDPs->clear();
+}

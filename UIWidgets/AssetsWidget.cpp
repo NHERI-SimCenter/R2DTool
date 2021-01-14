@@ -90,6 +90,13 @@ AssetsWidget::~AssetsWidget()
 }
 
 
+void AssetsWidget::clear(void)
+{
+    buildingWidget->clear();
+    pipelineWidget->clear();
+}
+
+
 
 
 

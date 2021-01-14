@@ -65,6 +65,7 @@ int AssetInputDelegate::size()
 void AssetInputDelegate::clear()
 {
     selectedComponentIDs.clear();
+    this->QLineEdit::clear();
 }
 
 
