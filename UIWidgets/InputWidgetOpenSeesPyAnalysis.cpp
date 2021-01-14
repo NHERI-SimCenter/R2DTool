@@ -67,170 +67,170 @@ InputWidgetOpenSeesPyAnalysis::InputWidgetOpenSeesPyAnalysis(RandomVariablesCont
 
     int row = 0;
 
-    QLabel *labelAnalysis = new QLabel("Analysis: ");
-    layout->addWidget(labelAnalysis, row, 0);
-    theAnalysis = new QLineEdit("Transient -numSubLevels 2 -numSubSteps 10");
-    theAnalysis->setToolTip(tr("Command for creating the analysis"));
-    layout->addWidget(theAnalysis, row, 1);
-    row++;
+//    QLabel *labelAnalysis = new QLabel("Analysis: ");
+//    layout->addWidget(labelAnalysis, row, 0);
+//    theAnalysis = new QLineEdit("Transient -numSubLevels 2 -numSubSteps 10");
+//    theAnalysis->setToolTip(tr("Command for creating the analysis"));
+//    layout->addWidget(theAnalysis, row, 1);
+//    row++;
 
-    QLabel *label2 = new QLabel("Integration: ");
-    layout->addWidget(label2, row, 0);
-    theIntegration = new QLineEdit();
-    theIntegration->setText("Newmark 0.5 0.25");
-    theIntegration->setToolTip(tr("Command specifying integration scheme"));
-    layout->addWidget(theIntegration, row, 1);
-    row++;
+//    QLabel *label2 = new QLabel("Integration: ");
+//    layout->addWidget(label2, row, 0);
+//    theIntegration = new QLineEdit();
+//    theIntegration->setText("Newmark 0.5 0.25");
+//    theIntegration->setToolTip(tr("Command specifying integration scheme"));
+//    layout->addWidget(theIntegration, row, 1);
+//    row++;
 
-    QLabel *label1 = new QLabel("Algorithm: ");
-    layout->addWidget(label1, row, 0);
-    //theAlgorithm = new QLineEdit("Newton");
-    theAlgorithm = new QComboBox();
-    theAlgorithm->setToolTip(tr("Nonlinear Solution Algorithm"));
-    theAlgorithm->addItem("Linear");
-    theAlgorithm->addItem("Newton");
-    theAlgorithm->addItem("Newmark");
-    theAlgorithm->setEditable(false);
-    theAlgorithm->setCurrentText("Newton");
-    layout->addWidget(theAlgorithm, row, 1);
-    row++;
+//    QLabel *label1 = new QLabel("Algorithm: ");
+//    layout->addWidget(label1, row, 0);
+//    //theAlgorithm = new QLineEdit("Newton");
+//    theAlgorithm = new QComboBox();
+//    theAlgorithm->setToolTip(tr("Nonlinear Solution Algorithm"));
+//    theAlgorithm->addItem("Linear");
+//    theAlgorithm->addItem("Newton");
+//    theAlgorithm->addItem("Newmark");
+//    theAlgorithm->setEditable(false);
+//    theAlgorithm->setCurrentText("Newton");
+//    layout->addWidget(theAlgorithm, row, 1);
+//    row++;
 
-    QLabel *label3 = new QLabel();
-    label3->setText(QString("ConvergenceTest: "));
-    layout->addWidget(label3, row, 0);
-    theConvergenceTest = new QLineEdit();
-    theConvergenceTest->setText("NormUnbalance 1.0e-2 10");
-    theConvergenceTest->setToolTip(tr("Convergence test command used in script: type tolerance and # iterations, valid types are NormUnbalance, NormDispIncr, NormEnergy are options"));
-    layout->addWidget(theConvergenceTest, row, 1);
-    row++;
+//    QLabel *label3 = new QLabel();
+//    label3->setText(QString("ConvergenceTest: "));
+//    layout->addWidget(label3, row, 0);
+//    theConvergenceTest = new QLineEdit();
+//    theConvergenceTest->setText("NormUnbalance 1.0e-2 10");
+//    theConvergenceTest->setToolTip(tr("Convergence test command used in script: type tolerance and # iterations, valid types are NormUnbalance, NormDispIncr, NormEnergy are options"));
+//    layout->addWidget(theConvergenceTest, row, 1);
+//    row++;
 
-    QLabel *labelSolver = new QLabel("Solver: ");
-    layout->addWidget(labelSolver, row, 0);
-    theSolver = new QLineEdit("Umfpack");
-    theSolver->setToolTip(tr("Equation Solver, Umfpack, ProfileSPD, BandGeneral, BandSPD, FullGeneral"));
-    layout->addWidget(theSolver, row, 1);
-    row++;
+//    QLabel *labelSolver = new QLabel("Solver: ");
+//    layout->addWidget(labelSolver, row, 0);
+//    theSolver = new QLineEdit("Umfpack");
+//    theSolver->setToolTip(tr("Equation Solver, Umfpack, ProfileSPD, BandGeneral, BandSPD, FullGeneral"));
+//    layout->addWidget(theSolver, row, 1);
+//    row++;
 
 
-    //
-    // Damping Options
-    //    Modal or Rayleigh
+//    //
+//    // Damping Options
+//    //    Modal or Rayleigh
 
-    QLabel *labelDampingSelection = new QLabel("Damping Model");
+//    QLabel *labelDampingSelection = new QLabel("Damping Model");
 
-    theSelectionBox = new QComboBox();
-    theSelectionBox->addItem(tr("Rayleigh Damping"));
-    theSelectionBox->addItem(tr("Modal Damping"));
-    theStackedWidget = new QStackedWidget();
+//    theSelectionBox = new QComboBox();
+//    theSelectionBox->addItem(tr("Rayleigh Damping"));
+//    theSelectionBox->addItem(tr("Modal Damping"));
+//    theStackedWidget = new QStackedWidget();
 
-    layout->addWidget(labelDampingSelection, row, 0);
-    layout->addWidget(theSelectionBox, row, 1);
-    row++;
+//    layout->addWidget(labelDampingSelection, row, 0);
+//    layout->addWidget(theSelectionBox, row, 1);
+//    row++;
 
-    layout->addWidget(theStackedWidget, row, 0, 1, 2);
-    row++;
+//    layout->addWidget(theStackedWidget, row, 0, 1, 2);
+//    row++;
 
-    //
-    // rayleigh option
-    //
+//    //
+//    // rayleigh option
+//    //
 
-    QFrame *theRayleighWidget = new QFrame();
-    theRayleighWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    //theRayleighWidget->setLineWidth(1);
-    QGridLayout *layoutRayleigh = new QGridLayout();
+//    QFrame *theRayleighWidget = new QFrame();
+//    theRayleighWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+//    //theRayleighWidget->setLineWidth(1);
+//    QGridLayout *layoutRayleigh = new QGridLayout();
 
-    QLabel *labelRD = new QLabel();
-    labelRD->setText(QString("Damping Ratio: "));
-    layoutRayleigh->addWidget(labelRD, 0, 0);
-    dampingRatio = new QLineEdit();
-    dampingRatio->setText("0.02");
-    dampingRatio->setToolTip(tr("Damp ratio, 0.02 = 2% damping"));
-    layoutRayleigh->addWidget(dampingRatio, 0, 1);
+//    QLabel *labelRD = new QLabel();
+//    labelRD->setText(QString("Damping Ratio: "));
+//    layoutRayleigh->addWidget(labelRD, 0, 0);
+//    dampingRatio = new QLineEdit();
+//    dampingRatio->setText("0.02");
+//    dampingRatio->setToolTip(tr("Damp ratio, 0.02 = 2% damping"));
+//    layoutRayleigh->addWidget(dampingRatio, 0, 1);
 
-    QLabel *labelRM1 = new QLabel();
-    labelRM1->setText(QString("Mode 1: "));
-    layoutRayleigh->addWidget(labelRM1, 2, 0);
-    QLabel *labelRM2 = new QLabel();
-    labelRM2->setText(QString("Mode 2: "));
-    layoutRayleigh->addWidget(labelRM2, 3, 0);
-    theRayleighStiffness = new QComboBox();
+//    QLabel *labelRM1 = new QLabel();
+//    labelRM1->setText(QString("Mode 1: "));
+//    layoutRayleigh->addWidget(labelRM1, 2, 0);
+//    QLabel *labelRM2 = new QLabel();
+//    labelRM2->setText(QString("Mode 2: "));
+//    layoutRayleigh->addWidget(labelRM2, 3, 0);
+//    theRayleighStiffness = new QComboBox();
 
-    QLabel *labelStiffness = new QLabel(QString("Selected Tangent Stiffness: "));
-    theRayleighStiffness->addItem(tr("Initial"));
-    theRayleighStiffness->addItem(tr("Current"));
-    theRayleighStiffness->addItem(tr("Committed"));
-    layoutRayleigh->addWidget(labelStiffness, 1,0);
-    layoutRayleigh->addWidget(theRayleighStiffness, 1,1);
+//    QLabel *labelStiffness = new QLabel(QString("Selected Tangent Stiffness: "));
+//    theRayleighStiffness->addItem(tr("Initial"));
+//    theRayleighStiffness->addItem(tr("Current"));
+//    theRayleighStiffness->addItem(tr("Committed"));
+//    layoutRayleigh->addWidget(labelStiffness, 1,0);
+//    layoutRayleigh->addWidget(theRayleighStiffness, 1,1);
 
-    firstMode = new QLineEdit();
-    firstMode->setText("1");
-    firstMode->setToolTip(tr("First Mode to to determine damping ratio, if 0 stiffness proportional damping"));
-    secondMode = new QLineEdit();
-    secondMode->setText("0");
-    secondMode->setToolTip(tr("Second Mode to to determine damping ratio, if 0 mass proportional damping"));
-    firstMode->setValidator(new QIntValidator);
-    secondMode->setValidator(new QIntValidator);
+//    firstMode = new QLineEdit();
+//    firstMode->setText("1");
+//    firstMode->setToolTip(tr("First Mode to to determine damping ratio, if 0 stiffness proportional damping"));
+//    secondMode = new QLineEdit();
+//    secondMode->setText("0");
+//    secondMode->setToolTip(tr("Second Mode to to determine damping ratio, if 0 mass proportional damping"));
+//    firstMode->setValidator(new QIntValidator);
+//    secondMode->setValidator(new QIntValidator);
 
-    layoutRayleigh->addWidget(firstMode, 2, 1);
-    layoutRayleigh->addWidget(secondMode, 3, 1);
-    theRayleighWidget->setLayout(layoutRayleigh);
+//    layoutRayleigh->addWidget(firstMode, 2, 1);
+//    layoutRayleigh->addWidget(secondMode, 3, 1);
+//    theRayleighWidget->setLayout(layoutRayleigh);
 
-    theStackedWidget->addWidget(theRayleighWidget);
+//    theStackedWidget->addWidget(theRayleighWidget);
 
-    //
-    // modal option
-    //
+//    //
+//    // modal option
+//    //
 
-    QFrame *theModalWidget = new QFrame();
-    theModalWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    //theModalWidget->setLineWidth(1);
-    QGridLayout *layoutModal = new QGridLayout();
+//    QFrame *theModalWidget = new QFrame();
+//    theModalWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+//    //theModalWidget->setLineWidth(1);
+//    QGridLayout *layoutModal = new QGridLayout();
 
-    QLabel *labelMDR = new QLabel();
-    labelMDR->setText(QString("Damping Ratio: "));
-    layoutModal->addWidget(labelMDR, 0, 0);
-    dampingRatioModal = new QLineEdit();
-    dampingRatioModal->setText("0.02");
-    dampingRatioModal->setToolTip(tr("Damp ratio, 0.02 = 2% damping"));
-    layoutModal->addWidget(dampingRatioModal, 0, 1);
+//    QLabel *labelMDR = new QLabel();
+//    labelMDR->setText(QString("Damping Ratio: "));
+//    layoutModal->addWidget(labelMDR, 0, 0);
+//    dampingRatioModal = new QLineEdit();
+//    dampingRatioModal->setText("0.02");
+//    dampingRatioModal->setToolTip(tr("Damp ratio, 0.02 = 2% damping"));
+//    layoutModal->addWidget(dampingRatioModal, 0, 1);
 
-    QLabel *labelNumModes = new QLabel();
-    labelNumModes->setText(QString("# Modes: "));
-    layoutModal->addWidget(labelNumModes, 1, 0);
-    numModesModal = new QLineEdit();
-    numModesModal->setText("1");
-    numModesModal->setToolTip(tr("number of modes to include"));
-    numModesModal->setValidator(new QIntValidator);
+//    QLabel *labelNumModes = new QLabel();
+//    labelNumModes->setText(QString("# Modes: "));
+//    layoutModal->addWidget(labelNumModes, 1, 0);
+//    numModesModal = new QLineEdit();
+//    numModesModal->setText("1");
+//    numModesModal->setToolTip(tr("number of modes to include"));
+//    numModesModal->setValidator(new QIntValidator);
 
-    QLabel *labelMDRT = new QLabel(QString("Stiffness Proportional Damping Ratio: "));
-    layoutModal->addWidget(labelMDRT, 2, 0);
-    dampingRatioModalTangent = new QLineEdit();
-    dampingRatioModalTangent->setText("0.0");
-    dampingRatioModalTangent->setToolTip(tr("Stiffness Proportional Damping ratio at last mode, 0.02 = 2% damping"));
-    dampingRatioModalTangent->setValidator(new QDoubleValidator);
-    layoutModal->addWidget(dampingRatioModalTangent, 2, 1);
+//    QLabel *labelMDRT = new QLabel(QString("Stiffness Proportional Damping Ratio: "));
+//    layoutModal->addWidget(labelMDRT, 2, 0);
+//    dampingRatioModalTangent = new QLineEdit();
+//    dampingRatioModalTangent->setText("0.0");
+//    dampingRatioModalTangent->setToolTip(tr("Stiffness Proportional Damping ratio at last mode, 0.02 = 2% damping"));
+//    dampingRatioModalTangent->setValidator(new QDoubleValidator);
+//    layoutModal->addWidget(dampingRatioModalTangent, 2, 1);
 
-    layoutModal->addWidget(numModesModal, 1, 1);
-    theModalWidget->setLayout(layoutModal);
+//    layoutModal->addWidget(numModesModal, 1, 1);
+//    theModalWidget->setLayout(layoutModal);
 
-    theStackedWidget->addWidget(theModalWidget);
+//    theStackedWidget->addWidget(theModalWidget);
 
-    QLabel *labelFile = new QLabel();
-    labelFile->setText("Analysis Script: ");
-    file = new QLineEdit;
-    file->setToolTip(tr("User provided analysis script, replaces OpenSees default"));
-    layout->addWidget(labelFile, row, 0);
-    layout->addWidget(file, row, 1);
+//    QLabel *labelFile = new QLabel();
+//    labelFile->setText("Analysis Script: ");
+//    file = new QLineEdit;
+//    file->setToolTip(tr("User provided analysis script, replaces OpenSees default"));
+//    layout->addWidget(labelFile, row, 0);
+//    layout->addWidget(file, row, 1);
 
-    QPushButton *chooseFile = new QPushButton();
-    chooseFile->setText(tr("Choose"));
-    layout->addWidget(chooseFile, row, 2);
-    row++;
+//    QPushButton *chooseFile = new QPushButton();
+//    chooseFile->setText(tr("Choose"));
+//    layout->addWidget(chooseFile, row, 2);
+//    row++;
 
-    connect(dampingRatio,SIGNAL(editingFinished()), this, SLOT(dampingEditingFinished()));
-    //connect(theTolerance,SIGNAL(editingFinished()), this, SLOT(toleranceEditingFinished()));
-    connect(chooseFile, SIGNAL(clicked(bool)), this, SLOT(chooseFileName()));
-    connect(theSelectionBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedDampingMethod(QString)));
+//    connect(dampingRatio,SIGNAL(editingFinished()), this, SLOT(dampingEditingFinished()));
+//    //connect(theTolerance,SIGNAL(editingFinished()), this, SLOT(toleranceEditingFinished()));
+//    connect(chooseFile, SIGNAL(clicked(bool)), this, SLOT(chooseFileName()));
+//    connect(theSelectionBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedDampingMethod(QString)));
 
     QWidget *dummy = new QWidget();
     layout->addWidget(dummy,8,0);
