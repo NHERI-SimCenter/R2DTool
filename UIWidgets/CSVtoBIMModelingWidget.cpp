@@ -77,6 +77,12 @@ CSVtoBIMModelingWidget::CSVtoBIMModelingWidget(QWidget *parent) : SimCenterAppWi
 }
 
 
+CSVtoBIMModelingWidget::~CSVtoBIMModelingWidget()
+{
+
+}
+
+
 bool CSVtoBIMModelingWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
@@ -99,9 +105,9 @@ bool CSVtoBIMModelingWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-CSVtoBIMModelingWidget::~CSVtoBIMModelingWidget()
+void CSVtoBIMModelingWidget::clear(void)
 {
-
+    selectComponentsLineEdit->clear();
 }
 
 

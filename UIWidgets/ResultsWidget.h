@@ -44,8 +44,11 @@ class AssetInputDelegate;
 class PelicunPostProcessor;
 class VisualizationWidget;
 
+class QStackedWidget;
 class QVBoxLayout;
+class QLabel;
 class QLineEdit;
+class QPushButton;
 
 class ResultsWidget : public SimCenterAppWidget
 {
@@ -63,6 +66,10 @@ public:
 
     void setCurrentlyViewable(bool status);
 
+    void clear(void);
+
+    void resultsShow(bool value);
+
 private slots:
 
     int printToPDF(void);
@@ -71,6 +78,15 @@ private slots:
     void chooseResultsDirDialog(void);
 
 private:
+
+    QStackedWidget* mainStackedWidget;
+    QLabel* resultsMainLabel;
+
+    QLabel* selectComponentsText;
+    QPushButton *selectComponentsButton;
+    QPushButton *exportPDFFileButton;
+    QPushButton *exportBrowseFileButton;
+    QLabel* exportLabel;
 
     QString DVApp;
     QLineEdit* exportPathLineEdit;

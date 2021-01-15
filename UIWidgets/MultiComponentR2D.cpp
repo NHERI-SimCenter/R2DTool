@@ -383,3 +383,10 @@ void MultiComponentR2D::selectionChangedSlot(const QString &selectedText)
         theStackedWidget->setCurrentIndex(stackIndex);
 }
 
+
+void MultiComponentR2D::clear(void)
+{
+    foreach (auto&& comp, theComponents)
+        comp->clear();
+}
+

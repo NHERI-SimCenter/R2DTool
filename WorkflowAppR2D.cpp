@@ -201,6 +201,11 @@ void WorkflowAppR2D::initialize(void)
         }
     }
 
+    // Clear action
+    QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
+    // Set the path to the input file
+    editMenu->addAction("Clear", this, &WorkflowAppR2D::clear);
+
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
     theRVs = new RandomVariablesContainer();
@@ -357,7 +362,16 @@ void WorkflowAppR2D::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/
 
 void WorkflowAppR2D::clear(void)
 {
-
+    theGeneralInformationWidget->clear();
+    theUQWidget->clear();
+    theModelingWidget->clear();
+    theAnalysisWidget->clear();
+    theHazardToAssetWidget->clear();
+    theAssetsWidget->clear();
+    theHazardsWidget->clear();
+    theDamageAndLossWidget->clear();
+    theResultsWidget->clear();
+    theVisualizationWidget->clear();
 }
 
 
@@ -556,7 +570,7 @@ void WorkflowAppR2D::loadFile(const QString fileName){
 
     QString dirPath = fileInfo.absoluteDir().absolutePath();
     QDir::setCurrent(dirPath);
-    qDebug() << "WorkflowAppR2D: setting current dir" << dirPath;
+    // qDebug() << "WorkflowAppR2D: setting current dir" << dirPath;
 
     //
     // open file

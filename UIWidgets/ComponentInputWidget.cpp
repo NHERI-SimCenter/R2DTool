@@ -56,7 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <algorithm>
 
 
-ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString type) : SimCenterAppWidget(parent), componentType(type)
+ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
 {
     label1 = "Load information from a CSV file";
     label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze. Leave blank to analyze all " + componentType.toLower() + "."
@@ -264,7 +264,7 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addWidget(clearSelectionButton, 4, 3);
     gridLayout->addItem(smallVSpacer,5,0,1,5);
     gridLayout->addWidget(componentInfoText,6,0,1,5,Qt::AlignCenter);
-    gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5);
+    gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5,Qt::AlignCenter);
     gridLayout->setRowStretch(8, 1);
     this->setLayout(gridLayout);
 }
@@ -413,7 +413,7 @@ void ComponentInputWidget::testFileLoad(QString& path)
 
 bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    jsonObject["Application"]=componentType;
+    jsonObject["Application"]=appType;
 
     QJsonObject data;
     QFileInfo componentFile(componentFileLineEdit->text());
@@ -456,9 +456,9 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
-    //jsonObject["Application"]=componentType;
+    //jsonObject["Application"]=appType;
     if (jsonObject.contains("Application")) {
-        if (componentType != jsonObject["Application"].toString()) {
+        if (appType != jsonObject["Application"].toString()) {
             emit sendErrorMessage("ComponentINputWidget::inputFRommJSON app name conflict");
             return false;
         }
@@ -514,13 +514,13 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (foundFile == true)
             selectComponentsLineEdit->selectComponents();
         else {
-            QString errMessage = componentType + "no file found" + fileName;
+            QString errMessage = appType + "no file found" + fileName;
             emit sendErrorMessage(errMessage);
             return false;
         }
     }
 
-    QString errMessage = componentType + "no ApplicationDta found";
+    QString errMessage = appType + "no ApplicationDta found";
     emit sendErrorMessage(errMessage);
     return false;
 
@@ -548,4 +548,14 @@ bool ComponentInputWidget::copyFiles(QString &destName)
         return this->copyFile(componentFileLineEdit->text(), destName);
     }
     return true;
+}
+
+
+void ComponentInputWidget::clear(void)
+{
+    pathToComponentInfoFile.clear();
+    componentFileLineEdit->clear();
+    selectComponentsLineEdit->clear();
+    componentTableWidget->clear();
+    componentTableWidget->hide();
 }

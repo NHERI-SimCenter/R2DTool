@@ -36,164 +36,41 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "LayerTreeItem.h"
 #include "TreeItem.h"
-#include "TreeModel.h"
+#include "ListTreeModel.h"
 
 #include <QDataStream>
 #include <QDebug>
 #include <QMimeData>
 #include <QStringList>
 
-TreeModel::TreeModel(QObject *parent) : QAbstractItemModel(parent)
+ListTreeModel::ListTreeModel(QString headerText, QObject *parent) : QAbstractItemModel(parent)
 {    
-    rootItem = new LayerTreeItem({tr("Layers")});
+    rootItem = new TreeItem({headerText});
 }
 
 
-TreeModel::~TreeModel()
+ListTreeModel::~ListTreeModel()
 {
     delete rootItem;
 }
 
 
-int TreeModel::columnCount(const QModelIndex &parent) const
+int ListTreeModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
-        return static_cast<LayerTreeItem*>(parent.internalPointer())->columnCount();
+        return static_cast<TreeItem*>(parent.internalPointer())->columnCount();
 
     return rootItem->columnCount();
 }
 
 
-Qt::DropActions TreeModel::supportedDropActions() const
-{
-    return Qt::MoveAction;
-}
-
-
-QMimeData* TreeModel::mimeData(const QModelIndexList &indexes) const
-{
-    QMimeData *mimeData = new QMimeData();
-    QByteArray encodedData;
-
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
-
-    foreach (const QModelIndex &index, indexes) {
-        if (index.isValid()) {
-            QString text = data(index, Qt::DisplayRole).toString();
-            stream << text;
-        }
-    }
-
-    mimeData->setData("application/data", encodedData);
-    return mimeData;
-}
-
-
-bool TreeModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
-{
-    if(action != Qt::MoveAction)
-        return false;
-
-    if (action == Qt::IgnoreAction)
-        return true;
-
-    if (!data->hasFormat("application/data"))
-        return false;
-
-    if (column != 0)
-        return false;
-
-    int beginRow;
-
-    if (row != -1)
-        beginRow = row;
-    else if (parent.isValid())
-        beginRow = parent.row();
-    else
-        beginRow = rowCount(QModelIndex());
-
-    QByteArray encodedData = data->data("application/data");
-    QDataStream stream(&encodedData, QIODevice::ReadOnly);
-    QStringList newItems;
-
-    int numItems = 0;
-    while (!stream.atEnd()) {
-        QString text;
-        stream >> text;
-        newItems << text;
-        ++numItems;
-    }
-
-
-    // Because the item row numbers are relative to the parent, need to do a deep search to find the model index of the item
-    std::function<QModelIndex(TreeItem*)> getItemIndexDeepSearch = [&](TreeItem* fromItem)
-    {
-        auto itemParent = fromItem->getParentItem();
-
-        // The item row, which is relative to the parent
-        auto itemParentRow = fromItem->row();
-
-        if(itemParent != rootItem)
-        {
-            auto itemRow = fromItem->row();
-
-            // Get the index of the parent
-            QModelIndex parentIndex =  this->index(itemRow, 0, getItemIndexDeepSearch(itemParent));
-
-            return parentIndex;
-        }
-        else
-        {
-            return this->index(itemParentRow,0);
-        }
-    };
-
-
-    foreach (const QString &itemName, newItems)
-    {
-        auto fromItem = rootItem->findChild(itemName);
-
-        if(fromItem == nullptr)
-            return false;
-
-        auto itemIndex = getItemIndexDeepSearch(fromItem);
-
-        // This row is relative to the parent!
-        auto sourceRow = fromItem->row();
-
-        // ModelIndex &sourceParent, int sourceRow, const QModelIndex &destinationParent, int destinationChild
-        moveRow(itemIndex, sourceRow, itemIndex, beginRow);
-
-    }
-
-    return true;
-}
-
-
-QStringList TreeModel::mimeTypes() const
-{
-    return QStringList("application/data");
-}
-
-
-QVariant TreeModel::data(const QModelIndex &index, int role) const
+QVariant ListTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
 
-    LayerTreeItem *item = static_cast<LayerTreeItem*>(index.internalPointer());
-
-    if (role == Qt::CheckStateRole && index.column() == 0)
-    {
-        if(item->getState() == 0)
-            return Qt::Unchecked;
-        else if(item->getState() == 1)
-            return Qt::PartiallyChecked;
-        else if(item->getState() == 2)
-            return Qt::Checked;
-    }
+    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
 
     if (role != Qt::DisplayRole)
         return QVariant();
@@ -202,21 +79,15 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 }
 
 
-Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ListTreeModel::flags(const QModelIndex &index) const
 {
-    //    if (!index.isValid())
-    //        return Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled ;
-
-    Qt::ItemFlags flags = Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsUserCheckable;
-
-    if (index.column() == 0)
-        flags |= Qt::ItemIsUserCheckable;
+    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
     return flags;
 }
 
 
-QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant ListTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         return rootItem->data(section);
@@ -225,19 +96,19 @@ QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 
-QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex ListTreeModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    LayerTreeItem *parentItem;
+    TreeItem *parentItem;
 
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<LayerTreeItem*>(parent.internalPointer());
+        parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
-   TreeItem *childItem = parentItem->child(row);
+    TreeItem *childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     else
@@ -245,12 +116,12 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
 }
 
 
-QModelIndex TreeModel::parent(const QModelIndex &index) const
+QModelIndex ListTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
         return QModelIndex();
 
-    LayerTreeItem *childItem = static_cast<LayerTreeItem*>(index.internalPointer());
+    TreeItem *childItem = static_cast<TreeItem*>(index.internalPointer());
     TreeItem *parentItem = childItem->getParentItem();
 
     if (parentItem == rootItem)
@@ -260,83 +131,45 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
 }
 
 
-int TreeModel::rowCount(const QModelIndex &parent) const
+int ListTreeModel::rowCount(const QModelIndex &parent) const
 {
-    LayerTreeItem *parentItem;
+    TreeItem *parentItem;
     if (parent.column() > 0)
         return 0;
 
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<LayerTreeItem*>(parent.internalPointer());
+        parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
     return parentItem->childCount();
 }
 
 
-LayerTreeItem *TreeModel::getRootItem() const
+TreeItem *ListTreeModel::getRootItem() const
 {
     return rootItem;
 }
 
 
-bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool ListTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    LayerTreeItem *item = static_cast<LayerTreeItem*>(index.internalPointer());
-
-    auto valueAsInt = value.toInt();
-
-    std::function<void(LayerTreeItem*, const int)> nestedItemChecker = [&](LayerTreeItem* item, const int value)
-    {
-        auto children = item->getChildItems();
-
-        for(auto&& it : children)
-        {
-            auto child = static_cast<LayerTreeItem*>(it);
-            nestedItemChecker(child,value);
-
-            emit itemValueChanged(child);
-        }
-
-        item->setState(value);
-
-        emit itemValueChanged(item);
-
-        // Set the parent as a partial checked
-        auto parent = static_cast<LayerTreeItem*>(item->getParentItem());
-
-        if(parent)
-            parent->setState(1);
-
-    };
-
-    if (index.column() == 0 && role == Qt::CheckStateRole)
-    {
-        nestedItemChecker(item,valueAsInt);
-
-        emit dataChanged(QModelIndex(), QModelIndex());
-
-        return true;
-    }
-    else
-        return false;
 
     return QAbstractItemModel::setData(index, value, role);
 }
 
 
-LayerTreeItem* TreeModel::addItemToTree(const QString itemText, const QString layerID, LayerTreeItem* parent)
+TreeItem* ListTreeModel::addItemToTree(const QString itemText, TreeItem* parent)
 {
     if(parent == nullptr)
         parent = rootItem;
 
-    if(auto exists = this->getLayerTreeItem(itemText, parent))
+    if(auto exists = this->getTreeItem(itemText, parent))
         return exists;
 
     QVector<QVariant> childText = {itemText};
 
-    auto childItem = new LayerTreeItem(childText, layerID, parent);
+    auto childItem = new TreeItem(childText, parent);
 
     parent->appendChild(childItem);
 
@@ -346,7 +179,7 @@ LayerTreeItem* TreeModel::addItemToTree(const QString itemText, const QString la
 }
 
 
-bool TreeModel::removeItemFromTree(const QString& itemName)
+bool ListTreeModel::removeItemFromTree(const QString& itemName)
 {
     std::function<bool(TreeItem*, const QString&)> nestedDeleter = [&](TreeItem* item, const QString& name)
     {
@@ -387,7 +220,7 @@ bool TreeModel::removeItemFromTree(const QString& itemName)
 }
 
 
-LayerTreeItem* TreeModel::getLayerTreeItem(const QString& itemName, const LayerTreeItem* parent) const
+TreeItem* ListTreeModel::getTreeItem(const QString& itemName, const TreeItem* parent) const
 {
     QString parentName;
 
@@ -396,11 +229,11 @@ LayerTreeItem* TreeModel::getLayerTreeItem(const QString& itemName, const LayerT
         parentName = parent->getName();
     }
 
-    return this->getLayerTreeItem(itemName,parentName);
+    return this->getTreeItem(itemName,parentName);
 }
 
 
-LayerTreeItem* TreeModel::getLayerTreeItem(const QString& itemName, const QString& parentName) const
+TreeItem* ListTreeModel::getTreeItem(const QString& itemName, const QString& parentName) const
 {
 
     std::function<TreeItem* (TreeItem*, const QString&, const QString&)> nestedItemFinder = [&](TreeItem* item, const QString& name, const QString& parentName) -> TreeItem*
@@ -432,11 +265,11 @@ LayerTreeItem* TreeModel::getLayerTreeItem(const QString& itemName, const QStrin
         return nullptr;
     };
 
-    return static_cast<LayerTreeItem*>(nestedItemFinder(rootItem, itemName, parentName));
+    return nestedItemFinder(rootItem, itemName, parentName);
 }
 
 
-bool TreeModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+bool ListTreeModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 {
     Q_UNUSED(count);
 
@@ -464,7 +297,7 @@ bool TreeModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int cou
 }
 
 
-bool TreeModel::clear(void)
+bool ListTreeModel::clear(void)
 {
     auto children = rootItem->getChildItems();
 
@@ -478,4 +311,3 @@ bool TreeModel::clear(void)
 
     return true;
 }
-

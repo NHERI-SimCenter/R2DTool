@@ -39,8 +39,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentInputWidget.h"
 #include "PopUpWidget.h"
 #include "SimCenterMapGraphicsView.h"
-#include "TreeItem.h"
-#include "TreeView.h"
+#include "LayerTreeItem.h"
+#include "LayerTreeView.h"
 #include "VisualizationWidget.h"
 #include "XMLAdaptor.h"
 
@@ -175,7 +175,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
     //    QString layerName = "Buildings Foot Print";
     //    QString layerID = this->createUniqueID();
-    //    TreeItem* buildingsItem = layersTree->addItemToTree(layerName,layerID);
+    //    LayerTreeItem* buildingsItem = layersTree->addItemToTree(layerName,layerID);
     //    auto buildingsLayer = this->createAndAddKMLLayer(filePath, layerName, buildingsItem);
     //    buildingsLayer->setLayerId(layerID);
     //    buildingsLayer->setName("SF");
@@ -184,13 +184,13 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     //   QString layerName = "Bathymetry";
     //   QString layerID = this->createUniqueID();
-    //   TreeItem* treeItem = layersTree->addItemToTree(layerName,layerID);
+    //   LayerTreeItem* LayerTreeItem = layersTree->addItemToTree(layerName,layerID);
 
     //   QString filePath = "/Users/steve/Downloads/GEBCO_2020_18_Nov_2020_f103650dc2c4/gebco_2020_n30.0_s15.0_w-179.0_e-152.0.tif";
-    //   auto rastLayer = this->createAndAddRasterLayer(filePath, layerName, treeItem) ;
+    //   auto rastLayer = this->createAndAddRasterLayer(filePath, layerName, LayerTreeItem) ;
     //   rastLayer->setLayerId(layerID);
     //   rastLayer->setName(layerName);
-    //   this->addLayerToMap(rastLayer,treeItem);
+    //   this->addLayerToMap(rastLayer,LayerTreeItem);
 
 }
 
@@ -251,7 +251,7 @@ void VisualizationWidget::createVisualizationWidget(void)
     connect(baseMapCombo, SIGNAL(currentIndexChanged(QString)), this, SLOT(handleBasemapSelection(QString)));
 
     // The tree view class used to visualize the tree data model
-    layersTree = new TreeView(visWidget, this);
+    layersTree = new LayerTreeView(visWidget, this);
 
     QLabel* topText = new QLabel(visWidget);
     topText->setText("Enclose an area with points\nto select a subset of\nassets to analyze");
@@ -415,7 +415,7 @@ void VisualizationWidget::convexHullPointSelector(QMouseEvent& e)
 }
 
 
-TreeView *VisualizationWidget::getLayersTree() const
+LayerTreeView *VisualizationWidget::getLayersTree() const
 {
     return layersTree;
 }
@@ -854,7 +854,7 @@ void VisualizationWidget::featureSelectionQueryCompleted(QUuid taskID, Esri::Arc
 }
 
 
-void VisualizationWidget::handleLayerSelection(TreeItem* item)
+void VisualizationWidget::handleLayerSelection(LayerTreeItem* item)
 {
     auto itemID = item->getItemID();
 
@@ -1383,7 +1383,7 @@ void VisualizationWidget::handleBasemapSelection(const QString selection)
 }
 
 
-RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem)
+RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem)
 {
     QFileInfo check_file(filePath);
 
@@ -1426,7 +1426,7 @@ RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePat
 }
 
 
-FeatureLayer* VisualizationWidget::createAndAddShapefileLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem)
+FeatureLayer* VisualizationWidget::createAndAddShapefileLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem)
 {
     // Create the ShapefileFeatureTable
     ShapefileFeatureTable* featureTable = new ShapefileFeatureTable(filePath, this);
@@ -1459,15 +1459,15 @@ FeatureLayer* VisualizationWidget::createAndAddShapefileLayer(const QString& fil
 }
 
 
-ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QString& url, const QString& layerName, TreeItem* parentItem)
+ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QString& url, const QString& layerName, LayerTreeItem* parentItem)
 {
     ArcGISMapImageLayer* layer  = new ArcGISMapImageLayer(QUrl(url), this);
 
     // Add the layers to the layer tree
     auto layerID = this->createUniqueID();
-    auto layerTreeItem = layersTree->addItemToTree(layerName, layerID, parentItem);
+    auto layerLayerTreeItem = layersTree->addItemToTree(layerName, layerID, parentItem);
 
-    connect(layer, &ArcGISMapImageLayer::doneLoading, this, [this, layer, layerTreeItem](Error loadError)
+    connect(layer, &ArcGISMapImageLayer::doneLoading, this, [this, layer, layerLayerTreeItem](Error loadError)
     {
         if (!loadError.isEmpty())
         {
@@ -1483,7 +1483,7 @@ ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QStri
         {
             auto subLayerName = it->name();
 
-            layersTree->addItemToTree(subLayerName, QString(), layerTreeItem);
+            layersTree->addItemToTree(subLayerName, QString(), layerLayerTreeItem);
         }
 
 
@@ -1499,7 +1499,7 @@ ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QStri
 }
 
 
-void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem)
+void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem)
 {
     auto m_geodatabase = new Geodatabase(filePath, this);
 
@@ -1538,7 +1538,7 @@ void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, 
 }
 
 
-KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem, double opacity)
+KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, double opacity)
 {
     QFileInfo check_file(filePath);
 
@@ -1584,7 +1584,7 @@ KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, co
 
 
 // Add a shakemap grid given as an XML file
-FeatureCollectionLayer* VisualizationWidget::createAndAddXMLShakeMapLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem)
+FeatureCollectionLayer* VisualizationWidget::createAndAddXMLShakeMapLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem)
 {
     XMLAdaptor XMLImportAdaptor;
 
@@ -1663,13 +1663,13 @@ QPointF VisualizationWidget::getScreenPointFromLatLong(const double& latitude, c
 }
 
 
-void VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* layer, TreeItem* parent)
+void VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent)
 {
     mapGIS->operationalLayers()->append(layer);
 
 
 
-    //        connect(layer, &Layer::doneLoading, this, [this, layer, layerTreeItem](Error loadError)
+    //        connect(layer, &Layer::doneLoading, this, [this, layer, layerLayerTreeItem](Error loadError)
     //        {
     //            if (!loadError.isEmpty())
     //            {
@@ -1685,15 +1685,13 @@ void VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* layer, TreeI
     //            {
     //                auto subLayerName = it->name();
 
-    //                layersModel->addItemToTree(subLayerName,layerTreeItem);
+    //                layersModel->addItemToTree(subLayerName,layerLayerTreeItem);
     //            }
 
 
     //            // If the layer was loaded successfully, set the map extent to the full extent of the layer
     //            mapViewWidget->setViewpointCenter(layer->fullExtent().center(), 80000);
     //        });
-
-
 
 }
 
@@ -1722,6 +1720,22 @@ void VisualizationWidget::takeScreenShot(void)
 void VisualizationWidget::exportImageComplete(QUuid id, QImage img)
 {
     emitScreenshot(img);
+}
+
+
+void VisualizationWidget::clear(void)
+{
+    layersTree->clear();
+
+    baseMapCombo->setCurrentIndex(0);
+
+    taskIDMap.clear();
+
+    selectedFeaturesList.clear();
+
+    theBuildingDb.clear();
+
+    mapGIS->operationalLayers()->clear();
 }
 
 

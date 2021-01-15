@@ -50,7 +50,6 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 CONFIG += c++17
 
 win32:DEFINES +=  CURL_STATICLIB
-
 # win32::include($$PWD/ConanHelper.pri)
 win32::LIBS+=Advapi32.lib
 
@@ -170,8 +169,10 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/SimCenterMapGraphicsView.cpp \
             UIWidgets/StructuralModelingWidget.cpp \
             UIWidgets/TreeItem.cpp \
+            UIWidgets/LayerTreeItem.cpp \
             UIWidgets/TreeModel.cpp \
-            UIWidgets/TreeView.cpp \
+            UIWidgets/ListTreeModel.cpp \
+            UIWidgets/LayerTreeView.cpp \
             UIWidgets/TreeViewStyle.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
@@ -266,8 +267,10 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             UIWidgets/SimCenterMapGraphicsView.h \
             UIWidgets/StructuralModelingWidget.h \
             UIWidgets/TreeItem.h \
+            UIWidgets/LayerTreeItem.h \
             UIWidgets/TreeModel.h \
-            UIWidgets/TreeView.h \
+            UIWidgets/ListTreeModel.h \
+            UIWidgets/LayerTreeView.h \
             UIWidgets/TreeViewStyle.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
@@ -290,7 +293,7 @@ linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
 # Copies over the examples folder into the build directory
 win32 {
-PATH_TO_BINARY=$$OUT_PWD
+PATH_TO_BINARY=$$DESTDIR/Examples
 } else {
     mac {
     PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS

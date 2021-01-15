@@ -101,7 +101,9 @@ MDOF_LU::~MDOF_LU()
 
 void MDOF_LU::clear(void)
 {
-
+    hazusDataFile->clear();
+    stdStiffness->clear();
+    stdDamping->clear();
 }
 
 

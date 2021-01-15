@@ -77,8 +77,8 @@ class Geometry;
 }
 
 class ComponentInputWidget;
-class TreeView;
-class TreeItem;
+class LayerTreeView;
+class LayerTreeItem;
 class TreeModel;
 class QGroupBox;
 class QComboBox;
@@ -110,22 +110,22 @@ public:
     void zoomToExtents(void);
 
     // Adds a raster layer to the map
-    Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem);
+    Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
 
     // Adds a shapefile layer to the map
-    Esri::ArcGISRuntime::FeatureLayer* createAndAddShapefileLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem = nullptr);
+    Esri::ArcGISRuntime::FeatureLayer* createAndAddShapefileLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem = nullptr);
 
     // Add a KML (google earth)
-    Esri::ArcGISRuntime::KmlLayer* createAndAddKMLLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem, double opacity = 1.0);
+    Esri::ArcGISRuntime::KmlLayer* createAndAddKMLLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, double opacity = 1.0);
 
     // From a geodatabase
-    void createAndAddGeoDatabaseLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem = nullptr);
+    void createAndAddGeoDatabaseLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem = nullptr);
 
     // Add a shakemap grid given as an XML file
-    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddXMLShakeMapLayer(const QString& filePath, const QString& layerName, TreeItem* parentItem);
+    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddXMLShakeMapLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
 
     // Create a layer from a map server URL
-    Esri::ArcGISRuntime::ArcGISMapImageLayer* createAndAddMapServerLayer(const QString& url, const QString& layerName, TreeItem* parentItem);
+    Esri::ArcGISRuntime::ArcGISMapImageLayer* createAndAddMapServerLayer(const QString& url, const QString& layerName, LayerTreeItem* parentItem);
 
     Esri::ArcGISRuntime::Layer* findLayer(const QString& layerID);
 
@@ -140,16 +140,18 @@ public:
 
     Esri::ArcGISRuntime::Map *getMapGIS() const;
 
-    void addLayerToMap(Esri::ArcGISRuntime::Layer* layer, TreeItem* parent = nullptr);
+    void addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr);
     void removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer);
 
-    TreeView *getLayersTree() const;
+    LayerTreeView *getLayersTree() const;
 
     QString createUniqueID(void);
 
     void takeScreenShot(void);
 
     BuildingDatabase* getBuildingDatabase();
+
+    void clear(void);
 
 signals:
     // Convex hull
@@ -164,7 +166,7 @@ public slots:
     void loadBuildingData(void);
     void loadPipelineData(void);
     void changeLayerOrder(const int from, const int to);
-    void handleLayerSelection(TreeItem* item);
+    void handleLayerSelection(LayerTreeItem* item);
     void handleOpacityChange(const QString& layerID, const double opacity);
     void exportImageComplete(QUuid id, QImage img);
     void onMouseClicked(QMouseEvent& mouseEvent);
@@ -187,7 +189,7 @@ private slots:
 
 private:
 
-    TreeView* layersTree;
+    LayerTreeView* layersTree;
     ComponentInputWidget* buildingWidget;
     ComponentInputWidget* pipelineWidget;
 
@@ -197,7 +199,7 @@ private:
     // It returns the all of the features in the table where the text in the field "FieldName" matches the search text
     void runFieldQuery(Esri::ArcGISRuntime::FeatureTable* table, const QString& fieldName, const QString& searchText);
 
-    Esri::ArcGISRuntime::Map*             mapGIS = nullptr;
+    Esri::ArcGISRuntime::Map* mapGIS = nullptr;
     //FMK Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
     SimCenterMapGraphicsView *mapViewWidget = nullptr;
     QVBoxLayout *mapViewLayout;
