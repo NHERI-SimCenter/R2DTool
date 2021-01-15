@@ -115,8 +115,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     theInstance = this;
 
-    localApp = new LocalApplication("R2D_workflow.py");
-    remoteApp = new RemoteApplication("R2D_workflow.py", theService);
+    localApp = new LocalApplication("R2DTool_workflow.py");
+    remoteApp = new RemoteApplication("R2DTool_workflow.py", theService);
 
     theJobManager = new RemoteJobManager(theService);
 
