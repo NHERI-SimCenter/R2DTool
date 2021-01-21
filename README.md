@@ -30,7 +30,7 @@ applications, FAQ, and how to collaborate.
 
 ### Documentation
 
-Tool documentation can be found: https://nheri-simcenter.github.io/RDT-Documentation/
+Tool documentation can be found: https://nheri-simcenter.github.io/R2D-Documentation/
 
 
 ### How to Build
