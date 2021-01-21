@@ -17,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,57 +36,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ResultsMapViewWidget.h"
-#include "SimCenterMapGraphicsView.h"
+#include "ComponentDatabase.h"
 
-#include <QGraphicsSimpleTextItem>
-#include <QDebug>
-
-ResultsMapViewWidget::ResultsMapViewWidget(QWidget* parent) : QWidget(parent)
+ComponentDatabase::ComponentDatabase()
 {
-    theViewLayout = new QVBoxLayout();
 
-    this->setAcceptDrops(true);
-    this->setObjectName("MapSubwindow");
-
-    this->setLayout(theViewLayout);
-
-    theNewView = SimCenterMapGraphicsView::getInstance();
-    theNewView->setAcceptDrops(true);
-    //theNewView->setObjectName("MapSubwindow");
-
-    theNewView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    theNewView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-
-    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 
-void ResultsMapViewWidget::setCurrentlyViewable(bool status)
+int ComponentDatabase::getNumberOfComponents()
 {
-    if (status == true)
-        theNewView->setCurrentLayout(theViewLayout);
-    else {
-        this->hide();
-    }
+    return ComponentsDB.size();
 }
 
 
-void ResultsMapViewWidget::resizeParent(QRectF rect)
+void ComponentDatabase::addComponent(int ID, Component& asset)
 {
-    auto width = rect.width();
-    auto height = rect.height();
-
-    theNewView->setMaximumWidth(width);
-    theNewView->setMaximumHeight(height);
-
-    theNewView->resize(width,height);
+    ComponentsDB.insert(ID, asset);
 }
 
 
+Component& ComponentDatabase::getComponent(const int ID)
+{
+  return ComponentsDB[ID];
+}
 
 
-
+void ComponentDatabase::clear(void)
+{
+    ComponentsDB.clear();
+}

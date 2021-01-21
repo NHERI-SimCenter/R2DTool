@@ -1,3 +1,5 @@
+#ifndef CheckableTreeModel_H
+#define CheckableTreeModel_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -17,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,33 +38,58 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "BuildingDatabase.h"
+#include <QAbstractItemModel>
 
-BuildingDatabase::BuildingDatabase()
+class TreeItem;
+
+class CheckableTreeModel : public QAbstractItemModel
 {
+    Q_OBJECT
 
-}
+public:
+    explicit CheckableTreeModel(QObject *parent = nullptr, QString headerText = QString());
+    ~CheckableTreeModel();
 
+    QVariant data(const QModelIndex &index, int role) const override;
 
-int BuildingDatabase::getNumberOfBuildings()
-{
-    return buildingsDB.size();
-}
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-void BuildingDatabase::addBuilding(int ID, Building& asset)
-{
-    buildingsDB.insert(ID, asset);
-}
+    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
 
+    QModelIndex parent(const QModelIndex &index) const override;
 
-Building& BuildingDatabase::getBuilding(const int ID)
-{
-  return buildingsDB[ID];
-}
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
+    int columnCount(const QModelIndex &parent) const override;
 
-void BuildingDatabase::clear(void)
-{
-    buildingsDB.clear();
-}
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+
+    TreeItem *getRootItem() const;
+
+    // If parent item is not provided, the item will get added to the root of the tree
+    TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
+    TreeItem* addItemToTree(const QString itemText, const QString itemID, TreeItem* parent = nullptr);
+
+    bool removeItemFromTree(const QString& itemID);
+
+    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
+    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
+    TreeItem* getTreeItem(const QString& itemID) const;
+
+    bool clear(void);
+
+    QVector<TreeItem *> getAllChildren(void);
+
+signals:
+
+    void itemValueChanged(TreeItem* item);
+
+    void rowPositionChanged(const int oldPos, const int newPos);
+
+private:
+    TreeItem *rootItem;
+};
+
+#endif // CheckableTreeModel_H

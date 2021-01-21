@@ -1,5 +1,5 @@
-#ifndef ListTreeModel_H
-#define ListTreeModel_H
+#ifndef LayerTreeView_H
+#define LayerTreeView_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,56 +38,46 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QAbstractItemModel>
+#include <QTreeView>
 
-class TreeItem;
+class LayerTreeModel;
+class LayerTreeItem;
+class VisualizationWidget;
 
-class ListTreeModel : public QAbstractItemModel
+class LayerTreeView : public QTreeView
 {
     Q_OBJECT
 
 public:
-    explicit ListTreeModel(QString headerText, QObject *parent = nullptr);
-    ~ListTreeModel();
+    LayerTreeView(QWidget *parent, VisualizationWidget* visWidget);
 
-    QVariant data(const QModelIndex &index, int role) const override;
+    LayerTreeModel *getLayersModel() const;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    bool removeItemFromTree(const QString& itemID);
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    LayerTreeItem* addItemToTree(const QString itemText, QString layerID, LayerTreeItem* parent = nullptr);
 
-    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
+    LayerTreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
 
-    QModelIndex parent(const QModelIndex &index) const override;
+    void clear(void);
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+public slots:
+    // Shows the "right-click" menu
+    void showPopup(const QPoint &position);
 
-    int columnCount(const QModelIndex &parent) const override;
+    // Removes a layer from the tree and map
+    void removeLayer(const QString& layerID);
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+private slots:
+    // Runs the action that the user selects on the right-click menu
+    void runAction();
 
-    TreeItem *getRootItem() const;
-
-    // If parent item is not provided, the item will get added to the root of the tree
-    TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
-
-    bool removeItemFromTree(const QString& itemName);
-
-    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
-    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
-
-    bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
-
-    bool clear(void);
-
-signals:
-
-    void itemValueChanged(TreeItem* item);
-
-    void rowPositionChanged(const int oldPos, const int newPos);
 
 private:
-    TreeItem *rootItem;
+
+    LayerTreeModel* layersModel;
+
+    VisualizationWidget* theVisualizationWidget;
 };
 
-#endif // ListTreeModel_H
+#endif // LayerTreeView_H

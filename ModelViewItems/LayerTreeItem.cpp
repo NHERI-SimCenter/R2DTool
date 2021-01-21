@@ -1,5 +1,3 @@
-#ifndef CustomListWidget_H
-#define CustomListWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,43 +36,85 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QTreeView>
+#include "LayerTreeItem.h"
 
-class QLabel;
-class ListTreeModel;
-class TreeItem;
+#include <QDebug>
+#include <QDialog>
+#include <QGridLayout>
+#include <QLabel>
+#include <QSlider>
 
-class CustomListWidget : public QTreeView
+LayerTreeItem::LayerTreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parent) : TreeItem(data,ID,parent)
 {
-public:
-    CustomListWidget(QWidget *parent = nullptr, QString headerText = QString());
+    opacityDialog = nullptr;
+    currentState = 2;
+}
 
-    void clear(void);
 
-    QStringList getListOfModels() const;
+LayerTreeItem::~LayerTreeItem()
+{
+    if (opacityDialog)
+        delete opacityDialog;
+}
 
-    QVariantList getListOfWeights() const;
 
-public slots:
+QStringList LayerTreeItem::getActionList()
+{
+    QStringList actionList = TreeItem::getActionList();
 
-    TreeItem* addItem(const QString item, QString model, const double weight, TreeItem* parent = nullptr);
-    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
+    actionList << "&Change Opacity"
+               << "Separator";
 
-    void removeItem(const QString item);
+    return actionList;
+}
 
-    // Shows the "right-click" menu
-    void showPopup(const QPoint &position);
 
-private slots:
-    // Runs the action that the user selects on the right-click menu
-    void runAction();
+void LayerTreeItem::changeOpacity()
+{
+    if (!opacityDialog)
+    {
+        opacityDialog = new QDialog();
 
-private:
+        auto slider = new QSlider(opacityDialog);
 
-    ListTreeModel* treeModel;
+        connect(slider, &QAbstractSlider::sliderMoved, this, &LayerTreeItem::handleChangeOpacity);
 
-    QStringList ListOfModels;
-    QVariantList ListOfWeights;
-};
+        slider->setOrientation(Qt::Horizontal);
 
-#endif // CustomListWidget_H
+        slider->setValue(100);
+
+        slider->setTickPosition(QSlider::TickPosition::TicksAbove);
+
+        auto dialogLayout = new QGridLayout(opacityDialog);
+
+        auto label = new QLabel("0.0",opacityDialog);
+        auto label2  = new QLabel("1.0",opacityDialog);
+
+        dialogLayout->addWidget(label, 0, 0);
+        dialogLayout->addWidget(slider, 0, 1);
+        dialogLayout->addWidget(label2, 0, 2);
+
+        opacityDialog->setLayout(dialogLayout);
+        opacityDialog->setWindowTitle("Adjust opacity of layer "+itemName);
+
+        opacityDialog->setMinimumWidth(400);
+        opacityDialog->setMinimumHeight(150);
+
+    }
+
+    opacityDialog->show();
+    opacityDialog->raise();
+    opacityDialog->activateWindow();
+}
+
+
+void LayerTreeItem::handleChangeOpacity(int value)
+{
+    if(itemID.isEmpty())
+        return;
+
+    auto opacity = static_cast<double>(value+1)/100.0;
+
+    emit opacityChanged(itemID, opacity);
+}
+

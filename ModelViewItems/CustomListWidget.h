@@ -1,3 +1,5 @@
+#ifndef CustomListWidget_H
+#define CustomListWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,57 +38,42 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ResultsMapViewWidget.h"
-#include "SimCenterMapGraphicsView.h"
+#include <QTreeView>
 
-#include <QGraphicsSimpleTextItem>
-#include <QDebug>
+class QLabel;
+class ListTreeModel;
+class TreeItem;
 
-ResultsMapViewWidget::ResultsMapViewWidget(QWidget* parent) : QWidget(parent)
+class CustomListWidget : public QTreeView
 {
-    theViewLayout = new QVBoxLayout();
+public:
+    CustomListWidget(QWidget *parent = nullptr, QString headerText = QString());
 
-    this->setAcceptDrops(true);
-    this->setObjectName("MapSubwindow");
+    void clear(void);
 
-    this->setLayout(theViewLayout);
+    QVariantList getListOfModels() const;
 
-    theNewView = SimCenterMapGraphicsView::getInstance();
-    theNewView->setAcceptDrops(true);
-    //theNewView->setObjectName("MapSubwindow");
+    QVariantList getListOfWeights() const;
 
-    theNewView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    theNewView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+public slots:
 
-    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-}
+    TreeItem* addItem(const QString item, QString model, const double weight, TreeItem* parent = nullptr);
+    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
 
+    void update();
 
-void ResultsMapViewWidget::setCurrentlyViewable(bool status)
-{
-    if (status == true)
-        theNewView->setCurrentLayout(theViewLayout);
-    else {
-        this->hide();
-    }
-}
+    void removeItem(const QString& itemID);
 
+    // Shows the "right-click" menu
+    void showPopup(const QPoint &position);
 
-void ResultsMapViewWidget::resizeParent(QRectF rect)
-{
-    auto width = rect.width();
-    auto height = rect.height();
+private slots:
+    // Runs the action that the user selects on the right-click menu
+    void runAction();
 
-    theNewView->setMaximumWidth(width);
-    theNewView->setMaximumHeight(height);
+private:
 
-    theNewView->resize(width,height);
-}
+    ListTreeModel* treeModel;
+};
 
-
-
-
-
+#endif // CustomListWidget_H

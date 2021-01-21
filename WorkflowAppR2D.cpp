@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -262,7 +262,7 @@ void WorkflowAppR2D::initialize(void)
 }
 
 
-void WorkflowAppR2D::replyFinished(QNetworkReply *pReply)
+void WorkflowAppR2D::replyFinished(QNetworkReply */*pReply*/)
 {
     return;
 }
@@ -382,7 +382,7 @@ void WorkflowAppR2D::loadExamples()
 
     if(pathToExample.isNull())
     {
-        qDebug()<<"Error loading example";
+        qDebug()<<"Error loading examples";
         return;
     }
 

@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "LayerTreeItem.h"
-#include "TreeModel.h"
+#include "LayerTreeModel.h"
 #include "LayerTreeView.h"
 #include "TreeViewStyle.h"
 #include "VisualizationWidget.h"
@@ -48,7 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : QTreeView(parent), theVisualizationWidget(visWidget)
 {
-    layersModel = new TreeModel(this);
+    layersModel = new LayerTreeModel(this);
     this->setModel(layersModel);
 
     this->setMaximumWidth(300);
@@ -64,10 +64,10 @@ LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : 
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(layersModel, &TreeModel::rowPositionChanged, visWidget, &VisualizationWidget::changeLayerOrder);
+    connect(layersModel, &LayerTreeModel::rowPositionChanged, visWidget, &VisualizationWidget::changeLayerOrder);
 
     // Connect the layers tree with the function that turns the layers visibility on/off in the GIS map
-    connect(layersModel, &TreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerSelection);
+    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerSelection);
 
     connect(this, &QWidget::customContextMenuRequested, this, &LayerTreeView::showPopup);
 
@@ -79,6 +79,7 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
     auto newLayer = layersModel->addItemToTree(itemText, layerID, parent);
 
     connect(newLayer, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
+    connect(newLayer, &TreeItem::removeThisItem, this, &LayerTreeView::removeLayer);
 
     return newLayer;
 }
@@ -178,13 +179,21 @@ void LayerTreeView::runAction()
 }
 
 
-bool LayerTreeView::removeItemFromTree(const QString& itemName)
+void LayerTreeView::removeLayer(const QString& layerID)
 {
-    return layersModel->removeItemFromTree(itemName);
+    theVisualizationWidget->removeLayerFromMap(layerID);
+
+    this->removeItemFromTree(layerID);
 }
 
 
-TreeModel *LayerTreeView::getLayersModel() const
+bool LayerTreeView::removeItemFromTree(const QString& itemID)
+{
+    return layersModel->removeItemFromTree(itemID);
+}
+
+
+LayerTreeModel *LayerTreeView::getLayersModel() const
 {
     return layersModel;
 }

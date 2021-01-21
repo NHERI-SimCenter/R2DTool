@@ -37,26 +37,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "TreeItem.h"
-#include "ListTreeModel.h"
+#include "CheckableTreeModel.h"
 
 #include <QDataStream>
 #include <QDebug>
 #include <QMimeData>
 #include <QStringList>
+#include <QUuid>
 
-ListTreeModel::ListTreeModel(QString headerText, QObject *parent) : QAbstractItemModel(parent)
+CheckableTreeModel::CheckableTreeModel(QObject *parent, QString headerText) : QAbstractItemModel(parent)
 {    
-    rootItem = new TreeItem({headerText});
+    rootItem = new TreeItem({headerText},0);
 }
 
 
-ListTreeModel::~ListTreeModel()
+CheckableTreeModel::~CheckableTreeModel()
 {
     delete rootItem;
 }
 
 
-int ListTreeModel::columnCount(const QModelIndex &parent) const
+int CheckableTreeModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return static_cast<TreeItem*>(parent.internalPointer())->columnCount();
@@ -65,12 +66,25 @@ int ListTreeModel::columnCount(const QModelIndex &parent) const
 }
 
 
-QVariant ListTreeModel::data(const QModelIndex &index, int role) const
+QVariant CheckableTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
 
     TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
+
+    if (role == Qt::CheckStateRole && index.column() == 0)
+    {
+        if(item->getIsCheckable())
+        {
+            if(item->getState() == 0)
+                return Qt::Unchecked;
+            else if(item->getState() == 1)
+                return Qt::PartiallyChecked;
+            else if(item->getState() == 2)
+                return Qt::Checked;
+        }
+    }
 
     if (role != Qt::DisplayRole)
         return QVariant();
@@ -79,15 +93,15 @@ QVariant ListTreeModel::data(const QModelIndex &index, int role) const
 }
 
 
-Qt::ItemFlags ListTreeModel::flags(const QModelIndex &index) const
+Qt::ItemFlags CheckableTreeModel::flags(const QModelIndex &/*index*/) const
 {
-    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
 
     return flags;
 }
 
 
-QVariant ListTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant CheckableTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         return rootItem->data(section);
@@ -96,7 +110,7 @@ QVariant ListTreeModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 
-QModelIndex ListTreeModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex CheckableTreeModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
@@ -116,7 +130,7 @@ QModelIndex ListTreeModel::index(int row, int column, const QModelIndex &parent)
 }
 
 
-QModelIndex ListTreeModel::parent(const QModelIndex &index) const
+QModelIndex CheckableTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
         return QModelIndex();
@@ -131,7 +145,7 @@ QModelIndex ListTreeModel::parent(const QModelIndex &index) const
 }
 
 
-int ListTreeModel::rowCount(const QModelIndex &parent) const
+int CheckableTreeModel::rowCount(const QModelIndex &parent) const
 {
     TreeItem *parentItem;
     if (parent.column() > 0)
@@ -146,20 +160,67 @@ int ListTreeModel::rowCount(const QModelIndex &parent) const
 }
 
 
-TreeItem *ListTreeModel::getRootItem() const
+TreeItem *CheckableTreeModel::getRootItem() const
 {
     return rootItem;
 }
 
 
-bool ListTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool CheckableTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
+
+    auto valueAsInt = value.toInt();
+
+    std::function<void(TreeItem*, const int)> nestedItemChecker = [&](TreeItem* item, const int value)
+    {
+        auto children = item->getChildItems();
+
+        for(auto&& it : children)
+        {
+            auto child = static_cast<TreeItem*>(it);
+            nestedItemChecker(child,value);
+
+            emit itemValueChanged(child);
+        }
+
+        item->setState(value);
+
+        emit itemValueChanged(item);
+
+        // Set the parent as a partial checked
+        auto parent = static_cast<TreeItem*>(item->getParentItem());
+
+        if(parent)
+            parent->setState(1);
+
+    };
+
+    if (index.column() == 0 && role == Qt::CheckStateRole)
+    {
+        nestedItemChecker(item,valueAsInt);
+
+        emit dataChanged(QModelIndex(), QModelIndex());
+
+        return true;
+    }
+    else
+        return false;
 
     return QAbstractItemModel::setData(index, value, role);
 }
 
 
-TreeItem* ListTreeModel::addItemToTree(const QString itemText, TreeItem* parent)
+TreeItem* CheckableTreeModel::addItemToTree(const QString itemText, TreeItem* parent)
+{
+    // Create a unique ID for the item as some items may have the same name
+    auto id = QUuid::createUuid().toString();
+
+    return this->addItemToTree(itemText,id,parent);
+}
+
+
+TreeItem* CheckableTreeModel::addItemToTree(const QString itemText, const QString itemID, TreeItem* parent)
 {
     if(parent == nullptr)
         parent = rootItem;
@@ -169,7 +230,7 @@ TreeItem* ListTreeModel::addItemToTree(const QString itemText, TreeItem* parent)
 
     QVector<QVariant> childText = {itemText};
 
-    auto childItem = new TreeItem(childText, parent);
+    auto childItem = new TreeItem(childText, itemID, parent);
 
     parent->appendChild(childItem);
 
@@ -179,9 +240,9 @@ TreeItem* ListTreeModel::addItemToTree(const QString itemText, TreeItem* parent)
 }
 
 
-bool ListTreeModel::removeItemFromTree(const QString& itemName)
+bool CheckableTreeModel::removeItemFromTree(const QString& itemID)
 {
-    std::function<bool(TreeItem*, const QString&)> nestedDeleter = [&](TreeItem* item, const QString& name)
+    std::function<bool(TreeItem*, const QString&)> nestedDeleter = [&](TreeItem* item, const QString& ID)
     {
         QVector<TreeItem *> children = item->getChildItems();
 
@@ -189,16 +250,15 @@ bool ListTreeModel::removeItemFromTree(const QString& itemName)
         for(int i = 0; i<children.size(); ++i)
         {
             auto child = children.at(i);
+            auto childID = child->getItemID();
 
-            auto childName = child->data(0).toString();
-
-            if(name.compare(childName) == 0)
+            if(ID.compare(childID) == 0)
             {
                 index = i;
                 break;
             }
 
-            if(nestedDeleter(child,name))
+            if(nestedDeleter(child,ID))
                 return true;
         }
 
@@ -212,7 +272,7 @@ bool ListTreeModel::removeItemFromTree(const QString& itemName)
 
     };
 
-    auto res = nestedDeleter(rootItem, itemName);
+    auto res = nestedDeleter(rootItem, itemID);
 
     emit layoutChanged();
 
@@ -220,7 +280,7 @@ bool ListTreeModel::removeItemFromTree(const QString& itemName)
 }
 
 
-TreeItem* ListTreeModel::getTreeItem(const QString& itemName, const TreeItem* parent) const
+TreeItem* CheckableTreeModel::getTreeItem(const QString& itemName, const TreeItem* parent) const
 {
     QString parentName;
 
@@ -233,7 +293,7 @@ TreeItem* ListTreeModel::getTreeItem(const QString& itemName, const TreeItem* pa
 }
 
 
-TreeItem* ListTreeModel::getTreeItem(const QString& itemName, const QString& parentName) const
+TreeItem* CheckableTreeModel::getTreeItem(const QString& itemName, const QString& parentName) const
 {
 
     std::function<TreeItem* (TreeItem*, const QString&, const QString&)> nestedItemFinder = [&](TreeItem* item, const QString& name, const QString& parentName) -> TreeItem*
@@ -265,39 +325,39 @@ TreeItem* ListTreeModel::getTreeItem(const QString& itemName, const QString& par
         return nullptr;
     };
 
-    return nestedItemFinder(rootItem, itemName, parentName);
+    return static_cast<TreeItem*>(nestedItemFinder(rootItem, itemName, parentName));
 }
 
 
-bool ListTreeModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+TreeItem* CheckableTreeModel::getTreeItem(const QString& itemID) const
 {
-    Q_UNUSED(count);
+    std::function<TreeItem* (TreeItem*, const QString&)> nestedItemFinder = [&](TreeItem* item, const QString& itemID) -> TreeItem*
+    {
+        // Check if this is the item
+        auto thisItemID = item->getItemID();
+        if(itemID.compare(thisItemID) == 0 )
+            return item;
 
-    auto sourceName = sourceParent.data(0).toString();
-    auto fromItem = rootItem->findChild(sourceName)->getParentItem();
+        // Now check the children of this item
+        QVector<TreeItem *> children = item->getChildItems();
+        for(int i = 0; i<children.size(); ++i)
+        {
+            auto child = children.at(i);
 
-    if(sourceName.isEmpty() || fromItem == nullptr)
-        return false;
+            // Check the childrens children
+            if(auto foundChild = nestedItemFinder(child, itemID))
+                return foundChild;
+        }
 
-    // const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationChild
-    if (!beginMoveRows(sourceParent, sourceRow, sourceRow, destinationParent, destinationChild))
-        return false;
+        // Return a null item if none is found
+        return nullptr;
+    };
 
-    // Need if moving up need to decrement the destination index
-    if(sourceRow <= destinationChild)
-        destinationChild--;
-
-    fromItem->moveChild(sourceRow,destinationChild);
-
-    endMoveRows();
-
-    emit rowPositionChanged(sourceRow, destinationChild);
-
-    return true;
+    return static_cast<TreeItem*>(nestedItemFinder(rootItem, itemID));
 }
 
 
-bool ListTreeModel::clear(void)
+bool CheckableTreeModel::clear(void)
 {
     auto children = rootItem->getChildItems();
 
@@ -310,4 +370,25 @@ bool ListTreeModel::clear(void)
     }
 
     return true;
+}
+
+
+QVector<TreeItem *> CheckableTreeModel::getAllChildren(void)
+{
+    QVector<TreeItem *> children{rootItem};
+
+    std::function<void(TreeItem * item)> nestedChildFinder = [&](TreeItem * item){
+
+        auto childItems = item->getChildItems();
+
+        children.append(childItems);
+
+        for(auto&& child : childItems)
+            nestedChildFinder(child);
+
+    };
+
+    nestedChildFinder(rootItem);
+
+    return children;
 }

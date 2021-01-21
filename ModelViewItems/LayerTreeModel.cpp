@@ -38,26 +38,26 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "LayerTreeItem.h"
 #include "TreeItem.h"
-#include "TreeModel.h"
+#include "LayerTreeModel.h"
 
 #include <QDataStream>
 #include <QDebug>
 #include <QMimeData>
 #include <QStringList>
 
-TreeModel::TreeModel(QObject *parent) : QAbstractItemModel(parent)
+LayerTreeModel::LayerTreeModel(QObject *parent) : QAbstractItemModel(parent)
 {    
-    rootItem = new LayerTreeItem({tr("Layers")});
+    rootItem = new LayerTreeItem({tr("Layers")},0);
 }
 
 
-TreeModel::~TreeModel()
+LayerTreeModel::~LayerTreeModel()
 {
     delete rootItem;
 }
 
 
-int TreeModel::columnCount(const QModelIndex &parent) const
+int LayerTreeModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return static_cast<LayerTreeItem*>(parent.internalPointer())->columnCount();
@@ -66,13 +66,13 @@ int TreeModel::columnCount(const QModelIndex &parent) const
 }
 
 
-Qt::DropActions TreeModel::supportedDropActions() const
+Qt::DropActions LayerTreeModel::supportedDropActions() const
 {
     return Qt::MoveAction;
 }
 
 
-QMimeData* TreeModel::mimeData(const QModelIndexList &indexes) const
+QMimeData* LayerTreeModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData *mimeData = new QMimeData();
     QByteArray encodedData;
@@ -91,7 +91,7 @@ QMimeData* TreeModel::mimeData(const QModelIndexList &indexes) const
 }
 
 
-bool TreeModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool LayerTreeModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     if(action != Qt::MoveAction)
         return false;
@@ -172,13 +172,13 @@ bool TreeModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int r
 }
 
 
-QStringList TreeModel::mimeTypes() const
+QStringList LayerTreeModel::mimeTypes() const
 {
     return QStringList("application/data");
 }
 
 
-QVariant TreeModel::data(const QModelIndex &index, int role) const
+QVariant LayerTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
@@ -202,7 +202,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 }
 
 
-Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
+Qt::ItemFlags LayerTreeModel::flags(const QModelIndex &index) const
 {
     //    if (!index.isValid())
     //        return Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled ;
@@ -216,7 +216,7 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 }
 
 
-QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant LayerTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         return rootItem->data(section);
@@ -225,7 +225,7 @@ QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 
-QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex LayerTreeModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
@@ -237,7 +237,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
     else
         parentItem = static_cast<LayerTreeItem*>(parent.internalPointer());
 
-   TreeItem *childItem = parentItem->child(row);
+    TreeItem *childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     else
@@ -245,7 +245,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
 }
 
 
-QModelIndex TreeModel::parent(const QModelIndex &index) const
+QModelIndex LayerTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
         return QModelIndex();
@@ -260,7 +260,7 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
 }
 
 
-int TreeModel::rowCount(const QModelIndex &parent) const
+int LayerTreeModel::rowCount(const QModelIndex &parent) const
 {
     LayerTreeItem *parentItem;
     if (parent.column() > 0)
@@ -275,13 +275,13 @@ int TreeModel::rowCount(const QModelIndex &parent) const
 }
 
 
-LayerTreeItem *TreeModel::getRootItem() const
+LayerTreeItem *LayerTreeModel::getRootItem() const
 {
     return rootItem;
 }
 
 
-bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool LayerTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     LayerTreeItem *item = static_cast<LayerTreeItem*>(index.internalPointer());
 
@@ -326,7 +326,7 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
 }
 
 
-LayerTreeItem* TreeModel::addItemToTree(const QString itemText, const QString layerID, LayerTreeItem* parent)
+LayerTreeItem* LayerTreeModel::addItemToTree(const QString itemText, const QString layerID, LayerTreeItem* parent)
 {
     if(parent == nullptr)
         parent = rootItem;
@@ -346,9 +346,9 @@ LayerTreeItem* TreeModel::addItemToTree(const QString itemText, const QString la
 }
 
 
-bool TreeModel::removeItemFromTree(const QString& itemName)
+bool LayerTreeModel::removeItemFromTree(const QString& itemID)
 {
-    std::function<bool(TreeItem*, const QString&)> nestedDeleter = [&](TreeItem* item, const QString& name)
+    std::function<bool(TreeItem*, const QString&)> nestedDeleter = [&](TreeItem* item, const QString& ID)
     {
         QVector<TreeItem *> children = item->getChildItems();
 
@@ -356,16 +356,15 @@ bool TreeModel::removeItemFromTree(const QString& itemName)
         for(int i = 0; i<children.size(); ++i)
         {
             auto child = children.at(i);
+            auto childID = child->getItemID();
 
-            auto childName = child->data(0).toString();
-
-            if(name.compare(childName) == 0)
+            if(ID.compare(childID) == 0)
             {
                 index = i;
                 break;
             }
 
-            if(nestedDeleter(child,name))
+            if(nestedDeleter(child,ID))
                 return true;
         }
 
@@ -379,7 +378,7 @@ bool TreeModel::removeItemFromTree(const QString& itemName)
 
     };
 
-    auto res = nestedDeleter(rootItem, itemName);
+    auto res = nestedDeleter(rootItem, itemID);
 
     emit layoutChanged();
 
@@ -387,7 +386,7 @@ bool TreeModel::removeItemFromTree(const QString& itemName)
 }
 
 
-LayerTreeItem* TreeModel::getLayerTreeItem(const QString& itemName, const LayerTreeItem* parent) const
+LayerTreeItem* LayerTreeModel::getLayerTreeItem(const QString& itemName, const LayerTreeItem* parent) const
 {
     QString parentName;
 
@@ -400,7 +399,7 @@ LayerTreeItem* TreeModel::getLayerTreeItem(const QString& itemName, const LayerT
 }
 
 
-LayerTreeItem* TreeModel::getLayerTreeItem(const QString& itemName, const QString& parentName) const
+LayerTreeItem* LayerTreeModel::getLayerTreeItem(const QString& itemName, const QString& parentName) const
 {
 
     std::function<TreeItem* (TreeItem*, const QString&, const QString&)> nestedItemFinder = [&](TreeItem* item, const QString& name, const QString& parentName) -> TreeItem*
@@ -436,7 +435,7 @@ LayerTreeItem* TreeModel::getLayerTreeItem(const QString& itemName, const QStrin
 }
 
 
-bool TreeModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+bool LayerTreeModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 {
     Q_UNUSED(count);
 
@@ -464,7 +463,7 @@ bool TreeModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int cou
 }
 
 
-bool TreeModel::clear(void)
+bool LayerTreeModel::clear(void)
 {
     auto children = rootItem->getChildItems();
 

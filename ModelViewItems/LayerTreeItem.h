@@ -1,5 +1,5 @@
-#ifndef TreeItem_H
-#define TreeItem_H
+#ifndef LayerTreeItem_H
+#define LayerTreeItem_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,6 +38,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
+#include "TreeItem.h"
+
 #include <QModelIndex>
 #include <QObject>
 #include <QVariant>
@@ -45,45 +47,29 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QDialog;
 
-class TreeItem : public QObject
+class LayerTreeItem : public TreeItem
 {
     Q_OBJECT
 
 public:
-    explicit TreeItem(const QVector<QVariant> &data, TreeItem *parentItem = nullptr);
-    ~TreeItem();
+    explicit LayerTreeItem(const QVector<QVariant> &data, const QString& ID/* = QString()*/, TreeItem *parentItem = nullptr);
+    ~LayerTreeItem();
 
-    void appendChild(TreeItem *child);
-    void removeChild(TreeItem *child);
-    void removeChild(int row);
+    QStringList getActionList();
 
-    TreeItem* child(int row);
+public slots:
 
-    virtual QStringList getActionList();
+    void changeOpacity();
 
-    int childCount() const;
-    int columnCount() const;
+    void handleChangeOpacity(int value);
 
-    QVariant data(int column) const;
-    int row() const;
+signals:
 
-    TreeItem* getParentItem();
+void opacityChanged(const QString& layerID, const double opacity);
 
-    QVector<TreeItem*> getChildItems() const;
-
-    void moveChild(int sourceRow, int destinationRow);
-
-    TreeItem *findChild(QString name);
-
-    QString getName() const;
-
-protected:
-    QVector<TreeItem*> vecChildItems;
-    QVector<QVariant> itemData;
-    TreeItem* parentItem;
-
-    QString itemName;
+private:
+    QDialog* opacityDialog;
 };
 
 
-#endif // TreeItem_H
+#endif // LayerTreeItem_H

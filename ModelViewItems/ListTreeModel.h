@@ -1,5 +1,5 @@
-#ifndef LayerTreeItem_H
-#define LayerTreeItem_H
+#ifndef ListTreeModel_H
+#define ListTreeModel_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,55 +38,58 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "TreeItem.h"
+#include <QAbstractItemModel>
 
-#include <QModelIndex>
-#include <QObject>
-#include <QVariant>
-#include <QVector>
+class TreeItem;
 
-class QDialog;
-
-class LayerTreeItem : public TreeItem
+class ListTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
-    explicit LayerTreeItem(const QVector<QVariant> &data, const QString& ID = QString(), LayerTreeItem *parentItem = nullptr);
-    ~LayerTreeItem();
+    explicit ListTreeModel(QString headerText, QObject *parent = nullptr);
+    ~ListTreeModel();
 
-    QStringList getActionList();
+    QVariant data(const QModelIndex &index, int role) const override;
 
-    // 0 = unchecked
-    // 1 = partially checked
-    // 2 = checked
-    int getState() const;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    void setState(int state);
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    QString getItemID() const;
+    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
 
-public slots:
+    QModelIndex parent(const QModelIndex &index) const override;
 
-    void changeOpacity();
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    void handleChangeOpacity(int value);
+    int columnCount(const QModelIndex &parent) const override;
+
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+
+    TreeItem *getRootItem() const;
+
+    // If parent item is not provided, the item will get added to the root of the tree
+    TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
+
+    bool removeItemFromTree(const QString& itemID);
+
+    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
+    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
+
+    bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
+
+    bool clear(void);
+
+    QVector<TreeItem *> getAllChildren(void);
 
 signals:
 
-void opacityChanged(const QString& layerID, const double opacity);
+    void itemValueChanged(TreeItem* item);
+
+    void rowPositionChanged(const int oldPos, const int newPos);
 
 private:
-    QVector<LayerTreeItem*> vecChildItems;
-    QVector<QVariant> itemData;
-    LayerTreeItem* parentItem;
-    int currentState;
-
-    QString itemName;
-    QString itemID;
-
-    QDialog* opacityDialog;
+    TreeItem *rootItem;
 };
 
-
-#endif // LayerTreeItem_H
+#endif // ListTreeModel_H
