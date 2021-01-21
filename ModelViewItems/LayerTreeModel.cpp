@@ -37,7 +37,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "LayerTreeItem.h"
-#include "TreeItem.h"
 #include "LayerTreeModel.h"
 
 #include <QDataStream>
@@ -69,6 +68,18 @@ int LayerTreeModel::columnCount(const QModelIndex &parent) const
 Qt::DropActions LayerTreeModel::supportedDropActions() const
 {
     return Qt::MoveAction;
+}
+
+
+Qt::DropActions LayerTreeModel::supportedDragActions() const
+{
+    return Qt::MoveAction;
+}
+
+
+QStringList LayerTreeModel::mimeTypes() const
+{
+    return QStringList("application/data");
 }
 
 
@@ -172,12 +183,6 @@ bool LayerTreeModel::dropMimeData(const QMimeData *data, Qt::DropAction action, 
 }
 
 
-QStringList LayerTreeModel::mimeTypes() const
-{
-    return QStringList("application/data");
-}
-
-
 QVariant LayerTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
@@ -204,10 +209,8 @@ QVariant LayerTreeModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags LayerTreeModel::flags(const QModelIndex &index) const
 {
-    //    if (!index.isValid())
-    //        return Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled ;
 
-    Qt::ItemFlags flags = Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsUserCheckable;
+    Qt::ItemFlags flags = Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled ;
 
     if (index.column() == 0)
         flags |= Qt::ItemIsUserCheckable;

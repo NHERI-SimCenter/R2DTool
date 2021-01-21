@@ -53,14 +53,16 @@ LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : 
 
     this->setMaximumWidth(300);
     this->setWordWrap(true);
+    resizeColumnToContents(0);
 
-    this->setAcceptDrops(true);
-    this->setDragEnabled(true);
-    this->setDragDropOverwriteMode(false);
     this->setDefaultDropAction(Qt::MoveAction);
-    this->setDragDropMode(QTreeView::InternalMove);
-    this->setStyle(new TreeViewStyle(style()));
+    this->setDragDropOverwriteMode(false);
     this->setFocusPolicy(Qt::NoFocus);
+    this->setStyle(new TreeViewStyle(style()));
+    this->setSelectionMode(QAbstractItemView::SingleSelection);
+    this->setDragEnabled(true);
+    this->viewport()->setAcceptDrops(true);
+    this->setDragDropMode(QAbstractItemView::InternalMove);
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 

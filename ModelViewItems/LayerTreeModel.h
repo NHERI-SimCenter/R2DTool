@@ -62,7 +62,7 @@ public:
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    int columnCount(const QModelIndex &parent) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
@@ -77,16 +77,16 @@ public:
     LayerTreeItem* getLayerTreeItem(const QString& itemName, const LayerTreeItem* parent) const;
 
     Qt::DropActions supportedDropActions() const override;
+    Qt::DropActions supportedDragActions() const override;
 
     QStringList mimeTypes () const override;
-
     QMimeData* mimeData(const QModelIndexList &indexes) const override;
-
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
 
     bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
 
     bool clear(void);
+
 
 signals:
 

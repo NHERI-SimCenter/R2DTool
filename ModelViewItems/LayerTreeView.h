@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include <QTreeView>
+#include <QDebug>
 
 class LayerTreeModel;
 class LayerTreeItem;
@@ -60,6 +61,7 @@ public:
     LayerTreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
 
     void clear(void);
+
 
 public slots:
     // Shows the "right-click" menu

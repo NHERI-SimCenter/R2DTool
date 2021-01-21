@@ -108,6 +108,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     selectingConvexHull = false;
 
+    setAcceptDrops(true);
     // Create the header layout and add it to the main layout
     //    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     //    SectionTitle *label = new SectionTitle();
@@ -713,11 +714,11 @@ void VisualizationWidget::loadPipelineData(void)
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
-        auto latitudeStart = pipelineTableWidget->item(i,1)->data(0).toDouble();
-        auto longitudeStart = pipelineTableWidget->item(i,2)->data(0).toDouble();
+        auto latitudeStart = pipelineTableWidget->item(i,3)->data(0).toDouble();
+        auto longitudeStart = pipelineTableWidget->item(i,4)->data(0).toDouble();
 
-        auto latitudeEnd = pipelineTableWidget->item(i,3)->data(0).toDouble();
-        auto longitudeEnd = pipelineTableWidget->item(i,4)->data(0).toDouble();
+        auto latitudeEnd = pipelineTableWidget->item(i,5)->data(0).toDouble();
+        auto longitudeEnd = pipelineTableWidget->item(i,6)->data(0).toDouble();
 
         // Create the points and add it to the feature table
         PolylineBuilder polylineBuilder(SpatialReference::wgs84());
@@ -1088,12 +1089,12 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
 
 ClassBreaksRenderer* VisualizationWidget::createPipelineRenderer(void)
 {
-    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(254, 229, 217), 5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol2 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(252, 187, 161), 5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol3 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(252, 146, 114), 5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol4 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(251, 106, 74),  5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol5 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(222, 45 , 38),  5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol6 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(165, 15 , 21),  5.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(0, 0, 0), 6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol2 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(255,255,178), 6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol3 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(253,204,92), 6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol4 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(253,141,60),  6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol5 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(240,59,32),  6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol6 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(189,0,38),  6.0f /*width*/, this);
 
     QList<ClassBreak*> classBreaks;
 
