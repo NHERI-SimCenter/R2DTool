@@ -96,7 +96,9 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     jsonObj.insert("Author", "SimCenter");
     jsonObj.insert("WorkflowType", "Parametric Study");
     jsonObj.insert("runDir", runDir);
-    jsonObj.insert("localAppDir", appDir);
+
+
+    //jsonObj.insert("localAppDir", appDir);
 
     QJsonObject unitsObj;
     //   unitsObj.insert("force", "kips"/*unitsForceCombo->currentText()*/);

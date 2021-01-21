@@ -56,7 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
 #include "ResultsWidget.h"
-#include "RunLocalWidget.h"
+//#include "RunLocalWidget.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
 #include "UQWidget.h"
@@ -115,8 +115,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     theInstance = this;
 
-    localApp = new LocalApplication("R2D_workflow.py");
-    remoteApp = new RemoteApplication("R2D_workflow.py", theService);
+    localApp = new LocalApplication("R2DTool_workflow.py");
+    remoteApp = new RemoteApplication("R2DTool_workflow.py", theService);
 
     theJobManager = new RemoteJobManager(theService);
 
@@ -336,7 +336,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 
     //  output regular data
 
+
     theRunWidget->outputToJSON(jsonObjectTop);
+
     theModelingWidget->outputToJSON(jsonObjectTop);
     theHazardsWidget->outputToJSON(jsonObjectTop);
     theAnalysisWidget->outputToJSON(jsonObjectTop);
@@ -350,9 +352,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppR2D::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/, QString /*inputFile*/)
+void WorkflowAppR2D::processResults(QString resultsDir, QString /*dakotaTab*/, QString /*inputFile*/)
 {
-    theResultsWidget->processResults();
+    theResultsWidget->processResults(resultsDir);
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
 
@@ -546,7 +548,6 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
 
     json["runDir"]=tmpDirectory;
     json["WorkflowType"]="Regional Simulation";
-
 
     QJsonDocument doc(json);
     file.write(doc.toJson());
