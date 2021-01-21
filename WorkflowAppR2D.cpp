@@ -177,10 +177,20 @@ void WorkflowAppR2D::initialize(void)
     jsonFile.open(QFile::ReadOnly);
     QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
 
-    auto docObj = exDoc.object();
+    QJsonObject docObj = exDoc.object();
+    QJsonArray examples = docObj["Examples"].toArray();
+    QMenu *exampleMenu = 0;
+    if (examples.size() > 0)
+        exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
+    foreach (const QJsonValue & example, examples) {
+        QJsonObject exampleObj = example.toObject();
+        QString name = exampleObj["name"].toString();
+        QString inputFile = exampleObj["InputFile"].toString();
+        auto action = exampleMenu->addAction(name, this, &WorkflowAppR2D::loadExamples);
+        action->setProperty("InputFile",inputFile);
+    }
 
-    auto exContainerObj = docObj.value("Examples").toObject();
-
+    /*
     auto numEx = exContainerObj.count();
 
     if(numEx > 0)
@@ -200,6 +210,7 @@ void WorkflowAppR2D::initialize(void)
             action->setProperty("InputFile",inputFile);
         }
     }
+    */
 
     // Clear action
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
