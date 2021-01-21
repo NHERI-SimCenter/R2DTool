@@ -59,7 +59,7 @@ class RandomVariablesContainer;
 class RemoteJobManager;
 class RemoteService;
 class ResultsWidget;
-class RunLocalWidget;
+//class RunLocalWidget;
 class RunWidget;
 class SimCenterAppWidget;
 class SimCenterComponentSelection;
