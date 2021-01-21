@@ -212,12 +212,14 @@ void ResultsWidget::setCurrentlyViewable(bool status){
 }
 
 
-int ResultsWidget::processResults()
+int ResultsWidget::processResults(QString resultsDirectory)
 {
 
-    auto SCPrefs = SimCenterPreferences::getInstance();
+    //auto SCPrefs = SimCenterPreferences::getInstance();
 
-    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
+    //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
+
+    qDebug() << resultsDirectory;
 
     try
     {
