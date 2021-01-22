@@ -51,9 +51,9 @@ public:
 
     void clear(void);
 
-    QVariantList getListOfModels() const;
+    QVariantList getListOfModels(TreeItem* parentItem = nullptr) const;
 
-    QVariantList getListOfWeights() const;
+    QVariantList getListOfWeights(TreeItem* parentItem = nullptr) const;
 
 public slots:
 

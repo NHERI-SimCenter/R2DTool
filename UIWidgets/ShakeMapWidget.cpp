@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "VisualizationWidget.h"
 #include "CustomListWidget.h"
+#include "OpenSRAPreferences.h"
 
 // GIS Layers
 #include "FeatureCollectionLayer.h"
@@ -48,8 +49,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeView.h"
 #include "LayerListModel.h"
 
+#include <QDirIterator>
 #include <QApplication>
 #include <QDialog>
+#include <QJsonArray>
 #include <QFile>
 #include <QFileDialog>
 #include <QGridLayout>
@@ -148,7 +151,7 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
 
     shakeMapStackedWidget = std::make_unique<QStackedWidget>();
 
-    directoryInputWidget = new QWidget(this);    
+    directoryInputWidget = new QWidget(this);
     auto inputLayout = new QGridLayout(directoryInputWidget);
 
     progressBarWidget = new QWidget(this);
@@ -240,11 +243,38 @@ void ShakeMapWidget::loadShakeMapData(void)
         return;
     }
 
-    const QFileInfo inputDir(pathToShakeMapDirectory);
+
+    const QFileInfo inputDirInfo(pathToShakeMapDirectory);
+
+    auto inputDir = inputDirInfo.absoluteFilePath();
+
+    QDirIterator iter(inputDir, QDirIterator::Subdirectories);
+
+    while(iter.hasNext() )
+    {
+        auto dir = iter.next();
+
+        this->loadDataFromDirectory(dir);
+    }
+
+    emit loadingComplete(true);
+
+    return;
+}
+
+
+void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
+{
+
+    // Return if the directory does not exist
+    if(!QDir(dir).exists())
+        return;
+
+    const QFileInfo inputDir(dir);
 
     if (!inputDir.exists() || !inputDir.isDir())
     {
-        QString errMsg ="A directory does not exist at the path: "+pathToShakeMapDirectory;
+        QString errMsg ="A directory does not exist at the path: " + dir;
         this->userMessageDialog(errMsg);
         return;
     }
@@ -255,8 +285,6 @@ void ShakeMapWidget::loadShakeMapData(void)
 
     if(inputFiles.empty())
     {
-        QString errMsg ="No ShakeMap files were found at the path: "+pathToShakeMapDirectory;
-        this->userMessageDialog(errMsg);
         return;
     }
 
@@ -265,6 +293,8 @@ void ShakeMapWidget::loadShakeMapData(void)
     // Check if the shake map already exists
     if(shakeMapContainer.contains(eventName))
         return;
+
+    eventsVec.push_back(eventName);
 
     // Create a new shakemap
     auto inputShakeMap = new ShakeMap();
@@ -304,7 +334,7 @@ void ShakeMapWidget::loadShakeMapData(void)
     int count = 0;
     foreach(QString filename, inputFiles)
     {
-        auto inFilePath = pathToShakeMapDirectory + filename;
+        auto inFilePath = dir + QDir::separator() + filename;
 
         // Create the XML grid
         if(filename.compare("grid.xml") == 0) // XML grid
@@ -396,8 +426,6 @@ void ShakeMapWidget::loadShakeMapData(void)
     if(shakeMapStackedWidget->isModal())
         shakeMapStackedWidget->close();
 
-    emit loadingComplete(true);
-
     return;
 }
 
@@ -428,7 +456,20 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 
     QJsonObject sourceParamObj;
 
-    sourceParamObj.insert("Directory",pathToShakeMapDirectory);
+    sourceParamObj.insert("SourceForVs30","Wills et al. (2015)");
+
+    auto tempWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "tmp.OpenSRA"  + QDir::separator() + "ShakeMap";
+
+    sourceParamObj.insert("Directory",tempWorkDir);
+
+    QJsonArray eventsList;
+
+    for(auto&& it : eventsVec)
+    {
+        eventsList.append(it);
+    }
+
+    sourceParamObj.insert("Events",eventsList);
 
     jsonObject.insert("SourceParameters",sourceParamObj);
 
@@ -438,5 +479,75 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool ShakeMapWidget::inputFromJSON(QJsonObject &jsonObject)
 {
+    pathToShakeMapDirectory = jsonObject["Directory"].toString();
+
+    shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
+
+    this->loadShakeMapData();
+
     return false;
+}
+
+
+bool ShakeMapWidget::copyFiles(QString &destDir)
+{
+    const QFileInfo inputDirInfo(pathToShakeMapDirectory);
+
+    auto sourcePath = inputDirInfo.absoluteFilePath();
+
+    auto targetPath = destDir + QDir::separator() + "ShakeMap";
+
+    auto res = this->recursiveCopy(sourcePath, targetPath);
+
+    if(!res)
+    {
+        QString msg = "Error copying ShakeMap files over to the directory " + destDir;
+        qDebug()<<msg;
+
+        return res;
+    }
+
+    return true;
+}
+
+
+bool ShakeMapWidget::recursiveCopy(const QString &sourcePath, const QString &destPath)
+{
+    QFileInfo srcFileInfo(sourcePath);
+
+    if (srcFileInfo.isDir())
+    {
+        QDir targetDir(destPath);
+
+        if (!targetDir.mkdir(destPath))
+            return false;
+
+        QDir sourceDir(sourcePath);
+
+        QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+
+        foreach (const QString &fileName, fileNames)
+        {
+            const QString newSrcFilePath = sourcePath + QDir::separator() + fileName;
+            const QString newDestFilePath = destPath  + QDir::separator() + fileName;
+
+            if (!recursiveCopy(newSrcFilePath, newDestFilePath))
+                return false;
+        }
+    } else {
+        if (!QFile::copy(sourcePath, destPath))
+            return false;
+    }
+
+    return true;
+}
+
+
+void ShakeMapWidget::clear()
+{
+    listWidget->clear();
+    shakeMapDirectoryLineEdit->clear();
+    pathToShakeMapDirectory = "NULL";
+    shakeMapContainer.clear();
+    eventsVec.clear();
 }

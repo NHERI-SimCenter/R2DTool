@@ -402,7 +402,7 @@ QString ComponentInputWidget::getPathToComponentFile(void) const
 }
 
 
-void ComponentInputWidget::testFileLoad(QString& path)
+void ComponentInputWidget::loadFileFromPath(QString& path)
 {
     pathToComponentInfoFile = path;
     componentFileLineEdit->setText(path);

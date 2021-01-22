@@ -46,23 +46,28 @@ ComponentDatabase::ComponentDatabase()
 
 int ComponentDatabase::getNumberOfComponents()
 {
-    return ComponentsDB.size();
+    return ComponentMap.size();
 }
 
 
 void ComponentDatabase::addComponent(int ID, Component& asset)
 {
-    ComponentsDB.insert(ID, asset);
+    ComponentMap.insert(ID, asset);
 }
 
 
 Component& ComponentDatabase::getComponent(const int ID)
 {
-  return ComponentsDB[ID];
+  return ComponentMap[ID];
 }
 
 
 void ComponentDatabase::clear(void)
 {
-    ComponentsDB.clear();
+    ComponentMap.clear();
+}
+
+QMap<int, Component> ComponentDatabase::getComponentsMap() const
+{
+    return ComponentMap;
 }
