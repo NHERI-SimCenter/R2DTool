@@ -4,8 +4,10 @@
 # Usage: 
 # 	1) cd the build folder containing the .app file of your application
 # 	2) Copy this script file over to the build folder
-#   3) Set the path to macdeployqt on your system and change the AppName to match the *.app file below
-# 	3) Run: bash PackageApp.sh
+#   3) Set the path to macdeployqt on your system and change
+#   4) Change the AppName on line 16 to match the *.app file of your application
+#   5) Change the path on line 98
+# 	6) Run: bash PackageApp.sh
 
 # ********* THINGS TO CHANGE START *********
 # Set the path to your macdeployqt here
@@ -93,7 +95,7 @@ echo $mount_point
 echo $dev_entry
 	
 # Define the paths to the application and to libEsriCommonQt.dylib - this should not change
-pathAppBin=$mount_point/$appFile/Contents/MacOS/RDT
+pathAppBin=$mount_point/$appFile/Contents/MacOS/R2D
 
 pathAppLib=$mount_point/$appFile/Contents/Frameworks/libEsriCommonQt.dylib
 
