@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentInputWidget.h"
 #include "CSVReaderWriter.h"
 
+#include <QCoreApplication>
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QTableWidget>
@@ -87,12 +88,23 @@ void ComponentInputWidget::loadComponentData(void)
 
     // Check if the directory exists
     QFile file(pathToComponentInfoFile);
+
     if (!file.exists())
     {
-        QString errMsg = "Cannot find the file: "+ pathToComponentInfoFile + "\n" +"Check your directory and try again.";
-        qDebug() << errMsg;
-        this->userMessageDialog(errMsg);
-        return;
+        auto relPathToComponentFile = QCoreApplication::applicationDirPath() + QDir::separator() + pathToComponentInfoFile;
+
+        if (!QFile(relPathToComponentFile).exists())
+        {
+            QString errMsg = "Cannot find the file: "+ pathToComponentInfoFile + "\n" +"Check your directory and try again.";
+            qDebug() << errMsg;
+            this->userMessageDialog(errMsg);
+            return;
+        }
+        else
+        {
+            pathToComponentInfoFile = relPathToComponentFile;
+            componentFileLineEdit->setText(pathToComponentInfoFile);
+        }
     }
 
     CSVReaderWriter csvTool;

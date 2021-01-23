@@ -39,7 +39,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "VisualizationWidget.h"
 #include "CustomListWidget.h"
-#include "OpenSRAPreferences.h"
+#include "SimCenterPreferences.h"
+//#include "OpenSRAPreferences.h"
 
 // GIS Layers
 #include "FeatureCollectionLayer.h"
@@ -244,7 +245,28 @@ void ShakeMapWidget::loadShakeMapData(void)
     }
 
 
-    const QFileInfo inputDirInfo(pathToShakeMapDirectory);
+    QFileInfo inputDirInfo(pathToShakeMapDirectory);
+
+    if(!inputDirInfo.exists())
+    {
+        auto relPathToDir = QCoreApplication::applicationDirPath() + QDir::separator() + pathToShakeMapDirectory;
+
+        if (!QFileInfo(relPathToDir).exists())
+        {
+            QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
+            qDebug() << errMsg;
+            this->userMessageDialog(errMsg);
+            return;
+        }
+        else
+        {
+            pathToShakeMapDirectory = relPathToDir;
+            shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
+        }
+
+    }
+
+    inputDirInfo = QFileInfo(pathToShakeMapDirectory);
 
     auto inputDir = inputDirInfo.absoluteFilePath();
 
@@ -458,7 +480,7 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 
     sourceParamObj.insert("SourceForVs30","Wills et al. (2015)");
 
-    auto tempWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "tmp.OpenSRA"  + QDir::separator() + "ShakeMap";
+    auto tempWorkDir = SimCenterPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "tmp.OpenSRA"  + QDir::separator() + "ShakeMap";
 
     sourceParamObj.insert("Directory",tempWorkDir);
 
