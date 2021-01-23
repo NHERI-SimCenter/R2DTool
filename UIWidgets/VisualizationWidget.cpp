@@ -270,7 +270,7 @@ void VisualizationWidget::createVisualizationWidget(void)
     connect(clearButton,SIGNAL(clicked()),this,SLOT(resetConvexHull()));
 
     QLabel* bottomText = new QLabel(visWidget);
-    bottomText->setText("Click the “Apply” button to\nselect the subset of assets");
+    bottomText->setText("Click the 'Apply' button to\nselect the subset of assets");
     bottomText->setStyleSheet("font-weight: bold; color: black; text-align: center");
 
     QPushButton *applyButton = new QPushButton(visWidget);
