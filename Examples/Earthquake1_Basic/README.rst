@@ -2,6 +2,36 @@
 Basic Earthquake
 ================
 
++-----------------+----------------------------------------------------+
+| Download files  | :github:`Github <Examples/Earthquake1_Basic/>`     |
++-----------------+----------------------------------------------------+
+
+
+
+Required Files
+--------------
+
+#. :github:`cantilever_light.py <Examples/Earthquake1_Basic/input_data/model/cantilever_light.py>`
+
+
+.. automodule:: cantilever_light
+   :members:
+
+
+.. currentmodule:: cantilever_light
+
+
+.. autofunction:: build_model
+
+
+.. autofunction:: run_analysis
+
+
+Modeling Procedure
+------------------
+
+
+
 #. **GI**
     
    .. figure:: figures/r2dt-0001-GI.png
@@ -45,8 +75,8 @@ Basic Earthquake
 
 #. **RV** 
 
-   .. figure:: figures/r2dt-0001-RV.png
-      :width: 400px
+   For this problem, the **RV** panel will be left empty.
+
 
 #. **RES** 
 

@@ -2,6 +2,10 @@
 Earthquake - Alameda
 ====================
 
++-----------------+----------------------------------------------------+
+| Download files  | :github:`Github <Examples/Earthquake2_Alameda/>`   |
++-----------------+----------------------------------------------------+
+
 #. **GI**
     
    .. figure:: figures/r2dt-0002-GI.png
@@ -25,8 +29,7 @@ Earthquake - Alameda
 
 #. **MOD** 
 
-   .. figure:: figures/r2dt-0002-MOD.png
-      :width: 400px
+   In the building modeling panel, simply leave the first dropdown box set to **None**.
 
 #. **ANA** 
 
@@ -38,15 +41,14 @@ Earthquake - Alameda
    .. figure:: figures/r2dt-0002-DL.png
       :width: 400px
 
-#. **UQ** 
+#. **UQ**
 
    .. figure:: figures/r2dt-0002-UQ.png
       :width: 400px
 
 #. **RV** 
 
-   .. figure:: figures/r2dt-0002-RV.png
-      :width: 400px
+   The random variable panel will be left empty for this example.
 
 #. **RES** 
 
