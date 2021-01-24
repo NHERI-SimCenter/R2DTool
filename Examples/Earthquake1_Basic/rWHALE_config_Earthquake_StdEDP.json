@@ -16,8 +16,8 @@
     "Hazard": {
         "Application": "UserInputGM",
         "ApplicationData": {
-	    "eventFile": "/records/EventGrid.csv",
-	    "motionDir": "/records"
+	    "eventFile": "input_data/records/EventGrid.csv",
+	    "motionDir": "input_data/records"
 	}
     },			
     "Building": {
@@ -30,7 +30,7 @@
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "records/EventGrid.csv",
+        "filenameEVENTgrid": "input_data/records/EventGrid.csv",
         "samples": 5,
         "neighbors": 4
       }
@@ -44,7 +44,7 @@
       "Application": "OpenSeesPyInput",
       "ApplicationData": {
         "mainScript": "cantilever_light.py",
-        "modelPath": "model/",
+        "modelPath": "input_data/model",
         "ndm": 3,
         "dofMap": "1,2,3",
         "columnLine": "0, 1"

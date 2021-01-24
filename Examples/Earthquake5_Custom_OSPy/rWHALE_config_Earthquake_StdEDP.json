@@ -23,7 +23,7 @@
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "records/EventGrid.csv",
+        "filenameEVENTgrid": "input_data/records/EventGrid.csv",
         "samples": 5,
         "neighbors": 1
       }
@@ -39,7 +39,7 @@
       "Application": "OpenSeesPyInput",
       "ApplicationData": {
         "mainScript": "cantilever.py",
-        "modelPath": "model/",
+        "modelPath": "input_data/model",
         "columnLine": "10000, 10001"
       }
     },
