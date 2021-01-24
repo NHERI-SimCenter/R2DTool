@@ -3,29 +3,33 @@ Earthquake - Alameda
 ====================
 
 +-----------------+----------------------------------------------------+
-| Download files  | :github:`Github <Examples/Earthquake2_Alameda/>`   |
+| Download files  | :github:`<Examples/Earthquake2_Alameda/>`          |
 +-----------------+----------------------------------------------------+
 
 #. **GI**
     
    .. figure:: figures/r2dt-0002-GI.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 
 #. **HAZ**
     
    .. figure:: figures/r2dt-0002-HAZ.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **ASD** 
 
    .. figure:: figures/r2dt-0002-ASD.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **HTA** 
 
    .. figure:: figures/r2dt-0002-HTA.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **MOD** 
 
@@ -34,17 +38,20 @@ Earthquake - Alameda
 #. **ANA** 
 
    .. figure:: figures/r2dt-0002-ANA.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **DL** 
 
    .. figure:: figures/r2dt-0002-DL.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **UQ**
 
    .. figure:: figures/r2dt-0002-UQ.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **RV** 
 
@@ -53,5 +60,6 @@ Earthquake - Alameda
 #. **RES** 
 
    .. figure:: figures/r2dt-0002-RES.png
-      :width: 400px
+      :width: 600px
+      :align: center
 

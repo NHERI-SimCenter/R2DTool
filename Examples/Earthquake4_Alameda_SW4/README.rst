@@ -16,51 +16,61 @@ Modeling Procedure
 #. **GI**
     
    .. figure:: figures/r2dt-0004-GI.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 
 #. **HAZ**
     
    .. figure:: figures/r2dt-0004-HAZ.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **ASD** 
 
    .. figure:: figures/r2dt-0004-ASD.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **HTA** 
 
    .. figure:: figures/r2dt-0004-HTA.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **MOD** 
 
    .. figure:: figures/r2dt-0004-MOD.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **ANA** 
 
    .. figure:: figures/r2dt-0004-ANA.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **DL** 
 
    .. figure:: figures/r2dt-0004-DL.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **UQ** 
 
    .. figure:: figures/r2dt-0004-UQ.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **RV** 
 
    .. figure:: figures/r2dt-0004-RV.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
 #. **RES** 
 
    .. figure:: figures/r2dt-0004-RES.png
-      :width: 400px
+      :width: 600px
+      :align: center
 
