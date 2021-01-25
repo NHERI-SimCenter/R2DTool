@@ -5,6 +5,9 @@ Earthquake - Custom - OpenSeesPy
 Required Files
 --------------
 
+
+
+
 Modeling Procedure
 ------------------
 
@@ -42,9 +45,7 @@ Modeling Procedure
 
 #. **ANA** 
 
-   .. figure:: figures/r2dt-0005-ANA.png
-      :width: 600px
-      :align: center
+   In the analysis panel, simply select **OpenSeesPy** from the first dropdown menu.
 
 #. **DL** 
 
