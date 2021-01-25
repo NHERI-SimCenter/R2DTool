@@ -1,5 +1,5 @@
 {
-  "Name": "rWHALE_",
+  "Name": "Earthquake - Alameda",
   "Author": "Tamika Bassman",
   "units": {
       "force": "kips",
@@ -16,21 +16,21 @@
     "Hazard": {
         "Application": "UserInputGM",
         "ApplicationData": {
-	    "eventFile": "/IMs/EventGrid.csv",
-	    "motionDir": "/IMs"
+	    "eventFile": "input_data/IMs/EventGrid.csv",
+	    "motionDir": "input_data/IMs"
 	}
     },	
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "1-20",
-        "buildingSourceFile":"all_bldgs.csv"
+        "buildingSourceFile":"input_data/all_bldgs.csv"
       }
     },
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "IMs/EventGrid.csv",
+        "filenameEVENTgrid": "input_data/IMs/EventGrid.csv",
         "samples": 10000,
         "neighbors": 4,
         "filter_label": "SoilType"

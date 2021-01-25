@@ -24,7 +24,7 @@
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "13-14",
-        "buildingSourceFile":"input_params.csv"
+        "buildingSourceFile":"input_data/input_params.csv"
       }
     },
     "RegionalMapping": {

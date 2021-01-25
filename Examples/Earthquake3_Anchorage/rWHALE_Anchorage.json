@@ -24,7 +24,7 @@
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "1-10",
-        "buildingSourceFile":"AnchorageBuildings.csv"
+        "buildingSourceFile":"input_data/AnchorageBuildings.csv"
       }
     },
     "RegionalMapping": {
@@ -43,7 +43,7 @@
     "Modeling": {
       "Application": "MDOF-LU",
       "ApplicationData": {
-         "hazusData":"HazusData.txt",
+         "hazusData":"input_data/HazusData.txt",
          "stdStiffness": 0.1,
          "stdDamping": 0.1
       }

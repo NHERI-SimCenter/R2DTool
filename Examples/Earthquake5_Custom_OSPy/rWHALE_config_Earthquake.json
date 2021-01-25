@@ -17,7 +17,7 @@
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "13-14",
-        "buildingSourceFile":"input_params.csv"
+        "buildingSourceFile":"input_data/input_params.csv"
       }
     },
     "RegionalMapping": {
@@ -43,7 +43,7 @@
     "EDP": {
       "Application": "UserDefinedEDP_R",
       "ApplicationData": {
-        "EDPspecs": "EDP_specs.json"
+        "EDPspecs": "input_data/EDP_specs.json"
       }
     },
     "Simulation": {
