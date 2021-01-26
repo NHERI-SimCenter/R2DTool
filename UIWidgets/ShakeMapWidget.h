@@ -121,6 +121,8 @@ public:
     void clear();
     bool copyFiles(QString &destDir);
 
+    int getNumShakeMapsLoaded();
+
 public slots:
 
     void showLoadShakeMapDialog(void);

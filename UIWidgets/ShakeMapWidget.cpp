@@ -111,7 +111,7 @@ void ShakeMapWidget::showShakeMapLayers(bool state)
 
     // If there is no item, create one
     if(shakeMapLayerTreeItem == nullptr)
-        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map",QString());
+//        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map",QString());
 
 
     for(auto&& it : shakeMapContainer)
@@ -329,12 +329,12 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     auto shakeMapLayerTreeItem = layersTreeView->getTreeItem("Shake Map", nullptr);
 
     // If there is no item, create one
-    if(shakeMapLayerTreeItem == nullptr)
-        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map", QString());
+//    if(shakeMapLayerTreeItem == nullptr)
+//        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map", QString());
 
 
     // Add the event layer to the layer tree
-    auto eventItem = layersTreeView->addItemToTree(eventName, QString(), shakeMapLayerTreeItem);
+//    auto eventItem = layersTreeView->addItemToTree(eventName, QString(), shakeMapLayerTreeItem);
 
     // Create the root event group layer
     inputShakeMap->eventLayer = new GroupLayer(QList<Layer*>{});
@@ -365,15 +365,15 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
             progressLabel->setVisible(true);
             QApplication::processEvents();
 
-            inputShakeMap->gridLayer = theVisualizationWidget->createAndAddXMLShakeMapLayer(inFilePath, "Grid", eventItem);
-            eventLayer->layers()->append(inputShakeMap->gridLayer);
+            // inputShakeMap->gridLayer = theVisualizationWidget->createAndAddXMLShakeMapLayer(inFilePath, "Grid", eventItem);
+            // eventLayer->layers()->append(inputShakeMap->gridLayer);
         }
         else if(filename.contains("_se.kmz")) // Event layer
         {
             progressLabel->setText("Loading Event Layer");
             QApplication::processEvents();
 
-            inputShakeMap->eventKMZLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Event", eventItem);
+//            inputShakeMap->eventKMZLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Event", eventItem);
             eventLayer->layers()->append(inputShakeMap->eventKMZLayer);
         }
         else if(filename.compare("polygons_mi.kmz") == 0)
@@ -382,7 +382,7 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
             progressLabel->setVisible(true);
             QApplication::processEvents();
 
-            inputShakeMap->pgaPolygonLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Polygons", eventItem, 0.3);
+//            inputShakeMap->pgaPolygonLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Polygons", eventItem, 0.3);
             eventLayer->layers()->append(inputShakeMap->pgaPolygonLayer);
         }
         else if(filename.compare("epicenter.kmz") == 0)
@@ -390,7 +390,7 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
             progressLabel->setText("Loading Epicenter Layer");
             QApplication::processEvents();
 
-            inputShakeMap->epicenterLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Epicenter", eventItem);
+//            inputShakeMap->epicenterLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Epicenter", eventItem);
             eventLayer->layers()->append(inputShakeMap->epicenterLayer);
         }
         else if(filename.compare("cont_pga.kmz") == 0)
@@ -398,7 +398,7 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
             progressLabel->setText("Loading PGA Contour Layer");
             QApplication::processEvents();
 
-            inputShakeMap->pgaContourLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Contours", eventItem);
+//            inputShakeMap->pgaContourLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Contours", eventItem);
             eventLayer->layers()->append(inputShakeMap->pgaContourLayer);
         }
         else if(filename.compare("overlay.kmz") == 0)
@@ -406,7 +406,7 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
             progressLabel->setText("Loading PGA Overlay Layer");
             QApplication::processEvents();
 
-            inputShakeMap->pgaOverlayLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Intensity Overlay", eventItem, 0.3);
+//            inputShakeMap->pgaOverlayLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Intensity Overlay", eventItem, 0.3);
             eventLayer->layers()->append(inputShakeMap->pgaOverlayLayer);
         }
         else if(filename.contains("_se.kmz")) // Fault layer
@@ -414,12 +414,12 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
             progressLabel->setText("Loading Fault Layer");
             QApplication::processEvents();
 
-            inputShakeMap->faultLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Fault", eventItem);
+//            inputShakeMap->faultLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Fault", eventItem);
             eventLayer->layers()->append(inputShakeMap->faultLayer);
         }
         else
         {
-            qDebug()<<"Warning could not load the file :"<<filename;
+            continue;
         }
 
 
@@ -439,7 +439,7 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     listWidget->addItem(eventName);
 
     // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
+//    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
 
     // Reset the widget back to the input pane and close
     shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
@@ -459,9 +459,7 @@ void ShakeMapWidget::chooseShakeMapDirectoryDialog(void)
 
     dialog.setFileMode(QFileDialog::Directory);
 
-    pathToShakeMapDirectory = dialog.getExistingDirectory(this, tr("Folder with ShakeMap files"));
-
-    pathToShakeMapDirectory.append("/");
+    pathToShakeMapDirectory = dialog.getExistingDirectory(this, tr("Folder with ShakeMap files")) + QDir::separator();
 
     dialog.close();
 
@@ -480,7 +478,7 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 
     sourceParamObj.insert("SourceForVs30","Wills et al. (2015)");
 
-    auto tempWorkDir = SimCenterPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "tmp.OpenSRA"  + QDir::separator() + "ShakeMap";
+    auto tempWorkDir = SimCenterPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "Input"  + QDir::separator() + "ShakeMap";
 
     sourceParamObj.insert("Directory",tempWorkDir);
 
@@ -530,6 +528,12 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
     }
 
     return true;
+}
+
+
+int ShakeMapWidget::getNumShakeMapsLoaded()
+{
+    return listWidget->getNumberOfItems();
 }
 
 

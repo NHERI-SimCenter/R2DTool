@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "IntensityMeasureWidget.h"
 #include "MapViewSubWidget.h"
 #include "NGAW2Converter.h"
-#include "R2DUserPass.h"
 #include "RecordSelectionWidget.h"
 #include "RuptureWidget.h"
 #include "SimCenterPreferences.h"
@@ -57,6 +56,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeView.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+
+#ifdef INCLUDE_USER_PASS
+#include "R2DUserPass.h"
+#else
+#include "SampleUserPass.h"
+#endif
 
 // GIS includes
 #include "MapGraphicsView.h"

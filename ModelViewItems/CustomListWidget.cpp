@@ -156,6 +156,12 @@ QVariantList CustomListWidget::getListOfModels(TreeItem* parentItem) const
 }
 
 
+int CustomListWidget::getNumberOfItems()
+{
+    return treeModel->getNumberOfItems();
+}
+
+
 void CustomListWidget::showPopup(const QPoint &position)
 {
 

@@ -55,6 +55,8 @@ public:
 
     QVariantList getListOfWeights(TreeItem* parentItem = nullptr) const;
 
+    int getNumberOfItems();
+
 public slots:
 
     TreeItem* addItem(const QString item, QString model, const double weight, TreeItem* parent = nullptr);

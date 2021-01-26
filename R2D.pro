@@ -49,6 +49,19 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 # C++17 support
 CONFIG += c++17
 
+# Check for the required Qt version
+equals(QT_MAJOR_VERSION, 5) {
+    lessThan(QT_MINOR_VERSION, 15) {
+        error("$$TARGET requires Qt 5.15.0")
+    }
+        equals(QT_MINOR_VERSION, 15) : lessThan(QT_PATCH_VERSION, 0) {
+                error("$$TARGET requires Qt 5.15.0")
+        }
+}
+
+
+#DEFINES += INCLUDE_USER_PASS
+
 win32:DEFINES +=  CURL_STATICLIB
 
 # win32::include($$PWD/ConanHelper.pri)
@@ -278,8 +291,19 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             GraphicElements/NodeHandle.h \
             GraphicElements/RectangleGrid.h \
             WorkflowAppR2D.h \
-            R2DUserPass.h \
             RunWidget.h \
+
+
+contains(DEFINES, INCLUDE_USER_PASS) {
+
+HEADERS += R2DUserPass.h \
+
+} else {
+
+HEADERS += SampleUserPass.h \
+
+}
+
 
 RESOURCES += \
     images.qrc \
