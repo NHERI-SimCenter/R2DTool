@@ -82,6 +82,8 @@ public:
 
     QVector<TreeItem *> getAllChildren(void);
 
+    int getNumberOfItems();
+
 signals:
 
     void itemValueChanged(TreeItem* item);

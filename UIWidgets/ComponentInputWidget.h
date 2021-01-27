@@ -75,7 +75,7 @@ public:
     void setLabel3(const QString &value);  
     void setGroupBoxText(const QString &value);
 
-    void testFileLoad(QString& path);
+    void loadFileFromPath(QString& path);
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);

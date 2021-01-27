@@ -19,12 +19,12 @@
 	    "eventFile": "input_data/records/EventGrid.csv",
 	    "motionDir": "input_data/records"
 	}
-    },			
+    },
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
-        "filter": "13-14",
-        "buildingSourceFile":"input_data/input_params.csv"
+        "filter": "17-18",
+        "buildingSourceFile":"input_params.csv"
       }
     },
     "RegionalMapping": {
@@ -46,8 +46,7 @@
         "mainScript": "cantilever_light.py",
         "modelPath": "input_data/model",
         "ndm": 3,
-        "dofMap": "1,2,3",
-        "columnLine": "0, 1"
+        "dofMap": "1,2,3"
       }
     },
     "EDP": {

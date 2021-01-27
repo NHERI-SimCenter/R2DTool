@@ -68,7 +68,8 @@ TreeItem* MutuallyExclusiveListWidget::addItem(const QString item, TreeItem* par
 
     connect(newItem, &TreeItem::removeThisItem, this, &MutuallyExclusiveListWidget::removeItem);
 
-    connect(newItem, &TreeItem::itemChecked, this, &MutuallyExclusiveListWidget::handleStateChanged);
+    connect(newItem, &TreeItem::itemChecked, this, &MutuallyExclusiveListWidget::handleItemChecked);
+    connect(newItem, &TreeItem::itemUnchecked, this, &MutuallyExclusiveListWidget::handleItemUnchecked);
 
     return newItem;
 }
@@ -80,27 +81,39 @@ void MutuallyExclusiveListWidget::removeItem(const QString& itemID)
 }
 
 
-void MutuallyExclusiveListWidget::handleStateChanged(const QString& itemID)
+void MutuallyExclusiveListWidget::handleItemChecked(const QString& itemID)
 {
     auto item = treeModel->getTreeItem(itemID);
 
-    if(item->getState() == 2)
+    if(item != checkedItem)
     {
-        if(item != checkedItem)
+        checkedItem = item;
+
+        auto children = treeModel->getAllChildren();
+
+        for(auto&& child : children)
         {
-            checkedItem = item;
-
-            auto children = treeModel->getAllChildren();
-
-            for(auto&& child : children)
-            {
-                if(child->getItemID().compare(itemID) != 0)
-                    child->setState(0);
-            }
+            if(child->getItemID().compare(itemID) != 0)
+                child->setState(0);
         }
     }
 
-    //    qDebug()<<"Checked Item: "<<checkedItem->getName();
+    //        auto checkedItemName = checkedItem->getName();
+    //        qDebug()<<"Checked Item: "<<checkedItemName;
+
+    emit itemChecked(checkedItem);
+
+}
+
+
+void MutuallyExclusiveListWidget::handleItemUnchecked(const QString& itemID)
+{
+    auto item = treeModel->getTreeItem(itemID);
+
+    if(item == checkedItem)
+    {
+        emit clearAll();
+    }
 }
 
 

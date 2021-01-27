@@ -45,7 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStringList>
 
 ListTreeModel::ListTreeModel(QString headerText, QObject *parent) : QAbstractItemModel(parent)
-{    
+{
     rootItem = new TreeItem({headerText},0);
 }
 
@@ -306,7 +306,7 @@ bool ListTreeModel::clear(void)
 
     for(auto&& child : children)
     {
-        auto res = this->removeItemFromTree(child->getName());
+        auto res = this->removeItemFromTree(child->getItemID());
 
         if(res == false)
             return false;
@@ -321,4 +321,12 @@ QVector<TreeItem *> ListTreeModel::getAllChildren(void)
     auto children = rootItem->getChildItems();
 
     return children;
+}
+
+
+int ListTreeModel::getNumberOfItems()
+{
+    auto res = rootItem->childCount();
+
+    return res;
 }

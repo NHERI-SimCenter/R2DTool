@@ -46,6 +46,8 @@ class TreeItem;
 
 class MutuallyExclusiveListWidget : public QTreeView
 {
+    Q_OBJECT
+
 public:
     MutuallyExclusiveListWidget(QWidget *parent = nullptr, QString headerText = QString());
 
@@ -58,7 +60,9 @@ public slots:
 
     void removeItem(const QString& itemID);
 
-    void handleStateChanged(const QString& itemID);
+    void handleItemChecked(const QString& itemID);
+
+    void handleItemUnchecked(const QString& itemID);
 
     // Shows the "right-click" menu
     void showPopup(const QPoint &position);
@@ -66,6 +70,11 @@ public slots:
 private slots:
     // Runs the action that the user selects on the right-click menu
     void runAction();
+
+signals:
+
+    void itemChecked(TreeItem* item);
+    void clearAll();
 
 private:
 

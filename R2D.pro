@@ -49,6 +49,19 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 # C++17 support
 CONFIG += c++17
 
+# Check for the required Qt version
+equals(QT_MAJOR_VERSION, 5) {
+    lessThan(QT_MINOR_VERSION, 15) {
+        error("$$TARGET requires Qt 5.15.0")
+    }
+        equals(QT_MINOR_VERSION, 15) : lessThan(QT_PATCH_VERSION, 0) {
+                error("$$TARGET requires Qt 5.15.0")
+        }
+}
+
+
+#DEFINES += INCLUDE_USER_PASS
+
 win32:DEFINES +=  CURL_STATICLIB
 
 #win32::include($$PWD/R2D.user.pri)
@@ -61,7 +74,7 @@ win32::LIBS+=Advapi32.lib
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -282,8 +295,19 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             GraphicElements/NodeHandle.h \
             GraphicElements/RectangleGrid.h \
             WorkflowAppR2D.h \
-            R2DUserPass.h \
             RunWidget.h \
+
+
+contains(DEFINES, INCLUDE_USER_PASS) {
+
+HEADERS += R2DUserPass.h \
+
+} else {
+
+HEADERS += SampleUserPass.h \
+
+}
+
 
 RESOURCES += \
     images.qrc \
@@ -297,19 +321,52 @@ DISTFILES += \
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
-# Copies over the examples folder into the build directory
+# Path to build directory
 win32 {
-PATH_TO_BINARY=$$OUT_PWD
+DESTDIR = $$shell_path($$OUT_PWD)
+Release:DESTDIR = $$DESTDIR/release
+Debug:DESTDIR = $$DESTDIR/debug
+
+PATH_TO_BINARY=$$DESTDIR/Examples
+
 } else {
     mac {
     PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS
     }
 }
-message($$PATH_TO_BINARY)
+
+
+win32 {
+
+# Copies over the examples folder into the build directory
+copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_BINARY))
+first.depends = $(first) copydata
+
+# copies the dll files into the build directory
+CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
+
+first.depends += CopyDLLs
+
+export(first.depends)
+export(CopyDLLs.commands)
+export(copydata.commands)
+
+QMAKE_EXTRA_TARGETS += first copydata CopyDLLs
+
+}else {
+mac {
+
+message($(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\")
+
 copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
 first.depends = $(first) copydata
 export(first.depends)
 export(copydata.commands)
 QMAKE_EXTRA_TARGETS += first copydata
+
+}
+}
+
+
 
 

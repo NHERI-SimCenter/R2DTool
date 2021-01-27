@@ -1,3 +1,5 @@
+#ifndef SAMPLEUSERPASS_H
+#define SAMPLEUSERPASS_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,38 +38,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentDatabase.h"
+// Enter the user name and password for your accounts below
 
-ComponentDatabase::ComponentDatabase()
-{
+#include <QString>
 
-}
+static QString getPEERUserName(void){return "PEER_USER_NAME";}
 
+static QString getPEERPassWord(void){return "PEER_USER_PASS";}
 
-int ComponentDatabase::getNumberOfComponents()
-{
-    return ComponentMap.size();
-}
+static QString getArcGISKey(void){return "ARC_GIS_KEY";}
 
-
-void ComponentDatabase::addComponent(int ID, Component& asset)
-{
-    ComponentMap.insert(ID, asset);
-}
-
-
-Component& ComponentDatabase::getComponent(const int ID)
-{
-  return ComponentMap[ID];
-}
-
-
-void ComponentDatabase::clear(void)
-{
-    ComponentMap.clear();
-}
-
-QMap<int, Component> ComponentDatabase::getComponentsMap() const
-{
-    return ComponentMap;
-}
+#endif // SAMPLEUSERPASS_H

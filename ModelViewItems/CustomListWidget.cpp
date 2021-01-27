@@ -106,12 +106,16 @@ void CustomListWidget::clear(void)
 }
 
 
-QVariantList CustomListWidget::getListOfWeights() const
+QVariantList CustomListWidget::getListOfWeights(TreeItem* parentItem) const
 {
+    QVector<TreeItem *> childVec;
+
+    if(parentItem != nullptr)
+        childVec = parentItem->getChildItems();
+    else
+        childVec = treeModel->getAllChildren();
 
     QVariantList ListOfWeights;
-
-    auto childVec = treeModel->getAllChildren();
 
     for(auto&& it : childVec)
     {
@@ -127,11 +131,16 @@ QVariantList CustomListWidget::getListOfWeights() const
 }
 
 
-QVariantList CustomListWidget::getListOfModels() const
+QVariantList CustomListWidget::getListOfModels(TreeItem* parentItem) const
 {
-    QVariantList ListOfModels;
+    QVector<TreeItem *> childVec;
 
-    auto childVec = treeModel->getAllChildren();
+    if(parentItem != nullptr)
+        childVec = parentItem->getChildItems();
+    else
+        childVec = treeModel->getAllChildren();
+
+    QVariantList ListOfModels;
 
     for(auto&& it : childVec)
     {
@@ -144,6 +153,12 @@ QVariantList CustomListWidget::getListOfModels() const
     }
 
     return ListOfModels;
+}
+
+
+int CustomListWidget::getNumberOfItems()
+{
+    return treeModel->getNumberOfItems();
 }
 
 

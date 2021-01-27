@@ -39,8 +39,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AgaveCurl.h"
 #include "GoogleAnalytics.h"
 #include "MainWindowWorkflowApp.h"
-#include "R2DUserPass.h"
 #include "WorkflowAppR2D.h"
+
+#ifdef INCLUDE_USER_PASS
+#include "R2DUserPass.h"
+#else
+#include "SampleUserPass.h"
+#endif
 
 #include <QApplication>
 #include <QCoreApplication>

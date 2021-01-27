@@ -472,7 +472,7 @@ bool LayerTreeModel::clear(void)
 
     for(auto&& child : children)
     {
-        auto res = this->removeItemFromTree(child->getName());
+        auto res = this->removeItemFromTree(child->getItemID());
 
         if(res == false)
             return false;

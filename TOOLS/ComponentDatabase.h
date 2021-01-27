@@ -53,6 +53,21 @@ struct Component
 {
 public:
 
+    void addResult(const QString& key, const double res)
+    {
+        ResultsValues.insert(key,res);
+    }
+
+    QVariant getAttributeValue(const QString& key)
+    {
+        return ComponentAttributes.value(key);
+    }
+
+    double getResultValue(const QString& key)
+    {
+        return ResultsValues.value(key);
+    }
+
     int ID = -1;
 
     // The Component feature in the GIS widget
@@ -80,9 +95,11 @@ public:
 
     void clear(void);
 
+    QMap<int, Component> getComponentsMap() const;
+
 private:
 
-    QMap<int,Component> ComponentsDB;
+    QMap<int,Component> ComponentMap;
 
 };
 
