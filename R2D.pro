@@ -317,35 +317,52 @@ DISTFILES += \
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
-# Copies over the examples folder into the build directory
+# Path to build directory
 win32 {
 DESTDIR = $$shell_path($$OUT_PWD)
 Release:DESTDIR = $$DESTDIR/release
 Debug:DESTDIR = $$DESTDIR/debug
 
 PATH_TO_BINARY=$$DESTDIR/Examples
+
 } else {
     mac {
-    PATH_TO_BINARY=$$OUT_PWD/OpenSRA.app/Contents/MacOS
+    PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS
     }
 }
 
+
+win32 {
+
+# Copies over the examples folder into the build directory
 copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_BINARY))
 first.depends = $(first) copydata
 
-win32 {
 # copies the dll files into the build directory
 CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
 
 first.depends += CopyDLLs
 
-
 export(first.depends)
 export(CopyDLLs.commands)
-}
+export(copydata.commands)
 
+QMAKE_EXTRA_TARGETS += first copydata CopyDLLs
+
+}else {
+mac {
+
+message($(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\")
+
+copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
+first.depends = $(first) copydata
+export(first.depends)
 export(copydata.commands)
 QMAKE_EXTRA_TARGETS += first copydata
 
-win32:QMAKE_EXTRA_TARGETS += CopyDLLs
+}
+}
+
+
+
 
