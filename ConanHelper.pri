@@ -16,7 +16,8 @@ CONFIG(debug, debug|release) {
 
 #Running Conan to install dependencies
 message(Running Conan)
-CONAN_INSTALL_COMMAND=cd $$OUT_PWD && conan install $$PWD -s build_type=$$BUILD_TYPE -s compiler=$$shell_quote(Visual Studio) -s compiler.version=16 --build missing
+#CONAN_INSTALL_COMMAND=cd $$OUT_PWD && conan install $$PWD -s build_type=$$BUILD_TYPE -s compiler=$$shell_quote(Visual Studio) -s compiler.version=16 --build missing
+CONAN_INSTALL_COMMAND=cd $$OUT_PWD && conan install $$PWD -s build_type=$$BUILD_TYPE --build missing
 message($$CONAN_INSTALL_COMMAND)
 system($$CONAN_INSTALL_COMMAND)
 
