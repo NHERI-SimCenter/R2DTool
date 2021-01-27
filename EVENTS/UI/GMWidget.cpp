@@ -914,7 +914,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     }
 
     // Create a new layer
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
+    LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
 
     // Check if there is a 'User Ground Motions' root item in the tree
     auto userInputTreeItem = layersTreeView->getTreeItem("EQ Hazard Simulation Grid", nullptr);

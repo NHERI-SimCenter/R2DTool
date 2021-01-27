@@ -1,3 +1,5 @@
+#ifndef LayerTreeModel_H
+#define LayerTreeModel_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,57 +38,64 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ResultsMapViewWidget.h"
-#include "SimCenterMapGraphicsView.h"
+#include <QAbstractItemModel>
 
-#include <QGraphicsSimpleTextItem>
-#include <QDebug>
+class LayerTreeItem;
 
-ResultsMapViewWidget::ResultsMapViewWidget(QWidget* parent) : QWidget(parent)
+class LayerTreeModel : public QAbstractItemModel
 {
-    theViewLayout = new QVBoxLayout();
+    Q_OBJECT
 
-    this->setAcceptDrops(true);
-    this->setObjectName("MapSubwindow");
+public:
+    explicit LayerTreeModel(QObject *parent = nullptr);
+    ~LayerTreeModel();
 
-    this->setLayout(theViewLayout);
+    QVariant data(const QModelIndex &index, int role) const override;
 
-    theNewView = SimCenterMapGraphicsView::getInstance();
-    theNewView->setAcceptDrops(true);
-    //theNewView->setObjectName("MapSubwindow");
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    theNewView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    theNewView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-}
+    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
 
+    QModelIndex parent(const QModelIndex &index) const override;
 
-void ResultsMapViewWidget::setCurrentlyViewable(bool status)
-{
-    if (status == true)
-        theNewView->setCurrentLayout(theViewLayout);
-    else {
-        this->hide();
-    }
-}
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-void ResultsMapViewWidget::resizeParent(QRectF rect)
-{
-    auto width = rect.width();
-    auto height = rect.height();
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
-    theNewView->setMaximumWidth(width);
-    theNewView->setMaximumHeight(height);
+    LayerTreeItem *getRootItem() const;
 
-    theNewView->resize(width,height);
-}
+    // If parent item is not provided, the item will get added to the root of the tree
+    LayerTreeItem* addItemToTree(const QString itemText, const QString itemID, LayerTreeItem* parent = nullptr);
 
+    bool removeItemFromTree(const QString& itemID);
 
+    LayerTreeItem *getLayerTreeItem(const QString& itemName, const QString& parentName) const;
+    LayerTreeItem* getLayerTreeItem(const QString& itemName, const LayerTreeItem* parent) const;
 
+    Qt::DropActions supportedDropActions() const override;
+    Qt::DropActions supportedDragActions() const override;
+
+    QStringList mimeTypes () const override;
+    QMimeData* mimeData(const QModelIndexList &indexes) const override;
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
+
+    bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
+
+    bool clear(void);
 
 
+signals:
+
+    void itemValueChanged(LayerTreeItem* item);
+
+    void rowPositionChanged(const int oldPos, const int newPos);
+
+private:
+    LayerTreeItem *rootItem;
+};
+
+#endif // LayerTreeModel_H

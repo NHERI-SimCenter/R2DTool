@@ -1,3 +1,5 @@
+#ifndef ComponentDATABASE_H
+#define ComponentDATABASE_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -17,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,57 +38,52 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ResultsMapViewWidget.h"
-#include "SimCenterMapGraphicsView.h"
+#include <QMap>
+#include <QVariant>
 
-#include <QGraphicsSimpleTextItem>
-#include <QDebug>
-
-ResultsMapViewWidget::ResultsMapViewWidget(QWidget* parent) : QWidget(parent)
+namespace Esri
 {
-    theViewLayout = new QVBoxLayout();
-
-    this->setAcceptDrops(true);
-    this->setObjectName("MapSubwindow");
-
-    this->setLayout(theViewLayout);
-
-    theNewView = SimCenterMapGraphicsView::getInstance();
-    theNewView->setAcceptDrops(true);
-    //theNewView->setObjectName("MapSubwindow");
-
-    theNewView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    theNewView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-
-    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+namespace ArcGISRuntime
+{
+class Feature;
+}
 }
 
-
-void ResultsMapViewWidget::setCurrentlyViewable(bool status)
+struct Component
 {
-    if (status == true)
-        theNewView->setCurrentLayout(theViewLayout);
-    else {
-        this->hide();
-    }
-}
+public:
+
+    int ID = -1;
+
+    // The Component feature in the GIS widget
+    Esri::ArcGISRuntime::Feature* ComponentFeature = nullptr;
+
+    // Map to store the Component attributes
+    QMap<QString, QVariant> ComponentAttributes;
+
+    // Map to store the results - the QString (key) is the header text while the double is the value for that Component
+    QMap<QString, double> ResultsValues;
+};
 
 
-void ResultsMapViewWidget::resizeParent(QRectF rect)
+class ComponentDatabase
 {
-    auto width = rect.width();
-    auto height = rect.height();
+public:
+    ComponentDatabase();
 
-    theNewView->setMaximumWidth(width);
-    theNewView->setMaximumHeight(height);
+    // Gets the Component as a modifiable reference
+    Component& getComponent(const int ID);
 
-    theNewView->resize(width,height);
-}
+    int getNumberOfComponents();
 
+    void addComponent(int ID, Component& asset);
 
+    void clear(void);
 
+private:
 
+    QMap<int,Component> ComponentsDB;
 
+};
+
+#endif // ComponentDATABASE_H

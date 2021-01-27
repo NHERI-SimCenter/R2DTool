@@ -108,6 +108,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     selectingConvexHull = false;
 
+    setAcceptDrops(true);
     // Create the header layout and add it to the main layout
     //    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     //    SectionTitle *label = new SectionTitle();
@@ -204,7 +205,7 @@ VisualizationWidget::~VisualizationWidget()
 void VisualizationWidget::setCurrentlyViewable(bool status)
 {
     if (status == true) {
-        // emit sendErrorMessage("SWAPPING Visaulizatytion Widget");
+        // emit sendErrorMessage("SWAPPING Visaulization Widget");
         QWidget *tmp = new QWidget();
         mapViewLayout->addWidget(tmp);
         mapViewWidget->setCurrentLayout(mapViewLayout);
@@ -299,9 +300,15 @@ void VisualizationWidget::createVisualizationWidget(void)
 }
 
 
-BuildingDatabase* VisualizationWidget::getBuildingDatabase()
+ComponentDatabase* VisualizationWidget::getBuildingDatabase()
 {
     return &theBuildingDb;
+}
+
+
+ComponentDatabase* VisualizationWidget::getPipelineDatabase()
+{
+    return &thePipelineDb;
 }
 
 
@@ -524,7 +531,7 @@ void VisualizationWidget::loadBuildingData(void)
         QMap<QString, QVariant> featureAttributes;
 
         // Create a new building
-        Building building;
+        Component building;
 
         QString buildingIDStr = buildingTableWidget->item(i,0)->data(0).toString();
 
@@ -545,7 +552,7 @@ void VisualizationWidget::loadBuildingData(void)
             featureAttributes.insert(attrbText,attrbVal);
         }
 
-        building.buildingAttributes = buildingAttributeMap;
+        building.ComponentAttributes = buildingAttributeMap;
 
         featureAttributes.insert("ID", buildingIDStr);
         featureAttributes.insert("LossRatio", 0.0);
@@ -564,9 +571,9 @@ void VisualizationWidget::loadBuildingData(void)
         Point point(longitude,latitude);
         Feature* feature = featureCollectionTable->createFeature(featureAttributes, point, this);
 
-        building.buildingFeature = feature;
+        building.ComponentFeature = feature;
 
-        theBuildingDb.addBuilding(buildingID, building);
+        theBuildingDb.addComponent(buildingID, building);
 
         featureCollectionTable->addFeature(feature);
     }
@@ -602,7 +609,7 @@ void VisualizationWidget::loadPipelineData(void)
     auto pipelineTableWidget = pipelineWidget->getTableWidget();
 
     QList<Field> fields;
-    fields.append(Field::createDouble("LossRatio", "0.0"));
+    fields.append(Field::createDouble("RepairRate", "0.0"));
     fields.append(Field::createText("AssetType", "NULL",4));
     fields.append(Field::createText("TabName", "NULL",4));
 
@@ -627,7 +634,7 @@ void VisualizationWidget::loadPipelineData(void)
     auto nRows = pipelineTableWidget->rowCount();
 
     // Select a column that will define the layers
-    int columnToMapLayers = 5;
+    int columnToMapLayers = 0;
 
     std::vector<std::string> vecLayerItems;
     for(int i = 0; i<nRows; ++i)
@@ -674,18 +681,31 @@ void VisualizationWidget::loadPipelineData(void)
         // create the feature attributes
         QMap<QString, QVariant> featureAttributes;
 
+        // Create a new pipeline
+        Component pipeline;
+
+        QString pipelineIDStr = pipelineTableWidget->item(i,0)->data(0).toString();
+
+        int pipelineID =  pipelineIDStr.toInt();
+
+        pipeline.ID = pipelineID;
+
+        QMap<QString, QVariant> pipelineAttributeMap;
+
         // The feature attributes are the columns from the table
         for(int j = 0; j<pipelineTableWidget->columnCount(); ++j)
         {
             auto attrbText = pipelineTableWidget->horizontalHeaderItem(j)->text();
             auto attrbVal = pipelineTableWidget->item(i,j)->data(0);
 
+            pipelineAttributeMap.insert(attrbText,attrbVal.toString());
+
             featureAttributes.insert(attrbText,attrbVal);
         }
 
-        double r = pipelineTableWidget->item(i,7)->data(0).toDouble();
+        pipeline.ComponentAttributes = pipelineAttributeMap;
 
-        featureAttributes.insert("LossRatio", r);
+        featureAttributes.insert("RepairRate", 0.0);
         featureAttributes.insert("AssetType", "PIPELINE");
         featureAttributes.insert("TabName", pipelineTableWidget->item(i,0)->data(0).toString());
 
@@ -694,11 +714,11 @@ void VisualizationWidget::loadPipelineData(void)
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
-        auto latitudeStart = pipelineTableWidget->item(i,1)->data(0).toDouble();
-        auto longitudeStart = pipelineTableWidget->item(i,2)->data(0).toDouble();
+        auto latitudeStart = pipelineTableWidget->item(i,3)->data(0).toDouble();
+        auto longitudeStart = pipelineTableWidget->item(i,4)->data(0).toDouble();
 
-        auto latitudeEnd = pipelineTableWidget->item(i,3)->data(0).toDouble();
-        auto longitudeEnd = pipelineTableWidget->item(i,4)->data(0).toDouble();
+        auto latitudeEnd = pipelineTableWidget->item(i,5)->data(0).toDouble();
+        auto longitudeEnd = pipelineTableWidget->item(i,6)->data(0).toDouble();
 
         // Create the points and add it to the feature table
         PolylineBuilder polylineBuilder(SpatialReference::wgs84());
@@ -712,11 +732,22 @@ void VisualizationWidget::loadPipelineData(void)
         polylineBuilder.addPoint(point1);
         polylineBuilder.addPoint(point2);
 
+        if(!polylineBuilder.isSketchValid())
+        {
+            this->userMessageDialog("Error, cannot create a pipeline feature with the latitude and longitude provided");
+            return;
+        }
+
         // Create the polyline feature
         auto polyline =  polylineBuilder.toPolyline();
 
         // Add the feature to the table
         Feature* feature = featureCollectionTable->createFeature(featureAttributes, polyline, this);
+
+        pipeline.ComponentFeature = feature;
+
+        thePipelineDb.addComponent(pipelineID, pipeline);
+
         featureCollectionTable->addFeature(feature);
     }
 
@@ -1058,16 +1089,16 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
 
 ClassBreaksRenderer* VisualizationWidget::createPipelineRenderer(void)
 {
-    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(254, 229, 217), 5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol2 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(252, 187, 161), 5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol3 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(252, 146, 114), 5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol4 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(251, 106, 74),  5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol5 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(222, 45 , 38),  5.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol6 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(165, 15 , 21),  5.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(0, 0, 0), 6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol2 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(255,255,178), 6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol3 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(253,204,92), 6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol4 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(253,141,60),  6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol5 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(240,59,32),  6.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol6 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(189,0,38),  6.0f /*width*/, this);
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", 0.0, 1E-03, lineSymbol1);
+    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 1E-03, lineSymbol1);
     classBreaks.append(classBreak1);
 
     auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 1.00E-03, 1.00E-02, lineSymbol2);
@@ -1085,7 +1116,7 @@ ClassBreaksRenderer* VisualizationWidget::createPipelineRenderer(void)
     auto classBreak6 = new ClassBreak("Total Loss Ratio", "Loss Ratio Between 75% and 90%", 1.00E+01, 1.00E+10, lineSymbol6);
     classBreaks.append(classBreak6);
 
-    return new ClassBreaksRenderer("LossRatio", classBreaks);
+    return new ClassBreaksRenderer("RepairRate", classBreaks);
 }
 
 
@@ -1699,7 +1730,12 @@ void VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* layer, Layer
 void VisualizationWidget::removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer)
 {
     mapGIS->operationalLayers()->removeOne(layer);
-    layersTree->removeItemFromTree(layer->name());
+}
+
+void VisualizationWidget::removeLayerFromMap(const QString layerID)
+{
+    auto layer = this->findLayer(layerID);
+    this->removeLayerFromMap(layer);
 }
 
 

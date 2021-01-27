@@ -1,5 +1,5 @@
-#ifndef TreeItem_H
-#define TreeItem_H
+#ifndef CustomListWidget_H
+#define CustomListWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,52 +38,42 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QModelIndex>
-#include <QObject>
-#include <QVariant>
-#include <QVector>
+#include <QTreeView>
 
-class QDialog;
+class QLabel;
+class ListTreeModel;
+class TreeItem;
 
-class TreeItem : public QObject
+class CustomListWidget : public QTreeView
 {
-    Q_OBJECT
-
 public:
-    explicit TreeItem(const QVector<QVariant> &data, TreeItem *parentItem = nullptr);
-    ~TreeItem();
+    CustomListWidget(QWidget *parent = nullptr, QString headerText = QString());
 
-    void appendChild(TreeItem *child);
-    void removeChild(TreeItem *child);
-    void removeChild(int row);
+    void clear(void);
 
-    TreeItem* child(int row);
+    QVariantList getListOfModels() const;
 
-    virtual QStringList getActionList();
+    QVariantList getListOfWeights() const;
 
-    int childCount() const;
-    int columnCount() const;
+public slots:
 
-    QVariant data(int column) const;
-    int row() const;
+    TreeItem* addItem(const QString item, QString model, const double weight, TreeItem* parent = nullptr);
+    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
 
-    TreeItem* getParentItem();
+    void update();
 
-    QVector<TreeItem*> getChildItems() const;
+    void removeItem(const QString& itemID);
 
-    void moveChild(int sourceRow, int destinationRow);
+    // Shows the "right-click" menu
+    void showPopup(const QPoint &position);
 
-    TreeItem *findChild(QString name);
+private slots:
+    // Runs the action that the user selects on the right-click menu
+    void runAction();
 
-    QString getName() const;
+private:
 
-protected:
-    QVector<TreeItem*> vecChildItems;
-    QVector<QVariant> itemData;
-    TreeItem* parentItem;
-
-    QString itemName;
+    ListTreeModel* treeModel;
 };
 
-
-#endif // TreeItem_H
+#endif // CustomListWidget_H

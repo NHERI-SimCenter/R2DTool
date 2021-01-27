@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "BuildingDatabase.h"
+#include "ComponentDatabase.h"
 #include "ResultsMapViewWidget.h"
 
 #include <QString>
@@ -191,7 +191,7 @@ private:
 
     int createCasualtiesChart(QtCharts::QBarSet *casualtiesSet);
 
-    QVector<Building> buildingsVec;
+    QVector<Component> buildingsVec;
 
     QByteArray uiState;
 

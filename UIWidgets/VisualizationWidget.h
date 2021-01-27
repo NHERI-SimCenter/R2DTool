@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterAppWidget.h"
-#include "BuildingDatabase.h"
+#include "ComponentDatabase.h"
 
 #include <QMap>
 #include <QObject>
@@ -141,7 +141,10 @@ public:
     Esri::ArcGISRuntime::Map *getMapGIS() const;
 
     void addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr);
+
+    // Removes a given layer from the map
     void removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer);
+    void removeLayerFromMap(const QString layerID);
 
     LayerTreeView *getLayersTree() const;
 
@@ -149,7 +152,8 @@ public:
 
     void takeScreenShot(void);
 
-    BuildingDatabase* getBuildingDatabase();
+    ComponentDatabase* getBuildingDatabase();
+    ComponentDatabase* getPipelineDatabase();
 
     void clear(void);
 
@@ -170,9 +174,8 @@ public slots:
     void handleOpacityChange(const QString& layerID, const double opacity);
     void exportImageComplete(QUuid id, QImage img);
     void onMouseClicked(QMouseEvent& mouseEvent);
-
     void onMouseClickedGlobal(QPoint pos);
-
+    void setCurrentlyViewable(bool status);
 
 private slots:
     void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);
@@ -184,8 +187,6 @@ private slots:
     // Convex hull stuff
     void getItemsInConvexHull();
     void convexHullPointSelector(QMouseEvent& e);
-
-    void setCurrentlyViewable(bool status);
 
 private:
 
@@ -229,7 +230,8 @@ private:
     QWidget* visWidget;
     void createVisualizationWidget(void);
 
-    BuildingDatabase theBuildingDb;
+    ComponentDatabase theBuildingDb;
+    ComponentDatabase thePipelineDb;
 
 };
 

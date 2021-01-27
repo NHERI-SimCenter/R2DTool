@@ -64,12 +64,16 @@ TreeItem* CustomListWidget::addItem(const QString item, QString model, const dou
 {
     auto num = treeModel->rowCount();
 
-    QString newItemText = QString::number(num+1) + ". " + item + " - weight="+ QString::number(weight);
+    QString newItemText = item + " - weight="+ QString::number(weight);
 
     auto newItem = treeModel->addItemToTree(newItemText, parent);
 
-    ListOfModels.push_back(model);
-    ListOfWeights.push_back(weight);
+    newItem->setProperty("Model",model);
+    newItem->setProperty("Weight",weight);
+
+    connect(newItem, &TreeItem::removeThisItem, this, &CustomListWidget::removeItem);
+
+    this->update();
 
     return newItem;
 }
@@ -83,34 +87,62 @@ TreeItem* CustomListWidget::addItem(const QString item, TreeItem* parent)
 
     auto newItem = treeModel->addItemToTree(newItemText, parent);
 
-    ListOfModels.push_back(item);
 
     return newItem;
 }
 
 
-void CustomListWidget::removeItem(const QString item)
+void CustomListWidget::removeItem(const QString& itemID)
 {
-    treeModel->removeItemFromTree(item);
+    treeModel->removeItemFromTree(itemID);
+
+    this->update();
 }
 
 
 void CustomListWidget::clear(void)
 {
     treeModel->clear();
-    ListOfModels.clear();
-    ListOfWeights.clear();
 }
 
 
 QVariantList CustomListWidget::getListOfWeights() const
 {
+
+    QVariantList ListOfWeights;
+
+    auto childVec = treeModel->getAllChildren();
+
+    for(auto&& it : childVec)
+    {
+       auto weightObj = it->property("Weight");
+
+       if(!weightObj.isValid())
+           continue;
+
+       ListOfWeights << weightObj;
+    }
+
     return ListOfWeights;
 }
 
 
-QStringList CustomListWidget::getListOfModels() const
+QVariantList CustomListWidget::getListOfModels() const
 {
+    QVariantList ListOfModels;
+
+    auto childVec = treeModel->getAllChildren();
+
+    for(auto&& it : childVec)
+    {
+       auto modelObj = it->property("Model");
+
+       if(!modelObj.isValid())
+           continue;
+
+       ListOfModels << modelObj;
+    }
+
     return ListOfModels;
 }
 
@@ -174,6 +206,43 @@ void CustomListWidget::showPopup(const QPoint &position)
     }
 
     return;
+}
+
+
+void CustomListWidget::update()
+{
+    auto childVec = treeModel->getAllChildren();
+
+    std::function<void(TreeItem* item)> nestedUpdater = [](TreeItem* item){
+
+        auto childItems = item->getChildItems();
+
+        for(auto&& it : childItems)
+        {
+           auto modelObj = it->property("Model");
+
+           if(!modelObj.isValid())
+               continue;
+
+           auto modelStr = modelObj.toString();
+
+           auto rowNum = it->row();
+
+           auto weightObj = it->property("Weight");
+
+           auto weightStr = weightObj.toString();
+
+           QString newItemText = QString::number(rowNum+1) + ". " + modelStr + " - weight="+ weightStr;
+
+           it->setData(newItemText,0);
+        }
+    };
+
+    for(auto&& it : childVec)
+    {
+        nestedUpdater(it);
+    }
+
 }
 
 

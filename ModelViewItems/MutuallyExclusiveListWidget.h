@@ -1,5 +1,5 @@
-#ifndef BUILDINGDATABASE_H
-#define BUILDINGDATABASE_H
+#ifndef MutuallyExclusiveListWidget_H
+#define MutuallyExclusiveListWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,52 +38,40 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QMap>
-#include <QVariant>
+#include <QTreeView>
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Feature;
-}
-}
+class QLabel;
+class CheckableTreeModel;
+class TreeItem;
 
-struct Building
+class MutuallyExclusiveListWidget : public QTreeView
 {
 public:
-
-    int ID = -1;
-
-    // The building feature in the GIS widget
-    Esri::ArcGISRuntime::Feature* buildingFeature = nullptr;
-
-    // Map to store the building attributes
-    QMap<QString, QVariant> buildingAttributes;
-
-    // Map to store the results - the QString (key) is the header text while the double is the value for that building
-    QMap<QString, double> ResultsValues;
-};
-
-
-class BuildingDatabase
-{
-public:
-    BuildingDatabase();
-
-    // Gets the building as a modifiable reference
-    Building& getBuilding(const int ID);
-
-    int getNumberOfBuildings();
-
-    void addBuilding(int ID, Building& asset);
+    MutuallyExclusiveListWidget(QWidget *parent = nullptr, QString headerText = QString());
 
     void clear(void);
 
+
+public slots:
+
+    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
+
+    void removeItem(const QString& itemID);
+
+    void handleStateChanged(const QString& itemID);
+
+    // Shows the "right-click" menu
+    void showPopup(const QPoint &position);
+
+private slots:
+    // Runs the action that the user selects on the right-click menu
+    void runAction();
+
 private:
 
-    QMap<int,Building> buildingsDB;
+    CheckableTreeModel* treeModel;
 
+    TreeItem* checkedItem;
 };
 
-#endif // BUILDINGDATABASE_H
+#endif // MutuallyExclusiveListWidget_H

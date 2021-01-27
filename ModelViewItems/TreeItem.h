@@ -1,5 +1,5 @@
-#ifndef TREEMODEL_H
-#define TREEMODEL_H
+#ifndef TreeItem_H
+#define TreeItem_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,64 +38,81 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QAbstractItemModel>
+#include <QModelIndex>
+#include <QObject>
+#include <QVariant>
+#include <QVector>
 
-class LayerTreeItem;
+class QDialog;
 
-class TreeModel : public QAbstractItemModel
+class TreeItem : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit TreeModel(QObject *parent = nullptr);
-    ~TreeModel();
+    explicit TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parentItem = nullptr);
+    ~TreeItem();
 
-    QVariant data(const QModelIndex &index, int role) const override;
+    void appendChild(TreeItem *child);
+    void removeChild(TreeItem *child);
+    void removeChild(int row);
 
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    // 0 = unchecked
+    // 1 = partially checked
+    // 2 = checked
+    int getState() const;
+    void setState(int state);
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    void setChecked(bool val);
 
-    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
+    TreeItem* child(int row);
 
-    QModelIndex parent(const QModelIndex &index) const override;
+    virtual QStringList getActionList();
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int childCount() const;
+    int columnCount() const;
 
-    int columnCount(const QModelIndex &parent) const override;
+    void setData(QString& val, int column);
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    QVariant data(int column) const;
+    int row() const;
 
-    LayerTreeItem *getRootItem() const;
+    TreeItem* getParentItem();
 
-    // If parent item is not provided, the item will get added to the root of the tree
-    LayerTreeItem* addItemToTree(const QString itemText, const QString itemID, LayerTreeItem* parent = nullptr);
+    QVector<TreeItem*> getChildItems() const;
 
-    bool removeItemFromTree(const QString& itemName);
+    void moveChild(int sourceRow, int destinationRow);
 
-    LayerTreeItem *getLayerTreeItem(const QString& itemName, const QString& parentName) const;
-    LayerTreeItem* getLayerTreeItem(const QString& itemName, const LayerTreeItem* parent) const;
+    TreeItem *findChild(QString name);
 
-    Qt::DropActions supportedDropActions() const override;
+    QString getName() const;
 
-    QStringList mimeTypes () const override;
+    QString getItemID() const;
 
-    QMimeData* mimeData(const QModelIndexList &indexes) const override;
+    bool getIsCheckable() const;
+    void setIsCheckable(bool value);
 
-    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
+public slots:
 
-    bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
-
-    bool clear(void);
+    void remove();
 
 signals:
 
-    void itemValueChanged(LayerTreeItem* item);
+    void itemChecked(const QString& itemID);
+    void itemUnchecked(const QString& itemID);
+    void removeThisItem(const QString& itemID);
 
-    void rowPositionChanged(const int oldPos, const int newPos);
+protected:
+    QVector<TreeItem*> vecChildItems;
+    QVector<QVariant> itemData;
+    TreeItem* parentItem;
 
-private:
-    LayerTreeItem *rootItem;
+    int currentState;
+    bool isCheckable;
+
+    QString itemName;
+    QString itemID;
 };
 
-#endif // TREEMODEL_H
+
+#endif // TreeItem_H

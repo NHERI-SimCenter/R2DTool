@@ -356,7 +356,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         auto buildingID = objectToInt(inputRow.at(0));
 
-        auto building = theBuildingDB->getBuilding(buildingID);
+        auto building = theBuildingDB->getComponent(buildingID);
 
         if(building.ID == -1)
             throw QString("Could not find the building ID " + QString::number(buildingID) + " in the database");
@@ -367,7 +367,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         }
 
         // Defaults to 1.0 if no replacement cost is given, i.e., it assumes the repair cost is the loss ratio
-        auto replacementCostVar = building.buildingAttributes.value("ReplacementCost",QVariant(1.0));
+        auto replacementCostVar = building.ComponentAttributes.value("ReplacementCost",QVariant(1.0));
 
         auto replacementCost = objectToDouble(replacementCostVar);
 
@@ -463,7 +463,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
         pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
 
-        auto buildingFeature = building.buildingFeature;
+        auto buildingFeature = building.ComponentFeature;
 
         buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
 

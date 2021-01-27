@@ -1,5 +1,3 @@
-#ifndef ListTreeModel_H
-#define ListTreeModel_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,56 +36,85 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QAbstractItemModel>
+#include "LayerTreeItem.h"
 
-class TreeItem;
+#include <QDebug>
+#include <QDialog>
+#include <QGridLayout>
+#include <QLabel>
+#include <QSlider>
 
-class ListTreeModel : public QAbstractItemModel
+LayerTreeItem::LayerTreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parent) : TreeItem(data,ID,parent)
 {
-    Q_OBJECT
+    opacityDialog = nullptr;
+    currentState = 2;
+}
 
-public:
-    explicit ListTreeModel(QString headerText, QObject *parent = nullptr);
-    ~ListTreeModel();
 
-    QVariant data(const QModelIndex &index, int role) const override;
+LayerTreeItem::~LayerTreeItem()
+{
+    if (opacityDialog)
+        delete opacityDialog;
+}
 
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+QStringList LayerTreeItem::getActionList()
+{
+    QStringList actionList = TreeItem::getActionList();
 
-    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
+    actionList << "&Change Opacity"
+               << "Separator";
 
-    QModelIndex parent(const QModelIndex &index) const override;
+    return actionList;
+}
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    int columnCount(const QModelIndex &parent) const override;
+void LayerTreeItem::changeOpacity()
+{
+    if (!opacityDialog)
+    {
+        opacityDialog = new QDialog();
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+        auto slider = new QSlider(opacityDialog);
 
-    TreeItem *getRootItem() const;
+        connect(slider, &QAbstractSlider::sliderMoved, this, &LayerTreeItem::handleChangeOpacity);
 
-    // If parent item is not provided, the item will get added to the root of the tree
-    TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
+        slider->setOrientation(Qt::Horizontal);
 
-    bool removeItemFromTree(const QString& itemName);
+        slider->setValue(100);
 
-    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
-    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
+        slider->setTickPosition(QSlider::TickPosition::TicksAbove);
 
-    bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
+        auto dialogLayout = new QGridLayout(opacityDialog);
 
-    bool clear(void);
+        auto label = new QLabel("0.0",opacityDialog);
+        auto label2  = new QLabel("1.0",opacityDialog);
 
-signals:
+        dialogLayout->addWidget(label, 0, 0);
+        dialogLayout->addWidget(slider, 0, 1);
+        dialogLayout->addWidget(label2, 0, 2);
 
-    void itemValueChanged(TreeItem* item);
+        opacityDialog->setLayout(dialogLayout);
+        opacityDialog->setWindowTitle("Adjust opacity of layer "+itemName);
 
-    void rowPositionChanged(const int oldPos, const int newPos);
+        opacityDialog->setMinimumWidth(400);
+        opacityDialog->setMinimumHeight(150);
 
-private:
-    TreeItem *rootItem;
-};
+    }
 
-#endif // ListTreeModel_H
+    opacityDialog->show();
+    opacityDialog->raise();
+    opacityDialog->activateWindow();
+}
+
+
+void LayerTreeItem::handleChangeOpacity(int value)
+{
+    if(itemID.isEmpty())
+        return;
+
+    auto opacity = static_cast<double>(value+1)/100.0;
+
+    emit opacityChanged(itemID, opacity);
+}
+

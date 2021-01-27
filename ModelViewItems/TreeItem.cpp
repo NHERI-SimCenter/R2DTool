@@ -44,8 +44,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QSlider>
 
-TreeItem::TreeItem(const QVector<QVariant> &data, TreeItem *parent) : QObject(), itemData(data), parentItem(parent)
+TreeItem::TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parent) : QObject(), itemData(data), parentItem(parent), itemID(ID)
 {
+    currentState = 0;
+    isCheckable = true;
     itemName = data.at(0).toString();
 }
 
@@ -56,6 +58,51 @@ TreeItem::~TreeItem()
 }
 
 
+void TreeItem::setState(int set)
+{
+    if(set == 1 && !vecChildItems.empty())
+    {
+        int state = vecChildItems.at(0)->getState();
+
+        for(auto&& it:vecChildItems)
+        {
+            // If any children are unchecked or partially set do nothing
+            if(it->getState() != state)
+            {
+                currentState = set;
+
+                if(parentItem)
+                    parentItem->setState(1);
+
+                return;
+            }
+        }
+
+        // If all children are checked or unchecked, set the state to this item as well
+        currentState = state;
+
+        if(parentItem)
+            parentItem->setState(1);
+
+        return;
+    }
+
+    currentState = set;
+
+    if(set == 0)
+        emit itemUnchecked(itemID);
+    else
+        emit itemChecked(itemID);
+}
+
+
+int TreeItem::getState() const
+{
+    return currentState;
+}
+
+
+
 QStringList TreeItem::getActionList()
 {
     QStringList actionList;
@@ -64,6 +111,22 @@ QStringList TreeItem::getActionList()
                << "Separator";
 
     return actionList;
+}
+
+
+void TreeItem::remove()
+{
+    emit removeThisItem(itemID);
+}
+
+bool TreeItem::getIsCheckable() const
+{
+    return isCheckable;
+}
+
+void TreeItem::setIsCheckable(bool value)
+{
+    isCheckable = value;
 }
 
 
@@ -170,6 +233,15 @@ int TreeItem::columnCount() const
 }
 
 
+void TreeItem::setData(QString& val, int column)
+{
+    if (column < 0 || column >= itemData.size())
+        return;
+
+    itemData[column].setValue(val);
+}
+
+
 QVariant TreeItem::data(int column) const
 {
     if (column < 0 || column >= itemData.size())
@@ -198,3 +270,10 @@ QString TreeItem::getName() const
 {
     return itemName;
 }
+
+
+QString TreeItem::getItemID() const
+{
+    return itemID;
+}
+

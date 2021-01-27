@@ -1,5 +1,5 @@
-#ifndef CustomListWidget_H
-#define CustomListWidget_H
+#ifndef LayerTreeItem_H
+#define LayerTreeItem_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,43 +38,38 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QTreeView>
+#include "TreeItem.h"
 
-class QLabel;
-class ListTreeModel;
-class TreeItem;
+#include <QModelIndex>
+#include <QObject>
+#include <QVariant>
+#include <QVector>
 
-class CustomListWidget : public QTreeView
+class QDialog;
+
+class LayerTreeItem : public TreeItem
 {
+    Q_OBJECT
+
 public:
-    CustomListWidget(QWidget *parent = nullptr, QString headerText = QString());
+    explicit LayerTreeItem(const QVector<QVariant> &data, const QString& ID/* = QString()*/, TreeItem *parentItem = nullptr);
+    ~LayerTreeItem();
 
-    void clear(void);
-
-    QStringList getListOfModels() const;
-
-    QVariantList getListOfWeights() const;
+    QStringList getActionList();
 
 public slots:
 
-    TreeItem* addItem(const QString item, QString model, const double weight, TreeItem* parent = nullptr);
-    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
+    void changeOpacity();
 
-    void removeItem(const QString item);
+    void handleChangeOpacity(int value);
 
-    // Shows the "right-click" menu
-    void showPopup(const QPoint &position);
+signals:
 
-private slots:
-    // Runs the action that the user selects on the right-click menu
-    void runAction();
+void opacityChanged(const QString& layerID, const double opacity);
 
 private:
-
-    ListTreeModel* treeModel;
-
-    QStringList ListOfModels;
-    QVariantList ListOfWeights;
+    QDialog* opacityDialog;
 };
 
-#endif // CustomListWidget_H
+
+#endif // LayerTreeItem_H

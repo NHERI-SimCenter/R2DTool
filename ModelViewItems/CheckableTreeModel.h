@@ -1,5 +1,5 @@
-#ifndef LayerTreeView_H
-#define LayerTreeView_H
+#ifndef CheckableTreeModel_H
+#define CheckableTreeModel_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,42 +38,58 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QTreeView>
+#include <QAbstractItemModel>
 
-class TreeModel;
-class LayerTreeItem;
-class VisualizationWidget;
+class TreeItem;
 
-class LayerTreeView : public QTreeView
+class CheckableTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
-    LayerTreeView(QWidget *parent, VisualizationWidget* visWidget);
+    explicit CheckableTreeModel(QObject *parent = nullptr, QString headerText = QString());
+    ~CheckableTreeModel();
 
-    TreeModel *getLayersModel() const;
+    QVariant data(const QModelIndex &index, int role) const override;
 
-    bool removeItemFromTree(const QString& itemName);
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    LayerTreeItem* addItemToTree(const QString itemText, const QString layerID, LayerTreeItem* parent = nullptr);
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    LayerTreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
+    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
 
-    void clear(void);
+    QModelIndex parent(const QModelIndex &index) const override;
 
-public slots:
-    // Shows the "right-click" menu
-    void showPopup(const QPoint &position);
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-private slots:
-    // Runs the action that the user selects on the right-click menu
-    void runAction();
+    int columnCount(const QModelIndex &parent) const override;
+
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+
+    TreeItem *getRootItem() const;
+
+    // If parent item is not provided, the item will get added to the root of the tree
+    TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
+    TreeItem* addItemToTree(const QString itemText, const QString itemID, TreeItem* parent = nullptr);
+
+    bool removeItemFromTree(const QString& itemID);
+
+    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
+    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
+    TreeItem* getTreeItem(const QString& itemID) const;
+
+    bool clear(void);
+
+    QVector<TreeItem *> getAllChildren(void);
+
+signals:
+
+    void itemValueChanged(TreeItem* item);
+
+    void rowPositionChanged(const int oldPos, const int newPos);
 
 private:
-
-    TreeModel* layersModel;
-
-    VisualizationWidget* theVisualizationWidget;
+    TreeItem *rootItem;
 };
 
-#endif // LayerTreeView_H
+#endif // CheckableTreeModel_H
