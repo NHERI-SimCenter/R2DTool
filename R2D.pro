@@ -51,7 +51,10 @@ CONFIG += c++17
 
 win32:DEFINES +=  CURL_STATICLIB
 
-# win32::include($$PWD/ConanHelper.pri)
+#win32::include($$PWD/R2D.user.pri)
+#win32::include($$PWD/R2D.user.pri)
+win32::include($$PWD/ConanHelper.pri)
+
 win32::LIBS+=Advapi32.lib
 
 # Full optimization on release
@@ -71,7 +74,8 @@ win32 {
 
 # GIS library
 ARCGIS_RUNTIME_VERSION = 100.9
-include($$PWD/arcgisruntime.pri)
+#include($$PWD/arcgisruntime.pri)
+include(./arcgisruntime.pri)
 
 # Simcenter dependencies
 include($$PATH_TO_COMMON/Common/Common.pri)
@@ -301,10 +305,11 @@ PATH_TO_BINARY=$$OUT_PWD
     PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS
     }
 }
-
+message($$PATH_TO_BINARY)
 copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
 first.depends = $(first) copydata
 export(first.depends)
 export(copydata.commands)
 QMAKE_EXTRA_TARGETS += first copydata
+
 
