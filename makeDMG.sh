@@ -14,8 +14,6 @@ pathToDakota="/Users/fmckenna/dakota-6.12.0"
 
 mkdir -p build
 cd build
-
-
 conan install .. --build missing
 qmake ../R2D.pro
 make
@@ -121,7 +119,11 @@ done
 userID="../userID.sh"
 
 if [ ! -f "$userID" ]; then
-    echo "No password & credential file to continue"
+    
+    echo "creating dmg $dmgFile"
+    hdiutil create $dmgFile -fs HFS+ -srcfolder ./$appFile -format UDZO -volname $appName
+
+    echo "No password & credential file to continue with codesig and App store verification"
     exit
 fi
 
@@ -129,9 +131,8 @@ source $userID
 echo $appleID
 
 #
-# codesign all file, create dmg and then code sign that too
+# codesign all files, create dmg and then code sign that too
 #
-
 
 # to codesign need a certificate from the apple developer program (one per user)
 # create one
@@ -141,10 +142,11 @@ echo "codesign --deep --force --verbose --options=runtime  --sign "$appleCredent
 codesign --deep --force --verbose --options=runtime  --sign "$appleCredential" $appFile
 
 # create dmg
-echo "hdiutil create $dmgFile -fs HFS+ -srcfolder ./$appFile -format UDZO -volname $appName"
+hdiutil create $dmgFile -fs HFS+ -srcfolder ./$appFile -format UDZO -volname $appName
 
 #codesign dmg
 codesign --force --sign "$appleCredential" $dmgFile
+
 
 #
 # notorize , create zip file & send to apple
