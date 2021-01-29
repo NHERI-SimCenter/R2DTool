@@ -37,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "CSVReaderWriter.h"
+#include "ComponentInputWidget.h"
 #include "GeneralInformationWidget.h"
 #include "MainWindowWorkflowApp.h"
 #include "PelicunPostProcessor.h"
@@ -347,7 +348,13 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     REmpiricalProbabilityDistribution theProbDist;
 
     // Get the buildings database
-    auto theBuildingDB = theVisualizationWidget->getBuildingDatabase();
+    auto theBuildingDB = theVisualizationWidget->getBuildingWidget()->getComponentDatabase();
+
+    if(theBuildingDB == nullptr)
+    {
+        QString msg = "Error getting the building database from the input widget!";
+        throw msg;
+    }
 
     // 4 rows of headers in the results file
     for(int i = numHeaderRows, count = 0; i<DVResults.size(); ++i, ++count)
@@ -465,9 +472,15 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         auto buildingFeature = building.ComponentFeature;
 
-        buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
+        auto atrb = "LossRatio";
+        auto atrbVal = QVariant(lossRatio);
 
+        buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
         buildingFeature->featureTable()->updateFeature(buildingFeature);
+
+        // Get the feature UID
+        auto uid = building.UID;
+        theVisualizationWidget->updateSelectedComponent(uid,atrb,atrbVal);
     }
 
     //  CASUALTIES

@@ -39,6 +39,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "ComponentDatabase.h"
+#include "VisualizationWidget.h"
 
 #include <set>
 
@@ -68,6 +70,8 @@ public:
 
     int numberComponentsSelected(void);
 
+    ComponentDatabase* getComponentDatabase();
+
     // Set custom labels in widget
     void setComponentType(const QString &value);
     void setLabel1(const QString &value);
@@ -86,6 +90,8 @@ public:
     QString getPathToComponentFile(void) const;
 
     void clear(void);
+
+    void setTheVisualizationWidget(VisualizationWidget *value);
 
 signals:
     void componentDataLoaded();
@@ -114,6 +120,10 @@ private:
     QString label3;
 
     void createComponentsBox(void);
+
+    ComponentDatabase theComponentDb;
+    VisualizationWidget* theVisualizationWidget;
+
 };
 
 #endif // ComponentInputWidget_H

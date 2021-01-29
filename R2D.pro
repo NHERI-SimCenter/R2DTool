@@ -60,7 +60,7 @@ equals(QT_MAJOR_VERSION, 5) {
 }
 
 
-#DEFINES += INCLUDE_USER_PASS
+DEFINES += INCLUDE_USER_PASS
 
 win32:DEFINES +=  CURL_STATICLIB
 
@@ -331,14 +331,13 @@ PATH_TO_BINARY=$$DESTDIR/Examples
     }
 }
 
-
 win32 {
 
 # Copies over the examples folder into the build directory
 copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_BINARY))
 first.depends = $(first) copydata
 
-# copies the dll files into the build directory
+# Copies the dll files into the build directory
 CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
 
 first.depends += CopyDLLs
@@ -352,8 +351,7 @@ QMAKE_EXTRA_TARGETS += first copydata CopyDLLs
 }else {
 mac {
 
-message($(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\")
-
+# Copies over the examples folder into the build directory
 copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
 first.depends = $(first) copydata
 export(first.depends)
@@ -362,7 +360,4 @@ QMAKE_EXTRA_TARGETS += first copydata
 
 }
 }
-
-
-
 

@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileInfo>
 #include <QVariant>
 
+#include <math.h>
 
 NGAW2Converter::NGAW2Converter()
 {

@@ -39,7 +39,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterAppWidget.h"
-#include "ComponentDatabase.h"
 
 #include <QMap>
 #include <QObject>
@@ -56,6 +55,7 @@ class FeatureTable;
 class FeatureLayer;
 class FeatureCollectionLayer;
 class FeatureCollectionTable;
+class FeatureCollection;
 class IdentifyLayerResult;
 class FeatureQueryResult;
 class ClassBreaksRenderer;
@@ -109,6 +109,11 @@ public:
     // Zooms the map to the extents of the data present in the visible map
     void zoomToExtents(void);
 
+    // Add component to 'selected layer'
+    void addComponentsToSelectedLayer(const QList<Esri::ArcGISRuntime::Feature*>& features);
+
+    void clearSelectedLayer();
+
     // Adds a raster layer to the map
     Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
 
@@ -152,14 +157,18 @@ public:
 
     void takeScreenShot(void);
 
-    ComponentDatabase* getBuildingDatabase();
-    ComponentDatabase* getPipelineDatabase();
-
     void clear(void);
+
+    ComponentInputWidget *getBuildingWidget() const;
+
+    ComponentInputWidget *getPipelineWidget() const;
+
+    // Updates the value of an attribute for a selected component
+    void updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value);
 
 signals:
     // Convex hull
-    void taskSelectionChanged();
+    void taskSelectionComplete();
     void emitScreenshot(QImage img);
 
 public slots:
@@ -180,9 +189,13 @@ public slots:
 private slots:
     void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);
     void featureSelectionQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
+    void fieldQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
+
     void handleSelectedFeatures(void);
-    void handleAsynchronousSelectionTask(void);
+    void handleAsyncSelectionTask(void);
+    void handleAsyncFieldQueryTask(void);
     void handleBasemapSelection(const QString selection);
+    void handleFieldQuerySelection(void);
 
     // Convex hull stuff
     void getItemsInConvexHull();
@@ -198,7 +211,7 @@ private:
 
     // This function runs a query on all features in a table
     // It returns the all of the features in the table where the text in the field "FieldName" matches the search text
-    void runFieldQuery(Esri::ArcGISRuntime::FeatureTable* table, const QString& fieldName, const QString& searchText);
+    void runFieldQuery(const QString& fieldName, const QString& searchText);
 
     Esri::ArcGISRuntime::Map* mapGIS = nullptr;
     //FMK Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
@@ -206,6 +219,7 @@ private:
     QVBoxLayout *mapViewLayout;
 
     QList<Esri::ArcGISRuntime::FeatureQueryResult*>  selectedFeaturesList;
+    QList<Esri::ArcGISRuntime::FeatureQueryResult*>  fieldQueryFeaturesList;
 
     QMap<QUuid,QString> taskIDMap;
 
@@ -222,6 +236,15 @@ private:
     Esri::ArcGISRuntime::MultipointBuilder* m_multipointBuilder = nullptr;
     bool selectingConvexHull;
 
+    Esri::ArcGISRuntime::GroupLayer* selectedComponentsLayer = nullptr;
+    Esri::ArcGISRuntime::FeatureCollectionLayer* selectedBuildingsLayer = nullptr;
+//    Esri::ArcGISRuntime::FeatureCollection*  selectedComponentsFeatureCollection = nullptr;
+    Esri::ArcGISRuntime::FeatureCollectionTable* selectedBuildingsTable = nullptr;
+    LayerTreeItem* selectedComponentsTreeItem = nullptr;
+
+    // Map to store the selected features according to their UID
+    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeatures;
+
     // Returns a vector of sorted items that are unique
     template <typename T>
     void uniqueVec(std::vector<T>& vec);
@@ -229,9 +252,6 @@ private:
     // The GIS widget
     QWidget* visWidget;
     void createVisualizationWidget(void);
-
-    ComponentDatabase theBuildingDb;
-    ComponentDatabase thePipelineDb;
 
 };
 
