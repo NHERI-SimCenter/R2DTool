@@ -24,6 +24,13 @@ Modeling Procedure
 
 The procedure for this example can be configured through the R2D interface by sequentially entering the following parameters into the respective panels:
 
+
+#. **VIZ**
+   
+   .. figure:: figures/r2dt-0001-VIZ.png
+      :width: 600px
+      :align: center
+
 #. **GI**
    
    .. figure:: figures/r2dt-0001-GI.png

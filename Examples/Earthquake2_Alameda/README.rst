@@ -6,6 +6,15 @@ Earthquake - Alameda
 | Download files  | :github:`<Examples/Earthquake2_Alameda/>`          |
 +-----------------+----------------------------------------------------+
 
+
+
+#. **VIZ**
+    
+   .. figure:: figures/r2dt-0002-VIZ.png
+      :width: 600px
+      :align: center
+
+
 #. **GI**
     
    .. figure:: figures/r2dt-0002-GI.png
