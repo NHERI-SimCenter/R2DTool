@@ -3,7 +3,7 @@ Earthquake - Alameda
 ====================
 
 +-----------------+----------------------------------------------------+
-| Download files  | :github:`<Examples/Earthquake2_Alameda/>`          |
+| Download files  | :github:`Github <Examples/Earthquake2_Alameda/>`            |
 +-----------------+----------------------------------------------------+
 
 

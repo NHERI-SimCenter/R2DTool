@@ -1,36 +1,36 @@
 {
-  "Name": "AnchorageM7.0",
-  "Author": "Adam Zsarnóczay",
+  "Name": "rWHALE_",
+  "Author": "Tamika Bassman",
   "units": {
       "force": "kips",
-      "length": "ft",
-      "acceleration": "g"
+      "length": "in",
+      "acceleration": "mps2"
    },
   "outputs": {
     "EDP": true,
     "DM": true,
     "DV": true,
-    "every_realization": false
+    "every_realization": true
   },
   "Applications": {
     "Hazard": {
         "Application": "UserInputGM",
         "ApplicationData": {
-	    "eventFile": "/records/EventGrid.csv",
-	    "motionDir": "/records"
+	    "eventFile": "/SW4/EventGrid.csv",
+	    "motionDir": "/SW4"
 	}
-    },		
+    },			
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
-        "filter": "1-10",
-        "buildingSourceFile":"AnchorageBuildings.csv"
+        "filter": "1-2",
+        "buildingSourceFile":"all_bldgs.csv"
       }
     },
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "records/EventGrid.csv",
+        "filenameEVENTgrid": "SW4/EventGrid.csv",
         "samples": 3,
         "neighbors": 4
       }

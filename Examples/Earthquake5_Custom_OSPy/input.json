@@ -17,13 +17,13 @@
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "13-14",
-        "buildingSourceFile":"input_params.csv"
+        "buildingSourceFile":"input_data/input_params.csv"
       }
     },
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "records/EventGrid.csv",
+        "filenameEVENTgrid": "input_data/records/EventGrid.csv",
         "samples": 5,
         "neighbors": 1
       }
@@ -31,24 +31,26 @@
     "Events": [{
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
-      "ApplicationData": {}
+      "ApplicationData": {
+        "testArg": 19
+      }
     }],
     "Modeling": {
       "Application": "OpenSeesPyInput",
       "ApplicationData": {
         "mainScript": "cantilever.py",
-        "modelPath": "model/"
+        "modelPath": "input_data/model",
+        "columnLine": "10000, 10001"
       }
     },
     "EDP": {
-      "Application": "UserDefinedEDP_R",
-      "ApplicationData": {
-        "EDPspecs": "EDP_specs.json"
-      }
+      "Application": "StandardEarthquakeEDP_R",
+      "ApplicationData": {}
     },
     "Simulation": {
        "Application": "OpenSeesPy-Simulation",
-       "ApplicationData": {}
+       "ApplicationData": {
+       }
     },
     "UQ": {
        "Application": "Dakota-UQ",

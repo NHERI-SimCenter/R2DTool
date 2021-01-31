@@ -17,13 +17,13 @@
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "13-14",
-        "buildingSourceFile":"input_data/input_params.csv"
+        "buildingSourceFile":"input_params.csv"
       }
     },
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "input_data/records/EventGrid.csv",
+        "filenameEVENTgrid": "records/EventGrid.csv",
         "samples": 5,
         "neighbors": 1
       }
@@ -39,7 +39,7 @@
       "Application": "OpenSeesPyInput",
       "ApplicationData": {
         "mainScript": "cantilever.py",
-        "modelPath": "input_data/model",
+        "modelPath": "model/",
         "columnLine": "10000, 10001"
       }
     },

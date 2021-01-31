@@ -17,13 +17,13 @@
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "13-14",
-        "buildingSourceFile":"input_data/input_params.csv"
+        "buildingSourceFile":"input_params.csv"
       }
     },
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "input_data/records/EventGrid.csv",
+        "filenameEVENTgrid": "records/EventGrid.csv",
         "samples": 5,
         "neighbors": 4
       }
@@ -37,7 +37,7 @@
       "Application": "OpenSeesPyInput",
       "ApplicationData": {
         "mainScript": "cantilever_light.py",
-        "modelPath": "input_data/model",
+        "modelPath": "model/",
         "ndm": 3,
         "dofMap": "1,2,3",
         "columnLine": "0, 1"
@@ -46,7 +46,7 @@
     "EDP": {
       "Application": "UserDefinedEDP_R",
       "ApplicationData": {
-        "EDPspecs": "input_data/EDP_specs.json"
+        "EDPspecs": "EDP_specs.json"
       }
     },
     "Simulation": {
