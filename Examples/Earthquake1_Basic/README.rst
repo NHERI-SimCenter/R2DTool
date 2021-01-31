@@ -25,30 +25,33 @@ Modeling Procedure
 The procedure for this example can be configured through the R2D interface by sequentially entering the following parameters into the respective panels:
 
 
-#. **VIZ**
+#. **VIZ** 
    
    .. figure:: figures/r2dt-0001-VIZ.png
       :width: 600px
       :align: center
 
-#. **GI**
+
+#. **GI** Next, the general information panel is used to broadly characterize the problem at hand.
    
    .. figure:: figures/r2dt-0001-GI.png
       :width: 600px
       :align: center
 
 
-#. **HAZ**
+#. **HAZ** Now in the hazard panel, the **User Specified Ground Motions** option is selected which allows for the use of pre-generated earthquake scenarios. The following figure shows the relevant example files which are now entered in this pane.
     
    .. figure:: figures/r2dt-0001-HAZ.png
       :width: 600px
       :align: center
 
-#. **ASD** 
+
+#. **ASD** In the asset definition panel, the path to the ``input_params.csv`` file is specified. Once this file is loaded, the user can select which particular assets will be included in the analysis by entering a valid range in the form and clicking **Select**.
 
    .. figure:: figures/r2dt-0001-ASD.png
       :width: 600px
       :align: center
+
 
 #. **HTA** 
 
@@ -56,11 +59,13 @@ The procedure for this example can be configured through the R2D interface by se
       :width: 600px
       :align: center
 
+
 #. **MOD** 
 
    .. figure:: figures/r2dt-0001-MOD.png
       :width: 600px
       :align: center
+
 
 #. **ANA** 
 
