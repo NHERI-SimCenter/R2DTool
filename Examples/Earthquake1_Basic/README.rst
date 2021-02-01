@@ -73,21 +73,20 @@ The procedure for this example can be configured through the R2D interface by se
       :width: 600px
       :align: center
 
-#. **DL** 
+#. **DL** The damage and loss panel is now used to configure the **Pelicun** backend. The **HAZUS MH EQ** damage and loss method is selected and configured as shown in the following figure:
 
    .. figure:: figures/r2dt-0001-DL.png
       :width: 600px
       :align: center
 
-#. **UQ** 
+.. 
+   #. **UQ** 
+      .. figure:: figures/r2dt-0001-UQ.png
+         :width: 600px
+         :align: center
 
-   .. figure:: figures/r2dt-0001-UQ.png
-      :width: 600px
-      :align: center
-
-#. **RV** 
-
-   For this problem, the **RV** panel will be left empty.
+.. 
+   #. **RV** For this problem, the **RV** panel will be left empty.
 
 
 #. **RES** 
