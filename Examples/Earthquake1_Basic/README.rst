@@ -53,21 +53,21 @@ The procedure for this example can be configured through the R2D interface by se
       :align: center
 
 
-#. **HTA** 
+#. **HTA** Next, a hazard mapping algorithm is specified using the **Nearest Neighbour** method and the **SimCenterEvent** application, which are configured as show in the following figure with **5** samples in **4** neighborhoods. 
 
    .. figure:: figures/r2dt-0001-HTA.png
       :width: 600px
       :align: center
 
 
-#. **MOD** 
+#. **MOD** In the modeling panel, the ``cantilever_light.py`` file is specified in the **Input Script** field and a DOF scheme is defined as shown in the following figure:
 
    .. figure:: figures/r2dt-0001-MOD.png
       :width: 600px
       :align: center
 
 
-#. **ANA** 
+#. **ANA** In the analysis panel, **OpenSeesPy** is selected from the primary dropdown.
 
    .. figure:: figures/r2dt-0001-ANA.png
       :width: 600px

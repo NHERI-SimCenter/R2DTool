@@ -2,9 +2,10 @@
 Earthquake - Alameda (SW4)
 ==========================
 
-+-----------------+----------------------------------------------------+
-| Download files  | :github:`Github <Examples/Earthquake4_Alameda/>`   |
-+-----------------+----------------------------------------------------+
++-----------------+--------------------------------------------------------+
+| Download files  | :github:`Github <Examples/Earthquake4_Alameda_SW4/>`   |
++-----------------+--------------------------------------------------------+
+
 
 .. note::
    This example uses simulated ground motion time histories from the Lawrence Livermore National Lab. Due to size constraints, the time histories are not bundled with R2D, but they are available at https://berkeley.box.com/s/65113pqclc2j29ve9alita5kr7q2jnwc . After downloading the zip file, extract its contents to the SW4 folder under input_data.
@@ -12,6 +13,7 @@ Earthquake - Alameda (SW4)
 
 Modeling Procedure
 ------------------
+
 
 #. **GI**
     
@@ -32,7 +34,7 @@ Modeling Procedure
       :width: 600px
       :align: center
 
-#. **HTA** 
+#. **HTA** Next, a hazard mapping algorithm is specified using the **Nearest Neighbour** method and the **SimCenterEvent** application, which are configured as show in the following figure with **3** samples in **4** neighborhoods. 
 
    .. figure:: figures/r2dt-0004-HTA.png
       :width: 600px
@@ -44,11 +46,13 @@ Modeling Procedure
       :width: 600px
       :align: center
 
-#. **ANA** 
+
+#. **ANA** In the analysis panel, **OpenSees** is selected from the primary dropdown.
 
    .. figure:: figures/r2dt-0004-ANA.png
       :width: 600px
       :align: center
+
 
 #. **DL** 
 

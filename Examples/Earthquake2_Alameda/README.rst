@@ -3,7 +3,7 @@ Earthquake - Alameda
 ====================
 
 +-----------------+----------------------------------------------------+
-| Download files  | :github:`Github <Examples/Earthquake2_Alameda/>`            |
+| Download files  | :github:`Github <Examples/Earthquake2_Alameda/>`   |
 +-----------------+----------------------------------------------------+
 
 
@@ -40,9 +40,8 @@ Earthquake - Alameda
       :width: 600px
       :align: center
 
-#. **MOD** 
+#. **MOD** In the building modeling panel, simply leave the first dropdown box set to **None**.
 
-   In the building modeling panel, simply leave the first dropdown box set to **None**.
 
 #. **ANA** 
 
