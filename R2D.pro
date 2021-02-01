@@ -64,7 +64,10 @@ DEFINES += INCLUDE_USER_PASS
 
 win32:DEFINES +=  CURL_STATICLIB
 
+#win32::include($$PWD/R2D.user.pri)
+#win32::include($$PWD/R2D.user.pri)
 win32::include($$PWD/ConanHelper.pri)
+
 win32::LIBS+=Advapi32.lib
 
 # Full optimization on release
@@ -84,7 +87,8 @@ win32 {
 
 # GIS library
 ARCGIS_RUNTIME_VERSION = 100.9
-include($$PWD/arcgisruntime.pri)
+#include($$PWD/arcgisruntime.pri)
+include(./arcgisruntime.pri)
 
 # Simcenter dependencies
 include($$PATH_TO_COMMON/Common/Common.pri)
