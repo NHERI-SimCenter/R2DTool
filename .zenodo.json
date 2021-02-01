@@ -1,0 +1,40 @@
+{
+    "description": "<p>Initial Release of Regional Resilience Determination (R2D) Tool</p>", 
+    "license": "other-open", 
+    "title": "NHERI-SimCenter/R2DTool: Version 1.0.0", 
+    "version": "v1.0.0", 
+    "upload_type": "software", 
+    "publication_date": "2021-01-31", 
+    "creators": [
+        {
+            "name": "Frank McKenna"
+            "affiliation": "UC Berkeley", 	    
+        }, 
+        {
+            "name": "Stevan Gavrilovic"
+            "affiliation": "UC Berkeley", 	    	    
+        },
+        {
+            "name": "Wael Elhaddad"
+            "affiliation": "UC Berkeley", 	    	    
+        }, 	
+        {
+            "affiliation": "Stanford University", 
+            "name": "Adam Zsarnoczay"
+        }, 
+
+    ], 
+    "access_right": "open", 
+    "related_identifiers": [
+        {
+            "scheme": "url", 
+            "identifier": "https://github.com/NHERI-SimCenter/R2DTool/tree/v1.0.0", 
+            "relation": "isSupplementTo"
+        }, 
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.4483614", 
+            "relation": "isVersionOf"
+        }
+    ]
+}
