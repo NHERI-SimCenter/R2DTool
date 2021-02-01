@@ -49,9 +49,25 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 # C++17 support
 CONFIG += c++17
 
+# Check for the required Qt version
+equals(QT_MAJOR_VERSION, 5) {
+    lessThan(QT_MINOR_VERSION, 15) {
+        error("$$TARGET requires Qt 5.15.0")
+    }
+        equals(QT_MINOR_VERSION, 15) : lessThan(QT_PATCH_VERSION, 0) {
+                error("$$TARGET requires Qt 5.15.0")
+        }
+}
+
+
+#DEFINES += INCLUDE_USER_PASS
+
 win32:DEFINES +=  CURL_STATICLIB
 
-# win32::include($$PWD/ConanHelper.pri)
+#win32::include($$PWD/R2D.user.pri)
+#win32::include($$PWD/R2D.user.pri)
+win32::include($$PWD/ConanHelper.pri)
+
 win32::LIBS+=Advapi32.lib
 
 # Full optimization on release
@@ -71,7 +87,8 @@ win32 {
 
 # GIS library
 ARCGIS_RUNTIME_VERSION = 100.9
-include($$PWD/arcgisruntime.pri)
+#include($$PWD/arcgisruntime.pri)
+include(./arcgisruntime.pri)
 
 # Simcenter dependencies
 include($$PATH_TO_COMMON/Common/Common.pri)
@@ -83,49 +100,49 @@ include(R2DCommon.pri)
 INCLUDEPATH += $$PWD/Utils \
                $$PWD/styles \
                $$PWD/UIWidgets \
-               $$PWD/EVENTS/UI \
-               $$PWD/TOOLS \
+               $$PWD/ModelViewItems \
+               $$PWD/GraphicElements \
+               $$PWD/Events/UI \
+               $$PWD/Tools \
 
 
-SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
-            EVENTS/UI/EarthquakeRuptureForecastWidget.cpp \
-            EVENTS/UI/GMPE.cpp \
-            EVENTS/UI/GMPEWidget.cpp \
-            EVENTS/UI/GMWidget.cpp \
-            EVENTS/UI/GmAppConfig.cpp \
-            EVENTS/UI/GmAppConfigWidget.cpp \
-            EVENTS/UI/GmCommon.cpp \
-            EVENTS/UI/GridDivision.cpp \
-            EVENTS/UI/HBoxFormLayout.cpp \
-            EVENTS/UI/IntensityMeasure.cpp \
-            EVENTS/UI/IntensityMeasureWidget.cpp \
-            EVENTS/UI/Location.cpp \
-            EVENTS/UI/PeerLoginDialog.cpp \
-            EVENTS/UI/PeerNGAWest2Client.cpp \
-            EVENTS/UI/PointSourceRupture.cpp \
-            EVENTS/UI/PointSourceRuptureWidget.cpp \
-            EVENTS/UI/RecordSelectionConfig.cpp \
-            EVENTS/UI/RecordSelectionWidget.cpp \
-            EVENTS/UI/RuptureLocation.cpp \
-            EVENTS/UI/RuptureWidget.cpp \
-            EVENTS/UI/Site.cpp \
-            EVENTS/UI/SiteConfig.cpp \
-            EVENTS/UI/SiteConfigWidget.cpp \
-            EVENTS/UI/SiteGrid.cpp \
-            EVENTS/UI/SiteGridWidget.cpp \
-            EVENTS/UI/SiteWidget.cpp \
-            EVENTS/UI/SpatialCorrelationWidget.cpp \
-            RunWidget.cpp \
-            TOOLS/AssetInputDelegate.cpp \
-            TOOLS/BuildingDatabase.cpp \
-            TOOLS/CSVReaderWriter.cpp \
-            TOOLS/CustomListWidget.cpp \
-            TOOLS/NGAW2Converter.cpp \
-            TOOLS/PelicunPostProcessor.cpp \
-            TOOLS/REmpiricalProbabilityDistribution.cpp \
-            TOOLS/TablePrinter.cpp \
-            TOOLS/XMLAdaptor.cpp \
-            TOOLS/shakeMapClient.cpp \
+SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
+            Events/UI/EarthquakeRuptureForecastWidget.cpp \
+            Events/UI/GMPE.cpp \
+            Events/UI/GMPEWidget.cpp \
+            Events/UI/GMWidget.cpp \
+            Events/UI/GmAppConfig.cpp \
+            Events/UI/GmAppConfigWidget.cpp \
+            Events/UI/GmCommon.cpp \
+            Events/UI/GridDivision.cpp \
+            Events/UI/HBoxFormLayout.cpp \
+            Events/UI/IntensityMeasure.cpp \
+            Events/UI/IntensityMeasureWidget.cpp \
+            Events/UI/Location.cpp \
+            Events/UI/PeerLoginDialog.cpp \
+            Events/UI/PeerNGAWest2Client.cpp \
+            Events/UI/PointSourceRupture.cpp \
+            Events/UI/PointSourceRuptureWidget.cpp \
+            Events/UI/RecordSelectionConfig.cpp \
+            Events/UI/RecordSelectionWidget.cpp \
+            Events/UI/RuptureLocation.cpp \
+            Events/UI/RuptureWidget.cpp \
+            Events/UI/Site.cpp \
+            Events/UI/SiteConfig.cpp \
+            Events/UI/SiteConfigWidget.cpp \
+            Events/UI/SiteGrid.cpp \
+            Events/UI/SiteGridWidget.cpp \
+            Events/UI/SiteWidget.cpp \
+            Events/UI/SpatialCorrelationWidget.cpp \
+            Tools/AssetInputDelegate.cpp \
+            Tools/ComponentDatabase.cpp \
+            Tools/CSVReaderWriter.cpp \
+            Tools/NGAW2Converter.cpp \
+            Tools/PelicunPostProcessor.cpp \
+            Tools/REmpiricalProbabilityDistribution.cpp \
+            Tools/TablePrinter.cpp \
+            Tools/XMLAdaptor.cpp \
+            Tools/ShakeMapClient.cpp \
             UIWidgets/AnalysisWidget.cpp \
             UIWidgets/AssetsModelWidget.cpp \
             UIWidgets/AssetsWidget.cpp \
@@ -144,7 +161,6 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EarthquakeInputWidget.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
-            UIWidgets/GridNode.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
@@ -156,12 +172,10 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/ModelWidget.cpp \
             UIWidgets/MultiComponentR2D.cpp \
             UIWidgets/NearestNeighbourMapping.cpp \
-            UIWidgets/NodeHandle.cpp \
             UIWidgets/NoneWidget.cpp \
             UIWidgets/OpenSeesPyBuildingModel.cpp \
             UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/PopUpWidget.cpp \
-            UIWidgets/RectangleGrid.cpp \
             UIWidgets/ResultsMapViewWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/SecondaryComponentSelection.cpp \
@@ -169,59 +183,63 @@ SOURCES +=  EVENTS/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/SimCenterEventRegional.cpp \
             UIWidgets/SimCenterMapGraphicsView.cpp \
             UIWidgets/StructuralModelingWidget.cpp \
-            UIWidgets/TreeItem.cpp \
-            UIWidgets/TreeModel.cpp \
-            UIWidgets/TreeView.cpp \
-            UIWidgets/TreeViewStyle.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
             UIWidgets/UserInputGMWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
+            ModelViewItems/LayerTreeItem.cpp \
+            ModelViewItems/TreeItem.cpp \
+            ModelViewItems/ListTreeModel.cpp \
+            ModelViewItems/LayerTreeModel.cpp \
+            ModelViewItems/LayerTreeView.cpp \
+            ModelViewItems/TreeViewStyle.cpp \
+            ModelViewItems/CustomListWidget.cpp \
+            GraphicElements/NodeHandle.cpp \
+            GraphicElements/RectangleGrid.cpp \
+            GraphicElements/GridNode.cpp \
+            RunWidget.cpp \
             WorkflowAppR2D.cpp \
             main.cpp \
 
 
-HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
-            EVENTS/UI/EarthquakeRuptureForecastWidget.h \
-            EVENTS/UI/GMPE.h \
-            EVENTS/UI/GMPEWidget.h \
-            EVENTS/UI/GMWidget.h \
-            EVENTS/UI/GmAppConfig.h \
-            EVENTS/UI/GmAppConfigWidget.h \
-            EVENTS/UI/GmCommon.h \
-            EVENTS/UI/GridDivision.h \
-            EVENTS/UI/HBoxFormLayout.h \
-            EVENTS/UI/IntensityMeasure.h \
-            EVENTS/UI/IntensityMeasureWidget.h \
-            EVENTS/UI/JsonSerializable.h \
-            EVENTS/UI/Location.h \
-            EVENTS/UI/PeerLoginDialog.h \
-            EVENTS/UI/PeerNGAWest2Client.h \
-            EVENTS/UI/PointSourceRupture.h \
-            EVENTS/UI/PointSourceRuptureWidget.h \
-            EVENTS/UI/RecordSelectionConfig.h \
-            EVENTS/UI/RecordSelectionWidget.h \
-            EVENTS/UI/RuptureLocation.h \
-            EVENTS/UI/RuptureWidget.h \
-            EVENTS/UI/Site.h \
-            EVENTS/UI/SiteConfig.h \
-            EVENTS/UI/SiteConfigWidget.h \
-            EVENTS/UI/SiteGrid.h \
-            EVENTS/UI/SiteGridWidget.h \
-            EVENTS/UI/SiteWidget.h \
-            EVENTS/UI/SpatialCorrelationWidget.h \
-            R2DUserPass.h \
-            RunWidget.h \
-            TOOLS/AssetInputDelegate.h \
-            TOOLS/BuildingDatabase.h \
-            TOOLS/CSVReaderWriter.h \
-            TOOLS/CustomListWidget.h \
-            TOOLS/NGAW2Converter.h \
-            TOOLS/PelicunPostProcessor.h \
-            TOOLS/REmpiricalProbabilityDistribution.h \
-            TOOLS/TablePrinter.h \
-            TOOLS/XMLAdaptor.h \
-            TOOLS/shakeMapClient.h \
+HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
+            Events/UI/EarthquakeRuptureForecastWidget.h \
+            Events/UI/GMPE.h \
+            Events/UI/GMPEWidget.h \
+            Events/UI/GMWidget.h \
+            Events/UI/GmAppConfig.h \
+            Events/UI/GmAppConfigWidget.h \
+            Events/UI/GmCommon.h \
+            Events/UI/GridDivision.h \
+            Events/UI/HBoxFormLayout.h \
+            Events/UI/IntensityMeasure.h \
+            Events/UI/IntensityMeasureWidget.h \
+            Events/UI/JsonSerializable.h \
+            Events/UI/Location.h \
+            Events/UI/PeerLoginDialog.h \
+            Events/UI/PeerNGAWest2Client.h \
+            Events/UI/PointSourceRupture.h \
+            Events/UI/PointSourceRuptureWidget.h \
+            Events/UI/RecordSelectionConfig.h \
+            Events/UI/RecordSelectionWidget.h \
+            Events/UI/RuptureLocation.h \
+            Events/UI/RuptureWidget.h \
+            Events/UI/Site.h \
+            Events/UI/SiteConfig.h \
+            Events/UI/SiteConfigWidget.h \
+            Events/UI/SiteGrid.h \
+            Events/UI/SiteGridWidget.h \
+            Events/UI/SiteWidget.h \
+            Events/UI/SpatialCorrelationWidget.h \
+            Tools/AssetInputDelegate.h \
+            Tools/ComponentDatabase.h \
+            Tools/CSVReaderWriter.h \
+            Tools/NGAW2Converter.h \
+            Tools/PelicunPostProcessor.h \
+            Tools/REmpiricalProbabilityDistribution.h \
+            Tools/TablePrinter.h \
+            Tools/XMLAdaptor.h \
+            Tools/shakeMapClient.h \
             UIWidgets/AnalysisWidget.h \
             UIWidgets/AssetsModelWidget.h \
             UIWidgets/AssetsWidget.h \
@@ -240,7 +258,6 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EarthquakeInputWidget.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
-            UIWidgets/GridNode.h \
             UIWidgets/GroundMotionStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \
@@ -250,14 +267,12 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             UIWidgets/MDOF_LU.h \
             UIWidgets/MapViewSubWidget.h \
             UIWidgets/ModelWidget.h \
-            UIWidgets/MultiComponentR2D.h \             \
+            UIWidgets/MultiComponentR2D.h \
             UIWidgets/NearestNeighbourMapping.h \
-            UIWidgets/NodeHandle.h \
             UIWidgets/NoneWidget.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
             UIWidgets/PelicunDLWidget.h \
             UIWidgets/PopUpWidget.h \
-            UIWidgets/RectangleGrid.h \
             UIWidgets/ResultsMapViewWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/SecondaryComponentSelection.h \
@@ -265,15 +280,33 @@ HEADERS +=  EVENTS/UI/EarthquakeRuptureForecast.h \
             UIWidgets/SimCenterEventRegional.h \
             UIWidgets/SimCenterMapGraphicsView.h \
             UIWidgets/StructuralModelingWidget.h \
-            UIWidgets/TreeItem.h \
-            UIWidgets/TreeModel.h \
-            UIWidgets/TreeView.h \
-            UIWidgets/TreeViewStyle.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
             UIWidgets/UserInputGMWidget.h \
             UIWidgets/VisualizationWidget.h \
-            WorkflowAppR2D.h\
+            ModelViewItems/LayerTreeItem.h \
+            ModelViewItems/TreeItem.h \
+            ModelViewItems/ListTreeModel.h \
+            ModelViewItems/LayerTreeModel.h \
+            ModelViewItems/LayerTreeView.h \
+            ModelViewItems/TreeViewStyle.h \
+            ModelViewItems/CustomListWidget.h \
+            GraphicElements/GridNode.h \
+            GraphicElements/NodeHandle.h \
+            GraphicElements/RectangleGrid.h \
+            WorkflowAppR2D.h \
+            RunWidget.h \
+
+
+contains(DEFINES, INCLUDE_USER_PASS) {
+
+HEADERS += R2DUserPass.h \
+
+} else {
+
+HEADERS += SampleUserPass.h \
+
+}
 
 
 RESOURCES += \
@@ -288,18 +321,52 @@ DISTFILES += \
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
-# Copies over the examples folder into the build directory
+# Path to build directory
 win32 {
-PATH_TO_BINARY=$$OUT_PWD
+DESTDIR = $$shell_path($$OUT_PWD)
+Release:DESTDIR = $$DESTDIR/release
+Debug:DESTDIR = $$DESTDIR/debug
+
+PATH_TO_BINARY=$$DESTDIR/Examples
+
 } else {
     mac {
     PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS
     }
 }
 
+
+win32 {
+
+# Copies over the examples folder into the build directory
+copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_BINARY))
+first.depends = $(first) copydata
+
+# copies the dll files into the build directory
+CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
+
+first.depends += CopyDLLs
+
+export(first.depends)
+export(CopyDLLs.commands)
+export(copydata.commands)
+
+QMAKE_EXTRA_TARGETS += first copydata CopyDLLs
+
+}else {
+mac {
+
+message($(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\")
+
 copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
 first.depends = $(first) copydata
 export(first.depends)
 export(copydata.commands)
 QMAKE_EXTRA_TARGETS += first copydata
+
+}
+}
+
+
+
 

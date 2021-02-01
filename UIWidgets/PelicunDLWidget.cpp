@@ -159,4 +159,15 @@ bool PelicunDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     return true;
 }
 
+void PelicunDLWidget::clear(void)
+{
+    DLTypeComboBox->setCurrentIndex(0);
+    realizationsLineEdit->clear();
+    eventTimeComboBox->setCurrentIndex(1);
+    detailedResultsCheckBox->setChecked(false);
+    logFileCheckBox->setChecked(false);
+    coupledEDPCheckBox->setChecked(false);
+    groundFailureCheckBox->setChecked(false);
+}
+
 

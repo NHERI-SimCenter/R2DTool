@@ -55,6 +55,8 @@ public:
 
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
 
+    void clear(void);
+
 private:
 
     QComboBox* DLTypeComboBox;

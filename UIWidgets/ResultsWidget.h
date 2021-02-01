@@ -44,8 +44,11 @@ class AssetInputDelegate;
 class PelicunPostProcessor;
 class VisualizationWidget;
 
+class QStackedWidget;
 class QVBoxLayout;
+class QLabel;
 class QLineEdit;
+class QPushButton;
 
 class ResultsWidget : public SimCenterAppWidget
 {
@@ -59,9 +62,13 @@ public:
     virtual bool outputToJSON(QJsonObject &rvObject);
     virtual bool inputFromJSON(QJsonObject &rvObject);
 
-    virtual int processResults();
+    virtual int processResults(QString resultsDir);
 
     void setCurrentlyViewable(bool status);
+
+    void clear(void);
+
+    void resultsShow(bool value);
 
 private slots:
 
@@ -71,6 +78,15 @@ private slots:
     void chooseResultsDirDialog(void);
 
 private:
+
+    QStackedWidget* mainStackedWidget;
+    QLabel* resultsMainLabel;
+
+    QLabel* selectComponentsText;
+    QPushButton *selectComponentsButton;
+    QPushButton *exportPDFFileButton;
+    QPushButton *exportBrowseFileButton;
+    QLabel* exportLabel;
 
     QString DVApp;
     QLineEdit* exportPathLineEdit;

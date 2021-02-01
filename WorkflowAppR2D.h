@@ -59,7 +59,7 @@ class RandomVariablesContainer;
 class RemoteJobManager;
 class RemoteService;
 class ResultsWidget;
-class RunLocalWidget;
+//class RunLocalWidget;
 class RunWidget;
 class SimCenterAppWidget;
 class SimCenterComponentSelection;
@@ -80,7 +80,6 @@ public:
 
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
-    void clear(void);
 
     void onRunButtonClicked();
     void onRemoteRunButtonClicked();
@@ -101,7 +100,7 @@ signals:
     void sendLoadFile(QString filename);
 
 public slots:  
-
+    void clear(void);
     void setUpForApplicationRun(QString &, QString &);
     void processResults(QString dakotaOut, QString dakotaTab, QString inputFile);
     void loadFile(QString filename);

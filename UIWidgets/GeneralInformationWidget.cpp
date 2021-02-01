@@ -96,7 +96,9 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     jsonObj.insert("Author", "SimCenter");
     jsonObj.insert("WorkflowType", "Parametric Study");
     jsonObj.insert("runDir", runDir);
-    jsonObj.insert("localAppDir", appDir);
+
+
+    //jsonObj.insert("localAppDir", appDir);
 
     QJsonObject unitsObj;
     //   unitsObj.insert("force", "kips"/*unitsForceCombo->currentText()*/);
@@ -347,4 +349,27 @@ QString GeneralInformationWidget::getLengthUnit()
 QString GeneralInformationWidget::getForceUnit()
 {
     return unitEnumToString(unitsForceCombo->currentData().value<ForceUnit>());
+}
+
+
+void GeneralInformationWidget::clear(void)
+{
+    nameEdit->clear();
+
+    unitsForceCombo->setCurrentIndex(0);
+    unitsLengthCombo->setCurrentIndex(0);
+    unitsTemperatureCombo->setCurrentIndex(0);
+    unitsTimeCombo->setCurrentIndex(0);
+
+    buildingsCheckBox->setChecked(true);
+    soilCheckBox->setChecked(false);
+    waterCheckBox->setChecked(false);
+    sewerCheckBox->setChecked(false);
+    gasCheckBox->setChecked(false);
+    transportationCheckBox->setChecked(false);
+
+    EDPCheckBox->setChecked(false);
+    DMCheckBox->setChecked(false);
+    DVCheckBox->setChecked(false);
+    realizationCheckBox->setChecked(false);
 }

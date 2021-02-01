@@ -92,6 +92,13 @@ ModelWidget::~ModelWidget()
 }
 
 
+void ModelWidget::clear(void)
+{
+    buildingWidget->clear();
+    pipelineWidget->clear();
+}
+
+
 
 
 

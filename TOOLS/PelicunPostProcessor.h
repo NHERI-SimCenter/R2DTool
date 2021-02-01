@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "BuildingDatabase.h"
+#include "ComponentDatabase.h"
 #include "ResultsMapViewWidget.h"
 
 #include <QString>
@@ -125,6 +125,10 @@ public:
 
     void setCurrentlyViewable(bool status);
 
+    void clear(void);
+
+    void setIsVisible(const bool value);
+
 private slots:
 
     int assemblePDF(QImage screenShot);
@@ -142,6 +146,8 @@ private:
     QVector<QStringList> EDPdata;
 
     QString outputFilePath;
+
+    QMenu* viewMenu;
 
     QLabel* totalCasLabel;
     QLabel* totalLossLabel;
@@ -185,7 +191,7 @@ private:
 
     int createCasualtiesChart(QtCharts::QBarSet *casualtiesSet);
 
-    QVector<Building> buildingsVec;
+    QVector<Component> buildingsVec;
 
     QByteArray uiState;
 

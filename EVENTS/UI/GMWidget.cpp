@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "IntensityMeasureWidget.h"
 #include "MapViewSubWidget.h"
 #include "NGAW2Converter.h"
-#include "R2DUserPass.h"
 #include "RecordSelectionWidget.h"
 #include "RuptureWidget.h"
 #include "SimCenterPreferences.h"
@@ -54,9 +53,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SiteGridWidget.h"
 #include "SiteWidget.h"
 #include "SpatialCorrelationWidget.h"
-#include "TreeView.h"
+#include "LayerTreeView.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+
+#ifdef INCLUDE_USER_PASS
+#include "R2DUserPass.h"
+#else
+#include "SampleUserPass.h"
+#endif
 
 // GIS includes
 #include "MapGraphicsView.h"
@@ -914,7 +919,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     }
 
     // Create a new layer
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
+    LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
 
     // Check if there is a 'User Ground Motions' root item in the tree
     auto userInputTreeItem = layersTreeView->getTreeItem("EQ Hazard Simulation Grid", nullptr);

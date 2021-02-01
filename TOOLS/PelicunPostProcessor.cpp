@@ -88,7 +88,7 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 
     // Create a view menu for the dockable windows
     auto mainWindow = WorkflowAppR2D::getInstance()->getTheMainWindow();
-    QMenu *viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
+    viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
 
     viewMenu->addAction(tr("&Restore"), this, &PelicunPostProcessor::restoreUI);
 
@@ -171,10 +171,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     pelicunResultsTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     pelicunResultsTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
-
-    pelicunResultsTableWidget->setColumnCount(tableHeadings.size());
-    pelicunResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
     pelicunResultsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     // Combo box to select how to sort the table
@@ -319,6 +315,11 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         headerStrings[i] = headerStr;
     }
 
+    QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
+
+    pelicunResultsTableWidget->setColumnCount(tableHeadings.size());
+    pelicunResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
+
     pelicunResultsTableWidget->setRowCount(DVResults.size()-numHeaderRows);
 
     auto cumulativeStructDS1 = 0.0;
@@ -355,7 +356,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         auto buildingID = objectToInt(inputRow.at(0));
 
-        auto building = theBuildingDB->getBuilding(buildingID);
+        auto building = theBuildingDB->getComponent(buildingID);
 
         if(building.ID == -1)
             throw QString("Could not find the building ID " + QString::number(buildingID) + " in the database");
@@ -366,7 +367,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         }
 
         // Defaults to 1.0 if no replacement cost is given, i.e., it assumes the repair cost is the loss ratio
-        auto replacementCostVar = building.buildingAttributes.value("ReplacementCost",QVariant(1.0));
+        auto replacementCostVar = building.ComponentAttributes.value("ReplacementCost",QVariant(1.0));
 
         auto replacementCost = objectToDouble(replacementCostVar);
 
@@ -462,7 +463,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
         pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
 
-        auto buildingFeature = building.buildingFeature;
+        auto buildingFeature = building.ComponentFeature;
 
         buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
 
@@ -515,6 +516,12 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     chartsDock3->setWidget(lossesRFDiagram);
 
     return 0;
+}
+
+
+void PelicunPostProcessor::setIsVisible(const bool value)
+{
+    viewMenu->menuAction()->setVisible(value);
 }
 
 
@@ -807,7 +814,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertImage(imageFormatSimCenterLogo);
 
-    cursor.insertText("\nRegional Resilience Determination Tool (R2D)\n",titleFormat);
+    cursor.insertText("\nRegional Resilience Determination (R2D) Tool\n",titleFormat);
 
     cursor.insertText("Results Summary\n",boldFormat);
 
@@ -1047,5 +1054,27 @@ void PelicunPostProcessor::setCurrentlyViewable(bool status){
 
     if (status == true)
         mapViewSubWidget->setCurrentlyViewable(status);
+}
+
+
+void PelicunPostProcessor::clear(void)
+{
+    DMdata.clear();
+    DVdata.clear();
+    EDPdata.clear();
+    buildingsVec.clear();
+
+    outputFilePath.clear();
+
+    totalCasValueLabel->clear();
+    totalLossValueLabel->clear();
+    totalRepairTimeValueLabel->clear();
+    totalFatalitiesValueLabel->clear();
+    structLossValueLabel->clear();
+    nonStructLossValueLabel->clear();
+
+    pelicunResultsTableWidget->clear();
+
+    sortComboBox->setCurrentIndex(0);
 }
 

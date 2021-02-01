@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 #include <QDebug>
 #include <QDir>
+#include <QMenu>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QJsonObject>
@@ -57,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPaintEngine>
 #include <QPushButton>
 #include <QStandardPaths>
+#include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QFileDialog>
 
@@ -65,6 +67,10 @@ using namespace Esri::ArcGISRuntime;
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     DVApp = "Pelicun";
+
+    resultsMainLabel = new QLabel("No results to display", this);
+
+    mainStackedWidget = new QStackedWidget(this);
 
     mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(5,0,0,0);
@@ -83,12 +89,21 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     // Layout to display the results
     resultsPageWidget = new QWidget();
 
+    mainStackedWidget->addWidget(resultsPageWidget);
+
+    QVBoxLayout* resultsPlaceHolderLayout = new QVBoxLayout(resultsPageWidget);
+    resultsPlaceHolderLayout->addStretch();
+    resultsPlaceHolderLayout->addWidget(resultsMainLabel,0,Qt::AlignCenter);
+    resultsPlaceHolderLayout->addStretch();
+
     thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(parent,theVisualizationWidget);
+
+    mainStackedWidget->addWidget(thePelicunPostProcessor.get());
 
     // Export layout and objects
     QGridLayout *theExportLayout = new QGridLayout();
-    QLabel* exportLabel = new QLabel("Export folder:", this);
 
+    exportLabel = new QLabel("Export folder:", this);
     exportPathLineEdit = new QLineEdit(this);
     //exportPathLineEdit->setMaximumWidth(1000);
     // exportPathLineEdit->setMinimumWidth(400);
@@ -97,23 +112,23 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
     exportPathLineEdit->setText(defaultOutput);
 
-    QPushButton *exportBrowseFileButton = new QPushButton(this);
+    exportBrowseFileButton = new QPushButton(this);
     exportBrowseFileButton->setText(tr("Browse"));
     exportBrowseFileButton->setMaximumWidth(150);
 
     connect(exportBrowseFileButton,&QPushButton::clicked,this,&ResultsWidget::chooseResultsDirDialog);
 
-    QPushButton *exportPDFFileButton = new QPushButton(this);
+    exportPDFFileButton = new QPushButton(this);
     exportPDFFileButton->setText(tr("Export to PDF"));
 
     connect(exportPDFFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
-    QLabel* selectComponentsText = new QLabel("Select a subset of buildings to display the results:",this);
+    selectComponentsText = new QLabel("Select a subset of buildings to display the results:",this);
     selectComponentsLineEdit = new AssetInputDelegate();
 
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);
 
-    QPushButton *selectComponentsButton = new QPushButton();
+    selectComponentsButton = new QPushButton();
     selectComponentsButton->setText(tr("Select"));
     selectComponentsButton->setMaximumWidth(150);
 
@@ -123,19 +138,21 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theExportLayout->addWidget(selectComponentsText,     0,0);
     theExportLayout->addWidget(selectComponentsLineEdit, 0,1);
     theExportLayout->addWidget(selectComponentsButton,   0,2);
-   // theExportLayout->addStretch();
+    // theExportLayout->addStretch();
     theExportLayout->addWidget(exportLabel,            1,0);
     theExportLayout->addWidget(exportPathLineEdit,     1,1);
     theExportLayout->addWidget(exportBrowseFileButton, 1,2);
     theExportLayout->addWidget(exportPDFFileButton,       2,0,1,3);
 
-   // theExportLayout->addStretch();
-   theExportLayout->setRowStretch(3,1);
+    // theExportLayout->addStretch();
+    theExportLayout->setRowStretch(3,1);
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addWidget(resultsPageWidget);
+    mainLayout->addWidget(mainStackedWidget);
     mainLayout->addLayout(theExportLayout,1);
     mainLayout->addStretch(1);
+
+    this->resultsShow(false);
 
     this->setMinimumWidth(640);
 }
@@ -144,6 +161,35 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 ResultsWidget::~ResultsWidget()
 {
 
+}
+
+
+void ResultsWidget::resultsShow(bool value)
+{
+    if(!value)
+    {
+        thePelicunPostProcessor->setIsVisible(false);
+        mainStackedWidget->setCurrentWidget(resultsPageWidget);
+        selectComponentsButton->hide();
+        selectComponentsLineEdit->hide();
+        selectComponentsText->hide();
+        exportPDFFileButton->hide();
+        exportBrowseFileButton->hide();
+        exportPathLineEdit->hide();
+        exportLabel->hide();
+    }
+    else
+    {
+        thePelicunPostProcessor->setIsVisible(true);
+        mainStackedWidget->setCurrentWidget(thePelicunPostProcessor.get());
+        selectComponentsButton->show();
+        selectComponentsLineEdit->show();
+        selectComponentsText->show();
+        exportPDFFileButton->show();
+        exportBrowseFileButton->show();
+        exportPathLineEdit->show();
+        exportLabel->show();
+    }
 }
 
 
@@ -166,12 +212,14 @@ void ResultsWidget::setCurrentlyViewable(bool status){
 }
 
 
-int ResultsWidget::processResults()
+int ResultsWidget::processResults(QString resultsDirectory)
 {
 
-    auto SCPrefs = SimCenterPreferences::getInstance();
+    //auto SCPrefs = SimCenterPreferences::getInstance();
 
-    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
+    //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
+
+    qDebug() << resultsDirectory;
 
     try
     {
@@ -179,7 +227,7 @@ int ResultsWidget::processResults()
         {
             thePelicunPostProcessor->importResults(resultsDirectory);
 
-            mainLayout->replaceWidget(resultsPageWidget,thePelicunPostProcessor.get());
+            this->resultsShow(true);
         }
     }
     catch (const QString msg)
@@ -275,6 +323,18 @@ void ResultsWidget::chooseResultsDirDialog(void)
     exportPathLineEdit->setText(newPath);
 
     return;
+}
+
+
+void ResultsWidget::clear(void)
+{
+    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
+    exportPathLineEdit->setText(defaultOutput);
+    selectComponentsLineEdit->clear();
+
+    thePelicunPostProcessor->clear();
+
+    resultsShow(false);
 }
 
 

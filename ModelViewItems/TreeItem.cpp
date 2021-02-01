@@ -46,29 +46,87 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 TreeItem::TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parent) : QObject(), itemData(data), parentItem(parent), itemID(ID)
 {
-    opacityDialog = nullptr;
+    currentState = 0;
+    isCheckable = true;
     itemName = data.at(0).toString();
-    currentState = 2;
 }
 
 
 TreeItem::~TreeItem()
 {
     qDeleteAll(vecChildItems);
-
-    if (opacityDialog)
-        delete opacityDialog;
 }
+
+
+void TreeItem::setState(int set)
+{
+    if(set == 1 && !vecChildItems.empty())
+    {
+        int state = vecChildItems.at(0)->getState();
+
+        for(auto&& it:vecChildItems)
+        {
+            // If any children are unchecked or partially set do nothing
+            if(it->getState() != state)
+            {
+                currentState = set;
+
+                if(parentItem)
+                    parentItem->setState(1);
+
+                return;
+            }
+        }
+
+        // If all children are checked or unchecked, set the state to this item as well
+        currentState = state;
+
+        if(parentItem)
+            parentItem->setState(1);
+
+        return;
+    }
+
+    currentState = set;
+
+    if(set == 0)
+        emit itemUnchecked(itemID);
+    else
+        emit itemChecked(itemID);
+}
+
+
+int TreeItem::getState() const
+{
+    return currentState;
+}
+
 
 
 QStringList TreeItem::getActionList()
 {
     QStringList actionList;
 
-    actionList << "&Change Opacity"
+    actionList << "&Remove"
                << "Separator";
 
     return actionList;
+}
+
+
+void TreeItem::remove()
+{
+    emit removeThisItem(itemID);
+}
+
+bool TreeItem::getIsCheckable() const
+{
+    return isCheckable;
+}
+
+void TreeItem::setIsCheckable(bool value)
+{
+    isCheckable = value;
 }
 
 
@@ -113,48 +171,9 @@ TreeItem *TreeItem::findChild(QString name)
 }
 
 
-void TreeItem::setState(int set)
-{
-    if(set == 1 && !vecChildItems.empty())
-    {
-        int state = vecChildItems.at(0)->getState();
-
-        for(auto&& it:vecChildItems)
-        {
-            // If any children are unchecked or partially set do nothing
-            if(it->getState() != state)
-            {
-                currentState = set;
-
-                if(parentItem)
-                    parentItem->setState(1);
-
-                return;
-            }
-        }
-
-        // If all children are checked or unchecked, set the state to this item as well
-        currentState = state;
-
-        if(parentItem)
-            parentItem->setState(1);
-
-        return;
-    }
-
-    currentState = set;
-}
-
-
 QVector<TreeItem *> TreeItem::getChildItems() const
 {
     return vecChildItems;
-}
-
-
-int TreeItem::getState() const
-{
-    return currentState;
 }
 
 
@@ -214,6 +233,15 @@ int TreeItem::columnCount() const
 }
 
 
+void TreeItem::setData(QString& val, int column)
+{
+    if (column < 0 || column >= itemData.size())
+        return;
+
+    itemData[column].setValue(val);
+}
+
+
 QVariant TreeItem::data(int column) const
 {
     if (column < 0 || column >= itemData.size())
@@ -238,61 +266,14 @@ int TreeItem::row() const
 }
 
 
-void TreeItem::changeOpacity()
+QString TreeItem::getName() const
 {
-    if (!opacityDialog)
-    {
-        opacityDialog = new QDialog();
-
-        auto slider = new QSlider(opacityDialog);
-
-        connect(slider, &QAbstractSlider::sliderMoved, this, &TreeItem::handleChangeOpacity);
-
-        slider->setOrientation(Qt::Horizontal);
-
-        slider->setValue(100);
-
-        slider->setTickPosition(QSlider::TickPosition::TicksAbove);
-
-        auto dialogLayout = new QGridLayout(opacityDialog);
-
-        auto label = new QLabel("0.0",opacityDialog);
-        auto label2  = new QLabel("1.0",opacityDialog);
-
-        dialogLayout->addWidget(label, 0, 0);
-        dialogLayout->addWidget(slider, 0, 1);
-        dialogLayout->addWidget(label2, 0, 2);
-
-        opacityDialog->setLayout(dialogLayout);
-        opacityDialog->setWindowTitle("Adjust opacity of layer "+itemName);
-
-        opacityDialog->setMinimumWidth(400);
-        opacityDialog->setMinimumHeight(150);
-
-    }
-
-    opacityDialog->show();
-    opacityDialog->raise();
-    opacityDialog->activateWindow();
+    return itemName;
 }
 
-
-void TreeItem::handleChangeOpacity(int value)
-{
-    if(itemID.isEmpty())
-        return;
-
-    auto opacity = static_cast<double>(value+1)/100.0;
-
-    emit opacityChanged(itemID, opacity);
-}
 
 QString TreeItem::getItemID() const
 {
     return itemID;
 }
 
-QString TreeItem::getName() const
-{
-    return itemName;
-}

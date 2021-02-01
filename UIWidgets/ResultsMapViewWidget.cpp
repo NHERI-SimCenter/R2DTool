@@ -60,6 +60,8 @@ ResultsMapViewWidget::ResultsMapViewWidget(QWidget* parent) : QWidget(parent)
     theNewView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 

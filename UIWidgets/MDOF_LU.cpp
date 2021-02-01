@@ -75,19 +75,24 @@ MDOF_LU::MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
     layout->addWidget(hazusDataFile, 0,1);
     layout->addWidget(hazusButton,   0,2);
 
-    QLabel *stiffnessLabel= new QLabel("stdStiffness");
+    QLabel *stiffnessLabel= new QLabel("std deviation Stiffness:");
     stdStiffness = new QLineEdit;
     stdStiffness->setText("0.1");
     layout->addWidget(stiffnessLabel, 1,0);
     layout->addWidget(stdStiffness,   1,1);
 
-    QLabel *dampingLabel= new QLabel("stdDamping");
+    QLabel *dampingLabel= new QLabel("std deviation Damping:");
     stdDamping = new QLineEdit;
     stdDamping->setText("0.1");
     layout->addWidget(dampingLabel, 2,0);
     layout->addWidget(stdDamping,   2,1);
 
-    layout->setRowStretch(3,1);
+    storyHeight = new QLineEdit;
+    storyHeight->setText("");
+    layout->addWidget(new QLabel("Default Story Height:"), 3,0);
+    layout->addWidget(storyHeight,   3,1);
+
+    layout->setRowStretch(4,1);
 
     this->setLayout(layout);
 }
@@ -101,7 +106,9 @@ MDOF_LU::~MDOF_LU()
 
 void MDOF_LU::clear(void)
 {
-
+    hazusDataFile->clear();
+    stdStiffness->clear();
+    stdDamping->clear();
 }
 
 
@@ -125,7 +132,11 @@ bool MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
     QJsonObject dataObj;
 
     dataObj["stdStiffness"] = stdStiffness->text();
-    dataObj["stdDamping"]   = stdDamping->text();
+    dataObj["stdDamping"] = stdDamping->text();
+
+    if(storyHeight->text() != "") {
+        dataObj["storyHeight"] = stdDamping->text();
+    }
 
     QFileInfo theFile(hazusDataFile->text());
     if (theFile.exists()) {
@@ -153,12 +164,18 @@ bool MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
         QFileInfo fileInfo;
         QString fileName;
         QString pathToFile;
+
         if (appData.contains("stdStiffness"))
             stdStiffness->setText(QString::number(appData["stdStiffness"].toDouble()));
+
         if (appData.contains("stdDamping"))
             stdDamping->setText(QString::number(appData["stdDamping"].toDouble()));
+
         if (appData.contains("hazusData"))
             fileName = appData["hazusData"].toString();
+
+        if (appData.contains("storyHeight"))
+            storyHeight->setText(QString::number(appData["storyHeight"].toDouble()));
 
         //
         // hazus file .. a number of options

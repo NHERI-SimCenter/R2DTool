@@ -1,5 +1,5 @@
-#ifndef BUILDINGDATABASE_H
-#define BUILDINGDATABASE_H
+#ifndef LayerTreeView_H
+#define LayerTreeView_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,50 +38,48 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QMap>
-#include <QVariant>
+#include <QTreeView>
+#include <QDebug>
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Feature;
-}
-}
+class LayerTreeModel;
+class LayerTreeItem;
+class VisualizationWidget;
 
-struct Building
+class LayerTreeView : public QTreeView
 {
+    Q_OBJECT
+
 public:
+    LayerTreeView(QWidget *parent, VisualizationWidget* visWidget);
 
-    int ID = -1;
+    LayerTreeModel *getLayersModel() const;
 
-    // The building feature in the GIS widget
-    Esri::ArcGISRuntime::Feature* buildingFeature = nullptr;
+    bool removeItemFromTree(const QString& itemID);
 
-    // Map to store the building attributes
-    QMap<QString, QVariant> buildingAttributes;
+    LayerTreeItem* addItemToTree(const QString itemText, QString layerID, LayerTreeItem* parent = nullptr);
 
-    // Map to store the results - the QString (key) is the header text while the double is the value for that building
-    QMap<QString, double> ResultsValues;
-};
+    LayerTreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
+
+    void clear(void);
 
 
-class BuildingDatabase
-{
-public:
-    BuildingDatabase();
+public slots:
+    // Shows the "right-click" menu
+    void showPopup(const QPoint &position);
 
-    // Gets the building as a modifiable reference
-    Building& getBuilding(const int ID);
+    // Removes a layer from the tree and map
+    void removeLayer(const QString& layerID);
 
-    int getNumberOfBuildings();
+private slots:
+    // Runs the action that the user selects on the right-click menu
+    void runAction();
 
-    void addBuilding(int ID, Building& asset);
 
 private:
 
-    QMap<int,Building> buildingsDB;
+    LayerTreeModel* layersModel;
 
+    VisualizationWidget* theVisualizationWidget;
 };
 
-#endif // BUILDINGDATABASE_H
+#endif // LayerTreeView_H

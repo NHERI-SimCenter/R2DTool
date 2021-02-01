@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -56,7 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
 #include "ResultsWidget.h"
-#include "RunLocalWidget.h"
+//#include "RunLocalWidget.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
 #include "UQWidget.h"
@@ -115,8 +115,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     theInstance = this;
 
-    localApp = new LocalApplication("R2D_workflow.py");
-    remoteApp = new RemoteApplication("R2D_workflow.py", theService);
+    localApp = new LocalApplication("R2DTool_workflow.py");
+    remoteApp = new RemoteApplication("R2DTool_workflow.py", theService);
 
     theJobManager = new RemoteJobManager(theService);
 
@@ -177,10 +177,20 @@ void WorkflowAppR2D::initialize(void)
     jsonFile.open(QFile::ReadOnly);
     QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
 
-    auto docObj = exDoc.object();
+    QJsonObject docObj = exDoc.object();
+    QJsonArray examples = docObj["Examples"].toArray();
+    QMenu *exampleMenu = 0;
+    if (examples.size() > 0)
+        exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
+    foreach (const QJsonValue & example, examples) {
+        QJsonObject exampleObj = example.toObject();
+        QString name = exampleObj["name"].toString();
+        QString inputFile = exampleObj["InputFile"].toString();
+        auto action = exampleMenu->addAction(name, this, &WorkflowAppR2D::loadExamples);
+        action->setProperty("InputFile",inputFile);
+    }
 
-    auto exContainerObj = docObj.value("Examples").toObject();
-
+    /*
     auto numEx = exContainerObj.count();
 
     if(numEx > 0)
@@ -200,6 +210,12 @@ void WorkflowAppR2D::initialize(void)
             action->setProperty("InputFile",inputFile);
         }
     }
+    */
+
+    // Clear action
+    QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
+    // Set the path to the input file
+    editMenu->addAction("Clear", this, &WorkflowAppR2D::clear);
 
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
@@ -257,7 +273,7 @@ void WorkflowAppR2D::initialize(void)
 }
 
 
-void WorkflowAppR2D::replyFinished(QNetworkReply *pReply)
+void WorkflowAppR2D::replyFinished(QNetworkReply */*pReply*/)
 {
     return;
 }
@@ -331,7 +347,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 
     //  output regular data
 
+
     theRunWidget->outputToJSON(jsonObjectTop);
+
     theModelingWidget->outputToJSON(jsonObjectTop);
     theHazardsWidget->outputToJSON(jsonObjectTop);
     theAnalysisWidget->outputToJSON(jsonObjectTop);
@@ -345,9 +363,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppR2D::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/, QString /*inputFile*/)
+void WorkflowAppR2D::processResults(QString resultsDir, QString /*dakotaTab*/, QString /*inputFile*/)
 {
-    theResultsWidget->processResults();
+    theResultsWidget->processResults(resultsDir);
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
 
@@ -357,7 +375,16 @@ void WorkflowAppR2D::processResults(QString /*dakotaOut*/, QString /*dakotaTab*/
 
 void WorkflowAppR2D::clear(void)
 {
-
+    theGeneralInformationWidget->clear();
+    theUQWidget->clear();
+    theModelingWidget->clear();
+    theAnalysisWidget->clear();
+    theHazardToAssetWidget->clear();
+    theAssetsWidget->clear();
+    theHazardsWidget->clear();
+    theDamageAndLossWidget->clear();
+    theResultsWidget->clear();
+    theVisualizationWidget->clear();
 }
 
 
@@ -368,7 +395,7 @@ void WorkflowAppR2D::loadExamples()
 
     if(pathToExample.isNull())
     {
-        qDebug()<<"Error loading example";
+        qDebug()<<"Error loading examples";
         return;
     }
 
@@ -533,7 +560,6 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     json["runDir"]=tmpDirectory;
     json["WorkflowType"]="Regional Simulation";
 
-
     QJsonDocument doc(json);
     file.write(doc.toJson());
     file.close();
@@ -556,7 +582,7 @@ void WorkflowAppR2D::loadFile(const QString fileName){
 
     QString dirPath = fileInfo.absoluteDir().absolutePath();
     QDir::setCurrent(dirPath);
-    qDebug() << "WorkflowAppR2D: setting current dir" << dirPath;
+    // qDebug() << "WorkflowAppR2D: setting current dir" << dirPath;
 
     //
     // open file

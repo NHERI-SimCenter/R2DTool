@@ -36,62 +36,64 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "TreeItem.h"
-#include "TreeModel.h"
-#include "TreeView.h"
+#include "LayerTreeItem.h"
+#include "LayerTreeModel.h"
+#include "LayerTreeView.h"
 #include "TreeViewStyle.h"
 #include "VisualizationWidget.h"
 
 #include <QDebug>
 #include <QMenu>
 #include <QPointer>
-#include <QTreeView>
 
-TreeView::TreeView(QWidget *parent, VisualizationWidget* visWidget) : QTreeView(parent), theVisualizationWidget(visWidget)
+LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : QTreeView(parent), theVisualizationWidget(visWidget)
 {
-    layersModel = new TreeModel(this);
+    layersModel = new LayerTreeModel(this);
     this->setModel(layersModel);
 
     this->setMaximumWidth(300);
     this->setWordWrap(true);
+    resizeColumnToContents(0);
 
-    this->setAcceptDrops(true);
-    this->setDragEnabled(true);
-    this->setDragDropOverwriteMode(false);
     this->setDefaultDropAction(Qt::MoveAction);
-    this->setDragDropMode(QTreeView::InternalMove);
-    this->setStyle(new TreeViewStyle(style()));
+    this->setDragDropOverwriteMode(false);
     this->setFocusPolicy(Qt::NoFocus);
+    this->setStyle(new TreeViewStyle(style()));
+    this->setSelectionMode(QAbstractItemView::SingleSelection);
+    this->setDragEnabled(true);
+    this->viewport()->setAcceptDrops(true);
+    this->setDragDropMode(QAbstractItemView::InternalMove);
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(layersModel, &TreeModel::rowPositionChanged, visWidget, &VisualizationWidget::changeLayerOrder);
+    connect(layersModel, &LayerTreeModel::rowPositionChanged, visWidget, &VisualizationWidget::changeLayerOrder);
 
     // Connect the layers tree with the function that turns the layers visibility on/off in the GIS map
-    connect(layersModel, &TreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerSelection);
+    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerSelection);
 
-    connect(this, &QWidget::customContextMenuRequested, this, &TreeView::showPopup);
+    connect(this, &QWidget::customContextMenuRequested, this, &LayerTreeView::showPopup);
 
 }
 
 
-TreeItem* TreeView::addItemToTree(const QString itemText, const QString layerID, TreeItem* parent)
+LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QString layerID, LayerTreeItem* parent)
 {
     auto newLayer = layersModel->addItemToTree(itemText, layerID, parent);
 
-    connect(newLayer, &TreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
+    connect(newLayer, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
+    connect(newLayer, &TreeItem::removeThisItem, this, &LayerTreeView::removeLayer);
 
     return newLayer;
 }
 
 
-TreeItem* TreeView::getTreeItem(const QString& itemName, const QString& parentName) const
+LayerTreeItem* LayerTreeView::getTreeItem(const QString& itemName, const QString& parentName) const
 {
-    return layersModel->getTreeItem(itemName, parentName);
+    return layersModel->getLayerTreeItem(itemName, parentName);
 }
 
 
-void TreeView::showPopup(const QPoint &position)
+void LayerTreeView::showPopup(const QPoint &position)
 {
 
     auto itemIndex = this->indexAt(position);
@@ -100,7 +102,7 @@ void TreeView::showPopup(const QPoint &position)
 
     auto parentName = itemIndex.parent().data(0).toString();
 
-    TreeItem *item = layersModel->getTreeItem(itemName,parentName);
+    LayerTreeItem *item = layersModel->getLayerTreeItem(itemName,parentName);
 
     if (!item)
         return;
@@ -127,7 +129,7 @@ void TreeView::showPopup(const QPoint &position)
                 QAction *action = new QAction(popupList[i], parent);
                 action->setObjectName(popupList[i]);
                 actionList << action;
-                connect(action, &QAction::triggered, this, &TreeView::runAction);
+                connect(action, &QAction::triggered, this, &LayerTreeView::runAction);
                 objectMenu.addAction(action);
             }
         }
@@ -153,7 +155,7 @@ void TreeView::showPopup(const QPoint &position)
 }
 
 
-void TreeView::runAction()
+void LayerTreeView::runAction()
 {
     QObject *senderObject = sender();
     QString syntax = senderObject->objectName();
@@ -179,13 +181,27 @@ void TreeView::runAction()
 }
 
 
-bool TreeView::removeItemFromTree(const QString& itemName)
+void LayerTreeView::removeLayer(const QString& layerID)
 {
-    return layersModel->removeItemFromTree(itemName);
+    theVisualizationWidget->removeLayerFromMap(layerID);
+
+    this->removeItemFromTree(layerID);
 }
 
 
-TreeModel *TreeView::getLayersModel() const
+bool LayerTreeView::removeItemFromTree(const QString& itemID)
+{
+    return layersModel->removeItemFromTree(itemID);
+}
+
+
+LayerTreeModel *LayerTreeView::getLayersModel() const
 {
     return layersModel;
+}
+
+
+void LayerTreeView::clear(void)
+{
+    layersModel->clear();
 }

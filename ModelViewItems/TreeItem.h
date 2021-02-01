@@ -1,5 +1,5 @@
-#ifndef TREEVIEW_H
-#define TREEVIEW_H
+#ifndef TreeItem_H
+#define TreeItem_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,40 +38,81 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QTreeView>
+#include <QModelIndex>
+#include <QObject>
+#include <QVariant>
+#include <QVector>
 
-class TreeModel;
-class TreeItem;
-class VisualizationWidget;
+class QDialog;
 
-class TreeView : public QTreeView
+class TreeItem : public QObject
 {
     Q_OBJECT
 
 public:
-    TreeView(QWidget *parent, VisualizationWidget* visWidget);
+    explicit TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parentItem = nullptr);
+    ~TreeItem();
 
-    TreeModel *getLayersModel() const;
+    void appendChild(TreeItem *child);
+    void removeChild(TreeItem *child);
+    void removeChild(int row);
 
-    bool removeItemFromTree(const QString& itemName);
+    // 0 = unchecked
+    // 1 = partially checked
+    // 2 = checked
+    int getState() const;
+    void setState(int state);
 
-    TreeItem* addItemToTree(const QString itemText, const QString layerID, TreeItem* parent = nullptr);
+    void setChecked(bool val);
 
-    TreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
+    TreeItem* child(int row);
+
+    virtual QStringList getActionList();
+
+    int childCount() const;
+    int columnCount() const;
+
+    void setData(QString& val, int column);
+
+    QVariant data(int column) const;
+    int row() const;
+
+    TreeItem* getParentItem();
+
+    QVector<TreeItem*> getChildItems() const;
+
+    void moveChild(int sourceRow, int destinationRow);
+
+    TreeItem *findChild(QString name);
+
+    QString getName() const;
+
+    QString getItemID() const;
+
+    bool getIsCheckable() const;
+    void setIsCheckable(bool value);
 
 public slots:
-    // Shows the "right-click" menu
-    void showPopup(const QPoint &position);
 
-private slots:
-    // Runs the action that the user selects on the right-click menu
-    void runAction();
+    void remove();
 
-private:
+signals:
 
-    TreeModel* layersModel;
+    void itemChecked(const QString& itemID);
+    void itemUnchecked(const QString& itemID);
+    void removeThisItem(const QString& itemID);
 
-    VisualizationWidget* theVisualizationWidget;
+protected:
+    QVector<TreeItem*> vecChildItems;
+    QVector<QVariant> itemData;
+    TreeItem* parentItem;
+
+    int currentState;
+    bool isCheckable;
+
+    QString itemName;
+    QString itemID;
 };
 
-#endif // TREEVIEW_H
+
+#endif // TreeItem_H

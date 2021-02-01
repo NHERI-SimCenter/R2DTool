@@ -140,6 +140,16 @@ bool NearestNeighbourMapping::inputAppDataFromJSON(QJsonObject &jsonObject)
 }
 
 
+void NearestNeighbourMapping::clear(void)
+{
+    eventGridPath.clear();
+    motionDirPath.clear();
+
+    samplesLineEdit->clear();
+    neighborsLineEdit->clear();
+}
+
+
 void NearestNeighbourMapping::handleFileNameChanged(QString motionDir, QString eventFile)
 {
     eventGridPath = eventFile;

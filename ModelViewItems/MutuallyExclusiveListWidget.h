@@ -1,5 +1,5 @@
-#ifndef TREEMODEL_H
-#define TREEMODEL_H
+#ifndef MutuallyExclusiveListWidget_H
+#define MutuallyExclusiveListWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,63 +38,49 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QAbstractItemModel>
+#include <QTreeView>
 
+class QLabel;
+class CheckableTreeModel;
 class TreeItem;
 
-class TreeModel : public QAbstractItemModel
+class MutuallyExclusiveListWidget : public QTreeView
 {
     Q_OBJECT
 
 public:
-    explicit TreeModel(QObject *parent = nullptr);
-    ~TreeModel();
+    MutuallyExclusiveListWidget(QWidget *parent = nullptr, QString headerText = QString());
 
-    QVariant data(const QModelIndex &index, int role) const override;
+    void clear(void);
 
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+public slots:
 
-    QModelIndex index(int row, int col = 0, const QModelIndex &parent = QModelIndex()) const override;
+    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
 
-    QModelIndex parent(const QModelIndex &index) const override;
+    void removeItem(const QString& itemID);
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    void handleItemChecked(const QString& itemID);
 
-    int columnCount(const QModelIndex &parent) const override;
+    void handleItemUnchecked(const QString& itemID);
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    // Shows the "right-click" menu
+    void showPopup(const QPoint &position);
 
-    TreeItem *getRootItem() const;
-
-    // If parent item is not provided, the item will get added to the root of the tree
-    TreeItem* addItemToTree(const QString itemText, const QString itemID, TreeItem* parent = nullptr);
-
-    bool removeItemFromTree(const QString& itemName);
-
-    TreeItem *getTreeItem(const QString& itemName, const QString& parentName) const;
-    TreeItem* getTreeItem(const QString& itemName, const TreeItem* parent) const;
-
-    Qt::DropActions supportedDropActions() const override;
-
-    QStringList mimeTypes () const override;
-
-    QMimeData* mimeData(const QModelIndexList &indexes) const override;
-
-    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
-
-    bool moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &dstParent, int dstChild) override;
-
+private slots:
+    // Runs the action that the user selects on the right-click menu
+    void runAction();
 
 signals:
 
-    void itemValueChanged(TreeItem* item);
-
-    void rowPositionChanged(const int oldPos, const int newPos);
+    void itemChecked(TreeItem* item);
+    void clearAll();
 
 private:
-    TreeItem *rootItem;
+
+    CheckableTreeModel* treeModel;
+
+    TreeItem* checkedItem;
 };
 
-#endif // TREEMODEL_H
+#endif // MutuallyExclusiveListWidget_H

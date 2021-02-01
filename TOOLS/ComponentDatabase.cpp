@@ -36,27 +36,38 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "BuildingDatabase.h"
+#include "ComponentDatabase.h"
 
-BuildingDatabase::BuildingDatabase()
+ComponentDatabase::ComponentDatabase()
 {
 
 }
 
 
-int BuildingDatabase::getNumberOfBuildings()
+int ComponentDatabase::getNumberOfComponents()
 {
-    return buildingsDB.size();
+    return ComponentMap.size();
 }
 
 
-void BuildingDatabase::addBuilding(int ID, Building& asset)
+void ComponentDatabase::addComponent(int ID, Component& asset)
 {
-    buildingsDB.insert(ID, asset);
+    ComponentMap.insert(ID, asset);
 }
 
 
-Building& BuildingDatabase::getBuilding(const int ID)
+Component& ComponentDatabase::getComponent(const int ID)
 {
-  return buildingsDB[ID];
+  return ComponentMap[ID];
+}
+
+
+void ComponentDatabase::clear(void)
+{
+    ComponentMap.clear();
+}
+
+QMap<int, Component> ComponentDatabase::getComponentsMap() const
+{
+    return ComponentMap;
 }

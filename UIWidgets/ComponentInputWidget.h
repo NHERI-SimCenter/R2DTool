@@ -57,7 +57,7 @@ class ComponentInputWidget : public  SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit ComponentInputWidget(QWidget *parent, QString type);
+    explicit ComponentInputWidget(QWidget *parent, QString componentType, QString appType = QString());
     virtual ~ComponentInputWidget();
 
     QGroupBox* getComponentsWidget(void);
@@ -75,7 +75,7 @@ public:
     void setLabel3(const QString &value);  
     void setGroupBoxText(const QString &value);
 
-    void testFileLoad(QString& path);
+    void loadFileFromPath(QString& path);
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
@@ -84,6 +84,8 @@ public:
     bool copyFiles(QString &destName);
 
     QString getPathToComponentFile(void) const;
+
+    void clear(void);
 
 signals:
     void componentDataLoaded();
@@ -105,6 +107,7 @@ private:
     QLabel* componentInfoText;
     QGroupBox* componentGroupBox;
 
+    QString appType;
     QString componentType;
     QString label1;
     QString label2;

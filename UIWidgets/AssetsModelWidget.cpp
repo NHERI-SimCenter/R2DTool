@@ -78,4 +78,10 @@ AssetsModelWidget::~AssetsModelWidget()
 }
 
 
+void AssetsModelWidget::clear(void)
+{
+    buildingWidget->clear();
+}
+
+
 

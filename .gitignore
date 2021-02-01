@@ -23,6 +23,9 @@ moc*
 *.dylib
 *.dll
 
+!winDLLS/
+!winDLLS/*
+
 # Fortran module files
 *.mod
 *.smod

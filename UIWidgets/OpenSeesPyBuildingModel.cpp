@@ -114,10 +114,11 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(RandomVariablesContainer *theRa
     layout->addWidget(label4,3,0);
     layout->addWidget(ndf,3,1);
 
-
+    /* FMK - Adam removed from script
     columnLine = new QLineEdit();
     layout->addWidget(new QLabel("Column Line Nodes:"), 4, 0);
-    layout->addWidget(columnLine);
+    layout->addWidget(columnLine, 4, 1);
+    */
 
     QWidget *dummyR = new QWidget();
     layout->addWidget(dummyR,4,0);
@@ -141,7 +142,13 @@ OpenSeesPyBuildingModel::~OpenSeesPyBuildingModel()
 
 void OpenSeesPyBuildingModel::clear(void)
 {
-
+    filePath.clear();
+    filePathLineEdit->clear();
+    responseNodes->clear();
+    ndm->clear();
+    ndf->clear();
+    // FMK columnLine->clear();
+    varNamesAndValues.clear();
 }
 
 
@@ -179,7 +186,7 @@ bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
     dataObj["dofMap"]=responseNodes->text();
     dataObj["ndm"]=ndm->text().toInt();
     dataObj["modelPath"] = "";
-    dataObj["columnLine"]=columnLine->text();
+    // dataObj["columnLine"]=columnLine->text();
 
     QFileInfo theModelFile(fileName);
     if (theModelFile.exists()) {
@@ -213,8 +220,8 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
             responseNodes->setText(appData["dofMap"].toString());
         if (appData.contains("ndm"))
             ndm->setText(QString::number(appData["ndm"].toInt()));
-        if (appData.contains("columnLine"))
-            columnLine->setText(appData["columnLine"].toString());
+        // FMK if (appData.contains("columnLine"))
+        //        columnLine->setText(appData["columnLine"].toString());
 
         //
         // mainScript file .. a number of options

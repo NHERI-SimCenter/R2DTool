@@ -52,6 +52,8 @@ public:
 
     bool outputToJSON(QJsonObject &rvObject);
 
+    void clear(void);
+
 private:
 
     QLineEdit* selectComponentsLineEdit;

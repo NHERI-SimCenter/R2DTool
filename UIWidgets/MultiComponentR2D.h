@@ -81,11 +81,11 @@ private:
     QVBoxLayout *theSelectionLayout;
     QStackedWidget *theStackedWidget;
 
-  QList<QString> theNames;
-  QList<QPushButton *>thePushButtons;  
-  QList<SimCenterAppWidget *> theComponents;
+    QList<QString> theNames;
+    QList<QPushButton *>thePushButtons;
+    QList<SimCenterAppWidget *> theComponents;
 
-  //  SecondaryComponentSelection *theSelection;
+    //  SecondaryComponentSelection *theSelection;
 };
 
 #endif // MultiComponentR2D_H

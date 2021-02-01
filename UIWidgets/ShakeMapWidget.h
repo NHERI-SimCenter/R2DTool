@@ -118,6 +118,11 @@ public:
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
 
+    void clear();
+    bool copyFiles(QString &destDir);
+
+    int getNumShakeMapsLoaded();
+
 public slots:
 
     void showLoadShakeMapDialog(void);
@@ -125,6 +130,7 @@ public slots:
 private slots:
 
     void loadShakeMapData(void);
+    void loadDataFromDirectory(const QString& dir);
     void chooseShakeMapDirectoryDialog(void);
 
 signals:
@@ -145,6 +151,10 @@ private:
     QString pathToShakeMapDirectory;
 
     QMap<QString,ShakeMap*> shakeMapContainer;
+
+    QVector<QString> eventsVec;
+
+    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
 
 };
 
