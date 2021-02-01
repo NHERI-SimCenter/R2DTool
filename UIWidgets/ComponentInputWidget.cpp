@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetInputDelegate.h"
 #include "ComponentInputWidget.h"
+#include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
 
 #include <QCoreApplication>
@@ -62,11 +63,11 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentTyp
     label1 = "Load information from a CSV file";
     label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze. Leave blank to analyze all " + componentType.toLower() + "."
                                                                                                                                                 "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
-
     label3 = QStringRef(&componentType, 0, componentType.length()) + " Information";
 
     pathToComponentInfoFile = "NULL";
     componentGroupBox = nullptr;
+    theVisualizationWidget = nullptr;
     this->createComponentsBox();
 }
 
@@ -281,6 +282,11 @@ void ComponentInputWidget::createComponentsBox(void)
     this->setLayout(gridLayout);
 }
 
+void ComponentInputWidget::setTheVisualizationWidget(VisualizationWidget *value)
+{
+    theVisualizationWidget = value;
+}
+
 
 void ComponentInputWidget::selectComponents(void)
 {
@@ -348,12 +354,41 @@ void ComponentInputWidget::handleComponentSelection(void)
     auto numAssets = selectedComponentIDs.size();
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     sendStatusMessage(msg);
+
+    QList<Esri::ArcGISRuntime::Feature*> selectedFeatures;
+    for(auto&& it : selectedComponentIDs)
+    {
+        auto component = theComponentDb.getComponent(it);
+
+        auto feature = component.ComponentFeature;
+
+        selectedFeatures<<feature;
+    }
+
+    theVisualizationWidget->addComponentsToSelectedLayer(selectedFeatures);
+
     //this->userMessageDialog(msg);
 }
 
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
+
+    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
+    QList<Esri::ArcGISRuntime::Feature*> selectedFeatures;
+    for(auto&& it : selectedComponentIDs)
+    {
+        auto component = theComponentDb.getComponent(it);
+
+        auto feature = component.ComponentFeature;
+
+        selectedFeatures<<feature;
+    }
+
+    theVisualizationWidget->clearSelectedLayer();
+
+
     auto nRows = componentTableWidget->rowCount();
 
     // Hide all rows in the table
@@ -363,6 +398,7 @@ void ComponentInputWidget::clearComponentSelection(void)
     }
 
     selectComponentsLineEdit->clear();
+
 }
 
 
@@ -432,25 +468,26 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     if (componentFile.exists()) {
         data["buildingSourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
-        QString filterData = selectComponentsLineEdit->text();
 
-        if(filterData.isEmpty())
-        {
-            auto nRows = componentTableWidget->rowCount();
+//        QString filterData = selectComponentsLineEdit->text();
 
-            if(nRows == 0)
-                return false;
+//        if(filterData.isEmpty())
+//        {
+//            auto nRows = componentTableWidget->rowCount();
 
-            // Get the ID of the first and last component
-            auto firstID = componentTableWidget->item(0,0)->data(0).toString();
+//            if(nRows == 0)
+//                return false;
 
+//            // Get the ID of the first and last component
+//            auto firstID = componentTableWidget->item(0,0)->data(0).toString();
+//            auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toString();
 
-            auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toString();
+//            filterData =  firstID + "-" + lastID;
+//        }
 
-            filterData =  firstID + "-" + lastID;
-        }
+//        filterData.replace(" ","");
 
-        filterData.replace(" ","");
+        QString filterData = selectComponentsLineEdit->getComponentAnalysisList();
 
         data["filter"] = filterData;
     } else {
@@ -571,3 +608,10 @@ void ComponentInputWidget::clear(void)
     componentTableWidget->clear();
     componentTableWidget->hide();
 }
+
+
+ComponentDatabase* ComponentInputWidget::getComponentDatabase()
+{
+    return &theComponentDb;
+}
+

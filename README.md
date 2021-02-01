@@ -1,6 +1,6 @@
 # R2D
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3475642.svg)](https://doi.org/10.5281/zenodo.3475642)
+[![DOI](https://zenodo.org/badge/329111097.svg)](https://zenodo.org/badge/latestdoi/329111097)
 
 This open-source research application provides an application
 researchers can use to predict regional damage and loss estimates

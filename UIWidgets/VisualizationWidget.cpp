@@ -152,7 +152,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     setupConvexHullObjects();
 
     // Handle the async. queries
-    connect(this, &VisualizationWidget::taskSelectionChanged, this, &VisualizationWidget::handleAsynchronousSelectionTask);
+    connect(this, &VisualizationWidget::taskSelectionComplete, this, &VisualizationWidget::handleAsyncSelectionTask);
 
     // Create the visualization widget and set it to the main layout
     this->createVisualizationWidget();
@@ -300,18 +300,6 @@ void VisualizationWidget::createVisualizationWidget(void)
 }
 
 
-ComponentDatabase* VisualizationWidget::getBuildingDatabase()
-{
-    return &theBuildingDb;
-}
-
-
-ComponentDatabase* VisualizationWidget::getPipelineDatabase()
-{
-    return &thePipelineDb;
-}
-
-
 // Convex hull stuff
 void VisualizationWidget::plotConvexHull()
 {
@@ -422,6 +410,18 @@ void VisualizationWidget::convexHullPointSelector(QMouseEvent& e)
 }
 
 
+ComponentInputWidget *VisualizationWidget::getPipelineWidget() const
+{
+    return pipelineWidget;
+}
+
+
+ComponentInputWidget *VisualizationWidget::getBuildingWidget() const
+{
+    return buildingWidget;
+}
+
+
 LayerTreeView *VisualizationWidget::getLayersTree() const
 {
     return layersTree;
@@ -431,6 +431,7 @@ LayerTreeView *VisualizationWidget::getLayersTree() const
 void VisualizationWidget::setPipelineWidget(ComponentInputWidget *value)
 {
     pipelineWidget = value;
+    pipelineWidget->setTheVisualizationWidget(this);
 
     connect(pipelineWidget,&ComponentInputWidget::componentDataLoaded,this,&VisualizationWidget::loadPipelineData);
 }
@@ -440,7 +441,9 @@ void VisualizationWidget::setBuildingWidget(ComponentInputWidget *value)
 {
     buildingWidget = value;
 
-    connect(buildingWidget,&ComponentInputWidget::componentDataLoaded,this,&VisualizationWidget::loadBuildingData);
+    buildingWidget->setTheVisualizationWidget(this);
+
+    connect(buildingWidget,&ComponentInputWidget::componentDataLoaded, this, &VisualizationWidget::loadBuildingData);
 }
 
 
@@ -448,13 +451,14 @@ void VisualizationWidget::loadBuildingData(void)
 {
 
     auto buildingTableWidget = buildingWidget->getTableWidget();
+    ComponentDatabase* theBuildingDb = buildingWidget->getComponentDatabase();
 
     QList<Field> fields;
     fields.append(Field::createDouble("LossRatio", "0.0"));
     fields.append(Field::createText("ID", "NULL",4));
     fields.append(Field::createText("AssetType", "NULL",4));
     fields.append(Field::createText("TabName", "NULL",4));
-
+    fields.append(Field::createText("UID", "NULL",4));
 
     // Select a column that will define the building layers
     int columnToMapLayers = 0;
@@ -475,7 +479,7 @@ void VisualizationWidget::loadBuildingData(void)
     }
 
     // Create the buildings group layer that will hold the sublayers
-    auto buildingLayer = new GroupLayer(QList<Layer*>{});
+    auto buildingLayer = new GroupLayer(QList<Layer*>{},this);
     buildingLayer->setName("Buildings");
 
     auto layerID = this->createUniqueID();
@@ -497,17 +501,23 @@ void VisualizationWidget::loadBuildingData(void)
 
     this->uniqueVec<std::string>(vecLayerItems);
 
+    auto selectedBuildingsFeatureCollection = new FeatureCollection(this);
+    selectedBuildingsTable = new FeatureCollectionTable(fields, GeometryType::Point, SpatialReference::wgs84(),this);
+    selectedBuildingsFeatureCollection->tables()->append(selectedBuildingsTable);
+    selectedBuildingsLayer = new FeatureCollectionLayer(selectedBuildingsFeatureCollection,this);
+    selectedBuildingsTable->setRenderer(this->createBuildingRenderer());
+
     // Map to hold the feature tables
     std::map<std::string, FeatureCollectionTable*> tablesMap;
     for(auto&& it : vecLayerItems)
     {
-        auto featureCollection = new FeatureCollection();
+        auto featureCollection = new FeatureCollection(this);
 
-        auto featureCollectionTable = new FeatureCollectionTable(fields, GeometryType::Point, SpatialReference::wgs84());
+        auto featureCollectionTable = new FeatureCollectionTable(fields, GeometryType::Point, SpatialReference::wgs84(),this);
 
         featureCollection->tables()->append(featureCollectionTable);
 
-        auto newBuildingLayer = new FeatureCollectionLayer(featureCollection);
+        auto newBuildingLayer = new FeatureCollectionLayer(featureCollection,this);
 
         newBuildingLayer->setName(QString::fromStdString(it));
 
@@ -523,7 +533,6 @@ void VisualizationWidget::loadBuildingData(void)
 
         layersTree->addItemToTree(QString::fromStdString(it), layerID, buildingsItem);
     }
-
 
     for(int i = 0; i<nRows; ++i)
     {
@@ -547,10 +556,13 @@ void VisualizationWidget::loadBuildingData(void)
             auto attrbText = buildingTableWidget->horizontalHeaderItem(j)->text();
             auto attrbVal = buildingTableWidget->item(i,j)->data(0);
 
-            buildingAttributeMap.insert(attrbText,attrbVal.toString());
+            buildingAttributeMap.insert(attrbText,attrbVal);
 
             featureAttributes.insert(attrbText,attrbVal);
         }
+
+        // Create a unique ID for the building
+        auto uid = this->createUniqueID();
 
         building.ComponentAttributes = buildingAttributeMap;
 
@@ -558,6 +570,7 @@ void VisualizationWidget::loadBuildingData(void)
         featureAttributes.insert("LossRatio", 0.0);
         featureAttributes.insert("AssetType", "BUILDING");
         featureAttributes.insert("TabName", buildingIDStr);
+        featureAttributes.insert("UID", uid);
 
         auto latitude = buildingTableWidget->item(i,1)->data(0).toDouble();
         auto longitude = buildingTableWidget->item(i,2)->data(0).toDouble();
@@ -569,15 +582,15 @@ void VisualizationWidget::loadBuildingData(void)
 
         // Create the point and add it to the feature table
         Point point(longitude,latitude);
-        Feature* feature = featureCollectionTable->createFeature(featureAttributes, point, this);
+        Feature* feature = featureCollectionTable->createFeature(featureAttributes, point);
 
+        building.UID = uid;
         building.ComponentFeature = feature;
 
-        theBuildingDb.addComponent(buildingID, building);
+        theBuildingDb->addComponent(buildingID, building);
 
         featureCollectionTable->addFeature(feature);
     }
-
 
     mapGIS->operationalLayers()->append(buildingLayer);
 
@@ -607,6 +620,7 @@ void VisualizationWidget::changeLayerOrder(const int from, const int to)
 void VisualizationWidget::loadPipelineData(void)
 {
     auto pipelineTableWidget = pipelineWidget->getTableWidget();
+    auto thePipelineDb = pipelineWidget->getComponentDatabase();
 
     QList<Field> fields;
     fields.append(Field::createDouble("RepairRate", "0.0"));
@@ -622,7 +636,7 @@ void VisualizationWidget::loadPipelineData(void)
     }
 
     // Create the pipelines group layer that will hold the sublayers
-    auto pipelineLayer = new GroupLayer(QList<Layer*>{});
+    auto pipelineLayer = new GroupLayer(QList<Layer*>{},this);
     pipelineLayer->setName("Pipelines");
 
     auto layerID = this->createUniqueID();
@@ -652,13 +666,13 @@ void VisualizationWidget::loadPipelineData(void)
 
     for(auto&& it : vecLayerItems)
     {
-        auto featureCollection = new FeatureCollection();
+        auto featureCollection = new FeatureCollection(this);
 
-        auto featureCollectionTable = new FeatureCollectionTable(fields, GeometryType::Polyline, SpatialReference::wgs84());
+        auto featureCollectionTable = new FeatureCollectionTable(fields, GeometryType::Polyline, SpatialReference::wgs84(),this);
 
         featureCollection->tables()->append(featureCollectionTable);
 
-        auto newpipelineLayer = new FeatureCollectionLayer(featureCollection);
+        auto newpipelineLayer = new FeatureCollectionLayer(featureCollection,this);
 
         newpipelineLayer->setName(QString::fromStdString(it));
 
@@ -746,7 +760,7 @@ void VisualizationWidget::loadPipelineData(void)
 
         pipeline.ComponentFeature = feature;
 
-        thePipelineDb.addComponent(pipelineID, pipeline);
+        thePipelineDb->addComponent(pipelineID, pipeline);
 
         featureCollectionTable->addFeature(feature);
     }
@@ -881,7 +895,7 @@ void VisualizationWidget::featureSelectionQueryCompleted(QUuid taskID, Esri::Arc
     selectedFeaturesList.append(rawResult);
 
     taskIDMap.remove(taskID);
-    emit taskSelectionChanged();
+    emit taskSelectionComplete();
 }
 
 
@@ -991,10 +1005,55 @@ Esri::ArcGISRuntime::Layer* VisualizationWidget::findLayer(const QString& layerI
 }
 
 
+void VisualizationWidget::fieldQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult)
+{
+    if(rawResult == nullptr)
+        return;
+
+    // Append the raw result to the list - memory management to be handled later
+    fieldQueryFeaturesList.append(rawResult);
+
+    taskIDMap.remove(taskID);
+
+    //    emit taskFeatureQueryComplete();
+}
+
+
+void VisualizationWidget::handleFieldQuerySelection(void)
+{
+    for(auto&& it : fieldQueryFeaturesList)
+    {
+        FeatureIterator iter = it->iterator();
+        while (iter.hasNext())
+        {
+            Feature* feature = iter.next();
+
+            auto atrbList = feature->attributes();
+
+            auto artbMap = atrbList->attributesMap();
+
+            auto assetID = artbMap.value("UID").toString();
+
+
+
+        }
+    }
+
+
+    // Delete the raw results and clear the selection list
+    qDeleteAll(fieldQueryFeaturesList);
+
+    // Clear the field query list
+    fieldQueryFeaturesList.clear();
+}
+
+
 void VisualizationWidget::handleSelectedFeatures(void)
 {
     auto buildingSelected = false;
     auto pipelineSelected = false;
+
+    //    QList<Feature*> buildingFeatures;
 
     for(auto&& it : selectedFeaturesList)
     {
@@ -1015,6 +1074,7 @@ void VisualizationWidget::handleSelectedFeatures(void)
             {
                 buildingSelected = true;
                 buildingWidget->insertSelectedComponent(assetID);
+                //                buildingFeatures<<feature;
             }
             else if(assetType.compare("PIPELINE") == 0)
             {
@@ -1027,7 +1087,10 @@ void VisualizationWidget::handleSelectedFeatures(void)
     }
 
     if(buildingSelected)
+    {
+        //        this->addComponentsToSelectedLayer(buildingFeatures);
         buildingWidget->handleComponentSelection();
+    }
 
     if(pipelineSelected)
         pipelineWidget->handleComponentSelection();
@@ -1068,22 +1131,22 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.05, symbol1);
+    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.05, symbol1,this);
     classBreaks.append(classBreak1);
 
-    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2);
+    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2,this);
     classBreaks.append(classBreak2);
 
-    auto classBreak3 = new ClassBreak("Medium Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3);
+    auto classBreak3 = new ClassBreak("Medium Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3,this);
     classBreaks.append(classBreak3);
 
-    auto classBreak4 = new ClassBreak("High Loss Ratio", "Loss Ratio Between 50% and 75%", 0.50, 0.75,symbol4);
+    auto classBreak4 = new ClassBreak("High Loss Ratio", "Loss Ratio Between 50% and 75%", 0.50, 0.75,symbol4,this);
     classBreaks.append(classBreak4);
 
-    auto classBreak5 = new ClassBreak("Very Loss Ratio", "Loss Ratio Between 75% and 90%", 0.75, 1.0,symbol5);
+    auto classBreak5 = new ClassBreak("Very Loss Ratio", "Loss Ratio Between 75% and 90%", 0.75, 1.0,symbol5,this);
     classBreaks.append(classBreak5);
 
-    return new ClassBreaksRenderer("LossRatio", classBreaks);
+    return new ClassBreaksRenderer("LossRatio", classBreaks, this);
 }
 
 
@@ -1288,7 +1351,7 @@ void VisualizationWidget::onMouseClickedGlobal(QPoint pos)
 }
 
 
-void VisualizationWidget::handleAsynchronousSelectionTask(void)
+void VisualizationWidget::handleAsyncSelectionTask(void)
 {
     // Only handle the selected features when all tasks are complete
     if(taskIDMap.empty())
@@ -1307,7 +1370,18 @@ void VisualizationWidget::handleAsynchronousSelectionTask(void)
 }
 
 
-void VisualizationWidget::runFieldQuery(FeatureTable* table, const QString& fieldName, const QString& searchText)
+void VisualizationWidget::handleAsyncFieldQueryTask(void)
+{
+    // Only handle the selected features when all tasks are complete
+    if(taskIDMap.empty())
+    {
+        //        this->xx();
+    }
+
+}
+
+
+void VisualizationWidget::runFieldQuery(const QString& fieldName, const QString& searchText)
 {
     // create a query parameter object and set the where clause
     QueryParameters queryParams;
@@ -1316,7 +1390,52 @@ void VisualizationWidget::runFieldQuery(FeatureTable* table, const QString& fiel
     const auto whereClause = fieldName + QString(" LIKE '" + searchText + "%'");
 
     queryParams.setWhereClause(whereClause);
-    table->queryFeatures(queryParams);
+
+    // Iterate through the layers
+    // Function to do a nested search through the layers - this is needed because some layers may have sub-layers
+    std::function<void(const LayerListModel*)> layerIterator = [&](const LayerListModel* layers)
+    {
+        for(int i = 0; i<layers->size(); ++i)
+        {
+            auto layer = layers->at(i);
+
+            // Continue if the layer is turned off
+            if(!layer->isVisible())
+                continue;
+
+            if(auto featureCollectLayer = dynamic_cast<FeatureCollectionLayer*>(layer))
+            {
+                auto tables = featureCollectLayer->featureCollection()->tables();
+
+                for(int j = 0; j<tables->size(); ++j)
+                {
+                    auto table = tables->at(j);
+
+                    // Make this a unique, i.e., one-off connection so that it does not call the slot multiple times
+                    connect(table, &FeatureTable::queryFeaturesCompleted, this, &VisualizationWidget::fieldQueryCompleted, Qt::UniqueConnection);
+
+                    // Query the table for features - note that this is done asynchronously
+                    auto taskWatcher = table->queryFeatures(queryParams);
+
+                    if (!taskWatcher.isValid())
+                        qDebug() <<"Error, task not valid in "<<__FUNCTION__;
+                    else
+                        taskIDMap[taskWatcher.taskId()] = taskIDMap[taskWatcher.taskId()] = taskWatcher.description();
+                }
+            }
+            else if(auto isGroupLayer = dynamic_cast<GroupLayer*>(layer))
+            {
+                auto subLayers = isGroupLayer->layers();
+                layerIterator(subLayers);
+            }
+        }
+    };
+
+    // Get the layers from the map, and ensure that they are not empty
+    auto layersList = mapGIS->operationalLayers();
+
+    layerIterator(layersList);
+
 }
 
 
@@ -1410,6 +1529,138 @@ void VisualizationWidget::handleBasemapSelection(const QString selection)
     else if(selection.compare("National Geographic") == 0)
     {
         mapGIS->setBasemap(Basemap::nationalGeographic(this));
+    }
+}
+
+
+void VisualizationWidget::addComponentsToSelectedLayer(const QList<Feature*>& features)
+{
+
+    if(features.empty())
+        return;
+
+
+    auto canAdd = selectedBuildingsTable->canAdd();
+
+    if(canAdd == false)
+        return;
+
+    for(auto&& it : features)
+    {
+        auto atrb = it->attributes()->attributesMap();
+        auto id = atrb.value("UID").toString();
+        //        auto nid = atrb.value("ID").toString();
+
+        auto atrVals = atrb.values();
+        auto atrKeys = atrb.keys();
+
+        if(selectedFeatures.contains(id))
+            continue;
+
+        //        qDebug()<<"Num atributes: "<<atrb.size();
+
+        QMap<QString, QVariant> featureAttributes;
+        for(int i = 0; i<atrb.size();++i)
+        {
+            auto key = atrKeys.at(i);
+            auto val = atrVals.at(i);
+
+            // The ObjectID messes everything up!!! Dont include it when creating an object
+            if(key == "ObjectID")
+                continue;
+
+            //            qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
+
+            featureAttributes[key] = val;
+        }
+
+        // featureAttributes.insert("ID", "99");
+        // featureAttributes.insert("LossRatio", 0.0);
+        // featureAttributes.insert("AssetType", "BUILDING");
+        // featureAttributes.insert("TabName", "99");
+        // featureAttributes.insert("UID", "99");
+
+        auto geom = it->geometry();
+        Feature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
+        selectedBuildingsTable->addFeature(feat);
+        selectedFeatures.insert(id,feat);
+    }
+
+    if(selectedComponentsTreeItem == nullptr)
+    {
+        if(selectedComponentsLayer == nullptr)
+        {        // Create the buildings group layer that will hold the sublayers
+            selectedComponentsLayer = new GroupLayer(QList<Layer*>{}, this);
+            selectedComponentsLayer->setName("Selected Components");
+
+            auto layerID = this->createUniqueID();
+
+            selectedComponentsLayer->setLayerId(layerID);
+            auto newID = this->createUniqueID();
+            selectedBuildingsLayer->setLayerId(newID);
+
+            selectedComponentsLayer->layers()->append(selectedBuildingsLayer);
+        }
+
+        // Create the root item in the trees
+        auto layerID = selectedComponentsLayer->layerId();
+        selectedComponentsTreeItem = layersTree->addItemToTree(selectedComponentsLayer->name(), layerID);
+
+        auto layerID2 = selectedBuildingsLayer->layerId();
+        layersTree->addItemToTree(QString::fromStdString("Selected Buildings"), layerID2, selectedComponentsTreeItem);
+
+        this->addLayerToMap(selectedComponentsLayer);
+    }
+
+}
+
+
+void VisualizationWidget::clearSelectedLayer()
+{
+
+    if(selectedFeatures.empty())
+        return;
+
+    for(auto&& it : selectedFeatures)
+    {
+        selectedBuildingsTable->deleteFeature(it);
+    }
+
+    // selectedBuildingsTable->deleteFeatures(selectedFeatures);
+    selectedFeatures.clear();
+}
+
+
+void VisualizationWidget::updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value)
+{
+    if(selectedFeatures.empty())
+    {
+        qDebug()<<"Selected features map is empty";
+        return;
+    }
+
+    if(!selectedFeatures.contains(uid))
+    {
+        qDebug()<<"Feature not found in selected components map";
+        return;
+    }
+
+    // Get the feature
+    Feature* feat = selectedFeatures[uid];
+
+    if(feat == nullptr)
+    {
+        qDebug()<<"Feature is a nullptr";
+        return;
+    }
+
+    feat->attributes()->replaceAttribute(attribute,value);
+    feat->featureTable()->updateFeature(feat);
+
+    if(feat->attributes()->attributeValue(attribute).isNull())
+    {
+        qDebug()<<"Failed to update feature "<<feat->attributes()->attributeValue("ID").toString();
+        return;
     }
 }
 
@@ -1730,7 +1981,10 @@ void VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* layer, Layer
 void VisualizationWidget::removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer)
 {
     mapGIS->operationalLayers()->removeOne(layer);
+
+    //    delete layer;
 }
+
 
 void VisualizationWidget::removeLayerFromMap(const QString layerID)
 {
@@ -1769,33 +2023,35 @@ void VisualizationWidget::clear(void)
 
     selectedFeaturesList.clear();
 
-    theBuildingDb.clear();
-
     mapGIS->operationalLayers()->clear();
+
+    delete selectedComponentsLayer;
+
+    selectedComponentsTreeItem = nullptr;
+    selectedComponentsLayer = nullptr;
 }
 
 
 //     connect to the mouse clicked signal on the MapQuickView
 //     This code snippet adds a point to where the mouse click is
-//            connect(mapViewWidget, &MapGraphicsView::mouseClicked, this, [this](QMouseEvent& mouseEvent)
-//            {
-//              // obtain the map point
-//              const double screenX = mouseEvent.x();
-//              const double screenY = mouseEvent.y();
-//              Point newPoint = mapViewWidget->screenToLocation(screenX, screenY);
+//        connect(mapViewWidget, &MapGraphicsView::mouseClicked, this, [this](QMouseEvent& mouseEvent)
+//        {
+//            // obtain the map point
+//            const double screenX = mouseEvent.x();
+//            const double screenY = mouseEvent.y();
+//            Point newPoint = mapViewWidget->screenToLocation(screenX, screenY);
 
-//              // create the feature attributes
-//              QMap<QString, QVariant> featureAttributes;
-//              featureAttributes.insert("typdamage", "Minor");
-//              featureAttributes.insert("primcause", "Earthquake");
+//            // create the feature attributes
+//            QMap<QString, QVariant> featureAttributes;
+//            featureAttributes.insert("ID", "99");
+//            featureAttributes.insert("LossRatio", 0.0);
+//            featureAttributes.insert("AssetType", "BUILDING");
+//            featureAttributes.insert("TabName", "99");
+//            featureAttributes.insert("UID", "99");
+//            // create a new feature and add it to the feature table
+//            Feature* feature = selectedBuildingsTable->createFeature(featureAttributes, newPoint, this);
+//            selectedBuildingsTable->addFeature(feature);
 
-//              // create a new feature and add it to the feature table
-//              Feature* feature = featureCollectionTable->createFeature(featureAttributes, newPoint, this);
-//              featureCollectionTable->addFeature(feature);
-//            });
-
-// This snippet will do a query on a field and return all features that match the search string
-//    QString fieldName = "Occupancy";
-//    QString searchString = "Residential Single Family";
-//    this->runFieldQuery(featureCollectionTable,fieldName,searchString);
-//    return;
+//            auto numFeat = selectedBuildingsTable->numberOfFeatures();
+//            qDebug()<<numFeat;
+//        });

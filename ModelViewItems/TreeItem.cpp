@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QSlider>
 
-TreeItem::TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parent) : QObject(), itemData(data), parentItem(parent), itemID(ID)
+TreeItem::TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *parent) : QObject(), itemData(data), itemID(ID), parentItem(parent)
 {
     currentState = 0;
     isCheckable = true;
@@ -54,6 +54,8 @@ TreeItem::TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *p
 
 TreeItem::~TreeItem()
 {
+    qDebug()<<"Delete"<<this->getName();
+
     qDeleteAll(vecChildItems);
 }
 
@@ -207,6 +209,12 @@ void TreeItem::removeChild(int row)
 
     if(row<0 || row>numChildren-1)
         return;
+
+    auto child = vecChildItems.at(row);
+
+    delete child;
+
+    child = nullptr;
 
     vecChildItems.remove(row);
 }

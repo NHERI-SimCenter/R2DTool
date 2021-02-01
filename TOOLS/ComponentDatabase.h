@@ -70,6 +70,9 @@ public:
 
     int ID = -1;
 
+    // Unique id of this component
+    QString UID;
+
     // The Component feature in the GIS widget
     Esri::ArcGISRuntime::Feature* ComponentFeature = nullptr;
 
@@ -88,6 +91,8 @@ public:
 
     // Gets the Component as a modifiable reference
     Component& getComponent(const int ID);
+
+    Component getComponent(const QString UID);
 
     int getNumberOfComponents();
 

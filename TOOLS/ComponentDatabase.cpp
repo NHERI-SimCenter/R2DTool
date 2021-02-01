@@ -62,6 +62,18 @@ Component& ComponentDatabase::getComponent(const int ID)
 }
 
 
+Component ComponentDatabase::getComponent(const QString UID)
+{
+    for(auto&& it: ComponentMap)
+    {
+        if(it.UID.compare(UID) == 0)
+            return it;
+    }
+
+    return Component();
+}
+
+
 void ComponentDatabase::clear(void)
 {
     ComponentMap.clear();

@@ -78,12 +78,12 @@ LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : 
 
 LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QString layerID, LayerTreeItem* parent)
 {
-    auto newLayer = layersModel->addItemToTree(itemText, layerID, parent);
+    auto newItem = layersModel->addItemToTree(itemText, layerID, parent);
 
-    connect(newLayer, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
-    connect(newLayer, &TreeItem::removeThisItem, this, &LayerTreeView::removeLayer);
+    connect(newItem, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
+    connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeLayer);
 
-    return newLayer;
+    return newItem;
 }
 
 
