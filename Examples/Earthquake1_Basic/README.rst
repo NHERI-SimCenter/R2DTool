@@ -90,7 +90,7 @@ This example is a small-scale regional earthquake risk assessment which performs
    #. **RV** For this problem, the **RV** panel will be left empty.
 
 
-#. **RES**
+#. **RES** The analysis outputs for the selected two buildings are show in the figure below. In the given earthquake scenario, the two buildings are mostly likely in no damage or minor damage (Damage State 1 or 2 per HAZUS) with about 1% expected loss ratios.
 
    .. figure:: figures/r2dt-0001-RES.png
       :width: 600px
