@@ -54,8 +54,7 @@ TreeItem::TreeItem(const QVector<QVariant> &data, const QString& ID, TreeItem *p
 
 TreeItem::~TreeItem()
 {
-    qDebug()<<"Delete"<<this->getName();
-
+//    qDebug()<<"Delete"<<this->getName();
     qDeleteAll(vecChildItems);
 }
 
