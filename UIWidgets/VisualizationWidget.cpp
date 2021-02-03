@@ -1197,22 +1197,22 @@ ClassBreaksRenderer* VisualizationWidget::createPipelineRenderer(void)
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 1E-03, lineSymbol1);
+    auto classBreak1 = new ClassBreak("0.0-0.001 number of repairs", "Loss Ratio less than 10%", -0.00001, 1E-03, lineSymbol1);
     classBreaks.append(classBreak1);
 
-    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 1.00E-03, 1.00E-02, lineSymbol2);
+    auto classBreak2 = new ClassBreak("0.001-0.01 number of repairs", "Loss Ratio Between 10% and 25%", 1.00E-03, 1.00E-02, lineSymbol2);
     classBreaks.append(classBreak2);
 
-    auto classBreak3 = new ClassBreak("Medium Loss Ratio", "Loss Ratio Between 25% and 50%", 1.00E-02, 1.00E-01, lineSymbol3);
+    auto classBreak3 = new ClassBreak("0.01-0.1 number of repairs", "Loss Ratio Between 25% and 50%", 1.00E-02, 1.00E-01, lineSymbol3);
     classBreaks.append(classBreak3);
 
-    auto classBreak4 = new ClassBreak("High Loss Ratio", "Loss Ratio Between 50% and 75%", 1.00E-01, 1.00E+00, lineSymbol4);
+    auto classBreak4 = new ClassBreak("0.1-1.0 number of repairs", "Loss Ratio Between 50% and 75%", 1.00E-01, 1.00E+00, lineSymbol4);
     classBreaks.append(classBreak4);
 
-    auto classBreak5 = new ClassBreak("Very High Loss Ratio", "Loss Ratio Between 75% and 90%", 1.00E+00, 1.00E+01, lineSymbol5);
+    auto classBreak5 = new ClassBreak("1.0-10.0 number of repairs", "Loss Ratio Between 75% and 90%", 1.00E+00, 1.00E+01, lineSymbol5);
     classBreaks.append(classBreak5);
 
-    auto classBreak6 = new ClassBreak("Total Loss Ratio", "Loss Ratio Between 75% and 90%", 1.00E+01, 1.00E+10, lineSymbol6);
+    auto classBreak6 = new ClassBreak("10.0-100.0 number of repairs", "Loss Ratio Between 75% and 90%", 1.00E+01, 1.00E+10, lineSymbol6);
     classBreaks.append(classBreak6);
 
     return new ClassBreaksRenderer("RepairRate", classBreaks);
