@@ -55,6 +55,7 @@ MutuallyExclusiveListWidget::MutuallyExclusiveListWidget(QWidget *parent, QStrin
     treeModel = new CheckableTreeModel(this, headerText);
     this->setModel(treeModel);
     this->setWordWrap(true);
+    this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 

@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // GIS headers
 #include "ArcGISMapImageLayer.h"
+#include "ArcGISTiledLayer.h"
 #include "Basemap.h"
 #include "ClassBreaksRenderer.h"
 #include "CoordinateFormatter.h"
@@ -93,10 +94,45 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QThread>
 #include <QTreeView>
+#include <QListView>
+#include <QUrl>
+#include <QIdentityProxyModel>
 
 #include <utility>
 
 using namespace Esri::ArcGISRuntime;
+
+namespace
+{
+
+/*
+ * This is nothing more than a helper class that shadows the
+ * LegendInfoSymbolUrlRole as a Qt::DecorationRole, since the
+ * LegendInfoListModel does not give us this functionality for free.
+ */
+class RoleProxyModel: public QIdentityProxyModel
+{
+public:
+    using QIdentityProxyModel::QIdentityProxyModel;
+
+    QVariant data(const QModelIndex& index, int role) const override;
+};
+
+QVariant RoleProxyModel::data(const QModelIndex& index, int role) const
+{
+    if (role == Qt::DecorationRole)
+    {
+        const QUrl iconRole =
+                index.data(LegendInfoListModel::LegendInfoSymbolUrlRole).toUrl();
+        return QIcon(iconRole.toLocalFile());
+    }
+    else
+    {
+        return QIdentityProxyModel::data(index, role);
+    }
+}
+
+}
 
 VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {    
@@ -171,6 +207,12 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Connect to the exportImageCompleted signal
     connect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
 
+    // Legend stuff
+    mapGIS->setAutoFetchLegendInfos(true);
+    legendView = nullptr;
+
+//    ArcGISTiledLayer* tiledLayer = new ArcGISTiledLayer(QUrl("https://services.arcgisonline.com/ArcGIS/rest/services/Specialty/Soil_Survey_Map/MapServer"), this);
+//    mapGIS->operationalLayers()->append(tiledLayer);
 
     // Test
     //    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
@@ -297,6 +339,11 @@ void VisualizationWidget::createVisualizationWidget(void)
 
     //layout->addWidget(mapViewWidget,0,1,12,2);
     layout->addLayout(mapViewLayout,0,1,12,2);
+}
+
+QListView *VisualizationWidget::getLegendView() const
+{
+    return legendView;
 }
 
 
@@ -648,16 +695,18 @@ void VisualizationWidget::loadPipelineData(void)
     auto nRows = pipelineTableWidget->rowCount();
 
     // Select a column that will define the layers
-    int columnToMapLayers = 0;
+    //    int columnToMapLayers = 0;
 
     std::vector<std::string> vecLayerItems;
-    for(int i = 0; i<nRows; ++i)
-    {
-        // Organize the layers according to occupancy type
-        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+    //    for(int i = 0; i<nRows; ++i)
+    //    {
+    //        // Organize the layers according to occupancy type
+    //        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
 
-        vecLayerItems.push_back(layerTag);
-    }
+    //        vecLayerItems.push_back(layerTag);
+    //    }
+
+    vecLayerItems.push_back("Pipeline Network");
 
     this->uniqueVec<std::string>(vecLayerItems);
 
@@ -685,6 +734,8 @@ void VisualizationWidget::loadPipelineData(void)
         auto layerID = this->createUniqueID();
 
         newpipelineLayer->setLayerId(layerID);
+
+        newpipelineLayer->setAutoFetchLegendInfos(true);
 
         layersTree->addItemToTree(QString::fromStdString(it), layerID ,pipelinesItem);
     }
@@ -724,7 +775,8 @@ void VisualizationWidget::loadPipelineData(void)
         featureAttributes.insert("TabName", pipelineTableWidget->item(i,0)->data(0).toString());
 
         // Get the feature collection table from the map
-        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+        //        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+        auto layerTag = "Pipeline Network";
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
@@ -765,26 +817,10 @@ void VisualizationWidget::loadPipelineData(void)
         featureCollectionTable->addFeature(feature);
     }
 
+//    pipelineLayer->setShowInLegend(true);
+//    pipelineLayer->setAutoFetchLegendInfos(true);
+
     mapGIS->operationalLayers()->append(pipelineLayer);
-
-    // When the layer is done loading, zoom to extents of the data
-    //    connect(pipelineLayer, &GroupLayer::doneLoading, this, [this, pipelineLayer](Error loadError)
-    //    {
-    //        if (!loadError.isEmpty())
-    //        {
-    //            auto msg = loadError.additionalMessage();
-    //            this->userMessageDialog(msg);
-    //            return;
-    //        }
-
-    //        auto env = pipelineLayer->fullExtent();
-
-    //        auto depth = env.depth();
-
-    //        auto width = env.width();
-
-    //        mapViewWidget->setViewpointCenter(pipelineLayer->fullExtent().center(), 80000);
-    //    });
 
     this->zoomToExtents();
 
@@ -2031,6 +2067,22 @@ void VisualizationWidget::clear(void)
     selectedComponentsLayer = nullptr;
 }
 
+
+void VisualizationWidget::setLegendView(QListView* legndView)
+{
+    legendView = legndView;
+
+    connect(mapGIS->legendInfos(), &LegendInfoListModel::fetchLegendInfosCompleted, this, [=]()
+    {
+        // set the legend info list model
+        RoleProxyModel* roleModel = new RoleProxyModel(mapGIS);
+
+        roleModel->setSourceModel(mapGIS->legendInfos());
+        legendView->setModel(roleModel);
+
+        legendView->show();
+    });
+}
 
 //     connect to the mouse clicked signal on the MapQuickView
 //     This code snippet adds a point to where the mouse click is
