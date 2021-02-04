@@ -64,6 +64,7 @@ class KmlLayer;
 class Layer;
 class ArcGISMapImageLayer;
 class RasterLayer;
+//class RoleProxyModel;
 
 //Convex hull stuff
 class GraphicsOverlay;
@@ -98,6 +99,7 @@ public:
 
     // Convex hull functionality
     void setupConvexHullObjects();
+
 
     Esri::ArcGISRuntime::MapGraphicsView* getMapViewWidget() const;
 
@@ -206,6 +208,8 @@ private slots:
     void getItemsInConvexHull();
     void convexHullPointSelector(QMouseEvent& e);
 
+    void setLegendInfo();
+
 private:
 
     LayerTreeView* layersTree;
@@ -259,6 +263,8 @@ private:
     void createVisualizationWidget(void);
 
     QListView* legendView;
+
+//    QVector<Esri::ArcGISRuntime::RoleProxyModel*> roleModels;
 };
 
 #endif // VISUALIZATIONWIDGET_H
