@@ -868,9 +868,9 @@ void VisualizationWidget::getItemsInConvexHull()
 
     // Set the envelope of the convex hull as the search parameter
     QueryParameters queryParams;
-    auto envelope = convexHull.extent();
+    auto envelope = Polygon(convexHull);
     queryParams.setGeometry(envelope);
-    queryParams.setSpatialRelationship(SpatialRelationship::Intersects);
+    queryParams.setSpatialRelationship(SpatialRelationship::Contains);
 
     // Iterate through the layers
     // Function to do a nested search through the layers - this is needed because some layers may have sub-layers
