@@ -96,10 +96,10 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
 
     theLocalMapping = new SimCenterAppEventSelection(QString("Local Event Type"), QString("Events"), this);
     SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
-    SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
+    //SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
 
     theLocalMapping->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
-    theLocalMapping->addComponent(QString("Site Response"), QString("SiteResponse"), siteResponse);
+    //theLocalMapping->addComponent(QString("Site Response"), QString("SiteResponse"), siteResponse);
 
     QGroupBox* localMappingGroupBox = new QGroupBox("Local Mapping", this);
     localMappingGroupBox->setContentsMargins(0,5,0,0);
