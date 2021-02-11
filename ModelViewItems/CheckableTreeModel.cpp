@@ -369,6 +369,8 @@ bool CheckableTreeModel::clear(void)
             return false;
     }
 
+    rootItem->clear();
+
     return true;
 }
 

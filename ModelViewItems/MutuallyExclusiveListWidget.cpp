@@ -62,6 +62,11 @@ MutuallyExclusiveListWidget::MutuallyExclusiveListWidget(QWidget *parent, QStrin
     connect(this, &QWidget::customContextMenuRequested, this, &MutuallyExclusiveListWidget::showPopup);
 }
 
+MutuallyExclusiveListWidget::~MutuallyExclusiveListWidget()
+{
+
+}
+
 
 TreeItem* MutuallyExclusiveListWidget::addItem(const QString item, TreeItem* parent)
 {
@@ -78,7 +83,10 @@ TreeItem* MutuallyExclusiveListWidget::addItem(const QString item, TreeItem* par
 
 void MutuallyExclusiveListWidget::removeItem(const QString& itemID)
 {
-    treeModel->removeItemFromTree(itemID);
+    auto res = treeModel->removeItemFromTree(itemID);
+
+    if(!res)
+        qDebug()<<"Failed to remove item "<<itemID;
 }
 
 
