@@ -76,7 +76,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimpleRenderer.h"
 #include "TransformationCatalog.h"
 #include "sectiontitle.h"
-#include "LegendInfoListModel.h"
 // Convex Hull
 #include "GeometryEngine.h"
 #include "MultipointBuilder.h"
@@ -97,39 +96,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTreeView>
 #include <QListView>
 #include <QUrl>
-#include <QIdentityProxyModel>
 
 #include <utility>
 
 using namespace Esri::ArcGISRuntime;
 
 
-class RoleProxyModel: public QIdentityProxyModel
-{
-public:
-
-    RoleProxyModel(QWidget* parent) : QIdentityProxyModel(parent)
-    {
-
-    }
-
-    QVariant data(const QModelIndex& index, int role) const override
-    {
-        if (role == Qt::DecorationRole)
-        {
-            const QUrl iconRole = index.data(LegendInfoListModel::LegendInfoSymbolUrlRole).toUrl();
-            return QIcon(iconRole.toLocalFile());
-        }
-        else
-        {
-            return QIdentityProxyModel::data(index, role);
-        }
-    }
-};
-
-
 VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {    
+    legendView = nullptr;
     visWidget = nullptr;
     this->setContentsMargins(0,0,0,0);
 
@@ -167,7 +142,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Create a map using the topographic Basemap
     mapGIS = new Map(Basemap::topographic(this), this);
 
-    mapGIS->setAutoFetchLegendInfos(true);
+    mapGIS->setAutoFetchLegendInfos(false);
 
     mapGIS->setObjectName("MainMap");
 
@@ -203,11 +178,11 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Connect to the exportImageCompleted signal
     connect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
 
-    // Legend stuff
-    legendView = nullptr;
 
-    //    ArcGISTiledLayer* tiledLayer = new ArcGISTiledLayer(QUrl("https://services.arcgisonline.com/ArcGIS/rest/services/Specialty/Soil_Survey_Map/MapServer"), this);
-    //    mapGIS->operationalLayers()->append(tiledLayer);
+    this->setLegendView(mapViewWidget->getLegendView());
+
+    //        ArcGISTiledLayer* tiledLayer = new ArcGISTiledLayer(QUrl("https://services.arcgisonline.com/ArcGIS/rest/services/Specialty/Soil_Survey_Map/MapServer"), this);
+    //        mapGIS->operationalLayers()->append(tiledLayer);
 
     // Test
     //    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
@@ -519,11 +494,13 @@ void VisualizationWidget::loadBuildingData(void)
     auto buildingLayer = new GroupLayer(QList<Layer*>{},this);
     buildingLayer->setName("Buildings");
 
-    auto layerID = this->createUniqueID();
-    buildingLayer->setLayerId(layerID);
+    auto buildingsItem = this->addLayerToMap(buildingLayer);
 
-    // Create the root item in the trees
-    auto buildingsItem = layersTree->addItemToTree("Buildings", layerID);
+    if(buildingsItem == nullptr)
+    {
+        qDebug()<<"Error adding item to the map";
+        return;
+    }
 
     auto nRows = buildingTableWidget->rowCount();
 
@@ -535,6 +512,7 @@ void VisualizationWidget::loadBuildingData(void)
 
         vecLayerItems.push_back(occupancyType);
     }
+    vecLayerItems.push_back("Building Inventory");
 
     this->uniqueVec<std::string>(vecLayerItems);
 
@@ -542,6 +520,9 @@ void VisualizationWidget::loadBuildingData(void)
     selectedBuildingsTable = new FeatureCollectionTable(fields, GeometryType::Point, SpatialReference::wgs84(),this);
     selectedBuildingsFeatureCollection->tables()->append(selectedBuildingsTable);
     selectedBuildingsLayer = new FeatureCollectionLayer(selectedBuildingsFeatureCollection,this);
+    selectedBuildingsLayer->setName("Selected Buildings");
+    selectedBuildingsLayer->setShowInLegend(false);
+    selectedBuildingsLayer->setAutoFetchLegendInfos(false);
     selectedBuildingsTable->setRenderer(this->createBuildingRenderer());
 
     // Map to hold the feature tables
@@ -558,17 +539,13 @@ void VisualizationWidget::loadBuildingData(void)
 
         newBuildingLayer->setName(QString::fromStdString(it));
 
-        buildingLayer->layers()->append(newBuildingLayer);
-
         featureCollectionTable->setRenderer(this->createBuildingRenderer());
 
         tablesMap.insert(std::make_pair(it,featureCollectionTable));
 
-        auto layerID = this->createUniqueID();
+        newBuildingLayer->setAutoFetchLegendInfos(true);
 
-        newBuildingLayer->setLayerId(layerID);
-
-        layersTree->addItemToTree(QString::fromStdString(it), layerID, buildingsItem);
+        this->addLayerToMap(newBuildingLayer,buildingsItem,buildingLayer);
     }
 
     for(int i = 0; i<nRows; ++i)
@@ -619,7 +596,7 @@ void VisualizationWidget::loadBuildingData(void)
 
         // Create the point and add it to the feature table
         Point point(longitude,latitude);
-        Feature* feature = featureCollectionTable->createFeature(featureAttributes, point);
+        Feature* feature = featureCollectionTable->createFeature(featureAttributes, point,this);
 
         building.UID = uid;
         building.ComponentFeature = feature;
@@ -628,21 +605,6 @@ void VisualizationWidget::loadBuildingData(void)
 
         featureCollectionTable->addFeature(feature);
     }
-
-    mapGIS->operationalLayers()->append(buildingLayer);
-
-    // When the layer is done loading, zoom to extents of the data
-    //    connect(buildingLayer, &GroupLayer::doneLoading, this, [this, buildingLayer](Error loadError)
-    //    {
-    //        if (!loadError.isEmpty())
-    //        {
-    //            auto msg = loadError.additionalMessage();
-    //            this->userMessageDialog(msg);
-    //            return;
-    //        }
-
-    //        mapViewWidget->setViewpointCenter(buildingLayer->fullExtent().center(), 80000);
-    //    });
 
     this->zoomToExtents();
 }
@@ -661,8 +623,10 @@ void VisualizationWidget::loadPipelineData(void)
 
     QList<Field> fields;
     fields.append(Field::createDouble("RepairRate", "0.0"));
+    fields.append(Field::createText("ID", "NULL",4));
     fields.append(Field::createText("AssetType", "NULL",4));
     fields.append(Field::createText("TabName", "NULL",4));
+    fields.append(Field::createText("UID", "NULL",4));
 
     // Set the table headers as fields in the table
     for(int i =0; i<pipelineTableWidget->columnCount(); ++i)
@@ -674,13 +638,16 @@ void VisualizationWidget::loadPipelineData(void)
 
     // Create the pipelines group layer that will hold the sublayers
     auto pipelineLayer = new GroupLayer(QList<Layer*>{},this);
-    pipelineLayer->setName("Pipelines");
+    pipelineLayer->setName("Components");
 
-    auto layerID = this->createUniqueID();
-    pipelineLayer->setLayerId(layerID);
+    // Add the pipeline layer to the map and get the root tree item
+    auto pipelinesItem = this->addLayerToMap(pipelineLayer);
 
-    // Create the root item in the trees
-    auto pipelinesItem = layersTree->addItemToTree("Pipelines",layerID);
+    if(pipelinesItem == nullptr)
+    {
+        qDebug()<<"Error adding item to the map";
+        return;
+    }
 
     auto nRows = pipelineTableWidget->rowCount();
 
@@ -703,6 +670,7 @@ void VisualizationWidget::loadPipelineData(void)
     // Map to hold the feature tables
     std::map<std::string, FeatureCollectionTable*> tablesMap;
 
+
     for(auto&& it : vecLayerItems)
     {
         auto featureCollection = new FeatureCollection(this);
@@ -715,21 +683,13 @@ void VisualizationWidget::loadPipelineData(void)
 
         newpipelineLayer->setName(QString::fromStdString(it));
 
-        pipelineLayer->layers()->append(newpipelineLayer);
-
-        pipelineLayer->setAutoFetchLegendInfos(true);
+        newpipelineLayer->setAutoFetchLegendInfos(true);
 
         featureCollectionTable->setRenderer(this->createPipelineRenderer());
 
         tablesMap.insert(std::make_pair(it,featureCollectionTable));
 
-        auto layerID = this->createUniqueID();
-
-        newpipelineLayer->setLayerId(layerID);
-
-        newpipelineLayer->setAutoFetchLegendInfos(true);
-
-        layersTree->addItemToTree(QString::fromStdString(it), layerID ,pipelinesItem);
+        this->addLayerToMap(newpipelineLayer,pipelinesItem, pipelineLayer);
     }
 
     for(int i = 0; i<nRows; ++i)
@@ -760,11 +720,16 @@ void VisualizationWidget::loadPipelineData(void)
             featureAttributes.insert(attrbText,attrbVal);
         }
 
+        // Create a unique ID for the pipeline
+        auto uid = this->createUniqueID();
+
         pipeline.ComponentAttributes = pipelineAttributeMap;
 
+        featureAttributes.insert("ID", pipelineIDStr);
         featureAttributes.insert("RepairRate", 0.0);
         featureAttributes.insert("AssetType", "PIPELINE");
         featureAttributes.insert("TabName", pipelineTableWidget->item(i,0)->data(0).toString());
+        featureAttributes.insert("UID", uid);
 
         // Get the feature collection table from the map
         //        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
@@ -802,6 +767,7 @@ void VisualizationWidget::loadPipelineData(void)
         // Add the feature to the table
         Feature* feature = featureCollectionTable->createFeature(featureAttributes, polyline, this);
 
+        pipeline.UID = uid;
         pipeline.ComponentFeature = feature;
 
         thePipelineDb->addComponent(pipelineID, pipeline);
@@ -809,20 +775,9 @@ void VisualizationWidget::loadPipelineData(void)
         featureCollectionTable->addFeature(feature);
     }
 
-    //    pipelineLayer->setShowInLegend(true);
-//    pipelineLayer->setAutoFetchLegendInfos(true);
-
-    mapGIS->operationalLayers()->append(pipelineLayer);
-
     this->zoomToExtents();
 
-    auto legendInfos = mapGIS->legendInfos();
-
-    if(legendInfos == nullptr)
-        return;
-
-    connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
-
+    layersTree->selectRow(1);
 }
 
 
@@ -1083,6 +1038,15 @@ void VisualizationWidget::handleFieldQuerySelection(void)
 }
 
 
+void VisualizationWidget::handleArcGISError(Esri::ArcGISRuntime::Error error)
+{
+    if(error.isEmpty())
+        return;
+
+    this->userMessageDialog(error.message());
+}
+
+
 void VisualizationWidget::handleSelectedFeatures(void)
 {
     auto buildingSelected = false;
@@ -1140,45 +1104,51 @@ void VisualizationWidget::handleSelectedFeatures(void)
 ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
 {
     // Images stored in base64 format
-    QByteArray buildingImg1 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWhJREFUSInt1jFrwkAYxvF/SDpJBaHFtlN0dlP0O3TWSWobOnZvidA2QycHZ9cGhNKlX0FwcPcLCC4OrWKGDMKZdKmg1WpOo1LwgYMb3nt/HHdwp7HjaHsDTdM8GgwGFnADXITU/xN4j0QiD9Vq1Z0Bh8PhE1AOCZrkFLhzXfcYuJ4BPc+7ChmbzuVkMn2GZ1sETxaBUkkkEnQ6Hel1a4GGYZBOp6nX6ySTSVKpFACWZTEajcIFDcMgl8sBUCwW6ff7xGIxAFRVXbleCpzGADRNIx6Py7QIDv7G1k0gMCiWzWZpNBqbgTI7KxQKjMdjms3memCpVCKTyeD7PoqirAQVRSGfzyOEoNVqyYO2bWPbNpVKhWg0uhJst9vUarWlNft7LQ7gAfzfYLkc7Ofh+74U2AP0RUVCiEDgkvQWga/A86ad/8jHHKjr+ku321U9z7sFzkOCvoA3x3Hu50DTNAXw+DO2lp3f0m97bGdscCiEZAAAAABJRU5ErkJggg==";
-    QByteArray buildingImg2 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAYNJREFUSInt1b9LAmEcx/H3nVfSYEiU9MNBaHPJwKaKoKGh6YbopqioqYaGoLjAashJ8C9oCZeQg/bAXXBoaGoPhH7YEA1n1z0NYVha3umlBH6mZ3i+39fzCx6FNkfpGKjr9FiW/1gIcw0Y9aj/PZC1bfbTaV6+gK+v/kMwDzyCKhkCtn0+AsDqFxDMFY+xzwjBYmVcfYfDfwUCg/VAVwmHN7m9PXVd1xSoaTlisVmy2XEikQmi0SkAUqkZyuUbb0FNyxGPzwOwvLxLqXRHMPhxYrLc17DeFViNAShKD6HQmJsWzsHvWLNxBDrFYrF18vmd1kA3O1PVLd7eLAqF3ebApaVLJifnEEIgSVJDUJZlVHULyypzdaW7Bw1jAcOAROKJ/v5gQ/D6Ok8mM/3rnM79Fl2wC/5vMJmMIsu9DefZ9rMrsAhE6jcqYttOlvZjijWgJPnPhDCPWmr7Q2ybixpwYMA8eXz0+8DcAEY8sh6A80CAvRpQ17HATAAJj7C6afsrfQdYrmo3mMtmpgAAAABJRU5ErkJggg==";
-    QByteArray buildingImg3 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWJJREFUSInt1s8rw3Ecx/Hn2zbfJpo0xTj4dXKh1ZSQUhzkX9CI0xwcVkQNB3+Gi9tycVPUzuS0qyPKCpFQvtp8HGaz2bd9v9/ta0t5nT59en/ej++PT30+bmocd91AFcejRNsR9AUg4FD/OwUH8sa6hHktBkXbEvRNh6Bc2gVWlJcWIFwECvq8w1g+opjNjQv/YcdvgYDfCLQX3zI87dleVhkYTEDvBJz2g38IukPZ+eNxyFw4DAYTMDCVHY9G4eUWmr++mHhNl9sDCzEAlwd8XbZaWAd/YhXGGmgVCyzC1WqVoJ03G4mASsN1tEJw+AT6JkEpEDEHpQFCEci8w81GBWByBpLA3CM0tZqDl2dwPla2pH6nxT/4D/5x8GgQaDSvU8+2wBTQY1j1kbLyWOWSb/B9iULbF/TtajsbRcFhCSht+q560FyCvgR0OmTdK4iLxlopOE0a9BgQcwgzTM136SeMBkz2tFUt2gAAAABJRU5ErkJggg==";
-    QByteArray buildingImg4 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAYxJREFUSInt1csrRGEYx/Hve2bGidwml1wil2xsMDUpl5RioWzYKAmxGgsLRaNcs7DyFyjZnWxsLKRmO0kWsrMTZQqRJvJq5hyLSQ0zY+bMHCPlt3oXz/t83lu9drIc+6+BmhcHL+oqipxAp8qi/nco7EnBwvgWz59A41VdFshFdIuoSMrQmcmBAmD8Eyh0OWYpFRUBAx/j6Dus+CkQKI0HmkpR7TRPV9um56UFukZ9NLR149caKa1voabZDcDhZhdheWEt6Br10eTuBaBjZI7gwy35zsiJCVtu0vmmwGgMwGZ3UFxebaZF6uBXLN2kBKaKVbVOcuWfzQw0s7P2YQ+GHuL6eC49sHXkiEZXD4ZhIIRICgpFwT3kIRx64+bUax480/o502Bw/ZG8wuKk4OX5MSc7nd/W/N5v8Q/+g38bPFhrBiUneaEeNAEaBBDUxSsywgEIp7K0hAnEgkLdBbmSUdsEEbAfA5ZUyI37W9UmdDkFVFpk3WOgqU7mY8A+LyGQS8CSRVjcZP2VvgN6imQ8SFFgygAAAABJRU5ErkJggg==";
-    QByteArray buildingImg5 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAXpJREFUSInt1b1LQlEYx/HvMfVQFAkZVBJE0uJiBBKkEQg1BP0JYZLTbXC4UBj0MvRntLRJS0tDCK4hTa1tUZBggoQ0nFBuQ2gvXvRevRVBv+kMz3k+5w2Omx+O+9fALHiQ8hClNoAJh/o/AqcKdhLw/Ak0pNwXSu06BDUyCmx5YQhIfAKFUusOY80IWG2MP97h2HeBgN8MtJXhVIqn42Pb87oC5/J5phcXuQwG8YfDTEYiAFzEYtRvbpwF5/J5ZuJxABZ0nWqpxKD/7cREf3/H+bbAjxhAn8eDLxCw08I6+BXrNpZAq9hEMsldOt0baGdn85qGUatxr+vdgbO5HMGlJQzDQAjRERQuFxFNo/7ywkMmYx+8XlnhGlirVBjw+TqCt4UCV9Fo25rf+y3+wX/wb4PnoRB4vZ0Lq1VbYBGYMisyikUr62qXZoN3UMoTlDrotbNZBJy1gCNKHZWl7BNKbQLjDlllICthuwVchhpK7QF7DmGm+fFX+gonY17k9eIf3wAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg1 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWhJREFUSInt1jFrwkAYxvF/SDpJBaHFtlN0dlP0O3TWSWobOnZvidA2QycHZ9cGhNKlX0FwcPcLCC4OrWKGDMKZdKmg1WpOo1LwgYMb3nt/HHdwp7HjaHsDTdM8GgwGFnADXITU/xN4j0QiD9Vq1Z0Bh8PhE1AOCZrkFLhzXfcYuJ4BPc+7ChmbzuVkMn2GZ1sETxaBUkkkEnQ6Hel1a4GGYZBOp6nX6ySTSVKpFACWZTEajcIFDcMgl8sBUCwW6ff7xGIxAFRVXbleCpzGADRNIx6Py7QIDv7G1k0gMCiWzWZpNBqbgTI7KxQKjMdjms3memCpVCKTyeD7PoqirAQVRSGfzyOEoNVqyYO2bWPbNpVKhWg0uhJst9vUarWlNft7LQ7gAfzfYLkc7Ofh+74U2AP0RUVCiEDgkvQWga/A86ad/8jHHKjr+ku321U9z7sFzkOCvoA3x3Hu50DTNAXw+DO2lp3f0m97bGdscCiEZAAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg2 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAYNJREFUSInt1b9LAmEcx/H3nVfSYEiU9MNBaHPJwKaKoKGh6YbopqioqYaGoLjAashJ8C9oCZeQg/bAXXBoaGoPhH7YEA1n1z0NYVha3umlBH6mZ3i+39fzCx6FNkfpGKjr9FiW/1gIcw0Y9aj/PZC1bfbTaV6+gK+v/kMwDzyCKhkCtn0+AsDqFxDMFY+xzwjBYmVcfYfDfwUCg/VAVwmHN7m9PXVd1xSoaTlisVmy2XEikQmi0SkAUqkZyuUbb0FNyxGPzwOwvLxLqXRHMPhxYrLc17DeFViNAShKD6HQmJsWzsHvWLNxBDrFYrF18vmd1kA3O1PVLd7eLAqF3ebApaVLJifnEEIgSVJDUJZlVHULyypzdaW7Bw1jAcOAROKJ/v5gQ/D6Ok8mM/3rnM79Fl2wC/5vMJmMIsu9DefZ9rMrsAhE6jcqYttOlvZjijWgJPnPhDCPWmr7Q2ybixpwYMA8eXz0+8DcAEY8sh6A80CAvRpQ17HATAAJj7C6afsrfQdYrmo3mMtmpgAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg3 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWJJREFUSInt1s8rw3Ecx/Hn2zbfJpo0xTj4dXKh1ZSQUhzkX9CI0xwcVkQNB3+Gi9tycVPUzuS0qyPKCpFQvtp8HGaz2bd9v9/ta0t5nT59en/ej++PT30+bmocd91AFcejRNsR9AUg4FD/OwUH8sa6hHktBkXbEvRNh6Bc2gVWlJcWIFwECvq8w1g+opjNjQv/YcdvgYDfCLQX3zI87dleVhkYTEDvBJz2g38IukPZ+eNxyFw4DAYTMDCVHY9G4eUWmr++mHhNl9sDCzEAlwd8XbZaWAd/YhXGGmgVCyzC1WqVoJ03G4mASsN1tEJw+AT6JkEpEDEHpQFCEci8w81GBWByBpLA3CM0tZqDl2dwPla2pH6nxT/4D/5x8GgQaDSvU8+2wBTQY1j1kbLyWOWSb/B9iULbF/TtajsbRcFhCSht+q560FyCvgR0OmTdK4iLxlopOE0a9BgQcwgzTM136SeMBkz2tFUt2gAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg4 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAYxJREFUSInt1csrRGEYx/Hve2bGidwml1wil2xsMDUpl5RioWzYKAmxGgsLRaNcs7DyFyjZnWxsLKRmO0kWsrMTZQqRJvJq5hyLSQ0zY+bMHCPlt3oXz/t83lu9drIc+6+BmhcHL+oqipxAp8qi/nco7EnBwvgWz59A41VdFshFdIuoSMrQmcmBAmD8Eyh0OWYpFRUBAx/j6Dus+CkQKI0HmkpR7TRPV9um56UFukZ9NLR149caKa1voabZDcDhZhdheWEt6Br10eTuBaBjZI7gwy35zsiJCVtu0vmmwGgMwGZ3UFxebaZF6uBXLN2kBKaKVbVOcuWfzQw0s7P2YQ+GHuL6eC49sHXkiEZXD4ZhIIRICgpFwT3kIRx64+bUax480/o502Bw/ZG8wuKk4OX5MSc7nd/W/N5v8Q/+g38bPFhrBiUneaEeNAEaBBDUxSsywgEIp7K0hAnEgkLdBbmSUdsEEbAfA5ZUyI37W9UmdDkFVFpk3WOgqU7mY8A+LyGQS8CSRVjcZP2VvgN6imQ8SFFgygAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg5 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAXpJREFUSInt1b1LQlEYx/HvMfVQFAkZVBJE0uJiBBKkEQg1BP0JYZLTbXC4UBj0MvRntLRJS0tDCK4hTa1tUZBggoQ0nFBuQ2gvXvRevRVBv+kMz3k+5w2Omx+O+9fALHiQ8hClNoAJh/o/AqcKdhLw/Ak0pNwXSu06BDUyCmx5YQhIfAKFUusOY80IWG2MP97h2HeBgN8MtJXhVIqn42Pb87oC5/J5phcXuQwG8YfDTEYiAFzEYtRvbpwF5/J5ZuJxABZ0nWqpxKD/7cREf3/H+bbAjxhAn8eDLxCw08I6+BXrNpZAq9hEMsldOt0baGdn85qGUatxr+vdgbO5HMGlJQzDQAjRERQuFxFNo/7ywkMmYx+8XlnhGlirVBjw+TqCt4UCV9Fo25rf+y3+wX/wb4PnoRB4vZ0Lq1VbYBGYMisyikUr62qXZoN3UMoTlDrotbNZBJy1gCNKHZWl7BNKbQLjDlllICthuwVchhpK7QF7DmGm+fFX+gonY17k9eIf3wAAAABJRU5ErkJggg==";
 
-    buildingImg1 = QByteArray::fromBase64(buildingImg1);
-    buildingImg2 = QByteArray::fromBase64(buildingImg2);
-    buildingImg3 = QByteArray::fromBase64(buildingImg3);
-    buildingImg4 = QByteArray::fromBase64(buildingImg4);
-    buildingImg5 = QByteArray::fromBase64(buildingImg5);
+    //    buildingImg1 = QByteArray::fromBase64(buildingImg1);
+    //    buildingImg2 = QByteArray::fromBase64(buildingImg2);
+    //    buildingImg3 = QByteArray::fromBase64(buildingImg3);
+    //    buildingImg4 = QByteArray::fromBase64(buildingImg4);
+    //    buildingImg5 = QByteArray::fromBase64(buildingImg5);
 
-    QImage img1 = QImage::fromData(buildingImg1);
-    QImage img2 = QImage::fromData(buildingImg2);
-    QImage img3 = QImage::fromData(buildingImg3);
-    QImage img4 = QImage::fromData(buildingImg4);
-    QImage img5 = QImage::fromData(buildingImg5);
+    //    QImage img1 = QImage::fromData(buildingImg1);
+    //    QImage img2 = QImage::fromData(buildingImg2);
+    //    QImage img3 = QImage::fromData(buildingImg3);
+    //    QImage img4 = QImage::fromData(buildingImg4);
+    //    QImage img5 = QImage::fromData(buildingImg5);
 
-    PictureMarkerSymbol* symbol1 = new PictureMarkerSymbol(img1, this);
-    PictureMarkerSymbol* symbol2 = new PictureMarkerSymbol(img2, this);
-    PictureMarkerSymbol* symbol3 = new PictureMarkerSymbol(img3, this);
-    PictureMarkerSymbol* symbol4 = new PictureMarkerSymbol(img4, this);
-    PictureMarkerSymbol* symbol5 = new PictureMarkerSymbol(img5, this);
+    //    PictureMarkerSymbol* symbol1 = new PictureMarkerSymbol(img1, this);
+    //    PictureMarkerSymbol* symbol2 = new PictureMarkerSymbol(img2, this);
+    //    PictureMarkerSymbol* symbol3 = new PictureMarkerSymbol(img3, this);
+    //    PictureMarkerSymbol* symbol4 = new PictureMarkerSymbol(img4, this);
+    //    PictureMarkerSymbol* symbol5 = new PictureMarkerSymbol(img5, this);
+
+    SimpleMarkerSymbol* symbol1 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor(0, 0, 255,125), 8.0f, this);
+    SimpleMarkerSymbol* symbol2 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor(255,255,178), 8.0f, this);
+    SimpleMarkerSymbol* symbol3 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor(253,204,92), 8.0f, this);
+    SimpleMarkerSymbol* symbol4 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor(253,141,60), 8.0f, this);
+    SimpleMarkerSymbol* symbol5 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor(240,59,32), 8.0f, this);
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.05, symbol1,this);
+    auto classBreak1 = new ClassBreak("0.0-0.05 Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.05, symbol1,this);
     classBreaks.append(classBreak1);
 
-    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2,this);
+    auto classBreak2 = new ClassBreak("0.5-0.25 Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2,this);
     classBreaks.append(classBreak2);
 
-    auto classBreak3 = new ClassBreak("Medium Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3,this);
+    auto classBreak3 = new ClassBreak("0.25-0.5 Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3,this);
     classBreaks.append(classBreak3);
 
-    auto classBreak4 = new ClassBreak("High Loss Ratio", "Loss Ratio Between 50% and 75%", 0.50, 0.75,symbol4,this);
+    auto classBreak4 = new ClassBreak("0.5-0.75 Loss Ratio", "Loss Ratio Between 50% and 75%", 0.50, 0.75,symbol4,this);
     classBreaks.append(classBreak4);
 
-    auto classBreak5 = new ClassBreak("Very Loss Ratio", "Loss Ratio Between 75% and 90%", 0.75, 1.0,symbol5,this);
+    auto classBreak5 = new ClassBreak("0.75-1.0 Loss Ratio", "Loss Ratio Between 75% and 90%", 0.75, 1.0,symbol5,this);
     classBreaks.append(classBreak5);
 
     return new ClassBreaksRenderer("LossRatio", classBreaks, this);
@@ -1624,29 +1594,16 @@ void VisualizationWidget::addComponentsToSelectedLayer(const QList<Feature*>& fe
     if(selectedComponentsTreeItem == nullptr)
     {
         if(selectedComponentsLayer == nullptr)
-        {        // Create the buildings group layer that will hold the sublayers
+        {
+            // Create the buildings group layer that will hold the sublayers
             selectedComponentsLayer = new GroupLayer(QList<Layer*>{}, this);
             selectedComponentsLayer->setName("Selected Components");
 
-            auto layerID = this->createUniqueID();
+            selectedComponentsTreeItem = this->addLayerToMap(selectedComponentsLayer);
 
-            selectedComponentsLayer->setLayerId(layerID);
-            auto newID = this->createUniqueID();
-            selectedBuildingsLayer->setLayerId(newID);
-
-            selectedComponentsLayer->layers()->append(selectedBuildingsLayer);
+            this->addLayerToMap(selectedBuildingsLayer, selectedComponentsTreeItem, selectedComponentsLayer);
         }
-
-        // Create the root item in the trees
-        auto layerID = selectedComponentsLayer->layerId();
-        selectedComponentsTreeItem = layersTree->addItemToTree(selectedComponentsLayer->name(), layerID);
-
-        auto layerID2 = selectedBuildingsLayer->layerId();
-        layersTree->addItemToTree(QString::fromStdString("Selected Buildings"), layerID2, selectedComponentsTreeItem);
-
-        this->addLayerToMap(selectedComponentsLayer);
     }
-
 }
 
 
@@ -1827,8 +1784,6 @@ void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, 
         return;
     });
 
-    auto layerID = this->createUniqueID();
-
     connect(m_geodatabase, &Geodatabase::doneLoading, this, [=](Error error)
     {
         if (error.isEmpty())
@@ -1837,21 +1792,15 @@ void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, 
 
             // create a feature layer from the feature table
             FeatureLayer* featureLayer = new FeatureLayer(featureTable, this);
-
             featureLayer->setName(layerName);
-            featureLayer->setLayerId(layerID);
 
             // add the feature layer to the map
-            mapGIS->operationalLayers()->append(featureLayer);
+            this->addLayerToMap(featureLayer,parentItem);
         }
     });
 
     // load the geodatabase
     m_geodatabase->load();
-
-
-    // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName, layerID, parentItem);
 }
 
 
@@ -1980,36 +1929,45 @@ QPointF VisualizationWidget::getScreenPointFromLatLong(const double& latitude, c
 }
 
 
-void VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent)
+LayerTreeItem* VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent, Esri::ArcGISRuntime::GroupLayer* groupLayer)
 {
-    mapGIS->operationalLayers()->append(layer);
 
+    // Create a unique ID for the layer
+    auto layerID = this->createUniqueID();
+    layer->setLayerId(layerID);
 
+    // Add it to the map or to a group layer if it is part of a group
+    if(groupLayer == nullptr)
+        mapGIS->operationalLayers()->append(layer);
+    else
+        groupLayer->layers()->append(layer);
 
-    //        connect(layer, &Layer::doneLoading, this, [this, layer, layerLayerTreeItem](Error loadError)
-    //        {
-    //            if (!loadError.isEmpty())
-    //            {
-    //                auto msg = loadError.message() + loadError.additionalMessage();
-    //                this->userMessageDialog(msg);
+    // Insert the layer into the map
+    layersMap.insert(layerID, layer);
 
-    //                return;
-    //            }
+    // Add the layer to the layer tree
+    auto layerName = layer->name();
+    auto treeItem = layersTree->addItemToTree(layerName, layerID, parent);
 
-    //            auto subLayers = layer->subLayerContents();
+    layer->load();
 
-    //            for(auto&& it : subLayers)
-    //            {
-    //                auto subLayerName = it->name();
+    auto status = layer->loadStatus();
 
-    //                layersModel->addItemToTree(subLayerName,layerLayerTreeItem);
-    //            }
+    // Populate the legend info for that layer
+    if(layer->isAutoFetchLegendInfos() && status == LoadStatus::Loaded)
+    {
+        layer->legendInfos();
 
+        auto legendInfos = layer->legendInfos();
+        if(legendInfos == nullptr)
+            return nullptr;
 
-    //            // If the layer was loaded successfully, set the map extent to the full extent of the layer
-    //            mapViewWidget->setViewpointCenter(layer->fullExtent().center(), 80000);
-    //        });
+        legendInfos->setProperty("UID",layerID);
 
+        connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
+    }
+
+    return treeItem;
 }
 
 
@@ -2067,7 +2025,7 @@ void VisualizationWidget::clear(void)
 }
 
 
-void VisualizationWidget::setLegendView(QListView* legndView)
+void VisualizationWidget::setLegendView(GISLegendView* legndView)
 {
     if(legndView == nullptr)
         return;
@@ -2079,8 +2037,14 @@ void VisualizationWidget::setLegendView(QListView* legndView)
 
 void VisualizationWidget::setLegendInfo()
 {
-    if(legendView == nullptr || mapGIS== nullptr)
+    QObject* obj = sender();
+
+    auto legendInfo = qobject_cast<LegendInfoListModel*>(obj);
+
+    if(legendView == nullptr || legendInfo == nullptr)
         return;
+
+    QString layerUID = obj->property("UID").toString();
 
     // set the legend info list model
     RoleProxyModel* roleModel = new RoleProxyModel(this);
@@ -2088,17 +2052,44 @@ void VisualizationWidget::setLegendInfo()
     if(roleModel == nullptr)
         return;
 
-    //    roleModels.append(roleModel);
+    roleModel->setSourceModel(legendInfo);
 
-    roleModel->setSourceModel(mapGIS->legendInfos());
+    legendModels.insert(layerUID,roleModel);
 
-    legendView->setModel(roleModel);
-
-    legendView->show();
+    this->handleLegendChange(layerUID);
 }
 
 
-QListView *VisualizationWidget::getLegendView() const
+void VisualizationWidget::handleLegendChange(const Layer* layer)
+{
+    if(layer == nullptr)
+        return;
+
+    auto UID = layer->layerId();
+    this->handleLegendChange(UID);
+}
+
+
+void VisualizationWidget::handleLegendChange(const QString layerUID)
+{
+    legendView->hide();
+
+    if(layerUID.isEmpty())
+        return;
+
+    RoleProxyModel* roleModel = legendModels.value(layerUID,nullptr);
+
+    if(roleModel == nullptr)
+        return;
+
+    legendView->setVisible(true);
+
+    legendView->setModel(roleModel);
+
+}
+
+
+GISLegendView *VisualizationWidget::getLegendView() const
 {
     return legendView;
 }

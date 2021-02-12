@@ -452,10 +452,10 @@ QString ComponentInputWidget::getPathToComponentFile(void) const
 
 void ComponentInputWidget::loadFileFromPath(QString& path)
 {
+    this->clear();
     pathToComponentInfoFile = path;
     componentFileLineEdit->setText(path);
     this->loadComponentData();
-
 }
 
 
@@ -602,6 +602,7 @@ bool ComponentInputWidget::copyFiles(QString &destName)
 
 void ComponentInputWidget::clear(void)
 {
+    theComponentDb.clear();
     pathToComponentInfoFile.clear();
     componentFileLineEdit->clear();
     selectComponentsLineEdit->clear();

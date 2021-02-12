@@ -39,6 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterAppWidget.h"
+#include "GISLegendView.h"
+
+#include "Error.h"
 
 #include <QMap>
 #include <QObject>
@@ -49,6 +52,7 @@ namespace Esri
 namespace ArcGISRuntime
 {
 class Map;
+class Error;
 class MapGraphicsView;
 class Feature;
 class FeatureTable;
@@ -86,7 +90,6 @@ class TreeModel;
 class QGroupBox;
 class QComboBox;
 class QTreeView;
-class QListView;
 class QVBoxLayout;
 
 class VisualizationWidget : public  SimCenterAppWidget
@@ -148,7 +151,7 @@ public:
 
     Esri::ArcGISRuntime::Map *getMapGIS() const;
 
-    void addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr);
+    LayerTreeItem* addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr, Esri::ArcGISRuntime::GroupLayer* groupLayer = nullptr);
 
     // Removes a given layer from the map
     void removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer);
@@ -169,9 +172,9 @@ public:
     // Updates the value of an attribute for a selected component
     void updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value);
 
-    void setLegendView(QListView* legndView);
+    void setLegendView(GISLegendView* legndView);
 
-    QListView *getLegendView() const;
+    GISLegendView *getLegendView() const;
 
 signals:
     // Convex hull
@@ -192,6 +195,9 @@ public slots:
     void onMouseClicked(QMouseEvent& mouseEvent);
     void onMouseClickedGlobal(QPoint pos);
     void setCurrentlyViewable(bool status);
+    void handleLegendChange(const QString layerUID);
+
+    void handleLegendChange(const Esri::ArcGISRuntime::Layer* layer);
 
 private slots:
     void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);
@@ -203,6 +209,7 @@ private slots:
     void handleAsyncFieldQueryTask(void);
     void handleBasemapSelection(const QString selection);
     void handleFieldQuerySelection(void);
+    void handleArcGISError(Esri::ArcGISRuntime::Error error);
 
     // Convex hull stuff
     void getItemsInConvexHull();
@@ -232,6 +239,9 @@ private:
 
     QMap<QUuid,QString> taskIDMap;
 
+    // Map to store the layers
+    QMap<QString, Esri::ArcGISRuntime::Layer*> layersMap;
+
     Esri::ArcGISRuntime::ClassBreaksRenderer* createBuildingRenderer(void);
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPipelineRenderer(void);
 
@@ -247,7 +257,6 @@ private:
 
     Esri::ArcGISRuntime::GroupLayer* selectedComponentsLayer = nullptr;
     Esri::ArcGISRuntime::FeatureCollectionLayer* selectedBuildingsLayer = nullptr;
-//    Esri::ArcGISRuntime::FeatureCollection*  selectedComponentsFeatureCollection = nullptr;
     Esri::ArcGISRuntime::FeatureCollectionTable* selectedBuildingsTable = nullptr;
     LayerTreeItem* selectedComponentsTreeItem = nullptr;
 
@@ -262,9 +271,12 @@ private:
     QWidget* visWidget;
     void createVisualizationWidget(void);
 
-    QListView* legendView;
+    // The legend view
+    GISLegendView* legendView;
 
-//    QVector<Esri::ArcGISRuntime::RoleProxyModel*> roleModels;
+    // Map to store the legend of a layer according to the  UID
+    QMap<QString, RoleProxyModel*> legendModels;
+
 };
 
 #endif // VISUALIZATIONWIDGET_H

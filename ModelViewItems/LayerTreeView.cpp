@@ -73,6 +73,8 @@ LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : 
 
     connect(this, &QWidget::customContextMenuRequested, this, &LayerTreeView::showPopup);
 
+    connect(this, &QTreeView::clicked, this, &LayerTreeView::itemSelected);
+
 }
 
 
@@ -204,4 +206,19 @@ LayerTreeModel *LayerTreeView::getLayersModel() const
 void LayerTreeView::clear(void)
 {
     layersModel->clear();
+}
+
+
+void LayerTreeView::itemSelected(const QModelIndex &index)
+{
+    auto selectedLayerUID = layersModel->uidItem(index);
+
+    theVisualizationWidget->handleLegendChange(selectedLayerUID);
+}
+
+
+void LayerTreeView::selectRow(int i)
+{
+    auto rowIndex = layersModel->index(i);
+    this->setCurrentIndex(rowIndex);
 }
