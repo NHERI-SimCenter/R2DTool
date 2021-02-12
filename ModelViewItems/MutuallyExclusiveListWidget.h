@@ -50,6 +50,7 @@ class MutuallyExclusiveListWidget : public QTreeView
 
 public:
     MutuallyExclusiveListWidget(QWidget *parent = nullptr, QString headerText = QString());
+    ~MutuallyExclusiveListWidget();
 
     void clear(void);
 

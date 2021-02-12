@@ -39,8 +39,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "VisualizationWidget.h"
 #include "CustomListWidget.h"
+
+#ifdef OpenSRA
+#include "OpenSRAPreferences.h"
+#else
 #include "SimCenterPreferences.h"
-//#include "OpenSRAPreferences.h"
+#endif
 
 // GIS Layers
 #include "FeatureCollectionLayer.h"
@@ -476,9 +480,13 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 
     QJsonObject sourceParamObj;
 
-    sourceParamObj.insert("SourceForVs30","Wills et al. (2015)");
+    sourceParamObj.insert("SourceForVs30", "Wills et al. (2015)");
 
+#ifdef OpenSRA
+    auto tempWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "Input"  + QDir::separator() + "ShakeMap";
+#else
     auto tempWorkDir = SimCenterPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "Input"  + QDir::separator() + "ShakeMap";
+#endif
 
     sourceParamObj.insert("Directory",tempWorkDir);
 

@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // GIS headers
 #include "ArcGISMapImageLayer.h"
+#include "ArcGISTiledLayer.h"
 #include "Basemap.h"
 #include "ClassBreaksRenderer.h"
 #include "CoordinateFormatter.h"
@@ -75,6 +76,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimpleRenderer.h"
 #include "TransformationCatalog.h"
 #include "sectiontitle.h"
+#include "LegendInfoListModel.h"
 // Convex Hull
 #include "GeometryEngine.h"
 #include "MultipointBuilder.h"
@@ -93,10 +95,38 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QThread>
 #include <QTreeView>
+#include <QListView>
+#include <QUrl>
+#include <QIdentityProxyModel>
 
 #include <utility>
 
 using namespace Esri::ArcGISRuntime;
+
+
+class RoleProxyModel: public QIdentityProxyModel
+{
+public:
+
+    RoleProxyModel(QWidget* parent) : QIdentityProxyModel(parent)
+    {
+
+    }
+
+    QVariant data(const QModelIndex& index, int role) const override
+    {
+        if (role == Qt::DecorationRole)
+        {
+            const QUrl iconRole = index.data(LegendInfoListModel::LegendInfoSymbolUrlRole).toUrl();
+            return QIcon(iconRole.toLocalFile());
+        }
+        else
+        {
+            return QIdentityProxyModel::data(index, role);
+        }
+    }
+};
+
 
 VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {    
@@ -137,6 +167,8 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Create a map using the topographic Basemap
     mapGIS = new Map(Basemap::topographic(this), this);
 
+    mapGIS->setAutoFetchLegendInfos(true);
+
     mapGIS->setObjectName("MainMap");
 
     mapViewWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -171,6 +203,11 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Connect to the exportImageCompleted signal
     connect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
 
+    // Legend stuff
+    legendView = nullptr;
+
+    //    ArcGISTiledLayer* tiledLayer = new ArcGISTiledLayer(QUrl("https://services.arcgisonline.com/ArcGIS/rest/services/Specialty/Soil_Survey_Map/MapServer"), this);
+    //    mapGIS->operationalLayers()->append(tiledLayer);
 
     // Test
     //    QString filePath = "/Users/steve/Desktop/SimCenter/Examples/SFTallBuildings/TallBuildingInventory.kmz";
@@ -648,16 +685,18 @@ void VisualizationWidget::loadPipelineData(void)
     auto nRows = pipelineTableWidget->rowCount();
 
     // Select a column that will define the layers
-    int columnToMapLayers = 0;
+    //    int columnToMapLayers = 0;
 
     std::vector<std::string> vecLayerItems;
-    for(int i = 0; i<nRows; ++i)
-    {
-        // Organize the layers according to occupancy type
-        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+    //    for(int i = 0; i<nRows; ++i)
+    //    {
+    //        // Organize the layers according to occupancy type
+    //        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
 
-        vecLayerItems.push_back(layerTag);
-    }
+    //        vecLayerItems.push_back(layerTag);
+    //    }
+
+    vecLayerItems.push_back("Pipeline Network");
 
     this->uniqueVec<std::string>(vecLayerItems);
 
@@ -678,6 +717,8 @@ void VisualizationWidget::loadPipelineData(void)
 
         pipelineLayer->layers()->append(newpipelineLayer);
 
+        pipelineLayer->setAutoFetchLegendInfos(true);
+
         featureCollectionTable->setRenderer(this->createPipelineRenderer());
 
         tablesMap.insert(std::make_pair(it,featureCollectionTable));
@@ -685,6 +726,8 @@ void VisualizationWidget::loadPipelineData(void)
         auto layerID = this->createUniqueID();
 
         newpipelineLayer->setLayerId(layerID);
+
+        newpipelineLayer->setAutoFetchLegendInfos(true);
 
         layersTree->addItemToTree(QString::fromStdString(it), layerID ,pipelinesItem);
     }
@@ -724,7 +767,8 @@ void VisualizationWidget::loadPipelineData(void)
         featureAttributes.insert("TabName", pipelineTableWidget->item(i,0)->data(0).toString());
 
         // Get the feature collection table from the map
-        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+        //        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+        auto layerTag = "Pipeline Network";
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
@@ -765,28 +809,19 @@ void VisualizationWidget::loadPipelineData(void)
         featureCollectionTable->addFeature(feature);
     }
 
+    //    pipelineLayer->setShowInLegend(true);
+//    pipelineLayer->setAutoFetchLegendInfos(true);
+
     mapGIS->operationalLayers()->append(pipelineLayer);
 
-    // When the layer is done loading, zoom to extents of the data
-    //    connect(pipelineLayer, &GroupLayer::doneLoading, this, [this, pipelineLayer](Error loadError)
-    //    {
-    //        if (!loadError.isEmpty())
-    //        {
-    //            auto msg = loadError.additionalMessage();
-    //            this->userMessageDialog(msg);
-    //            return;
-    //        }
-
-    //        auto env = pipelineLayer->fullExtent();
-
-    //        auto depth = env.depth();
-
-    //        auto width = env.width();
-
-    //        mapViewWidget->setViewpointCenter(pipelineLayer->fullExtent().center(), 80000);
-    //    });
-
     this->zoomToExtents();
+
+    auto legendInfos = mapGIS->legendInfos();
+
+    if(legendInfos == nullptr)
+        return;
+
+    connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
 
 }
 
@@ -833,9 +868,9 @@ void VisualizationWidget::getItemsInConvexHull()
 
     // Set the envelope of the convex hull as the search parameter
     QueryParameters queryParams;
-    auto envelope = convexHull.extent();
+    auto envelope = Polygon(convexHull);
     queryParams.setGeometry(envelope);
-    queryParams.setSpatialRelationship(SpatialRelationship::Intersects);
+    queryParams.setSpatialRelationship(SpatialRelationship::Contains);
 
     // Iterate through the layers
     // Function to do a nested search through the layers - this is needed because some layers may have sub-layers
@@ -1161,25 +1196,25 @@ ClassBreaksRenderer* VisualizationWidget::createPipelineRenderer(void)
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("Very Low Loss Ratio", "Loss Ratio less than 10%", -0.00001, 1E-03, lineSymbol1);
+    auto classBreak1 = new ClassBreak("0.0-0.001 number of repairs", "Loss Ratio less than 10%", -0.00001, 1E-03, lineSymbol1, this);
     classBreaks.append(classBreak1);
 
-    auto classBreak2 = new ClassBreak("Low Loss Ratio", "Loss Ratio Between 10% and 25%", 1.00E-03, 1.00E-02, lineSymbol2);
+    auto classBreak2 = new ClassBreak("0.001-0.01 number of repairs", "Loss Ratio Between 10% and 25%", 1.00E-03, 1.00E-02, lineSymbol2, this);
     classBreaks.append(classBreak2);
 
-    auto classBreak3 = new ClassBreak("Medium Loss Ratio", "Loss Ratio Between 25% and 50%", 1.00E-02, 1.00E-01, lineSymbol3);
+    auto classBreak3 = new ClassBreak("0.01-0.1 number of repairs", "Loss Ratio Between 25% and 50%", 1.00E-02, 1.00E-01, lineSymbol3, this);
     classBreaks.append(classBreak3);
 
-    auto classBreak4 = new ClassBreak("High Loss Ratio", "Loss Ratio Between 50% and 75%", 1.00E-01, 1.00E+00, lineSymbol4);
+    auto classBreak4 = new ClassBreak("0.1-1.0 number of repairs", "Loss Ratio Between 50% and 75%", 1.00E-01, 1.00E+00, lineSymbol4, this);
     classBreaks.append(classBreak4);
 
-    auto classBreak5 = new ClassBreak("Very High Loss Ratio", "Loss Ratio Between 75% and 90%", 1.00E+00, 1.00E+01, lineSymbol5);
+    auto classBreak5 = new ClassBreak("1.0-10.0 number of repairs", "Loss Ratio Between 75% and 90%", 1.00E+00, 1.00E+01, lineSymbol5, this);
     classBreaks.append(classBreak5);
 
-    auto classBreak6 = new ClassBreak("Total Loss Ratio", "Loss Ratio Between 75% and 90%", 1.00E+01, 1.00E+10, lineSymbol6);
+    auto classBreak6 = new ClassBreak("10.0-100.0 number of repairs", "Loss Ratio Between 75% and 90%", 1.00E+01, 1.00E+10, lineSymbol6, this);
     classBreaks.append(classBreak6);
 
-    return new ClassBreaksRenderer("RepairRate", classBreaks);
+    return new ClassBreaksRenderer("RepairRate", classBreaks, this);
 }
 
 
@@ -2029,6 +2064,43 @@ void VisualizationWidget::clear(void)
 
     selectedComponentsTreeItem = nullptr;
     selectedComponentsLayer = nullptr;
+}
+
+
+void VisualizationWidget::setLegendView(QListView* legndView)
+{
+    if(legndView == nullptr)
+        return;
+
+    legendView = legndView;
+
+}
+
+
+void VisualizationWidget::setLegendInfo()
+{
+    if(legendView == nullptr || mapGIS== nullptr)
+        return;
+
+    // set the legend info list model
+    RoleProxyModel* roleModel = new RoleProxyModel(this);
+
+    if(roleModel == nullptr)
+        return;
+
+    //    roleModels.append(roleModel);
+
+    roleModel->setSourceModel(mapGIS->legendInfos());
+
+    legendView->setModel(roleModel);
+
+    legendView->show();
+}
+
+
+QListView *VisualizationWidget::getLegendView() const
+{
+    return legendView;
 }
 
 

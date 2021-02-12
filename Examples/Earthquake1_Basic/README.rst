@@ -2,6 +2,7 @@
 Basic Earthquake
 ================
 
+
 +-----------------+----------------------------------------------------+
 | Download files  | :github:`Github <Examples/Earthquake1_Basic/>`     |
 +-----------------+----------------------------------------------------+
@@ -25,7 +26,7 @@ Modeling Procedure
 This example is a small-scale regional earthquake risk assessment which performs response simulation and damage/loss estimation for a group of 20 wood buildings under a pseudo earthquake scenario. The procedure for this example can be configured through the R2D interface by sequentially entering the following parameters into the respective panels:
 
 
-#. **VIZ** The 20 buildings are distributed in space in a 4 \times 5 grid in Northern California.
+#. **VIZ** The 20 buildings are distributed in space in a :math:`4 \times 5` grid in Northern California.
 
    .. figure:: figures/r2dt-0001-VIZ.png
       :width: 600px
@@ -80,14 +81,6 @@ This example is a small-scale regional earthquake risk assessment which performs
       :width: 600px
       :align: center
 
-..
-   #. **UQ**
-      .. figure:: figures/r2dt-0001-UQ.png
-         :width: 600px
-         :align: center
-
-..
-   #. **RV** For this problem, the **RV** panel will be left empty.
 
 
 #. **RES** The analysis outputs for the selected two buildings are show in the figure below. In the given earthquake scenario, the two buildings are mostly likely in no damage or minor damage (Damage State 1 or 2 per HAZUS) with about 1% expected loss ratios.
@@ -95,3 +88,4 @@ This example is a small-scale regional earthquake risk assessment which performs
    .. figure:: figures/r2dt-0001-RES.png
       :width: 600px
       :align: center
+

@@ -64,6 +64,7 @@ class KmlLayer;
 class Layer;
 class ArcGISMapImageLayer;
 class RasterLayer;
+//class RoleProxyModel;
 
 //Convex hull stuff
 class GraphicsOverlay;
@@ -79,12 +80,13 @@ class Geometry;
 class ComponentInputWidget;
 class LayerTreeView;
 class LayerTreeItem;
+class SimCenterMapGraphicsView;
+
 class TreeModel;
 class QGroupBox;
 class QComboBox;
 class QTreeView;
-
-class SimCenterMapGraphicsView;
+class QListView;
 class QVBoxLayout;
 
 class VisualizationWidget : public  SimCenterAppWidget
@@ -97,6 +99,7 @@ public:
 
     // Convex hull functionality
     void setupConvexHullObjects();
+
 
     Esri::ArcGISRuntime::MapGraphicsView* getMapViewWidget() const;
 
@@ -166,6 +169,10 @@ public:
     // Updates the value of an attribute for a selected component
     void updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value);
 
+    void setLegendView(QListView* legndView);
+
+    QListView *getLegendView() const;
+
 signals:
     // Convex hull
     void taskSelectionComplete();
@@ -200,6 +207,8 @@ private slots:
     // Convex hull stuff
     void getItemsInConvexHull();
     void convexHullPointSelector(QMouseEvent& e);
+
+    void setLegendInfo();
 
 private:
 
@@ -253,6 +262,9 @@ private:
     QWidget* visWidget;
     void createVisualizationWidget(void);
 
+    QListView* legendView;
+
+//    QVector<Esri::ArcGISRuntime::RoleProxyModel*> roleModels;
 };
 
 #endif // VISUALIZATIONWIDGET_H
