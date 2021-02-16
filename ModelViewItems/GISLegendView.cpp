@@ -1,9 +1,12 @@
 #include "GISLegendView.h"
 
-#include <QGraphicsOpacityEffect>
+#include <QHeaderView>
 
-GISLegendView::GISLegendView(QWidget *parent) : QListView(parent)
+
+GISLegendView::GISLegendView(QWidget *parent) : QTreeView(parent)
 {
+    currModel = nullptr;
+
     //    this->setSizeAdjustPolicy(SizeAdjustPolicy::AdjustToContents);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
@@ -13,10 +16,11 @@ GISLegendView::GISLegendView(QWidget *parent) : QListView(parent)
     this->setSelectionMode(SelectionMode::NoSelection);
 
 
-    this->setStyleSheet("background-color: yellow;"
-                        "border: 1px solid transparent;"
+    this->setStyleSheet("border: 1px solid transparent;"
                         "border-radius: 10px;"
-                        "background:  rgba(255, 255, 255, 200);");
+                        "background:  rgba(255, 255, 255, 150);");
+
+    this->header()->setObjectName("legendView");
 
 }
 
@@ -56,20 +60,48 @@ GISLegendView::GISLegendView(QWidget *parent) : QListView(parent)
 //}
 
 
-void GISLegendView::setModel(QAbstractItemModel *model)
+void GISLegendView::setModel(QAbstractItemModel* model)
 {
-    this->updateGeometry();
+    if(currModel == model)
+        return;
 
-    QListView::setModel(model);
+    QTreeView::setModel(model);
 
     int nToShow = model->rowCount();
 
-    auto widthLegend = sizeHintForColumn(0)*1.1;
-    auto heightLegend = nToShow*sizeHintForRow(0)*1.1;
+    auto widthLegend = sizeHintForColumn(0);
+    auto heightLegend = nToShow*sizeHintForRow(0);
+
+    auto modelName = model->objectName();
+
+    if(!listModels.empty())
+    {
+        if(listModels.contains(modelName))
+        {
+            widthLegend *= 1.0;
+            heightLegend *= 1.3;
+        }
+    }
+    else
+    {
+        widthLegend *= 1.15;
+        heightLegend *= 1.45;
+
+        listModels.append(modelName);
+    }
 
     resize(widthLegend, heightLegend);
-    viewport()->resize(widthLegend, heightLegend);
-    resizeContents(widthLegend, heightLegend);
 
     this->updateGeometry();
+}
+
+
+void GISLegendView::clear(void)
+{
+    listModels.clear();
+}
+
+QAbstractItemModel *GISLegendView::getModel() const
+{
+    return currModel;
 }

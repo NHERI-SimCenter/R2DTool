@@ -211,6 +211,9 @@ void LayerTreeView::clear(void)
 
 void LayerTreeView::itemSelected(const QModelIndex &index)
 {
+    if(!index.isValid())
+        return;
+
     auto selectedLayerUID = layersModel->uidItem(index);
 
     theVisualizationWidget->handleLegendChange(selectedLayerUID);

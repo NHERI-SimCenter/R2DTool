@@ -1,8 +1,9 @@
 #ifndef GISLEGENDVIEW_H
 #define GISLEGENDVIEW_H
 
-#include <QListView>
+#include <QTreeView>
 #include <QIdentityProxyModel>
+
 #include <QIcon>
 
 #include "LegendInfoListModel.h"
@@ -14,6 +15,19 @@ public:
     RoleProxyModel(QWidget* parent) : QIdentityProxyModel(parent)
     {
 
+    }
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
+    {
+        if (role != Qt::DisplayRole)
+            return QVariant();
+
+        if (sourceModel())
+        {
+            return "Legend";
+        }
+
+        return QIdentityProxyModel::headerData(section, orientation, role);
     }
 
     QVariant data(const QModelIndex& index, int role) const override
@@ -28,18 +42,31 @@ public:
             return QIdentityProxyModel::data(index, role);
         }
     }
+
+private:
+
 };
 
 
-class GISLegendView : public QListView
+class GISLegendView : public QTreeView
 {
 public:
     GISLegendView(QWidget *parent = nullptr);
 
-//    QSize sizeHint() const;
-//    QSize minimumSizeHint() const;
+    //    QSize sizeHint() const;
+    //    QSize minimumSizeHint() const;
 
-    void setModel(QAbstractItemModel *model);
+    void setModel(QAbstractItemModel* model);
+
+    void clear();
+
+    QAbstractItemModel *getModel() const;
+
+private:
+
+    QAbstractItemModel* currModel;
+    QVector<QString> listModels;
+
 };
 
 #endif // GISLEGENDVIEW_H
