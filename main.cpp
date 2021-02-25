@@ -110,9 +110,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("1.0.0");
 
-    // GoogleAnalytics::SetTrackingId("UA-186298856-1");
-    // GoogleAnalytics::StartSession();
-    // GoogleAnalytics::ReportStart();
+    //GoogleAnalytics::SetTrackingId("UA-186298856-1");
+    //GoogleAnalytics::StartSession();
+    //GoogleAnalytics::ReportStart();
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
     theRemoteService->logout();
     thread->quit();
 
-    // GoogleAnalytics::EndSession();
+    //GoogleAnalytics::EndSession();
 
     return res;
 }
