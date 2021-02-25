@@ -41,6 +41,11 @@ QHeaderView#legendView::section {
     border: 1px solid transparent;
 }
 
+QTreeView#legendView::item:hover {
+    background: rgba(255, 255, 255, 0);
+}
+
+
 
 /*----------------------------------------------------------------------------*/
 /* QTreeView                                                                  */

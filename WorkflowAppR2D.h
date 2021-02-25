@@ -46,6 +46,7 @@ class AnalysisWidget;
 class Application;
 class AssetsWidget;
 class DLWidget;
+class PythonProgressDialog;
 class EngDemandParameterWidget;
 class GeneralInformationWidget;
 class HazardToAssetWidget;
@@ -74,7 +75,6 @@ class WorkflowAppR2D : public WorkflowAppWidget
 public:
     explicit WorkflowAppR2D(RemoteService *theService, QWidget *parent = 0);
     ~WorkflowAppR2D();
-    static WorkflowAppR2D *theInstance;
 
     static WorkflowAppR2D *getInstance(void);
 
@@ -95,6 +95,8 @@ public:
     AssetsWidget *getAssetsWidget() const;
     GeneralInformationWidget *getGeneralInformationWidget() const;
 
+    static PythonProgressDialog *getProgressDialog();
+
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
     void sendLoadFile(QString filename);
@@ -106,9 +108,14 @@ public slots:
     void loadFile(QString filename);
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
+    void showOutputDialog(void);
 
     // Examples
     void loadExamples();
+
+    void statusMessage(QString message);
+    void errorMessage(QString message);
+    void fatalMessage(QString message);
 
 private:
 
@@ -142,6 +149,9 @@ private:
 
     QJsonObject *jsonObjOrig;
     QNetworkAccessManager *manager;
+
+    static PythonProgressDialog *progressDialog;
+    static WorkflowAppR2D *theInstance;
 
 };
 

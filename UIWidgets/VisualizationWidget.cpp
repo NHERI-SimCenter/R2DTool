@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ClassBreaksRenderer.h"
 #include "CoordinateFormatter.h"
 #include "FeatureCollection.h"
+#include "EnvelopeBuilder.h"
 #include "FeatureCollectionLayer.h"
 #include "FeatureCollectionTable.h"
 #include "FeatureLayer.h"
@@ -71,6 +72,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PolylineBuilder.h"
 #include "PopupManager.h"
 #include "RasterLayer.h"
+#include "PolygonBuilder.h"
 #include "ShapefileFeatureTable.h"
 #include "SimpleMarkerSymbol.h"
 #include "SimpleRenderer.h"
@@ -153,6 +155,8 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     // Set the initial viewport to UCB
     Viewpoint UCB(37.8717450069, -122.2609607382, 100000.0);
+//    Viewpoint UCB(61.216663, -149.907122, 100000.0);
+
     mapGIS->setInitialViewpoint(UCB);
 
     // Setup the various convex hull objects
@@ -516,12 +520,11 @@ void VisualizationWidget::loadBuildingData(void)
     this->uniqueVec<std::string>(vecLayerItems);
 
     auto selectedBuildingsFeatureCollection = new FeatureCollection(this);
-    selectedBuildingsTable = new FeatureCollectionTable(fields, GeometryType::Point, SpatialReference::wgs84(),this);
+    selectedBuildingsTable = new FeatureCollectionTable(fields, GeometryType::Polygon, SpatialReference::wgs84(),this);
     selectedBuildingsFeatureCollection->tables()->append(selectedBuildingsTable);
     selectedBuildingsLayer = new FeatureCollectionLayer(selectedBuildingsFeatureCollection,this);
     selectedBuildingsLayer->setName("Selected Buildings");
-    selectedBuildingsLayer->setShowInLegend(false);
-    selectedBuildingsLayer->setAutoFetchLegendInfos(false);
+    selectedBuildingsLayer->setAutoFetchLegendInfos(true);
     selectedBuildingsTable->setRenderer(this->createBuildingRenderer());
 
     // Map to hold the feature tables
@@ -530,7 +533,7 @@ void VisualizationWidget::loadBuildingData(void)
     {
         auto featureCollection = new FeatureCollection(this);
 
-        auto featureCollectionTable = new FeatureCollectionTable(fields, GeometryType::Point, SpatialReference::wgs84(),this);
+        auto featureCollectionTable = new FeatureCollectionTable(fields, GeometryType::Polygon, SpatialReference::wgs84(),this);
 
         featureCollection->tables()->append(featureCollectionTable);
 
@@ -544,7 +547,21 @@ void VisualizationWidget::loadBuildingData(void)
 
         newBuildingLayer->setAutoFetchLegendInfos(true);
 
+
         this->addLayerToMap(newBuildingLayer,buildingsItem,buildingLayer);
+    }
+
+    // First check if a footprint was provided
+    auto indexFootprint = -1;
+    for(int i = 0; i<buildingTableWidget->columnCount(); ++i)
+    {
+        auto headerText = buildingTableWidget->horizontalHeaderItem(i)->text();
+
+        if(headerText.contains("Footprint"))
+        {
+            indexFootprint = i;
+            break;
+        }
     }
 
     for(int i = 0; i<nRows; ++i)
@@ -593,17 +610,65 @@ void VisualizationWidget::loadBuildingData(void)
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
-        // Create the point and add it to the feature table
-        Point point(longitude,latitude);
-        Feature* feature = featureCollectionTable->createFeature(featureAttributes, point,this);
+        Feature* feature = nullptr;
+
+        // If a footprint is given use that
+        if(indexFootprint != -1)
+        {
+            QString footprint = buildingTableWidget->item(i,indexFootprint)->data(0).toString();
+
+            if(footprint.compare("NA") == 0)
+            {
+                Point point(longitude,latitude);
+                auto geom = getRectGeometryFromPoint(point, 0.0005,0.0005);
+                if(geom.isEmpty())
+                {
+                    qDebug()<<"Error getting the building footprint geometry";
+                    return;
+                }
+
+                feature = featureCollectionTable->createFeature(featureAttributes, geom, this);
+
+                featureCollectionTable->addFeature(feature);
+            }
+            else
+            {
+                auto geom = getGeometryFromJson(footprint);
+
+                if(geom.isEmpty())
+                {
+                    qDebug()<<"Error getting the building footprint geometry";
+                    return;
+                }
+
+                feature = featureCollectionTable->createFeature(featureAttributes, geom, this);
+
+                featureCollectionTable->addFeature(feature);
+            }
+
+        }
+        else
+        {
+            Point point(longitude,latitude);
+            auto geom = getRectGeometryFromPoint(point, 0.0005,0.0005);
+            if(geom.isEmpty())
+            {
+                qDebug()<<"Error getting the building footprint geometry";
+                return;
+            }
+
+            feature = featureCollectionTable->createFeature(featureAttributes, geom, this);
+
+            featureCollectionTable->addFeature(feature);
+        }
 
         building.UID = uid;
         building.ComponentFeature = feature;
 
         theBuildingDb->addComponent(buildingID, building);
 
-        featureCollectionTable->addFeature(feature);
     }
+
 
     this->zoomToExtents();
 }
@@ -790,10 +855,11 @@ void VisualizationWidget::getItemsInConvexHull()
 {
 
     // For debug purposes; creates  a shape
-    // QString inputGeomStr = "{\"points\":[[-16687850.289930943,8675247.6610443853],[-16687885.484665291,8675189.0031538066],[-16687874.819594277,8675053.5567519218],[-16687798.031082973,8675037.5591454003],[-16687641.254539061,8675065.2883300371],[-16687665.784202393,8675228.4639165588]],\"spatialReference\":{\"wkid\":102100,\"latestWkid\":3857}}";
-    // auto impGeom = Geometry::fromJson(inputGeomStr);
-    // m_inputsGraphic->setGeometry(impGeom);
-    // this->plotConvexHull();
+    //    QString inputGeomStr = "{\"points\":[[-16687850.289930943,8675247.6610443853],[-16687885.484665291,8675189.0031538066],[-16687874.819594277,8675053.5567519218],[-16687798.031082973,8675037.5591454003],[-16687641.254539061,8675065.2883300371],[-16687665.784202393,8675228.4639165588]],\"spatialReference\":{\"wkid\":102100,\"latestWkid\":3857}}";
+    //    auto impGeom = Geometry::fromJson(inputGeomStr);
+    //    m_inputsGraphic->setGeometry(impGeom);
+    //    this->plotConvexHull();
+    //    return;
     // End debug
 
     // Check that the input geometry is not empty
@@ -1100,32 +1166,8 @@ void VisualizationWidget::handleSelectedFeatures(void)
 }
 
 
-ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
+ClassBreaksRenderer* VisualizationWidget::createPointRenderer(void)
 {
-    // Images stored in base64 format
-//    QByteArray buildingImg1 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWhJREFUSInt1jFrwkAYxvF/SDpJBaHFtlN0dlP0O3TWSWobOnZvidA2QycHZ9cGhNKlX0FwcPcLCC4OrWKGDMKZdKmg1WpOo1LwgYMb3nt/HHdwp7HjaHsDTdM8GgwGFnADXITU/xN4j0QiD9Vq1Z0Bh8PhE1AOCZrkFLhzXfcYuJ4BPc+7ChmbzuVkMn2GZ1sETxaBUkkkEnQ6Hel1a4GGYZBOp6nX6ySTSVKpFACWZTEajcIFDcMgl8sBUCwW6ff7xGIxAFRVXbleCpzGADRNIx6Py7QIDv7G1k0gMCiWzWZpNBqbgTI7KxQKjMdjms3memCpVCKTyeD7PoqirAQVRSGfzyOEoNVqyYO2bWPbNpVKhWg0uhJst9vUarWlNft7LQ7gAfzfYLkc7Ofh+74U2AP0RUVCiEDgkvQWga/A86ad/8jHHKjr+ku321U9z7sFzkOCvoA3x3Hu50DTNAXw+DO2lp3f0m97bGdscCiEZAAAAABJRU5ErkJggg==";
-//    QByteArray buildingImg2 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAYNJREFUSInt1b9LAmEcx/H3nVfSYEiU9MNBaHPJwKaKoKGh6YbopqioqYaGoLjAashJ8C9oCZeQg/bAXXBoaGoPhH7YEA1n1z0NYVha3umlBH6mZ3i+39fzCx6FNkfpGKjr9FiW/1gIcw0Y9aj/PZC1bfbTaV6+gK+v/kMwDzyCKhkCtn0+AsDqFxDMFY+xzwjBYmVcfYfDfwUCg/VAVwmHN7m9PXVd1xSoaTlisVmy2XEikQmi0SkAUqkZyuUbb0FNyxGPzwOwvLxLqXRHMPhxYrLc17DeFViNAShKD6HQmJsWzsHvWLNxBDrFYrF18vmd1kA3O1PVLd7eLAqF3ebApaVLJifnEEIgSVJDUJZlVHULyypzdaW7Bw1jAcOAROKJ/v5gQ/D6Ok8mM/3rnM79Fl2wC/5vMJmMIsu9DefZ9rMrsAhE6jcqYttOlvZjijWgJPnPhDCPWmr7Q2ybixpwYMA8eXz0+8DcAEY8sh6A80CAvRpQ17HATAAJj7C6afsrfQdYrmo3mMtmpgAAAABJRU5ErkJggg==";
-//    QByteArray buildingImg3 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWJJREFUSInt1s8rw3Ecx/Hn2zbfJpo0xTj4dXKh1ZSQUhzkX9CI0xwcVkQNB3+Gi9tycVPUzuS0qyPKCpFQvtp8HGaz2bd9v9/ta0t5nT59en/ej++PT30+bmocd91AFcejRNsR9AUg4FD/OwUH8sa6hHktBkXbEvRNh6Bc2gVWlJcWIFwECvq8w1g+opjNjQv/YcdvgYDfCLQX3zI87dleVhkYTEDvBJz2g38IukPZ+eNxyFw4DAYTMDCVHY9G4eUWmr++mHhNl9sDCzEAlwd8XbZaWAd/YhXGGmgVCyzC1WqVoJ03G4mASsN1tEJw+AT6JkEpEDEHpQFCEci8w81GBWByBpLA3CM0tZqDl2dwPla2pH6nxT/4D/5x8GgQaDSvU8+2wBTQY1j1kbLyWOWSb/B9iULbF/TtajsbRcFhCSht+q560FyCvgR0OmTdK4iLxlopOE0a9BgQcwgzTM136SeMBkz2tFUt2gAAAABJRU5ErkJggg==";
-//    QByteArray buildingImg4 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAYxJREFUSInt1csrRGEYx/Hve2bGidwml1wil2xsMDUpl5RioWzYKAmxGgsLRaNcs7DyFyjZnWxsLKRmO0kWsrMTZQqRJvJq5hyLSQ0zY+bMHCPlt3oXz/t83lu9drIc+6+BmhcHL+oqipxAp8qi/nco7EnBwvgWz59A41VdFshFdIuoSMrQmcmBAmD8Eyh0OWYpFRUBAx/j6Dus+CkQKI0HmkpR7TRPV9um56UFukZ9NLR149caKa1voabZDcDhZhdheWEt6Br10eTuBaBjZI7gwy35zsiJCVtu0vmmwGgMwGZ3UFxebaZF6uBXLN2kBKaKVbVOcuWfzQw0s7P2YQ+GHuL6eC49sHXkiEZXD4ZhIIRICgpFwT3kIRx64+bUax480/o502Bw/ZG8wuKk4OX5MSc7nd/W/N5v8Q/+g38bPFhrBiUneaEeNAEaBBDUxSsywgEIp7K0hAnEgkLdBbmSUdsEEbAfA5ZUyI37W9UmdDkFVFpk3WOgqU7mY8A+LyGQS8CSRVjcZP2VvgN6imQ8SFFgygAAAABJRU5ErkJggg==";
-//    QByteArray buildingImg5 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAXpJREFUSInt1b1LQlEYx/HvMfVQFAkZVBJE0uJiBBKkEQg1BP0JYZLTbXC4UBj0MvRntLRJS0tDCK4hTa1tUZBggoQ0nFBuQ2gvXvRevRVBv+kMz3k+5w2Omx+O+9fALHiQ8hClNoAJh/o/AqcKdhLw/Ak0pNwXSu06BDUyCmx5YQhIfAKFUusOY80IWG2MP97h2HeBgN8MtJXhVIqn42Pb87oC5/J5phcXuQwG8YfDTEYiAFzEYtRvbpwF5/J5ZuJxABZ0nWqpxKD/7cREf3/H+bbAjxhAn8eDLxCw08I6+BXrNpZAq9hEMsldOt0baGdn85qGUatxr+vdgbO5HMGlJQzDQAjRERQuFxFNo/7ywkMmYx+8XlnhGlirVBjw+TqCt4UCV9Fo25rf+y3+wX/wb4PnoRB4vZ0Lq1VbYBGYMisyikUr62qXZoN3UMoTlDrotbNZBJy1gCNKHZWl7BNKbQLjDlllICthuwVchhpK7QF7DmGm+fFX+gonY17k9eIf3wAAAABJRU5ErkJggg==";
-
-//    buildingImg1 = QByteArray::fromBase64(buildingImg1);
-//    buildingImg2 = QByteArray::fromBase64(buildingImg2);
-//    buildingImg3 = QByteArray::fromBase64(buildingImg3);
-//    buildingImg4 = QByteArray::fromBase64(buildingImg4);
-//    buildingImg5 = QByteArray::fromBase64(buildingImg5);
-
-//    QImage img1 = QImage::fromData(buildingImg1);
-//    QImage img2 = QImage::fromData(buildingImg2);
-//    QImage img3 = QImage::fromData(buildingImg3);
-//    QImage img4 = QImage::fromData(buildingImg4);
-//    QImage img5 = QImage::fromData(buildingImg5);
-
-//    PictureMarkerSymbol* symbol1 = new PictureMarkerSymbol(img1, this);
-//    PictureMarkerSymbol* symbol2 = new PictureMarkerSymbol(img2, this);
-//    PictureMarkerSymbol* symbol3 = new PictureMarkerSymbol(img3, this);
-//    PictureMarkerSymbol* symbol4 = new PictureMarkerSymbol(img4, this);
-//    PictureMarkerSymbol* symbol5 = new PictureMarkerSymbol(img5, this);
 
     SimpleMarkerSymbol* symbol1 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(0, 0, 255,125), 8.0f, this);
     SimpleMarkerSymbol* symbol2 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(255,255,178), 8.0f, this);
@@ -1139,6 +1181,66 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
     classBreaks.append(classBreak1);
 
     auto classBreak2 = new ClassBreak("0.50-0.25 Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2,this);
+    classBreaks.append(classBreak2);
+
+    auto classBreak3 = new ClassBreak("0.25-0.50 Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3,this);
+    classBreaks.append(classBreak3);
+
+    auto classBreak4 = new ClassBreak("0.50-0.75 Loss Ratio", "Loss Ratio Between 50% and 75%", 0.50, 0.75,symbol4,this);
+    classBreaks.append(classBreak4);
+
+    auto classBreak5 = new ClassBreak("0.75-1.00 Loss Ratio", "Loss Ratio Between 75% and 90%", 0.75, 1.0,symbol5,this);
+    classBreaks.append(classBreak5);
+
+    return new ClassBreaksRenderer("LossRatio", classBreaks, this);
+}
+
+
+ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
+{
+    // Images stored in base64 format
+    //    QByteArray buildingImg1 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWhJREFUSInt1jFrwkAYxvF/SDpJBaHFtlN0dlP0O3TWSWobOnZvidA2QycHZ9cGhNKlX0FwcPcLCC4OrWKGDMKZdKmg1WpOo1LwgYMb3nt/HHdwp7HjaHsDTdM8GgwGFnADXITU/xN4j0QiD9Vq1Z0Bh8PhE1AOCZrkFLhzXfcYuJ4BPc+7ChmbzuVkMn2GZ1sETxaBUkkkEnQ6Hel1a4GGYZBOp6nX6ySTSVKpFACWZTEajcIFDcMgl8sBUCwW6ff7xGIxAFRVXbleCpzGADRNIx6Py7QIDv7G1k0gMCiWzWZpNBqbgTI7KxQKjMdjms3memCpVCKTyeD7PoqirAQVRSGfzyOEoNVqyYO2bWPbNpVKhWg0uhJst9vUarWlNft7LQ7gAfzfYLkc7Ofh+74U2AP0RUVCiEDgkvQWga/A86ad/8jHHKjr+ku321U9z7sFzkOCvoA3x3Hu50DTNAXw+DO2lp3f0m97bGdscCiEZAAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg2 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAYNJREFUSInt1b9LAmEcx/H3nVfSYEiU9MNBaHPJwKaKoKGh6YbopqioqYaGoLjAashJ8C9oCZeQg/bAXXBoaGoPhH7YEA1n1z0NYVha3umlBH6mZ3i+39fzCx6FNkfpGKjr9FiW/1gIcw0Y9aj/PZC1bfbTaV6+gK+v/kMwDzyCKhkCtn0+AsDqFxDMFY+xzwjBYmVcfYfDfwUCg/VAVwmHN7m9PXVd1xSoaTlisVmy2XEikQmi0SkAUqkZyuUbb0FNyxGPzwOwvLxLqXRHMPhxYrLc17DeFViNAShKD6HQmJsWzsHvWLNxBDrFYrF18vmd1kA3O1PVLd7eLAqF3ebApaVLJifnEEIgSVJDUJZlVHULyypzdaW7Bw1jAcOAROKJ/v5gQ/D6Ok8mM/3rnM79Fl2wC/5vMJmMIsu9DefZ9rMrsAhE6jcqYttOlvZjijWgJPnPhDCPWmr7Q2ybixpwYMA8eXz0+8DcAEY8sh6A80CAvRpQ17HATAAJj7C6afsrfQdYrmo3mMtmpgAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg3 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWJJREFUSInt1s8rw3Ecx/Hn2zbfJpo0xTj4dXKh1ZSQUhzkX9CI0xwcVkQNB3+Gi9tycVPUzuS0qyPKCpFQvtp8HGaz2bd9v9/ta0t5nT59en/ej++PT30+bmocd91AFcejRNsR9AUg4FD/OwUH8sa6hHktBkXbEvRNh6Bc2gVWlJcWIFwECvq8w1g+opjNjQv/YcdvgYDfCLQX3zI87dleVhkYTEDvBJz2g38IukPZ+eNxyFw4DAYTMDCVHY9G4eUWmr++mHhNl9sDCzEAlwd8XbZaWAd/YhXGGmgVCyzC1WqVoJ03G4mASsN1tEJw+AT6JkEpEDEHpQFCEci8w81GBWByBpLA3CM0tZqDl2dwPla2pH6nxT/4D/5x8GgQaDSvU8+2wBTQY1j1kbLyWOWSb/B9iULbF/TtajsbRcFhCSht+q560FyCvgR0OmTdK4iLxlopOE0a9BgQcwgzTM136SeMBkz2tFUt2gAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg4 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAYxJREFUSInt1csrRGEYx/Hve2bGidwml1wil2xsMDUpl5RioWzYKAmxGgsLRaNcs7DyFyjZnWxsLKRmO0kWsrMTZQqRJvJq5hyLSQ0zY+bMHCPlt3oXz/t83lu9drIc+6+BmhcHL+oqipxAp8qi/nco7EnBwvgWz59A41VdFshFdIuoSMrQmcmBAmD8Eyh0OWYpFRUBAx/j6Dus+CkQKI0HmkpR7TRPV9um56UFukZ9NLR149caKa1voabZDcDhZhdheWEt6Br10eTuBaBjZI7gwy35zsiJCVtu0vmmwGgMwGZ3UFxebaZF6uBXLN2kBKaKVbVOcuWfzQw0s7P2YQ+GHuL6eC49sHXkiEZXD4ZhIIRICgpFwT3kIRx64+bUax480/o502Bw/ZG8wuKk4OX5MSc7nd/W/N5v8Q/+g38bPFhrBiUneaEeNAEaBBDUxSsywgEIp7K0hAnEgkLdBbmSUdsEEbAfA5ZUyI37W9UmdDkFVFpk3WOgqU7mY8A+LyGQS8CSRVjcZP2VvgN6imQ8SFFgygAAAABJRU5ErkJggg==";
+    //    QByteArray buildingImg5 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAXpJREFUSInt1b1LQlEYx/HvMfVQFAkZVBJE0uJiBBKkEQg1BP0JYZLTbXC4UBj0MvRntLRJS0tDCK4hTa1tUZBggoQ0nFBuQ2gvXvRevRVBv+kMz3k+5w2Omx+O+9fALHiQ8hClNoAJh/o/AqcKdhLw/Ak0pNwXSu06BDUyCmx5YQhIfAKFUusOY80IWG2MP97h2HeBgN8MtJXhVIqn42Pb87oC5/J5phcXuQwG8YfDTEYiAFzEYtRvbpwF5/J5ZuJxABZ0nWqpxKD/7cREf3/H+bbAjxhAn8eDLxCw08I6+BXrNpZAq9hEMsldOt0baGdn85qGUatxr+vdgbO5HMGlJQzDQAjRERQuFxFNo/7ywkMmYx+8XlnhGlirVBjw+TqCt4UCV9Fo25rf+y3+wX/wb4PnoRB4vZ0Lq1VbYBGYMisyikUr62qXZoN3UMoTlDrotbNZBJy1gCNKHZWl7BNKbQLjDlllICthuwVchhpK7QF7DmGm+fFX+gonY17k9eIf3wAAAABJRU5ErkJggg==";
+
+    //    buildingImg1 = QByteArray::fromBase64(buildingImg1);
+    //    buildingImg2 = QByteArray::fromBase64(buildingImg2);
+    //    buildingImg3 = QByteArray::fromBase64(buildingImg3);
+    //    buildingImg4 = QByteArray::fromBase64(buildingImg4);
+    //    buildingImg5 = QByteArray::fromBase64(buildingImg5);
+
+    //    QImage img1 = QImage::fromData(buildingImg1);
+    //    QImage img2 = QImage::fromData(buildingImg2);
+    //    QImage img3 = QImage::fromData(buildingImg3);
+    //    QImage img4 = QImage::fromData(buildingImg4);
+    //    QImage img5 = QImage::fromData(buildingImg5);
+
+    //    PictureMarkerSymbol* symbol1 = new PictureMarkerSymbol(img1, this);
+    //    PictureMarkerSymbol* symbol2 = new PictureMarkerSymbol(img2, this);
+    //    PictureMarkerSymbol* symbol3 = new PictureMarkerSymbol(img3, this);
+    //    PictureMarkerSymbol* symbol4 = new PictureMarkerSymbol(img4, this);
+    //    PictureMarkerSymbol* symbol5 = new PictureMarkerSymbol(img5, this);
+
+    //        SimpleMarkerSymbol* symbol1 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(0, 0, 255,125), 8.0f, this);
+    //        SimpleMarkerSymbol* symbol2 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(255,255,178), 8.0f, this);
+    //        SimpleMarkerSymbol* symbol3 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(253,204,92), 8.0f, this);
+    //        SimpleMarkerSymbol* symbol4 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(253,141,60), 8.0f, this);
+    //        SimpleMarkerSymbol* symbol5 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(240,59,32), 8.0f, this);
+
+    SimpleFillSymbol* symbol1 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0, 0, 255,125), this);
+    SimpleFillSymbol* symbol2 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(255,255,178), this);
+    SimpleFillSymbol* symbol3 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(253,204,92), this);
+    SimpleFillSymbol* symbol4 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(253,141,60), this);
+    SimpleFillSymbol* symbol5 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(240,59,32), this);
+
+    QList<ClassBreak*> classBreaks;
+
+    auto classBreak1 = new ClassBreak("0.00-0.05 Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.05, symbol1,this);
+    classBreaks.append(classBreak1);
+
+    auto classBreak2 = new ClassBreak("0.05-0.25 Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2,this);
     classBreaks.append(classBreak2);
 
     auto classBreak3 = new ClassBreak("0.25-0.50 Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3,this);
@@ -1201,7 +1303,7 @@ void VisualizationWidget::identifyLayersCompleted(QUuid taskID, const QList<Iden
 {
     int count = 0;
 
-    QList<std::pair<GeoElement*,QString>> elemList;
+    QVector<std::pair<GeoElement*,QString>> elemList;
 
     // lambda for calculating result count
     auto geoElementsCountFromResult = [&] (IdentifyLayerResult* result) -> int
@@ -1543,54 +1645,58 @@ void VisualizationWidget::addComponentsToSelectedLayer(const QList<Feature*>& fe
     if(features.empty())
         return;
 
-
-    auto canAdd = selectedBuildingsTable->canAdd();
-
-    if(canAdd == false)
-        return;
-
-    for(auto&& it : features)
+    // Handle selection of buildings
+    if(selectedBuildingsTable)
     {
-        auto atrb = it->attributes()->attributesMap();
-        auto id = atrb.value("UID").toString();
-        //        auto nid = atrb.value("ID").toString();
+        auto canAdd = selectedBuildingsTable->canAdd();
 
-        auto atrVals = atrb.values();
-        auto atrKeys = atrb.keys();
+        if(canAdd == false)
+            return;
 
-        if(selectedFeatures.contains(id))
-            continue;
-
-        //        qDebug()<<"Num atributes: "<<atrb.size();
-
-        QMap<QString, QVariant> featureAttributes;
-        for(int i = 0; i<atrb.size();++i)
+        for(auto&& it : features)
         {
-            auto key = atrKeys.at(i);
-            auto val = atrVals.at(i);
+            auto atrb = it->attributes()->attributesMap();
+            auto id = atrb.value("UID").toString();
+            //        auto nid = atrb.value("ID").toString();
 
-            // The ObjectID messes everything up!!! Dont include it when creating an object
-            if(key == "ObjectID")
+            auto atrVals = atrb.values();
+            auto atrKeys = atrb.keys();
+
+            if(selectedFeatures.contains(id))
                 continue;
 
-            //            qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
+            // qDebug()<<"Num atributes: "<<atrb.size();
 
-            featureAttributes[key] = val;
+            QMap<QString, QVariant> featureAttributes;
+            for(int i = 0; i<atrb.size();++i)
+            {
+                auto key = atrKeys.at(i);
+                auto val = atrVals.at(i);
+
+                // Including the ObjectID causes a crash!!! Do not include it when creating an object
+                if(key == "ObjectID")
+                    continue;
+
+                // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
+
+                featureAttributes[key] = val;
+            }
+
+            // featureAttributes.insert("ID", "99");
+            // featureAttributes.insert("LossRatio", 0.0);
+            // featureAttributes.insert("AssetType", "BUILDING");
+            // featureAttributes.insert("TabName", "99");
+            // featureAttributes.insert("UID", "99");
+
+            auto geom = it->geometry();
+            Feature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
+            selectedBuildingsTable->addFeature(feat);
+            selectedFeatures.insert(id,feat);
         }
-
-        // featureAttributes.insert("ID", "99");
-        // featureAttributes.insert("LossRatio", 0.0);
-        // featureAttributes.insert("AssetType", "BUILDING");
-        // featureAttributes.insert("TabName", "99");
-        // featureAttributes.insert("UID", "99");
-
-        auto geom = it->geometry();
-        Feature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
-        selectedBuildingsTable->addFeature(feat);
-        selectedFeatures.insert(id,feat);
     }
 
-    if(selectedComponentsTreeItem == nullptr)
+    // Create the tree item if
+    if(selectedComponentsTreeItem == nullptr && !selectedFeatures.empty())
     {
         if(selectedComponentsLayer == nullptr)
         {
@@ -2101,6 +2207,76 @@ void VisualizationWidget::handleLegendChange(const QString layerUID)
 GISLegendView *VisualizationWidget::getLegendView() const
 {
     return legendView;
+}
+
+
+Esri::ArcGISRuntime::Geometry VisualizationWidget::getGeometryFromJson(const QString& geoJson)
+{
+    QRegularExpression rx("[^\\[\\]]+(?=\\])");
+
+    QRegularExpressionMatchIterator i = rx.globalMatch(geoJson);
+
+    QStringList pointsList;
+    while (i.hasNext())
+    {
+        QRegularExpressionMatch match = i.next();
+
+        if(!match.hasMatch())
+            continue;
+
+        QString word = match.captured(0);
+        pointsList << word;
+    }
+
+    if(pointsList.empty())
+        return Geometry();
+
+    PolygonBuilder polygonBuilder(SpatialReference::wgs84());
+
+    for(auto&& it : pointsList)
+    {
+        auto points = it.split(",");
+
+        if(points.size() != 2)
+            return Geometry();
+
+        bool OK = false;
+        double lat = points.at(0).toDouble(&OK);
+
+        if(!OK)
+            return Geometry();
+
+        double lon = points.at(1).toDouble(&OK);
+        if(!OK)
+            return Geometry();
+
+        polygonBuilder.addPoint(lat,lon);
+    }
+
+    return polygonBuilder.toGeometry();
+}
+
+
+Esri::ArcGISRuntime::Geometry VisualizationWidget::getRectGeometryFromPoint(const Esri::ArcGISRuntime::Point& pnt, const double sizeX, double sizeY)
+{
+
+    if(sizeY == 0)
+        sizeY=sizeX;
+
+    Envelope envelope(pnt,sizeX,sizeY);
+
+    auto xMin = envelope.xMin();
+    auto xMax = envelope.xMax();
+    auto yMin = envelope.yMin();
+    auto yMax = envelope.yMax();
+
+    PolygonBuilder polygonBuilder(SpatialReference::wgs84());
+    polygonBuilder.addPoint(xMin,yMin);
+    polygonBuilder.addPoint(xMax,yMin);
+    polygonBuilder.addPoint(xMax,yMax);
+    polygonBuilder.addPoint(xMin,yMax);
+
+    return polygonBuilder.toGeometry();
 }
 
 

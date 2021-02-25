@@ -53,8 +53,7 @@ class GISLegendView : public QTreeView
 public:
     GISLegendView(QWidget *parent = nullptr);
 
-    //    QSize sizeHint() const;
-    //    QSize minimumSizeHint() const;
+    QSize sizeHint() const;
 
     void setModel(QAbstractItemModel* model);
 
@@ -65,7 +64,6 @@ public:
 private:
 
     QAbstractItemModel* currModel;
-    QVector<QString> listModels;
 
 };
 
