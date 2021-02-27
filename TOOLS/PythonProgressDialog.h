@@ -15,6 +15,8 @@ public:
 
     void appendText(const QString text);
 
+    void appendInfoMessage(const QString text);
+
     void appendErrorMessage(const QString text);
 
     void clear(void);

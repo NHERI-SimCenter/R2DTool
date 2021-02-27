@@ -155,7 +155,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     // Set the initial viewport to UCB
     Viewpoint UCB(37.8717450069, -122.2609607382, 100000.0);
-//    Viewpoint UCB(61.216663, -149.907122, 100000.0);
+    //    Viewpoint UCB(61.216663, -149.907122, 100000.0);
 
     mapGIS->setInitialViewpoint(UCB);
 
@@ -181,7 +181,6 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     connect(mapViewWidget, &MapGraphicsView::identifyLayersCompleted, this, &VisualizationWidget::identifyLayersCompleted);
     // Connect to the exportImageCompleted signal
     connect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
-
 
     this->setLegendView(mapViewWidget->getLegendView());
 
@@ -669,8 +668,6 @@ void VisualizationWidget::loadBuildingData(void)
 
     }
 
-
-    this->zoomToExtents();
 }
 
 
@@ -838,8 +835,6 @@ void VisualizationWidget::loadPipelineData(void)
 
         featureCollectionTable->addFeature(feature);
     }
-
-    this->zoomToExtents();
 
     layersTree->selectRow(1);
 }
@@ -1055,7 +1050,6 @@ Esri::ArcGISRuntime::Layer* VisualizationWidget::findLayer(const QString& layerI
     };
 
 
-
     return layerIterator(layers,layerID);
 }
 
@@ -1089,11 +1083,8 @@ void VisualizationWidget::handleFieldQuerySelection(void)
 
             auto assetID = artbMap.value("UID").toString();
 
-
-
         }
     }
-
 
     // Delete the raw results and clear the selection list
     qDeleteAll(fieldQueryFeaturesList);
@@ -1476,13 +1467,53 @@ void VisualizationWidget::handleAsyncSelectionTask(void)
 }
 
 
-void VisualizationWidget::handleAsyncFieldQueryTask(void)
+void VisualizationWidget::handleAsyncLayerLoad(Esri::ArcGISRuntime::LoadStatus layerLoadStatus)
 {
-    // Only handle the selected features when all tasks are complete
-    if(taskIDMap.empty())
+
+    if (layerLoadStatus == LoadStatus::Loaded)
     {
-        //        this->xx();
+        QObject* obj = sender();
+
+        Layer* layerSender = qobject_cast<Layer*>(obj);
+
+        if(layerSender == nullptr)
+        {
+            qDebug()<<"The sender must be a layer";
+            return;
+        }
+
+        auto layerID = layerSender->layerId();
+
+        // Populate the legend info for that layer
+        if(layerSender->isAutoFetchLegendInfos())
+        {
+            layerSender->legendInfos();
+
+            auto legendInfos = layerSender->legendInfos();
+            if(legendInfos == nullptr)
+                return;
+
+            legendInfos->setProperty("UID",layerID);
+
+            connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
+        }
+
+        layerLoadMap.remove(layerID);
+
+        // Only zoom to extents when all of the layers are loaded
+        if(layerLoadMap.empty())
+        {
+            this->zoomToExtents();
+        }
     }
+
+    //    QMap<QUuid, QString>::const_iterator i = m_taskIds.constBegin();
+    //    while (i != m_taskIds.constEnd())
+    //    {
+    //        auto isDone = i.value();
+    //        qDebug()<< i.key() << ": "<<isDone << Qt::endl;
+    //        ++i;
+    //    }
 
 }
 
@@ -1553,12 +1584,44 @@ Esri::ArcGISRuntime::Map *VisualizationWidget::getMapGIS() const
 
 void VisualizationWidget::zoomToExtents(void)
 {
+
+    LayerListModel* layers = mapGIS->operationalLayers();
+
+    Envelope bbox;
+    for (int j = 0; j < layers->size(); j++)
+    {
+        if(!bbox.isValid())
+        {
+            bbox = layers->at(j)->fullExtent();
+            continue;
+        }
+
+        auto layerExtent = layers->at(j)->fullExtent();
+
+        if(layerExtent.isValid())
+            bbox = GeometryEngine::unionOf(bbox, layerExtent);
+    }
+
+    if(!bbox.isValid())
+        return;
+
+    auto center = bbox.center();
+//    auto x = center.x();
+//    auto y = center.y();
+    mapViewWidget->setViewpointCenter(center,10000);
+//    mapViewWidget->setViewpointGeometry(bbox);
+
+}
+
+
+
+/*
+
+
     LayerListModel* layers = mapGIS->operationalLayers();
 
     if(layers->size() == 0)
         return;
-
-    layers->at(0)->load();
 
     Envelope bbox;
 
@@ -1602,8 +1665,12 @@ void VisualizationWidget::zoomToExtents(void)
 
     if(bbox.isValid())
         mapViewWidget->setViewpointGeometry(bbox, 40);  //  mapViewWidget->setViewpointCenter(bbox->fullExtent().center(), 80000);
+        */
 
-}
+//void zoomToLayer()
+//{
+
+//}
 
 
 void VisualizationWidget::handleBasemapSelection(const QString selection)
@@ -2054,23 +2121,12 @@ LayerTreeItem* VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* la
     auto layerName = layer->name();
     auto treeItem = layersTree->addItemToTree(layerName, layerID, parent);
 
+    // Add layer to the map
+    layerLoadMap[layerID] = layerName;
+
+    connect(layer, &Layer::loadStatusChanged, this, &VisualizationWidget::handleAsyncLayerLoad);
+
     layer->load();
-
-    auto status = layer->loadStatus();
-
-    // Populate the legend info for that layer
-    if(layer->isAutoFetchLegendInfos() && status == LoadStatus::Loaded)
-    {
-        layer->legendInfos();
-
-        auto legendInfos = layer->legendInfos();
-        if(legendInfos == nullptr)
-            return nullptr;
-
-        legendInfos->setProperty("UID",layerID);
-
-        connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
-    }
 
     return treeItem;
 }
@@ -2118,6 +2174,7 @@ void VisualizationWidget::clear(void)
     baseMapCombo->setCurrentIndex(0);
 
     taskIDMap.clear();
+    layerLoadMap.clear();
 
     selectedFeaturesList.clear();
 

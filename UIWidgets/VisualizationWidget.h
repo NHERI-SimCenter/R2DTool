@@ -66,6 +66,7 @@ class ClassBreaksRenderer;
 class GroupLayer;
 class KmlLayer;
 class Layer;
+enum class LoadStatus;
 class ArcGISMapImageLayer;
 class RasterLayer;
 //class RoleProxyModel;
@@ -112,9 +113,6 @@ public:
 
     // Set the pipeline widget to the visualization engine
     void setPipelineWidget(ComponentInputWidget *value);
-
-    // Zooms the map to the extents of the data present in the visible map
-    void zoomToExtents(void);
 
     // Add component to 'selected layer'
     void addComponentsToSelectedLayer(const QList<Esri::ArcGISRuntime::Feature*>& features);
@@ -206,7 +204,7 @@ private slots:
 
     void handleSelectedFeatures(void);
     void handleAsyncSelectionTask(void);
-    void handleAsyncFieldQueryTask(void);
+    void handleAsyncLayerLoad(Esri::ArcGISRuntime::LoadStatus layerLoadStatus);
     void handleBasemapSelection(const QString selection);
     void handleFieldQuerySelection(void);
     void handleArcGISError(Esri::ArcGISRuntime::Error error);
@@ -216,6 +214,11 @@ private slots:
     void convexHullPointSelector(QMouseEvent& e);
 
     void setLegendInfo();
+
+    // Zooms the map to the extents of the data present in the visible map
+    void zoomToExtents(void);
+
+
 
 private:
 
@@ -238,6 +241,7 @@ private:
     QList<Esri::ArcGISRuntime::FeatureQueryResult*>  fieldQueryFeaturesList;
 
     QMap<QUuid,QString> taskIDMap;
+    QMap<QUuid,QString> layerLoadMap;
 
     // Map to store the layers
     QMap<QString, Esri::ArcGISRuntime::Layer*> layersMap;

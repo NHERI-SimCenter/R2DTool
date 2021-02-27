@@ -191,9 +191,12 @@ void WorkflowAppR2D::initialize(void)
     foreach (const QJsonValue & example, examples) {
         QJsonObject exampleObj = example.toObject();
         QString name = exampleObj["name"].toString();
+        QString description = exampleObj["description"].toString();
         QString inputFile = exampleObj["InputFile"].toString();
         auto action = exampleMenu->addAction(name, this, &WorkflowAppR2D::loadExamples);
+        action->setProperty("Name",name);
         action->setProperty("InputFile",inputFile);
+        action->setProperty("Description",description);
     }
 
     /*
@@ -405,14 +408,30 @@ void WorkflowAppR2D::showOutputDialog(void)
 
 void WorkflowAppR2D::loadExamples()
 {
+
+    auto senderObj = QObject::sender();
     auto pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator();
-    pathToExample += QObject::sender()->property("InputFile").toString();
+    pathToExample += senderObj->property("InputFile").toString();
 
     if(pathToExample.isNull())
     {
         qDebug()<<"Error loading examples";
         return;
     }
+
+    //
+    // clear current and input from new JSON
+    //
+    this->clear();
+
+    auto exampleName = senderObj->property("Name").toString();
+    this->statusMessage("Loading example "+exampleName);
+
+    auto description = senderObj->property("Description").toString();
+
+    if(!description.isEmpty())
+        this->infoMessage(description);
+
 
     this->loadFile(pathToExample);
 }
@@ -476,7 +495,7 @@ void WorkflowAppR2D::onRunButtonClicked() {
 
 
 void WorkflowAppR2D::onRemoteRunButtonClicked(){
-    emit errorMessage("");
+    //    emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
 
@@ -495,7 +514,7 @@ void WorkflowAppR2D::onRemoteRunButtonClicked(){
 
 void WorkflowAppR2D::onRemoteGetButtonClicked(){
 
-    emit errorMessage("");
+    // emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
 
@@ -624,24 +643,17 @@ void WorkflowAppR2D::loadFile(const QString fileName){
     // close file
     file.close();
 
-    this->clear();
-
-    auto exampleName = jsonObj.value("Name").toString();
-    this->statusMessage("Loading example "+exampleName);
-
-    //
-    // clear current and input from new JSON
-    //
     progressDialog->showProgressBar();
     QApplication::processEvents();
 
     this->inputFromJSON(jsonObj);
     progressDialog->hideProgressBar();
 
-    this->statusMessage("Done loading.");
+    if(qobject_cast<RemoteJobManager*>(QObject::sender()) == nullptr)
+        this->statusMessage("Done loading. Click on the 'RUN' button to run an analysis.");
 
-    // Automatically hide after 1 second
-    progressDialog->hideAfterElapsedTime(1.5);
+    // Automatically hide after n seconds
+    // progressDialog->hideAfterElapsedTime(4);
 }
 
 
@@ -680,10 +692,13 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
 
 void WorkflowAppR2D::statusMessage(QString message)
 {
-    if(!progressDialog->isVisible())
-        progressDialog->showDialog(true);
-
     progressDialog->appendText(message);
+}
+
+
+void WorkflowAppR2D::infoMessage(QString message)
+{
+    progressDialog->appendInfoMessage(message);
 }
 
 

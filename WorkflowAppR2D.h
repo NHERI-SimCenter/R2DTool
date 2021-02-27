@@ -114,6 +114,7 @@ public slots:
     void loadExamples();
 
     void statusMessage(QString message);
+    void infoMessage(QString message);
     void errorMessage(QString message);
     void fatalMessage(QString message);
 

@@ -11,7 +11,7 @@ PythonProgressDialog::PythonProgressDialog(QWidget* parent) : QDialog(parent)
 {
 
     this->setWindowModality(Qt::ApplicationModal);
-    this->setWindowTitle("Python Output");
+    this->setWindowTitle("Program Output");
     this->setAutoFillBackground(true);
 
     auto progressLayout = new QVBoxLayout(this);
@@ -80,6 +80,9 @@ void PythonProgressDialog::showDialog(bool visible)
 
 void PythonProgressDialog::appendText(const QString text)
 {
+    if(!this->isVisible())
+        this->showDialog(true);
+
     auto cleanText = cleanUpText(text);
 
     progressTextEdit->appendPlainText(cleanText+ "\n");
@@ -89,7 +92,8 @@ void PythonProgressDialog::appendText(const QString text)
 
 void PythonProgressDialog::appendErrorMessage(const QString text)
 {
-    //    progressTextEdit->appendPlainText("\n");
+    if(!this->isVisible())
+        this->showDialog(true);
 
     auto msgStr = QString("<font color=%1>").arg("red") + text + QString("</font>") + QString("<font color=%1>").arg("black") + QString("&nbsp;") + QString("</font>");
 
@@ -99,6 +103,22 @@ void PythonProgressDialog::appendErrorMessage(const QString text)
     progressTextEdit->appendPlainText("\n");
     qDebug()<<text;
 }
+
+
+void PythonProgressDialog::appendInfoMessage(const QString text)
+{
+    if(!this->isVisible())
+        this->showDialog(true);
+
+    auto msgStr = QString("<font color=%1>").arg("blue") + text + QString("</font>") + QString("<font color=%1>").arg("black") + QString("&nbsp;") + QString("</font>");
+
+    // Output to console and to text edit
+    progressTextEdit->appendHtml(msgStr);
+
+    progressTextEdit->appendPlainText("\n");
+    qDebug()<<text;
+}
+
 
 
 void PythonProgressDialog::handleCloseButtonPress()
@@ -149,12 +169,13 @@ void PythonProgressDialog::setProgressBarRange(const int start,const int end)
 
 void PythonProgressDialog::hideAfterElapsedTime(int sec)
 {
+    progressTextEdit->appendPlainText("This window will automatically close in "+QString::number(sec) + " seconds");
 
-    QTimer *timer = new QTimer(this);
+    QTimer::singleShot(sec*1000, [=]() {
 
-    connect(timer, &QTimer::timeout,
-            [=]() { this->showDialog(false); }
-    );
+        if(this->isVisible())
+            this->showDialog(false);
 
-    timer->start(sec*1000); //time specified in ms
+        progressTextEdit->undo();
+    });
 }

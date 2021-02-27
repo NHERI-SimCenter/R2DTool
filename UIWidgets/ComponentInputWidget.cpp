@@ -61,9 +61,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
 {
     label1 = "Load information from a CSV file";
-    label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze. Leave blank to analyze all " + componentType.toLower() + "."
-                                                                                                                                                "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
-    label3 = QStringRef(&componentType, 0, componentType.length()) + " Information";
+    label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
+    "Define a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+
+    label3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
 
     pathToComponentInfoFile = "NULL";
     componentGroupBox = nullptr;
@@ -639,6 +640,34 @@ bool ComponentInputWidget::copyFiles(QString &destName)
 
     if(!err.isEmpty())
         return false;
+
+
+    // Test
+    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
+    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
+
+    //    selectedData[0] = headerInfo;
+
+    //    int i = 0;
+    //    for(auto&& rowID : selectedIDs)
+    //    {
+    //        QStringList rowData;
+    //        rowData.reserve(nCols);
+
+    //        for(int j = 0; j<nCols; ++j)
+    //        {
+    //            auto item = componentTableWidget->item(rowID,j)->data(0).toString();
+
+    //            rowData<<item;
+    //        }
+    //        selectedData[i+1] = rowData;
+
+    //        ++i;
+    //    }
+
+    //    csvTool.saveCSVFile(selectedData,"Location",err);
+
 
     return true;
 }
