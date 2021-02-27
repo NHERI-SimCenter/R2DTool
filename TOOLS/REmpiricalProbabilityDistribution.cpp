@@ -163,12 +163,15 @@ QVector<double>  REmpiricalProbabilityDistribution::getHistogramTicks(void)
     auto stdv = this->stdDev();
 
     // Get size of histogram
-    histogramMin = meanVal - 5.0 * stdv;
+//    histogramMin = meanVal - 5.0 * stdv;
+    histogramMin = 0.0;
     histogramMax = meanVal + 5.0 * stdv;
     binSize = (histogramMax - histogramMin) / numBins;
 
+    theHistogramTicks[0] = histogramMin;
+
     // Set bin ticks
-    for (int k=0; k<numBins; ++k)
+    for (int k=1 ; k<numBins; ++k)
     {
 
         theHistogramTicks[k] = histogramMin + k * binSize - 0.5 * binSize;
@@ -253,15 +256,17 @@ QVector<double>  REmpiricalProbabilityDistribution::updateHistogram()
     auto meanVal = this->mean();
 
     // Get size of histogram
-    histogramMin = meanVal - 5.0 * stdv;
+//    histogramMin = meanVal - 5.0 * stdv;
+
+    histogramMin = 0.0;
+
     histogramMax = meanVal + 5.0 * stdv;
     binSize = (histogramMax - histogramMin) / numBins;
-
 
     // Create histogram
     for (int j=0; j<values.size(); ++j) {
 
-        for (int k=0; k<numBins; ++k) {
+        for (int k=1; k<numBins; ++k) {
 
             if (values.at(j) < histogramMin + static_cast<double>(k) * binSize) {
 

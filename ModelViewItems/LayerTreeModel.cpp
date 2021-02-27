@@ -207,6 +207,17 @@ QVariant LayerTreeModel::data(const QModelIndex &index, int role) const
 }
 
 
+QString LayerTreeModel::uidItem(const QModelIndex &index)
+{
+    LayerTreeItem *item = static_cast<LayerTreeItem*>(index.internalPointer());
+
+    if(item == nullptr)
+        return QString();
+
+    return item->getItemID();
+}
+
+
 Qt::ItemFlags LayerTreeModel::flags(const QModelIndex &index) const
 {
 
@@ -480,4 +491,6 @@ bool LayerTreeModel::clear(void)
 
     return true;
 }
+
+
 

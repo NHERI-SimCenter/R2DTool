@@ -37,12 +37,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "SimCenterMapGraphicsView.h"
+#include "GISLegendView.h"
 
 // Qt headers
 #include <QApplication>
 #include <QPushButton>
 #include <QThread>
 #include <QVBoxLayout>
+#include <QListView>
 
 SimCenterMapGraphicsView *SimCenterMapGraphicsView::theInstance(0);
 
@@ -59,6 +61,14 @@ SimCenterMapGraphicsView * SimCenterMapGraphicsView::getInstance() {
 SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj) :theCurrentLayout(nullptr)
 {
     theCurrentLayout = nullptr;
+
+    legendView = new GISLegendView(this);
+}
+
+
+GISLegendView *SimCenterMapGraphicsView::getLegendView() const
+{
+    return legendView;
 }
 
 

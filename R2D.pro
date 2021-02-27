@@ -134,11 +134,13 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SiteGridWidget.cpp \
             Events/UI/SiteWidget.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
+            ModelViewItems/GISLegendView.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/PelicunPostProcessor.cpp \
+            Tools/PythonProgressDialog.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
             Tools/XMLAdaptor.cpp \
@@ -231,12 +233,15 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SiteGridWidget.h \
             Events/UI/SiteWidget.h \
             Events/UI/SpatialCorrelationWidget.h \
+            ModelViewItems/GISLegendView.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
+            Tools/PythonProgressDialog.h \
             Tools/REmpiricalProbabilityDistribution.h \
+            Tools/TableNumberItem.h \
             Tools/TablePrinter.h \
             Tools/XMLAdaptor.h \
             Tools/shakeMapClient.h \

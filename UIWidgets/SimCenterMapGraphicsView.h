@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QVBoxLayout>
 
+class GISLegendView;
+
 class SimCenterMapGraphicsView: public  Esri::ArcGISRuntime::MapGraphicsView
 {
     Q_OBJECT
@@ -52,11 +54,16 @@ public:
 
     void setCurrentLayout(QVBoxLayout *layout);
 
+    GISLegendView *getLegendView() const;
+
 private:
     SimCenterMapGraphicsView(QObject *obj);
 
     QVBoxLayout *theCurrentLayout;
     static SimCenterMapGraphicsView *theInstance;
+
+    GISLegendView* legendView;
+
 };
 
 #endif // SimCenter_MAP_GRAPHICS_VIEW_H

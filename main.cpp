@@ -170,7 +170,6 @@ int main(int argc, char *argv[])
     // Create the  menu bar and actions to run the examples
     theInputApp->initialize();
 
-
     QString aboutTitle = "About the SimCenter R2D Application"; // this is the title displayed in the on About dialog
     QString aboutSource = ":/resources/docs/textAboutR2D.html";  // this is an HTML file stored under resources
 
