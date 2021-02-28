@@ -1,18 +1,19 @@
 
-Basic Earthquake
-================
+E4 - OpenSeesPy FEM
+===================
 
 
-+-----------------+----------------------------------------------------+
-| Download files  | :github:`Github <Examples/Earthquake1_Basic/>`     |
-+-----------------+----------------------------------------------------+
++-----------------+--------------------------------------------------+
+| Download files  | :github:`Github <Examples/E4OpenSeesPyFEM/>`     |
++-----------------+--------------------------------------------------+
 
 
+Advanced response estimation is enabled in this example through custom scripts that generate a finite element model for a building using the information available in the building inventory. A template script is provided that creates a building-specific cantilever and performs the response-history analysis to obtain EDPs. The hazard is described by empirical ground motion records from the PEER NGA West2 database. The buildings are located in Albany, CA, and their damage and loss assessment is based on the HAZUS methodology. This example includes 81 buildings and 5 are selected for analysis.
 
 Required Files
 --------------
 
-#. :github:`cantilever_light.py <Examples/Earthquake1_Basic/input_data/model/cantilever_light.py>`
+#. :github:`cantilever_light.py <Examples/E4OpenSeesPyFEM/input_data/model/cantilever_light.py>`
    This Python script defines the following functions which use OpenSeesPy to construct a structural model.
 
 

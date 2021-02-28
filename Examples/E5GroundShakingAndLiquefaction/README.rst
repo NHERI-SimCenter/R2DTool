@@ -1,11 +1,12 @@
 
-Earthquake - Alameda
-====================
+E5 - Ground Shaking and Liquefaction
+====================================
 
-+-----------------+----------------------------------------------------+
-| Download files  | :github:`Github <Examples/Earthquake2_Alameda/>`   |
-+-----------------+----------------------------------------------------+
++-----------------+---------------------------------------------------------------+
+| Download files  | :github:`Github <Examples/E5GroundShakingAndLiquefaction/>`   |
++-----------------+---------------------------------------------------------------+
 
+This example presents a coupled damage assessment for ground shaking and liquefaction hazards. To infer liquefaction, estimates of horizontal spreading and vertical settlement are generated from PGA values obtained through PSHA. These three intensity measures form the basis of input to a building-level, HAZUS-based damage and loss assessment that accounts for potential collapses due to liquefaction. Approximately 14,000 buildings are considered in the city of Alameda, CA.
 
 
 #. **VIZ** This example shows simulation for pseudo earthquake scenarios in Bay Area. The damage and loss of a sample of buildings in the Alameda County due to the soil liquefaction are estimated.  The results presented herein are only for demonstrating the use of R2DTool and do not serve as an accurate representation of the real losses.
