@@ -58,7 +58,19 @@ void ComponentDatabase::addComponent(int ID, Component& asset)
 
 Component& ComponentDatabase::getComponent(const int ID)
 {
-  return ComponentMap[ID];
+    return ComponentMap[ID];
+}
+
+
+Component ComponentDatabase::getComponent(const QString UID)
+{
+    for(auto&& it: ComponentMap)
+    {
+        if(it.UID.compare(UID) == 0)
+            return it;
+    }
+
+    return Component();
 }
 
 
@@ -67,7 +79,16 @@ void ComponentDatabase::clear(void)
     ComponentMap.clear();
 }
 
+
 QMap<int, Component> ComponentDatabase::getComponentsMap() const
 {
     return ComponentMap;
+}
+
+
+void ComponentDatabase::updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value)
+{
+    auto component = this->getComponent(ID);
+
+   component.setAttributeValue(attribute,value);
 }

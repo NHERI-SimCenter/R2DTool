@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetInputDelegate.h"
 #include "ComponentInputWidget.h"
+#include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
 
 #include <QCoreApplication>
@@ -60,13 +61,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
 {
     label1 = "Load information from a CSV file";
-    label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze. Leave blank to analyze all " + componentType.toLower() + "."
-                                                                                                                                                "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+    label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
+    "Define a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
 
-    label3 = QStringRef(&componentType, 0, componentType.length()) + " Information";
+    label3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
 
     pathToComponentInfoFile = "NULL";
     componentGroupBox = nullptr;
+    theVisualizationWidget = nullptr;
     this->createComponentsBox();
 }
 
@@ -151,6 +153,10 @@ void ComponentInputWidget::loadComponentData(void)
             auto cellData = rowStringList[j];
 
             auto item = new QTableWidgetItem(cellData);
+
+            // Make the first three columns (ID, lat, lon) uneditable
+            if(j < 3)
+                item->setFlags(item->flags() ^ (Qt::ItemIsEditable | Qt::ItemIsEnabled));
 
             componentTableWidget->setItem(i,j, item);
         }
@@ -263,6 +269,8 @@ void ComponentInputWidget::createComponentsBox(void)
     componentTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
     componentTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 
+    connect(componentTableWidget, &QTableWidget::cellChanged, this, &ComponentInputWidget::handleCellChanged);
+
     // Add a vertical spacer at the bottom to push everything up
     gridLayout->addItem(smallVSpacer,0,0,1,5);
     gridLayout->addWidget(topText,1,0,1,5);
@@ -279,6 +287,11 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5,Qt::AlignCenter);
     gridLayout->setRowStretch(8, 1);
     this->setLayout(gridLayout);
+}
+
+void ComponentInputWidget::setTheVisualizationWidget(VisualizationWidget *value)
+{
+    theVisualizationWidget = value;
 }
 
 
@@ -348,12 +361,44 @@ void ComponentInputWidget::handleComponentSelection(void)
     auto numAssets = selectedComponentIDs.size();
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     sendStatusMessage(msg);
+
+    QList<Esri::ArcGISRuntime::Feature*> selectedFeatures;
+    for(auto&& it : selectedComponentIDs)
+    {
+        auto component = theComponentDb.getComponent(it);
+
+        auto feature = component.ComponentFeature;
+
+        if(feature == nullptr)
+            continue;
+
+        selectedFeatures<<feature;
+    }
+
+    theVisualizationWidget->addComponentsToSelectedLayer(selectedFeatures);
+
     //this->userMessageDialog(msg);
 }
 
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
+
+    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
+    QList<Esri::ArcGISRuntime::Feature*> selectedFeatures;
+    for(auto&& it : selectedComponentIDs)
+    {
+        auto component = theComponentDb.getComponent(it);
+
+        auto feature = component.ComponentFeature;
+
+        selectedFeatures<<feature;
+    }
+
+    theVisualizationWidget->clearSelectedLayer();
+
+
     auto nRows = componentTableWidget->rowCount();
 
     // Hide all rows in the table
@@ -363,6 +408,7 @@ void ComponentInputWidget::clearComponentSelection(void)
     }
 
     selectComponentsLineEdit->clear();
+
 }
 
 
@@ -416,10 +462,10 @@ QString ComponentInputWidget::getPathToComponentFile(void) const
 
 void ComponentInputWidget::loadFileFromPath(QString& path)
 {
+    this->clear();
     pathToComponentInfoFile = path;
     componentFileLineEdit->setText(path);
     this->loadComponentData();
-
 }
 
 
@@ -432,28 +478,13 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     if (componentFile.exists()) {
         data["buildingSourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
-        QString filterData = selectComponentsLineEdit->text();
 
-        if(filterData.isEmpty())
-        {
-            auto nRows = componentTableWidget->rowCount();
-
-            if(nRows == 0)
-                return false;
-
-            // Get the ID of the first and last component
-            auto firstID = componentTableWidget->item(0,0)->data(0).toString();
-
-
-            auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toString();
-
-            filterData =  firstID + "-" + lastID;
-        }
-
-        filterData.replace(" ","");
+        QString filterData = selectComponentsLineEdit->getComponentAnalysisList();
 
         data["filter"] = filterData;
-    } else {
+    }
+    else
+    {
         data["sourceFile"]=QString("None");
         data["pathToSource"]=QString("");
         return false;
@@ -490,7 +521,7 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (fileInfo.exists(fileName)) {
 
             selectComponentsLineEdit->setText(fileName);
-            foundFile = true;
+
             this->loadComponentData();
             foundFile = true;
 
@@ -555,19 +586,137 @@ bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 
 bool ComponentInputWidget::copyFiles(QString &destName)
 {
-    QFileInfo componentFile(componentFileLineEdit->text());
-    if (componentFile.exists()) {
-        return this->copyFile(componentFileLineEdit->text(), destName);
+    auto compLineEditText = componentFileLineEdit->text();
+
+    QFileInfo componentFile(compLineEditText);
+
+    if (!componentFile.exists())
+        return false;
+
+    // Do not copy the file, output a new csv which will have the changes that the user makes in the table
+    //        if (componentFile.exists()) {
+    //            return this->copyFile(componentFileLineEdit->text(), destName);
+    //        }
+
+    auto pathToSaveFile = destName + QDir::separator() + componentFile.fileName();
+
+    auto nRows = componentTableWidget->rowCount();
+    auto nCols = componentTableWidget->columnCount();
+
+    if(nRows == 0)
+        return false;
+
+
+    QVector<QStringList> data(nRows+1);
+
+    QStringList headerInfo;
+
+    for(int i = 0; i<nCols; ++i)
+    {
+        auto headerText = componentTableWidget->horizontalHeaderItem(i)->data(0).toString();
+        headerInfo << headerText;
     }
+
+    data[0] = headerInfo;
+
+    for(int i = 0; i<nRows; ++i)
+    {
+        QStringList rowData;
+        rowData.reserve(nCols);
+
+        for(int j = 0; j<nCols; ++j)
+        {
+            auto item = componentTableWidget->item(i,j)->data(0).toString();
+
+            rowData<<item;
+        }
+        data[i+1] = rowData;
+    }
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    csvTool.saveCSVFile(data,pathToSaveFile,err);
+
+    if(!err.isEmpty())
+        return false;
+
+
+    // Test
+    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
+    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
+
+    //    selectedData[0] = headerInfo;
+
+    //    int i = 0;
+    //    for(auto&& rowID : selectedIDs)
+    //    {
+    //        QStringList rowData;
+    //        rowData.reserve(nCols);
+
+    //        for(int j = 0; j<nCols; ++j)
+    //        {
+    //            auto item = componentTableWidget->item(rowID,j)->data(0).toString();
+
+    //            rowData<<item;
+    //        }
+    //        selectedData[i+1] = rowData;
+
+    //        ++i;
+    //    }
+
+    //    csvTool.saveCSVFile(selectedData,"Location",err);
+
+
     return true;
 }
 
 
 void ComponentInputWidget::clear(void)
 {
+    theComponentDb.clear();
     pathToComponentInfoFile.clear();
     componentFileLineEdit->clear();
     selectComponentsLineEdit->clear();
     componentTableWidget->clear();
     componentTableWidget->hide();
 }
+
+
+ComponentDatabase* ComponentInputWidget::getComponentDatabase()
+{
+    return &theComponentDb;
+}
+
+
+void ComponentInputWidget::handleCellChanged(int row, int column)
+{
+    // Cannot change the ID, lat, or long
+    if(column < 3)
+        return;
+
+    auto item = componentTableWidget->item(row,column);
+
+    // Only update when the user selects the cell and changes it, inefficient to update programatically
+    if(!item->isSelected())
+        return;
+
+    auto ID = componentTableWidget->item(row,0)->data(0).toInt();
+
+    auto attrib = componentTableWidget->horizontalHeaderItem(column)->data(0).toString();
+
+    auto attribVal = item->data(0);
+
+    theComponentDb.updateComponentAttribute(ID,attrib,attribVal);
+
+    auto component = theComponentDb.getComponent(ID);
+
+    if(!component.isValid())
+        return;
+
+    auto uid = component.UID;
+    theVisualizationWidget->updateSelectedComponent(uid,attrib,attribVal);
+
+}
+

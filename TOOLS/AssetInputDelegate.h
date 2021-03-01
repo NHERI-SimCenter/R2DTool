@@ -57,6 +57,9 @@ public:
 
     int size();
 
+    // Returns the list of components in a string in the form 1,3,5-6,10,12,...
+    QString getComponentAnalysisList();
+
 public slots:
     void selectComponents(void);
 

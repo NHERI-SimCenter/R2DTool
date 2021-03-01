@@ -60,11 +60,14 @@ equals(QT_MAJOR_VERSION, 5) {
 }
 
 
-#DEFINES += INCLUDE_USER_PASS
+DEFINES += INCLUDE_USER_PASS
 
 win32:DEFINES +=  CURL_STATICLIB
 
-# win32::include($$PWD/ConanHelper.pri)
+#win32::include($$PWD/R2D.user.pri)
+#win32::include($$PWD/R2D.user.pri)
+win32::include($$PWD/ConanHelper.pri)
+
 win32::LIBS+=Advapi32.lib
 
 # Full optimization on release
@@ -84,7 +87,8 @@ win32 {
 
 # GIS library
 ARCGIS_RUNTIME_VERSION = 100.9
-include($$PWD/arcgisruntime.pri)
+#include($$PWD/arcgisruntime.pri)
+include(./arcgisruntime.pri)
 
 # Simcenter dependencies
 include($$PATH_TO_COMMON/Common/Common.pri)
@@ -130,11 +134,13 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SiteGridWidget.cpp \
             Events/UI/SiteWidget.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
+            ModelViewItems/GISLegendView.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/PelicunPostProcessor.cpp \
+            Tools/PythonProgressDialog.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
             Tools/XMLAdaptor.cpp \
@@ -227,12 +233,15 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SiteGridWidget.h \
             Events/UI/SiteWidget.h \
             Events/UI/SpatialCorrelationWidget.h \
+            ModelViewItems/GISLegendView.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
+            Tools/PythonProgressDialog.h \
             Tools/REmpiricalProbabilityDistribution.h \
+            Tools/TableNumberItem.h \
             Tools/TablePrinter.h \
             Tools/XMLAdaptor.h \
             Tools/shakeMapClient.h \
@@ -317,18 +326,47 @@ DISTFILES += \
 macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
-# Copies over the examples folder into the build directory
+# Path to build directory
 win32 {
-PATH_TO_BINARY=$$OUT_PWD
+DESTDIR = $$shell_path($$OUT_PWD)
+Release:DESTDIR = $$DESTDIR/release
+Debug:DESTDIR = $$DESTDIR/debug
+
+PATH_TO_BINARY=$$DESTDIR/Examples
+
 } else {
     mac {
     PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS
     }
 }
 
+win32 {
+
+# Copies over the examples folder into the build directory
+copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_BINARY))
+first.depends = $(first) copydata
+
+# Copies the dll files into the build directory
+CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
+
+first.depends += CopyDLLs
+
+export(first.depends)
+export(CopyDLLs.commands)
+export(copydata.commands)
+
+QMAKE_EXTRA_TARGETS += first copydata CopyDLLs
+
+}else {
+mac {
+
+# Copies over the examples folder into the build directory
 copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
 first.depends = $(first) copydata
 export(first.depends)
 export(copydata.commands)
 QMAKE_EXTRA_TARGETS += first copydata
+
+}
+}
 

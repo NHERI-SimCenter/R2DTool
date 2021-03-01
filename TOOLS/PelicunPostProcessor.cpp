@@ -37,11 +37,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "CSVReaderWriter.h"
+#include "ComponentInputWidget.h"
 #include "GeneralInformationWidget.h"
 #include "MainWindowWorkflowApp.h"
 #include "PelicunPostProcessor.h"
 #include "REmpiricalProbabilityDistribution.h"
 #include "TablePrinter.h"
+#include "TableNumberItem.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 
@@ -172,6 +174,8 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     pelicunResultsTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     pelicunResultsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    pelicunResultsTableWidget->setItemDelegate(new DoubleDelegate(this,3));
 
     // Combo box to select how to sort the table
     QHBoxLayout *comboLayout = new QHBoxLayout();
@@ -347,7 +351,13 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     REmpiricalProbabilityDistribution theProbDist;
 
     // Get the buildings database
-    auto theBuildingDB = theVisualizationWidget->getBuildingDatabase();
+    auto theBuildingDB = theVisualizationWidget->getBuildingWidget()->getComponentDatabase();
+
+    if(theBuildingDB == nullptr)
+    {
+        QString msg = "Error getting the building database from the input widget!";
+        throw msg;
+    }
 
     // 4 rows of headers in the results file
     for(int i = numHeaderRows, count = 0; i<DVResults.size(); ++i, ++count)
@@ -449,12 +459,14 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         theProbDist.addSample(repairCost);
 
-        auto IDItem = new QTableWidgetItem(IDStr);
-        auto RepCostItem = new QTableWidgetItem(totalRepairCost);
-        auto RepProbItem = new QTableWidgetItem(replaceMentProb);
-        auto RepairTimeItem = new QTableWidgetItem(QString::number(repairTime));
-        auto fatalitiesItem = new QTableWidgetItem(QString::number(fatalities));
-        auto lossRatioItem = new QTableWidgetItem(QString::number(lossRatio));
+
+
+        auto IDItem = new TableNumberItem(IDStr);
+        auto RepCostItem = new TableNumberItem(totalRepairCost);
+        auto RepProbItem = new TableNumberItem(replaceMentProb);
+        auto RepairTimeItem = new TableNumberItem(QString::number(repairTime));
+        auto fatalitiesItem = new TableNumberItem(QString::number(fatalities));
+        auto lossRatioItem = new TableNumberItem(QString::number(lossRatio));
 
         pelicunResultsTableWidget->setItem(count,0, IDItem);
         pelicunResultsTableWidget->setItem(count,1, RepCostItem);
@@ -465,9 +477,15 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         auto buildingFeature = building.ComponentFeature;
 
-        buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
+        auto atrb = "LossRatio";
+        auto atrbVal = QVariant(lossRatio);
 
+        buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
         buildingFeature->featureTable()->updateFeature(buildingFeature);
+
+        // Get the feature UID
+        auto uid = building.UID;
+        theVisualizationWidget->updateSelectedComponent(uid,atrb,atrbVal);
     }
 
     //  CASUALTIES
@@ -477,8 +495,8 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
     this->createCasualtiesChart(casualtiesSet);
 
-    totalCasValueLabel->setText(QString::number(casualtiesSet->sum()));
-    totalFatalitiesValueLabel->setText(QString::number(casualtiesSet->at(3)));
+    totalCasValueLabel->setText(QString::number(casualtiesSet->sum(),'f',2));
+    totalFatalitiesValueLabel->setText(QString::number(casualtiesSet->at(3),'f',2));
 
     //  LOSSES
     QBarSet *structLossSet = new QBarSet("Structural");
@@ -495,13 +513,13 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     auto sumNonStruct = NSAccLossSet->sum() + NSDriftLossSet->sum();
 
     auto sumLosses = sumStruct + sumNonStruct;
-    totalLossValueLabel->setText(QString::number(sumLosses));
+    totalLossValueLabel->setText(QString::number(sumLosses,'g',3));
 
-    structLossValueLabel->setText(QString::number(sumStruct));
-    nonStructLossValueLabel->setText(QString::number(sumNonStruct));
+    structLossValueLabel->setText(QString::number(sumStruct,'g',3));
+    nonStructLossValueLabel->setText(QString::number(sumNonStruct,'g',3));
 
     // Repair time
-    totalRepairTimeValueLabel->setText(QString::number(cumulativeRepairTime));
+    totalRepairTimeValueLabel->setText(QString::number(cumulativeRepairTime,'g',3));
 
     this->createHistogramChart(&theProbDist);
 
@@ -624,6 +642,8 @@ int PelicunPostProcessor::createHistogramChart(REmpiricalProbabilityDistribution
     axisX->setGridLineVisible(false);
     axisX->setLabelsVisible(true);
     RFDiagChart->addAxis(axisX, Qt::AlignBottom);
+
+    axisX->setMin(0.0);
 
     series->attachAxis(axisX);
 

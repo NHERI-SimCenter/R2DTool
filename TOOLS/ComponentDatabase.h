@@ -41,6 +41,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 #include <QVariant>
 
+#include <Feature.h>
+#include <FeatureTable.h>
+
 namespace Esri
 {
 namespace ArcGISRuntime
@@ -68,7 +71,37 @@ public:
         return ResultsValues.value(key);
     }
 
+    int setAttributeValue(const QString& attribute, const QVariant& value)
+    {
+        ComponentAttributes[attribute] = value;
+
+        if(ComponentFeature != nullptr)
+        {
+            ComponentFeature->attributes()->replaceAttribute(attribute,value);
+            ComponentFeature->featureTable()->updateFeature(ComponentFeature);
+
+            if(ComponentFeature->attributes()->attributeValue(attribute).isNull())
+            {
+                qDebug()<<"Failed to update feature "<<attribute<<" in component "<<ID;
+                return -1;
+            }
+        }
+
+        return 0;
+    }
+
+    bool isValid(void)
+    {
+        if(ComponentFeature == nullptr || ComponentAttributes.empty())
+            return false;
+
+        return true;
+    }
+
     int ID = -1;
+
+    // Unique id of this component
+    QString UID = "NULL";
 
     // The Component feature in the GIS widget
     Esri::ArcGISRuntime::Feature* ComponentFeature = nullptr;
@@ -89,6 +122,8 @@ public:
     // Gets the Component as a modifiable reference
     Component& getComponent(const int ID);
 
+    Component getComponent(const QString UID);
+
     int getNumberOfComponents();
 
     void addComponent(int ID, Component& asset);
@@ -96,6 +131,8 @@ public:
     void clear(void);
 
     QMap<int, Component> getComponentsMap() const;
+
+    void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
 
 private:
 

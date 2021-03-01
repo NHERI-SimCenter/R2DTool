@@ -31,6 +31,22 @@ QHeaderView::section {
     border: 1px solid white;
 }
 
+
+QHeaderView#legendView::section {
+    background-color:  rgba(255, 255, 255, 0);
+    color: black;
+    font: bold 14px;
+    padding-left: 4px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+QTreeView#legendView::item:hover {
+    background: rgba(255, 255, 255, 0);
+}
+
+
+
 /*----------------------------------------------------------------------------*/
 /* QTreeView                                                                  */
 /*----------------------------------------------------------------------------*/

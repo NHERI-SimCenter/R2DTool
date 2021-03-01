@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QTextEdit>
 
 MDOF_LU::MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
     : SimCenterAppWidget(parent), theRandomVariablesContainer(theRandomVariableIW)
@@ -75,19 +76,43 @@ MDOF_LU::MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
     layout->addWidget(hazusDataFile, 0,1);
     layout->addWidget(hazusButton,   0,2);
 
-    QLabel *stiffnessLabel= new QLabel("stdStiffness");
+    QLabel *stiffnessLabel= new QLabel("std deviation Stiffness:");
     stdStiffness = new QLineEdit;
     stdStiffness->setText("0.1");
     layout->addWidget(stiffnessLabel, 1,0);
     layout->addWidget(stdStiffness,   1,1);
 
-    QLabel *dampingLabel= new QLabel("stdDamping");
+    QLabel *dampingLabel= new QLabel("std deviation Damping:");
     stdDamping = new QLineEdit;
     stdDamping->setText("0.1");
     layout->addWidget(dampingLabel, 2,0);
     layout->addWidget(stdDamping,   2,1);
 
-    layout->setRowStretch(3,1);
+    storyHeight = new QLineEdit;
+    storyHeight->setText("");
+    layout->addWidget(new QLabel("Default Story Height:"), 3,0);
+    layout->addWidget(storyHeight,   3,1);
+
+    auto citation1 = new QLabel("This backend application used by this selection was provided by Prof. Xinzheng Lu, Tsinghua University, China. "
+                                       "Users should cite the work as follows:");
+
+    auto citation2 = new QLabel("(1) Lu X.Z., McKenna F., Cheng Q.L., Xu Z., Zeng X., and Mahin S.A.,"
+                " \"An open-source framework for regional earthquake loss estimation using the city-scale nonlinear time-history analysis\" "
+                ", Earthquake Spectra, 2020, 36(2): 806-831.");
+    auto citation3 = new QLabel("(2) Lu X.Z., Han B., Hori M., Xiong C., and Xu Z.,"
+                                " \"A coarse-grained parallel approach for seismic damage simulations of urban areas based on refined models"
+                                "and GPU/CPU cooperative computing\" , Advances in Engineering Software,"
+                                "2014, 70: 90-103.");
+    citation1->setWordWrap(true);
+    citation2->setWordWrap(true);
+    citation3->setWordWrap(true);
+
+    QLabel *spacer = new QLabel("");
+    layout->addWidget(spacer,4,0);
+    layout->addWidget(citation1, 5, 0, 1,2);
+    layout->addWidget(citation2, 6, 0, 1, 2);
+    layout->addWidget(citation3, 7, 0, 1, 2);
+    layout->setRowStretch(8,1);
 
     this->setLayout(layout);
 }
@@ -127,7 +152,11 @@ bool MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
     QJsonObject dataObj;
 
     dataObj["stdStiffness"] = stdStiffness->text();
-    dataObj["stdDamping"]   = stdDamping->text();
+    dataObj["stdDamping"] = stdDamping->text();
+
+    if(storyHeight->text() != "") {
+        dataObj["storyHeight"] = stdDamping->text();
+    }
 
     QFileInfo theFile(hazusDataFile->text());
     if (theFile.exists()) {
@@ -155,12 +184,18 @@ bool MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
         QFileInfo fileInfo;
         QString fileName;
         QString pathToFile;
+
         if (appData.contains("stdStiffness"))
             stdStiffness->setText(QString::number(appData["stdStiffness"].toDouble()));
+
         if (appData.contains("stdDamping"))
             stdDamping->setText(QString::number(appData["stdDamping"].toDouble()));
+
         if (appData.contains("hazusData"))
             fileName = appData["hazusData"].toString();
+
+        if (appData.contains("storyHeight"))
+            storyHeight->setText(QString::number(appData["storyHeight"].toDouble()));
 
         //
         // hazus file .. a number of options

@@ -110,9 +110,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("1.0.0");
 
-    // GoogleAnalytics::SetTrackingId("UA-186298856-1");
-    // GoogleAnalytics::StartSession();
-    // GoogleAnalytics::ReportStart();
+    //GoogleAnalytics::SetTrackingId("UA-186298856-1");
+    //GoogleAnalytics::StartSession();
+    //GoogleAnalytics::ReportStart();
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -170,7 +170,6 @@ int main(int argc, char *argv[])
     // Create the  menu bar and actions to run the examples
     theInputApp->initialize();
 
-
     QString aboutTitle = "About the SimCenter R2D Application"; // this is the title displayed in the on About dialog
     QString aboutSource = ":/resources/docs/textAboutR2D.html";  // this is an HTML file stored under resources
 
@@ -179,13 +178,13 @@ int main(int argc, char *argv[])
     QString version("Version 1.0.0");
     w.setVersion(version);
 
-    QString citeText("TO DO R2D CITATION");
+    QString citeText("Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Wael Elhaddad, & Kuanshi Zhong. (2021, January 31). NHERI-SimCenter/R2DTool: Version 1.0.0 (Version v1.0.0). Zenodo. http://doi.org/10.5281/zenodo.4483615");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
     w.setDocumentationURL(manualURL);
 
-    QString messageBoardURL("https://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=6.0");
+    QString messageBoardURL("http://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=8.0");
     w.setFeedbackURL(messageBoardURL);
 
 
@@ -240,7 +239,7 @@ int main(int argc, char *argv[])
     theRemoteService->logout();
     thread->quit();
 
-    // GoogleAnalytics::EndSession();
+    //GoogleAnalytics::EndSession();
 
     return res;
 }

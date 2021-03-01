@@ -52,6 +52,8 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const override;
 
+    QString uidItem(const QModelIndex &index);
+
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;

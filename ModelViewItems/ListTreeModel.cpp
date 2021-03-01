@@ -208,6 +208,7 @@ bool ListTreeModel::removeItemFromTree(const QString& itemID)
         if(index > -1)
         {
             item->removeChild(index);
+
             return true;
         }
 
@@ -310,6 +311,7 @@ bool ListTreeModel::clear(void)
 
         if(res == false)
             return false;
+
     }
 
     return true;

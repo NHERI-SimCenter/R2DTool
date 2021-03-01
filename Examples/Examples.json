@@ -1,16 +1,19 @@
 {
     "Examples": [
         {
-	    "name": "Basic Earthquake",
-            "InputFile": "Earthquake1_Basic/rWHALE_config_Earthquake_StdEDP.json"
+            "name":"E2 - MDOF Building Response",
+            "description":"This example uses ground motions from the 2018 earthquake in Anchorage, AK, to characterize the response of buildings with an idealized MDOF building model through story-level Engineering Demand Parameters (EDP). Exploiting the refinement in EDPs, a HAZUS-based story-level assessment is employed to evaluate the performance of 10 buildings. Comparison of simulated losses with the historic event’s outcomes present research opportunities for the community.",
+            "InputFile": "E2MDOFBuildingResponse/input.json"
+         },
+        {
+            "name":"E4 - OpenSeesPy FEM",
+            "description":"Advanced response estimation is enabled in this example through custom scripts that generate a finite element model for a building using the information available in the building inventory. A template script is provided that creates a building-specific cantilever and performs the response-history analysis to obtain EDPs. The hazard is described by empirical ground motion records from the PEER NGA West2 database. The buildings are located in Albany, CA, and their damage and loss assessment is based on the HAZUS methodology. This example includes 81 buildings and 5 are selected for analysis.",
+            "InputFile": "E4OpenSeesPyFEM/input.json"
         },
         {
-	    "name":"Alameda Earthquake",
-            "InputFile": "Earthquake2_Alameda/rWHALE_Alameda.json"
-        },
-        {
-	    "name":"Anchorage Earthquake",
-            "InputFile": "Earthquake3_Anchorage/rWHALE_Anchorage.json"
+            "name":"E5 - Ground Shaking + Liquefaction",
+            "description":"This example presents a coupled damage assessment for ground shaking and liquefaction hazards. To infer liquefaction, estimates of horizontal spreading and vertical settlement are generated from PGA values obtained through PSHA. These three intensity measures form the basis of input to a building-level, HAZUS-based damage and loss assessment that accounts for potential collapses due to liquefaction. Approximately 14,000 buildings are considered in the city of Alameda, CA.",
+            "InputFile": "E5GroundShakingAndLiquefaction/input.json"
         }
     ]
 }

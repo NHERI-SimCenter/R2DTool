@@ -72,6 +72,7 @@ private:
     QLineEdit *hazusDataFile;
     QLineEdit *stdStiffness;
     QLineEdit *stdDamping;
+    QLineEdit *storyHeight;
     RandomVariablesContainer *theRandomVariablesContainer;
 };
 

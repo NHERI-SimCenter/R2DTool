@@ -72,6 +72,9 @@ void AssetInputDelegate::clear()
 void AssetInputDelegate::insertSelectedCompoonent(const int id)
 {
     selectedComponentIDs.insert(id);
+
+    // Reset the text on the line edit
+    this->setText(this->getComponentAnalysisList());
 }
 
 
@@ -139,6 +142,9 @@ void AssetInputDelegate::selectComponents()
         }
     }
 
+    // Reset the text on the line edit
+    this->setText(this->getComponentAnalysisList());
+
     emit componentSelectionComplete();
 }
 
@@ -146,5 +152,37 @@ void AssetInputDelegate::selectComponents()
 std::set<int> AssetInputDelegate::getSelectedComponentIDs() const
 {
     return selectedComponentIDs;
+}
+
+
+QString AssetInputDelegate::getComponentAnalysisList()
+{
+    QString stringList;
+
+    std::set<int>::iterator it;
+    for (it = selectedComponentIDs.begin(); it != selectedComponentIDs.end(); ++it)
+    {
+        int first = *it;
+        int next = *it;
+        while(std::next(it, 1) != selectedComponentIDs.end() && *std::next(it, 1) == *it +1 )
+        {
+            next = *std::next(it, 1);
+            ++it;
+        }
+
+        if(next == first)
+        {
+            stringList.append(QString::number(*it)+",");
+        }
+        else
+        {
+            stringList.append(QString::number(first)+"-"+QString::number(next)+",");
+        }
+    }
+
+    // Remove the last comma
+    stringList.truncate(stringList.lastIndexOf(QChar(',')));
+
+    return stringList;
 }
 
