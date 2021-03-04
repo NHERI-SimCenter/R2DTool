@@ -1,4 +1,4 @@
-﻿/* *****************************************************************************
+/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LocalApplication.h"
 #include "MainWindowWorkflowApp.h"
 #include "ModelWidget.h"
+#include "PythonProgressDialog.h"
 #include "RandomVariablesContainer.h"
 #include "RemoteApplication.h"
 #include "RemoteJobManager.h"
@@ -63,6 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 
+#include <QApplication>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
@@ -106,6 +108,7 @@ WorkflowAppR2D* WorkflowAppR2D::getInstance()
 
 WorkflowAppR2D *WorkflowAppR2D::theInstance = nullptr;
 
+PythonProgressDialog *WorkflowAppR2D::progressDialog = nullptr;
 
 WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     : WorkflowAppWidget(theService, parent)
@@ -114,6 +117,7 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     theApp = this;
 
     theInstance = this;
+    progressDialog = new PythonProgressDialog(parent);
 
     localApp = new LocalApplication("R2DTool_workflow.py");
     remoteApp = new RemoteApplication("R2DTool_workflow.py", theService);
@@ -150,6 +154,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
 
+    connect(localApp,SIGNAL(runComplete()), progressDialog, SLOT(hideProgressBar()));
+
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
 
@@ -173,6 +179,10 @@ void WorkflowAppR2D::initialize(void)
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
     // Set the path to the input file
     editMenu->addAction("Clear", this, &WorkflowAppR2D::clear);
+
+    // Show progress dialog
+    QMenu *windowsMenu = theMainWindow->menuBar()->addMenu(tr("&Windows"));
+    windowsMenu->addAction("Show Output Dialog", this, &WorkflowAppR2D::showOutputDialog);
 
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
@@ -325,8 +335,6 @@ void WorkflowAppR2D::processResults(QString resultsDir, QString /*dakotaTab*/, Q
     theResultsWidget->processResults(resultsDir);
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
-
-    statusMessage("Analysis complete");
 }
 
 
@@ -342,19 +350,42 @@ void WorkflowAppR2D::clear(void)
     theDamageAndLossWidget->clear();
     theResultsWidget->clear();
     theVisualizationWidget->clear();
+    progressDialog->clear();
+}
+
+
+void WorkflowAppR2D::showOutputDialog(void)
+{
+    progressDialog->showDialog(true);
 }
 
 
 void WorkflowAppR2D::loadExamples()
 {
+
+    auto senderObj = QObject::sender();
     auto pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator();
-    pathToExample += QObject::sender()->property("InputFile").toString();
+    pathToExample += senderObj->property("InputFile").toString();
 
     if(pathToExample.isNull())
     {
         qDebug()<<"Error loading examples";
         return;
     }
+
+    //
+    // clear current and input from new JSON
+    //
+    this->clear();
+
+    auto exampleName = senderObj->property("Name").toString();
+    this->statusMessage("Loading example "+exampleName);
+
+    auto description = senderObj->property("Description").toString();
+
+    if(!description.isEmpty())
+        this->infoMessage(description);
+
 
     this->loadFile(pathToExample);
 }
@@ -409,13 +440,16 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
 void WorkflowAppR2D::onRunButtonClicked() {
     theRunWidget->hide();
     theRunWidget->setMinimumWidth(this->width()*0.5);
+
+    progressDialog->showDialog(true);
+    progressDialog->showProgressBar();
     theRunWidget->showLocalApplication();
     GoogleAnalytics::ReportLocalRun();
 }
 
 
 void WorkflowAppR2D::onRemoteRunButtonClicked(){
-    emit errorMessage("");
+    //    emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
 
@@ -434,7 +468,7 @@ void WorkflowAppR2D::onRemoteRunButtonClicked(){
 
 void WorkflowAppR2D::onRemoteGetButtonClicked(){
 
-    emit errorMessage("");
+    // emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
 
@@ -457,7 +491,7 @@ void WorkflowAppR2D::onExitButtonClicked(){
 
 void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir) {
 
-    errorMessage("");
+    //    errorMessage("");
 
     //
     // create temporary directory in working dir
@@ -522,7 +556,7 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     file.close();
 
 
-    statusMessage("SetUp Done .. Now starting application");
+    statusMessage("Setup done. Now starting application.");
 
     emit setUpForApplicationRunDone(tmpDirectory, inputFile);
 }
@@ -563,12 +597,17 @@ void WorkflowAppR2D::loadFile(const QString fileName){
     // close file
     file.close();
 
-    //
-    // clear current and input from new JSON
-    //
+    progressDialog->showProgressBar();
+    QApplication::processEvents();
 
-    this->clear();
     this->inputFromJSON(jsonObj);
+    progressDialog->hideProgressBar();
+
+    if(qobject_cast<RemoteJobManager*>(QObject::sender()) == nullptr)
+        this->statusMessage("Done loading. Click on the 'RUN' button to run an analysis.");
+
+    // Automatically hide after n seconds
+    // progressDialog->hideAfterElapsedTime(4);
 }
 
 
@@ -603,3 +642,34 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
     }
 
 }
+
+
+void WorkflowAppR2D::statusMessage(QString message)
+{
+    progressDialog->appendText(message);
+}
+
+
+void WorkflowAppR2D::infoMessage(QString message)
+{
+    progressDialog->appendInfoMessage(message);
+}
+
+
+void WorkflowAppR2D::errorMessage(QString message)
+{
+    progressDialog->appendErrorMessage(message);
+}
+
+
+void WorkflowAppR2D::fatalMessage(QString message)
+{
+    progressDialog->appendErrorMessage(message);
+}
+
+
+PythonProgressDialog *WorkflowAppR2D::getProgressDialog()
+{
+    return progressDialog;
+}
+

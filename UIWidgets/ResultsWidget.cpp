@@ -81,10 +81,19 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     label->setText(tr("Regional Results Summary"));
     label->setMinimumWidth(150);
 
+    auto disclaimerLabel = new QLabel("Disclaimer:\nThe presented simulation results are not representative of any individual building’s response. To understand the response of any individual building, "
+                                     "please consult with a professional structural engineer. The presented tool does not assert the known condition of the building. Just as it cannot be used to predict the negative outcome of an individual "
+                                     "building, prediction of safety or an undamaged state is not assured for an individual building. Any opinions, findings, and conclusions or recommendations expressed in this material are "
+                                     "those of the author(s) and do not necessarily reflect the views of the National Science Foundation.",this);
+    disclaimerLabel->setStyleSheet("font: 10pt;");
+    disclaimerLabel->setWordWrap(true);
+
     theHeaderLayout->addWidget(label);
     QSpacerItem *spacer = new QSpacerItem(50,10);
     theHeaderLayout->addItem(spacer);
-    theHeaderLayout->addStretch(1);
+    theHeaderLayout->addWidget(disclaimerLabel);
+
+    //    theHeaderLayout->addStretch(1);
 
     // Layout to display the results
     resultsPageWidget = new QWidget();

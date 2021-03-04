@@ -1,0 +1,8 @@
+summary: |
+  This example highlights the use of R2D for advanced response estimation leveraging information provided through a building inventory. A template script is provided that creates a building-specific cantilever and performs the response-history analysis to obtain EDPs and the hazard is generated using empirical ground motion records from the PEER NGA West2 database.
+#<p>Tags: (PEER ground motions | OpenSeesPy | HAZUS story-level D&L)</p>
+#  [Albany; 81 buildings with 5 selected; Steve]
+
+
+difficulty: 0
+

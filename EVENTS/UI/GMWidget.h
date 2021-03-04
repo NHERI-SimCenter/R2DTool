@@ -50,6 +50,7 @@ class GMPEWidget;
 class GmAppConfig;
 class IntensityMeasure;
 class IntensityMeasureWidget;
+class PythonProgressDialog;
 class MapViewSubWidget;
 class RecordSelectionConfig;
 class RecordSelectionWidget;
@@ -59,10 +60,7 @@ class SiteConfigWidget;
 class SpatialCorrelationWidget;
 class VisualizationWidget;
 
-class QDialog;
-class QPlainTextEdit;
 class QPushButton;
-class QProgressBar;
 class QStatusBar;
 
 namespace Esri
@@ -97,7 +95,6 @@ public slots:
     void setAppConfig(void);
     void showGISWindow(void);
     void runHazardSimulation(void);
-    void showInfoDialog(void);
 
     // Handles the results when the user is finished
     void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
@@ -137,10 +134,6 @@ private:
     QPushButton* m_settingButton;
     GmAppConfig* m_appConfig;
 
-    QDialog* progressDialog;
-    QPlainTextEdit* progressTextEdit;
-    QProgressBar* progressBar;
-
     VisualizationWidget* theVisualizationWidget;
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
@@ -153,12 +146,12 @@ private:
 
     int processDownloadedRecords(QString& errorMessage);
 
-    void handleErrorMessage(const QString& errorMessage);
-
     int numDownloaded;
     bool downloadComplete;
     QStringList recordsListToDownload;
     QJsonObject NGA2Results;
+
+    PythonProgressDialog* progressDialog;
 };
 
 #endif // GMWIDGET_H

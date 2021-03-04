@@ -58,7 +58,7 @@ void ComponentDatabase::addComponent(int ID, Component& asset)
 
 Component& ComponentDatabase::getComponent(const int ID)
 {
-  return ComponentMap[ID];
+    return ComponentMap[ID];
 }
 
 
@@ -79,7 +79,16 @@ void ComponentDatabase::clear(void)
     ComponentMap.clear();
 }
 
+
 QMap<int, Component> ComponentDatabase::getComponentsMap() const
 {
     return ComponentMap;
+}
+
+
+void ComponentDatabase::updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value)
+{
+    auto component = this->getComponent(ID);
+
+   component.setAttributeValue(attribute,value);
 }

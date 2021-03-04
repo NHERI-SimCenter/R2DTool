@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GmCommon.h"
 #include "GridNode.h"
 #include "IntensityMeasureWidget.h"
+#include "PythonProgressDialog.h"
 #include "MapViewSubWidget.h"
 #include "NGAW2Converter.h"
 #include "RecordSelectionWidget.h"
@@ -93,8 +94,6 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     initAppConfig();
 
     simulationComplete = false;
-    progressDialog = nullptr;
-    progressTextEdit = nullptr;
 
     process = new QProcess(this);
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &GMWidget::handleProcessFinished);
@@ -148,6 +147,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     //toolsGridLayout->setColumnStretch(4,1);
     this->setLayout(toolsGridLayout);
 
+    progressDialog = WorkflowAppR2D::getProgressDialog();
 
     setupConnections();
 
@@ -213,8 +213,8 @@ void GMWidget::setupConnections()
 
     connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, [this](QString statusUpdate)
     {
-        if(progressTextEdit != nullptr)
-            progressTextEdit->appendPlainText(statusUpdate + "\n");
+        if(progressDialog != nullptr)
+            progressDialog->appendText(statusUpdate);
     });
 
     connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
@@ -407,7 +407,7 @@ void GMWidget::runHazardSimulation(void)
 
     simulationComplete = false;
 
-    this->showInfoDialog();
+    progressDialog->showDialog(true);
 
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
@@ -433,7 +433,7 @@ void GMWidget::runHazardSimulation(void)
     QString err;
     if(!m_appConfig->validate(err))
     {
-        this->handleErrorMessage(err);
+        progressDialog->appendErrorMessage(err);
         return;
     }
 
@@ -457,7 +457,7 @@ void GMWidget::runHazardSimulation(void)
     if(EqRupture.isEmpty())
     {
         QString err = "Error in getting the earthquake rupture .JSON";
-        this->handleErrorMessage(err);
+        progressDialog->appendErrorMessage(err);
         return;
     }
 
@@ -480,7 +480,7 @@ void GMWidget::runHazardSimulation(void)
     if(numGM == -1)
     {
         QString err = "Error in getting the number of ground motions at a site";
-        this->handleErrorMessage(err);
+        progressDialog->appendErrorMessage(err);
         return;
     }
 
@@ -558,7 +558,7 @@ void GMWidget::runHazardSimulation(void)
 
     if(res != 0)
     {
-        this->handleErrorMessage(err);
+        progressDialog->appendErrorMessage(err);
         return;
     }
 
@@ -597,6 +597,8 @@ void GMWidget::runHazardSimulation(void)
     }
     QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
 
+    qDebug()<<"Hazard Simulation Command:"<<args[0]<<" "<<args[1]<<" "<<args[2];
+
     process->start(pythonPath, args);
     process->waitForStarted();
 }
@@ -609,8 +611,8 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     if(exitStatus == QProcess::ExitStatus::CrashExit)
     {
         QString errText("Error, the process running the hazard simulation script crashed");
-        this->handleErrorMessage(errText);
-        progressBar->hide();
+        progressDialog->appendErrorMessage(errText);
+        progressDialog->hideProgressBar();
 
         return;
     }
@@ -618,13 +620,13 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     if(exitCode != 0)
     {
         QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
-        this->handleErrorMessage(errText);
-        progressBar->hide();
+        progressDialog->appendErrorMessage(errText);
+        progressDialog->hideProgressBar();
 
         return;
     }
 
-    progressTextEdit->appendPlainText("Contacting PEER server to download ground motion records.\n");
+    progressDialog->appendText("Contacting PEER server to download ground motion records.");
 
     QApplication::processEvents();
 
@@ -638,8 +640,8 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     if(res != 0)
     {
         QString errText("Error downloading the ground motion records");
-        this->handleErrorMessage(errText);
-        progressBar->hide();
+        progressDialog->appendErrorMessage(errText);
+        progressDialog->hideProgressBar();
     }
 
 
@@ -648,7 +650,7 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
 
 void GMWidget::handleProcessStarted(void)
 {
-    progressTextEdit->appendPlainText("Running script in the background.\n");
+    progressDialog->appendText("Running script in the background");
     this->m_runButton->setEnabled(false);
 }
 
@@ -657,10 +659,7 @@ void GMWidget::handleProcessTextOutput(void)
 {
     QByteArray output = process->readAllStandardOutput();
 
-    progressTextEdit->appendPlainText("\n***Output from script start***\n");
-    progressTextEdit->appendPlainText(QString(output));
-    progressTextEdit->appendPlainText("***Output from script end***\n");
-
+    progressDialog->appendText(QString(output));
 }
 
 
@@ -794,9 +793,8 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
     QApplication::processEvents();
 
-    progressBar->setRange(0,inputFiles.size());
-
-    progressBar->setValue(0);
+    progressDialog->setProgressBarRange(0,inputFiles.size());
+    progressDialog->setProgressBarValue(0);
 
     // Create the table to store the fields
     QList<Field> tableFields;
@@ -836,6 +834,8 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     // Get the data
     for(int i = 0; i<numRows; ++i)
     {
+        progressDialog->setProgressBarValue(i+1);
+
         auto vecValues = data.at(i);
 
         if(vecValues.size() != 3)
@@ -875,7 +875,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
         {
             auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
 
-            this->handleErrorMessage(errorMessage);
+            progressDialog->appendErrorMessage(errorMessage);
 
             return -1;
         }
@@ -945,7 +945,7 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     if (result == false)
     {
         QString errMsg = "Error in unziping the downloaded ground motion files";
-        this->handleErrorMessage(errMsg);
+        progressDialog->appendErrorMessage(errMsg);
         return -1;
     }
 
@@ -957,7 +957,7 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     if(res1 != 0)
     {
         return -1;
-        this->handleErrorMessage(errMsg);
+        progressDialog->appendErrorMessage(errMsg);
     }
 
     // if more records to download due to 100 record limit .. go download them
@@ -976,81 +976,35 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
             errMsg.prepend("Error downloading ground motion files from PEER server.\n");
         }
 
-        this->handleErrorMessage(errMsg);
+        progressDialog->appendErrorMessage(errMsg);
         return res;
     }
 
     auto res2 = this->processDownloadedRecords(errMsg);
     if(res2 != 0)
     {
-        this->handleErrorMessage(errMsg);
+        progressDialog->appendErrorMessage(errMsg);
         return res2;
     }
 
-    progressTextEdit->appendPlainText("Download and parsing of ground motion records complete.\n");
+    progressDialog->appendText("Download and parsing of ground motion records complete.");
 
-    progressBar->hide();
+    progressDialog->hideProgressBar();
 
-    progressTextEdit->appendPlainText("The folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n");
+    progressDialog->appendText("The folder containing the results: "+m_appConfig->getOutputDirectoryPath());
 
-    progressTextEdit->appendPlainText("Earthquake hazard simulation complete.\n");
+    progressDialog->appendText("Earthquake hazard simulation complete.");
 
     simulationComplete = true;
 
     auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
 
     emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
-    progressDialog->hide();
+    // progressDialog->hide();
 
     return 0;
 }
 
-
-void GMWidget::showInfoDialog(void)
-{
-    if (!progressDialog)
-    {
-        progressDialog = new QDialog(this);
-
-        auto progressBarLayout = new QVBoxLayout(progressDialog);
-        progressDialog->setLayout(progressBarLayout);
-
-        progressDialog->setMinimumHeight(640);
-        //progressDialog->setMinimumWidth(750);
-
-        progressTextEdit = new QPlainTextEdit(this);
-        progressTextEdit->setWordWrapMode(QTextOption::WrapMode::WordWrap);
-        progressTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        progressTextEdit->setReadOnly(true);
-
-        progressBar = new QProgressBar(progressDialog);
-        progressBar->setRange(0,0);
-
-        progressBarLayout->addWidget(progressTextEdit);
-        progressBarLayout->addWidget(progressBar);
-    }
-
-    progressTextEdit->clear();
-    progressTextEdit->appendPlainText("Earthquake hazard simulation started. This may take a while!\n\nThe script is using OpenSHA and determining which records to select from the PEER NGA West 2 database.\n");
-    progressBar->show();
-    progressDialog->show();
-    progressDialog->raise();
-    progressDialog->activateWindow();
-}
-
-
-void GMWidget::handleErrorMessage(const QString& errorMessage)
-{
-    progressTextEdit->appendPlainText("\n");
-
-    auto msgStr = QString("<font color=%1>").arg("red") + errorMessage + QString("</font>") + QString("<font color=%1>").arg("black") + QString("&nbsp;") + QString("</font>");
-
-    // Output to console and to text edit
-    qDebug()<<msgStr;
-    progressTextEdit->appendHtml(msgStr);
-
-    progressTextEdit->appendPlainText("\n");
-}
 
 void GMWidget::setCurrentlyViewable(bool status){
 

@@ -98,6 +98,7 @@ signals:
 
 public slots:
     void handleComponentSelection(void);
+    void handleCellChanged(int row, int column);
 
 private slots:
     void selectComponents(void);
