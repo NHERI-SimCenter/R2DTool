@@ -1,4 +1,4 @@
-id,Latitude,Longitude,NumberofStories,YearBuilt,OccupancyClass,StructureType,PlanArea,ReplacementCost
+id,Latitude,Longitude,NumberOfStories,YearBuilt,OccupancyClass,StructureType,PlanArea,ReplacementCost
 0,37.422,-122.182,9,1957,RES1,S4,3879.760428,1
 1,37.422,-122.18575,3,1927,RES1,W2,4449.354054,1
 2,37.422,-122.1895,10,2020,RES1,S1,3564.13162,1
