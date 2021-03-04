@@ -1,4 +1,4 @@
-id,Longitude,Latitude,NumberofStories,YearBuilt,OccupancyClass,StructureType,PlanArea,ReplacementCost,Population,SoilType
+id,Longitude,Latitude,NumberOfStories,YearBuilt,OccupancyClass,StructureType,PlanArea,ReplacementCost,Population,SoilType
 1,-122.2939517,37.7709536,1,1953,IND2,W1,18615.30048,38781.876,1,B
 2,-122.294029,37.77157898,1,1954,IND2,W1,248537.7936,517787.07,1,B
 3,-122.2948735,37.7722115,1,1954,IND2,W1,13863.19968,28881.666,1,B

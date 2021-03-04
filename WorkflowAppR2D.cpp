@@ -175,52 +175,6 @@ WorkflowAppR2D::~WorkflowAppR2D()
 
 void WorkflowAppR2D::initialize(void)
 {
-    // Load the examples
-    auto pathToExamplesJson = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator() + "Examples.json";
-    // QString pathToExamplesJson = "/Users/steve/Desktop/SimCenter/RDT/RDT/Examples/";
-
-    QFile jsonFile(pathToExamplesJson);
-    jsonFile.open(QFile::ReadOnly);
-    QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
-
-    QJsonObject docObj = exDoc.object();
-    QJsonArray examples = docObj["Examples"].toArray();
-    QMenu *exampleMenu = nullptr;
-    if (examples.size() > 0)
-        exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-    foreach (const QJsonValue & example, examples) {
-        QJsonObject exampleObj = example.toObject();
-        QString name = exampleObj["name"].toString();
-        QString description = exampleObj["description"].toString();
-        QString inputFile = exampleObj["InputFile"].toString();
-        auto action = exampleMenu->addAction(name, this, &WorkflowAppR2D::loadExamples);
-        action->setProperty("Name",name);
-        action->setProperty("InputFile",inputFile);
-        action->setProperty("Description",description);
-    }
-
-    /*
-    auto numEx = exContainerObj.count();
-
-    if(numEx > 0)
-    {
-        QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-
-        for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
-        {
-            auto name = it.key();
-
-            auto exObj = exContainerObj.value(name).toObject();
-
-            auto inputFile = exObj.value("InputFile").toString();
-
-            // Set the path to the input file
-            auto action = exampleMenu->addAction(name, this, &WorkflowAppR2D::loadExamples);
-            action->setProperty("InputFile",inputFile);
-        }
-    }
-    */
-
     // Clear action
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
     // Set the path to the input file

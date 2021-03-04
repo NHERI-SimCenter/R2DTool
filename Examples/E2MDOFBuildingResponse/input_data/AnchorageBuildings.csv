@@ -1,4 +1,4 @@
-id,Latitude,Longitude,NumberofStories,YearBuilt,OccupancyClass,PlanArea,TypeID,ParcelId,StructureType,Footprint
+id,Latitude,Longitude,NumberOfStories,YearBuilt,OccupancyClass,PlanArea,TypeID,ParcelId,StructureType,Footprint
 1,61.21700019,-149.9083196,2,1983,RES1,3059,1,001-031-05-000,W1,"{""type"":""Feature"",""geometry"":{""type"":""Polygon"",""coordinates"":[[[-149.908450,61.217076],[-149.908450,61.217100],[-149.908506,61.217100],[-149.908506,61.217076],[-149.908450,61.217076]]]},""properties"":{}}"
 2,61.21671905,-149.9083414,1,1947,RES1,1498,1,001-031-07-000,W1,"{""type"":""Feature"",""geometry"":{""type"":""Polygon"",""coordinates"":[[[-149.908077,61.216670],[-149.908077,61.216756],[-149.908262,61.216756],[-149.908262,61.216670],[-149.908077,61.216670]]]},""properties"":{}}"
 3,61.21672429,-149.9072262,2,2000,RES3,4483,3,001-031-08-001,W1,"{""type"":""Feature"",""geometry"":{""type"":""Polygon"",""coordinates"":[[[-149.907122,61.216663],[-149.907124,61.216768],[-149.907557,61.216766],[-149.907555,61.216662],[-149.907122,61.216663]]]},""properties"":{}}"
