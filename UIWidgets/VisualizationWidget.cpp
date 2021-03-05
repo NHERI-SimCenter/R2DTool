@@ -657,7 +657,7 @@ void VisualizationWidget::loadBuildingData(void)
         else
         {
             Point point(longitude,latitude);
-            auto geom = getRectGeometryFromPoint(point, 0.0005,0.0005);
+            auto geom = getRectGeometryFromPoint(point, 0.00015,0.00015);
             if(geom.isEmpty())
             {
                 qDebug()<<"Error getting the building footprint geometry";

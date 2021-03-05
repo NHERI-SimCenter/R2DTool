@@ -140,7 +140,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Tools/CSVReaderWriter.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/PelicunPostProcessor.cpp \
-            Tools/PythonProgressDialog.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
             Tools/XMLAdaptor.cpp \
@@ -240,7 +239,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Tools/CSVReaderWriter.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
-            Tools/PythonProgressDialog.h \
             Tools/REmpiricalProbabilityDistribution.h \
             Tools/TableNumberItem.h \
             Tools/TablePrinter.h \
