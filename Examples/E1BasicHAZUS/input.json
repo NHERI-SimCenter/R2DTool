@@ -9,7 +9,7 @@
     "EDP": true,
     "DM": true,
     "DV": true,
-    "every_realization": true
+    "every_realization": false
   },
   "Applications": {
     "Hazard": {
@@ -22,7 +22,7 @@
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
-        "filter": "1-20",
+        "filter": "1-2",
         "buildingSourceFile":"San_Mateo_buildings.csv"
       }
     },
@@ -30,7 +30,7 @@
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
         "filenameEVENTgrid": "Project_general_IM/EventGrid.csv",
-        "samples": 1000,
+        "samples": 100,
         "neighbors": 4
       }
     },
@@ -47,7 +47,7 @@
        "Application": "pelicun",
        "ApplicationData": {
           "DL_Method": "HAZUS MH EQ IM",
-          "Realizations": "1000",
+          "Realizations": "100",
           "coupled_EDP": true,
           "event_time": "off",
           "detailed_results": false,
