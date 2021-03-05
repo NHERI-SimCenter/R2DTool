@@ -337,11 +337,15 @@ void UserInputGMWidget::loadUserGMData(void)
 
     auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
 
+    gridLayer->setName("Ground Motion Grid Points");
+//    gridLayer->setAutoFetchLegendInfos(true);
+
     // Create red cross SimpleMarkerSymbol
     SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
 
     // Create renderer and set symbol to crossSymbol
     SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+    renderer->setLabel("Ground motion grid points");
 
     // Set the renderer for the feature layer
     gridFeatureCollectionTable->setRenderer(renderer);
@@ -474,12 +478,12 @@ void UserInputGMWidget::loadUserGMData(void)
 
 
     // Add the event layer to the layer tree
-    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
+    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
 
     progressLabel->setVisible(false);
 
     // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(gridLayer,eventItem);
+    theVisualizationWidget->addLayerToMap(gridLayer,userInputTreeItem);
 
     // Reset the widget back to the input pane and close
     userGMStackedWidget->setCurrentWidget(fileInputWidget);

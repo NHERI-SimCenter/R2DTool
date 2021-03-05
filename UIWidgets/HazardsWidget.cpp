@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GMWidget.h"
 #include "HazardsWidget.h"
 #include "ShakeMapWidget.h"
+#include "UserInputHurricaneWidget.h"
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
@@ -61,17 +62,24 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     theShakeMapWidget = nullptr;
     theEQSSWidget = nullptr;
     theUserInputGMWidget = nullptr;
+    theUserInputHurricaneWidget = nullptr;
+
+    this->setContentsMargins(0,0,0,0);
 
     theEQSSWidget = new GMWidget(this, theVisualizationWidget);
     // theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
+    // theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget);
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
     this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);
+    // this->addComponent("User Specified Hurricanes", "UserInputHurricane", theUserInputHurricaneWidget);
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
     connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
-    connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));    
+
+//    selectionChangedSlot("User Specified Hurricanes");
 }
 
 

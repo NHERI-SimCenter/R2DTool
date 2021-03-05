@@ -117,6 +117,7 @@ public slots:
     void infoMessage(QString message);
     void errorMessage(QString message);
     void fatalMessage(QString message);
+    void runComplete();
 
 private:
 

@@ -396,7 +396,7 @@ void ComponentInputWidget::clearComponentSelection(void)
         selectedFeatures<<feature;
     }
 
-    theVisualizationWidget->clearSelectedLayer();
+    theVisualizationWidget->clearLayerSelectedForAnalysis();
 
 
     auto nRows = componentTableWidget->rowCount();

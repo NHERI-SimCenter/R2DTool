@@ -57,6 +57,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "FeatureLayer.h"
 #include "Geodatabase.h"
 #include "GeodatabaseFeatureTable.h"
+#include "GeoElement.h"
 #include "GeographicTransformation.h"
 #include "GeographicTransformationStep.h"
 #include "GroupLayer.h"
@@ -159,6 +160,7 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     mapGIS->setInitialViewpoint(UCB);
 
+
     // Setup the various convex hull objects
     setupConvexHullObjects();
 
@@ -183,6 +185,13 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     connect(mapViewWidget, &MapGraphicsView::exportImageCompleted, this, &VisualizationWidget::exportImageComplete);
 
     this->setLegendView(mapViewWidget->getLegendView());
+
+    // Create a new graphics overlay for the features selected by clicking
+    selectedFeaturesOverlay = new GraphicsOverlay(this);
+
+    // Add the overlay to the mapview
+    mapViewWidget->graphicsOverlays()->append(selectedFeaturesOverlay);
+
 
     //        ArcGISTiledLayer* tiledLayer = new ArcGISTiledLayer(QUrl("https://services.arcgisonline.com/ArcGIS/rest/services/Specialty/Soil_Survey_Map/MapServer"), this);
     //        mapGIS->operationalLayers()->append(tiledLayer);
@@ -524,7 +533,7 @@ void VisualizationWidget::loadBuildingData(void)
     selectedBuildingsLayer = new FeatureCollectionLayer(selectedBuildingsFeatureCollection,this);
     selectedBuildingsLayer->setName("Selected Buildings");
     selectedBuildingsLayer->setAutoFetchLegendInfos(true);
-    selectedBuildingsTable->setRenderer(this->createBuildingRenderer());
+    selectedBuildingsTable->setRenderer(this->createBuildingRenderer(2.5));
 
     // Map to hold the feature tables
     std::map<std::string, FeatureCollectionTable*> tablesMap;
@@ -540,12 +549,11 @@ void VisualizationWidget::loadBuildingData(void)
 
         newBuildingLayer->setName(QString::fromStdString(it));
 
+        newBuildingLayer->setAutoFetchLegendInfos(true);
+
         featureCollectionTable->setRenderer(this->createBuildingRenderer());
 
         tablesMap.insert(std::make_pair(it,featureCollectionTable));
-
-        newBuildingLayer->setAutoFetchLegendInfos(true);
-
 
         this->addLayerToMap(newBuildingLayer,buildingsItem,buildingLayer);
     }
@@ -667,6 +675,10 @@ void VisualizationWidget::loadBuildingData(void)
         theBuildingDb->addComponent(buildingID, building);
 
     }
+
+    buildingLayer->load();
+
+    zoomToLayer(buildingLayer->layerId());
 
 }
 
@@ -908,7 +920,7 @@ void VisualizationWidget::getItemsInConvexHull()
                     auto table = tables->at(j);
 
                     // Make this a unique, i.e., one-off connection so that it does not call the slot multiple times
-                    connect(table, &FeatureTable::queryFeaturesCompleted, this, &VisualizationWidget::featureSelectionQueryCompleted, Qt::UniqueConnection);
+                    connect(table, &FeatureTable::queryFeaturesCompleted, this, &VisualizationWidget::selectFeaturesForAnalysisQueryCompleted, Qt::UniqueConnection);
 
                     // Query the table for features - note that this is done asynchronously
                     auto taskWatcher = table->queryFeatures(queryParams);
@@ -936,13 +948,13 @@ void VisualizationWidget::getItemsInConvexHull()
 }
 
 
-void VisualizationWidget::featureSelectionQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult)
+void VisualizationWidget::selectFeaturesForAnalysisQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult)
 {
     if(rawResult == nullptr)
         return;
 
     // Append the raw result to the list - memory management to be handled later
-    selectedFeaturesList.append(rawResult);
+    featuresSelectedForAnalysisList.append(rawResult);
 
     taskIDMap.remove(taskID);
     emit taskSelectionComplete();
@@ -953,7 +965,7 @@ void VisualizationWidget::handleLayerSelection(LayerTreeItem* item)
 {
     auto itemID = item->getItemID();
 
-    auto isChecked = item->getState() == 1 || item->getState() == 2 ? true : false;
+    auto isChecked = item->getState() == 2 ? true : false;
 
     // Get the list of layers
     auto layersList = mapGIS->operationalLayers();
@@ -973,15 +985,15 @@ void VisualizationWidget::handleLayerSelection(LayerTreeItem* item)
             }
 
             // Check the sublayers - to do get layer pointer from sublayer contents
-            //            auto subLayersCont = layer->subLayerContents();
-            //            for(auto&& it : subLayersCont)
-            //            {
-            //                if(it->name() == itemID)
-            //                {
-            //                    it->setVisible(isChecked);
-            //                    return true;
-            //                }
-            //            }
+            //  auto subLayersCont = layer->subLayerContents();
+            //  for(auto&& it : subLayersCont)
+            //  {
+            //      if(it->name() == itemID)
+            //      {
+            //          it->setVisible(isChecked);
+            //          return true;
+            //      }
+            //  }
 
             if(auto isGroupLayer = dynamic_cast<GroupLayer*>(layer))
             {
@@ -990,7 +1002,9 @@ void VisualizationWidget::handleLayerSelection(LayerTreeItem* item)
 
                 if(found)
                 {
-                    isGroupLayer->setVisible(true);
+                    if(!layer->isVisible())
+                        layer->setVisible(true);
+
                     return true;
                 }
             }
@@ -1103,14 +1117,14 @@ void VisualizationWidget::handleArcGISError(Esri::ArcGISRuntime::Error error)
 }
 
 
-void VisualizationWidget::handleSelectedFeatures(void)
+void VisualizationWidget::handleSelectFeaturesForAnalysis(void)
 {
     auto buildingSelected = false;
     auto pipelineSelected = false;
 
     //    QList<Feature*> buildingFeatures;
 
-    for(auto&& it : selectedFeaturesList)
+    for(auto&& it : featuresSelectedForAnalysisList)
     {
         FeatureIterator iter = it->iterator();
         while (iter.hasNext())
@@ -1151,9 +1165,9 @@ void VisualizationWidget::handleSelectedFeatures(void)
         pipelineWidget->handleComponentSelection();
 
     // Delete the raw results and clear the selection list
-    qDeleteAll(selectedFeaturesList);
+    qDeleteAll(featuresSelectedForAnalysisList);
 
-    selectedFeaturesList.clear();
+    featuresSelectedForAnalysisList.clear();
 }
 
 
@@ -1187,7 +1201,7 @@ ClassBreaksRenderer* VisualizationWidget::createPointRenderer(void)
 }
 
 
-ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
+ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(double outlineWidth)
 {
     // Images stored in base64 format
     //    QByteArray buildingImg1 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWhJREFUSInt1jFrwkAYxvF/SDpJBaHFtlN0dlP0O3TWSWobOnZvidA2QycHZ9cGhNKlX0FwcPcLCC4OrWKGDMKZdKmg1WpOo1LwgYMb3nt/HHdwp7HjaHsDTdM8GgwGFnADXITU/xN4j0QiD9Vq1Z0Bh8PhE1AOCZrkFLhzXfcYuJ4BPc+7ChmbzuVkMn2GZ1sETxaBUkkkEnQ6Hel1a4GGYZBOp6nX6ySTSVKpFACWZTEajcIFDcMgl8sBUCwW6ff7xGIxAFRVXbleCpzGADRNIx6Py7QIDv7G1k0gMCiWzWZpNBqbgTI7KxQKjMdjms3memCpVCKTyeD7PoqirAQVRSGfzyOEoNVqyYO2bWPbNpVKhWg0uhJst9vUarWlNft7LQ7gAfzfYLkc7Ofh+74U2AP0RUVCiEDgkvQWga/A86ad/8jHHKjr+ku321U9z7sFzkOCvoA3x3Hu50DTNAXw+DO2lp3f0m97bGdscCiEZAAAAABJRU5ErkJggg==";
@@ -1225,6 +1239,16 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(void)
     SimpleFillSymbol* symbol3 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(253,204,92), this);
     SimpleFillSymbol* symbol4 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(253,141,60), this);
     SimpleFillSymbol* symbol5 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(240,59,32), this);
+
+    if(outlineWidth != 0.0)
+    {
+        SimpleLineSymbol* outlineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(255, 255, 0, 200), outlineWidth, this);
+        symbol1->setOutline(outlineSymbol);
+        symbol2->setOutline(outlineSymbol);
+        symbol3->setOutline(outlineSymbol);
+        symbol4->setOutline(outlineSymbol);
+        symbol5->setOutline(outlineSymbol);
+    }
 
     QList<ClassBreak*> classBreaks;
 
@@ -1294,6 +1318,8 @@ void VisualizationWidget::identifyLayersCompleted(QUuid taskID, const QList<Iden
 {
     int count = 0;
 
+    this->clearSelection();
+
     QVector<std::pair<GeoElement*,QString>> elemList;
 
     // lambda for calculating result count
@@ -1351,6 +1377,15 @@ void VisualizationWidget::identifyLayersCompleted(QUuid taskID, const QList<Iden
     {
         auto geomElem = it.first;
 
+        // cast the GeoElement to a Feature
+        Feature* feature = static_cast<Feature*>(geomElem);
+
+        if(feature)
+        {
+            auto feature2 = new Feature(feature->getImpl(),this);
+            selectedFeaturesList.append(feature2);
+        }
+
         auto elemAttrib = geomElem->attributes();
 
         auto listOfAttributes = elemAttrib->attributeNames();
@@ -1402,11 +1437,13 @@ void VisualizationWidget::identifyLayersCompleted(QUuid taskID, const QList<Iden
         popUp->addTab(attributeTableWidget,label);
     }
 
+    // If got this far then some features were selected
+    this->handleSelectFeatures();
+
     popUp->exec();
 
     // Delete the results
     qDeleteAll(results);
-
     taskIDMap.remove(taskID);
 }
 
@@ -1453,7 +1490,7 @@ void VisualizationWidget::handleAsyncSelectionTask(void)
     // Only handle the selected features when all tasks are complete
     if(taskIDMap.empty())
     {
-        this->handleSelectedFeatures();
+        this->handleSelectFeaturesForAnalysis();
     }
 
     //    QMap<QUuid, QString>::const_iterator i = m_taskIds.constBegin();
@@ -1467,54 +1504,49 @@ void VisualizationWidget::handleAsyncSelectionTask(void)
 }
 
 
-void VisualizationWidget::handleAsyncLayerLoad(Esri::ArcGISRuntime::LoadStatus layerLoadStatus)
+void VisualizationWidget::handleAsyncLayerLoad(Esri::ArcGISRuntime::Error layerLoadStatus)
 {
 
-    if (layerLoadStatus == LoadStatus::Loaded)
+    if (!layerLoadStatus.isEmpty())
     {
-        QObject* obj = sender();
-
-        Layer* layerSender = qobject_cast<Layer*>(obj);
-
-        if(layerSender == nullptr)
-        {
-            qDebug()<<"The sender must be a layer";
-            return;
-        }
-
-        auto layerID = layerSender->layerId();
-
-        // Populate the legend info for that layer
-        if(layerSender->isAutoFetchLegendInfos())
-        {
-            layerSender->legendInfos();
-
-            auto legendInfos = layerSender->legendInfos();
-            if(legendInfos == nullptr)
-                return;
-
-            legendInfos->setProperty("UID",layerID);
-
-            connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
-        }
-
-        layerLoadMap.remove(layerID);
-
-        // Only zoom to extents when all of the layers are loaded
-        if(layerLoadMap.empty())
-        {
-            this->zoomToExtents();
-        }
+        qDebug() << layerLoadStatus.message() << layerLoadStatus.additionalMessage();
+        return;
     }
 
-    //    QMap<QUuid, QString>::const_iterator i = m_taskIds.constBegin();
-    //    while (i != m_taskIds.constEnd())
-    //    {
-    //        auto isDone = i.value();
-    //        qDebug()<< i.key() << ": "<<isDone << Qt::endl;
-    //        ++i;
-    //    }
+    QObject* obj = sender();
 
+    Layer* layerSender = qobject_cast<Layer*>(obj);
+
+    if(layerSender == nullptr)
+    {
+        qDebug()<<"The sender must be a layer";
+        return;
+    }
+
+    auto layerID = layerSender->layerId();
+    auto layerName = layerSender->name();
+
+    // Populate the legend info for that layer
+    if(layerSender->isAutoFetchLegendInfos())
+    {
+        layerSender->legendInfos();
+
+        auto legendInfos = layerSender->legendInfos();
+        if(legendInfos == nullptr)
+            return;
+
+        legendInfos->setProperty("UID",layerID);
+
+        connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
+    }
+
+    layerLoadMap.remove(layerID);
+
+    // Only zoom to extents when all of the layers are loaded
+    if(layerLoadMap.empty())
+    {
+        //        this->zoomToExtents();
+    }
 }
 
 
@@ -1590,13 +1622,18 @@ void VisualizationWidget::zoomToExtents(void)
     Envelope bbox;
     for (int j = 0; j < layers->size(); j++)
     {
+        auto layer = layers->at(j);
+
+        if(layer->loadStatus() != Esri::ArcGISRuntime::LoadStatus::Loaded)
+            continue;
+
         if(!bbox.isValid())
         {
-            bbox = layers->at(j)->fullExtent();
+            bbox = layer->fullExtent();
             continue;
         }
 
-        auto layerExtent = layers->at(j)->fullExtent();
+        auto layerExtent = layer->fullExtent();
 
         if(layerExtent.isValid())
             bbox = GeometryEngine::unionOf(bbox, layerExtent);
@@ -1605,72 +1642,87 @@ void VisualizationWidget::zoomToExtents(void)
     if(!bbox.isValid())
         return;
 
-    auto center = bbox.center();
-//    auto x = center.x();
-//    auto y = center.y();
-    mapViewWidget->setViewpointCenter(center,10000);
-//    mapViewWidget->setViewpointGeometry(bbox);
+    //    auto center = bbox.center();
+    //    auto x = center.x();
+    //    auto y = center.y();
+    //    mapViewWidget->setViewpointCenter(center,10000);
+    mapViewWidget->setViewpointGeometry(bbox,50);
 
 }
 
 
+void VisualizationWidget::zoomToLayer(const QString layerID)
+{
 
-/*
+    Layer* gisLayer = layersMap.value(layerID,nullptr);
+    //    Layer* gisLayer = this->findLayer(layerID);
 
-
-    LayerListModel* layers = mapGIS->operationalLayers();
-
-    if(layers->size() == 0)
+    // Continue if the layer is turned off
+    if(gisLayer == nullptr || gisLayer->loadStatus() != Esri::ArcGISRuntime::LoadStatus::Loaded || !gisLayer->isVisible())
         return;
+
+    auto layerName = gisLayer->name();
 
     Envelope bbox;
 
-    std::function<void(const LayerListModel*)> getExtentsNestedLayers = [&](const LayerListModel* layers)
+    if(auto featureCollectLayer = dynamic_cast<FeatureCollectionLayer*>(gisLayer))
     {
-        for(int i = 0; i<layers->size(); ++i)
+        auto tables = featureCollectLayer->featureCollection()->tables();
+
+        for(int j = 0; j<tables->size(); ++j)
         {
-            auto layer = layers->at(i);
+            auto table = tables->at(j);
 
-            // Continue if the layer is turned off
-            if(!layer->isVisible())
-                continue;
+            Envelope tableExt = table->extent();
 
-            if(auto featureCollectLayer = dynamic_cast<FeatureCollectionLayer*>(layer))
+            if(tableExt.isValid())
             {
-                featureCollectLayer->load();
+                if(!bbox.isValid())
+                    bbox = tableExt;
 
-                auto layerExtent = featureCollectLayer->fullExtent();
-
-                if(layerExtent.isValid())
-                {
-                    // auto width = layerExtent.width();
-                    // auto depth = layerExtent.depth();
-
-                    if(bbox.isValid())
-                        bbox = GeometryEngine::unionOf(bbox, layerExtent);
-                    else
-                        bbox = layerExtent;
-                }
-
-            }
-            else if(auto isGroupLayer = dynamic_cast<GroupLayer*>(layer))
-            {
-                auto subLayers = isGroupLayer->layers();
-                getExtentsNestedLayers(subLayers);
+                bbox = GeometryEngine::combineExtents(bbox, tableExt);
             }
         }
-    };
+    }
+    else if(auto isGroupLayer = dynamic_cast<GroupLayer*>(gisLayer))
+    {
+        auto subLayers = isGroupLayer->layers();
+        for(int i = 0; i<subLayers->size(); ++i)
+        {
+            Layer* subLayer = subLayers->at(i);
 
-    getExtentsNestedLayers(layers);
+            auto featureCollectLayer = dynamic_cast<FeatureCollectionLayer*>(subLayer);
 
-    if(bbox.isValid())
-        mapViewWidget->setViewpointGeometry(bbox, 40);  //  mapViewWidget->setViewpointCenter(bbox->fullExtent().center(), 80000);
-        */
+            if(featureCollectLayer == nullptr)
+                continue;
 
-//void zoomToLayer()
-//{
+            auto tables = featureCollectLayer->featureCollection()->tables();
 
-//}
+            for(int j = 0; j<tables->size(); ++j)
+            {
+                auto table = tables->at(j);
+
+                Envelope tableExt = table->extent();
+
+                if(tableExt.isValid())
+                {
+                    if(!bbox.isValid())
+                        bbox = tableExt;
+
+                    bbox = GeometryEngine::combineExtents(bbox, tableExt);
+                }
+            }
+        }
+    }
+
+
+    if(!bbox.isValid())
+        return;
+
+    //    auto center = bbox.center();
+    //    mapViewWidget->setViewpointCenter(center,10000);
+    mapViewWidget->setViewpointGeometry(bbox,20);
+}
 
 
 void VisualizationWidget::handleBasemapSelection(const QString selection)
@@ -1729,7 +1781,7 @@ void VisualizationWidget::addComponentsToSelectedLayer(const QList<Feature*>& fe
             auto atrVals = atrb.values();
             auto atrKeys = atrb.keys();
 
-            if(selectedFeatures.contains(id))
+            if(selectedFeaturesForAnalysis.contains(id))
                 continue;
 
             // qDebug()<<"Num atributes: "<<atrb.size();
@@ -1758,12 +1810,12 @@ void VisualizationWidget::addComponentsToSelectedLayer(const QList<Feature*>& fe
             auto geom = it->geometry();
             Feature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
             selectedBuildingsTable->addFeature(feat);
-            selectedFeatures.insert(id,feat);
+            selectedFeaturesForAnalysis.insert(id,feat);
         }
     }
 
     // Create the tree item if
-    if(selectedComponentsTreeItem == nullptr && !selectedFeatures.empty())
+    if(selectedComponentsTreeItem == nullptr && !selectedFeaturesForAnalysis.empty())
     {
         if(selectedComponentsLayer == nullptr)
         {
@@ -1779,38 +1831,38 @@ void VisualizationWidget::addComponentsToSelectedLayer(const QList<Feature*>& fe
 }
 
 
-void VisualizationWidget::clearSelectedLayer()
+void VisualizationWidget::clearLayerSelectedForAnalysis(void)
 {
 
-    if(selectedFeatures.empty())
+    if(selectedFeaturesForAnalysis.empty())
         return;
 
-    for(auto&& it : selectedFeatures)
+    for(auto&& it : selectedFeaturesForAnalysis)
     {
         selectedBuildingsTable->deleteFeature(it);
     }
 
     // selectedBuildingsTable->deleteFeatures(selectedFeatures);
-    selectedFeatures.clear();
+    selectedFeaturesForAnalysis.clear();
 }
 
 
 void VisualizationWidget::updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value)
 {
-    if(selectedFeatures.empty())
+    if(selectedFeaturesForAnalysis.empty())
     {
         qDebug()<<"Selected features map is empty";
         return;
     }
 
-    if(!selectedFeatures.contains(uid))
+    if(!selectedFeaturesForAnalysis.contains(uid))
     {
         qDebug()<<"Feature not found in selected components map";
         return;
     }
 
     // Get the feature
-    Feature* feat = selectedFeatures[uid];
+    Feature* feat = selectedFeaturesForAnalysis[uid];
 
     if(feat == nullptr)
     {
@@ -2124,7 +2176,7 @@ LayerTreeItem* VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* la
     // Add layer to the map
     layerLoadMap[layerID] = layerName;
 
-    connect(layer, &Layer::loadStatusChanged, this, &VisualizationWidget::handleAsyncLayerLoad);
+    connect(layer, &Layer::doneLoading, this, &VisualizationWidget::handleAsyncLayerLoad);
 
     layer->load();
 
@@ -2176,7 +2228,7 @@ void VisualizationWidget::clear(void)
     taskIDMap.clear();
     layerLoadMap.clear();
 
-    selectedFeaturesList.clear();
+    featuresSelectedForAnalysisList.clear();
 
     mapGIS->operationalLayers()->clear();
 
@@ -2186,6 +2238,8 @@ void VisualizationWidget::clear(void)
 
     selectedComponentsTreeItem = nullptr;
     selectedComponentsLayer = nullptr;
+
+    this->clearSelection();
 }
 
 
@@ -2334,6 +2388,55 @@ Esri::ArcGISRuntime::Geometry VisualizationWidget::getRectGeometryFromPoint(cons
     polygonBuilder.addPoint(xMin,yMax);
 
     return polygonBuilder.toGeometry();
+}
+
+QList<Esri::ArcGISRuntime::Feature *> VisualizationWidget::getSelectedFeaturesList() const
+{
+    return selectedFeaturesList;
+}
+
+
+void VisualizationWidget::handleSelectFeatures(void)
+{
+    auto selectedColor = QColor(255, 170, 29);
+
+    for(auto&& it: selectedFeaturesList)
+    {
+        auto geom = it->geometry();
+
+        auto geomType = geom.geometryType();
+
+        if(geomType == GeometryType::Polyline)
+        {
+            SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, selectedColor, 4.0f /*width*/, this);
+            Graphic* graphic = new Graphic(geom, this);
+            graphic->setSymbol(lineSymbol);
+            selectedFeaturesOverlay->graphics()->append(graphic);
+        }
+        else if(geomType == GeometryType::Polygon)
+        {
+            SimpleFillSymbol* fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, selectedColor, this);
+            Graphic* graphic = new Graphic(geom, this);
+            graphic->setSymbol(fillSymbol);
+            selectedFeaturesOverlay->graphics()->append(graphic);
+        }
+        else if(geomType == GeometryType::Point)
+        {
+            SimpleMarkerSymbol* pointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, selectedColor, 4.0f, this);
+            Graphic* graphic = new Graphic(geom, this);
+            graphic->setSymbol(pointSymbol);
+            selectedFeaturesOverlay->graphics()->append(graphic);
+        }
+    }
+
+}
+
+
+void VisualizationWidget::clearSelection(void)
+{
+    selectedFeaturesOverlay->graphics()->clear();
+    qDeleteAll(selectedFeaturesList);
+    selectedFeaturesList.clear();
 }
 
 

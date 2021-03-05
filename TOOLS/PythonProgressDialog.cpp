@@ -74,7 +74,6 @@ void PythonProgressDialog::showDialog(bool visible)
     {
         this->hide();
     }
-
 }
 
 
@@ -86,6 +85,7 @@ void PythonProgressDialog::appendText(const QString text)
     auto cleanText = cleanUpText(text);
 
     progressTextEdit->appendPlainText(cleanText+ "\n");
+
     qDebug()<<cleanText;
 }
 
@@ -101,6 +101,7 @@ void PythonProgressDialog::appendErrorMessage(const QString text)
     progressTextEdit->appendHtml(msgStr);
 
     progressTextEdit->appendPlainText("\n");
+
     qDebug()<<text;
 }
 
@@ -116,6 +117,7 @@ void PythonProgressDialog::appendInfoMessage(const QString text)
     progressTextEdit->appendHtml(msgStr);
 
     progressTextEdit->appendPlainText("\n");
+
     qDebug()<<text;
 }
 
@@ -169,7 +171,7 @@ void PythonProgressDialog::setProgressBarRange(const int start,const int end)
 
 void PythonProgressDialog::hideAfterElapsedTime(int sec)
 {
-    progressTextEdit->appendPlainText("This window will automatically close in "+QString::number(sec) + " seconds");
+    progressTextEdit->appendPlainText("This window will automatically close in "+QString::number(sec) + " seconds \n");
 
     QTimer::singleShot(sec*1000, [=]() {
 

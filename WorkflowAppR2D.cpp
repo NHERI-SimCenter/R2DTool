@@ -139,6 +139,7 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
+    connect(localApp,SIGNAL(runComplete()), this,SLOT(runComplete()));
 
     connect(remoteApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(remoteApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
@@ -280,6 +281,8 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
 
     theComponentSelection->displayComponent("VIZ");
+//    theComponentSelection->displayComponent("HAZ");
+
 
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidget->setAssetTypeState("Buildings", true);
@@ -711,6 +714,12 @@ void WorkflowAppR2D::errorMessage(QString message)
 void WorkflowAppR2D::fatalMessage(QString message)
 {
     progressDialog->appendErrorMessage(message);
+}
+
+
+void WorkflowAppR2D::runComplete()
+{
+    progressDialog->hideAfterElapsedTime(2);
 }
 
 

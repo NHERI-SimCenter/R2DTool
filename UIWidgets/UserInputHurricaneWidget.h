@@ -1,5 +1,5 @@
-#ifndef HAZARDS_WIDGET_H
-#define HAZARDS_WIDGET_H
+#ifndef UserInputHurricaneWidget_H
+#define UserInputHurricaneWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,44 +38,85 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "SimCenterAppSelection.h"
+#include "SimCenterAppWidget.h"
+#include "ResultsMapViewWidget.h"
 
-class GMWidget;
-class RandomVariablesContainer;
-class ShakeMapWidget;
-class UserInputHurricaneWidget;
-class UserInputGMWidget;
+#include <memory>
+
+#include <QMap>
+
 class VisualizationWidget;
 
-class QGroupBox;
+class QStackedWidget;
+class QLineEdit;
+class QProgressBar;
+class QLabel;
 
-class HazardsWidget : public  SimCenterAppSelection
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class ArcGISMapImageLayer;
+class GroupLayer;
+class FeatureCollectionLayer;
+class KmlLayer;
+class Layer;
+}
+}
+
+
+class UserInputHurricaneWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
-    ~HazardsWidget();
+    UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~UserInputHurricaneWidget();
+
+    void showUserGMLayers(bool state);
+
+    QStackedWidget* getUserInputHurricaneWidget(void);
+
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
+
+    void clear(void);
 
     void setCurrentlyViewable(bool status);
 
-signals:
-    void gridFileChangedSignal(QString motionDir, QString eventFile);
+public slots:
+
+    void showUserGMSelectDialog(void);
 
 private slots:
 
-    void shakeMapLoadingFinished(const bool value);
-    void gridFileChangedSlot(QString motionDir, QString eventFile);
+    void handleHurricaneSelect(void);
+    void loadUserHurricaneData(void);
+    void chooseEventFileDialog(void);
+
+signals:
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void loadingComplete(const bool value);
 
 private:
 
-    RandomVariablesContainer* theRandomVariablesContainer;
+    std::unique_ptr<QStackedWidget> theStackedWidget;
+    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
 
     VisualizationWidget* theVisualizationWidget;
-    GMWidget* theEQSSWidget;
-    ShakeMapWidget* theShakeMapWidget;
-    UserInputGMWidget* theUserInputGMWidget;
-    UserInputHurricaneWidget* theUserInputHurricaneWidget;
+
+    QString eventFile;
+    QLineEdit *eventFileLineEdit;
+
+    QLabel* selectedHurricaneName;
+    QLabel* selectedHurricaneSID;
+
+    QLabel* progressLabel;
+    QWidget* progressBarWidget;
+    QWidget* fileInputWidget;
+    QProgressBar* progressBar;
+
 };
 
-#endif // HAZARDS_WIDGET_H
+#endif // UserInputHurricaneWidget_H

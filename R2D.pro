@@ -188,6 +188,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
             UIWidgets/UserInputGMWidget.cpp \
+            UIWidgets/UserInputHurricaneWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
             ModelViewItems/LayerTreeItem.cpp \
             ModelViewItems/TreeItem.cpp \
@@ -288,6 +289,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
             UIWidgets/UserInputGMWidget.h \
+            UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/VisualizationWidget.h \
             ModelViewItems/LayerTreeItem.h \
             ModelViewItems/TreeItem.h \
