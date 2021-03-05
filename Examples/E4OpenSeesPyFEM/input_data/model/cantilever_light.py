@@ -40,15 +40,11 @@
 #
 
 import os
-from sys import platform
 
 import numpy as np
 from math import pi, sqrt
 
-if platform == "darwin":  # MACOS
-    import openseespymac.opensees as ops
-else:
-    import openseespy.opensees as ops
+import openseespy.opensees as ops
 
 def build_model(model_params):
     """
@@ -82,11 +78,6 @@ def build_model(model_params):
 
     psf = 1.0
     Nsm = 4.88242  # N per square meter
-
-    # g in
-    g_in = 386.1  # inches per s2
-    g_ft = 32.174  # ft per s2
-    g_m = 9.80665  # m per s2
 
     stories = model_params["NumberOfStories"]
     node_tags = list(range(stories+1))
@@ -122,17 +113,17 @@ def build_model(model_params):
     if 'length' in units.keys():
 
         if units['length'] == 'm':
-            G= g_m
+            G= 9.81
             h_story = h_story * m
             w_story = w_story * Nsm
 
         elif units['length'] == 'ft':
-            G = g_ft
+            G = 32.174
             h_story = h_story * ft
             w_story = w_story / ft2
 
         else:  # elif units['length'] == 'in':
-            G = g_in
+            G = 386.1
             h_story = h_story * inch
             w_story = w_story / inch2
 
