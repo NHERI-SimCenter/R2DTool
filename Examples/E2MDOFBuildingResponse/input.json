@@ -3,8 +3,7 @@
   "Author": "Adam Zsarnóczay",
   "units": {
       "force": "kips",
-      "length": "ft",
-      "acceleration": "g"
+      "length": "ft"
    },
   "outputs": {
     "EDP": true,
@@ -38,7 +37,9 @@
     "Events": [{
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
-      "ApplicationData": {}
+      "ApplicationData": {
+        "inputUnit": "mps2"
+      }
     }],
     "Modeling": {
       "Application": "MDOF-LU",

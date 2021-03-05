@@ -1,10 +1,13 @@
 
-Earthquake - Anchorage
-======================
+E2 - MDOF Building Response
+===========================
 
-+-----------------+----------------------------------------------------+
-| Download files  | :github:`Github <Examples/Earthquake3_Anchorage/>` |
-+-----------------+----------------------------------------------------+
++-----------------+-----------------------------------------------------+
+| Download files  | :github:`Github <Examples/E2MDOFBuildingResponse/>` |
++-----------------+-----------------------------------------------------+
+
+This example uses ground motions from the 2018 earthquake in Anchorage, AK, to characterize the response of buildings with an idealized MDOF building model through story-level Engineering Demand Parameters (EDP). Exploiting the refinement in EDPs, a HAZUS-based story-level assessment is employed to evaluate the performance of 510 buildings.
+
 
 #. **VIZ** This example shows simulation of the magnitude 7 earthquake occurred in Anchorage in 2018. The damage and loss of a sample of buildings in the region are estimated.  It is important to note that the results are based on an approximate characterization of the ground motions and preliminary buildings data that has not been curated or verified thoroughly yet. The results presented herein are only for demonstrating the use of R2DTool and do not serve as an accurate representation of the real losses resulting from the earthquake.
 

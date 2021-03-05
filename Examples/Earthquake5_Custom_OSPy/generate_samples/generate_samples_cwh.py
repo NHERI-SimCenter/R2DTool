@@ -106,7 +106,7 @@ def generate_samples_cwh(building_source_file, n_stories, cw_tag, constr_era, ex
 
 
     # reassign value to default parameters (number of stories, plan area)
-    bldgs_df['NumberofStories'] = archetype_df['numStories']
+    bldgs_df['NumberOfStories'] = archetype_df['numStories']
     bldgs_df['PlanArea'] = model_df['planArea']
 
 

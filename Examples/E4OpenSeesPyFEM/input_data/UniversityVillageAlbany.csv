@@ -1,4 +1,4 @@
-id,Latitude,Longitude,NumberofStories,YearBuilt,OccupancyClass,StructureType,PlanArea,ReplacementCost,Footprint
+id,Latitude,Longitude,NumberOfStories,YearBuilt,OccupancyClass,StructureType,PlanArea,ReplacementCost,Footprint
 0,37.8860429,-122.3006004,3,2000,RES3,W2,9332,1,"{""type"":""Feature"",""geometry"":{""type"":""Polygon"",""coordinates"":[[[-122.300575,37.886210],[-122.300738,37.886181],[-122.300611,37.885734],[-122.300447,37.885763],[-122.300575,37.886210]]]},""properties"":{}}"
 1,37.8859807,-122.3010232,3,2000,RES3,W2,6300,1,"{""type"":""Feature"",""geometry"":{""type"":""Polygon"",""coordinates"":[[[-122.300924,37.885819],[-122.301024,37.886140],[-122.301181,37.886109],[-122.301081,37.885789],[-122.300924,37.885819]]]},""properties"":{}}"
 2,37.88590719,-122.3013671,3,2000,RES3,W2,6300,1,"{""type"":""Feature"",""geometry"":{""type"":""Polygon"",""coordinates"":[[[-122.301358,37.886083],[-122.301499,37.886056],[-122.301400,37.885737],[-122.301258,37.885765],[-122.301358,37.886083]]]},""properties"":{}}"
