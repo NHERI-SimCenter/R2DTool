@@ -3,8 +3,7 @@
   "Author": "Adam Zsarnóczay",
   "units": {
       "force": "kips",
-      "length": "ft",
-      "acceleration": "g"
+      "length": "ft"
    },
   "outputs": {
     "EDP": true,
@@ -23,7 +22,7 @@
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
-        "filter": "18,27,44",
+        "filter": "18,27,44,93,240,270,417-419,435",
         "buildingSourceFile":"AnchorageBuildings.csv"
       }
     },
@@ -38,7 +37,9 @@
     "Events": [{
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
-      "ApplicationData": {}
+      "ApplicationData": {
+        "inputUnit": "mps2"
+      }
     }],
     "Modeling": {
       "Application": "MDOF-LU",
