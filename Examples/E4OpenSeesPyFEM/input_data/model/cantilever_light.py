@@ -58,7 +58,7 @@ def build_model(model_params):
 
     Parameters
     ----------
-    NumberofStories: int
+    NumberOfStories: int
         Number of stories
     StructureType: string
         Type of structural system - expects one of the HAZUS structure classes
@@ -88,7 +88,7 @@ def build_model(model_params):
     g_ft = 32.174  # ft per s2
     g_m = 9.80665  # m per s2
 
-    stories = model_params["NumberofStories"]
+    stories = model_params["NumberOfStories"]
     node_tags = list(range(stories+1))
 
     # The fundamental period is approximated as per ASCE 7-16 12.8.2.1
@@ -229,7 +229,7 @@ def run_analysis(GM_dt, GM_npts, TS_List, EDP_specs, model_params):
 
     """
 
-    stories = model_params["NumberofStories"]
+    stories = model_params["NumberOfStories"]
     node_tags = list(range(stories + 1))
     height = ops.nodeCoord(node_tags[-1], 3) - ops.nodeCoord(node_tags[0], 3)
 
