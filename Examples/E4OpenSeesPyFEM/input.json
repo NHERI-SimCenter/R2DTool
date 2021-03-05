@@ -3,7 +3,7 @@
   "Author": "Stevan Gavrilovic",
   "units": {
       "force": "kips",
-      "length": "in",
+      "length": "ft",
       "time": "sec"
    },
    "outputs": {
