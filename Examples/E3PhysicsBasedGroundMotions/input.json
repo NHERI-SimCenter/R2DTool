@@ -22,7 +22,7 @@
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
-        "filter": "1-10",
+        "filter": "1-2",
         "buildingSourceFile":"BerkeleyBuildings.csv"
       }
     },
@@ -37,7 +37,9 @@
     "Events": [{
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
-      "ApplicationData": {}
+      "ApplicationData": {
+        "inputUnit": "mps2"
+      }
     }],
     "Modeling": {
       "Application": "MDOF-LU",
