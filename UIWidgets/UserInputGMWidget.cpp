@@ -59,6 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QProgressBar>
+#include <QComboBox>
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QStackedWidget>
@@ -176,6 +177,7 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         }
 
         this->loadUserGMData();
+
         return true;
     }
 
@@ -232,9 +234,9 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     fileLayout->addWidget(eventFileLineEdit,    0,1);
     fileLayout->addWidget(browseFileButton,     0,2);
 
-    QLabel* selectFolderText = new QLabel("Folder Containing Motions");
+    QLabel* selectFolderText = new QLabel("Folder Containing Motions",this);
     motionDirLineEdit = new QLineEdit();
-    QPushButton *browseFolderButton = new QPushButton("Browse");
+    QPushButton *browseFolderButton = new QPushButton("Browse",this);
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
 
@@ -242,7 +244,6 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     fileLayout->addWidget(motionDirLineEdit, 1,1);
     fileLayout->addWidget(browseFolderButton, 1,2);
     fileLayout->setRowStretch(2,1);
-
 
     //
     // progress bar
@@ -338,7 +339,7 @@ void UserInputGMWidget::loadUserGMData(void)
     auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
 
     gridLayer->setName("Ground Motion Grid Points");
-//    gridLayer->setAutoFetchLegendInfos(true);
+    gridLayer->setAutoFetchLegendInfos(true);
 
     // Create red cross SimpleMarkerSymbol
     SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);

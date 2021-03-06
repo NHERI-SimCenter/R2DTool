@@ -105,7 +105,6 @@ public slots:
     void loadFile(QString filename);
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
-    void showOutputDialog(void);
 
     void statusMessage(QString message);
     void infoMessage(QString message);

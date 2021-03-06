@@ -7,7 +7,7 @@ GISLegendView::GISLegendView(QWidget *parent) : QTreeView(parent)
 {
     currModel = nullptr;
 
-    //    this->setSizeAdjustPolicy(SizeAdjustPolicy::AdjustToContents);
+    this->setSizeAdjustPolicy(SizeAdjustPolicy::AdjustToContents);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
     this->hide();
@@ -30,12 +30,12 @@ QSize GISLegendView::sizeHint() const
         return QSize();
 
     if (model()->rowCount() == 0)
-        return QSize(sizeHintForColumn(0)*1.2, 0);
+        return QSize(sizeHintForColumn(0)*1.15, 0);
 
-    int nToShow = model()->rowCount();
+    int nToShow = model()->rowCount()+1;
 
-    auto widthLegend = sizeHintForColumn(0)*1.2;
-    auto heightLegend = nToShow*sizeHintForRow(0)*1.5;
+    auto widthLegend = sizeHintForColumn(0)*1.15;
+    auto heightLegend = nToShow*sizeHintForRow(0)*1.2;
 
 
     return QSize(widthLegend,heightLegend);
@@ -46,9 +46,12 @@ void GISLegendView::setModel(QAbstractItemModel* model)
 {
     if(currModel == model)
         return;
+    else
+       currModel = model;
 
     QTreeView::setModel(model);
 
+    this->resize(this->sizeHint());
 }
 
 

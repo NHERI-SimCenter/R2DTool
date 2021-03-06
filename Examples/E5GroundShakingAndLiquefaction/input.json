@@ -39,7 +39,7 @@
       "EventClassification": "Earthquake",
       "Application": "SimCenterEvent",
       "ApplicationData": {
-        "inputUnit": "inch"
+        "inputUnit": "inchps2"
       }
     }],
     "Simulation": {

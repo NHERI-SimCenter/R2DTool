@@ -179,10 +179,6 @@ void WorkflowAppR2D::initialize(void)
     // Set the path to the input file
     editMenu->addAction("Clear", this, &WorkflowAppR2D::clear);
 
-    // Show progress dialog
-    QMenu *windowsMenu = theMainWindow->menuBar()->addMenu(tr("&Windows"));
-    windowsMenu->addAction("Show Output Dialog", this, &WorkflowAppR2D::showOutputDialog);
-
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
     theRVs = new RandomVariablesContainer();
@@ -350,12 +346,6 @@ void WorkflowAppR2D::clear(void)
     theResultsWidget->clear();
     theVisualizationWidget->clear();
     progressDialog->clear();
-}
-
-
-void WorkflowAppR2D::showOutputDialog(void)
-{
-    progressDialog->showDialog(true);
 }
 
 

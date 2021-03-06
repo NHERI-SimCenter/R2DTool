@@ -533,7 +533,7 @@ void VisualizationWidget::loadBuildingData(void)
     selectedBuildingsLayer = new FeatureCollectionLayer(selectedBuildingsFeatureCollection,this);
     selectedBuildingsLayer->setName("Selected Buildings");
     selectedBuildingsLayer->setAutoFetchLegendInfos(true);
-    selectedBuildingsTable->setRenderer(this->createBuildingRenderer(2.5));
+    selectedBuildingsTable->setRenderer(this->createSelectedBuildingRenderer(2.5));
 
     // Map to hold the feature tables
     std::map<std::string, FeatureCollectionTable*> tablesMap;
@@ -1201,7 +1201,19 @@ ClassBreaksRenderer* VisualizationWidget::createPointRenderer(void)
 }
 
 
-ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(double outlineWidth)
+SimpleRenderer* VisualizationWidget::createBuildingRenderer(void)
+{
+    SimpleFillSymbol* fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0, 0, 255, 125), this);
+
+    SimpleRenderer* lineRenderer = new SimpleRenderer(fillSymbol, this);
+
+    lineRenderer->setLabel("Building footprint");
+
+    return lineRenderer;
+}
+
+
+ClassBreaksRenderer* VisualizationWidget::createSelectedBuildingRenderer(double outlineWidth)
 {
     // Images stored in base64 format
     //    QByteArray buildingImg1 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWhJREFUSInt1jFrwkAYxvF/SDpJBaHFtlN0dlP0O3TWSWobOnZvidA2QycHZ9cGhNKlX0FwcPcLCC4OrWKGDMKZdKmg1WpOo1LwgYMb3nt/HHdwp7HjaHsDTdM8GgwGFnADXITU/xN4j0QiD9Vq1Z0Bh8PhE1AOCZrkFLhzXfcYuJ4BPc+7ChmbzuVkMn2GZ1sETxaBUkkkEnQ6Hel1a4GGYZBOp6nX6ySTSVKpFACWZTEajcIFDcMgl8sBUCwW6ff7xGIxAFRVXbleCpzGADRNIx6Py7QIDv7G1k0gMCiWzWZpNBqbgTI7KxQKjMdjms3memCpVCKTyeD7PoqirAQVRSGfzyOEoNVqyYO2bWPbNpVKhWg0uhJst9vUarWlNft7LQ7gAfzfYLkc7Ofh+74U2AP0RUVCiEDgkvQWga/A86ad/8jHHKjr+ku321U9z7sFzkOCvoA3x3Hu50DTNAXw+DO2lp3f0m97bGdscCiEZAAAAABJRU5ErkJggg==";
@@ -1228,17 +1240,17 @@ ClassBreaksRenderer* VisualizationWidget::createBuildingRenderer(double outlineW
     //    PictureMarkerSymbol* symbol4 = new PictureMarkerSymbol(img4, this);
     //    PictureMarkerSymbol* symbol5 = new PictureMarkerSymbol(img5, this);
 
-    //        SimpleMarkerSymbol* symbol1 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(0, 0, 255,125), 8.0f, this);
-    //        SimpleMarkerSymbol* symbol2 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(255,255,178), 8.0f, this);
-    //        SimpleMarkerSymbol* symbol3 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(253,204,92), 8.0f, this);
-    //        SimpleMarkerSymbol* symbol4 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(253,141,60), 8.0f, this);
-    //        SimpleMarkerSymbol* symbol5 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(240,59,32), 8.0f, this);
+    // SimpleMarkerSymbol* symbol1 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(0, 0, 255,125), 8.0f, this);
+    // SimpleMarkerSymbol* symbol2 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(255,255,178), 8.0f, this);
+    // SimpleMarkerSymbol* symbol3 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(253,204,92), 8.0f, this);
+    // SimpleMarkerSymbol* symbol4 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(253,141,60), 8.0f, this);
+    // SimpleMarkerSymbol* symbol5 = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Square, QColor(240,59,32), 8.0f, this);
 
-    SimpleFillSymbol* symbol1 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0, 0, 255,125), this);
-    SimpleFillSymbol* symbol2 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(255,255,178), this);
-    SimpleFillSymbol* symbol3 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(253,204,92), this);
-    SimpleFillSymbol* symbol4 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(253,141,60), this);
-    SimpleFillSymbol* symbol5 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(240,59,32), this);
+    SimpleFillSymbol* symbol1 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(99, 99, 99, 200), this);
+    SimpleFillSymbol* symbol2 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(254,217,142), this);
+    SimpleFillSymbol* symbol3 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(254,153,41), this);
+    SimpleFillSymbol* symbol4 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(217,95,14), this);
+    SimpleFillSymbol* symbol5 = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(153,52,4), this);
 
     if(outlineWidth != 0.0)
     {

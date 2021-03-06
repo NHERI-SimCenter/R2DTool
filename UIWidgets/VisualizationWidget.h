@@ -63,6 +63,7 @@ class FeatureCollection;
 class IdentifyLayerResult;
 class FeatureQueryResult;
 class ClassBreaksRenderer;
+class SimpleRenderer;
 class GroupLayer;
 class KmlLayer;
 class Layer;
@@ -251,7 +252,8 @@ private:
     // Map to store the layers
     QMap<QString, Esri::ArcGISRuntime::Layer*> layersMap;
 
-    Esri::ArcGISRuntime::ClassBreaksRenderer* createBuildingRenderer(double outlineWidth = 0.0);
+    Esri::ArcGISRuntime::SimpleRenderer* createBuildingRenderer(void);
+    Esri::ArcGISRuntime::ClassBreaksRenderer* createSelectedBuildingRenderer(double outlineWidth = 0.0);
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPipelineRenderer(void);
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPointRenderer(void);
 
