@@ -1,6 +1,6 @@
 {
   "Name": "E1 - HAZUS",
-  "Author": "Adam Zsarnoczay & Major Zeng",
+  "Author": "Adam Zsarnoczay",
   "units": {
       "force": "kips",
       "length": "ft"
@@ -15,21 +15,21 @@
     "Hazard": {
         "Application": "UserInputGM",
         "ApplicationData": {
-	    "eventFile": "/Project_general_IM/EventGrid.csv",
-	    "motionDir": "/Project_general_IM"
+	    "eventFile": "/San_Andreas_Mw72/EventGrid.csv",
+	    "motionDir": "/San_Andreas_Mw72"
 	}
     },	
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "1-2",
-        "buildingSourceFile":"San_Mateo_buildings.csv"
+        "buildingSourceFile":"SanFrancisco_buildings.csv"
       }
     },
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "Project_general_IM/EventGrid.csv",
+        "filenameEVENTgrid": "San_Andreas_Mw72/EventGrid.csv",
         "samples": 100,
         "neighbors": 4
       }

@@ -6,7 +6,7 @@ E2 - MDOF Building Response
 | Download files  | :github:`Github <Examples/E2MDOFBuildingResponse/>` |
 +-----------------+-----------------------------------------------------+
 
-This earthquake example demonstrates rapid analysis capabilities with the HAZUS earthquake damage and loss assessment methodology. Building-level Damage and Losses (D&L) are calculated directly from Intensity Measures (IM) for 100 assets. The IM field for the region of San Mateo, CA, was obtained from Probabilistic Seismic Hazard Analysis (PSHA).
+This earthquake example demonstrates rapid analysis capabilities with the HAZUS earthquake damage and loss assessment methodology. Building-level Damage and Losses (D&L) are calculated directly from Intensity Measures (IM) for 100 assets. The IM field that represents peak ground acceleration in the city of San Francisco, CA, from an Mw7.2 event on the San Andreas fault, was obtained from Probabilistic Seismic Hazard Analysis (PSHA).
 
 **The rest of the readme has not been updated yet!**
 
