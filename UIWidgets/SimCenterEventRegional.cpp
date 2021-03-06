@@ -39,10 +39,28 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterEventRegional.h"
 #include "RandomVariablesContainer.h"
 
+#include <QVBoxLayout>
+
 SimCenterEventRegional::SimCenterEventRegional(QWidget *parent)
     :SimCenterAppWidget(parent), eventType("Earthquake")
 {
 
+    unitsCombo = new QComboBox(this);
+    unitsCombo->addItem("Gravitational constant (g)","g");
+    unitsCombo->addItem("Meter per second squared","mps2");
+    unitsCombo->addItem("Feet per second squared","ftps2");
+    unitsCombo->addItem("Inches per second squared","inchps2");
+    unitsCombo->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
+
+    QVBoxLayout *Vlayout = new QVBoxLayout(this);
+    QHBoxLayout *Hlayout = new QHBoxLayout();
+
+    QLabel* unitsLabel = new QLabel("Event Units:",this);
+
+    Hlayout->addWidget(unitsLabel);
+    Hlayout->addWidget(unitsCombo,Qt::AlignLeft);
+
+    Vlayout->addLayout(Hlayout);
 }
 
 
@@ -75,8 +93,8 @@ bool SimCenterEventRegional::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject) {
-
+bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject)
+{
     //
     // per API, need to add name of application to be called in AppLication
     // and all data to be used in ApplicationDate
@@ -85,6 +103,11 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "SimCenterEvent";
     jsonObject["EventClassification"] = eventType;
     QJsonObject dataObj;
+
+    auto units = unitsCombo->currentData().toString();
+
+    dataObj["inputUnit"]=units;
+
     jsonObject["ApplicationData"] = dataObj;
 
     return true;
@@ -92,8 +115,43 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 
 bool SimCenterEventRegional::inputAppDataFromJSON(QJsonObject &jsonObject) {
-    Q_UNUSED(jsonObject);
-    return true;
+
+    if (jsonObject.contains("ApplicationData"))
+    {
+        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+        if (appData.contains("inputUnit"))
+        {
+            auto unit = appData["inputUnit"].toString();
+
+            if(unit.compare("mps2") == 0)
+            {
+                unitsCombo->setCurrentText("Meter per second squared");
+            }
+            else if(unit.compare("ftps2") == 0)
+            {
+                unitsCombo->setCurrentText("Feet per second squared");
+            }
+            else if(unit.compare("inchps2") == 0)
+            {
+                unitsCombo->setCurrentText("Inches per second squared");
+            }
+            else
+            {
+                qDebug()<<" The unit type "<<unit<<" is not recognized";
+                return false;
+            }
+        }
+        else
+        {
+            // Default is g
+            unitsCombo->setCurrentText("Gravitational constant (g)");
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 

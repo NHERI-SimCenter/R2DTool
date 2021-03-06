@@ -22,7 +22,7 @@
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
-        "filter": "1-2",
+        "filter":"170,1493,1977,2380,2459",
         "buildingSourceFile":"BerkeleyBuildings.csv"
       }
     },

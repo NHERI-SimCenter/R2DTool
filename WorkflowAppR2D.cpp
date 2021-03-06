@@ -51,12 +51,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LocalApplication.h"
 #include "MainWindowWorkflowApp.h"
 #include "ModelWidget.h"
-#include "PythonProgressDialog.h"
 #include "RandomVariablesContainer.h"
 #include "RemoteApplication.h"
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
 #include "ResultsWidget.h"
+#include "Utils/PythonProgressDialog.h"
 //#include "RunLocalWidget.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
@@ -108,7 +108,6 @@ WorkflowAppR2D* WorkflowAppR2D::getInstance()
 
 WorkflowAppR2D *WorkflowAppR2D::theInstance = nullptr;
 
-PythonProgressDialog *WorkflowAppR2D::progressDialog = nullptr;
 
 WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     : WorkflowAppWidget(theService, parent)
@@ -117,7 +116,6 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     theApp = this;
 
     theInstance = this;
-    progressDialog = new PythonProgressDialog(parent);
 
     localApp = new LocalApplication("R2DTool_workflow.py");
     remoteApp = new RemoteApplication("R2DTool_workflow.py", theService);
@@ -139,6 +137,7 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
+    connect(localApp,SIGNAL(runComplete()), this,SLOT(runComplete()));
 
     connect(remoteApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(remoteApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
@@ -179,10 +178,6 @@ void WorkflowAppR2D::initialize(void)
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
     // Set the path to the input file
     editMenu->addAction("Clear", this, &WorkflowAppR2D::clear);
-
-    // Show progress dialog
-    QMenu *windowsMenu = theMainWindow->menuBar()->addMenu(tr("&Windows"));
-    windowsMenu->addAction("Show Output Dialog", this, &WorkflowAppR2D::showOutputDialog);
 
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
@@ -351,43 +346,6 @@ void WorkflowAppR2D::clear(void)
     theResultsWidget->clear();
     theVisualizationWidget->clear();
     progressDialog->clear();
-}
-
-
-void WorkflowAppR2D::showOutputDialog(void)
-{
-    progressDialog->showDialog(true);
-}
-
-
-void WorkflowAppR2D::loadExamples()
-{
-
-    auto senderObj = QObject::sender();
-    auto pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator();
-    pathToExample += senderObj->property("InputFile").toString();
-
-    if(pathToExample.isNull())
-    {
-        qDebug()<<"Error loading examples";
-        return;
-    }
-
-    //
-    // clear current and input from new JSON
-    //
-    this->clear();
-
-    auto exampleName = senderObj->property("Name").toString();
-    this->statusMessage("Loading example "+exampleName);
-
-    auto description = senderObj->property("Description").toString();
-
-    if(!description.isEmpty())
-        this->infoMessage(description);
-
-
-    this->loadFile(pathToExample);
 }
 
 
@@ -668,8 +626,8 @@ void WorkflowAppR2D::fatalMessage(QString message)
 }
 
 
-PythonProgressDialog *WorkflowAppR2D::getProgressDialog()
+void WorkflowAppR2D::runComplete()
 {
-    return progressDialog;
+    progressDialog->hideAfterElapsedTime(2);
 }
 

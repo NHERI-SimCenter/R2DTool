@@ -396,7 +396,7 @@ void ComponentInputWidget::clearComponentSelection(void)
         selectedFeatures<<feature;
     }
 
-    theVisualizationWidget->clearSelectedLayer();
+    theVisualizationWidget->clearLayerSelectedForAnalysis();
 
 
     auto nRows = componentTableWidget->rowCount();
@@ -642,31 +642,31 @@ bool ComponentInputWidget::copyFiles(QString &destName)
         return false;
 
 
-    // Test
-    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+    // Creates a csv file of only the selected components
+//     auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
+//     QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-    //    selectedData[0] = headerInfo;
+//     selectedData[0] = headerInfo;
 
-    //    int i = 0;
-    //    for(auto&& rowID : selectedIDs)
-    //    {
-    //        QStringList rowData;
-    //        rowData.reserve(nCols);
+//     int i = 0;
+//     for(auto&& rowID : selectedIDs)
+//     {
+//         QStringList rowData;
+//         rowData.reserve(nCols);
 
-    //        for(int j = 0; j<nCols; ++j)
-    //        {
-    //            auto item = componentTableWidget->item(rowID,j)->data(0).toString();
+//         for(int j = 0; j<nCols; ++j)
+//         {
+//             auto item = componentTableWidget->item(rowID,j)->data(0).toString();
 
-    //            rowData<<item;
-    //        }
-    //        selectedData[i+1] = rowData;
+//             rowData<<item;
+//         }
+//         selectedData[i+1] = rowData;
 
-    //        ++i;
-    //    }
+//         ++i;
+//     }
 
-    //    csvTool.saveCSVFile(selectedData,"Location",err);
+//     csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
 
 
     return true;

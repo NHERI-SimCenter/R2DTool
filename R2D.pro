@@ -140,7 +140,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Tools/CSVReaderWriter.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/PelicunPostProcessor.cpp \
-            Tools/PythonProgressDialog.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
             Tools/XMLAdaptor.cpp \
@@ -188,6 +187,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
             UIWidgets/UserInputGMWidget.cpp \
+            UIWidgets/UserInputHurricaneWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
             ModelViewItems/LayerTreeItem.cpp \
             ModelViewItems/TreeItem.cpp \
@@ -239,7 +239,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Tools/CSVReaderWriter.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
-            Tools/PythonProgressDialog.h \
             Tools/REmpiricalProbabilityDistribution.h \
             Tools/TableNumberItem.h \
             Tools/TablePrinter.h \
@@ -288,6 +287,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
             UIWidgets/UserInputGMWidget.h \
+            UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/VisualizationWidget.h \
             ModelViewItems/LayerTreeItem.h \
             ModelViewItems/TreeItem.h \
