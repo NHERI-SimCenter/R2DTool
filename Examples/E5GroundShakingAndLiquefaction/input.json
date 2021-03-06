@@ -1,0 +1,62 @@
+{
+  "Name": "E5 - Ground Shaking + Liquefaction",
+  "Author": "Tamika Bassman & Adam Zsarnoczay",
+  "units": {
+      "force": "kips",
+      "length": "inch" 
+   },
+  "outputs": {
+    "EDP": true,
+    "DM": true,
+    "DV": true,
+    "every_realization": false
+  },
+  "Applications": {
+    "Hazard": {
+        "Application": "UserInputGM",
+        "ApplicationData": {
+	    "eventFile": "/IMs/EventGrid.csv",
+	    "motionDir": "/IMs"
+	}
+    },	
+    "Building": {
+      "Application": "CSV_to_BIM",
+      "ApplicationData": {
+        "filter": "1-10",
+        "buildingSourceFile":"all_bldgs.csv"
+      }
+    },
+    "RegionalMapping": {
+      "Application": "NearestNeighborEvents",
+      "ApplicationData": {
+        "filenameEVENTgrid": "IMs/EventGrid.csv",
+        "samples": 1000,
+        "neighbors": 4,
+        "filter_label": "SoilType"
+      }
+    },
+    "Events": [{
+      "EventClassification": "Earthquake",
+      "Application": "SimCenterEvent",
+      "ApplicationData": {
+        "inputUnit": "inchps2"
+      }
+    }],
+    "Simulation": {
+       "Application": "IMasEDP",
+       "ApplicationData": {}
+    },
+    "DL": {
+       "Application": "pelicun",
+       "ApplicationData": {
+          "DL_Method": "HAZUS MH EQ IM",
+          "Realizations": "1000",
+          "coupled_EDP": true,
+          "event_time": "off",
+          "detailed_results": false,
+          "log_file": true,
+          "ground_failure": true
+       }
+    }
+  }
+}

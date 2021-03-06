@@ -90,10 +90,14 @@ int CSVReaderWriter::saveCSVFile(const QVector<QStringList>& data, const QString
     // Function to handle the case where there are commas within a cell
     auto strOutput = [](const QString& in)
     {
-        if(in.contains(','))
-            return "\"" + in.toUtf8() + "\"";
+        auto newStr = in;
+
+        newStr = newStr.replace("\"","\"\"");
+
+        if(newStr.contains(','))
+            return "\"" + newStr.toUtf8() + "\"";
         else
-            return in.toUtf8();
+         return newStr.toUtf8();
     };
 
 

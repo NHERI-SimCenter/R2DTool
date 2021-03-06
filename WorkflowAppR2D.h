@@ -74,7 +74,6 @@ class WorkflowAppR2D : public WorkflowAppWidget
 public:
     explicit WorkflowAppR2D(RemoteService *theService, QWidget *parent = 0);
     ~WorkflowAppR2D();
-    static WorkflowAppR2D *theInstance;
 
     static WorkflowAppR2D *getInstance(void);
 
@@ -107,8 +106,11 @@ public slots:
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
 
-    // Examples
-    void loadExamples();
+    void statusMessage(QString message);
+    void infoMessage(QString message);
+    void errorMessage(QString message);
+    void fatalMessage(QString message);
+    void runComplete();
 
 private:
 
@@ -142,6 +144,8 @@ private:
 
     QJsonObject *jsonObjOrig;
     QNetworkAccessManager *manager;
+
+    static WorkflowAppR2D *theInstance;
 
 };
 

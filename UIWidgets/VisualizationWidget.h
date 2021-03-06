@@ -39,6 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterAppWidget.h"
+#include "GISLegendView.h"
+
+#include "Error.h"
 
 #include <QMap>
 #include <QObject>
@@ -49,6 +52,7 @@ namespace Esri
 namespace ArcGISRuntime
 {
 class Map;
+class Error;
 class MapGraphicsView;
 class Feature;
 class FeatureTable;
@@ -59,16 +63,20 @@ class FeatureCollection;
 class IdentifyLayerResult;
 class FeatureQueryResult;
 class ClassBreaksRenderer;
+class SimpleRenderer;
 class GroupLayer;
 class KmlLayer;
 class Layer;
+enum class LoadStatus;
 class ArcGISMapImageLayer;
 class RasterLayer;
+//class RoleProxyModel;
 
 //Convex hull stuff
 class GraphicsOverlay;
 class SimpleMarkerSymbol;
 class Graphic;
+class Point;
 class SimpleLineSymbol;
 class SimpleFillSymbol;
 class MultipointBuilder;
@@ -79,12 +87,12 @@ class Geometry;
 class ComponentInputWidget;
 class LayerTreeView;
 class LayerTreeItem;
+class SimCenterMapGraphicsView;
+
 class TreeModel;
 class QGroupBox;
 class QComboBox;
 class QTreeView;
-
-class SimCenterMapGraphicsView;
 class QVBoxLayout;
 
 class VisualizationWidget : public  SimCenterAppWidget
@@ -98,6 +106,7 @@ public:
     // Convex hull functionality
     void setupConvexHullObjects();
 
+
     Esri::ArcGISRuntime::MapGraphicsView* getMapViewWidget() const;
 
     // Set the building widget to the visualization engine
@@ -106,13 +115,10 @@ public:
     // Set the pipeline widget to the visualization engine
     void setPipelineWidget(ComponentInputWidget *value);
 
-    // Zooms the map to the extents of the data present in the visible map
-    void zoomToExtents(void);
-
     // Add component to 'selected layer'
     void addComponentsToSelectedLayer(const QList<Esri::ArcGISRuntime::Feature*>& features);
 
-    void clearSelectedLayer();
+    void clearLayerSelectedForAnalysis(void);
 
     // Adds a raster layer to the map
     Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
@@ -145,7 +151,7 @@ public:
 
     Esri::ArcGISRuntime::Map *getMapGIS() const;
 
-    void addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr);
+    LayerTreeItem* addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr, Esri::ArcGISRuntime::GroupLayer* groupLayer = nullptr);
 
     // Removes a given layer from the map
     void removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer);
@@ -164,7 +170,15 @@ public:
     ComponentInputWidget *getPipelineWidget() const;
 
     // Updates the value of an attribute for a selected component
-    void updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value);
+    void updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value);    
+
+    void setLegendView(GISLegendView* legndView);
+
+    GISLegendView *getLegendView() const;
+
+    // User selected features
+    void clearSelection(void);
+    QList<Esri::ArcGISRuntime::Feature *> getSelectedFeaturesList() const;
 
 signals:
     // Convex hull
@@ -173,6 +187,7 @@ signals:
 
 public slots:
     // Convex hull
+    void zoomToLayer(const QString layerID);
     void plotConvexHull();
     void getConvexHullInputs();
     void resetConvexHull();
@@ -185,21 +200,31 @@ public slots:
     void onMouseClicked(QMouseEvent& mouseEvent);
     void onMouseClickedGlobal(QPoint pos);
     void setCurrentlyViewable(bool status);
+    void handleLegendChange(const QString layerUID);
+    void handleLegendChange(const Esri::ArcGISRuntime::Layer* layer);
 
 private slots:
     void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);
-    void featureSelectionQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
+    void selectFeaturesForAnalysisQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
     void fieldQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
 
-    void handleSelectedFeatures(void);
+    void handleSelectFeatures(void);
+    void handleSelectFeaturesForAnalysis(void);
     void handleAsyncSelectionTask(void);
-    void handleAsyncFieldQueryTask(void);
+    void handleAsyncLayerLoad(Esri::ArcGISRuntime::Error layerLoadStatus);
     void handleBasemapSelection(const QString selection);
     void handleFieldQuerySelection(void);
+    void handleArcGISError(Esri::ArcGISRuntime::Error error);
 
     // Convex hull stuff
     void getItemsInConvexHull();
     void convexHullPointSelector(QMouseEvent& e);
+
+    void setLegendInfo();
+
+    // Zooms the map to the extents of the data present in the visible map
+    void zoomToExtents(void);
+
 
 private:
 
@@ -218,13 +243,19 @@ private:
     SimCenterMapGraphicsView *mapViewWidget = nullptr;
     QVBoxLayout *mapViewLayout;
 
-    QList<Esri::ArcGISRuntime::FeatureQueryResult*>  selectedFeaturesList;
+    QList<Esri::ArcGISRuntime::FeatureQueryResult*>  featuresSelectedForAnalysisList;
     QList<Esri::ArcGISRuntime::FeatureQueryResult*>  fieldQueryFeaturesList;
 
     QMap<QUuid,QString> taskIDMap;
+    QMap<QUuid,QString> layerLoadMap;
 
-    Esri::ArcGISRuntime::ClassBreaksRenderer* createBuildingRenderer(void);
+    // Map to store the layers
+    QMap<QString, Esri::ArcGISRuntime::Layer*> layersMap;
+
+    Esri::ArcGISRuntime::SimpleRenderer* createBuildingRenderer(void);
+    Esri::ArcGISRuntime::ClassBreaksRenderer* createSelectedBuildingRenderer(double outlineWidth = 0.0);
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPipelineRenderer(void);
+    Esri::ArcGISRuntime::ClassBreaksRenderer* createPointRenderer(void);
 
     // Create a graphic to display the convex hull selection
     Esri::ArcGISRuntime::GraphicsOverlay* m_graphicsOverlay = nullptr;
@@ -238,12 +269,11 @@ private:
 
     Esri::ArcGISRuntime::GroupLayer* selectedComponentsLayer = nullptr;
     Esri::ArcGISRuntime::FeatureCollectionLayer* selectedBuildingsLayer = nullptr;
-//    Esri::ArcGISRuntime::FeatureCollection*  selectedComponentsFeatureCollection = nullptr;
     Esri::ArcGISRuntime::FeatureCollectionTable* selectedBuildingsTable = nullptr;
     LayerTreeItem* selectedComponentsTreeItem = nullptr;
 
     // Map to store the selected features according to their UID
-    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeatures;
+    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
 
     // Returns a vector of sorted items that are unique
     template <typename T>
@@ -253,6 +283,17 @@ private:
     QWidget* visWidget;
     void createVisualizationWidget(void);
 
+    // The legend view
+    GISLegendView* legendView;
+
+    // Map to store the legend of a layer according to the  UID
+    QMap<QString, RoleProxyModel*> legendModels;
+
+    Esri::ArcGISRuntime::Geometry getGeometryFromJson(const QString& geoJson);
+    Esri::ArcGISRuntime::Geometry getRectGeometryFromPoint(const Esri::ArcGISRuntime::Point& pnt, const double sizeX, double sizeY = 0);
+
+    Esri::ArcGISRuntime::GraphicsOverlay* selectedFeaturesOverlay = nullptr;
+    QList<Esri::ArcGISRuntime::Feature*> selectedFeaturesList;
 };
 
 #endif // VISUALIZATIONWIDGET_H

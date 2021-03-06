@@ -92,6 +92,8 @@ public:
     bool getIsCheckable() const;
     void setIsCheckable(bool value);
 
+    void clear();
+
 public slots:
 
     void remove();

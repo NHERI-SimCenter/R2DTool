@@ -59,13 +59,17 @@ public:
 
 public slots:
 
+    // Change the opacity of a layer
     void changeOpacity();
-
     void handleChangeOpacity(int value);
+
+    // Zoom to the extents of the layer
+    void zoomToExtents();
 
 signals:
 
 void opacityChanged(const QString& layerID, const double opacity);
+void zoomLayerExtents(QString itemID);
 
 private:
     QDialog* opacityDialog;

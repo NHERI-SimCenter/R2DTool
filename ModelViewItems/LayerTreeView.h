@@ -62,6 +62,7 @@ public:
 
     void clear(void);
 
+    void selectRow(int i);
 
 public slots:
     // Shows the "right-click" menu
@@ -69,6 +70,8 @@ public slots:
 
     // Removes a layer from the tree and map
     void removeLayer(const QString& layerID);
+
+    void itemSelected(const QModelIndex &index);
 
 private slots:
     // Runs the action that the user selects on the right-click menu

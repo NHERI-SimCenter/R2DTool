@@ -59,6 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QProgressBar>
+#include <QComboBox>
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QStackedWidget>
@@ -176,6 +177,7 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         }
 
         this->loadUserGMData();
+
         return true;
     }
 
@@ -232,9 +234,9 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     fileLayout->addWidget(eventFileLineEdit,    0,1);
     fileLayout->addWidget(browseFileButton,     0,2);
 
-    QLabel* selectFolderText = new QLabel("Folder Containing Motions");
+    QLabel* selectFolderText = new QLabel("Folder Containing Motions",this);
     motionDirLineEdit = new QLineEdit();
-    QPushButton *browseFolderButton = new QPushButton("Browse");
+    QPushButton *browseFolderButton = new QPushButton("Browse",this);
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
 
@@ -242,7 +244,6 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     fileLayout->addWidget(motionDirLineEdit, 1,1);
     fileLayout->addWidget(browseFolderButton, 1,2);
     fileLayout->setRowStretch(2,1);
-
 
     //
     // progress bar
@@ -337,11 +338,15 @@ void UserInputGMWidget::loadUserGMData(void)
 
     auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
 
+    gridLayer->setName("Ground Motion Grid Points");
+    gridLayer->setAutoFetchLegendInfos(true);
+
     // Create red cross SimpleMarkerSymbol
     SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
 
     // Create renderer and set symbol to crossSymbol
     SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+    renderer->setLabel("Ground motion grid points");
 
     // Set the renderer for the feature layer
     gridFeatureCollectionTable->setRenderer(renderer);
@@ -474,12 +479,12 @@ void UserInputGMWidget::loadUserGMData(void)
 
 
     // Add the event layer to the layer tree
-    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
+    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
 
     progressLabel->setVisible(false);
 
     // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(gridLayer,eventItem);
+    theVisualizationWidget->addLayerToMap(gridLayer,userInputTreeItem);
 
     // Reset the widget back to the input pane and close
     userGMStackedWidget->setCurrentWidget(fileInputWidget);

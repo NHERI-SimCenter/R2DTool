@@ -251,6 +251,12 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     sewerCheckBox->setCheckable(false);
     transportationCheckBox->setCheckable(false);
 
+    soilCheckBox->setEnabled(false);
+    gasCheckBox->setEnabled(false);
+    waterCheckBox->setEnabled(false);
+    sewerCheckBox->setEnabled(false);
+    transportationCheckBox->setEnabled(false);
+
     connect(buildingsCheckBox, &QCheckBox::stateChanged, this, [=](){
         emit(assetChanged("Buildings",buildingsCheckBox->isChecked()));
     });

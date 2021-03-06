@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGraphicsRectItem>
 #include <QGraphicsScene>
 #include <QGraphicsSimpleTextItem>
+#include <QPushButton>
 #include <QMimeData>
 #include <QScreen>
 #include <QScrollBar>
@@ -55,9 +56,18 @@ MapViewSubWidget::MapViewSubWidget(QWidget* parent)
 {
     displayText = nullptr;
 
+    auto theMainLayout = new QVBoxLayout(this);
+
     theViewLayout = new QVBoxLayout();
 
-    this->setLayout(theViewLayout);
+    theViewLayout->addStretch(1);
+
+    auto closeButton = new QPushButton("Close",this);
+
+    connect(closeButton,&QPushButton::pressed,this,&QDialog::close);
+
+    theMainLayout->addLayout(theViewLayout);
+    theMainLayout->addWidget(closeButton,Qt::AlignBottom);
 
     theNewView = SimCenterMapGraphicsView::getInstance();
     theNewView->setAcceptDrops(true);
@@ -71,6 +81,8 @@ MapViewSubWidget::MapViewSubWidget(QWidget* parent)
     //theNewView->setScene(theNewView->scene());
 
     grid = std::make_unique<RectangleGrid>(theNewView);
+
+
 
 }
 

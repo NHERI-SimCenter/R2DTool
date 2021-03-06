@@ -1,4 +1,4 @@
-﻿/* *****************************************************************************
+/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
 #include "ResultsWidget.h"
+#include "Utils/PythonProgressDialog.h"
 //#include "RunLocalWidget.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
@@ -63,6 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 
+#include <QApplication>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
@@ -135,6 +137,7 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
+    connect(localApp,SIGNAL(runComplete()), this,SLOT(runComplete()));
 
     connect(remoteApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(remoteApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
@@ -149,6 +152,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     connect(theJobManager,SIGNAL(loadFile(QString)), this, SLOT(loadFile(QString)));
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
+
+    connect(localApp,SIGNAL(runComplete()), progressDialog, SLOT(hideProgressBar()));
 
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
@@ -169,49 +174,6 @@ WorkflowAppR2D::~WorkflowAppR2D()
 
 void WorkflowAppR2D::initialize(void)
 {
-    // Load the examples
-    auto pathToExamplesJson = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator() + "Examples.json";
-    // QString pathToExamplesJson = "/Users/steve/Desktop/SimCenter/RDT/RDT/Examples/";
-
-    QFile jsonFile(pathToExamplesJson);
-    jsonFile.open(QFile::ReadOnly);
-    QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
-
-    QJsonObject docObj = exDoc.object();
-    QJsonArray examples = docObj["Examples"].toArray();
-    QMenu *exampleMenu = 0;
-    if (examples.size() > 0)
-        exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-    foreach (const QJsonValue & example, examples) {
-        QJsonObject exampleObj = example.toObject();
-        QString name = exampleObj["name"].toString();
-        QString inputFile = exampleObj["InputFile"].toString();
-        auto action = exampleMenu->addAction(name, this, &WorkflowAppR2D::loadExamples);
-        action->setProperty("InputFile",inputFile);
-    }
-
-    /*
-    auto numEx = exContainerObj.count();
-
-    if(numEx > 0)
-    {
-        QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-
-        for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
-        {
-            auto name = it.key();
-
-            auto exObj = exContainerObj.value(name).toObject();
-
-            auto inputFile = exObj.value("InputFile").toString();
-
-            // Set the path to the input file
-            auto action = exampleMenu->addAction(name, this, &WorkflowAppR2D::loadExamples);
-            action->setProperty("InputFile",inputFile);
-        }
-    }
-    */
-
     // Clear action
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
     // Set the path to the input file
@@ -368,8 +330,6 @@ void WorkflowAppR2D::processResults(QString resultsDir, QString /*dakotaTab*/, Q
     theResultsWidget->processResults(resultsDir);
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
-
-    statusMessage("Analysis complete");
 }
 
 
@@ -385,21 +345,7 @@ void WorkflowAppR2D::clear(void)
     theDamageAndLossWidget->clear();
     theResultsWidget->clear();
     theVisualizationWidget->clear();
-}
-
-
-void WorkflowAppR2D::loadExamples()
-{
-    auto pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator();
-    pathToExample += QObject::sender()->property("InputFile").toString();
-
-    if(pathToExample.isNull())
-    {
-        qDebug()<<"Error loading examples";
-        return;
-    }
-
-    this->loadFile(pathToExample);
+    progressDialog->clear();
 }
 
 
@@ -452,13 +398,16 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
 void WorkflowAppR2D::onRunButtonClicked() {
     theRunWidget->hide();
     theRunWidget->setMinimumWidth(this->width()*0.5);
+
+    progressDialog->showDialog(true);
+    progressDialog->showProgressBar();
     theRunWidget->showLocalApplication();
     GoogleAnalytics::ReportLocalRun();
 }
 
 
 void WorkflowAppR2D::onRemoteRunButtonClicked(){
-    emit errorMessage("");
+    //    emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
 
@@ -477,7 +426,7 @@ void WorkflowAppR2D::onRemoteRunButtonClicked(){
 
 void WorkflowAppR2D::onRemoteGetButtonClicked(){
 
-    emit errorMessage("");
+    // emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
 
@@ -500,7 +449,7 @@ void WorkflowAppR2D::onExitButtonClicked(){
 
 void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir) {
 
-    errorMessage("");
+    //    errorMessage("");
 
     //
     // create temporary directory in working dir
@@ -565,7 +514,7 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     file.close();
 
 
-    statusMessage("SetUp Done .. Now starting application");
+    statusMessage("Setup done. Now starting application.");
 
     emit setUpForApplicationRunDone(tmpDirectory, inputFile);
 }
@@ -606,12 +555,17 @@ void WorkflowAppR2D::loadFile(const QString fileName){
     // close file
     file.close();
 
-    //
-    // clear current and input from new JSON
-    //
+    progressDialog->showProgressBar();
+    QApplication::processEvents();
 
-    this->clear();
     this->inputFromJSON(jsonObj);
+    progressDialog->hideProgressBar();
+
+    if(qobject_cast<RemoteJobManager*>(QObject::sender()) == nullptr)
+        this->statusMessage("Done loading. Click on the 'RUN' button to run an analysis.");
+
+    // Automatically hide after n seconds
+    // progressDialog->hideAfterElapsedTime(4);
 }
 
 
@@ -646,3 +600,34 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
     }
 
 }
+
+
+void WorkflowAppR2D::statusMessage(QString message)
+{
+    progressDialog->appendText(message);
+}
+
+
+void WorkflowAppR2D::infoMessage(QString message)
+{
+    progressDialog->appendInfoMessage(message);
+}
+
+
+void WorkflowAppR2D::errorMessage(QString message)
+{
+    progressDialog->appendErrorMessage(message);
+}
+
+
+void WorkflowAppR2D::fatalMessage(QString message)
+{
+    progressDialog->appendErrorMessage(message);
+}
+
+
+void WorkflowAppR2D::runComplete()
+{
+    progressDialog->hideAfterElapsedTime(2);
+}
+

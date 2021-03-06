@@ -63,6 +63,7 @@ QStringList LayerTreeItem::getActionList()
     QStringList actionList = TreeItem::getActionList();
 
     actionList << "&Change Opacity"
+               << "&Zoom To Extents"
                << "Separator";
 
     return actionList;
@@ -105,6 +106,16 @@ void LayerTreeItem::changeOpacity()
     opacityDialog->show();
     opacityDialog->raise();
     opacityDialog->activateWindow();
+}
+
+
+void LayerTreeItem::zoomToExtents()
+{
+    if(itemID.isEmpty())
+        return;
+
+    emit zoomLayerExtents(itemID);
+
 }
 
 
