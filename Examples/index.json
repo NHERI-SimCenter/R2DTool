@@ -5,16 +5,16 @@
       "title": "E4 - OpenSeesPy FEM",
       "base": "E4OpenSeesPyFEM",
       "doc": [
-        "E4OpenSeesPyFEM/figures/r2dt-0001-HAZ.png",
-        "E4OpenSeesPyFEM/figures/r2dt-0001-GI.png",
-        "E4OpenSeesPyFEM/figures/r2dt-0001-ANA.png",
-        "E4OpenSeesPyFEM/figures/r2dt-0001-MOD.png",
-        "E4OpenSeesPyFEM/figures/r2dt-0001-VIZ.png",
-        "E4OpenSeesPyFEM/figures/r2dt-0001-RES.png",
-        "E4OpenSeesPyFEM/figures/r2dt-0001-ASD.png",
         "E4OpenSeesPyFEM/figures/r2dt-0001-HTA.png",
-        "E4OpenSeesPyFEM/figures/r2dt-0001-DL.png",
-        "E4OpenSeesPyFEM/README.rst"
+        "E4OpenSeesPyFEM/figures/r2dt-0001-MOD.png",
+        "E4OpenSeesPyFEM/figures/r2dt-0001-ASD.png",
+        "E4OpenSeesPyFEM/README.rst",
+        "E4OpenSeesPyFEM/figures/r2dt-0001-RES.png",
+        "E4OpenSeesPyFEM/figures/r2dt-0001-GI.png",
+        "E4OpenSeesPyFEM/figures/r2dt-0001-HAZ.png",
+        "E4OpenSeesPyFEM/figures/r2dt-0001-VIZ.png",
+        "E4OpenSeesPyFEM/figures/r2dt-0001-ANA.png",
+        "E4OpenSeesPyFEM/figures/r2dt-0001-DL.png"
       ],
       "summary": "This example highlights the use of R2D for advanced response estimation leveraging information provided through a building inventory. A template script is provided that creates a building-specific cantilever and performs the response-history analysis to obtain EDPs and the hazard is generated using empirical ground motion records from the PEER NGA West2 database.\n",
       "logo": "figures/r2dt-0001-VIZ.png",
@@ -29,16 +29,16 @@
       "title": "E5 - Ground Shaking and Liquefaction",
       "base": "E5GroundShakingAndLiquefaction",
       "doc": [
-        "E5GroundShakingAndLiquefaction/README.rst",
-        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-HTA.png",
+        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-DL.png",
         "E5GroundShakingAndLiquefaction/figures/r2dt-0002-GI.png",
-        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-ANA.png",
         "E5GroundShakingAndLiquefaction/figures/r2dt-0002-VIZ.png",
+        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-ANA.png",
+        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-HTA.png",
         "E5GroundShakingAndLiquefaction/figures/r2dt-0002-ASD.png",
-        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-HAZ.png",
         "E5GroundShakingAndLiquefaction/figures/r2dt-0002-UQ.png",
-        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-RES.png",
-        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-DL.png"
+        "E5GroundShakingAndLiquefaction/README.rst",
+        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-HAZ.png",
+        "E5GroundShakingAndLiquefaction/figures/r2dt-0002-RES.png"
       ],
       "summary": "This example presents a coupled damage assessment for ground shaking and liquefaction hazards. \nTo infer liquefaction, estimates of horizontal spreading and vertical settlement are generated from PGA values obtained through PSHA. \nThese three intensity measures form the basis of input to a building-level, HAZUS-based damage and loss assessment that accounts for potential collapses due to liquefaction. \nApproximately 14,000 buildings are considered in the city of Alameda, CA.\n",
       "logo": "figures/r2dt-0002-VIZ.png",
@@ -54,14 +54,14 @@
       "base": "E2MDOFBuildingResponse",
       "doc": [
         "E2MDOFBuildingResponse/figures/r2dt-0003-MOD.png",
+        "E2MDOFBuildingResponse/figures/r2dt-0003-HTA.png",
         "E2MDOFBuildingResponse/README.rst",
-        "E2MDOFBuildingResponse/figures/r2dt-0003-HAZ.png",
-        "E2MDOFBuildingResponse/figures/r2dt-0003-GI.png",
         "E2MDOFBuildingResponse/figures/r2dt-0003-RES.png",
+        "E2MDOFBuildingResponse/figures/r2dt-0003-GI.png",
+        "E2MDOFBuildingResponse/figures/r2dt-0003-ASD.png",
         "E2MDOFBuildingResponse/figures/r2dt-0003-ANA.png",
         "E2MDOFBuildingResponse/figures/r2dt-0003-VIZ.png",
-        "E2MDOFBuildingResponse/figures/r2dt-0003-HTA.png",
-        "E2MDOFBuildingResponse/figures/r2dt-0003-ASD.png",
+        "E2MDOFBuildingResponse/figures/r2dt-0003-HAZ.png",
         "E2MDOFBuildingResponse/figures/r2dt-0003-DL.png"
       ],
       "summary": "This example uses ground motions from the 2018 earthquake in Anchorage, AK, to characterize the response of buildings with an idealized MDOF building model through story-level Engineering Demand Parameters (EDP). Exploiting the refinement in EDPs, a HAZUS-based story-level assessment is employed to evaluate the performance of 510 buildings.\n",
@@ -77,17 +77,17 @@
       "title": "Physics-based Ground Motions",
       "base": "Earthquake4_Alameda_SW4",
       "doc": [
+        "Earthquake4_Alameda_SW4/figures/r2dt-0004-RES.png",
+        "Earthquake4_Alameda_SW4/figures/r2dt-0004-RV.png",
+        "Earthquake4_Alameda_SW4/figures/r2dt-0004-GI.png",
+        "Earthquake4_Alameda_SW4/figures/r2dt-0004-HTA.png",
+        "Earthquake4_Alameda_SW4/figures/r2dt-0004-ANA.png",
+        "Earthquake4_Alameda_SW4/figures/r2dt-0004-UQ.png",
+        "Earthquake4_Alameda_SW4/README.rst",
+        "Earthquake4_Alameda_SW4/figures/r2dt-0004-ASD.png",
         "Earthquake4_Alameda_SW4/figures/r2dt-0004-HAZ.png",
         "Earthquake4_Alameda_SW4/figures/r2dt-0004-MOD.png",
-        "Earthquake4_Alameda_SW4/figures/r2dt-0004-UQ.png",
-        "Earthquake4_Alameda_SW4/figures/r2dt-0004-HTA.png",
-        "Earthquake4_Alameda_SW4/figures/r2dt-0004-GI.png",
-        "Earthquake4_Alameda_SW4/figures/r2dt-0004-RV.png",
-        "Earthquake4_Alameda_SW4/README.rst",
-        "Earthquake4_Alameda_SW4/figures/r2dt-0004-DL.png",
-        "Earthquake4_Alameda_SW4/figures/r2dt-0004-ASD.png",
-        "Earthquake4_Alameda_SW4/figures/r2dt-0004-RES.png",
-        "Earthquake4_Alameda_SW4/figures/r2dt-0004-ANA.png"
+        "Earthquake4_Alameda_SW4/figures/r2dt-0004-DL.png"
       ],
       "summary": "This example features ground motion acceleration time histories simulated using the SW4 software and a detailed geophysical model of the San Francisco Bay Area by the Lawrence Livermore National Laboratory. The ground motions are used to investigate the impact of a Mw7.0 earthquake on the Hayward fault on the city of Berkeley. Engineering Demand Parameters are simulated with an idealized MDOF building model; building performance is evaluated at the story-level based on the HAZUS earthquake damage and loss assessment methodology.\n",
       "logo": "figures/r2dt-0004-GI.png",
@@ -102,16 +102,16 @@
       "title": "Earthquake - Custom - OpenSeesPy",
       "base": "Earthquake5_Custom_OSPy",
       "doc": [
-        "Earthquake5_Custom_OSPy/figures/r2dt-0005-MOD.png",
-        "Earthquake5_Custom_OSPy/figures/r2dt-0005-HTA.png",
-        "Earthquake5_Custom_OSPy/figures/r2dt-0005-DL.png",
-        "Earthquake5_Custom_OSPy/README.rst",
-        "Earthquake5_Custom_OSPy/figures/r2dt-0005-ASD.png",
-        "Earthquake5_Custom_OSPy/figures/r2dt-0005-RV.png",
-        "Earthquake5_Custom_OSPy/figures/r2dt-0005-RES.png",
-        "Earthquake5_Custom_OSPy/figures/r2dt-0005-UQ.png",
         "Earthquake5_Custom_OSPy/figures/r2dt-0005-GI.png",
-        "Earthquake5_Custom_OSPy/figures/r2dt-0005-HAZ.png"
+        "Earthquake5_Custom_OSPy/figures/r2dt-0005-DL.png",
+        "Earthquake5_Custom_OSPy/figures/r2dt-0005-UQ.png",
+        "Earthquake5_Custom_OSPy/figures/r2dt-0005-RES.png",
+        "Earthquake5_Custom_OSPy/README.rst",
+        "Earthquake5_Custom_OSPy/figures/r2dt-0005-RV.png",
+        "Earthquake5_Custom_OSPy/figures/r2dt-0005-HTA.png",
+        "Earthquake5_Custom_OSPy/figures/r2dt-0005-HAZ.png",
+        "Earthquake5_Custom_OSPy/figures/r2dt-0005-MOD.png",
+        "Earthquake5_Custom_OSPy/figures/r2dt-0005-ASD.png"
       ],
       "summary": "A basic earthquake example.",
       "logo": "figures/r2dt-0005-GI.png",
@@ -119,6 +119,55 @@
         "Damage and Loss": "HAZUS MH EQ",
         "Simulation": "OpenSeesPy-Simulation",
         "Difficulty": "2"
+      }
+    },
+    "r2dt-0006": {
+      "id": "r2dt-0006",
+      "title": "E1 - Basic HAZUS",
+      "base": "E1BasicHAZUS",
+      "doc": [
+        "E1BasicHAZUS/figures/r2dt-0006-GI.png",
+        "E1BasicHAZUS/README.rst",
+        "E1BasicHAZUS/figures/r2dt-0006-MOD.png",
+        "E1BasicHAZUS/figures/r2dt-0006-HTA.png",
+        "E1BasicHAZUS/figures/r2dt-0006-HAZ.png",
+        "E1BasicHAZUS/figures/r2dt-0006-ASD.png",
+        "E1BasicHAZUS/figures/r2dt-0006-VIZ.png",
+        "E1BasicHAZUS/figures/r2dt-0006-DL.png",
+        "E1BasicHAZUS/figures/r2dt-0006-RES.png",
+        "E1BasicHAZUS/figures/r2dt-0006-ANA.png"
+      ],
+      "summary": "This earthquake example demonstrates rapid analysis capabilities with the HAZUS earthquake damage and loss assessment methodology. Building-level Damage and Losses (D&L) are calculated directly from Intensity Measures (IM) for 100 assets. The IM field for the region of San Mateo, CA, was obtained from Probabilistic Seismic Hazard Analysis (PSHA).\n",
+      "logo": "figures/r2dt-0006-VIZ.png",
+      "categories": {
+        "Damage and Loss": "HAZUS MH EQ IM",
+        "Simulation": "IMasEDP",
+        "Difficulty": "1"
+      }
+    },
+    "r2dt-0007": {
+      "id": "r2dt-0007",
+      "title": "E3 - Physics-based Ground Motions",
+      "base": "E3PhysicsBasedGroundMotions",
+      "doc": [
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-UQ.png",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-RES.png",
+        "E3PhysicsBasedGroundMotions/README.rst",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-ANA.png",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-DL.png",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-ASD.png",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-HAZ.png",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-HTA.png",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-MOD.png",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-RV.png",
+        "E3PhysicsBasedGroundMotions/figures/r2dt-0007-GI.png"
+      ],
+      "summary": "This example features ground motion acceleration time histories simulated using the SW4 software and a detailed geophysical model of the San Francisco Bay Area by the Lawrence Livermore National Laboratory [doi: 10.1785/0220180261]. The ground motions are used to investigate the impact of a Mw7.0 earthquake on the Hayward fault on the city of Berkeley. Engineering Demand Parameters are simulated with an idealized MDOF building model; building performance is evaluated at the story-level based on the HAZUS earthquake damage and loss assessment methodology.\n",
+      "logo": "figures/r2dt-0007-GI.png",
+      "categories": {
+        "Damage and Loss": "HAZUS MH EQ",
+        "Simulation": "OpenSees-Simulation_R",
+        "Difficulty": "1"
       }
     }
   },
