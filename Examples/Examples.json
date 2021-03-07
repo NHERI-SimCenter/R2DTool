@@ -2,7 +2,7 @@
     "Examples": [
         {
             "name":"E1 - Basic HAZUS",
-            "description":"This earthquake example demonstrates rapid analysis capabilities with the HAZUS earthquake damage and loss assessment methodology. Building-level Damage and Losses (D&L) are calculated directly from Intensity Measures (IM) for 100 assets. The IM field for the region of San Mateo, CA, was obtained from Probabilistic Seismic Hazard Analysis (PSHA).",
+            "description":"This earthquake example demonstrates rapid analysis capabilities with the HAZUS earthquake damage and loss assessment methodology. Building-level Damage and Losses (D&L) are calculated directly from Intensity Measures (IM) for 25 assets. The IM field for the region of San Francisco, CA, was obtained from Probabilistic Seismic Hazard Analysis (PSHA).",
             "InputFile": "E1BasicHAZUS/input.json"
         },
         {
