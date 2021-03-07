@@ -13,45 +13,38 @@ This example features ground motion acceleration time histories simulated using 
    This example uses simulated ground motion time histories from the Lawrence Livermore National Lab. Due to size constraints, only the time histories near Berkeley are bundled with R2D. The complete set of simulated ground motions are available at https://berkeley.box.com/s/65113pqclc2j29ve9alita5kr7q2jnwc . After downloading the zip file, extract its contents to the SW4 folder under input_data.
 
 
-**The rest of the readme has not been updated yet!**
-
-
 Modeling Procedure
 ------------------
 
-#. **VIZ**
-    
-   .. figure:: figures/r2dt-0007-VIZ.png
-      :width: 600px
-      :align: center
+This study will be defined by sequentially traversing the input panels of the **R2D** interface. However, as outlined in the online user's manual, these procedures can be serialized to and loaded immediately from a JSON file, which for this example may be found :github:`here <Examples/E3PhysicsBasedGroundMotions/input.json>`.
 
 
-#. **GI**
-    
+#. **GI** The following figure shows how the general information panel is configured to handle the units of our analysis and provide output corresponding to demand parameters, damage measures, and decision variables.
+
    .. figure:: figures/r2dt-0007-GI.png
       :width: 600px
       :align: center
 
 
-#. **HAZ**
-    
+#. **HAZ** Next, in the hazard panel, the :github:`EventGrid.csv <Examples/E3PhysicsBasedGroundMotions/input_data/SW4/EventGrid.csv>` file is loaded pointing to the suite of SW4 ground motions which are used for the procedure.
+
    .. figure:: figures/r2dt-0007-HAZ.png
       :width: 600px
       :align: center
 
-#. **ASD** 
+#. **ASD** Now a few buildings of interest can be singled out from the building inventory as shown in the following figure where the **CSV to BIM** option is selected as our backend.
 
    .. figure:: figures/r2dt-0007-ASD.png
       :width: 600px
       :align: center
 
-#. **HTA** Next, a hazard mapping algorithm is specified using the **Nearest Neighbour** method and the **SimCenterEvent** application, which are configured as show in the following figure with **3** samples in **4** neighborhoods. 
+#. **HTA** Next, a hazard mapping algorithm is specified using the **Nearest Neighbour** method and the **SimCenterEvent** application, which are configured as show in the following figure with **3** samples in **4** neighborhoods.
 
    .. figure:: figures/r2dt-0007-HTA.png
       :width: 600px
       :align: center
 
-#. **MOD** 
+#. **MOD** Now the building modeling procedure is configured with the **MDOF-LU** backend where standard deviations of :math:`0.1` for stiffness and damping are defined.
 
    .. figure:: figures/r2dt-0007-MOD.png
       :width: 600px
@@ -65,25 +58,30 @@ Modeling Procedure
       :align: center
 
 
-#. **DL** 
+#. **DL**  The damage and loss panel is now used to configure the **Pelicun** backend. The **HAZUS MH EQ** damage and loss method is selected and configured as shown in the following figure.
 
    .. figure:: figures/r2dt-0007-DL.png
       :width: 600px
       :align: center
 
-#. **UQ** 
+#. **UQ** Now nearing the end of our journey, it is time to configure the venerable **Dakota** uncertainty quantification engine to carry out our lating hypercube sampling procedure **3** samples and an arbitrary seed for reproducibility.
 
    .. figure:: figures/r2dt-0007-UQ.png
       :width: 600px
       :align: center
 
-#. **RV** 
+#. **RV** For the problem at hand we elect to decline the services of the random variable panel and proceed to our journey's end with a swift click of the **Run** button.
 
-   .. figure:: figures/r2dt-0007-RV.png
+
+
+#. **VIZ** The following snapshot of the visualization panel shows the assets which have been configured for this study, and their locations on a map of Berkeley, CA.
+
+   .. figure:: figures/r2dt-0007-VIZ.png
       :width: 600px
       :align: center
 
-#. **RES** 
+
+#. **RES**
 
    .. figure:: figures/r2dt-0007-RES.png
       :width: 600px

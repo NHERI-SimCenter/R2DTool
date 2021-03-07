@@ -12,15 +12,7 @@ This earthquake example demonstrates rapid analysis capabilities with the HAZUS 
    :width: 400px
    :align: center
 
-**The rest of the readme has not been updated yet!**
-
-
-#. **VIZ** The visualization panel in the following figure shows the location of the assets considered by this example.
-
-   .. figure:: figures/r2dt-0006-VIZ.png
-      :width: 600px
-      :align: center
-
+We now embark on our journey through the input panels of R2D, making known to the workflow builder how our procedure should be built.
 
 #. **GI** The unit system and asset type are prescribed in this panel, and we're interested in the building engineering demand parameters, damage measures, and the resulting decision variables.
 
@@ -29,7 +21,7 @@ This earthquake example demonstrates rapid analysis capabilities with the HAZUS 
       :align: center
 
 
-#. **HAZ** Next, the hazard panel is used to load the event grid ``.csv`` file (:github:`view on Github <Examples/E1BasicHAZUS/input_data/San_Andreas_Mw72/EventGrid.csv>`) which lists out the 10 recorded ground motions cross San Francisco which are used as the ground acceleration time history inputs in this example.
+#. **HAZ** Next, the hazard panel is used to load the event grid ``.csv`` file (:github:`view on Github <Examples/E1BasicHAZUS/input_data/San_Andreas_Mw72/EventGrid.csv>`) which lists out the ground motions which are used as the ground acceleration time history inputs in this example.
 
    .. figure:: figures/r2dt-0006-HAZ.png
       :width: 600px
@@ -60,7 +52,7 @@ This earthquake example demonstrates rapid analysis capabilities with the HAZUS 
       :align: center
 
 
-#. **DL** The damage and loss panel is now used to configure the **Pelicun** backend. The **HAZUS MH EQ** damage and loss method is selected and configured as shown in the following figure:
+#. **DL** The damage and loss panel is now used to configure the **Pelicun** backend. The **HAZUS MH EQ IM** damage and loss method is selected and configured as shown in the following figure:
 
    .. figure:: figures/r2dt-0006-DL.png
       :width: 600px
@@ -69,5 +61,11 @@ This earthquake example demonstrates rapid analysis capabilities with the HAZUS 
 
 #. The **UQ** and **RV** panels will be left empty for this procedure.
 
+
+#. **VIZ** The visualization panel in the following figure shows the location of the assets considered by this example.
+
+   .. figure:: figures/r2dt-0006-VIZ.png
+      :width: 600px
+      :align: center
 
 
