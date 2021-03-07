@@ -2,9 +2,9 @@
 E2 - MDOF Building Response
 ===========================
 
-+-----------------+-----------------------------------------------------+
-| Download files  | :github:`Github <Examples/E2MDOFBuildingResponse/>` |
-+-----------------+-----------------------------------------------------+
++-----------------+-------------------------------------------------------+
+| Download files  | :github:`Download <Examples/E2MDOFBuildingResponse/>` |
++-----------------+-------------------------------------------------------+
 
 This example uses ground motions from the 2018 earthquake in Anchorage, AK, to characterize the response of buildings with an idealized MDOF building model through story-level Engineering Demand Parameters (EDP). Exploiting the refinement in EDPs, a HAZUS-based story-level assessment is employed to evaluate the performance of 510 buildings.
 

@@ -2,11 +2,11 @@
 E3 - Physics-based Ground Motions
 =================================
 
-+-----------------+------------------------------------------------------------+
-| Download files  | :github:`Github <Examples/E3PhysicsBasedGroundMotions/>`   |
-+-----------------+------------------------------------------------------------+
++-----------------+--------------------------------------------------------------+
+| Download files  | :github:`Download <Examples/E3PhysicsBasedGroundMotions/>`   |
++-----------------+--------------------------------------------------------------+
 
-This example features ground motion acceleration time histories simulated using the SW4 software and a detailed geophysical model of the San Francisco Bay Area by the Lawrence Livermore National Laboratory [doi: 10.1785/0220180261]. The ground motions are used to investigate the impact of a Mw7.0 earthquake on the Hayward fault on the city of Berkeley. Engineering Demand Parameters are simulated with an idealized MDOF building model; building performance is evaluated at the story-level based on the HAZUS earthquake damage and loss assessment methodology.
+This example features ground motion acceleration time histories simulated using the SW4 software and a detailed geophysical model of the San Francisco Bay Area by the Lawrence Livermore National Laboratory (https://doi.org/10.1785/0220180261). The ground motions are used to investigate the impact of a Mw7.0 earthquake on the Hayward fault on the city of Berkeley. Engineering Demand Parameters are simulated with an idealized MDOF building model; building performance is evaluated at the story-level based on the HAZUS earthquake damage and loss assessment methodology.
 
 
 .. note::
@@ -18,6 +18,12 @@ This example features ground motion acceleration time histories simulated using 
 
 Modeling Procedure
 ------------------
+
+#. **VIZ**
+    
+   .. figure:: figures/r2dt-0007-VIZ.png
+      :width: 600px
+      :align: center
 
 
 #. **GI**

@@ -2,37 +2,41 @@
 E1 - Basic HAZUS
 ===========================
 
-+-----------------+-------------------------------------------+
-| Download files  | :github:`Github <Examples/E1BasicHAZUS/>` |
-+-----------------+-------------------------------------------+
++-----------------+---------------------------------------------+
+| Download files  | :github:`Download <Examples/E1BasicHAZUS/>` |
++-----------------+---------------------------------------------+
 
 This earthquake example demonstrates rapid analysis capabilities with the HAZUS earthquake damage and loss assessment methodology. Building-level Damage and Losses (D&L) are calculated directly from Intensity Measures (IM) for 100 assets. The IM field that represents peak ground acceleration in the city of San Francisco, CA, from an Mw7.2 event on the San Andreas fault, was obtained from Probabilistic Seismic Hazard Analysis (PSHA).
+
+.. figure:: r2dt-0006.png
+   :width: 400px
+   :align: center
 
 **The rest of the readme has not been updated yet!**
 
 
-#. **VIZ** This example shows simulation of the magnitude 7 earthquake occurred in Anchorage in 2018. The damage and loss of a sample of buildings in the region are estimated.  It is important to note that the results are based on an approximate characterization of the ground motions and preliminary buildings data that has not been curated or verified thoroughly yet. The results presented herein are only for demonstrating the use of R2DTool and do not serve as an accurate representation of the real losses resulting from the earthquake.
+#. **VIZ** The visualization panel in the following figure shows the location of the assets considered by this example.
 
    .. figure:: figures/r2dt-0006-VIZ.png
       :width: 600px
       :align: center
 
 
-#. **GI** First, the unit system and asset type are prescribed in this panel, and we're interested in the building engineering demand parameters, damage measures, and the resulting decision variables.
+#. **GI** The unit system and asset type are prescribed in this panel, and we're interested in the building engineering demand parameters, damage measures, and the resulting decision variables.
 
    .. figure:: figures/r2dt-0006-GI.png
       :width: 600px
       :align: center
 
 
-#. **HAZ** 12 recorded ground motions cross Anchorage (from the Center for Engineering Strong Motion Data, CESMD) are used as the ground acceleration time history inputs in this example. The PGA values of these 12 records range from 0.12 g to 0.81 g.
+#. **HAZ** Next, the hazard panel is used to load the event grid ``.csv`` file (:github:`view on Github <Examples/E1BasicHAZUS/input_data/San_Andreas_Mw72/EventGrid.csv>`) which lists out the 10 recorded ground motions cross San Francisco which are used as the ground acceleration time history inputs in this example.
 
    .. figure:: figures/r2dt-0006-HAZ.png
       :width: 600px
       :align: center
 
 
-#. **ASD** In the asset definition panel, the path to the ``AnchorageBuilding.csv`` file is specified. Once this file is loaded, the user can select which particular assets will be included in the analysis by entering a valid range (e.g., 1-50) in the form and clicking **Select**. The ``AnchorageBuilding.csv`` includes parameters for the damage and loss assessment (i.e., number of stories, year of built, occupancy class, structure type, and plan area) for more than 80,000 buildings in the community.
+#. **ASD** In the asset definition panel, the path to the :github:`SanFranciscoBuildings.csv <Examples/E1BasicHAZUS/input_data/SanFrancisco_buildings.csv>` file is specified. Once this file is loaded, the user can select which particular assets will be included in the analysis by entering a valid range (e.g., 1-50) in the form and clicking **Select**. The ``SanFranciscoBuildings_full.csv`` file includes parameters for the damage and loss assessment (e.g., number of stories, year of built, occupancy class, structure type, and plan area) for more than 100,000 buildings in the community.
 
    .. figure:: figures/r2dt-0006-ASD.png
       :width: 600px
@@ -46,14 +50,10 @@ This earthquake example demonstrates rapid analysis capabilities with the HAZUS 
       :align: center
 
 
-#. **MOD** In the modeling panel, the **MDOF-LU** method is used to create Multi-Degree-Of-Freedom (MDOF) nonlinear shear building model from the input ``AnchorageBuilding.csv``. Following the HAZUS EQ Technical Manual Chapter 5, a hysteretic nonlinear material is defined for each story with a story shear and displacement relationship with the initial stiffness, over-strength ratio, hardening ratio, and degradation factor. These parameters are stored in the ``HazusData.txt`` for different building design levels (e.g., high-, moderate-, or pre-code) which is now primarily based on the built year of the structure.
-
-   .. figure:: figures/r2dt-0006-MOD.png
-      :width: 600px
-      :align: center
+#. The **MOD** panel is not used for this procedure. The **Building Modeling** dropdown should be left set to **None**.
 
 
-#. **ANA** In the analysis panel, **OpenSees** is selected from the primary dropdown.
+#. **ANA** In the analysis panel, **IMasEDP** is selected from the primary dropdown.
 
    .. figure:: figures/r2dt-0006-ANA.png
       :width: 600px
@@ -66,23 +66,8 @@ This earthquake example demonstrates rapid analysis capabilities with the HAZUS 
       :width: 600px
       :align: center
 
-..
-   #. **UQ**
 
-      .. figure:: figures/r2dt-0006-UQ.png
-         :width: 600px
-         :align: center
-
-..
-   #. **RV**
-
-      .. figure:: figures/r2dt-0006-RV.png
-         :width: 600px
-         :align: center
+#. The **UQ** and **RV** panels will be left empty for this procedure.
 
 
-#. **RES** The analysis outputs for the selected 50 buildings are show in the figure below. The buildings are mostly likely in moderate damage states (Damage State 2 or 3 per HAZUS) with the non-structural damage would dominate the economic losses. The repair costs range from 1% to 7% of the total replacement costs, and the repair time range from 1 to 20 days.
 
-   .. figure:: figures/r2dt-0006-RES.png
-      :width: 600px
-      :align: center
