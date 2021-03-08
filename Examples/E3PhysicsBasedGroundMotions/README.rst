@@ -16,8 +16,8 @@ This example features ground motion acceleration time histories simulated using 
 Modeling Procedure
 ------------------
 
-This study will be defined by sequentially traversing the input panels of the **R2D** interface. However, as outlined in the online user's manual, these procedures can be serialized to and loaded immediately from a JSON file, which for this example may be found :github:`here <Examples/E3PhysicsBasedGroundMotions/input.json>`.
 
+We now embark on our journey through the input panels of R2D, making known to the workflow builder how our procedure should be built. An input file which will automatically configure these steps can be downloaded :github:`here <Examples/E3PhysicsBasedGroundMotions/input.json>`.
 
 #. **GI** The following figure shows how the general information panel is configured to handle the units of our analysis and provide output corresponding to demand parameters, damage measures, and decision variables.
 

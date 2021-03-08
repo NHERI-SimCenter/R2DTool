@@ -12,9 +12,10 @@ This earthquake example demonstrates rapid analysis capabilities with the HAZUS 
    :width: 400px
    :align: center
 
-We now embark on our journey through the input panels of R2D, making known to the workflow builder how our procedure should be built.
+This study will be defined by sequentially traversing the input panels of the **R2D** interface. However, as outlined in the online user's manual, these procedures can be serialized to and loaded immediately from a JSON file, which for this example may be found :github:`here <Examples/E3PhysicsBasedGroundMotions/input.json>`.
 
-#. **GI** The unit system and asset type are prescribed in this panel, and we're interested in the building engineering demand parameters, damage measures, and the resulting decision variables.
+
+#. **GI** The unit system and asset type are prescribed in this panel, and we're interested in the **building engineering demand parameters**, **damage measures**, and the resulting **decision variables**.
 
    .. figure:: figures/r2dt-0006-GI.png
       :width: 600px
