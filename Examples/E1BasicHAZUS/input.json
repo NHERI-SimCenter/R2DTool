@@ -15,8 +15,8 @@
     "Hazard": {
         "Application": "UserInputGM",
         "ApplicationData": {
-	    "eventFile": "/San_Andreas_Mw72/EventGrid.csv",
-	    "motionDir": "/San_Andreas_Mw72"
+	    "eventFile": "/San_Andreas_Mw72_filtered/EventGrid.csv",
+	    "motionDir": "/San_Andreas_Mw72_filtered"
 	}
     },	
     "Building": {
@@ -29,7 +29,7 @@
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "San_Andreas_Mw72/EventGrid.csv",
+        "filenameEVENTgrid": "San_Andreas_Mw72_filtered/EventGrid.csv",
         "samples": 100,
         "neighbors": 4
       }
