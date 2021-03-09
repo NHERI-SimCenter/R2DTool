@@ -2239,6 +2239,8 @@ void VisualizationWidget::clear(void)
 
     taskIDMap.clear();
     layerLoadMap.clear();
+    layersMap.clear();
+    legendModels.clear();
 
     featuresSelectedForAnalysisList.clear();
 

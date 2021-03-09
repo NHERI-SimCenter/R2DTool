@@ -148,13 +148,35 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
 
         QJsonValue unitsLengthValue = unitsObj["length"];
         LengthUnit lengthUnit = unitStringToEnum<LengthUnit>(unitsLengthValue.toString());
-        int lengthUnitIndex = unitsLengthCombo->findData(lengthUnit);
-        unitsLengthCombo->setCurrentIndex(lengthUnitIndex);
+
+        if(lengthUnit == LengthUnit::m || lengthUnit == LengthUnit::meter)
+            unitsLengthCombo->setCurrentIndex(0);
+        else if(lengthUnit == LengthUnit::cm || lengthUnit == LengthUnit::centimeter)
+            unitsLengthCombo->setCurrentIndex(1);
+        else if(lengthUnit == LengthUnit::mm || lengthUnit == LengthUnit::milimeter)
+            unitsLengthCombo->setCurrentIndex(2);
+        if(lengthUnit == LengthUnit::in || lengthUnit == LengthUnit::inch)
+            unitsLengthCombo->setCurrentIndex(3);
+        else if(lengthUnit == LengthUnit::ft || lengthUnit == LengthUnit::foot)
+            unitsLengthCombo->setCurrentIndex(4);
+        else
+            unitsLengthCombo->setCurrentIndex(0);
+
 
         QJsonValue unitsTimeValue = unitsObj["time"];
-        TimeUnit timeUnit = unitStringToEnum<TimeUnit>(unitsTimeValue.toString());
-        int timeUnitIndex = unitsTimeCombo->findData(timeUnit);
-        unitsTimeCombo->setCurrentIndex(timeUnitIndex);
+
+        if(!unitsTimeValue.isNull())
+        {
+            TimeUnit timeUnit = unitStringToEnum<TimeUnit>(unitsTimeValue.toString());
+            if(timeUnit == TimeUnit::sec || timeUnit == TimeUnit::seconds)
+                unitsTimeCombo->setCurrentIndex(0);
+            else if(timeUnit == TimeUnit::min || timeUnit == TimeUnit::minutes)
+                unitsTimeCombo->setCurrentIndex(1);
+            else if(timeUnit == TimeUnit::hr || timeUnit == TimeUnit::hour)
+                unitsTimeCombo->setCurrentIndex(2);
+            else
+                unitsTimeCombo->setCurrentIndex(0);
+        }
     }
 
     if (jsonObject.contains("outputs")) {

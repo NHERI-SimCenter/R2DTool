@@ -346,6 +346,7 @@ void WorkflowAppR2D::clear(void)
     theResultsWidget->clear();
     theVisualizationWidget->clear();
     progressDialog->clear();
+    theComponentSelection->displayComponent("VIZ");
 }
 
 
