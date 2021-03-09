@@ -233,7 +233,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     unitsLengthCombo->addItem("Meters", LengthUnit::m);
     unitsLengthCombo->addItem("Centimeters", LengthUnit::cm);
     unitsLengthCombo->addItem("Millimeters", LengthUnit::mm);
-    unitsLengthCombo->addItem("Inches", LengthUnit::in);
+    unitsLengthCombo->addItem("Inches", LengthUnit::inch);
     unitsLengthCombo->addItem("Feet", LengthUnit::ft);
     unitsLengthCombo->setCurrentIndex(3);
 
