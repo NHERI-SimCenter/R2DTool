@@ -11,7 +11,7 @@ This example presents a coupled damage assessment for ground shaking and liquefa
 
 #. **VIZ** This example shows simulation for pseudo earthquake scenarios in Bay Area. The damage and loss of a sample of buildings in the Alameda County due to the soil liquefaction are estimated.  The results presented herein are only for demonstrating the use of R2DTool and do not serve as an accurate representation of the real losses.
 
-   .. figure:: figures/r2dt-0002-VIZ.png
+   .. figure:: figures/r2dt-0002.png
       :width: 600px
       :align: center
 

@@ -63,7 +63,7 @@ The results presented herein are only for demonstrating the use of R2DTool and d
 
 #. **VIZ**
 
-   .. figure:: figures/r2dt-0003-VIZ.png
+   .. figure:: figures/r2dt-0003.png
       :width: 600px
       :align: center
 

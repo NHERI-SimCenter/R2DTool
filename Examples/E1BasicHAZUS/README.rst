@@ -70,7 +70,13 @@ This study will be defined by sequentially traversing the input panels of the **
       :align: center
 
 
-#. **RES** The final step is to click the **Run** button at the bottom of the application, after which the results panel will be populated with a variety of widgets which can be configured to one's heart's desires as shown below:
+#. **RES** The final step is to click the **Run** button at the bottom of the application, after which the results panel will be populated with a variety of widgets which can be configured to one's heart's content as shown below:
    
+   .. figure:: figures/r2dt-0006.png
+      :width: 600px
+      :align: center
+
    .. figure:: figures/r2dt-0006-FULL.png
+      :width: 600px
+      :align: center
 
