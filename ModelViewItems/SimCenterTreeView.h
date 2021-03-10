@@ -1,5 +1,5 @@
-#ifndef GENERALINFORMATIONWIDGET_H
-#define GENERALINFORMATIONWIDGET_H
+#ifndef SimCenterTreeView_H
+#define SimCenterTreeView_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,75 +36,45 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include <SimCenterWidget.h>
+#include <QTreeView>
+#include <QDebug>
 
-class QLineEdit;
-class QGridLayout;
-class QComboBox;
-class QCheckBox;
+class CheckableTreeModel;
+class TreeItem;
 
-class GeneralInformationWidget : public SimCenterWidget
+class SimCenterTreeView : public QTreeView
 {
-
     Q_OBJECT
+
 public:
-    explicit GeneralInformationWidget(QWidget *parent);
-    ~GeneralInformationWidget();
+    SimCenterTreeView(QWidget *parent, QString headerText = QString());
 
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
+    bool removeItemFromTree(const QString& itemID);
 
-    bool outputToJSON(QJsonArray &arrayObject);
-    bool inputFromJSON(QJsonArray &arrayObject);
+    TreeItem* addItemToTree(const QString itemText, QString UID, TreeItem* parent = nullptr);
 
-    QString getAnalysisName(void);
+    TreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
 
     void clear(void);
 
-    enum LengthUnit{m, meter, cm, centimeter, mm, milimeter, in, inch, ft, foot};
-    Q_ENUM(LengthUnit)
-    enum ForceUnit{N, kN, lb, kips};
-    Q_ENUM(ForceUnit)
-    enum TimeUnit{sec, seconds, min, minutes, hr, hour};
-    Q_ENUM(TimeUnit)
-    enum TemperatureUnit{C, F, K};
-    Q_ENUM(TemperatureUnit)
+    void selectRow(int i);
 
-    bool setAssetTypeState(QString assetType, bool);
-    QString getLengthUnit();
-    QString getForceUnit();
+public slots:
+    // Shows the "right-click" menu
+    void showPopup(const QPoint &position);
 
-signals:
-    void assetChanged(QString name, bool checked);
+    void itemSelected(const QModelIndex &index);
+
+private slots:
+    // Runs the action that the user selects on the right-click menu
+    void runAction();
+
 
 private:
 
-    QGridLayout* getInfoLayout(void);
-
-    QLineEdit* nameEdit;
-
-    QComboBox* unitsForceCombo;
-    QComboBox* unitsLengthCombo;
-    QComboBox* unitsTemperatureCombo;
-    QComboBox* unitsTimeCombo;
-
-    QCheckBox* buildingsCheckBox;
-    QCheckBox* soilCheckBox;
-    QCheckBox* waterCheckBox;
-    QCheckBox* sewerCheckBox;  
-    QCheckBox* gasCheckBox;
-    QCheckBox* transportationCheckBox;
-  
-    QCheckBox* EDPCheckBox;
-    QCheckBox* DMCheckBox;
-    QCheckBox* DVCheckBox;
-    QCheckBox* realizationCheckBox;
-
-    template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
-    template<typename UnitEnum> UnitEnum unitStringToEnum(QString unitString);
+    CheckableTreeModel* layersModel;
 };
 
-
-#endif // GENERALINFORMATIONWIDGET_H
+#endif // SimCenterTreeView_H

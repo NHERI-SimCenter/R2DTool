@@ -5,6 +5,7 @@
 #include <QStyledItemDelegate>
 
 #include <cmath>
+#include <stdexcept>
 
 bool is_integer(float k)
 {
