@@ -73,3 +73,7 @@ The results presented herein are only for demonstrating the use of R2DTool and d
    .. figure:: figures/r2dt-0003-RES.png
       :width: 600px
       :align: center
+   
+   .. figure:: figures/r2dt-0003-MAP.png
+      :width: 600px
+      :align: center
