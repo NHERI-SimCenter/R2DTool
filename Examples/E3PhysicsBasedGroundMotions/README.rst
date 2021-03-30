@@ -83,7 +83,7 @@ We now embark on our journey through the input panels of R2D, making known to th
 
 #. **RES**
 
-   .. figure:: figures/r2dt-0007-RES.png
+   .. figure:: figures/r2dt-0007.png
       :width: 600px
       :align: center
 

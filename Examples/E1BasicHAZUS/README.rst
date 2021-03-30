@@ -6,9 +6,9 @@ E1 - Basic HAZUS
 | Download files  | :github:`Download <Examples/E1BasicHAZUS/>` |
 +-----------------+---------------------------------------------+
 
-This earthquake example demonstrates rapid analysis capabilities with the HAZUS earthquake damage and loss assessment methodology. Building-level Damage and Losses (D&L) are calculated directly from Intensity Measures (IM) for 100 assets. The IM field that represents peak ground acceleration in the city of San Francisco, CA, from an Mw7.2 event on the San Andreas fault, was obtained from Probabilistic Seismic Hazard Analysis (PSHA).
+This earthquake example demonstrates rapid analysis capabilities with the HAZUS earthquake damage and loss assessment methodology. Building-level Damage and Losses (D&L) are calculated directly from Intensity Measures (IM) for 25 assets. The IM field that represents peak ground acceleration in the city of San Francisco, CA, from an Mw7.2 event on the San Andreas fault, was obtained from Probabilistic Seismic Hazard Analysis (PSHA).
 
-.. figure:: r2dt-0006.png
+.. figure:: r2dt-0006-1.png
    :width: 400px
    :align: center
 
@@ -69,4 +69,14 @@ This study will be defined by sequentially traversing the input panels of the **
       :width: 600px
       :align: center
 
+
+#. **RES** The final step is to click the **Run** button at the bottom of the application, after which the results panel will be populated with a variety of widgets which can be configured to one's heart's content as shown below:
+   
+   .. figure:: figures/r2dt-0006.png
+      :width: 600px
+      :align: center
+
+   .. figure:: figures/r2dt-0006-FULL.png
+      :width: 600px
+      :align: center
 

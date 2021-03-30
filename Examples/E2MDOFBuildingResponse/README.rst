@@ -63,7 +63,7 @@ The results presented herein are only for demonstrating the use of R2DTool and d
 
 #. **VIZ**
 
-   .. figure:: figures/r2dt-0003-VIZ.png
+   .. figure:: figures/r2dt-0003.png
       :width: 600px
       :align: center
 
@@ -71,5 +71,9 @@ The results presented herein are only for demonstrating the use of R2DTool and d
 #. **RES** The analysis outputs for the selected 50 buildings are show in the figure below. The buildings are mostly likely in moderate damage states (Damage State 2 or 3 per HAZUS) with the non-structural damage would dominate the economic losses. The repair costs range from 1% to 7% of the total replacement costs, and the repair time range from 1 to 20 days.
 
    .. figure:: figures/r2dt-0003-RES.png
+      :width: 600px
+      :align: center
+   
+   .. figure:: figures/r2dt-0003-MAP.png
       :width: 600px
       :align: center
