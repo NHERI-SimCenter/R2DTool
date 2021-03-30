@@ -1,5 +1,5 @@
-#ifndef HAZARDS_WIDGET_H
-#define HAZARDS_WIDGET_H
+﻿#ifndef HURRICANEPREPROCESSOR_H
+#define HURRICANEPREPROCESSOR_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,48 +36,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "SimCenterAppSelection.h"
+#include <QString>
 
-class GMWidget;
-class RandomVariablesContainer;
-class ShakeMapWidget;
-class HurricaneSelectionWidget;
-class UserInputHurricaneWidget;
-class UserInputGMWidget;
+class QObject;
+class QProgressBar;
 class VisualizationWidget;
 
-class QGroupBox;
-
-class HazardsWidget : public  SimCenterAppSelection
+class HurricanePreprocessor
 {
-    Q_OBJECT
-
 public:
-    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
-    ~HazardsWidget();
+    HurricanePreprocessor(QProgressBar* pBar, VisualizationWidget* visWidget, QObject* parent);
 
-    void setCurrentlyViewable(bool status);
-
-signals:
-    void gridFileChangedSignal(QString motionDir, QString eventFile);
-
-private slots:
-
-    void shakeMapLoadingFinished(const bool value);
-    void gridFileChangedSlot(QString motionDir, QString eventFile);
+    int loadHurricaneTrackData(const QString &eventFile, QString &err);
 
 private:
 
-    RandomVariablesContainer* theRandomVariablesContainer;
-
+    QProgressBar* theProgressBar;
     VisualizationWidget* theVisualizationWidget;
-    GMWidget* theEQSSWidget;
-    ShakeMapWidget* theShakeMapWidget;
-    UserInputGMWidget* theUserInputGMWidget;
-    UserInputHurricaneWidget* theUserInputHurricaneWidget;
-    HurricaneSelectionWidget* theHurricaneSelectionWidget;
+    QObject* theParent;
+
 };
 
-#endif // HAZARDS_WIDGET_H
+#endif // HURRICANEPREPROCESSOR_H

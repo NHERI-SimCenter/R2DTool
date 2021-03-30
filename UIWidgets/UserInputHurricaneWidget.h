@@ -38,8 +38,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
+#include "GroundMotionStation.h"
 #include "SimCenterAppWidget.h"
-#include "ResultsMapViewWidget.h"
 
 #include <memory>
 
@@ -83,34 +83,27 @@ public:
 
     void clear(void);
 
-    void setCurrentlyViewable(bool status);
-
 public slots:
 
-    void showUserGMSelectDialog(void);
+    void showEventSelectDialog(void);
 
 private slots:
 
-    void handleHurricaneSelect(void);
-    void loadUserHurricaneData(void);
+    void loadHurricaneTrackData(void);
     void chooseEventFileDialog(void);
 
 signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
     void loadingComplete(const bool value);
 
 private:
 
     std::unique_ptr<QStackedWidget> theStackedWidget;
-    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
-    QLineEdit *eventFileLineEdit;
 
-    QLabel* selectedHurricaneName;
-    QLabel* selectedHurricaneSID;
+    QLineEdit *eventFileLineEdit;
 
     QLabel* progressLabel;
     QWidget* progressBarWidget;

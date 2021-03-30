@@ -134,11 +134,16 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SiteGridWidget.cpp \
             Events/UI/SiteWidget.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
+            ModelViewItems/CheckableTreeModel.cpp \
             ModelViewItems/GISLegendView.cpp \
+            ModelViewItems/SimCenterTreeView.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
+            Tools/ExampleDownloader.cpp \
+            Tools/HurricanePreprocessor.cpp \
             Tools/NGAW2Converter.cpp \
+            Tools/NetworkDownloadManager.cpp \
             Tools/PelicunPostProcessor.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
@@ -187,6 +192,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
             UIWidgets/UserInputGMWidget.cpp \
+            UIWidgets/HurricaneSelectionWidget.cpp \
             UIWidgets/UserInputHurricaneWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
             ModelViewItems/LayerTreeItem.cpp \
@@ -233,11 +239,16 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SiteGridWidget.h \
             Events/UI/SiteWidget.h \
             Events/UI/SpatialCorrelationWidget.h \
+            ModelViewItems/CheckableTreeModel.h \
             ModelViewItems/GISLegendView.h \
+            ModelViewItems/SimCenterTreeView.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
+            Tools/ExampleDownloader.h \
+            Tools/HurricanePreprocessor.h \
             Tools/NGAW2Converter.h \
+            Tools/NetworkDownloadManager.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
             Tools/TableNumberItem.h \
@@ -287,6 +298,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
             UIWidgets/UserInputGMWidget.h \
+            UIWidgets/HurricaneSelectionWidget.h \
             UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/VisualizationWidget.h \
             ModelViewItems/LayerTreeItem.h \
