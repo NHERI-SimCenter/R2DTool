@@ -491,7 +491,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         // Get the feature UID
         auto uid = building.UID;
-        theVisualizationWidget->updateSelectedComponent(uid,atrb,atrbVal);
+        theVisualizationWidget->updateSelectedComponent("BUILDINGS",uid,atrb,atrbVal);
     }
 
     //  CASUALTIES

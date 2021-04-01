@@ -151,7 +151,7 @@ int BuildingInputWidget::loadComponentVisualization()
 
         featureAttributes.insert("ID", buildingIDStr);
         featureAttributes.insert("LossRatio", 0.0);
-        featureAttributes.insert("AssetType", "BUILDING");
+        featureAttributes.insert("AssetType", "BUILDINGS");
         featureAttributes.insert("TabName", buildingIDStr);
         featureAttributes.insert("UID", uid);
 
@@ -266,7 +266,7 @@ SimpleRenderer* BuildingInputWidget::createBuildingRenderer(void)
 Esri::ArcGISRuntime::FeatureCollectionLayer* BuildingInputWidget::getSelectedFeatureLayer(void)
 {
     if(selectedBuildingsTable->numberOfFeatures() > 0)
-        selectedBuildingsLayer;
+        return selectedBuildingsLayer;
 
     return nullptr;
 }

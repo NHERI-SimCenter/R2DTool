@@ -90,6 +90,9 @@ public:
 
     ComponentDatabase* getComponentDatabase();
 
+    void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
+    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
+
     // Set custom labels in widget
     void setComponentType(const QString &value);
     void setLabel1(const QString &value);
@@ -123,6 +126,7 @@ private slots:
     void loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
+    void clearLayerSelectedForAnalysis(void);
 
 protected:
     VisualizationWidget* theVisualizationWidget;
@@ -156,6 +160,9 @@ private:
     QString label3;
 
     void createComponentsBox(void);
+
+    // Map to store the selected features according to their UID
+    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
 };
 
 #endif // ComponentInputWidget_H

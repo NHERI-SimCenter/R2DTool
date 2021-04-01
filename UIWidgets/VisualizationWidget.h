@@ -118,9 +118,7 @@ public:
     void setPipelineWidget(ComponentInputWidget *value);
 
     // Add component to 'selected layer'
-    void addComponentsToSelectedLayer(const QList<Esri::ArcGISRuntime::Feature*>& features);
-
-    void clearLayerSelectedForAnalysis(void);
+    void addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::FeatureCollectionLayer* featLayer);
 
     // Adds a raster layer to the map
     Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
@@ -170,7 +168,7 @@ public:
     ComponentInputWidget *getPipelineWidget() const;
 
     // Updates the value of an attribute for a selected component
-    void updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value);    
+    void updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value);
 
     void setLegendView(GISLegendView* legndView);
 
@@ -275,9 +273,6 @@ private:
 
     Esri::ArcGISRuntime::GroupLayer* selectedComponentsLayer = nullptr;
     LayerTreeItem* selectedComponentsTreeItem = nullptr;
-
-    // Map to store the selected features according to their UID
-    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
 
     // The GIS widget
     QWidget* visWidget;

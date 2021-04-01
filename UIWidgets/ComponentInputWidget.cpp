@@ -400,7 +400,6 @@ void ComponentInputWidget::handleComponentSelection(void)
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     sendStatusMessage(msg);
 
-    QList<Esri::ArcGISRuntime::Feature*> selectedFeatures;
     for(auto&& it : selectedComponentIDs)
     {
         auto component = theComponentDb.getComponent(it);
@@ -410,18 +409,70 @@ void ComponentInputWidget::handleComponentSelection(void)
         if(feature == nullptr)
             continue;
 
-        selectedFeatures<<feature;
+        auto atrb = feature->attributes()->attributesMap();
+        auto id = atrb.value("UID").toString();
+
+        if(selectedFeaturesForAnalysis.contains(id))
+            continue;
+
+        auto atrVals = atrb.values();
+        auto atrKeys = atrb.keys();
+
+        // qDebug()<<"Num atributes: "<<atrb.size();
+
+        QMap<QString, QVariant> featureAttributes;
+        for(int i = 0; i<atrb.size();++i)
+        {
+            auto key = atrKeys.at(i);
+            auto val = atrVals.at(i);
+
+            // Including the ObjectID causes a crash!!! Do not include it when creating an object
+            if(key == "ObjectID")
+                continue;
+
+            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
+
+            featureAttributes[key] = val;
+        }
+
+        // featureAttributes.insert("ID", "99");
+        // featureAttributes.insert("LossRatio", 0.0);
+        // featureAttributes.insert("AssetType", "BUILDING");
+        // featureAttributes.insert("TabName", "99");
+        // featureAttributes.insert("UID", "99");
+
+        auto geom = feature->geometry();
+
+        auto feat = this->addFeatureToSelectedLayer(featureAttributes,geom);
+
+        if(feat)
+            selectedFeaturesForAnalysis.insert(id,feat);
     }
 
-    theVisualizationWidget->addComponentsToSelectedLayer(selectedFeatures);
+    auto selecFeatLayer = this->getSelectedFeatureLayer();
+
+    theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
 
     //this->userMessageDialog(msg);
 }
 
 
+void ComponentInputWidget::clearLayerSelectedForAnalysis(void)
+{
+    if(selectedFeaturesForAnalysis.empty())
+        return;
+
+    for(auto&& it : selectedFeaturesForAnalysis)
+    {
+        this->removeFeatureFromSelectedLayer(it);
+    }
+
+    selectedFeaturesForAnalysis.clear();
+}
+
+
 void ComponentInputWidget::clearComponentSelection(void)
 {
-
     auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
     QList<Esri::ArcGISRuntime::Feature*> selectedFeatures;
@@ -434,7 +485,7 @@ void ComponentInputWidget::clearComponentSelection(void)
         selectedFeatures<<feature;
     }
 
-    theVisualizationWidget->clearLayerSelectedForAnalysis();
+    this->clearLayerSelectedForAnalysis();
 
 
     auto nRows = componentTableWidget->rowCount();
@@ -754,7 +805,7 @@ void ComponentInputWidget::handleCellChanged(int row, int column)
         return;
 
     auto uid = component.UID;
-    theVisualizationWidget->updateSelectedComponent(uid,attrib,attribVal);
+    this->updateSelectedComponentAttribute(uid,attrib,attribVal);
 
 }
 
@@ -773,5 +824,45 @@ int ComponentInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Fe
 
 Esri::ArcGISRuntime::FeatureCollectionLayer* ComponentInputWidget::getSelectedFeatureLayer(void)
 {
-   return nullptr;
+    return nullptr;
+}
+
+
+void ComponentInputWidget::updateComponentAttribute(const int uid, const QString& attribute, const QVariant& value)
+{
+    theComponentDb.updateComponentAttribute(uid,attribute,value);
+}
+
+
+void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
+{
+    if(selectedFeaturesForAnalysis.empty())
+    {
+        qDebug()<<"Selected features map is empty";
+        return;
+    }
+
+    if(!selectedFeaturesForAnalysis.contains(uid))
+    {
+        qDebug()<<"Feature not found in selected components map";
+        return;
+    }
+
+    // Get the feature
+    Feature* feat = selectedFeaturesForAnalysis[uid];
+
+    if(feat == nullptr)
+    {
+        qDebug()<<"Feature is a nullptr";
+        return;
+    }
+
+    feat->attributes()->replaceAttribute(attribute,value);
+    feat->featureTable()->updateFeature(feat);
+
+    if(feat->attributes()->attributeValue(attribute).isNull())
+    {
+        qDebug()<<"Failed to update feature "<<feat->attributes()->attributeValue("ID").toString();
+        return;
+    }
 }

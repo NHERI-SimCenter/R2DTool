@@ -632,7 +632,7 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
     hurricaneParamsWidget->setLandfallSpeed(stormSpeed);
     hurricaneParamsWidget->setLandfallRadius(radius);
 
-    theVisualizationWidget->addComponentsToSelectedLayer(selectedHurricaneFeature);
+//    theVisualizationWidget->addFeaturesToSelectedLayer(selectedHurricaneFeature);
 }
 
 

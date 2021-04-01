@@ -1452,143 +1452,40 @@ void VisualizationWidget::handleBasemapSelection(const QString selection)
 }
 
 
-void VisualizationWidget::addComponentsToSelectedLayer(const QList<Feature*>& features)
+void VisualizationWidget::addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::FeatureCollectionLayer* featLayer)
 {
-    if(features.empty())
-        return;
-
-    for(auto&& it : features)
-    {
-        auto atrb = it->attributes()->attributesMap();
-        auto id = atrb.value("UID").toString();
-
-        if(selectedFeaturesForAnalysis.contains(id))
-            continue;
-
-
-        auto assetType = atrb.value("AssetType").toString();
-
-        auto componentWidget = componentWidgetsMap.value(assetType,nullptr);
-
-        if(componentWidget == nullptr)
-            continue;
-
-        auto atrVals = atrb.values();
-        auto atrKeys = atrb.keys();
-
-        // qDebug()<<"Num atributes: "<<atrb.size();
-
-        QMap<QString, QVariant> featureAttributes;
-        for(int i = 0; i<atrb.size();++i)
-        {
-            auto key = atrKeys.at(i);
-            auto val = atrVals.at(i);
-
-            // Including the ObjectID causes a crash!!! Do not include it when creating an object
-            if(key == "ObjectID")
-                continue;
-
-            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
-
-            featureAttributes[key] = val;
-        }
-
-        // featureAttributes.insert("ID", "99");
-        // featureAttributes.insert("LossRatio", 0.0);
-        // featureAttributes.insert("AssetType", "BUILDING");
-        // featureAttributes.insert("TabName", "99");
-        // featureAttributes.insert("UID", "99");
-
-        auto geom = it->geometry();
-
-        auto feat = componentWidget->addFeatureToSelectedLayer(featureAttributes,geom);
-
-        if(feat)
-            selectedFeaturesForAnalysis.insert(id,feat);
-    }
-
 
     // Create the tree item if it does not exist
-    if(selectedComponentsTreeItem == nullptr && !selectedFeaturesForAnalysis.empty())
+    if(selectedComponentsTreeItem == nullptr)
     {
-        if(selectedComponentsLayer == nullptr)
-        {
-            // Create the buildings group layer that will hold the sublayers
-            selectedComponentsLayer = new GroupLayer(QList<Layer*>{}, this);
-            selectedComponentsLayer->setName("Selected Components");
+        // Create the buildings group layer that will hold the sublayers
+        selectedComponentsLayer = new GroupLayer(QList<Layer*>{}, this);
+        selectedComponentsLayer->setName("Selected Components");
 
-            selectedComponentsTreeItem = this->addLayerToMap(selectedComponentsLayer);
-
-            for(auto&& it : componentWidgetsMap)
-            {
-                auto selectedFeatLayer = it->getSelectedFeatureLayer();
-
-                if(selectedFeatLayer)
-                    this->addLayerToMap(selectedFeatLayer, selectedComponentsTreeItem, selectedComponentsLayer);
-            }
-        }
+        selectedComponentsTreeItem = this->addLayerToMap(selectedComponentsLayer);
     }
+
+    this->addLayerToMap(featLayer, selectedComponentsTreeItem, selectedComponentsLayer);
 }
 
 
-void VisualizationWidget::clearLayerSelectedForAnalysis(void)
+
+void VisualizationWidget::updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value)
 {
 
-    if(selectedFeaturesForAnalysis.empty())
-        return;
+    auto inputWidget = componentWidgetsMap.value(assetType,nullptr);
 
-    for(auto&& it : selectedFeaturesForAnalysis)
+    if(inputWidget)
     {
-        auto atrbMap = it->attributes()->attributesMap();
-        auto assetType = atrbMap.value("AssetType").toString();
-
-        auto componentWidget = componentWidgetsMap.value(assetType,nullptr);
-
-        if(componentWidget == nullptr)
-        {
-            QString err = "Error could not find the component of a selected feature";
-            qDebug()<<err;
-            continue;
-        }
-
-        componentWidget->removeFeatureFromSelectedLayer(it);
+        inputWidget->updateSelectedComponentAttribute(uid,attribute,value);
     }
-
-    selectedFeaturesForAnalysis.clear();
-}
-
-
-void VisualizationWidget::updateSelectedComponent(const QString& uid, const QString& attribute, const QVariant& value)
-{
-    if(selectedFeaturesForAnalysis.empty())
+    else
     {
-        qDebug()<<"Selected features map is empty";
+        QString err = "Could not find the widget for the corresponding asset type";
+        qDebug()<<err;
         return;
     }
 
-    if(!selectedFeaturesForAnalysis.contains(uid))
-    {
-        qDebug()<<"Feature not found in selected components map";
-        return;
-    }
-
-    // Get the feature
-    Feature* feat = selectedFeaturesForAnalysis[uid];
-
-    if(feat == nullptr)
-    {
-        qDebug()<<"Feature is a nullptr";
-        return;
-    }
-
-    feat->attributes()->replaceAttribute(attribute,value);
-    feat->featureTable()->updateFeature(feat);
-
-    if(feat->attributes()->attributeValue(attribute).isNull())
-    {
-        qDebug()<<"Failed to update feature "<<feat->attributes()->attributeValue("ID").toString();
-        return;
-    }
 }
 
 
