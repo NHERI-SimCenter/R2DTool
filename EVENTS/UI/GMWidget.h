@@ -63,14 +63,6 @@ class VisualizationWidget;
 class QPushButton;
 class QStatusBar;
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class MapGraphicsView;
-}
-}
-
 class GMWidget : public SimCenterAppWidget
 {
     Q_OBJECT
@@ -136,7 +128,6 @@ private:
 
     VisualizationWidget* theVisualizationWidget;
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
     void setupConnections();
     void initAppConfig();

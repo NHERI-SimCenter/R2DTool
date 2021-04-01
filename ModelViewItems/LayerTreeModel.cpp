@@ -385,6 +385,11 @@ bool LayerTreeModel::removeItemFromTree(const QString& itemID)
         if(index > -1)
         {
             item->removeChild(index);
+
+            // Remove the item if it has no more children
+            if(item->childCount() == 0)
+                removeItemFromTree(item->getItemID());
+
             return true;
         }
 

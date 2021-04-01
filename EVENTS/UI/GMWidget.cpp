@@ -124,9 +124,6 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     m_settingButton = new QPushButton(tr("&Settings"));
 
     // Create a map view that will be used for selecting the grid points
-
-    // mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
-
     mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr);
 
     auto userGrid = mapViewSubWidget->getGrid();
@@ -355,13 +352,6 @@ void GMWidget::saveAppSettings()
 
 void GMWidget::showGISWindow(void)
 {
-    /*
-    auto scene = mapViewMainWidget->scene();
-    auto sceneRect = scene->sceneRect();
-    if(sceneRect.isNull())
-        return;
-    */
-
     mapViewSubWidget->show();
     mapViewSubWidget->addGridToScene();
 

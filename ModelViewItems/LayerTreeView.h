@@ -54,8 +54,6 @@ public:
 
     LayerTreeModel *getLayersModel() const;
 
-    bool removeItemFromTree(const QString& itemID);
-
     LayerTreeItem* addItemToTree(const QString itemText, QString layerID, LayerTreeItem* parent = nullptr);
 
     LayerTreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
@@ -69,7 +67,7 @@ public slots:
     void showPopup(const QPoint &position);
 
     // Removes a layer from the tree and map
-    void removeLayer(const QString& layerID);
+    bool removeItemFromTree(const QString& itemID);
 
     void itemSelected(const QModelIndex &index);
 
@@ -79,6 +77,9 @@ private slots:
 
 
 private:
+
+    // Keep this function private
+    void removeLayer(const QString& layerID);
 
     LayerTreeModel* layersModel;
 

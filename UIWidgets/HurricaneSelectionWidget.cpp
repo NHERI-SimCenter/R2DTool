@@ -88,6 +88,9 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
     siteGrid = nullptr;
     hurricaneImportTool = nullptr;
     hurricaneParamsWidget = nullptr;
+    gridLayer = nullptr;
+    selectedHurricaneLayer = nullptr;
+    selectedHurricaneTable = nullptr;
 
     eventDatabaseFile = "";
 
@@ -514,7 +517,7 @@ void HurricaneSelectionWidget::setCurrentlyViewable(bool status){
     if (status == true)
         mapViewSubWidget->setCurrentlyViewable(status);
     else
-        this->clearGridFromMap();
+        mapViewSubWidget->removeGridFromScene();
 }
 
 
@@ -555,6 +558,7 @@ void HurricaneSelectionWidget::clear(void)
 
     hurricaneImportTool->clear();
     hurricaneParamsWidget->clear();
+    gridData.clear();
 }
 
 
@@ -567,6 +571,8 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
 
     QString hurricaneSID;
 
+    QList<Esri::ArcGISRuntime::Feature*> selectedHurricaneFeature;
+
     // Only select the first hurricane
     for(auto&& it : selectedFeatures)
     {
@@ -577,6 +583,8 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
         if(featType.toString() != "HURRICANE")
             continue;
 
+        selectedHurricaneFeature.push_back(it);
+
         auto hurricaneName = attrbList->attributeValue("NAME").toString();
         hurricaneSID = attrbList->attributeValue("SID").toString();
         auto hurricaneSeason = attrbList->attributeValue("SEASON").toString();
@@ -584,6 +592,8 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
         selectedHurricaneName->setText(hurricaneName);
         selectedHurricaneSID->setText(hurricaneSID);
         selectedHurricaneSeason->setText(hurricaneSeason);
+
+        break;
     }
 
     auto selectedHurricane = hurricaneImportTool->getHurricane(hurricaneSID);
@@ -621,6 +631,8 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
     hurricaneParamsWidget->setLandingAngle(stormDir);
     hurricaneParamsWidget->setLandfallSpeed(stormSpeed);
     hurricaneParamsWidget->setLandfallRadius(radius);
+
+    theVisualizationWidget->addComponentsToSelectedLayer(selectedHurricaneFeature);
 }
 
 
@@ -635,6 +647,9 @@ void HurricaneSelectionWidget::handleGridSelected(void)
 
     // Create the objects needed to visualize the grid in the GIS
     auto siteGrid = mapViewSubWidget->getGrid();
+
+    if(!siteGrid->isVisible())
+        return;
 
     // Get the vector of grid nodes
     auto gridNodeVec = siteGrid->getGridNodeVec();
@@ -656,7 +671,8 @@ void HurricaneSelectionWidget::handleGridSelected(void)
     auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
     gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
 
-    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+    gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+    gridLayer->setName("Windfield");
 
     // Create red cross SimpleMarkerSymbol
     SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
@@ -667,8 +683,8 @@ void HurricaneSelectionWidget::handleGridSelected(void)
     // Set the renderer for the feature layer
     gridFeatureCollectionTable->setRenderer(renderer);
 
-//    QStringList headerRow = {"Station", "Latitude", "Longitude"};
-//    gridData.push_back(headerRow);
+    QStringList headerRow = {"Station", "Latitude", "Longitude"};
+    gridData.push_back(headerRow);
 
     for(int i = 0; i<gridNodeVec.size(); ++i)
     {
@@ -696,31 +712,47 @@ void HurricaneSelectionWidget::handleGridSelected(void)
         Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
 
         gridFeatureCollectionTable->addFeature(feature);
+
+        QStringList stationRow;
+        stationRow.push_back(stationName);
+        stationRow.push_back(QString::number(latitude));
+        stationRow.push_back(QString::number(longitude));
     }
+
 
     // Create a new layer
     LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
 
     // Check if there is a 'User Ground Motions' root item in the tree
-    auto userInputTreeItem = layersTreeView->getTreeItem("Hurricane Simulation Grid", nullptr);
+    auto hurricaneGridItem = layersTreeView->getTreeItem("Hurricanes", nullptr);
 
     // If there is no item, create one
-    if(userInputTreeItem == nullptr)
-        userInputTreeItem = layersTreeView->addItemToTree("Hurricane Simulation Grid", QString());
+    if(hurricaneGridItem == nullptr)
+    {
+        auto gridID = theVisualizationWidget->createUniqueID();
+        hurricaneGridItem = layersTreeView->addItemToTree("Hurricanes", gridID);
+    }
 
     // Add the event layer to the layer tree
-    auto eventItem = layersTreeView->addItemToTree("Windfield", QString(), userInputTreeItem);
+    //    auto eventID = theVisualizationWidget->createUniqueID();
+    //    auto eventItem = layersTreeView->addItemToTree("Windfield Grid", eventID, hurricaneGridItem);
 
     // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(gridLayer,eventItem);
+    theVisualizationWidget->addLayerToMap(gridLayer,hurricaneGridItem);
 
-    this->clearGridFromMap();
+    mapViewSubWidget->removeGridFromScene();
 }
 
 
 void HurricaneSelectionWidget::clearGridFromMap(void)
 {
-    mapViewSubWidget->removeGridFromScene();
+    if(gridLayer)
+    {
+        LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
+        layersTreeView->removeItemFromTree(gridLayer->layerId());
+    }
 
+    gridData.clear();
+    mapViewSubWidget->removeGridFromScene();
 }
 

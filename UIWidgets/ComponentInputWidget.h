@@ -49,6 +49,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class AssetInputDelegate;
 
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class ClassBreaksRenderer;
+class SimpleRenderer;
+class Feature;
+class Geometry;
+}
+}
+
 class QGroupBox;
 class QLineEdit;
 class QTableWidget;
@@ -61,6 +72,13 @@ class ComponentInputWidget : public  SimCenterAppWidget
 public:
     explicit ComponentInputWidget(QWidget *parent, QString componentType, QString appType = QString());
     virtual ~ComponentInputWidget();
+
+    virtual int loadComponentVisualization();
+
+    virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
+    virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
+
+    virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
 
     QGroupBox* getComponentsWidget(void);
 
@@ -106,11 +124,28 @@ private slots:
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
 
+protected:
+    VisualizationWidget* theVisualizationWidget;
+    QTableWidget* componentTableWidget;
+    ComponentDatabase theComponentDb;
+
+    // Returns a vector of sorted items that are unique
+    template <typename T>
+    void uniqueVec(std::vector<T>& vec)
+    {
+        std::sort(vec.begin(), vec.end());
+
+        // Using std::unique to get the unique items in the vector
+        auto ip = std::unique(vec.begin(), vec.end());
+
+        // Resizing the vector so as to remove the terms that became undefined after the unique operation
+        vec.resize(std::distance(vec.begin(), ip));
+    }
+
 private:
     QString pathToComponentInfoFile;
     QLineEdit* componentFileLineEdit;
     AssetInputDelegate* selectComponentsLineEdit;
-    QTableWidget* componentTableWidget;
     QLabel* componentInfoText;
     QGroupBox* componentGroupBox;
 
@@ -121,10 +156,6 @@ private:
     QString label3;
 
     void createComponentsBox(void);
-
-    ComponentDatabase theComponentDb;
-    VisualizationWidget* theVisualizationWidget;
-
 };
 
 #endif // ComponentInputWidget_H

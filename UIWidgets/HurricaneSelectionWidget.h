@@ -57,6 +57,15 @@ class QProgressBar;
 class QPushButton;
 class QLabel;
 
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class FeatureCollectionLayer;
+class FeatureCollectionTable;
+}
+}
+
 
 class HurricaneSelectionWidget : public SimCenterAppWidget
 {
@@ -119,6 +128,12 @@ private:
     QWidget* selectHurricaneWidget;
     QWidget* specifyHurricaneWidget;
     QPushButton* loadDbButton;
+
+    QVector<QStringList> gridData;
+    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
+
+    Esri::ArcGISRuntime::FeatureCollectionLayer* selectedHurricaneLayer = nullptr;
+    Esri::ArcGISRuntime::FeatureCollectionTable* selectedHurricaneTable = nullptr;
 };
 
 #endif // HurricaneSelectionWidget_H

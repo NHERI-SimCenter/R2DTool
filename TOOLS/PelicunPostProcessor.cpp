@@ -348,8 +348,16 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
     REmpiricalProbabilityDistribution theProbDist;
 
+    auto buildingsWidget = theVisualizationWidget->getComponentWidget("BUILDINGS");
+
+    if(buildingsWidget == nullptr)
+    {
+        QString msg = "Error getting the building buildings widget from the visualization widget";
+        throw msg;
+    }
+
     // Get the buildings database
-    auto theBuildingDB = theVisualizationWidget->getBuildingWidget()->getComponentDatabase();
+    auto theBuildingDB = buildingsWidget->getComponentDatabase();
 
     if(theBuildingDB == nullptr)
     {

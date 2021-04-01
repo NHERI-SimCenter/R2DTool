@@ -109,8 +109,10 @@ public:
 
     Esri::ArcGISRuntime::MapGraphicsView* getMapViewWidget() const;
 
-    // Set the building widget to the visualization engine
-    void setBuildingWidget(ComponentInputWidget *value);
+    void registerComponentWidget(const QString type, ComponentInputWidget* widget);
+
+    ComponentInputWidget* getComponentWidget(const QString type);
+
 
     // Set the pipeline widget to the visualization engine
     void setPipelineWidget(ComponentInputWidget *value);
@@ -165,8 +167,6 @@ public:
 
     void clear(void);
 
-    ComponentInputWidget *getBuildingWidget() const;
-
     ComponentInputWidget *getPipelineWidget() const;
 
     // Updates the value of an attribute for a selected component
@@ -179,6 +179,12 @@ public:
     // User selected features
     void clearSelection(void);
     QList<Esri::ArcGISRuntime::Feature *> getSelectedFeaturesList() const;
+
+    // Returns a rectangular geometry item of dimensions x and y around a center point
+    Esri::ArcGISRuntime::Geometry getRectGeometryFromPoint(const Esri::ArcGISRuntime::Point& pnt, const double sizeX, double sizeY = 0);
+
+    // Returns a geometry from the geojson format
+    Esri::ArcGISRuntime::Geometry getGeometryFromJson(const QString& geoJson);
 
 signals:
     // Convex hull
@@ -225,11 +231,13 @@ private slots:
     // Zooms the map to the extents of the data present in the visible map
     void zoomToExtents(void);
 
-
 private:
 
     LayerTreeView* layersTree;
-    ComponentInputWidget* buildingWidget;
+
+    // Map to hold the component input widgets (key = type of component or asset, e.g., BUILDINGS)
+    QMap<QString, ComponentInputWidget*> componentWidgetsMap;
+
     ComponentInputWidget* pipelineWidget;
 
     QComboBox* baseMapCombo;
@@ -252,8 +260,6 @@ private:
     // Map to store the layers
     QMap<QString, Esri::ArcGISRuntime::Layer*> layersMap;
 
-    Esri::ArcGISRuntime::SimpleRenderer* createBuildingRenderer(void);
-    Esri::ArcGISRuntime::ClassBreaksRenderer* createSelectedBuildingRenderer(double outlineWidth = 0.0);
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPipelineRenderer(void);
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPointRenderer(void);
 
@@ -268,16 +274,10 @@ private:
     bool selectingConvexHull;
 
     Esri::ArcGISRuntime::GroupLayer* selectedComponentsLayer = nullptr;
-    Esri::ArcGISRuntime::FeatureCollectionLayer* selectedBuildingsLayer = nullptr;
-    Esri::ArcGISRuntime::FeatureCollectionTable* selectedBuildingsTable = nullptr;
     LayerTreeItem* selectedComponentsTreeItem = nullptr;
 
     // Map to store the selected features according to their UID
     QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
-
-    // Returns a vector of sorted items that are unique
-    template <typename T>
-    void uniqueVec(std::vector<T>& vec);
 
     // The GIS widget
     QWidget* visWidget;
@@ -288,9 +288,6 @@ private:
 
     // Map to store the legend of a layer according to the  UID
     QMap<QString, RoleProxyModel*> legendModels;
-
-    Esri::ArcGISRuntime::Geometry getGeometryFromJson(const QString& geoJson);
-    Esri::ArcGISRuntime::Geometry getRectGeometryFromPoint(const Esri::ArcGISRuntime::Point& pnt, const double sizeX, double sizeY = 0);
 
     Esri::ArcGISRuntime::GraphicsOverlay* selectedFeaturesOverlay = nullptr;
     QList<Esri::ArcGISRuntime::Feature*> selectedFeaturesList;

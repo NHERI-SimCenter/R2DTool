@@ -156,6 +156,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingDMWidget.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
+            UIWidgets/BuildingInputWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
             UIWidgets/BuildingSimulationWidget.cpp \
@@ -172,7 +173,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
             UIWidgets/HazardToAssetWidget.cpp \
             UIWidgets/HazardsWidget.cpp \
-    UIWidgets/HurricaneParameterWidget.cpp \
+            UIWidgets/HurricaneParameterWidget.cpp \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
             UIWidgets/MDOF_LU.cpp \
             UIWidgets/MapViewSubWidget.cpp \
@@ -263,6 +264,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingDMWidget.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
+            UIWidgets/BuildingInputWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
             UIWidgets/BuildingModelingWidget.h \
             UIWidgets/BuildingSimulationWidget.h \
@@ -279,7 +281,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/HazardToAssetBuilding.h \
             UIWidgets/HazardToAssetWidget.h \
             UIWidgets/HazardsWidget.h \
-    UIWidgets/HurricaneParameterWidget.h \
+            UIWidgets/HurricaneParameterWidget.h \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
             UIWidgets/MDOF_LU.h \
             UIWidgets/MapViewSubWidget.h \

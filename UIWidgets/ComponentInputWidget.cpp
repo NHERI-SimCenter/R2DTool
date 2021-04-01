@@ -57,6 +57,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <string>
 #include <algorithm>
 
+using namespace Esri::ArcGISRuntime;
 
 ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
 {
@@ -193,6 +194,8 @@ void ComponentInputWidget::loadComponentData(void)
 
     emit componentDataLoaded();
 
+    this->loadComponentVisualization();
+
     return;
 }
 
@@ -214,6 +217,14 @@ void ComponentInputWidget::chooseComponentInfoFileDialog(void)
     this->loadComponentData();
 
     return;
+}
+
+
+// Implement in subclass
+int ComponentInputWidget::loadComponentVisualization()
+{
+
+    return 0;
 }
 
 
@@ -314,6 +325,7 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->setRowStretch(8, 1);
     this->setLayout(gridLayout);
 }
+
 
 void ComponentInputWidget::setTheVisualizationWidget(VisualizationWidget *value)
 {
@@ -746,3 +758,20 @@ void ComponentInputWidget::handleCellChanged(int row, int column)
 
 }
 
+
+Feature* ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Geometry& /*geom*/)
+{
+    return nullptr;
+}
+
+
+int ComponentInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* /*feat*/)
+{
+    return -1;
+}
+
+
+Esri::ArcGISRuntime::FeatureCollectionLayer* ComponentInputWidget::getSelectedFeatureLayer(void)
+{
+   return nullptr;
+}

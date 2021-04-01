@@ -84,7 +84,8 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
 
     connect(newItem, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
     connect(newItem, &LayerTreeItem::zoomLayerExtents, theVisualizationWidget, &VisualizationWidget::zoomToLayer);
-    connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeLayer);
+    connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeItemFromTree);
+    connect(newItem, &TreeItem::removingChildItem, this, &LayerTreeView::removeLayer);
 
     return newItem;
 }
@@ -186,14 +187,15 @@ void LayerTreeView::runAction()
 
 void LayerTreeView::removeLayer(const QString& layerID)
 {
-    theVisualizationWidget->removeLayerFromMap(layerID);
-
-    this->removeItemFromTree(layerID);
+    if(!layerID.isEmpty())
+        theVisualizationWidget->removeLayerFromMap(layerID);
 }
 
 
 bool LayerTreeView::removeItemFromTree(const QString& itemID)
 {
+    this->removeLayer(itemID);
+
     return layersModel->removeItemFromTree(itemID);
 }
 
