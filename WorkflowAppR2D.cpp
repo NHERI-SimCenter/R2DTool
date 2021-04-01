@@ -228,7 +228,8 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
 
-    theComponentSelection->displayComponent("VIZ");
+//    theComponentSelection->displayComponent("VIZ");
+    theComponentSelection->displayComponent("HAZ");
 
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidget->setAssetTypeState("Buildings", true);

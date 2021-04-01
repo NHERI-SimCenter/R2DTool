@@ -59,7 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
 {
-    GMSiteConfig = nullptr;
+    gridSiteConfig = nullptr;
 
     setCacheMode(DeviceCoordinateCache);
     setZValue(-1);
@@ -149,7 +149,7 @@ void RectangleGrid::updateGeometry(void)
     topLeftNode->setPos(rectangleGeometry.topLeft());
     centerNode->setPos(centerPnt);
 
-    if(GMSiteConfig && updateConnectedWidgets)
+    if(gridSiteConfig && updateConnectedWidgets)
     {
         latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt);
         latMax = theVisWidget->getLatFromScreenPoint(topRightPnt);
@@ -157,8 +157,8 @@ void RectangleGrid::updateGeometry(void)
         lonMin = theVisWidget->getLongFromScreenPoint(bottomLeftPnt);
         lonMax = theVisWidget->getLongFromScreenPoint(topRightPnt);
 
-        GMSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
-        GMSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
+        gridSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
+        gridSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
 
         //        auto centerPointLat = theVisWidget->getLatFromScreenPoint(centerPnt);
         //        auto centerPointLong = theVisWidget->getLongFromScreenPoint(centerPnt);
@@ -206,21 +206,21 @@ void RectangleGrid::setVisualizationWidget(VisualizationWidget *value)
 }
 
 
-void RectangleGrid::setGMSiteConfig(SiteConfig *value)
+void RectangleGrid::setSiteGridConfig(SiteConfig *value)
 {
-    GMSiteConfig = value;
+    gridSiteConfig = value;
 
     // Connect grid latitude
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
 
     // Connect grid longitude
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
 
     // Connect the grid discretization
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
+    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
+    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
 }
 
 
@@ -475,8 +475,8 @@ void RectangleGrid::createGrid()
 
 void RectangleGrid::handleGridDivisionsChanged(void)
 {
-    auto numDivH = static_cast<size_t>(GMSiteConfig->siteGrid().longitude().divisions());
-    auto numDivV = static_cast<size_t>(GMSiteConfig->siteGrid().latitude().divisions());
+    auto numDivH = static_cast<size_t>(gridSiteConfig->siteGrid().longitude().divisions());
+    auto numDivV = static_cast<size_t>(gridSiteConfig->siteGrid().latitude().divisions());
 
     if(numDivV == this->numDivisionsVertical && numDivH == this->numDivisionsHoriz)
         return;
@@ -494,11 +494,11 @@ void RectangleGrid::handleLatLonChanged(void)
     if(changingDimensions == true)
         return;
 
-    auto lat_Min = GMSiteConfig->siteGrid().latitude().min();
-    auto lat_Max = GMSiteConfig->siteGrid().latitude().max();
+    auto lat_Min = gridSiteConfig->siteGrid().latitude().min();
+    auto lat_Max = gridSiteConfig->siteGrid().latitude().max();
 
-    auto lon_Min = GMSiteConfig->siteGrid().longitude().min();
-    auto lon_Max = GMSiteConfig->siteGrid().longitude().max();
+    auto lon_Min = gridSiteConfig->siteGrid().longitude().min();
+    auto lon_Max = gridSiteConfig->siteGrid().longitude().max();
 
     if(lat_Min != latMin || lon_Min != lonMin)
     {

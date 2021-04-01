@@ -39,10 +39,229 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include <QString>
+#include <QStringList>
+#include <QVector>
 
 class QObject;
 class QProgressBar;
 class VisualizationWidget;
+
+struct HurricaneObject{
+
+public:
+    QStringList& operator[](int index) {
+
+        return hurricaneData[index];
+    }
+
+
+    QStringList& front(void) {
+        return hurricaneData.front();
+    }
+
+
+    int size(void) {
+        return hurricaneData.size();
+    }
+
+
+    QString getValueOfParameter(const QString& paramName, const int dataPoint) {
+        auto indexOfParam = headerData.indexOf(paramName);
+
+        if(indexOfParam == -1 || hurricaneData.size() < dataPoint || dataPoint < 0)
+            return QString();
+
+        return hurricaneData.at(dataPoint).at(indexOfParam);
+    }
+
+
+    QStringList getDataAtLandfall(void){
+        return landfallData;
+    }
+
+
+    void push_back(QStringList& data)
+    {
+        hurricaneData.push_back(data);
+    }
+
+
+    bool isEmpty(void) {
+        return hurricaneData.isEmpty();
+    }
+
+
+    bool hasLandfall(void) {
+        return landfallData.isEmpty();
+    }
+
+
+    void clear() {
+        hurricaneData.clear();
+        landfallData.clear();
+        name.clear();
+        SID.clear();
+        season.clear();
+        indexLandfall = -1;
+    }
+
+
+    double getLatitudeAtLandfall(void)
+    {
+        if(landfallData.empty() || landfallData.size() != headerData.size())
+            return 0.0;
+
+        // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
+        auto indexUSALat = headerData.indexOf("USA_LAT");
+        auto indexLat = headerData.indexOf("LAT");
+
+        if(indexUSALat == -1 || indexLat == -1)
+            return 0.0;
+
+        auto USAlat = landfallData.at(indexUSALat).toDouble();
+
+        if(USAlat != 0.0)
+            return USAlat;
+
+        return landfallData.at(indexLat).toDouble();
+    }
+
+
+    double getLongitudeAtLandfall(void)
+    {
+        if(landfallData.empty() || landfallData.size() != headerData.size())
+            return 0.0;
+
+        // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
+        auto indexUSALon = headerData.indexOf("USA_LON");
+        auto indexLon = headerData.indexOf("LON");
+
+        if(indexUSALon == -1 || indexLon == -1)
+            return 0.0;
+
+        auto USAlon = landfallData.at(indexUSALon).toDouble();
+
+        if(USAlon != 0.0)
+            return USAlon;
+
+        return landfallData.at(indexLon).toDouble();
+    }
+
+
+    // i.e., the storm direction at landfall
+    double getLandingAngle(void)
+    {
+        if(landfallData.empty() || landfallData.size() != headerData.size())
+            return 0.0;
+
+        auto indexStormDir = headerData.indexOf("STORM_DIR");
+
+        if(indexStormDir == -1)
+            return 0.0;
+
+        return landfallData.at(indexStormDir).toDouble();
+    }
+
+
+    // Speed in kts
+    double getStormSpeedAtLandfall(void)
+    {
+        if(landfallData.empty() || landfallData.size() != headerData.size())
+            return 0.0;
+
+        auto indexStormSpeed = headerData.indexOf("STORM_SPEED");
+
+        if(indexStormSpeed == -1)
+            return 0.0;
+
+        return landfallData.at(indexStormSpeed).toDouble();
+    }
+
+
+    // Pressure in mb
+    double getPressureAtLandfall(void)
+    {
+        if(landfallData.empty() || landfallData.size() != headerData.size())
+            return 0.0;
+
+        // Default to USA pressure and then WMO pressure if no USA pressure
+        auto indexUSAPress = headerData.indexOf("USA_PRES");
+        auto indexWMOPress = headerData.indexOf("WMO_PRES");
+
+        if(indexUSAPress == -1 || indexWMOPress == -1)
+            return 0.0;
+
+        auto USAPress = landfallData.at(indexUSAPress).toDouble();
+
+        if(USAPress != 0.0)
+            return USAPress;
+
+
+        // Check if there is WMO pressure at landfall (WMO data  can have longer intervals and may need to interpolate)
+        auto WMOPress = landfallData.at(indexWMOPress).toDouble();
+
+        if(WMOPress != 0.0)
+            return WMOPress;
+
+        // Need to interpolate WMO pressure
+
+        // Get the WMO pressure at the timepoint before landfall
+        auto pressBefore = 0.0;
+        auto indexBefore = indexLandfall-1;
+        while(pressBefore == 0.0 && indexBefore > 0)
+        {
+            pressBefore = hurricaneData.at(indexBefore).at(indexWMOPress).toDouble();
+        }
+
+        // Get the WMO pressure at the timepoint after landfall
+        auto pressAfter = 0.0;
+        auto indexAfter = indexLandfall+1;
+        while(pressAfter == 0.0 && indexAfter < hurricaneData.size()-1)
+        {
+            pressAfter = hurricaneData.at(indexAfter).at(indexWMOPress).toDouble();
+        }
+
+        // Throw an error
+        if(pressAfter == 0.0 || pressBefore == 0.0)
+            return 0.0;
+
+        // Return the interpolation
+        return 0.5*(pressBefore + pressAfter);
+    }
+
+    // Storm radius in nautical mile nmile
+    double getRadiusAtLandfall(void){
+
+        if(landfallData.empty() || landfallData.size() != headerData.size())
+            return 0.0;
+
+        auto indexOfUSARMW = headerData.indexOf("USA_RMW");
+        auto indexOfReunionRMW = headerData.indexOf("REUNION_RMW");
+
+        if(indexOfUSARMW == -1 || indexOfReunionRMW == -1)
+            return 0.0;
+
+        auto USARMW = landfallData.at(indexOfUSARMW).toDouble();
+
+        if(USARMW != 0.0)
+            return USARMW;
+
+        return landfallData.at(indexOfReunionRMW).toDouble();
+
+    }
+
+    QVector<QStringList> hurricaneData;
+    QStringList headerData;
+
+    QStringList landfallData;
+    int indexLandfall = -1;
+
+    QString name;
+    QString SID; // The storm id
+    QString season; // i.e., the year
+
+};
+
 
 class HurricanePreprocessor
 {
@@ -51,12 +270,17 @@ public:
 
     int loadHurricaneTrackData(const QString &eventFile, QString &err);
 
+    void clear(void);
+
+    // Gets the hurricane of the given storm id
+    HurricaneObject* getHurricane(const QString& SID);
+
 private:
 
     QProgressBar* theProgressBar;
     VisualizationWidget* theVisualizationWidget;
     QObject* theParent;
-
+    QVector<HurricaneObject> hurricanes;
 };
 
 #endif // HURRICANEPREPROCESSOR_H

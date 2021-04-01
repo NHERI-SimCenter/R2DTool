@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ComponentDatabase.h"
-#include "ResultsMapViewWidget.h"
+#include "EmbeddedMapViewWidget.h"
 
 #include <QString>
 #include <QMainWindow>
@@ -48,7 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <set>
 
 class REmpiricalProbabilityDistribution;
-class ResultsMapViewWidget;
+class EmbeddedMapViewWidget;
 class VisualizationWidget;
 
 class QDockWidget;
@@ -174,7 +174,7 @@ private:
 
     QComboBox* sortComboBox;
 
-    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
+    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
     QtCharts::QChart *casualtiesChart;

@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -131,7 +131,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
 
     auto userGrid = mapViewSubWidget->getGrid();
     userGrid->createGrid();
-    userGrid->setGMSiteConfig(m_siteConfig);
+    userGrid->setSiteGridConfig(m_siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
 
     toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,1,3);
@@ -583,7 +583,7 @@ void GMWidget::runHazardSimulation(void)
 
     // TODO: make this a relative link once we figure out the folder structure
     // auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
-    //    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
+    // auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
     QString pathToHazardSimScript = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
             + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
             + "regionalGroundMotion" + QDir::separator() + "HazardSimulation.py";

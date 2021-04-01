@@ -23,7 +23,7 @@
       "Application": "CSV_to_BIM",
       "ApplicationData": {
         "filter": "18,27,44,93,240,270,417-419,435",
-        "buildingSourceFile":"AnchorageBuildings.csv"
+        "buildingSourceFile":"AnchorageBuildings_Full.csv"
       }
     },
     "RegionalMapping": {

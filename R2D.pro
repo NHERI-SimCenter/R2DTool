@@ -172,6 +172,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
             UIWidgets/HazardToAssetWidget.cpp \
             UIWidgets/HazardsWidget.cpp \
+    UIWidgets/HurricaneParameterWidget.cpp \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
             UIWidgets/MDOF_LU.cpp \
             UIWidgets/MapViewSubWidget.cpp \
@@ -182,7 +183,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/OpenSeesPyBuildingModel.cpp \
             UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/PopUpWidget.cpp \
-            UIWidgets/ResultsMapViewWidget.cpp \
+            UIWidgets/EmbeddedMapViewWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/SecondaryComponentSelection.cpp \
             UIWidgets/ShakeMapWidget.cpp \
@@ -278,6 +279,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/HazardToAssetBuilding.h \
             UIWidgets/HazardToAssetWidget.h \
             UIWidgets/HazardsWidget.h \
+    UIWidgets/HurricaneParameterWidget.h \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
             UIWidgets/MDOF_LU.h \
             UIWidgets/MapViewSubWidget.h \
@@ -288,7 +290,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
             UIWidgets/PelicunDLWidget.h \
             UIWidgets/PopUpWidget.h \
-            UIWidgets/ResultsMapViewWidget.h \
+            UIWidgets/EmbeddedMapViewWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/SecondaryComponentSelection.h \
             UIWidgets/ShakeMapWidget.h \
@@ -344,40 +346,53 @@ DESTDIR = $$shell_path($$OUT_PWD)
 Release:DESTDIR = $$DESTDIR/release
 Debug:DESTDIR = $$DESTDIR/debug
 
-PATH_TO_BINARY=$$DESTDIR/Examples
+PATH_TO_EXAMPLES=$$DESTDIR/Examples
+PATH_TO_DATABASES=$$DESTDIR/Databases
 
 } else {
     mac {
-    PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS
+    PATH_TO_EXAMPLES=$$OUT_PWD/R2D.app/Contents/MacOS
+    PATH_TO_DATABASES=$$OUT_PWD/R2D.app/Contents/MacOS
+
+    mkpath($$OUT_PWD/R2D.app/Contents/MacOS)
     }
 }
 
 win32 {
 
 # Copies over the examples folder into the build directory
-copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_BINARY))
-first.depends = $(first) copydata
+Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+first.depends = $(first) Copydata
 
 # Copies the dll files into the build directory
 CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
-
 first.depends += CopyDLLs
 
-export(first.depends)
-export(CopyDLLs.commands)
-export(copydata.commands)
+CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+first.depends += CopyDbs
 
-QMAKE_EXTRA_TARGETS += first copydata CopyDLLs
+export(first.depends)
+export(CopyDbs.commands)
+export(CopyDLLs.commands)
+
+QMAKE_EXTRA_TARGETS += first Copydata CopyDbs CopyDLLs
 
 }else {
 mac {
 
-# Copies over the examples folder into the build directory
-copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
-first.depends = $(first) copydata
+# Copies the examples folder into the build directory
+Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+
+# Copies the databases folder into the build directory
+CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+
+first.depends += Copydata CopyDbs
+
 export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
+export(Copydata.commands)
+export(CopyDbs.commands)
+
+QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
 }
 }

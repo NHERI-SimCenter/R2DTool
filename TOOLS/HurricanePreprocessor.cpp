@@ -81,32 +81,30 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
     }
 
     // Get the header information to populate the fields
-    auto topHeaderData = data.at(0);
-    //    auto unitsData = data.at(1);
+    auto headerData = data.at(0);
 
-    auto numCol = topHeaderData.size();
+    auto numCol = headerData.size();
 
-    auto indexName = -1;
-    auto indexSID = -1;
-    auto indexLat = -1;
-    auto indexLon = -1;
-    auto indexSeason = -1;
+    // Name and storm ID
+    auto indexName = headerData.indexOf("NAME");
+    auto indexSID = headerData.indexOf("SID");
 
-    for(int col = 0; col < numCol; ++col)
-    {
-        if(topHeaderData.at(col) == "LAT")
-            indexLat = col;
-        else if(topHeaderData.at(col) == "LON")
-            indexLon = col;
-        else if(topHeaderData.at(col) == "NAME")
-            indexName = col;
-        else if(topHeaderData.at(col) == "SID")
-            indexSID = col;
-        else if(topHeaderData.at(col) == "SEASON")
-            indexSeason = col;
-    }
+    // Storm pressure
 
-    if(indexName == -1 || indexSID == -1 || indexLat == -1 || indexLon == -1 || indexSeason == -1)
+
+    // RMW: radius of maximum wind speed - by default try USA data first
+
+
+    // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
+    auto indexUSALat = headerData.indexOf("USA_LAT");
+    auto indexUSALon = headerData.indexOf("USA_LON");
+    auto indexLat = headerData.indexOf("LAT");
+    auto indexLon = headerData.indexOf("LON");
+
+    auto indexSeason = headerData.indexOf("SEASON");
+    auto indexLandfall = headerData.indexOf("DIST2LAND");
+
+    if(indexName == -1 || indexSID == -1 || indexLat == -1 || indexLon == -1 || indexSeason == -1 || indexLandfall == -1 || indexUSALat == -1 || indexUSALon == -1 )
     {
         err = "Could not find the required column indexes in the data file";
         return -1;
@@ -120,12 +118,12 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
     tableFields.append(Field::createText("TabName", "NULL",4));
     tableFields.append(Field::createText("UID", "NULL",4));
 
-    for(auto&& it : topHeaderData)
+    for(auto&& it : headerData)
     {
         tableFields.append(Field::createText(it, "NULL",4));
     }
 
-    // Pop off the first two rows that contain the header information
+    // Pop off the first two rows that contain the header and units information
     data.pop_front();
     data.pop_front();
 
@@ -143,12 +141,14 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
 
 
     // Split the hurricanes up as they come in one long list
-    QVector<QVector<QStringList>> hurricanes;
-
     QVectorIterator<QStringList> i(data);
     QString SID;
 
-    QVector<QStringList> hurricane;
+    HurricaneObject hurricane;
+    hurricane.headerData = headerData;
+
+    // While iterating through the hurricane points, save the data at first landfall
+    bool landfallFound = false;
     while (i.hasNext())
     {
         auto row = i.next();
@@ -159,6 +159,20 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
             return -1;
         }
 
+        // Not all hurricanes will make landfall
+        if(!landfallFound)
+        {
+            auto distToLand = row.at(indexLandfall);
+
+            // If the distance to land is 0, then this is the first landfall
+            if(distToLand.compare("0") == 0)
+            {
+                landfallFound = true;
+                hurricane.landfallData = row;
+                hurricane.indexLandfall = hurricane.size();
+            }
+        }
+
         auto currSID = row.at(indexSID);
 
         if(SID.compare(currSID) != 0)
@@ -167,18 +181,16 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
             {
                 hurricanes.push_back(hurricane);
                 hurricane.clear();
+                landfallFound = false;
             }
 
             SID = currSID;
         }
-        else
-        {
-            hurricane.push_back(row);
-        }
 
+        hurricane.push_back(row);
     }
 
-    // Push back
+    // Push back the last hurricane
     if(!hurricane.isEmpty())
         hurricanes.push_back(hurricane);
 
@@ -195,13 +207,17 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
         QApplication::processEvents();
 
         // Get the hurricane
-        auto hurricane = hurricanes.at(i);
+        HurricaneObject& hurricane = hurricanes[i];
 
         auto numPnts = hurricane.size();
 
         auto name = hurricane.front().at(indexName);
         auto SID = hurricane.front().at(indexSID);
         auto season = hurricane.front().at(indexSeason);
+
+        hurricane.name = name;
+        hurricane.SID = SID;
+        hurricane.season = season;
 
         auto nameID = name+"-"+season;
 
@@ -236,7 +252,7 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
         double longitude = 0.0;
         for(int j = 0; j<numPnts; ++j)
         {
-            auto trackPoint = hurricane.at(j);
+            auto trackPoint = hurricane[j];
 
             // create the feature attributes
             //  QMap<QString, QVariant> featureAttributes;
@@ -252,8 +268,21 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
             Point pointPrev(longitude,latitude);
 
             // Create the geometry for visualization
+            // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
             latitude = trackPoint.at(indexLat).toDouble();
             longitude = trackPoint.at(indexLon).toDouble();
+
+//            if(latitude == 0.0 || longitude == 0.0)
+//            {
+//                latitude = trackPoint.at(indexLat).toDouble();
+//                longitude = trackPoint.at(indexLon).toDouble();
+
+//                if(latitude == 0.0 || longitude == 0.0)
+//                {
+//                    err = "Error getting the latitude and longitude";
+//                    return -1;
+//                }
+//            }
 
             Point point(longitude,latitude);
 
@@ -336,5 +365,25 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
 
         theVisualizationWidget->addLayerToMap(trackLayer, thisHurricanesItem, thisHurricaneLayer);
     }
+
+    return 0;
+}
+
+
+void HurricanePreprocessor::clear(void)
+{
+    hurricanes.clear();
+}
+
+
+HurricaneObject* HurricanePreprocessor::getHurricane(const QString& SID)
+{
+    for(auto&& it : hurricanes)
+    {
+        if(SID.compare(it.SID) == 0)
+            return &it;
+    }
+
+    return nullptr;
 }
 

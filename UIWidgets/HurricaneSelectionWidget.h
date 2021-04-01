@@ -39,17 +39,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-#include "ResultsMapViewWidget.h"
+#include "EmbeddedMapViewWidget.h"
+#include "HurricanePreprocessor.h"
 
 #include <memory>
 
 #include <QMap>
 
 class VisualizationWidget;
+class SiteConfig;
+class SiteGrid;
+class HurricaneParameterWidget;
 
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
+class QPushButton;
 class QLabel;
 
 
@@ -81,29 +86,39 @@ private slots:
 
     void handleHurricaneSelect(void);
     void loadHurricaneTrackData(void);
-    void chooseEventFileDialog(void);
+    void loadHurricaneButtonClicked(void);
+    void showGridOnMap(void);
+    void handleGridSelected(void);
+    void clearGridFromMap(void);
 
 signals:
-     void loadingComplete(const bool value);
+    void loadingComplete(const bool value);
 
 private:
 
     std::unique_ptr<QStackedWidget> theStackedWidget;
-    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
-
+    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
+    std::unique_ptr<HurricanePreprocessor> hurricaneImportTool;
+    HurricaneParameterWidget* hurricaneParamsWidget;
     VisualizationWidget* theVisualizationWidget;
 
-    QString eventFile;
-    QLineEdit *eventFileLineEdit;
+    QString eventDatabaseFile;
 
     QLabel* selectedHurricaneName;
     QLabel* selectedHurricaneSID;
+    QLabel* selectedHurricaneSeason;
 
     QLabel* progressLabel;
     QWidget* progressBarWidget;
     QWidget* fileInputWidget;
     QProgressBar* progressBar;
+    SiteConfig* siteConfig;
+    SiteGrid* siteGrid;
 
+    QStackedWidget* typeOfScenarioWidget;
+    QWidget* selectHurricaneWidget;
+    QWidget* specifyHurricaneWidget;
+    QPushButton* loadDbButton;
 };
 
 #endif // HurricaneSelectionWidget_H

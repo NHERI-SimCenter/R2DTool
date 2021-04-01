@@ -208,11 +208,11 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
-    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr);
+    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(nullptr);
 
     // Popup stuff
     // Once map is set, connect to MapQuickView mouse clicked signal
-//    connect(mapViewSubWidget.get(), &ResultsMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
+//    connect(mapViewSubWidget.get(), &EmbeddedMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
 
     QDockWidget* mapViewDock = new QDockWidget("Regional Map",this);
     mapViewDock->setObjectName("MapViewDock");
