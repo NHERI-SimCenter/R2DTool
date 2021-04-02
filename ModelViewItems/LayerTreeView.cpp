@@ -69,7 +69,7 @@ LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : 
     connect(layersModel, &LayerTreeModel::rowPositionChanged, visWidget, &VisualizationWidget::changeLayerOrder);
 
     // Connect the layers tree with the function that turns the layers visibility on/off in the GIS map
-    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerSelection);
+    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerChecked);
 
     connect(this, &QWidget::customContextMenuRequested, this, &LayerTreeView::showPopup);
 
@@ -94,6 +94,12 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
 LayerTreeItem* LayerTreeView::getTreeItem(const QString& itemName, const QString& parentName) const
 {
     return layersModel->getLayerTreeItem(itemName, parentName);
+}
+
+
+LayerTreeItem* LayerTreeView::getTreeItem(const QString& itemID) const
+{
+    return layersModel->getLayerTreeItem(itemID);
 }
 
 

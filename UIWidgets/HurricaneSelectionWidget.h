@@ -61,8 +61,10 @@ namespace Esri
 {
 namespace ArcGISRuntime
 {
+class Feature;
 class FeatureCollectionLayer;
 class FeatureCollectionTable;
+class SimpleRenderer;
 }
 }
 
@@ -74,8 +76,6 @@ class HurricaneSelectionWidget : public SimCenterAppWidget
 public:
     HurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~HurricaneSelectionWidget();
-
-    void showUserGMLayers(bool state);
 
     QStackedWidget* getHurricaneSelectionWidget(void);
 
@@ -132,8 +132,15 @@ private:
     QVector<QStringList> gridData;
     Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
 
-    Esri::ArcGISRuntime::FeatureCollectionLayer* selectedHurricaneLayer = nullptr;
-    Esri::ArcGISRuntime::FeatureCollectionTable* selectedHurricaneTable = nullptr;
+    Esri::ArcGISRuntime::Feature* selectedHurricaneFeature;
+    Esri::ArcGISRuntime::FeatureCollectionLayer* trackLayer;
+    Esri::ArcGISRuntime::FeatureCollectionTable* trackTable;
+    Esri::ArcGISRuntime::FeatureCollectionTable* trackPntsTable;
+    Esri::ArcGISRuntime::FeatureCollectionLayer* trackPntsLayer;
+    Esri::ArcGISRuntime::GroupLayer* selectedHurricaneLayer;
+
+    Esri::ArcGISRuntime::SimpleRenderer* createSelectedHurricaneTrackRenderer(void);
+
 };
 
 #endif // HurricaneSelectionWidget_H

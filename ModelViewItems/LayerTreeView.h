@@ -57,6 +57,7 @@ public:
     LayerTreeItem* addItemToTree(const QString itemText, QString layerID, LayerTreeItem* parent = nullptr);
 
     LayerTreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
+    LayerTreeItem* getTreeItem(const QString& itemID) const;
 
     void clear(void);
 

@@ -120,10 +120,12 @@ void TreeItem::remove()
     emit removeThisItem(itemID);
 }
 
+
 bool TreeItem::getIsCheckable() const
 {
     return isCheckable;
 }
+
 
 void TreeItem::setIsCheckable(bool value)
 {

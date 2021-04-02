@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterMapGraphicsView.h"
 #include "LayerTreeItem.h"
 #include "LayerTreeView.h"
+#include "LayerTreeModel.h"
 #include "VisualizationWidget.h"
 #include "XMLAdaptor.h"
 
@@ -743,7 +744,31 @@ void VisualizationWidget::selectFeaturesForAnalysisQueryCompleted(QUuid taskID, 
 }
 
 
-void VisualizationWidget::handleLayerSelection(LayerTreeItem* item)
+void VisualizationWidget::setLayerVisibility(const QString& layerID, const bool val)
+{
+    auto layerItem = layersTree->getTreeItem(layerID);
+
+    if(layerItem == nullptr)
+    {
+        QString err = "Could not find layer item with ID " + layerID;
+        qDebug()<<err;
+
+        return;
+    }
+
+    auto isUnchecked = layerItem->getState() == 0 ? false : true;
+
+    if(isUnchecked != val)
+    {
+        auto layerModel = layersTree->getLayersModel();
+        auto itemIndex = layerModel->index(layerItem->row());
+        auto boolVariant = QVariant(val);
+        layerModel->setData(itemIndex,boolVariant,Qt::CheckStateRole);
+    }
+}
+
+
+void VisualizationWidget::handleLayerChecked(LayerTreeItem* item)
 {
     auto itemID = item->getItemID();
 
@@ -964,7 +989,6 @@ ClassBreaksRenderer* VisualizationWidget::createPointRenderer(void)
 }
 
 
-
 ClassBreaksRenderer* VisualizationWidget::createPipelineRenderer(void)
 {
     SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(0, 0, 0), 6.0f /*width*/, this);
@@ -1092,11 +1116,16 @@ void VisualizationWidget::identifyLayersCompleted(QUuid taskID, const QList<Iden
             if(QString::compare(atrb,"ObjectID") == 0 || QString::compare(atrb,"AssetType") == 0 || QString::compare(atrb,"TabName") == 0)
                 continue;
 
+            auto atrbVal = elemAttrib->attributeValue(atrb).toString();
+
+            // Do not list empty attributes in the popup
+            if(atrbVal.isEmpty())
+                continue;
+
             attrbKeyList.append(atrb);
 
-            auto atrbVal = elemAttrib->attributeValue(atrb);
 
-            attrbValList.append(atrbVal.toString());
+            attrbValList.append(atrbVal);
         }
 
         // Create a table to display the attributes of this element
@@ -1452,20 +1481,20 @@ void VisualizationWidget::handleBasemapSelection(const QString selection)
 }
 
 
-void VisualizationWidget::addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::FeatureCollectionLayer* featLayer)
+LayerTreeItem* VisualizationWidget::addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::Layer* featLayer)
 {
 
     // Create the tree item if it does not exist
-    if(selectedComponentsTreeItem == nullptr)
+    if(selectedObjectsTreeItem == nullptr)
     {
         // Create the buildings group layer that will hold the sublayers
-        selectedComponentsLayer = new GroupLayer(QList<Layer*>{}, this);
-        selectedComponentsLayer->setName("Selected Components");
+        selectedObjectsLayer = new GroupLayer(QList<Layer*>{}, this);
+        selectedObjectsLayer->setName("Selected Components");
 
-        selectedComponentsTreeItem = this->addLayerToMap(selectedComponentsLayer);
+        selectedObjectsTreeItem = this->addLayerToMap(selectedObjectsLayer);
     }
 
-    this->addLayerToMap(featLayer, selectedComponentsTreeItem, selectedComponentsLayer);
+    return this->addLayerToMap(featLayer, selectedObjectsTreeItem, selectedObjectsLayer);
 }
 
 
@@ -1829,12 +1858,12 @@ void VisualizationWidget::clear(void)
 
     mapGIS->operationalLayers()->clear();
 
-    delete selectedComponentsLayer;
+    delete selectedObjectsLayer;
 
     legendView->clear();
 
-    selectedComponentsTreeItem = nullptr;
-    selectedComponentsLayer = nullptr;
+    selectedObjectsTreeItem = nullptr;
+    selectedObjectsLayer = nullptr;
 
     this->clearSelection();
 }

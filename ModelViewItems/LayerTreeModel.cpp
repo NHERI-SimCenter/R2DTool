@@ -345,8 +345,15 @@ LayerTreeItem* LayerTreeModel::addItemToTree(const QString itemText, const QStri
     if(parent == nullptr)
         parent = rootItem;
 
-    if(auto exists = this->getLayerTreeItem(itemText, parent))
-        return exists;
+    int count = 1;
+
+    auto exists = this->getLayerTreeItem(itemText, parent);
+    while(exists != nullptr)
+    {
+        auto newName = itemText + "_" + QString::number(count);
+        exists = this->getLayerTreeItem(newName,parent);
+        ++count;
+    }
 
     QVector<QVariant> childText = {itemText};
 
@@ -394,7 +401,6 @@ bool LayerTreeModel::removeItemFromTree(const QString& itemID)
         }
 
         return false;
-
     };
 
     auto res = nestedDeleter(rootItem, itemID);
@@ -415,6 +421,43 @@ LayerTreeItem* LayerTreeModel::getLayerTreeItem(const QString& itemName, const L
     }
 
     return this->getLayerTreeItem(itemName,parentName);
+}
+
+
+LayerTreeItem* LayerTreeModel::getLayerTreeItem(const QString& itemID) const
+{
+    std::function<TreeItem*(TreeItem*, const QString&)> nestedItemFinder = [&](TreeItem* item, const QString& ID) -> TreeItem*
+    {
+        // First check for this item
+        auto thisItemID = item->getItemID();
+
+        if(ID.compare(thisItemID) == 0)
+            return item;
+
+        // Then check any and all children
+        QVector<TreeItem *> children = item->getChildItems();
+        for(int i = 0; i<children.size(); ++i)
+        {
+            auto child = children.at(i);
+            auto childID = child->getItemID();
+
+            if(ID.compare(childID) == 0)
+                return child;
+
+            auto grandChild = nestedItemFinder(child,ID);
+
+            if(grandChild)
+                return grandChild;
+        }
+
+
+        // if we got this far then item not found
+        return nullptr;
+    };
+
+    auto res = nestedItemFinder(rootItem, itemID);
+
+    return static_cast<LayerTreeItem*>(res);
 }
 
 

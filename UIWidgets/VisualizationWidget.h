@@ -113,12 +113,11 @@ public:
 
     ComponentInputWidget* getComponentWidget(const QString type);
 
-
     // Set the pipeline widget to the visualization engine
     void setPipelineWidget(ComponentInputWidget *value);
 
     // Add component to 'selected layer'
-    void addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::FeatureCollectionLayer* featLayer);
+    LayerTreeItem* addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::Layer* featLayer);
 
     // Adds a raster layer to the map
     Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
@@ -184,6 +183,10 @@ public:
     // Returns a geometry from the geojson format
     Esri::ArcGISRuntime::Geometry getGeometryFromJson(const QString& geoJson);
 
+    // Programatically set the visibility of a layer
+    void setLayerVisibility(const QString& layerID, const bool val);
+
+
 signals:
     // Convex hull
     void taskSelectionComplete();
@@ -198,7 +201,7 @@ public slots:
     void loadBuildingData(void);
     void loadPipelineData(void);
     void changeLayerOrder(const int from, const int to);
-    void handleLayerSelection(LayerTreeItem* item);
+    void handleLayerChecked(LayerTreeItem* item);
     void handleOpacityChange(const QString& layerID, const double opacity);
     void exportImageComplete(QUuid id, QImage img);
     void onMouseClicked(QMouseEvent& mouseEvent);
@@ -271,8 +274,8 @@ private:
     Esri::ArcGISRuntime::MultipointBuilder* m_multipointBuilder = nullptr;
     bool selectingConvexHull;
 
-    Esri::ArcGISRuntime::GroupLayer* selectedComponentsLayer = nullptr;
-    LayerTreeItem* selectedComponentsTreeItem = nullptr;
+    Esri::ArcGISRuntime::GroupLayer* selectedObjectsLayer = nullptr;
+    LayerTreeItem* selectedObjectsTreeItem = nullptr;
 
     // The GIS widget
     QWidget* visWidget;
@@ -281,7 +284,7 @@ private:
     // The legend view
     GISLegendView* legendView;
 
-    // Map to store the legend of a layer according to the  UID
+    // Map to store the legend of a layer according to the layers UID
     QMap<QString, RoleProxyModel*> legendModels;
 
     Esri::ArcGISRuntime::GraphicsOverlay* selectedFeaturesOverlay = nullptr;

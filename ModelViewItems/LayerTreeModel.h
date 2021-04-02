@@ -77,6 +77,7 @@ public:
 
     LayerTreeItem *getLayerTreeItem(const QString& itemName, const QString& parentName) const;
     LayerTreeItem* getLayerTreeItem(const QString& itemName, const LayerTreeItem* parent) const;
+    LayerTreeItem* getLayerTreeItem(const QString& itemID) const;
 
     Qt::DropActions supportedDropActions() const override;
     Qt::DropActions supportedDragActions() const override;

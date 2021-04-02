@@ -63,8 +63,6 @@ public:
     int getState() const;
     void setState(int state);
 
-    void setChecked(bool val);
-
     TreeItem* child(int row);
 
     virtual QStringList getActionList();

@@ -53,6 +53,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileInfo>
 #include <QJsonObject>
 
+#include "FeatureCollectionLayer.h"
+
 // Std library headers
 #include <string>
 #include <algorithm>

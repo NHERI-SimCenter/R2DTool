@@ -41,10 +41,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QString>
 #include <QStringList>
 #include <QVector>
+#include <QVariant>
+
+class VisualizationWidget;
+class LayerTreeItem;
 
 class QObject;
 class QProgressBar;
-class VisualizationWidget;
+
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class Layer;
+class GroupLayer;
+class Geometry;
+}
+}
 
 struct HurricaneObject{
 
@@ -66,7 +79,7 @@ public:
 
 
     QString getValueOfParameter(const QString& paramName, const int dataPoint) {
-        auto indexOfParam = headerData.indexOf(paramName);
+        auto indexOfParam = parameterLabels.indexOf(paramName);
 
         if(indexOfParam == -1 || hurricaneData.size() < dataPoint || dataPoint < 0)
             return QString();
@@ -108,12 +121,12 @@ public:
 
     double getLatitudeAtLandfall(void)
     {
-        if(landfallData.empty() || landfallData.size() != headerData.size())
+        if(landfallData.empty() || landfallData.size() != parameterLabels.size())
             return 0.0;
 
         // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
-        auto indexUSALat = headerData.indexOf("USA_LAT");
-        auto indexLat = headerData.indexOf("LAT");
+        auto indexUSALat = parameterLabels.indexOf("USA_LAT");
+        auto indexLat = parameterLabels.indexOf("LAT");
 
         if(indexUSALat == -1 || indexLat == -1)
             return 0.0;
@@ -129,12 +142,12 @@ public:
 
     double getLongitudeAtLandfall(void)
     {
-        if(landfallData.empty() || landfallData.size() != headerData.size())
+        if(landfallData.empty() || landfallData.size() != parameterLabels.size())
             return 0.0;
 
         // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
-        auto indexUSALon = headerData.indexOf("USA_LON");
-        auto indexLon = headerData.indexOf("LON");
+        auto indexUSALon = parameterLabels.indexOf("USA_LON");
+        auto indexLon = parameterLabels.indexOf("LON");
 
         if(indexUSALon == -1 || indexLon == -1)
             return 0.0;
@@ -151,10 +164,10 @@ public:
     // i.e., the storm direction at landfall
     double getLandingAngle(void)
     {
-        if(landfallData.empty() || landfallData.size() != headerData.size())
+        if(landfallData.empty() || landfallData.size() != parameterLabels.size())
             return 0.0;
 
-        auto indexStormDir = headerData.indexOf("STORM_DIR");
+        auto indexStormDir = parameterLabels.indexOf("STORM_DIR");
 
         if(indexStormDir == -1)
             return 0.0;
@@ -166,10 +179,10 @@ public:
     // Speed in kts
     double getStormSpeedAtLandfall(void)
     {
-        if(landfallData.empty() || landfallData.size() != headerData.size())
+        if(landfallData.empty() || landfallData.size() != parameterLabels.size())
             return 0.0;
 
-        auto indexStormSpeed = headerData.indexOf("STORM_SPEED");
+        auto indexStormSpeed = parameterLabels.indexOf("STORM_SPEED");
 
         if(indexStormSpeed == -1)
             return 0.0;
@@ -181,12 +194,12 @@ public:
     // Pressure in mb
     double getPressureAtLandfall(void)
     {
-        if(landfallData.empty() || landfallData.size() != headerData.size())
+        if(landfallData.empty() || landfallData.size() != parameterLabels.size())
             return 0.0;
 
         // Default to USA pressure and then WMO pressure if no USA pressure
-        auto indexUSAPress = headerData.indexOf("USA_PRES");
-        auto indexWMOPress = headerData.indexOf("WMO_PRES");
+        auto indexUSAPress = parameterLabels.indexOf("USA_PRES");
+        auto indexWMOPress = parameterLabels.indexOf("WMO_PRES");
 
         if(indexUSAPress == -1 || indexWMOPress == -1)
             return 0.0;
@@ -229,14 +242,15 @@ public:
         return 0.5*(pressBefore + pressAfter);
     }
 
+
     // Storm radius in nautical mile nmile
     double getRadiusAtLandfall(void){
 
-        if(landfallData.empty() || landfallData.size() != headerData.size())
+        if(landfallData.empty() || landfallData.size() != parameterLabels.size())
             return 0.0;
 
-        auto indexOfUSARMW = headerData.indexOf("USA_RMW");
-        auto indexOfReunionRMW = headerData.indexOf("REUNION_RMW");
+        auto indexOfUSARMW = parameterLabels.indexOf("USA_RMW");
+        auto indexOfReunionRMW = parameterLabels.indexOf("REUNION_RMW");
 
         if(indexOfUSARMW == -1 || indexOfReunionRMW == -1)
             return 0.0;
@@ -251,7 +265,7 @@ public:
     }
 
     QVector<QStringList> hurricaneData;
-    QStringList headerData;
+    QStringList parameterLabels;
 
     QStringList landfallData;
     int indexLandfall = -1;
@@ -259,7 +273,6 @@ public:
     QString name;
     QString SID; // The storm id
     QString season; // i.e., the year
-
 };
 
 
@@ -275,8 +288,24 @@ public:
     // Gets the hurricane of the given storm id
     HurricaneObject* getHurricane(const QString& SID);
 
+    Esri::ArcGISRuntime::Layer *getAllHurricanesLayer() const;
+
+    // Creates a hurricane visualization of the track and track points if desired
+    int createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
+
+    // Note that including track points may take a long time, moreover not all hurricanes have a landfall
+    int createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
+
+    int createLandfallVisualization(const double latitude,
+                                    const double longitude,
+                                    const QMap<QString, QVariant>& featureAttributes,
+                                    LayerTreeItem* parentItem,
+                                    Esri::ArcGISRuntime::GroupLayer* parentLayer);
+
 private:
 
+    Esri::ArcGISRuntime::Geometry getTrackGeometry(HurricaneObject* hurricane, QString& err);
+    Esri::ArcGISRuntime::Layer* allHurricanesLayer;
     QProgressBar* theProgressBar;
     VisualizationWidget* theVisualizationWidget;
     QObject* theParent;

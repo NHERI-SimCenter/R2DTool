@@ -201,9 +201,11 @@ void UserInputGMWidget::showUserGMLayers(bool state)
     // Check if there is a 'User Ground Motions' root item in the tree
     auto shakeMapTreeItem = layersTreeView->getTreeItem("User Ground Motions",nullptr);
 
+    auto itemUID = theVisualizationWidget->createUniqueID();
+
     // If there is no item, create one
     if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",QString());
+        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",itemUID);
 
 }
 
@@ -475,7 +477,10 @@ void UserInputGMWidget::loadUserGMData(void)
 
     // If there is no item, create one
     if(userInputTreeItem == nullptr)
-        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", QString());
+    {
+        auto itemUID = theVisualizationWidget->createUniqueID();
+        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", itemUID);
+    }
 
 
     // Add the event layer to the layer tree

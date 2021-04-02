@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SiteConfig.h"
 #include "GridNode.h"
 
+#include "GroupLayer.h"
 #include "Feature.h"
 #include "FeatureCollection.h"
 #include "FeatureCollectionLayer.h"
@@ -89,8 +90,12 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
     hurricaneImportTool = nullptr;
     hurricaneParamsWidget = nullptr;
     gridLayer = nullptr;
+    trackLayer = nullptr;
+    trackTable = nullptr;
+    selectedHurricaneFeature = nullptr;
+    trackPntsTable = nullptr;
+    trackPntsLayer = nullptr;
     selectedHurricaneLayer = nullptr;
-    selectedHurricaneTable = nullptr;
 
     eventDatabaseFile = "";
 
@@ -101,7 +106,7 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
     layout->addStretch();
     this->setLayout(layout);
 
-    //    this->loadUserHurricaneData();
+    this->loadHurricaneButtonClicked();
 }
 
 
@@ -200,29 +205,6 @@ bool HurricaneSelectionWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
     }
 
     return false;
-}
-
-
-void HurricaneSelectionWidget::showUserGMLayers(bool state)
-{
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
-
-
-    if(state == false)
-    {
-        layersTreeView->removeItemFromTree("User Ground Motions");
-
-        return;
-    }
-
-
-    // Check if there is a 'User Ground Motions' root item in the tree
-    auto shakeMapTreeItem = layersTreeView->getTreeItem("User Ground Motions",nullptr);
-
-    // If there is no item, create one
-    if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",QString());
-
 }
 
 
@@ -486,16 +468,11 @@ void HurricaneSelectionWidget::showHurricaneSelectDialog(void)
 
 void HurricaneSelectionWidget::loadHurricaneTrackData(void)
 {
-
-
     theStackedWidget->setCurrentWidget(progressBarWidget);
     progressBarWidget->setVisible(true);
 
     QString errMsg;
     auto res = hurricaneImportTool->loadHurricaneTrackData(eventDatabaseFile,errMsg);
-
-    if(res != 0)
-        this->userMessageDialog(errMsg);
 
     progressLabel->setVisible(false);
 
@@ -507,6 +484,9 @@ void HurricaneSelectionWidget::loadHurricaneTrackData(void)
         theStackedWidget->close();
 
     emit loadingComplete(true);
+
+    if(res != 0)
+        this->userMessageDialog(errMsg);
 
     return;
 }
@@ -571,9 +551,7 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
 
     QString hurricaneSID;
 
-    QList<Esri::ArcGISRuntime::Feature*> selectedHurricaneFeature;
-
-    // Only select the first hurricane
+    // Only select the first hurricane, if there is more than one selected
     for(auto&& it : selectedFeatures)
     {
         auto attrbList = it->attributes();
@@ -583,7 +561,10 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
         if(featType.toString() != "HURRICANE")
             continue;
 
-        selectedHurricaneFeature.push_back(it);
+        if(selectedHurricaneFeature == it)
+            return;
+        else
+            selectedHurricaneFeature = it;
 
         auto hurricaneName = attrbList->attributeValue("NAME").toString();
         hurricaneSID = attrbList->attributeValue("SID").toString();
@@ -596,6 +577,7 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
         break;
     }
 
+    // Get the selected hurricane from the preprocessor
     auto selectedHurricane = hurricaneImportTool->getHurricane(hurricaneSID);
 
     if(selectedHurricane == nullptr)
@@ -605,6 +587,11 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
         return;
     }
 
+    // Get the hurricane description
+    auto name = selectedHurricane->name;
+    auto landfallData = selectedHurricane->landfallData;
+
+    // Populate the landfall parameters
     auto pressure = selectedHurricane->getPressureAtLandfall();
     auto lat = selectedHurricane->getLatitudeAtLandfall();
     auto lon = selectedHurricane->getLongitudeAtLandfall();
@@ -632,7 +619,52 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
     hurricaneParamsWidget->setLandfallSpeed(stormSpeed);
     hurricaneParamsWidget->setLandfallRadius(radius);
 
-//    theVisualizationWidget->addFeaturesToSelectedLayer(selectedHurricaneFeature);
+    selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
+    selectedHurricaneLayer->setName("Hurricane " + name);
+    selectedHurricaneLayer->setAutoFetchLegendInfos(true);
+
+    auto selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
+
+    // Track
+    QString err;
+    auto res = hurricaneImportTool->createTrackVisualization(selectedHurricane,selectedHurricaneItem,selectedHurricaneLayer, err);
+    if(res != 0)
+    {
+        qDebug()<<err;
+        return;
+    }
+
+    // Track points
+    auto res2 = hurricaneImportTool->createTrackPointsVisualization(selectedHurricane,selectedHurricaneItem, selectedHurricaneLayer,err);
+    if(res2 != 0)
+    {
+        qDebug()<<err;
+        return;
+    }
+
+    // Landfall
+    if(!landfallData.empty())
+    {
+        auto lfParams = selectedHurricane->parameterLabels;
+
+        QMap<QString, QVariant> featureAttributes;
+
+        for(int i = 0; i < landfallData.size(); ++i)
+        {
+            auto dataVal = landfallData.at(i);
+
+            if(!dataVal.isEmpty())
+                featureAttributes.insert(lfParams.at(i), landfallData.at(i));
+        }
+
+
+        hurricaneImportTool->createLandfallVisualization(lat,lon,featureAttributes, selectedHurricaneItem, selectedHurricaneLayer);
+    }
+
+    auto allHurricanesLayer = hurricaneImportTool->getAllHurricanesLayer();
+
+    theVisualizationWidget->setLayerVisibility(allHurricanesLayer->layerId(), false);
+    theVisualizationWidget->clearSelection();
 }
 
 
@@ -756,3 +788,21 @@ void HurricaneSelectionWidget::clearGridFromMap(void)
     mapViewSubWidget->removeGridFromScene();
 }
 
+
+Esri::ArcGISRuntime::SimpleRenderer* HurricaneSelectionWidget::createSelectedHurricaneTrackRenderer(void)
+{
+
+    // Create line symbol for the track
+    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid,
+                                                        QColor(225, 255, 0, 200),
+                                                        2.0f /*width*/,
+                                                        SimpleLineSymbolMarkerStyle::Arrow,
+                                                        SimpleLineSymbolMarkerPlacement::End,
+                                                        this);
+
+    // Create renderer and set symbol for the track
+    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
+    lineRenderer->setLabel("Hurricane track");
+
+    return lineRenderer;
+}
