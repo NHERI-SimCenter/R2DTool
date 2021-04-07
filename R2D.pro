@@ -169,6 +169,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/GroundMotionStation.cpp \
+            UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
             UIWidgets/HazardToAssetWidget.cpp \
@@ -277,6 +278,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/GroundMotionStation.h \
+            UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \
             UIWidgets/HazardToAssetWidget.h \
@@ -339,7 +341,7 @@ DISTFILES += \
     resources/docs/textAboutR2DT.html
 
 # External libraries
-macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
+macos:LIBS += -lcurl -llapack -lblas
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
 # Path to build directory

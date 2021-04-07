@@ -296,11 +296,11 @@ public:
     // Note that including track points may take a long time, moreover not all hurricanes have a landfall
     int createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
 
-    int createLandfallVisualization(const double latitude,
-                                    const double longitude,
-                                    const QMap<QString, QVariant>& featureAttributes,
-                                    LayerTreeItem* parentItem,
-                                    Esri::ArcGISRuntime::GroupLayer* parentLayer);
+    LayerTreeItem* createLandfallVisualization(const double latitude,
+                                               const double longitude,
+                                               const QMap<QString, QVariant>& featureAttributes,
+                                               LayerTreeItem* parentItem,
+                                               Esri::ArcGISRuntime::GroupLayer* parentLayer);
 
 private:
 

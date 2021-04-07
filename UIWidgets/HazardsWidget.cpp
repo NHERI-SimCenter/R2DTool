@@ -82,7 +82,6 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));    
 
-    selectionChangedSlot("Hurricane Scenario Simulation");
 }
 
 

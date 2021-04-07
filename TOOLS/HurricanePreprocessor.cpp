@@ -187,7 +187,6 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
     trackFeatureCollection->tables()->append(trackFeatureCollectionTable);
 
     allHurricanesLayer = new FeatureCollectionLayer(trackFeatureCollection,theParent);
-    allHurricanesLayer->setAutoFetchLegendInfos(true);
     allHurricanesLayer->setName("All Hurricanes");
 
 
@@ -262,8 +261,9 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
 void HurricanePreprocessor::clear(void)
 {
     hurricanes.clear();
+    delete allHurricanesLayer;
+    allHurricanesLayer = nullptr;
 }
-
 
 
 int HurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
@@ -350,7 +350,7 @@ Geometry HurricanePreprocessor::getTrackGeometry(HurricaneObject* hurricane, QSt
     auto indexLon = headerData.indexOf("LON");
 
     // Check that the indexes are found
-    if(indexLat == -1 || indexLon == -1 || indexUSALat == -1 || indexUSALon == -1 )
+    if((indexLat == -1 || indexLon == -1) && (indexUSALat == -1 || indexUSALon == -1))
     {
         err = "Could not find the required column indexes in the data file";
         return Geometry();
@@ -420,40 +420,18 @@ int HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurri
     // Get the parameter labels or header data
     auto headerData = hurricane->parameterLabels;
 
-    // Name and storm ID
-    auto indexName = headerData.indexOf("NAME");
-    auto indexSID = headerData.indexOf("SID");
-    auto indexSeason = headerData.indexOf("SEASON");
-
     // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
     auto indexUSALat = headerData.indexOf("USA_LAT");
     auto indexUSALon = headerData.indexOf("USA_LON");
     auto indexLat = headerData.indexOf("LAT");
     auto indexLon = headerData.indexOf("LON");
 
-    // Check that the indexes are found
-    if(indexName == -1 || indexSID == -1 || indexLat == -1 || indexLon == -1 || indexSeason == -1 || indexUSALat == -1 || indexUSALon == -1 )
+    // Check that the lat/lon indexes are found
+    if((indexLat == -1 || indexLon == -1) && (indexUSALat == -1 || indexUSALon == -1))
     {
         err = "Could not find the required column indexes in the data file";
-        return -1;
+                return -1;
     }
-
-    auto name = hurricane->front().at(indexName);
-    auto SID = hurricane->front().at(indexSID);
-    auto season = hurricane->front().at(indexSeason);
-
-    hurricane->name = name;
-    hurricane->SID = SID;
-    hurricane->season = season;
-
-    auto nameID = name+"-"+season;
-
-    // Create the layers and tree item
-
-    // Save the pointers to the layer object
-
-    FeatureCollectionLayer* trackPntsLayer = nullptr;
-    FeatureCollectionTable* trackPntsTable = nullptr;
 
     // Create the table to store the fields
     QList<Field> pointFields;
@@ -469,10 +447,10 @@ int HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurri
 
     // Create the feature collection table/layers
     auto trackPntsFeatureCollection = new FeatureCollection(theParent);
-    trackPntsTable = new FeatureCollectionTable(pointFields, GeometryType::Point, SpatialReference::wgs84(), theParent);
+    auto trackPntsTable = new FeatureCollectionTable(pointFields, GeometryType::Point, SpatialReference::wgs84(), theParent);
     trackPntsFeatureCollection->tables()->append(trackPntsTable);
 
-    trackPntsLayer = new FeatureCollectionLayer(trackPntsFeatureCollection,theParent);
+    auto trackPntsLayer = new FeatureCollectionLayer(trackPntsFeatureCollection,theParent);
     trackPntsLayer->setAutoFetchLegendInfos(true);
     trackPntsLayer->setName("Track Points");
 
@@ -538,7 +516,7 @@ int HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurri
 }
 
 
-int HurricanePreprocessor::createLandfallVisualization(const double latitude,const double longitude, const QMap<QString, QVariant>& featureAttributes, LayerTreeItem* parentItem, GroupLayer* parentLayer)
+LayerTreeItem* HurricanePreprocessor::createLandfallVisualization(const double latitude,const double longitude, const QMap<QString, QVariant>& featureAttributes, LayerTreeItem* parentItem, GroupLayer* parentLayer)
 {
 
     QList<Field> pointFields;
@@ -573,10 +551,10 @@ int HurricanePreprocessor::createLandfallVisualization(const double latitude,con
     auto feature = landFallPntTable->createFeature(featureAttributes, point, theParent);
     landFallPntTable->addFeature(feature);
 
-    // Add the points layer
-    theVisualizationWidget->addLayerToMap(landFallPointLayer,parentItem, parentLayer);
+    // Add the point layer
+    LayerTreeItem* landfallItem = theVisualizationWidget->addLayerToMap(landFallPointLayer,parentItem, parentLayer);
 
-    return 0;
+    return landfallItem;
 }
 
 

@@ -63,6 +63,8 @@ SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj) :theCurrentLayo
     theCurrentLayout = nullptr;
 
     legendView = new GISLegendView(this);
+
+    this->setContentsMargins(0,0,0,0);
 }
 
 

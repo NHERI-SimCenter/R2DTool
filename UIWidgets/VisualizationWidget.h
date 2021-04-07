@@ -93,6 +93,7 @@ class TreeModel;
 class QGroupBox;
 class QComboBox;
 class QTreeView;
+class QSplitter;
 class QVBoxLayout;
 
 class VisualizationWidget : public  SimCenterAppWidget
@@ -153,7 +154,7 @@ public:
     LayerTreeItem* addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr, Esri::ArcGISRuntime::GroupLayer* groupLayer = nullptr);
 
     // Removes a given layer from the map
-    void removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer);
+    bool removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer);
     void removeLayerFromMap(const QString layerID);
 
     LayerTreeView *getLayersTree() const;
@@ -278,7 +279,7 @@ private:
     LayerTreeItem* selectedObjectsTreeItem = nullptr;
 
     // The GIS widget
-    QWidget* visWidget;
+    QSplitter* visWidget;
     void createVisualizationWidget(void);
 
     // The legend view

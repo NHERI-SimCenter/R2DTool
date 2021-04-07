@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QJsonArray>
+#include <QJsonObject>
 
 HurricaneParameterWidget::HurricaneParameterWidget(QWidget* parent) : QWidget(parent)
 {
@@ -73,6 +75,14 @@ HurricaneParameterWidget::HurricaneParameterWidget(QWidget* parent) : QWidget(pa
     speedLandfallLineEdit   = new QLineEdit(this);
     radiusLandfallLineEdit  = new QLineEdit(this);
 
+    latLandfallLineEdit->setValidator(new QDoubleValidator(latLandfallLineEdit));
+    lonLandfallLineEdit->setValidator(new QDoubleValidator(lonLandfallLineEdit));
+    angleLandfallLineEdit->setValidator(new QDoubleValidator(angleLandfallLineEdit));
+    pressLandfallLineEdit->setValidator(new QDoubleValidator(pressLandfallLineEdit));
+    speedLandfallLineEdit->setValidator(new QDoubleValidator(speedLandfallLineEdit));
+    radiusLandfallLineEdit->setValidator(new QDoubleValidator(radiusLandfallLineEdit));
+
+
     //    latLandfallLineEdit ->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     //    lonLandfallLineEdit ->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     //    angleLandfallLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -80,34 +90,36 @@ HurricaneParameterWidget::HurricaneParameterWidget(QWidget* parent) : QWidget(pa
     //    speedLandfallLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     //    radiusLandfallLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    QLineEdit* latLandfallPerturbLineEdit     = new QLineEdit(this);
-    QLineEdit* lonLandfallPerturbLineEdit     = new QLineEdit(this);
-    QLineEdit* angleLandfallPerturbLineEdit   = new QLineEdit(this);
-    QLineEdit* pressLandfallPerturbLineEdit   = new QLineEdit(this);
-    QLineEdit* speedLandfallPerturbLineEdit   = new QLineEdit(this);
-    QLineEdit* radiusLandfallPerturbLineEdit  = new QLineEdit(this);
+    latLandfallPerturbLineEdit     = new QLineEdit(this);
+    lonLandfallPerturbLineEdit     = new QLineEdit(this);
+    angleLandfallPerturbLineEdit   = new QLineEdit(this);
+    pressLandfallPerturbLineEdit   = new QLineEdit(this);
+    speedLandfallPerturbLineEdit   = new QLineEdit(this);
+    radiusLandfallPerturbLineEdit  = new QLineEdit(this);
 
-    QComboBox* exposureComboBox = new QComboBox(this);
+    latLandfallPerturbLineEdit->setValidator(new QDoubleValidator(latLandfallPerturbLineEdit));
+    lonLandfallPerturbLineEdit->setValidator(new QDoubleValidator(lonLandfallPerturbLineEdit));
+    angleLandfallPerturbLineEdit->setValidator(new QDoubleValidator(angleLandfallPerturbLineEdit));
+    pressLandfallPerturbLineEdit->setValidator(new QDoubleValidator(pressLandfallPerturbLineEdit));
+    speedLandfallPerturbLineEdit->setValidator(new QDoubleValidator(speedLandfallPerturbLineEdit));
+    radiusLandfallPerturbLineEdit->setValidator(new QDoubleValidator(radiusLandfallPerturbLineEdit));
+
+
+    exposureComboBox = new QComboBox(this);
     exposureComboBox->addItem("A");
     exposureComboBox->addItem("B");
     exposureComboBox->addItem("C");
-    exposureComboBox->setCurrentText("C");
     QLabel* exposureLabel = new QLabel("Exposure Category",this);
 
     QLabel* gustLabel = new QLabel("Gust Duration [s]",this);
-    QLineEdit* gustLineEdit  = new QLineEdit(this);
-    gustLineEdit->setText("3");
+    gustLineEdit  = new QLineEdit(this);
+
+    gustLineEdit->setValidator(new QDoubleValidator(gustLineEdit));
 
     QLabel* refHeightLabel = new QLabel("Reference Height [m]",this);
-    QLineEdit* refHeightLineEdit  = new QLineEdit(this);
-    refHeightLineEdit->setText("10.0");
+    refHeightLineEdit  = new QLineEdit(this);
 
-    latLandfallPerturbLineEdit->setText("0.0");
-    lonLandfallPerturbLineEdit->setText("0.0");
-    angleLandfallPerturbLineEdit->setText("90.0");
-    pressLandfallPerturbLineEdit->setText("10.0");
-    speedLandfallPerturbLineEdit->setText("10.0");
-    radiusLandfallPerturbLineEdit->setText("10.0");
+    refHeightLineEdit->setValidator(new QDoubleValidator(refHeightLineEdit));
 
     mainLayout->addWidget(paramLabel1,0,0,1,2,Qt::AlignCenter);
     mainLayout->addWidget(perturbationLabel1,0,2,1,1,Qt::AlignCenter);
@@ -151,6 +163,8 @@ HurricaneParameterWidget::HurricaneParameterWidget(QWidget* parent) : QWidget(pa
     mainLayout->addWidget(refHeightLineEdit,3,7);
 
     mainLayout->setRowStretch(4,1);
+
+    this->clear();
 }
 
 
@@ -199,5 +213,76 @@ void HurricaneParameterWidget::clear(void)
     pressLandfallLineEdit->clear();
     speedLandfallLineEdit->clear();
     radiusLandfallLineEdit->clear();
+
+    angleLandfallLineEdit->setText("-40.0");
+    pressLandfallLineEdit->setText("110.0");
+    speedLandfallLineEdit->setText("90.0");
+    radiusLandfallLineEdit->setText("25.0");
+
+    latLandfallPerturbLineEdit->setText("0.0");
+    lonLandfallPerturbLineEdit->setText("0.0");
+    angleLandfallPerturbLineEdit->setText("90.0");
+    pressLandfallPerturbLineEdit->setText("10.0");
+    speedLandfallPerturbLineEdit->setText("10.0");
+    radiusLandfallPerturbLineEdit->setText("10.0");
+    refHeightLineEdit->setText("10.0");
+    gustLineEdit->setText("3");
+    exposureComboBox->setCurrentText("C");
+}
+
+
+QJsonObject HurricaneParameterWidget::getEventJson(void)
+{
+    QJsonObject eventObj;
+
+    double latPert =  latLandfallPerturbLineEdit->text().toDouble();
+    double lonPert =  lonLandfallPerturbLineEdit->text().toDouble();
+    double landAnglePert =  angleLandfallPerturbLineEdit->text().toDouble();
+    double centPressPert =  pressLandfallPerturbLineEdit->text().toDouble();
+    double speedPert =  speedLandfallPerturbLineEdit->text().toDouble();
+    double radiusPert =  radiusLandfallPerturbLineEdit->text().toDouble();
+
+    QJsonArray Perturbation = {latPert,lonPert,landAnglePert,centPressPert,speedPert,radiusPert};
+    eventObj.insert("Perturbation", Perturbation);
+
+    double refHeight = refHeightLineEdit->text().toDouble();
+    double gustDuration = gustLineEdit->text().toDouble();
+
+    QString exposureClass = exposureComboBox->currentText();
+
+    QJsonArray measHeightArray = {refHeight,refHeight,refHeight};
+
+    QJsonObject intMeasObj;
+    intMeasObj.insert("Type","HAZUS-PWS");
+    intMeasObj.insert("MeasureHeight",measHeightArray);
+    intMeasObj.insert("ReferenceHeight",refHeight);
+    intMeasObj.insert("GustDuration",gustDuration);
+    intMeasObj.insert("Exposure",exposureClass);
+
+    eventObj.insert("IntensityMeasure",intMeasObj);
+
+    return eventObj;
+}
+
+
+QJsonObject HurricaneParameterWidget::getLandfallParamsJson(void)
+{
+    QJsonObject landfallObj;
+
+    double latLF =  latLandfallLineEdit->text().toDouble();
+    double lonLF =  lonLandfallLineEdit->text().toDouble();
+    double landAngleLF =  angleLandfallLineEdit->text().toDouble();
+    double centPressLF =  pressLandfallLineEdit->text().toDouble();
+    double speedLF =  speedLandfallLineEdit->text().toDouble();
+    double radiusLF =  radiusLandfallLineEdit->text().toDouble();
+
+    landfallObj.insert("Latitude",latLF);
+    landfallObj.insert("Longitude",lonLF);
+    landfallObj.insert("LandingAngle",landAngleLF);
+    landfallObj.insert("Pressure",centPressLF);
+    landfallObj.insert("Speed",speedLF);
+    landfallObj.insert("Radius",radiusLF);
+
+    return landfallObj;
 }
 

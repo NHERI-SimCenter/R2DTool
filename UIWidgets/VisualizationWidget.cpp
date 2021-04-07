@@ -91,7 +91,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QGroupBox>
+#include <QToolButton>
 #include <QHeaderView>
+#include <QSplitter>
 #include <QLabel>
 #include <QPushButton>
 #include <QString>
@@ -135,6 +137,8 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     // Create the Widget view
     //mapViewWidget = new MapGraphicsView(this);
     mapViewLayout = new QVBoxLayout();
+    mapViewLayout->setMargin(0);
+    mapViewLayout->setSpacing(0);
 
     mapViewWidget = SimCenterMapGraphicsView::getInstance();
 
@@ -253,11 +257,14 @@ void VisualizationWidget::setCurrentlyViewable(bool status)
 
 void VisualizationWidget::createVisualizationWidget(void)
 {
-    visWidget = new QWidget(this);
-    visWidget->setContentsMargins(0,0,0,0);
+    visWidget = new QSplitter(this);
+    visWidget->setContentsMargins(5,0,0,0);
 
-    QGridLayout* layout = new QGridLayout(visWidget);
-    visWidget->setLayout(layout);
+    auto leftHandWidget = new QWidget(this);
+    leftHandWidget->setContentsMargins(0,0,0,0);
+
+    QGridLayout* leftHandLayout = new QGridLayout(leftHandWidget);
+    leftHandLayout->setMargin(0);
 
     auto smallVSpacer = new QSpacerItem(0,2);
 
@@ -304,23 +311,64 @@ void VisualizationWidget::createVisualizationWidget(void)
     connect(applyButton,SIGNAL(clicked()),this,SLOT(getItemsInConvexHull()));
 
     // Add a vertical spacer at the bottom to push everything up
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Maximum, QSizePolicy::Expanding);
 
-    layout->addItem(smallVSpacer,0,0,1,2);
-    layout->addWidget(basemapText,1,0);
-    layout->addWidget(baseMapCombo,2,0);
-    layout->addItem(smallVSpacer,3,0,1,2);
-    layout->addWidget(layersTree,4,0);
-    layout->addWidget(topText,5,0);
-    layout->addWidget(selectPointsButton,6,0);
-    layout->addWidget(clearButton,7,0);
-    layout->addWidget(bottomText,8,0);
-    layout->addWidget(applyButton,9,0);
-    layout->addItem(vspacer,10,0,1,1);
+    leftHandLayout->addItem(smallVSpacer,0,0);
+    leftHandLayout->addWidget(basemapText,1,0);
+    leftHandLayout->addWidget(baseMapCombo,2,0);
+    leftHandLayout->addItem(smallVSpacer,3,0);
+    leftHandLayout->addWidget(layersTree,4,0);
+    leftHandLayout->addWidget(topText,5,0);
+    leftHandLayout->addWidget(selectPointsButton,6,0);
+    leftHandLayout->addWidget(clearButton,7,0);
+    leftHandLayout->addWidget(bottomText,8,0);
+    leftHandLayout->addWidget(applyButton,9,0);
+    leftHandLayout->addItem(vspacer,10,0);
+
+    QWidget* subWidget = new QWidget(this);
+    subWidget->setContentsMargins(0,0,0,0);
+    subWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    subWidget->setLayout(mapViewLayout);
 
 
-    //layout->addWidget(mapViewWidget,0,1,12,2);
-    layout->addLayout(mapViewLayout,0,1,12,2);
+    //    QFrame *line = new QFrame(handle);
+    //    line->setFrameShape(QFrame::HLine);
+    //    line->setFrameShadow(QFrame::Sunken);
+    //    layout->addWidget(line);
+
+
+    //    connect(buttonHandle,&QToolButton::clicked,handle,&QSplitterHandle::hand)
+    visWidget->addWidget(leftHandWidget);
+    visWidget->addWidget(subWidget);
+
+    visWidget->setStretchFactor(1,1);
+
+    // Now add the line to the splitter handle
+    // Note: index 0 handle is always hidden, index 1 is between the two widgets
+    QSplitterHandle *handle = visWidget->handle(1);
+
+    if(handle == nullptr)
+    {
+        qDebug()<<"Error getting the handle";
+        return;
+    }
+
+    auto buttonHandle = new QToolButton(handle);
+    QVBoxLayout *layout = new QVBoxLayout(handle);
+    layout->setSpacing(0);
+    layout->setMargin(0);
+
+    visWidget->setHandleWidth(15);
+
+    buttonHandle->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    buttonHandle->setDown(false);
+    buttonHandle->setAutoRaise(false);
+    buttonHandle->setCheckable(false);
+    buttonHandle->setArrowType(Qt::RightArrow);
+    buttonHandle->setStyleSheet("QToolButton{border:0px solid}; QToolButton:pressed {border:0px solid}");
+    buttonHandle->setIconSize(buttonHandle->size());
+    layout->addWidget(buttonHandle);
+
 }
 
 
@@ -454,8 +502,6 @@ void VisualizationWidget::setPipelineWidget(ComponentInputWidget *value)
 
     connect(pipelineWidget,&ComponentInputWidget::componentDataLoaded,this,&VisualizationWidget::loadPipelineData);
 }
-
-
 
 
 void VisualizationWidget::loadBuildingData(void)
@@ -1808,11 +1854,61 @@ LayerTreeItem* VisualizationWidget::addLayerToMap(Esri::ArcGISRuntime::Layer* la
 }
 
 
-void VisualizationWidget::removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer)
+bool VisualizationWidget::removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer)
 {
-    mapGIS->operationalLayers()->removeOne(layer);
+    if(layer == nullptr)
+        return false;
 
-    //    delete layer;
+    auto mapLayers = mapGIS->operationalLayers();
+
+    auto hasLayer = mapLayers->contains(layer);
+
+    // First check to see if this layer is directly added to the operational layers and it is not part of a group layer
+    if(hasLayer)
+    {
+        mapLayers->removeOne(layer);
+
+        legendView->hide();
+
+        return true;
+    }
+    else
+    {
+        std::function<bool(Layer*)> nestedLayerRemover = [&](Layer* layerToCheck){
+
+            auto grpLayer = static_cast<GroupLayer*>(layerToCheck);
+
+            if(grpLayer)
+            {
+                auto layersInGroup = grpLayer->layers();
+                if(layersInGroup->contains(layer))
+                {
+                    layersInGroup->removeOne(layer);
+                    legendView->hide();
+                    return true;
+                }
+                else
+                {
+                    for(auto&& subLayer : *layersInGroup)
+                    {
+                        if(nestedLayerRemover(subLayer))
+                            return true;
+                    }
+                }
+            }
+
+            return false;
+        };
+
+        // Then check any group layers
+        for(auto it : *mapLayers)
+        {
+            if(nestedLayerRemover(it))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 

@@ -79,7 +79,7 @@ int BuildingInputWidget::loadComponentVisualization()
     selectedBuildingsLayer = new FeatureCollectionLayer(selectedBuildingsFeatureCollection,this);
     selectedBuildingsLayer->setName("Selected Buildings");
     selectedBuildingsLayer->setAutoFetchLegendInfos(true);
-    selectedBuildingsTable->setRenderer(this->createSelectedBuildingRenderer(2.5));
+    selectedBuildingsTable->setRenderer(this->createSelectedBuildingRenderer(1.5));
 
     // Map to hold the feature tables
     std::map<std::string, FeatureCollectionTable*> tablesMap;
@@ -231,11 +231,6 @@ int BuildingInputWidget::loadComponentVisualization()
 
 Feature* BuildingInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Geometry& geom)
 {
-    auto canAdd = selectedBuildingsTable->canAdd();
-
-    if(canAdd == false)
-        return nullptr;
-
     Feature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
     selectedBuildingsTable->addFeature(feat);
 
@@ -265,10 +260,19 @@ SimpleRenderer* BuildingInputWidget::createBuildingRenderer(void)
 
 Esri::ArcGISRuntime::FeatureCollectionLayer* BuildingInputWidget::getSelectedFeatureLayer(void)
 {
-    if(selectedBuildingsTable->numberOfFeatures() > 0)
-        return selectedBuildingsLayer;
+    return selectedBuildingsLayer;
+}
 
-    return nullptr;
+
+void BuildingInputWidget::clear()
+{
+    delete selectedBuildingsLayer;
+    delete selectedBuildingsTable;
+
+    selectedBuildingsLayer = nullptr;
+    selectedBuildingsTable = nullptr;
+
+    ComponentInputWidget::clear();
 }
 
 

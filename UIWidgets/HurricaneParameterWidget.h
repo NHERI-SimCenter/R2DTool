@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QWidget>
 
 class QLineEdit;
+class QComboBox;
 
 class HurricaneParameterWidget : public QWidget
 {
@@ -58,6 +59,9 @@ public:
 
     void clear();
 
+    QJsonObject getEventJson(void);
+    QJsonObject getLandfallParamsJson(void);
+
 private:
 
     QLineEdit* latLandfallLineEdit;
@@ -66,6 +70,16 @@ private:
     QLineEdit* pressLandfallLineEdit;
     QLineEdit* speedLandfallLineEdit;
     QLineEdit* radiusLandfallLineEdit;
+
+    QLineEdit* latLandfallPerturbLineEdit;
+    QLineEdit* lonLandfallPerturbLineEdit;
+    QLineEdit* angleLandfallPerturbLineEdit;
+    QLineEdit* pressLandfallPerturbLineEdit;
+    QLineEdit* speedLandfallPerturbLineEdit;
+    QLineEdit* radiusLandfallPerturbLineEdit;
+    QLineEdit* refHeightLineEdit;
+    QLineEdit* gustLineEdit;
+    QComboBox* exposureComboBox;
 };
 
 #endif // HURRICANEPARAMETERWIDGET_H

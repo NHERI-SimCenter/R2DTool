@@ -41,8 +41,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 #include "HurricaneParameterWidget.h"
+#include "SimCenterPreferences.h"
 #include "SiteConfig.h"
 #include "GridNode.h"
+#include "NodeHandle.h"
+#include "LayerTreeItem.h"
+#include "Utils/PythonProgressDialog.h"
+#include "CSVReaderWriter.h"
 
 #include "GroupLayer.h"
 #include "Feature.h"
@@ -52,6 +57,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimpleMarkerSymbol.h"
 
 #include <QApplication>
+#include <QJsonDocument>
 #include <QComboBox>
 #include <QDialog>
 #include <QFile>
@@ -73,29 +79,40 @@ using namespace Esri::ArcGISRuntime;
 
 HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    progressBar = nullptr;
     fileInputWidget = nullptr;
-    progressBarWidget = nullptr;
-    theStackedWidget = nullptr;
-    progressLabel = nullptr;
-    selectedHurricaneName = nullptr;
-    selectedHurricaneSeason = nullptr;
-    selectedHurricaneSID = nullptr;
-    siteConfig = nullptr;
-    typeOfScenarioWidget = nullptr;
-    selectHurricaneWidget = nullptr;
-    specifyHurricaneWidget = nullptr;
-    loadDbButton = nullptr;
-    siteGrid = nullptr;
+    gridLayer = nullptr;
+    landfallItem = nullptr;
     hurricaneImportTool = nullptr;
     hurricaneParamsWidget = nullptr;
-    gridLayer = nullptr;
-    trackLayer = nullptr;
-    trackTable = nullptr;
+    loadDbButton = nullptr;
+    numIMsLineEdit = nullptr;
+    progressBar = nullptr;
+    progressBarWidget = nullptr;
+    progressLabel = nullptr;
+    selectHurricaneWidget = nullptr;
     selectedHurricaneFeature = nullptr;
-    trackPntsTable = nullptr;
-    trackPntsLayer = nullptr;
     selectedHurricaneLayer = nullptr;
+    selectedHurricaneItem = nullptr;
+    selectedHurricaneName = nullptr;
+    selectedHurricaneSID = nullptr;
+    selectedHurricaneSeason = nullptr;
+    siteConfig = nullptr;
+    siteGrid = nullptr;
+    specifyHurricaneWidget = nullptr;
+    terrainLineEdit = nullptr;
+    theStackedWidget = nullptr;
+    trackLayer = nullptr;
+    trackLineEdit = nullptr;
+    trackPntsLayer = nullptr;
+    trackPntsTable = nullptr;
+    trackTable = nullptr;
+    typeOfScenarioWidget = nullptr;
+    runButton = nullptr;
+
+    process = new QProcess(this);
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &HurricaneSelectionWidget::handleProcessFinished);
+    connect(process, &QProcess::readyReadStandardOutput, this, &HurricaneSelectionWidget::handleProcessTextOutput);
+    connect(process, &QProcess::started, this, &HurricaneSelectionWidget::handleProcessStarted);
 
     eventDatabaseFile = "";
 
@@ -106,7 +123,6 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
     layout->addStretch();
     this->setLayout(layout);
 
-    this->loadHurricaneButtonClicked();
 }
 
 
@@ -142,7 +158,7 @@ bool HurricaneSelectionWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 }
 
 
-bool HurricaneSelectionWidget::outputToJSON(QJsonObject &jsonObj)
+bool HurricaneSelectionWidget::outputToJSON(QJsonObject &/*jsonObj*/)
 {
     // qDebug() << "USER GM outputPLAIN";
 
@@ -246,7 +262,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     typeOfScenarioWidget->setContentsMargins(5,0,5,0);
 
     // Widget to select hurricane from database
-    QWidget* selectHurricaneWidget = new QWidget(this);
+    selectHurricaneWidget = new QWidget(this);
 
     selectHurricaneWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
 
@@ -283,20 +299,36 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     selectHurricaneLayout->rowStretch(4);
 
     // Widget to specify hurricane track
-    QWidget* specifyHurricaneWidget = new QWidget(this);
+    specifyHurricaneWidget = new QWidget(this);
     QGridLayout* specifyHurricaneLayout = new QGridLayout(specifyHurricaneWidget);
     specifyHurricaneLayout->setContentsMargins(0,0,0,0);
     //    specifyHurricaneLayout->setSpacing(8);
 
-    QLabel* trackLabel = new QLabel("Hurricane Track");
-    QLineEdit* trackLineEdit = new QLineEdit();
+    QLabel* trackLabel = new QLabel("Hurricane Track (.csv)");
+    trackLineEdit = new QLineEdit();
     QPushButton *browseTrackButton = new QPushButton("Browse");
 
-    QLabel* terrainLabel = new QLabel("Terrain");
-    QLineEdit* terrainLineEdit = new QLineEdit();
+    connect(browseTrackButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleHurricaneTrackImport);
+
+
+    QLabel* terrainLabel = new QLabel("Terrain (.geojson)");
+    terrainLineEdit = new QLineEdit();
     QPushButton *browseTerrainButton = new QPushButton("Browse");
 
+    connect(browseTerrainButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleTerrainImport);
+
+    QPushButton *defineLandfall = new QPushButton("Define Landfall on Map");
+    QPushButton *clearLandfall = new QPushButton("Clear Landfall");
     QPushButton *selectLandfall = new QPushButton("Select Landfall");
+
+    connect(defineLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::showPointOnMap);
+    connect(selectLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleLandfallPointSelected);
+    connect(clearLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::clearPointFromMap);
+
+    QHBoxLayout* selectLandfallLayout = new QHBoxLayout();
+    selectLandfallLayout->addWidget(defineLandfall);
+    selectLandfallLayout->addWidget(selectLandfall);
+    selectLandfallLayout->addWidget(clearLandfall);
 
     specifyHurricaneLayout->addWidget(trackLabel,0,0);
     specifyHurricaneLayout->addWidget(trackLineEdit,0,1);
@@ -304,7 +336,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     specifyHurricaneLayout->addWidget(terrainLabel,1,0);
     specifyHurricaneLayout->addWidget(terrainLineEdit,1,1);
     specifyHurricaneLayout->addWidget(browseTerrainButton,1,2);
-    specifyHurricaneLayout->addWidget(selectLandfall,2,0,1,3);
+    specifyHurricaneLayout->addLayout(selectLandfallLayout,2,0,1,3);
 
     //    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
 
@@ -343,15 +375,15 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 
     auto divLatLabel = new QLabel("Divisions Latitude",this);
     auto divLatSpinBox = new QSpinBox(this);
-    divLatSpinBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-    divLatSpinBox->setRange(1, 60);
+    divLatSpinBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    divLatSpinBox->setRange(1, 1000);
     divLatSpinBox->setValue(5);
     divLatSpinBox->setValue(siteGrid->latitude().divisions());
 
     auto divLonLabel = new QLabel("Divisions Longitude",this);
     auto divLonSpinBox = new QSpinBox(this);
-    divLonSpinBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-    divLonSpinBox->setRange(1, 60);
+    divLonSpinBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    divLonSpinBox->setRange(1, 1000);
     divLonSpinBox->setValue(5);
     divLonSpinBox->setValue(siteGrid->latitude().divisions());
 
@@ -375,9 +407,16 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
             divLonSpinBox,
             &QSpinBox::setValue);
 
+    divLonSpinBox->setValue(10);
+    divLatSpinBox->setValue(10);
+
     auto numIMsLabel = new QLabel("Number per site",this);
-    auto numIMsLineEdit = new QLineEdit(this);
+    numIMsLineEdit = new QLineEdit(this);
     numIMsLineEdit->setText("1");
+
+    auto numImsVal = new QIntValidator(numIMsLineEdit);
+    numImsVal->setBottom(1);
+    numIMsLineEdit->setValidator(numImsVal);
 
     gridLayout->addWidget(divLatLabel,0,3);
     gridLayout->addWidget(divLatSpinBox,0,4);
@@ -386,8 +425,8 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     gridLayout->addWidget(numIMsLabel,0,7);
     gridLayout->addWidget(numIMsLineEdit,0,8);
 
-    auto runButton = new QPushButton(tr("&Run"));
-    auto settingButton = new QPushButton(tr("&Settings"));
+    runButton = new QPushButton(tr("&Run"));
+    connect(runButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::runHazardSimulation);
 
     QFrame* runFrame = new QFrame(this);
     //    runFrame->setObjectName("TopLine");
@@ -395,8 +434,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     runFrame->setContentsMargins(0,0,0,0);
 
     auto runLayout = new QHBoxLayout(runFrame);
-    runLayout->addWidget(settingButton,0,Qt::AlignLeft);
-    runLayout->addWidget(runButton,1);
+    runLayout->addWidget(runButton,0);
 
     auto scenarioTypeLabel = new QLabel("Hurricane Scenario Type",this);
 
@@ -538,7 +576,9 @@ void HurricaneSelectionWidget::clear(void)
 
     hurricaneImportTool->clear();
     hurricaneParamsWidget->clear();
-    gridData.clear();
+
+    this->clearGridFromMap();
+    this->clearPointFromMap();
 }
 
 
@@ -587,10 +627,6 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
         return;
     }
 
-    // Get the hurricane description
-    auto name = selectedHurricane->name;
-    auto landfallData = selectedHurricane->landfallData;
-
     // Populate the landfall parameters
     auto pressure = selectedHurricane->getPressureAtLandfall();
     auto lat = selectedHurricane->getLatitudeAtLandfall();
@@ -619,33 +655,57 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
     hurricaneParamsWidget->setLandfallSpeed(stormSpeed);
     hurricaneParamsWidget->setLandfallRadius(radius);
 
-    selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
-    selectedHurricaneLayer->setName("Hurricane " + name);
-    selectedHurricaneLayer->setAutoFetchLegendInfos(true);
+    this->createHurricaneVisuals(selectedHurricane);
 
-    auto selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
+    auto allHurricanesLayer = hurricaneImportTool->getAllHurricanesLayer();
+
+    theVisualizationWidget->setLayerVisibility(allHurricanesLayer->layerId(), false);
+    theVisualizationWidget->clearSelection();
+}
+
+
+void HurricaneSelectionWidget::createHurricaneVisuals(HurricaneObject* hurricane)
+{
+
+    auto progressDialog = WorkflowAppR2D::getProgressDialog();
+
+    // Get the hurricane description
+    auto name = hurricane->name;
+    auto landfallData = hurricane->landfallData;
+
+    if(selectedHurricaneLayer == nullptr)
+    {
+        selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
+        selectedHurricaneLayer->setName("Hurricane " + name);
+        selectedHurricaneLayer->setAutoFetchLegendInfos(true);
+
+        selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
+    }
 
     // Track
     QString err;
-    auto res = hurricaneImportTool->createTrackVisualization(selectedHurricane,selectedHurricaneItem,selectedHurricaneLayer, err);
+    auto res = hurricaneImportTool->createTrackVisualization(hurricane,selectedHurricaneItem,selectedHurricaneLayer, err);
     if(res != 0)
     {
-        qDebug()<<err;
+        progressDialog->appendErrorMessage(err);
         return;
     }
 
     // Track points
-    auto res2 = hurricaneImportTool->createTrackPointsVisualization(selectedHurricane,selectedHurricaneItem, selectedHurricaneLayer,err);
+    auto res2 = hurricaneImportTool->createTrackPointsVisualization(hurricane,selectedHurricaneItem, selectedHurricaneLayer,err);
     if(res2 != 0)
     {
-        qDebug()<<err;
+        progressDialog->appendErrorMessage(err);
         return;
     }
+
+    auto lat = hurricane->getLatitudeAtLandfall();
+    auto lon = hurricane->getLongitudeAtLandfall();
 
     // Landfall
     if(!landfallData.empty())
     {
-        auto lfParams = selectedHurricane->parameterLabels;
+        auto lfParams = hurricane->parameterLabels;
 
         QMap<QString, QVariant> featureAttributes;
 
@@ -660,17 +720,18 @@ void HurricaneSelectionWidget::handleHurricaneSelect(void)
 
         hurricaneImportTool->createLandfallVisualization(lat,lon,featureAttributes, selectedHurricaneItem, selectedHurricaneLayer);
     }
-
-    auto allHurricanesLayer = hurricaneImportTool->getAllHurricanesLayer();
-
-    theVisualizationWidget->setLayerVisibility(allHurricanesLayer->layerId(), false);
-    theVisualizationWidget->clearSelection();
 }
 
 
 void HurricaneSelectionWidget::showGridOnMap(void)
 {
     mapViewSubWidget->addGridToScene();
+}
+
+
+void HurricaneSelectionWidget::showPointOnMap(void)
+{
+    mapViewSubWidget->addPointToScene();
 }
 
 
@@ -696,6 +757,7 @@ void HurricaneSelectionWidget::handleGridSelected(void)
     tableFields.append(Field::createText("Station Name", "NULL",4));
     tableFields.append(Field::createText("Latitude", "NULL",8));
     tableFields.append(Field::createText("Longitude", "NULL",9));
+    tableFields.append(Field::createText("Peak Wind Speeds", "NULL",9));
 
     auto gridFeatureCollection = new FeatureCollection(this);
 
@@ -704,6 +766,7 @@ void HurricaneSelectionWidget::handleGridSelected(void)
     gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
 
     gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+    gridLayer->setAutoFetchLegendInfos(true);
     gridLayer->setName("Windfield");
 
     // Create red cross SimpleMarkerSymbol
@@ -711,6 +774,7 @@ void HurricaneSelectionWidget::handleGridSelected(void)
 
     // Create renderer and set symbol to crossSymbol
     SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+    renderer->setLabel("Windfield Grid Point");
 
     // Set the renderer for the feature layer
     gridFeatureCollectionTable->setRenderer(renderer);
@@ -723,13 +787,15 @@ void HurricaneSelectionWidget::handleGridSelected(void)
         auto gridNode = gridNodeVec.at(i);
 
         // The station id
-        auto stationName = QString::number(i);
+        auto stationName = QString::number(i+1);
 
         auto screenPoint = gridNode->getPoint();
 
         // The latitude and longitude
         auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint);
         auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint);
+
+        WindFieldStation station(stationName,latitude,longitude);
 
         // create the feature attributes
         QMap<QString, QVariant> featureAttributes;
@@ -738,10 +804,13 @@ void HurricaneSelectionWidget::handleGridSelected(void)
         featureAttributes.insert("TabName", "Wind Field Grid Point");
         featureAttributes.insert("Latitude", latitude);
         featureAttributes.insert("Longitude", longitude);
+        featureAttributes.insert("Peak Wind Speeds", "N/A");
 
         // Create the point and add it to the feature table
         Point point(longitude,latitude);
         Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+
+        station.setStationFeature(feature);
 
         gridFeatureCollectionTable->addFeature(feature);
 
@@ -749,6 +818,10 @@ void HurricaneSelectionWidget::handleGridSelected(void)
         stationRow.push_back(stationName);
         stationRow.push_back(QString::number(latitude));
         stationRow.push_back(QString::number(longitude));
+
+        stationMap.insert(stationName,station);
+
+        gridData.push_back(stationRow);
     }
 
 
@@ -756,13 +829,13 @@ void HurricaneSelectionWidget::handleGridSelected(void)
     LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
 
     // Check if there is a 'User Ground Motions' root item in the tree
-    auto hurricaneGridItem = layersTreeView->getTreeItem("Hurricanes", nullptr);
+    auto hurricaneMainItem = layersTreeView->getTreeItem("Hurricanes", nullptr);
 
     // If there is no item, create one
-    if(hurricaneGridItem == nullptr)
+    if(hurricaneMainItem == nullptr)
     {
         auto gridID = theVisualizationWidget->createUniqueID();
-        hurricaneGridItem = layersTreeView->addItemToTree("Hurricanes", gridID);
+        hurricaneMainItem = layersTreeView->addItemToTree("Hurricanes", gridID);
     }
 
     // Add the event layer to the layer tree
@@ -770,9 +843,56 @@ void HurricaneSelectionWidget::handleGridSelected(void)
     //    auto eventItem = layersTreeView->addItemToTree("Windfield Grid", eventID, hurricaneGridItem);
 
     // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(gridLayer,hurricaneGridItem);
+    theVisualizationWidget->addLayerToMap(gridLayer,hurricaneMainItem);
 
     mapViewSubWidget->removeGridFromScene();
+}
+
+
+void HurricaneSelectionWidget::handleLandfallPointSelected(void)
+{
+
+    // Create the objects needed to visualize the grid in the GIS
+    auto landfallPoint = mapViewSubWidget->getPoint();
+
+    if(!landfallPoint->isVisible())
+        return;
+
+    // Get the vector of grid nodes
+    auto posNodeVec = landfallPoint->pos();
+
+    if(posNodeVec.isNull())
+        return;
+
+    // The latitude and longitude
+    auto longitude = theVisualizationWidget->getLongFromScreenPoint(posNodeVec);
+    auto latitude = theVisualizationWidget->getLatFromScreenPoint(posNodeVec);
+
+    hurricaneParamsWidget->setLandfallLat(latitude);
+    hurricaneParamsWidget->setLandfallLon(longitude);
+
+    // create the feature attributes
+    QMap<QString, QVariant> featureAttributes;
+    featureAttributes.insert("Station Name", "Landfall");
+    featureAttributes.insert("AssetType", "LandfallPoint");
+    featureAttributes.insert("TabName", "Landfall Point");
+    featureAttributes.insert("Latitude", latitude);
+    featureAttributes.insert("Longitude", longitude);
+
+
+    // Create a new hurricane layer
+    if(selectedHurricaneLayer == nullptr)
+    {
+        selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
+        selectedHurricaneLayer->setName("User hurricane");
+        selectedHurricaneLayer->setAutoFetchLegendInfos(true);
+
+        selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
+    }
+
+    landfallItem = hurricaneImportTool->createLandfallVisualization(latitude,longitude,featureAttributes, selectedHurricaneItem,selectedHurricaneLayer);
+
+    mapViewSubWidget->removePointFromScene();
 }
 
 
@@ -782,27 +902,485 @@ void HurricaneSelectionWidget::clearGridFromMap(void)
     {
         LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
         layersTreeView->removeItemFromTree(gridLayer->layerId());
+
+        delete gridLayer;
+        gridLayer = nullptr;
     }
 
+    stationMap.clear();
     gridData.clear();
     mapViewSubWidget->removeGridFromScene();
 }
 
 
-Esri::ArcGISRuntime::SimpleRenderer* HurricaneSelectionWidget::createSelectedHurricaneTrackRenderer(void)
+void HurricaneSelectionWidget::clearPointFromMap(void)
 {
+    if(landfallItem)
+    {
+        LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
+        auto res = layersTreeView->removeItemFromTree(landfallItem->getItemID());
 
-    // Create line symbol for the track
-    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid,
-                                                        QColor(225, 255, 0, 200),
-                                                        2.0f /*width*/,
-                                                        SimpleLineSymbolMarkerStyle::Arrow,
-                                                        SimpleLineSymbolMarkerPlacement::End,
-                                                        this);
+        if(res == false)
+            qDebug()<<"Error removing landfall item from tree";
 
-    // Create renderer and set symbol for the track
-    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
-    lineRenderer->setLabel("Hurricane track");
+        landfallItem = nullptr;
 
-    return lineRenderer;
+        hurricaneParamsWidget->setLandfallLat(0.0);
+        hurricaneParamsWidget->setLandfallLon(0.0);
+    }
+
+    mapViewSubWidget->removePointFromScene();
+}
+
+
+void HurricaneSelectionWidget::runHazardSimulation(void)
+{
+    auto progressDialog = WorkflowAppR2D::getProgressDialog();
+
+    progressDialog->showDialog(true);
+
+    QString workingDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
+
+    if(workingDir.isEmpty())
+    {
+        QString errorMessage = QString("Set the Local Jobs Directory location in preferences.");
+
+        progressDialog->appendErrorMessage(errorMessage);
+
+        return;
+    }
+
+    // Make a hurricanes folder under hazard simulation
+    workingDir += QDir::separator() + QString("HazardSimulation") + QDir::separator() + QString("Hurricanes");
+
+    QDir dirWork(workingDir);
+
+    if (!dirWork.exists())
+        if (!dirWork.mkpath(workingDir))
+        {
+            QString errorMessage = QString("Could not load the Working Directory: ") + workingDir
+                    + QString(". Change the Local Jobs Directory location in preferences.");
+
+            progressDialog->appendErrorMessage(errorMessage);
+
+            return;
+        }
+
+
+    if(gridData.size()<2)
+    {
+        QString msg = "Specify a site grid before continuing";
+        progressDialog->appendText(msg);
+        return;
+    }
+
+    QJsonObject configFile;
+
+    // Get the output directory path
+    QString outputDir = workingDir + QDir::separator() + "Output";
+
+    // Get the input directory path
+    QString inputDir = workingDir + QDir::separator() + "Input";
+
+    // Delete and create a new output directory
+    QDir dirOutput(outputDir);
+
+    if(dirOutput.exists())
+        dirOutput.removeRecursively();
+
+    if (!dirOutput.mkpath(outputDir))
+    {
+        QString errorMessage = QString("Could not create the output Directory: ") + outputDir;
+        progressDialog->appendErrorMessage(errorMessage);
+        return;
+    }
+
+    // Delete and create a new input directory
+    QDir dirInput(inputDir);
+
+    if(dirInput.exists())
+        dirInput.removeRecursively();
+
+    if (!dirInput.mkpath(inputDir))
+    {
+        QString errorMessage = QString("Could not create the input Directory: ") + inputDir;
+        progressDialog->appendErrorMessage(errorMessage);
+        return;
+    }
+
+    // Directory json object
+    QJsonObject dirObj;
+    dirObj.insert("Work",workingDir);
+    dirObj.insert("Input",inputDir);
+    dirObj.insert("Output",outputDir);
+
+    configFile.insert("Directory",dirObj);
+
+    int maxID = siteConfig->siteGrid().getNumSites();
+
+    QJsonObject siteObj;
+    siteObj.insert("Type", "From_CSV");
+    siteObj.insert("input_file", "SiteFile.csv");
+    siteObj.insert("min_ID", 1);
+    siteObj.insert("max_ID", maxID);
+
+    configFile.insert("Site",siteObj);
+
+    QJsonObject scenarioObj;
+    scenarioObj.insert("Type", "Wind");
+    scenarioObj.insert("Number", 1);
+    scenarioObj.insert("ModelType", "LinearAnalytical");
+
+    QJsonObject stormObj;
+
+    auto currHurrType = typeOfScenarioWidget->currentWidget();
+    if(currHurrType == selectHurricaneWidget)
+    {
+        scenarioObj.insert("Generator", "SimulationHist");
+
+        auto hurrName = selectedHurricaneName->text();
+        auto hurrSeason = selectedHurricaneSeason->text().toInt();
+
+        stormObj.insert("Name",hurrName);
+        stormObj.insert("Year",hurrSeason);
+    }
+    else if(currHurrType == specifyHurricaneWidget)
+    {
+        scenarioObj.insert("Generator", "Simulation");
+
+        auto pathTrackFile = trackLineEdit->text();
+        stormObj.insert("Track", pathTrackFile);
+
+        stormObj.insert("TrackSimu", pathTrackFile);
+
+        QJsonObject landfallObj = hurricaneParamsWidget->getLandfallParamsJson();
+
+        stormObj.insert("Landfall",landfallObj);
+
+        auto pathTerrainFile = terrainLineEdit->text();
+        scenarioObj.insert("Terrain", pathTerrainFile);
+    }
+
+    // stormObject.insert("TrackSimu",);
+
+    scenarioObj.insert("Storm",stormObj);
+
+    QJsonObject meshObj;
+    meshObj.insert("DivRad", 10000.0);
+    meshObj.insert("DivDeg", 1.0);
+
+    scenarioObj.insert("Mesh",meshObj);
+
+    configFile.insert("Scenario",scenarioObj);
+
+    QJsonObject eventObj = hurricaneParamsWidget->getEventJson();
+
+    int numPerSite = numIMsLineEdit->text().toInt();
+    eventObj.insert("NumberPerSite",numPerSite);
+
+    configFile.insert("Event",eventObj);
+
+
+    // Now save the site grid .csv file
+    QString pathToSiteLocationFile = inputDir + QDir::separator() + "SiteFile.csv";
+
+    CSVReaderWriter csvTool;
+    QString err;
+    auto res = csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err);
+
+    if(res != 0)
+    {
+        progressDialog->appendErrorMessage(err);
+        return;
+    }
+
+
+    // Hazard sim config file
+    QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
+
+    QString pathToConfigFile = inputDir + QDir::separator() + "HurricaneHazardConfiguration.json";
+
+    QFile file(pathToConfigFile);
+
+    if(!file.open(QIODevice::WriteOnly))
+    {
+        file.close();
+    }
+    else
+    {
+        QTextStream out(&file); out << strFromObj;
+        file.close();
+    }
+
+    // Get the path to the Python
+    auto pythonPath = SimCenterPreferences::getInstance()->getPython();
+
+    // TODO: make this a relative link once we figure out the folder structure
+    auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/SimCenterBackEndKuanshi/applications/performRegionalEventSimulation/regionalWindField/HurricaneSimulation.py";
+    // auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
+    //    QString pathToHazardSimScript = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+    //            + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
+    //            + "regionalWindField" + QDir::separator() + "HurricaneSimulation.py";
+
+    QFileInfo hazardFileInfo(pathToHazardSimScript);
+    if (!hazardFileInfo.exists()) {
+        QString errorMessage = QString("ERROR - hazardApp does not exist") + pathToHazardSimScript;
+        emit sendErrorMessage(errorMessage);
+        qDebug() << errorMessage;
+        return;
+    }
+    QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
+
+    qDebug()<<"Hazard Simulation Command:"<<args[0]<<" "<<args[1]<<" "<<args[2];
+
+    process->start(pythonPath, args);
+    process->waitForStarted();
+}
+
+
+void HurricaneSelectionWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    auto progressDialog = WorkflowAppR2D::getProgressDialog();
+
+    this->runButton->setEnabled(true);
+
+    if(exitStatus == QProcess::ExitStatus::CrashExit)
+    {
+        QString errText("Error, the process running the hazard simulation script crashed");
+        progressDialog->appendErrorMessage(errText);
+        progressDialog->hideProgressBar();
+
+        return;
+    }
+
+    if(exitCode != 0)
+    {
+        QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
+        progressDialog->appendErrorMessage(errText);
+        progressDialog->hideProgressBar();
+
+        return;
+    }
+
+    progressDialog->appendText("Hazard Simulation Complete!");
+
+    this->loadResults();
+}
+
+
+void HurricaneSelectionWidget::handleProcessStarted(void)
+{
+    auto progressDialog = WorkflowAppR2D::getProgressDialog();
+
+    progressDialog->appendText("Running script in the background");
+    this->runButton->setEnabled(false);
+}
+
+
+void HurricaneSelectionWidget::handleProcessTextOutput(void)
+{
+    auto progressDialog = WorkflowAppR2D::getProgressDialog();
+
+    QByteArray output = process->readAllStandardOutput();
+
+    progressDialog->appendText(QString(output));
+}
+
+
+int HurricaneSelectionWidget::loadResults(void)
+{
+    auto progressDialog = WorkflowAppR2D::getProgressDialog();
+
+    progressDialog->appendText("Loading windfield results");
+
+    QString outputDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
+
+    // Make a hurricanes folder under hazard simulation
+    outputDir += QDir::separator() + QString("HazardSimulation") + QDir::separator() + QString("Hurricanes") + QDir::separator() + "Output";
+
+    // Delete and create a new output directory
+    QDir dirOutput(outputDir);
+
+    if(!dirOutput.exists())
+    {
+        progressDialog->appendErrorMessage("Output directory: " + outputDir + " - does not exist");
+        return -1;
+    }
+
+    QString resultsPath = outputDir + QDir::separator() + "EventGrid.csv";
+
+    QFile resultsFile(resultsPath);
+
+    if(!resultsFile.exists())
+    {
+        progressDialog->appendErrorMessage("The results file does not exist: " + resultsPath);
+        return -1;
+    }
+
+    QStringList acceptableFileExtensions = {"*.CSV", "*.csv"};
+
+    QStringList inputFiles = dirOutput.entryList(acceptableFileExtensions,QDir::Files);
+
+    if(inputFiles.empty())
+    {
+        progressDialog->appendErrorMessage("No files with .csv extensions were found at the path: "+outputDir);
+        return -1;
+    }
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(resultsPath,err);
+
+    if(!err.isEmpty())
+    {
+        progressDialog->appendErrorMessage(err);
+        return -1;
+    }
+
+    if(data.empty())
+        return -1;
+
+    auto headerFields = data.front();
+
+    auto stationIndex = headerFields.indexOf("Station");
+    auto latIndex = headerFields.indexOf("Latitude");
+    auto lonIndex = headerFields.indexOf("Longitude");
+
+    if(stationIndex == -1 || latIndex == -1 || lonIndex == -1)
+    {
+        progressDialog->appendErrorMessage("Could not find the requires indexes for station name, lat, and lon");
+        return -1;
+    }
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+
+        auto vecValues = data.at(i);
+
+        if(vecValues.size() != 3)
+        {
+            progressDialog->appendErrorMessage("Error in importing ground motions");
+            return -1;
+        }
+
+        auto stationName = vecValues[stationIndex].remove(".csv");
+
+        auto stationPath = outputDir + QDir::separator() + stationName + ".csv";
+
+        // Find the station in the map
+        auto station = stationMap.find(stationName);
+
+        if(station->isNull())
+        {
+            progressDialog->appendErrorMessage("Error, could not find the station in the map");
+            return -1;
+        }
+
+        station->setStationFilePath(stationPath);
+
+        try {
+            station->importWindFieldStation();
+        } catch (const QString& err) {
+            progressDialog->appendErrorMessage(err);
+            return -1;
+        }
+
+        auto pws = station->getPeakWindSpeeds();
+
+        QString pwsStr;
+        for(int i = 0; i<pws.size()-1; ++i)
+        {
+            pwsStr += QString::number(pws[i]) + ", ";
+        }
+
+        pwsStr += QString::number(pws.back());
+
+        auto attribute = "Peak Wind Speeds";
+
+        station->updateFeatureAttribute(attribute,QVariant(pwsStr));
+    }
+
+
+    progressDialog->appendText("Done loading results");
+
+    return 0;
+}
+
+
+void HurricaneSelectionWidget::handleHurricaneTrackImport(void)
+{
+    QFileDialog dialog(this);
+    QString trackFilePath = QFileDialog::getOpenFileName(this,tr("Hurricane track file (.csv)"),QString(),QString("*.csv"));
+    dialog.close();
+
+    auto oldTrackFilePath = trackLineEdit->text();
+
+    // Return if the user cancels or enters same file
+    if(trackFilePath.isEmpty() || trackFilePath == oldTrackFilePath)
+    {
+        return;
+    }
+
+    trackLineEdit->setText(trackFilePath);
+
+    auto progressDialog = WorkflowAppR2D::getProgressDialog();
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(trackFilePath,err);
+
+    if(!err.isEmpty())
+    {
+        progressDialog->appendErrorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    HurricaneObject hurricaneObj;
+
+    QStringList parameterLabels = {"LAT","LON"};
+
+    hurricaneObj.parameterLabels = parameterLabels;
+
+    for(auto&& it : data)
+    {
+        if(it.size() != 2)
+        {
+            return;
+        }
+
+        hurricaneObj.push_back(it);
+    }
+
+    this->createHurricaneVisuals(&hurricaneObj);
+
+    theVisualizationWidget->zoomToLayer(selectedHurricaneLayer->layerId());
+}
+
+
+void HurricaneSelectionWidget::handleTerrainImport(void)
+{
+    QFileDialog dialog(this);
+    QString terrainPath = QFileDialog::getOpenFileName(this,tr("Terrain file (.geojson)"),QString(),QString("*.geojson"));
+    dialog.close();
+
+    auto oldTerrainPath = terrainLineEdit->text();
+
+    // Return if the user cancels or enters same file
+    if(terrainPath.isEmpty() || terrainPath == oldTerrainPath)
+    {
+        return;
+    }
+
+    terrainLineEdit->setText(terrainPath);
 }

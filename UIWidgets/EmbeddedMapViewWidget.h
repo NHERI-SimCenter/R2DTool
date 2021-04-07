@@ -39,13 +39,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "RectangleGrid.h"
+#include "NodeHandle.h"
 
 #include <QObject>
 #include <QWidget>
 
 class SimCenterMapGraphicsView;
 class RectangleGrid;
-
 class QGraphicsSimpleTextItem;
 class QVBoxLayout;
 
@@ -56,15 +56,17 @@ public:
     EmbeddedMapViewWidget(QWidget* parent);
 
     RectangleGrid* getGrid(void);
+    NodeHandle* getPoint(void);
 
     virtual void setCurrentlyViewable(bool status);
 
 public slots:
 
-//    void resizeParent(QRectF rect);
-
     void addGridToScene(void);
     void removeGridFromScene(void);
+
+    void addPointToScene(void);
+    void removePointFromScene(void);
 
 protected:
 
@@ -80,7 +82,8 @@ protected:
     void closeEvent(QCloseEvent *event) override;
     QVBoxLayout *theViewLayout;
     QGraphicsSimpleTextItem* displayText;
-    std::unique_ptr<RectangleGrid> grid;
+    std::unique_ptr<RectangleGrid> grid; 
+    std::unique_ptr<NodeHandle> point;
     SimCenterMapGraphicsView *theNewView;
 };
 

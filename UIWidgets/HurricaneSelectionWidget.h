@@ -41,9 +41,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 #include "EmbeddedMapViewWidget.h"
 #include "HurricanePreprocessor.h"
+#include "WindFieldStation.h"
 
 #include <memory>
 
+#include <QProcess>
 #include <QMap>
 
 class VisualizationWidget;
@@ -56,6 +58,7 @@ class QLineEdit;
 class QProgressBar;
 class QPushButton;
 class QLabel;
+class QProcess;
 
 namespace Esri
 {
@@ -87,18 +90,35 @@ public:
 
     void setCurrentlyViewable(bool status);
 
+    void createHurricaneVisuals(HurricaneObject* hurricane);
+
 public slots:
 
     void showHurricaneSelectDialog(void);
 
+    // Handles the results when the user is finished
+    void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+    // Brings up the dialog and tells the user that the process has started
+    void handleProcessStarted(void);
+
+    // Displays the text output of the process in the dialog
+    void handleProcessTextOutput(void);
+
 private slots:
 
+    void runHazardSimulation(void);
     void handleHurricaneSelect(void);
+    void handleHurricaneTrackImport(void);
+    void handleTerrainImport(void);
     void loadHurricaneTrackData(void);
     void loadHurricaneButtonClicked(void);
     void showGridOnMap(void);
+    void showPointOnMap(void);
     void handleGridSelected(void);
+    void handleLandfallPointSelected(void);
     void clearGridFromMap(void);
+    void clearPointFromMap(void);
 
 signals:
     void loadingComplete(const bool value);
@@ -123,14 +143,19 @@ private:
     QProgressBar* progressBar;
     SiteConfig* siteConfig;
     SiteGrid* siteGrid;
+    QLineEdit* numIMsLineEdit;
 
     QStackedWidget* typeOfScenarioWidget;
     QWidget* selectHurricaneWidget;
     QWidget* specifyHurricaneWidget;
     QPushButton* loadDbButton;
+    QLineEdit* trackLineEdit;
+    QLineEdit* terrainLineEdit;
 
     QVector<QStringList> gridData;
     Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
+
+    QMap<QString,WindFieldStation> stationMap;
 
     Esri::ArcGISRuntime::Feature* selectedHurricaneFeature;
     Esri::ArcGISRuntime::FeatureCollectionLayer* trackLayer;
@@ -138,9 +163,13 @@ private:
     Esri::ArcGISRuntime::FeatureCollectionTable* trackPntsTable;
     Esri::ArcGISRuntime::FeatureCollectionLayer* trackPntsLayer;
     Esri::ArcGISRuntime::GroupLayer* selectedHurricaneLayer;
+    LayerTreeItem* selectedHurricaneItem;
+    LayerTreeItem* landfallItem;
 
-    Esri::ArcGISRuntime::SimpleRenderer* createSelectedHurricaneTrackRenderer(void);
+    QProcess* process;
+    QPushButton* runButton;
 
+    int loadResults(void);
 };
 
 #endif // HurricaneSelectionWidget_H

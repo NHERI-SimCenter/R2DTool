@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "EmbeddedMapViewWidget.h"
 #include "SimCenterMapGraphicsView.h"
-#include "NodeHandle.h"
 
 #include <QGraphicsSimpleTextItem>
 #include <QDebug>
@@ -46,6 +45,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 EmbeddedMapViewWidget::EmbeddedMapViewWidget(QWidget* parent) : QWidget(parent)
 {
     theViewLayout = new QVBoxLayout(this);
+    theViewLayout->setSpacing(0);
+    theViewLayout->setMargin(0);
 
     this->setAcceptDrops(true);
     this->setObjectName("MapSubwindow");
@@ -63,6 +64,8 @@ EmbeddedMapViewWidget::EmbeddedMapViewWidget(QWidget* parent) : QWidget(parent)
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     grid = std::make_unique<RectangleGrid>(theNewView);
+
+    point = std::make_unique<NodeHandle>();
 }
 
 
@@ -104,6 +107,12 @@ void EmbeddedMapViewWidget::addGridToScene(void)
 RectangleGrid* EmbeddedMapViewWidget::getGrid(void)
 {
     return grid.get();
+}
+
+
+NodeHandle* EmbeddedMapViewWidget::getPoint(void)
+{
+    return point.get();
 }
 
 
@@ -158,16 +167,30 @@ void EmbeddedMapViewWidget::closeEvent(QCloseEvent *event)
 }
 
 
-//void EmbeddedMapViewWidget::resizeParent(QRectF rect)
-//{
-//    auto width = rect.width();
-//    auto height = rect.height();
+void EmbeddedMapViewWidget::addPointToScene(void)
+{
+    auto scene = theNewView->scene();
 
-//    theNewView->setMaximumWidth(width);
-//    theNewView->setMaximumHeight(height);
+    auto sceneRect = scene->sceneRect();
 
-//    theNewView->resize(width,height);
-//}
+    auto centerScene = sceneRect.center();
+
+    // Set the initial grid size if it has not already been set
+    if(point->pos().isNull() )
+    {
+        point->setPos(centerScene.toPoint());
+
+        scene->addItem(point.get());
+    }
+
+    point->show();
+}
+
+
+void EmbeddedMapViewWidget::removePointFromScene(void)
+{
+    point->hide();
+}
 
 
 

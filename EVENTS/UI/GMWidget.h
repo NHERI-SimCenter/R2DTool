@@ -74,7 +74,8 @@ public:
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
-    void saveAppSettings();
+    void saveAppSettings(void);
+    void resetAppSettings(void);
     void setCurrentlyViewable(bool status);
 
 signals:

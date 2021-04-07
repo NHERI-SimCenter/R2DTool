@@ -110,7 +110,7 @@ public:
 
     QString getPathToComponentFile(void) const;
 
-    void clear(void);
+    virtual void clear(void);
 
     void setTheVisualizationWidget(VisualizationWidget *value);
 

@@ -25,6 +25,8 @@ public:
     int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
     Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
 
+    void clear();
+
 private:
 
     Esri::ArcGISRuntime::SimpleRenderer* createBuildingRenderer(void);

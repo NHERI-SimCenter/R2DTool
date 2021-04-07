@@ -200,7 +200,7 @@ void LayerTreeView::removeLayer(const QString& layerID)
 
 bool LayerTreeView::removeItemFromTree(const QString& itemID)
 {
-    this->removeLayer(itemID);
+//    this->removeLayer(itemID);
 
     return layersModel->removeItemFromTree(itemID);
 }

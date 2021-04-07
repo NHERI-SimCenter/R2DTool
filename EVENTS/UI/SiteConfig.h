@@ -27,9 +27,9 @@ public slots:
     void setType(const SiteType &type);
 
 private:
-    Site m_site;
-    SiteGrid m_siteGrid;
-    SiteType m_type;
+    Site theSite;
+    SiteGrid theSiteGrid;
+    SiteType theType;
 
     // JsonSerializable interface
 public:

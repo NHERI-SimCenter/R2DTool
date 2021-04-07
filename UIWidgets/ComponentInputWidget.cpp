@@ -453,6 +453,13 @@ void ComponentInputWidget::handleComponentSelection(void)
 
     auto selecFeatLayer = this->getSelectedFeatureLayer();
 
+    if(selecFeatLayer == nullptr)
+    {
+        QString err = "Error in getting the selected feature layer";
+        qDebug()<<err;
+        return;
+    }
+
     theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
 
     //this->userMessageDialog(msg);

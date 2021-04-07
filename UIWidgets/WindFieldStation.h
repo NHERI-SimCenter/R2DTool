@@ -1,6 +1,5 @@
-#ifndef GMAPPCONFIGWIDGET_H
-#define GMAPPCONFIGWIDGET_H
-
+#ifndef WindFieldStation_H
+#define WindFieldStation_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,41 +38,72 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
+#include <QVector>
+#include <QVariant>
 
-class GmAppConfig;
-class QLineEdit;
-class QPushButton;
-class GMWidget;
-
-class GmAppConfigWidget : public QWidget
+namespace Esri
 {
-    Q_OBJECT
+namespace ArcGISRuntime
+{
+class Feature;
+}
+}
+
+class WindFieldStation
+{
 public:
-    explicit GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent = nullptr);
+    WindFieldStation(QString name, double lat, double lon);
 
-signals:
+    bool isNull(){return stationName.isEmpty();}
 
-public slots:
+    double getLatitude() const;
 
-    void saveConfig(void);
-    void resetConfig(void);
+    double getLongitude() const;
+
+    QString getStationFilePath() const;
+    void setStationFilePath(const QString &value);
+
+    void importWindFieldStation(void);
+
+    // Function to convert a QString and QVariant to double
+    // Throws an error exception if conversion fails
+    template <typename T>
+    auto objectToDouble(T obj)
+    {
+        // Assume a zero value if the string is empty
+        if(obj.isNull())
+            return 0.0;
+
+        bool OK;
+        auto val = obj.toDouble(&OK);
+
+        if(!OK)
+            throw QString("Could not convert the object to a double");
+
+        return val;
+    }
+
+    QVector<double> getPeakWindSpeeds() const;
+
+    Esri::ArcGISRuntime::Feature *getStationFeature() const;
+    void setStationFeature(Esri::ArcGISRuntime::Feature *value);
+
+    int updateFeatureAttribute(const QString& attribute, const QVariant& value);
 
 private:
-    GmAppConfig* appConfig;
-    GMWidget* parentWidget;
-    QLineEdit* workDirectoryBox;
-    QPushButton* workDirectoryButton;
-    QLineEdit* inputDirectoryBox;
-    QPushButton* inputDirectoryButton;
-    QLineEdit* outputDirectoryBox;
-    QPushButton* outputDirectoryButton;
-    QPushButton* closeButton;
-    QPushButton* resetButton;
-    //    QLineEdit* usernameBox;
-    //    QLineEdit* passwordBox;
 
-    void setupConnections();
+    QString stationFilePath;
+
+    QString stationName;
+
+    double latitude;
+
+    double longitude;
+
+    QVector<double> peakWindSpeeds;
+
+    Esri::ArcGISRuntime::Feature* stationFeature;
+
 };
 
-#endif // GMAPPCONFIGWIDGET_H
+#endif // WindFieldStation_H

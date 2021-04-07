@@ -232,8 +232,6 @@ void GMWidget::initAppConfig()
 
     m_appConfig = new GmAppConfig(this);
 
-    //    auto regMapWidget = WorkflowAppR2D::getInstance()->getTheRegionalMappingWidget();
-    //    connect(m_appConfig,&GmAppConfig::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 
     //First, We will look into settings
     QSettings settings;
@@ -271,7 +269,10 @@ void GMWidget::initAppConfig()
                 return;
             }
 
-        m_appConfig->setWorkDirectoryPath(workingDir+"/HazardSimulation/");
+        // Store data in a ground motions folder under hazard simulation
+        workingDir += QDir::separator() + QString("HazardSimulation") + QDir::separator() + QString("GroundMotions");
+
+        m_appConfig->setWorkDirectoryPath(workingDir);
 
     }
 
@@ -302,7 +303,9 @@ void GMWidget::initAppConfig()
                 return;
             }
 
-        m_appConfig->setInputFilePath(workingDir+"/HazardSimulation/Input/");
+        QString inputFilePath = workingDir + QDir::separator() + "HazardSimulation" +  QDir::separator() + "GroundMotions" +  QDir::separator() +  "Input";
+
+        m_appConfig->setInputFilePath(inputFilePath);
 
     }
 
@@ -333,13 +336,15 @@ void GMWidget::initAppConfig()
                 return;
             }
 
-        m_appConfig->setOutputFilePath(workingDir+"/HazardSimulation/Output/");
+        QString outputFilePath = workingDir + QDir::separator() + "HazardSimulation" +  QDir::separator() + "GroundMotions" +  QDir::separator() +  "Output";
+
+        m_appConfig->setOutputFilePath(outputFilePath);
     }
 
 }
 
 
-void GMWidget::saveAppSettings()
+void GMWidget::saveAppSettings(void)
 {
     QSettings settings;
     settings.setValue("WorkingDirectoryPath", m_appConfig->getWorkDirectoryPath());
@@ -347,6 +352,17 @@ void GMWidget::saveAppSettings()
     settings.setValue("OutputFilePath", m_appConfig->getOutputDirectoryPath());
     settings.setValue("RDBUsername", m_appConfig->getUsername());
     settings.setValue("RDBPassword", m_appConfig->getPassword());
+}
+
+
+void GMWidget::resetAppSettings(void)
+{
+    QSettings settings;
+    settings.setValue("WorkingDirectoryPath", "");
+    settings.setValue("InputFilePath", "");
+    settings.setValue("OutputFilePath", "");
+    settings.setValue("RDBUsername", "");
+    settings.setValue("RDBPassword","");
 }
 
 
@@ -540,7 +556,7 @@ void GMWidget::runHazardSimulation(void)
         }
     }
 
-    QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + "SiteFile.csv";
+    QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "SiteFile.csv";
 
     CSVReaderWriter csvTool;
 
@@ -555,7 +571,7 @@ void GMWidget::runHazardSimulation(void)
     QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
 
     // Hazard sim
-    QString pathToConfigFile = m_appConfig->getInputDirectoryPath() + "EQHazardConfiguration.json";
+    QString pathToConfigFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "EQHazardConfiguration.json";
 
     QFile file(pathToConfigFile);
 
