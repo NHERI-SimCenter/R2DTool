@@ -9,7 +9,7 @@ class quoFEM(ConanFile):
     description = "NHERI SimCenter R2D Tool"
     settings = "os", "compiler", "build_type", "arch"
     generators = "qmake"
-    requires = "jansson/2.11@bincrafters/stable", \
+    requires = "jansson/2.13.1", \
                "zlib/1.2.11", \
                "libcurl/7.64.1"
     build_policy = "missing"
