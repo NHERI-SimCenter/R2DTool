@@ -6,12 +6,12 @@ E5 - Ground Shaking and Liquefaction
 | Download files  | :github:`Download <Examples/E5GroundShakingAndLiquefaction/>`   |
 +-----------------+-----------------------------------------------------------------+
 
-This example presents a coupled damage assessment for ground shaking and liquefaction hazards. To infer liquefaction, estimates of horizontal spreading and vertical settlement are generated from PGA values obtained through PSHA. These three intensity measures form the basis of input to a building-level, HAZUS-based damage and loss assessment that accounts for potential collapses due to liquefaction. Approximately 14,000 buildings are considered in the city of Alameda, CA.
+This example presents a coupled damage assessment for ground shaking and liquefaction hazards. To infer liquefaction, estimates of horizontal spreading and vertical settlement are generated from PGA values obtained through PSHA. These three intensity measures form the basis of input to a building-level, HAZUS-based damage and loss assessment that accounts for potential collapses due to liquefaction.
 
 
 #. **VIZ** This example shows simulation for pseudo earthquake scenarios in Bay Area. The damage and loss of a sample of buildings in the Alameda County due to the soil liquefaction are estimated.  The results presented herein are only for demonstrating the use of R2DTool and do not serve as an accurate representation of the real losses.
 
-   .. figure:: figures/r2dt-0002-VIZ.png
+   .. figure:: figures/r2dt-0002.png
       :width: 600px
       :align: center
 
@@ -57,15 +57,8 @@ This example presents a coupled damage assessment for ground shaking and liquefa
       :width: 600px
       :align: center
 
-#. **UQ**
 
-   .. figure:: figures/r2dt-0002-UQ.png
-      :width: 600px
-      :align: center
-
-#. **RV**
-
-   The random variable panel will be left empty for this example.
+#. **UQ/RV** The random variable and uncertianty panels will be left empty for this example.
 
 #. **RES** The analysis outputs for the selected 20 buildings are show in the figure below. The buildings may experience severe damage states (Damage State 3 or 4 per HAZUS). The repair costs range from 3% to 7% of the total replacement costs, and the repair time range from 9 to more than 20 days.
 
