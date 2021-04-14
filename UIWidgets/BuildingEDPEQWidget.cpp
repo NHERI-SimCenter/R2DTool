@@ -116,7 +116,7 @@ bool BuildingEDPEQWidget::inputFromJSON(QJsonObject &jsonObject)
     }
     else
     {
-        emit sendErrorMessage("EDP_SElection no current EDP selected");
+        this->errorMessage("EDP_SElection no current EDP selected");
     }
 
     return false;
@@ -167,7 +167,7 @@ bool BuildingEDPEQWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     }
     else
     {
-        emit sendErrorMessage(" BuildingEDPEQWidget - no Application key found");
+        this->errorMessage(" BuildingEDPEQWidget - no Application key found");
         return false;
     }
 
@@ -184,7 +184,7 @@ bool BuildingEDPEQWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     }
     else
     {
-        emit sendErrorMessage(" BuildingEDPEQWidget - no valid type found");
+        this->errorMessage(" BuildingEDPEQWidget - no valid type found");
         return false;
     }
 

@@ -57,6 +57,7 @@ class MapGraphicsView;
 class Feature;
 class FeatureTable;
 class FeatureLayer;
+class GraphicsOverlay;
 class FeatureCollectionLayer;
 class FeatureCollectionTable;
 class FeatureCollection;
@@ -67,23 +68,15 @@ class SimpleRenderer;
 class GroupLayer;
 class KmlLayer;
 class Layer;
+class Point;
 enum class LoadStatus;
 class ArcGISMapImageLayer;
 class RasterLayer;
-//class RoleProxyModel;
-
-//Convex hull stuff
-class GraphicsOverlay;
-class SimpleMarkerSymbol;
-class Graphic;
-class Point;
-class SimpleLineSymbol;
-class SimpleFillSymbol;
-class MultipointBuilder;
-class Geometry;
 }
 }
 
+class ConvexHull;
+class PolygonBoundary;
 class ComponentInputWidget;
 class LayerTreeView;
 class LayerTreeItem;
@@ -104,11 +97,7 @@ public:
     explicit VisualizationWidget(QWidget* parent);
     virtual ~VisualizationWidget();
 
-    // Convex hull functionality
-    void setupConvexHullObjects();
-
-
-    Esri::ArcGISRuntime::MapGraphicsView* getMapViewWidget() const;
+    SimCenterMapGraphicsView* getMapViewWidget() const;
 
     void registerComponentWidget(const QString type, ComponentInputWidget* widget);
 
@@ -138,7 +127,7 @@ public:
     // Create a layer from a map server URL
     Esri::ArcGISRuntime::ArcGISMapImageLayer* createAndAddMapServerLayer(const QString& url, const QString& layerName, LayerTreeItem* parentItem);
 
-    Esri::ArcGISRuntime::Layer* findLayer(const QString& layerID);
+    Esri::ArcGISRuntime::Layer* getLayer(const QString& layerID);
 
     // Get the visualization widget
     QWidget *getVisWidget();
@@ -149,13 +138,14 @@ public:
 
     QPointF getScreenPointFromLatLong(const double& latitude, const double& longitude);
 
-    Esri::ArcGISRuntime::Map *getMapGIS() const;
+    Esri::ArcGISRuntime::Map *getMapGIS(void) const;
 
     LayerTreeItem* addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr, Esri::ArcGISRuntime::GroupLayer* groupLayer = nullptr);
 
     // Removes a given layer from the map
     bool removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer);
     void removeLayerFromMap(const QString layerID);
+    bool removeLayerFromMapAndTree(const QString layerID);
 
     LayerTreeView *getLayersTree() const;
 
@@ -171,11 +161,15 @@ public:
     void updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value);
 
     void setLegendView(GISLegendView* legndView);
-
     GISLegendView *getLegendView() const;
 
-    // User selected features
+    // Hides the map legend
+    void hideLegend(void);
+
+    // Clear the currently selected features (i.e., features highlighted by clicking on them)
     void clearSelection(void);
+
+    // Get the list of features that are currently selected (i.e., features highlighted by clicking on them)
     QList<Esri::ArcGISRuntime::Feature *> getSelectedFeaturesList() const;
 
     // Returns a rectangular geometry item of dimensions x and y around a center point
@@ -183,55 +177,59 @@ public:
 
     // Returns a geometry from the geojson format
     Esri::ArcGISRuntime::Geometry getGeometryFromJson(const QString& geoJson);
+    Esri::ArcGISRuntime::Geometry getGeometryFromJson(const QJsonArray& geoJson);
 
     // Programatically set the visibility of a layer
     void setLayerVisibility(const QString& layerID, const bool val);
 
+    // Returns a map containing the IDs of all asynchronous tasks
+    QMap<QUuid, QString>& getTaskIDMap(void);
+
+    // Returns the tool to select a polygon boundary
+    PolygonBoundary* getThePolygonBoundaryTool(void) const;
+
+    // Get the list of features saved from the latest query
+    QList<Esri::ArcGISRuntime::FeatureQueryResult *> getFeaturesFromQueryList() const;
 
 signals:
-    // Convex hull
-    void taskSelectionComplete();
+    // Emit a screen shot of the current GIS view
     void emitScreenshot(QImage img);
+    void taskSelectionComplete();
 
-public slots:
-    // Convex hull
+public slots:    
     void zoomToLayer(const QString layerID);
-    void plotConvexHull();
-    void getConvexHullInputs();
-    void resetConvexHull();
     void loadBuildingData(void);
     void loadPipelineData(void);
     void changeLayerOrder(const int from, const int to);
     void handleLayerChecked(LayerTreeItem* item);
     void handleOpacityChange(const QString& layerID, const double opacity);
+
     void exportImageComplete(QUuid id, QImage img);
     void onMouseClicked(QMouseEvent& mouseEvent);
     void onMouseClickedGlobal(QPoint pos);
     void setCurrentlyViewable(bool status);
     void handleLegendChange(const QString layerUID);
     void handleLegendChange(const Esri::ArcGISRuntime::Layer* layer);
+    void selectFeaturesForAnalysisQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
 
 private slots:
     void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);
-    void selectFeaturesForAnalysisQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
     void fieldQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
 
     void handleSelectFeatures(void);
-    void handleSelectFeaturesForAnalysis(void);
-    void handleAsyncSelectionTask(void);
     void handleAsyncLayerLoad(Esri::ArcGISRuntime::Error layerLoadStatus);
     void handleBasemapSelection(const QString selection);
     void handleFieldQuerySelection(void);
     void handleArcGISError(Esri::ArcGISRuntime::Error error);
-
-    // Convex hull stuff
-    void getItemsInConvexHull();
-    void convexHullPointSelector(QMouseEvent& e);
-
     void setLegendInfo();
 
     // Zooms the map to the extents of the data present in the visible map
     void zoomToExtents(void);
+
+    // Asset selection
+    void handleSelectAreaMap(void);
+    void handleClearSelectAreaMap(void);
+    void handleSelectFeaturesForAnalysis(void);
 
 private:
 
@@ -249,11 +247,10 @@ private:
     void runFieldQuery(const QString& fieldName, const QString& searchText);
 
     Esri::ArcGISRuntime::Map* mapGIS = nullptr;
-    //FMK Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
     SimCenterMapGraphicsView *mapViewWidget = nullptr;
     QVBoxLayout *mapViewLayout;
 
-    QList<Esri::ArcGISRuntime::FeatureQueryResult*>  featuresSelectedForAnalysisList;
+    QList<Esri::ArcGISRuntime::FeatureQueryResult*>  featuresFromQueryList;
     QList<Esri::ArcGISRuntime::FeatureQueryResult*>  fieldQueryFeaturesList;
 
     QMap<QUuid,QString> taskIDMap;
@@ -264,16 +261,6 @@ private:
 
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPipelineRenderer(void);
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPointRenderer(void);
-
-    // Create a graphic to display the convex hull selection
-    Esri::ArcGISRuntime::GraphicsOverlay* m_graphicsOverlay = nullptr;
-    Esri::ArcGISRuntime::SimpleMarkerSymbol* m_markerSymbol = nullptr;
-    Esri::ArcGISRuntime::Graphic* m_inputsGraphic = nullptr;
-    Esri::ArcGISRuntime::Graphic* m_convexHullGraphic = nullptr;
-    Esri::ArcGISRuntime::SimpleLineSymbol* m_lineSymbol = nullptr;
-    Esri::ArcGISRuntime::SimpleFillSymbol* m_fillSymbol = nullptr;
-    Esri::ArcGISRuntime::MultipointBuilder* m_multipointBuilder = nullptr;
-    bool selectingConvexHull;
 
     Esri::ArcGISRuntime::GroupLayer* selectedObjectsLayer = nullptr;
     LayerTreeItem* selectedObjectsTreeItem = nullptr;
@@ -290,6 +277,9 @@ private:
 
     Esri::ArcGISRuntime::GraphicsOverlay* selectedFeaturesOverlay = nullptr;
     QList<Esri::ArcGISRuntime::Feature*> selectedFeaturesList;
+
+    std::unique_ptr<ConvexHull> theConvexHullTool;
+    std::unique_ptr<PolygonBoundary> thePolygonBoundaryTool;
 };
 
 #endif // VISUALIZATIONWIDGET_H

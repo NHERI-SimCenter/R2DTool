@@ -263,7 +263,7 @@ void UserInputHurricaneWidget::loadHurricaneTrackData(void)
     auto res = hurricaneImportTool.loadHurricaneTrackData(eventFile,errMsg);
 
     if(res != 0)
-        this->userMessageDialog(errMsg);
+        this->statusMessage(errMsg);
 
     // Reset the widget back to the input pane and close
     theStackedWidget->setCurrentWidget(fileInputWidget);

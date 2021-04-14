@@ -50,7 +50,6 @@ class GMPEWidget;
 class GmAppConfig;
 class IntensityMeasure;
 class IntensityMeasureWidget;
-class PythonProgressDialog;
 class MapViewSubWidget;
 class RecordSelectionConfig;
 class RecordSelectionWidget;
@@ -142,8 +141,6 @@ private:
     bool downloadComplete;
     QStringList recordsListToDownload;
     QJsonObject NGA2Results;
-
-    PythonProgressDialog* progressDialog;
 };
 
 #endif // GMWIDGET_H

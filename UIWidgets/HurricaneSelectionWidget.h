@@ -59,6 +59,7 @@ class QProgressBar;
 class QPushButton;
 class QLabel;
 class QProcess;
+class QSpinBox;
 
 namespace Esri
 {
@@ -105,6 +106,11 @@ public slots:
     // Displays the text output of the process in the dialog
     void handleProcessTextOutput(void);
 
+    // Handle the area selection for track truncation
+    void handleSelectAreaMap(void);
+    void handleClearSelectAreaMap(void);
+    void handleAreaSelected(void);
+
 private slots:
 
     void runHazardSimulation(void);
@@ -118,7 +124,7 @@ private slots:
     void handleGridSelected(void);
     void handleLandfallPointSelected(void);
     void clearGridFromMap(void);
-    void clearPointFromMap(void);
+    void clearLandfallFromMap(void);
 
 signals:
     void loadingComplete(const bool value);
@@ -144,6 +150,8 @@ private:
     SiteConfig* siteConfig;
     SiteGrid* siteGrid;
     QLineEdit* numIMsLineEdit;
+    QSpinBox* divLatSpinBox;
+    QSpinBox* divLonSpinBox;
 
     QStackedWidget* typeOfScenarioWidget;
     QWidget* selectHurricaneWidget;
@@ -158,18 +166,18 @@ private:
     QMap<QString,WindFieldStation> stationMap;
 
     Esri::ArcGISRuntime::Feature* selectedHurricaneFeature;
-    Esri::ArcGISRuntime::FeatureCollectionLayer* trackLayer;
-    Esri::ArcGISRuntime::FeatureCollectionTable* trackTable;
-    Esri::ArcGISRuntime::FeatureCollectionTable* trackPntsTable;
-    Esri::ArcGISRuntime::FeatureCollectionLayer* trackPntsLayer;
     Esri::ArcGISRuntime::GroupLayer* selectedHurricaneLayer;
     LayerTreeItem* selectedHurricaneItem;
     LayerTreeItem* landfallItem;
+    LayerTreeItem* hurricaneTrackItem;
+    LayerTreeItem* hurricaneTrackPointsItem;
 
     QProcess* process;
     QPushButton* runButton;
 
     int loadResults(void);
+
+    HurricaneObject selectedHurricaneObj;
 };
 
 #endif // HurricaneSelectionWidget_H

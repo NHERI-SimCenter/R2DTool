@@ -305,7 +305,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
     if(!err.isEmpty())
     {
-        this->userMessageDialog(err);
+        this->errorMessage(err);
         return;
     }
 
@@ -379,7 +379,7 @@ void UserInputGMWidget::loadUserGMData(void)
         if(!ok)
         {
             QString errMsg = "Error longitude to a double, check the value";
-            this->userMessageDialog(errMsg);
+            this->errorMessage(errMsg);
 
             userGMStackedWidget->setCurrentWidget(fileInputWidget);
             progressBarWidget->setVisible(false);
@@ -392,7 +392,7 @@ void UserInputGMWidget::loadUserGMData(void)
         if(!ok)
         {
             QString errMsg = "Error latitude to a double, check the value";
-            this->userMessageDialog(errMsg);
+            this->errorMessage(errMsg);
 
             userGMStackedWidget->setCurrentWidget(fileInputWidget);
             progressBarWidget->setVisible(false);
@@ -411,7 +411,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
             auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
 
-            this->userMessageDialog(errorMessage);
+            this->errorMessage(errorMessage);
 
             userGMStackedWidget->setCurrentWidget(fileInputWidget);
             progressBarWidget->setVisible(false);
@@ -533,7 +533,7 @@ void UserInputGMWidget::chooseEventFileDialog(void)
 
     if(!err.isEmpty())
     {
-        this->userMessageDialog(err);
+        this->errorMessage(err);
         return;
     }
 

@@ -259,7 +259,7 @@ void ShakeMapWidget::loadShakeMapData(void)
         {
             QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
             qDebug() << errMsg;
-            this->userMessageDialog(errMsg);
+            this->errorMessage(errMsg);
             return;
         }
         else
@@ -301,7 +301,7 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     if (!inputDir.exists() || !inputDir.isDir())
     {
         QString errMsg ="A directory does not exist at the path: " + dir;
-        this->userMessageDialog(errMsg);
+        this->errorMessage(errMsg);
         return;
     }
 

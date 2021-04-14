@@ -126,14 +126,6 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
 
     // connect signals and slots - error messages and signals
-    //    connect(theGI,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    //    connect(theGI,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    //    connect(theGI,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
-    connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    connect(theRunWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theRunWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
     connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
@@ -194,12 +186,8 @@ void WorkflowAppR2D::initialize(void)
     theUQWidget = new UQWidget(this, theRVs);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
-    connect(theVisualizationWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    connect(theVisualizationWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theVisualizationWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
-
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -345,7 +333,7 @@ void WorkflowAppR2D::clear(void)
     theDamageAndLossWidget->clear();
     theResultsWidget->clear();
     theVisualizationWidget->clear();
-    progressDialog->clear();
+    // progressDialog->clear();
     theComponentSelection->displayComponent("VIZ");
 }
 
@@ -400,7 +388,7 @@ void WorkflowAppR2D::onRunButtonClicked() {
     theRunWidget->hide();
     theRunWidget->setMinimumWidth(this->width()*0.5);
 
-    progressDialog->showDialog(true);
+    progressDialog->setVisibility(true);
     progressDialog->showProgressBar();
     theRunWidget->showLocalApplication();
     GoogleAnalytics::ReportLocalRun();
@@ -514,7 +502,6 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     file.write(doc.toJson());
     file.close();
 
-
     statusMessage("Setup done. Now starting application.");
 
     emit setUpForApplicationRunDone(tmpDirectory, inputFile);
@@ -558,6 +545,9 @@ void WorkflowAppR2D::loadFile(const QString fileName){
 
     progressDialog->showProgressBar();
     QApplication::processEvents();
+
+    // Clear this before loading a new file
+    this->clear();
 
     this->inputFromJSON(jsonObj);
     progressDialog->hideProgressBar();
@@ -629,6 +619,6 @@ void WorkflowAppR2D::fatalMessage(QString message)
 
 void WorkflowAppR2D::runComplete()
 {
-    progressDialog->hideAfterElapsedTime(2);
+//    progressDialog->hideAfterElapsedTime(2);
 }
 

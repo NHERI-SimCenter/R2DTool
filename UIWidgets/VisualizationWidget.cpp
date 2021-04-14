@@ -44,6 +44,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeModel.h"
 #include "VisualizationWidget.h"
 #include "XMLAdaptor.h"
+#include "ConvexHull.h"
+#include "PolygonBoundary.h"
 
 // GIS headers
 #include "ArcGISMapImageLayer.h"
@@ -89,6 +91,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QFileInfo>
+#include <QJsonArray>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QToolButton>
@@ -116,8 +119,6 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
-
-    selectingConvexHull = false;
 
     setAcceptDrops(true);
     // Create the header layout and add it to the main layout
@@ -166,10 +167,8 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
 
     // Setup the various convex hull objects
-    setupConvexHullObjects();
-
-    // Handle the async. queries
-    connect(this, &VisualizationWidget::taskSelectionComplete, this, &VisualizationWidget::handleAsyncSelectionTask);
+    theConvexHullTool = std::make_unique<ConvexHull>(this);
+    thePolygonBoundaryTool  = std::make_unique<PolygonBoundary>(this);
 
     // Create the visualization widget and set it to the main layout
     this->createVisualizationWidget();
@@ -297,9 +296,6 @@ void VisualizationWidget::createVisualizationWidget(void)
     clearButton->setText(tr("Clear"));
     clearButton->setMaximumWidth(150);
 
-    connect(selectPointsButton,SIGNAL(clicked()),this,SLOT(getConvexHullInputs()));
-    connect(clearButton,SIGNAL(clicked()),this,SLOT(resetConvexHull()));
-
     QLabel* bottomText = new QLabel(visWidget);
     bottomText->setText("Click the 'Apply' button to\nselect the subset of assets");
     bottomText->setStyleSheet("font-weight: bold; color: black; text-align: center");
@@ -308,7 +304,10 @@ void VisualizationWidget::createVisualizationWidget(void)
     applyButton->setText(tr("Apply"));
     applyButton->setMaximumWidth(150);
 
-    connect(applyButton,SIGNAL(clicked()),this,SLOT(getItemsInConvexHull()));
+    connect(selectPointsButton,&QPushButton::clicked,this,&VisualizationWidget::handleSelectAreaMap);
+    connect(clearButton,&QPushButton::clicked,this,&VisualizationWidget::handleClearSelectAreaMap);
+    connect(applyButton,SIGNAL(clicked()),thePolygonBoundaryTool.get(),SLOT(getItemsInPolygonBoundary()));
+
 
     // Add a vertical spacer at the bottom to push everything up
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Maximum, QSizePolicy::Expanding);
@@ -372,113 +371,9 @@ void VisualizationWidget::createVisualizationWidget(void)
 }
 
 
-// Convex hull stuff
-void VisualizationWidget::plotConvexHull()
+PolygonBoundary* VisualizationWidget::getThePolygonBoundaryTool(void) const
 {
-    if (m_inputsGraphic->geometry().isEmpty())
-        return;
-
-    // normalizing the geometry before performing geometric operations
-    const Geometry normalizedPoints = GeometryEngine::normalizeCentralMeridian(m_inputsGraphic->geometry());
-    const Geometry convexHull = GeometryEngine::convexHull(normalizedPoints);
-
-    // change the symbol based on the returned geometry type
-    if (convexHull.geometryType() == GeometryType::Point)
-    {
-        m_convexHullGraphic->setSymbol(m_markerSymbol);
-    }
-    else if (convexHull.geometryType() == GeometryType::Polyline)
-    {
-        m_convexHullGraphic->setSymbol(m_lineSymbol);
-    }
-    else if (convexHull.geometryType() == GeometryType::Polygon)
-    {
-        m_convexHullGraphic->setSymbol(m_fillSymbol);
-    }
-    else
-    {
-        qWarning("Not a valid geometry.");
-    }
-
-    m_convexHullGraphic->setGeometry(convexHull);
-}
-
-
-void VisualizationWidget::resetConvexHull()
-{
-    selectingConvexHull = false;
-
-    if (m_multipointBuilder)
-        m_multipointBuilder->points()->removeAll();
-    if (m_inputsGraphic)
-        m_inputsGraphic->setGeometry(Geometry());
-    if (m_convexHullGraphic)
-        m_convexHullGraphic->setGeometry(Geometry());
-
-    // Turn off point selection for the convex hull
-    disconnect(mapViewWidget, &MapGraphicsView::mouseClicked, this, &VisualizationWidget::convexHullPointSelector);
-}
-
-
-void VisualizationWidget::setupConvexHullObjects()
-{
-    // graphics overlay to show clicked points and convex hull
-    m_graphicsOverlay = new GraphicsOverlay(this);
-
-    // create a graphic to show clicked points
-    m_markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, Qt::red, 10, this);
-    m_inputsGraphic = new Graphic(this);
-    m_inputsGraphic->setSymbol(m_markerSymbol);
-    m_graphicsOverlay->graphics()->append(m_inputsGraphic);
-
-    // create a graphic to display the convex hull
-    m_convexHullGraphic = new Graphic(this);
-    m_graphicsOverlay->graphics()->append(m_convexHullGraphic);
-
-    // create a graphic to show the convex hull
-    m_lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, Qt::blue, 3, this);
-    m_fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0,0,255,25), m_lineSymbol, this);
-
-    // wait for map to load before creating multipoint builder
-    connect(mapGIS, &Map::doneLoading, this, [this](Error e){
-        if (!e.isEmpty())
-        {
-            qDebug() << e.message() << e.additionalMessage();
-            return;
-        }
-
-        if (mapGIS->loadStatus() == LoadStatus::FailedToLoad)
-        {
-            qWarning( "Failed to load map.");
-            return;
-        }
-
-        m_multipointBuilder = new MultipointBuilder(mapGIS->spatialReference(), this);
-    });
-
-    mapViewWidget->graphicsOverlays()->append(m_graphicsOverlay);
-}
-
-
-void VisualizationWidget::getConvexHullInputs()
-{
-    selectingConvexHull = true;
-
-    // show clicked points on MapView
-    connect(mapViewWidget, &MapGraphicsView::mouseClicked, this, &VisualizationWidget::convexHullPointSelector, Qt::UniqueConnection);
-}
-
-
-void VisualizationWidget::convexHullPointSelector(QMouseEvent& e)
-{
-    e.accept();
-
-    const Point clickedPoint = mapViewWidget->screenToLocation(e.x(), e.y());
-
-    m_multipointBuilder->points()->addPoint(clickedPoint);
-    m_inputsGraphic->setGeometry(m_multipointBuilder->toGeometry());
-
-    this->plotConvexHull();
+    return thePolygonBoundaryTool.get();
 }
 
 
@@ -486,7 +381,6 @@ ComponentInputWidget *VisualizationWidget::getPipelineWidget() const
 {
     return pipelineWidget;
 }
-
 
 
 LayerTreeView *VisualizationWidget::getLayersTree() const
@@ -659,7 +553,7 @@ void VisualizationWidget::loadPipelineData(void)
 
         if(!polylineBuilder.isSketchValid())
         {
-            this->userMessageDialog("Error, cannot create a pipeline feature with the latitude and longitude provided");
+            this->errorMessage("Error, cannot create a pipeline feature with the latitude and longitude provided");
             return;
         }
 
@@ -681,100 +575,11 @@ void VisualizationWidget::loadPipelineData(void)
 }
 
 
-MapGraphicsView* VisualizationWidget::getMapViewWidget() const
+SimCenterMapGraphicsView* VisualizationWidget::getMapViewWidget() const
 {
     return mapViewWidget;
 }
 
-
-void VisualizationWidget::getItemsInConvexHull()
-{
-
-    // For debug purposes; creates  a shape
-    //    QString inputGeomStr = "{\"points\":[[-16687850.289930943,8675247.6610443853],[-16687885.484665291,8675189.0031538066],[-16687874.819594277,8675053.5567519218],[-16687798.031082973,8675037.5591454003],[-16687641.254539061,8675065.2883300371],[-16687665.784202393,8675228.4639165588]],\"spatialReference\":{\"wkid\":102100,\"latestWkid\":3857}}";
-    //    auto impGeom = Geometry::fromJson(inputGeomStr);
-    //    m_inputsGraphic->setGeometry(impGeom);
-    //    this->plotConvexHull();
-    //    return;
-    // End debug
-
-    // Check that the input geometry is not empty
-    if(m_inputsGraphic->geometry().isEmpty())
-    {
-        // Clear the graphics
-        resetConvexHull();
-
-        return;
-    }
-
-    // Get the layers from the map, and ensure that they are not empty
-    auto layersList = mapGIS->operationalLayers();
-
-    if(layersList->isEmpty())
-    {
-        // Clear the graphics
-        resetConvexHull();
-
-        return;
-    }
-
-    // Normalizing the geometry before performing convex hull operation
-    const Geometry normalizedPoints = GeometryEngine::normalizeCentralMeridian(m_inputsGraphic->geometry());
-    const Geometry convexHull = GeometryEngine::convexHull(normalizedPoints);
-
-    // Set the envelope of the convex hull as the search parameter
-    QueryParameters queryParams;
-    auto envelope = Polygon(convexHull);
-    queryParams.setGeometry(envelope);
-    queryParams.setSpatialRelationship(SpatialRelationship::Contains);
-
-    // Iterate through the layers
-    // Function to do a nested search through the layers - this is needed because some layers may have sub-layers
-    std::function<void(const LayerListModel*)> layerIterator = [&](const LayerListModel* layers)
-    {
-        for(int i = 0; i<layers->size(); ++i)
-        {
-            auto layer = layers->at(i);
-
-            // Continue if the layer is turned off
-            if(!layer->isVisible())
-                continue;
-
-            if(auto featureCollectLayer = dynamic_cast<FeatureCollectionLayer*>(layer))
-            {
-                auto tables = featureCollectLayer->featureCollection()->tables();
-
-                for(int j = 0; j<tables->size(); ++j)
-                {
-                    auto table = tables->at(j);
-
-                    // Make this a unique, i.e., one-off connection so that it does not call the slot multiple times
-                    connect(table, &FeatureTable::queryFeaturesCompleted, this, &VisualizationWidget::selectFeaturesForAnalysisQueryCompleted, Qt::UniqueConnection);
-
-                    // Query the table for features - note that this is done asynchronously
-                    auto taskWatcher = table->queryFeatures(queryParams);
-
-                    if (!taskWatcher.isValid())
-                        qDebug() <<"Error, task not valid in "<<__FUNCTION__;
-                    else
-                        taskIDMap[taskWatcher.taskId()] = taskIDMap[taskWatcher.taskId()] = taskWatcher.description();
-                }
-            }
-            else if(auto isGroupLayer = dynamic_cast<GroupLayer*>(layer))
-            {
-                auto subLayers = isGroupLayer->layers();
-                layerIterator(subLayers);
-            }
-        }
-    };
-
-    layerIterator(layersList);
-
-    // Clear the graphics
-    resetConvexHull();
-
-    return;
-}
 
 
 void VisualizationWidget::selectFeaturesForAnalysisQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult)
@@ -783,10 +588,12 @@ void VisualizationWidget::selectFeaturesForAnalysisQueryCompleted(QUuid taskID, 
         return;
 
     // Append the raw result to the list - memory management to be handled later
-    featuresSelectedForAnalysisList.append(rawResult);
+    featuresFromQueryList.append(rawResult);
 
     taskIDMap.remove(taskID);
-    emit taskSelectionComplete();
+
+    if(taskIDMap.empty())
+        emit taskSelectionComplete();
 }
 
 
@@ -879,7 +686,7 @@ void VisualizationWidget::handleOpacityChange(const QString& layerID, const doub
     if(layerID.isEmpty())
         return;
 
-    auto layer = this->findLayer(layerID);
+    auto layer = this->getLayer(layerID);
 
     if(layer)
         layer->setOpacity(opacity);
@@ -889,7 +696,7 @@ void VisualizationWidget::handleOpacityChange(const QString& layerID, const doub
 }
 
 
-Esri::ArcGISRuntime::Layer* VisualizationWidget::findLayer(const QString& layerID)
+Esri::ArcGISRuntime::Layer* VisualizationWidget::getLayer(const QString& layerID)
 {
     auto layers = mapGIS->operationalLayers();
 
@@ -966,14 +773,28 @@ void VisualizationWidget::handleArcGISError(Esri::ArcGISRuntime::Error error)
     if(error.isEmpty())
         return;
 
-    this->userMessageDialog(error.message());
+    this->errorMessage(error.message());
+}
+
+
+void VisualizationWidget::handleSelectAreaMap(void)
+{
+    connect(this, &VisualizationWidget::taskSelectionComplete, this, &VisualizationWidget::handleSelectFeaturesForAnalysis);
+    thePolygonBoundaryTool->getPolygonBoundaryInputs();
+}
+
+
+void VisualizationWidget::handleClearSelectAreaMap(void)
+{
+    thePolygonBoundaryTool->resetPolygonBoundary();
+    disconnect(this, &VisualizationWidget::taskSelectionComplete, this, &VisualizationWidget::handleSelectFeaturesForAnalysis);
 }
 
 
 void VisualizationWidget::handleSelectFeaturesForAnalysis(void)
 {
 
-    for(auto&& it : featuresSelectedForAnalysisList)
+    for(auto&& it : featuresFromQueryList)
     {
         FeatureIterator iter = it->iterator();
         while (iter.hasNext())
@@ -999,9 +820,12 @@ void VisualizationWidget::handleSelectFeaturesForAnalysis(void)
         it->handleComponentSelection();
 
     // Delete the raw results and clear the selection list
-    qDeleteAll(featuresSelectedForAnalysisList);
+    qDeleteAll(featuresFromQueryList);
 
-    featuresSelectedForAnalysisList.clear();
+    featuresFromQueryList.clear();
+
+    disconnect(this, &VisualizationWidget::taskSelectionComplete, this, &VisualizationWidget::handleSelectFeaturesForAnalysis);
+
 }
 
 
@@ -1220,7 +1044,7 @@ void VisualizationWidget::identifyLayersCompleted(QUuid taskID, const QList<Iden
 void VisualizationWidget::onMouseClicked(QMouseEvent& mouseEvent)
 {
     // Do not show popups if the map is not loaded, or if selecting objects with an convex hull
-    if (mapGIS->loadStatus() != LoadStatus::Loaded || selectingConvexHull == true)
+    if (mapGIS->loadStatus() != LoadStatus::Loaded || thePolygonBoundaryTool->getSelectingPoints() == true)
         return;
 
     constexpr double tolerance = 12;
@@ -1251,25 +1075,6 @@ void VisualizationWidget::onMouseClickedGlobal(QPoint pos)
         qDebug() <<"Error, task not valid in "<<__FUNCTION__;
     else
         taskIDMap[taskWatcher.taskId()] = taskWatcher.description();
-}
-
-
-void VisualizationWidget::handleAsyncSelectionTask(void)
-{
-    // Only handle the selected features when all tasks are complete
-    if(taskIDMap.empty())
-    {
-        this->handleSelectFeaturesForAnalysis();
-    }
-
-    //    QMap<QUuid, QString>::const_iterator i = m_taskIds.constBegin();
-    //    while (i != m_taskIds.constEnd())
-    //    {
-    //        auto isDone = i.value();
-    //        qDebug()<< i.key() << ": "<<isDone << Qt::endl;
-    //        ++i;
-    //    }
-
 }
 
 
@@ -1377,7 +1182,19 @@ void VisualizationWidget::runFieldQuery(const QString& fieldName, const QString&
 }
 
 
-Esri::ArcGISRuntime::Map *VisualizationWidget::getMapGIS() const
+QList<Esri::ArcGISRuntime::FeatureQueryResult *> VisualizationWidget::getFeaturesFromQueryList() const
+{
+    return featuresFromQueryList;
+}
+
+
+QMap<QUuid, QString>& VisualizationWidget::getTaskIDMap(void)
+{
+    return taskIDMap;
+}
+
+
+Esri::ArcGISRuntime::Map *VisualizationWidget::getMapGIS(void) const
 {
     return mapGIS;
 }
@@ -1530,19 +1347,19 @@ void VisualizationWidget::handleBasemapSelection(const QString selection)
 LayerTreeItem* VisualizationWidget::addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::Layer* featLayer)
 {
 
+    selectedObjectsTreeItem = layersTree->getTreeItem("Selected Objects",layersTree->getLayersModel()->getRootItem()->objectName());
     // Create the tree item if it does not exist
     if(selectedObjectsTreeItem == nullptr)
     {
         // Create the buildings group layer that will hold the sublayers
         selectedObjectsLayer = new GroupLayer(QList<Layer*>{}, this);
-        selectedObjectsLayer->setName("Selected Components");
+        selectedObjectsLayer->setName("Selected Objects");
 
         selectedObjectsTreeItem = this->addLayerToMap(selectedObjectsLayer);
     }
 
     return this->addLayerToMap(featLayer, selectedObjectsTreeItem, selectedObjectsLayer);
 }
-
 
 
 void VisualizationWidget::updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value)
@@ -1572,7 +1389,7 @@ RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePat
     if (!check_file.exists() && !check_file.isFile())
     {
         QString msg = "Error, the file at location "+filePath+" does not exist ";
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
         return nullptr;
     }
 
@@ -1589,7 +1406,7 @@ RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePat
         if (!loadError.isEmpty())
         {
             auto msg = loadError.message();
-            this->userMessageDialog(msg);
+            this->errorMessage(msg);
             return;
         }
 
@@ -1620,7 +1437,7 @@ FeatureLayer* VisualizationWidget::createAndAddShapefileLayer(const QString& fil
         if (!loadError.isEmpty())
         {
             auto msg = loadError.message() + loadError.additionalMessage();
-            this->userMessageDialog(msg);
+            this->errorMessage(msg);
             return;
         }
 
@@ -1653,7 +1470,7 @@ ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QStri
         if (!loadError.isEmpty())
         {
             auto msg = loadError.message() + loadError.additionalMessage();
-            this->userMessageDialog(msg);
+            this->errorMessage(msg);
 
             return;
         }
@@ -1687,7 +1504,7 @@ void VisualizationWidget::createAndAddGeoDatabaseLayer(const QString& filePath, 
     connect(m_geodatabase, &Geodatabase::errorOccurred, this, [this](Error error)
     {
         auto msg = error.message() + error.additionalMessage();
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
         return;
     });
 
@@ -1719,7 +1536,7 @@ KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, co
     if (!check_file.exists() && !check_file.isFile())
     {
         QString msg = "Error, the file at location "+filePath+" does not exist ";
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
         return nullptr;
     }
 
@@ -1742,7 +1559,7 @@ KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, co
         if (!loadError.isEmpty())
         {
             auto msg = loadError.message() + loadError.additionalMessage();
-            this->userMessageDialog(msg);
+            this->errorMessage(msg);
             return;
         }
 
@@ -1766,7 +1583,7 @@ FeatureCollectionLayer* VisualizationWidget::createAndAddXMLShakeMapLayer(const 
 
     if(XMLlayer == nullptr)
     {
-        this->userMessageDialog(errMess);
+        this->errorMessage(errMess);
         return nullptr;
     }
 
@@ -1876,7 +1693,7 @@ bool VisualizationWidget::removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer)
     {
         std::function<bool(Layer*)> nestedLayerRemover = [&](Layer* layerToCheck){
 
-            auto grpLayer = static_cast<GroupLayer*>(layerToCheck);
+            auto grpLayer = dynamic_cast<GroupLayer*>(layerToCheck);
 
             if(grpLayer)
             {
@@ -1914,8 +1731,14 @@ bool VisualizationWidget::removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer)
 
 void VisualizationWidget::removeLayerFromMap(const QString layerID)
 {
-    auto layer = this->findLayer(layerID);
+    auto layer = this->getLayer(layerID);
     this->removeLayerFromMap(layer);
+}
+
+
+bool VisualizationWidget::removeLayerFromMapAndTree(const QString layerID)
+{
+    return layersTree->removeItemFromTree(layerID);
 }
 
 
@@ -1950,7 +1773,7 @@ void VisualizationWidget::clear(void)
     layersMap.clear();
     legendModels.clear();
 
-    featuresSelectedForAnalysisList.clear();
+    featuresFromQueryList.clear();
 
     mapGIS->operationalLayers()->clear();
 
@@ -1971,7 +1794,12 @@ void VisualizationWidget::setLegendView(GISLegendView* legndView)
         return;
 
     legendView = legndView;
+}
 
+
+void VisualizationWidget::hideLegend(void)
+{
+    legendView->clear();
 }
 
 
@@ -2090,6 +1918,36 @@ Esri::ArcGISRuntime::Geometry VisualizationWidget::getGeometryFromJson(const QSt
 }
 
 
+Esri::ArcGISRuntime::Geometry VisualizationWidget::getGeometryFromJson(const QJsonArray& geoJson)
+{
+
+    if(geoJson.size() == 0)
+        return Geometry();
+
+
+    PolygonBuilder polygonBuilder(SpatialReference::wgs84());
+
+    for(auto&& it : geoJson)
+    {
+
+        auto points = it.toArray();
+
+        if(points.size() != 2)
+            return Geometry();
+
+        double lat = points.at(1).toDouble(360.0);
+        double lon = points.at(0).toDouble(360.0);
+
+        if(lat == 360.0 || lon == 360.0)
+            return Geometry();
+
+        polygonBuilder.addPoint(lat,lon);
+    }
+
+    return polygonBuilder.toGeometry();
+}
+
+
 Esri::ArcGISRuntime::Geometry VisualizationWidget::getRectGeometryFromPoint(const Esri::ArcGISRuntime::Point& pnt, const double sizeX, double sizeY)
 {
 
@@ -2111,6 +1969,7 @@ Esri::ArcGISRuntime::Geometry VisualizationWidget::getRectGeometryFromPoint(cons
 
     return polygonBuilder.toGeometry();
 }
+
 
 QList<Esri::ArcGISRuntime::Feature *> VisualizationWidget::getSelectedFeaturesList() const
 {

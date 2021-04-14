@@ -1,5 +1,5 @@
-#ifndef MDOF_LU_H
-#define MDOF_LU_H
+#ifndef PolygonBoundary_H
+#define PolygonBoundary_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,44 +36,68 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
+#include <QMouseEvent>
+#include <QObject>
 
-#include <QGroupBox>
-#include <QVector>
-#include <QGridLayout>
-#include <QComboBox>
+class VisualizationWidget;
+class SimCenterMapGraphicsView;
 
-class InputWidgetParameters;
-class RandomVariablesContainer;
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class GraphicsOverlay;
+class SimpleMarkerSymbol;
+class Graphic;
+class Point;
+class SimpleLineSymbol;
+class SimpleFillSymbol;
+class MultipointBuilder;
+class Geometry;
+class Map;
+}
+}
 
-class MDOF_LU : public SimCenterAppWidget
+class PolygonBoundary : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
-    ~MDOF_LU();
+    PolygonBoundary(VisualizationWidget* visualizationWidget);
 
-    bool outputToJSON(QJsonObject &rvObject) override;
-    bool inputFromJSON(QJsonObject &rvObject) override;
-    bool outputAppDataToJSON(QJsonObject &rvObject) override;
-    bool inputAppDataFromJSON(QJsonObject &rvObject) override;
-    bool copyFiles(QString &dirName) override;
+    void setupPolygonBoundaryObjects();
 
-     // copy main file to new filename ONLY if varNamesAndValues not empy
-    void setFileName(QString filnema1);
+    bool getSelectingPoints() const;
+    void setSelectingPoints(bool value);
+
+signals:
+    void selectionStart();
+    void selectionEnd();
 
 public slots:
-   void clear(void) override;
-   void chooseFileName1(void);
+    void plotPolygonBoundary();
+    void getPolygonBoundaryInputs();
+    void resetPolygonBoundary();
+    void getItemsInPolygonBoundary();
+    void PolygonBoundaryPointSelector(QMouseEvent& e);
 
 private:
-    QLineEdit *hazusDataFile;
-    QLineEdit *stdStiffness;
-    QLineEdit *stdDamping;
-    QLineEdit *storyHeight;
-    RandomVariablesContainer *theRandomVariablesContainer;
+
+    // Create a graphic to display the convex hull selection
+    Esri::ArcGISRuntime::GraphicsOverlay* m_graphicsOverlay = nullptr;
+    Esri::ArcGISRuntime::SimpleMarkerSymbol* m_markerSymbol = nullptr;
+    Esri::ArcGISRuntime::Graphic* m_inputsGraphic = nullptr;
+    Esri::ArcGISRuntime::Graphic* m_PolygonBoundaryGraphic = nullptr;
+    Esri::ArcGISRuntime::SimpleLineSymbol* m_lineSymbol = nullptr;
+    Esri::ArcGISRuntime::SimpleFillSymbol* m_fillSymbol = nullptr;
+    Esri::ArcGISRuntime::MultipointBuilder* m_multipointBuilder = nullptr;
+    bool selectingPolygonBoundary;
+
+    Esri::ArcGISRuntime::Map *mapGIS = nullptr;
+    VisualizationWidget* theVisualizationWidget = nullptr;
+    SimCenterMapGraphicsView *mapViewWidget = nullptr;
 };
 
-#endif // MDOF_LU_H
+#endif // PolygonBoundary_H

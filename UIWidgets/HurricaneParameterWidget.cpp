@@ -82,13 +82,12 @@ HurricaneParameterWidget::HurricaneParameterWidget(QWidget* parent) : QWidget(pa
     speedLandfallLineEdit->setValidator(new QDoubleValidator(speedLandfallLineEdit));
     radiusLandfallLineEdit->setValidator(new QDoubleValidator(radiusLandfallLineEdit));
 
-
-    //    latLandfallLineEdit ->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    //    lonLandfallLineEdit ->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    //    angleLandfallLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    //    pressLandfallLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    //    speedLandfallLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    //    radiusLandfallLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    latLandfallLineEdit   ->setMinimumWidth(75);
+    lonLandfallLineEdit   ->setMinimumWidth(75);
+    angleLandfallLineEdit ->setMinimumWidth(75);
+    pressLandfallLineEdit ->setMinimumWidth(75);
+    speedLandfallLineEdit ->setMinimumWidth(75);
+    radiusLandfallLineEdit->setMinimumWidth(75);
 
     latLandfallPerturbLineEdit     = new QLineEdit(this);
     lonLandfallPerturbLineEdit     = new QLineEdit(this);
@@ -269,6 +268,10 @@ QJsonObject HurricaneParameterWidget::getLandfallParamsJson(void)
 {
     QJsonObject landfallObj;
 
+    if(latLandfallLineEdit->text().isEmpty() || lonLandfallLineEdit->text().isEmpty() || angleLandfallLineEdit->text().isEmpty() ||
+            pressLandfallLineEdit->text().isEmpty() ||   speedLandfallLineEdit->text().isEmpty() ||  radiusLandfallLineEdit->text().isEmpty() )
+        return landfallObj;
+
     double latLF =  latLandfallLineEdit->text().toDouble();
     double lonLF =  lonLandfallLineEdit->text().toDouble();
     double landAngleLF =  angleLandfallLineEdit->text().toDouble();
@@ -285,4 +288,6 @@ QJsonObject HurricaneParameterWidget::getLandfallParamsJson(void)
 
     return landfallObj;
 }
+
+
 

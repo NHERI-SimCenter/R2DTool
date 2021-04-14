@@ -101,7 +101,7 @@ void ComponentInputWidget::loadComponentData(void)
         if (!QFile(relPathToComponentFile).exists())
         {
             QString errMsg = "Cannot find the file: "+ pathToComponentInfoFile + "\n" +"Check your directory and try again.";
-            emit sendErrorMessage(errMsg);
+            this->errorMessage(errMsg);
             return;
         }
         else
@@ -118,13 +118,13 @@ void ComponentInputWidget::loadComponentData(void)
 
     if(!err.isEmpty())
     {
-        emit sendErrorMessage(err);
+        this->errorMessage(err);
         return;
     }
 
     if(data.empty())
     {
-        emit sendErrorMessage("Input file is empty");
+        this->errorMessage("Input file is empty");
         return;
     }
 
@@ -139,7 +139,7 @@ void ComponentInputWidget::loadComponentData(void)
 
     if(numRows == 0)
     {
-        emit sendErrorMessage("Input file is empty");
+        this->errorMessage("Input file is empty");
         return;
     }
 
@@ -147,7 +147,7 @@ void ComponentInputWidget::loadComponentData(void)
 
     if(firstRow.empty())
     {
-        emit sendErrorMessage("First row is empty");
+        this->errorMessage("First row is empty");
         return;
     }
 
@@ -165,7 +165,7 @@ void ComponentInputWidget::loadComponentData(void)
 
         if(rowStringList.size() != numCols)
         {
-            this->userMessageDialog("Error, the number of items in row " + QString::number(i+1) + " does not equal number of headings in the file");
+            this->statusMessage("Error, the number of items in row " + QString::number(i+1) + " does not equal number of headings in the file");
             return;
         }
 
@@ -173,7 +173,7 @@ void ComponentInputWidget::loadComponentData(void)
 
         if(initialID+i != currID)
         {
-            this->userMessageDialog("Error, the asset IDs must be sequential");
+            this->statusMessage("Error, the asset IDs must be sequential");
             return;
         }
 
@@ -343,7 +343,7 @@ void ComponentInputWidget::selectComponents(void)
     }
     catch (const QString msg)
     {
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
     }
 }
 
@@ -363,7 +363,7 @@ void ComponentInputWidget::handleComponentSelection(void)
     if(!OK)
     {
         QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
         return;
     }
 
@@ -372,7 +372,7 @@ void ComponentInputWidget::handleComponentSelection(void)
     if(!OK)
     {
         QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
         return;
     }
 
@@ -384,7 +384,7 @@ void ComponentInputWidget::handleComponentSelection(void)
         if(it<firstID || it>lastID)
         {
             QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
-            this->userMessageDialog(msg);
+            this->errorMessage(msg);
             selectComponentsLineEdit->clear();
             return;
         }
@@ -400,7 +400,7 @@ void ComponentInputWidget::handleComponentSelection(void)
 
     auto numAssets = selectedComponentIDs.size();
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
-    sendStatusMessage(msg);
+    this->statusMessage(msg);
 
     for(auto&& it : selectedComponentIDs)
     {
@@ -437,12 +437,6 @@ void ComponentInputWidget::handleComponentSelection(void)
             featureAttributes[key] = val;
         }
 
-        // featureAttributes.insert("ID", "99");
-        // featureAttributes.insert("LossRatio", 0.0);
-        // featureAttributes.insert("AssetType", "BUILDING");
-        // featureAttributes.insert("TabName", "99");
-        // featureAttributes.insert("UID", "99");
-
         auto geom = feature->geometry();
 
         auto feat = this->addFeatureToSelectedLayer(featureAttributes,geom);
@@ -460,9 +454,11 @@ void ComponentInputWidget::handleComponentSelection(void)
         return;
     }
 
-    theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
+    // Add the layer to the map if it does not already exist
+    auto layerExists = theVisualizationWidget->getLayer(selecFeatLayer->layerId());
 
-    //this->userMessageDialog(msg);
+    if(layerExists == nullptr)
+        theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
 }
 
 
@@ -600,7 +596,7 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     //jsonObject["Application"]=appType;
     if (jsonObject.contains("Application")) {
         if (appType != jsonObject["Application"].toString()) {
-            emit sendErrorMessage("ComponentINputWidget::inputFRommJSON app name conflict");
+            this->errorMessage("ComponentINputWidget::inputFRommJSON app name conflict");
             return false;
         }
     }
@@ -646,6 +642,12 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                     foundFile = true;
                     this->loadComponentData();
                 }
+                else
+                {
+                    QString errMessage = appType + "no file found at: " + fileName;
+                    this->errorMessage(errMessage);
+                    return false;
+                }
             }
         }
 
@@ -656,15 +658,12 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             selectComponentsLineEdit->selectComponents();
         else {
             QString errMessage = appType + "no file found" + fileName;
-            emit sendErrorMessage(errMessage);
+            this->errorMessage(errMessage);
             return false;
         }
     }
 
-    QString errMessage = appType + "no ApplicationDta found";
-    emit sendErrorMessage(errMessage);
-    return false;
-
+    return true;
 }
 
 

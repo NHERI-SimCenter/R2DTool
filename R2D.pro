@@ -134,6 +134,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SiteGridWidget.cpp \
             Events/UI/SiteWidget.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
+            GraphicElements/ConvexHull.cpp \
+            GraphicElements/PolygonBoundary.cpp \
             ModelViewItems/CheckableTreeModel.cpp \
             ModelViewItems/GISLegendView.cpp \
             ModelViewItems/SimCenterTreeView.cpp \
@@ -242,6 +244,8 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SiteGridWidget.h \
             Events/UI/SiteWidget.h \
             Events/UI/SpatialCorrelationWidget.h \
+            GraphicElements/ConvexHull.h \
+            GraphicElements/PolygonBoundary.h \
             ModelViewItems/CheckableTreeModel.h \
             ModelViewItems/GISLegendView.h \
             ModelViewItems/SimCenterTreeView.h \

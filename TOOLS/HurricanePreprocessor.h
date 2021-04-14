@@ -62,9 +62,35 @@ class Geometry;
 struct HurricaneObject{
 
 public:
+
+    QVector<QStringList>& getHurricaneData(){
+        return hurricaneData;
+    }
+
     QStringList& operator[](int index) {
 
         return hurricaneData[index];
+    }
+
+
+    QStringList trackPointAtLatLon(double lat, double lon)
+    {
+        auto latIndex = parameterLabels.indexOf("LAT");
+        auto lonIndex = parameterLabels.indexOf("LON");
+
+        if(latIndex == -1 || lonIndex == -1)
+            return QStringList();
+
+        for(auto&& it : hurricaneData)
+        {
+            auto latD = it.at(latIndex).toDouble();
+            auto lonD = it.at(lonIndex).toDouble();
+
+            if((latD-lat)*(latD-lat) + (lonD-lon)*(lonD-lon) <= std::numeric_limits<double>::epsilon())
+                return it;
+        }
+
+        return QStringList();
     }
 
 
@@ -75,6 +101,40 @@ public:
 
     int size(void) {
         return hurricaneData.size();
+    }
+
+
+    void push_back(const QStringList& data)
+    {
+        hurricaneData.push_back(data);
+    }
+
+
+
+
+    void push_back(const QList<QVariant>& data)
+    {
+        QStringList dataAsStringList;
+
+        for(auto&& it : data)
+            dataAsStringList.append(it.toString());
+
+        hurricaneData.push_back(dataAsStringList);
+    }
+
+
+    bool empty(void) {
+        return hurricaneData.isEmpty();
+    }
+
+
+    void clear() {
+        hurricaneData.clear();
+        landfallData.clear();
+        name.clear();
+        SID.clear();
+        season.clear();
+        indexLandfall = -1;
     }
 
 
@@ -93,29 +153,8 @@ public:
     }
 
 
-    void push_back(QStringList& data)
-    {
-        hurricaneData.push_back(data);
-    }
-
-
-    bool isEmpty(void) {
-        return hurricaneData.isEmpty();
-    }
-
-
     bool hasLandfall(void) {
         return landfallData.isEmpty();
-    }
-
-
-    void clear() {
-        hurricaneData.clear();
-        landfallData.clear();
-        name.clear();
-        SID.clear();
-        season.clear();
-        indexLandfall = -1;
     }
 
 
@@ -273,6 +312,7 @@ public:
     QString name;
     QString SID; // The storm id
     QString season; // i.e., the year
+
 };
 
 
@@ -291,10 +331,10 @@ public:
     Esri::ArcGISRuntime::Layer *getAllHurricanesLayer() const;
 
     // Creates a hurricane visualization of the track and track points if desired
-    int createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
+    LayerTreeItem* createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
 
     // Note that including track points may take a long time, moreover not all hurricanes have a landfall
-    int createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
+    LayerTreeItem*  createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
 
     LayerTreeItem* createLandfallVisualization(const double latitude,
                                                const double longitude,

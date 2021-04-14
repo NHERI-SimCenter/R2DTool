@@ -137,7 +137,7 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
 
         if(SID.compare(currSID) != 0)
         {
-            if(!hurricane.isEmpty())
+            if(!hurricane.empty())
             {
                 hurricanes.push_back(hurricane);
                 hurricane.clear();
@@ -151,7 +151,7 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
     }
 
     // Push back the last hurricane
-    if(!hurricane.isEmpty())
+    if(!hurricane.empty())
         hurricanes.push_back(hurricane);
 
     auto numHurricanes = hurricanes.size();
@@ -266,14 +266,14 @@ void HurricanePreprocessor::clear(void)
 }
 
 
-int HurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
+LayerTreeItem* HurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
 {
     auto numPnts = hurricane->size();
 
     if(numPnts == 0)
     {
         err = "Hurricane does not have any track points";
-        return -1;
+        return nullptr;
     }
 
     // Name and storm ID
@@ -289,13 +289,13 @@ int HurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, 
     featureAttributes.insert("SID",SID);
     featureAttributes.insert("SEASON",season);
     featureAttributes.insert("TabName", nameID);
-    featureAttributes.insert("AssetType", "HURRICANE");
+    featureAttributes.insert("AssetType", "HURRICANE_TRACK");
     featureAttributes.insert("UID", uid);
 
     auto polyline = this->getTrackGeometry(hurricane, err);
 
     if(polyline.isEmpty())
-        return -1;
+        return nullptr;
 
     // Create the feature collection table/layers
     QList<Field> trackFields;
@@ -332,9 +332,7 @@ int HurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, 
     auto trackFeat = trackFeatureCollectionTable->createFeature(featureAttributes,polyline,theParent);
     trackFeatureCollectionTable->addFeature(trackFeat);
 
-    theVisualizationWidget->addLayerToMap(trackLayer, parentItem, parentLayer);
-
-    return 0;
+    return theVisualizationWidget->addLayerToMap(trackLayer, parentItem, parentLayer);
 }
 
 
@@ -407,14 +405,14 @@ Geometry HurricanePreprocessor::getTrackGeometry(HurricaneObject* hurricane, QSt
 }
 
 
-int HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
+LayerTreeItem*  HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
 {
     auto numPnts = hurricane->size();
 
     if(numPnts == 0)
     {
         err = "Hurricane does not have any track points";
-        return -1;
+        return nullptr;
     }
 
     // Get the parameter labels or header data
@@ -430,12 +428,11 @@ int HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurri
     if((indexLat == -1 || indexLon == -1) && (indexUSALat == -1 || indexUSALon == -1))
     {
         err = "Could not find the required column indexes in the data file";
-                return -1;
+        return nullptr;
     }
 
     // Create the table to store the fields
     QList<Field> pointFields;
-
     // Common fields
     pointFields.append(Field::createText("AssetType", "NULL",4));
     pointFields.append(Field::createText("TabName", "NULL",4));
@@ -443,7 +440,9 @@ int HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurri
 
     // Full fields
     for(auto&& it : headerData)
+    {
         pointFields.append(Field::createText(it, "NULL",4));
+    }
 
     // Create the feature collection table/layers
     auto trackPntsFeatureCollection = new FeatureCollection(theParent);
@@ -481,7 +480,7 @@ int HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurri
 
         auto uid = theVisualizationWidget->createUniqueID();
 
-        featureAttributes.insert("AssetType", "HURRICANE");
+        featureAttributes.insert("AssetType", "HURRICANE_TRACK_POINT");
         featureAttributes.insert("TabName", "Track Point");
         featureAttributes.insert("UID", uid);
 
@@ -509,10 +508,9 @@ int HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurri
     }
 
 
-    theVisualizationWidget->addLayerToMap(trackPntsLayer,parentItem, parentLayer);
+    LayerTreeItem* trackPointsItem = theVisualizationWidget->addLayerToMap(trackPntsLayer,parentItem, parentLayer);
 
-
-    return 0;
+    return trackPointsItem;
 }
 
 

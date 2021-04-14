@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "TableNumberItem.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+#include "SimCenterMapGraphicsView.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
