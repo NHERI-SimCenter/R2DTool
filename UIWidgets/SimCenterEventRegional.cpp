@@ -136,6 +136,10 @@ bool SimCenterEventRegional::inputAppDataFromJSON(QJsonObject &jsonObject) {
             {
                 unitsCombo->setCurrentText("Inches per second squared");
             }
+            else if(unit.compare("g") == 0)
+            {
+                unitsCombo->setCurrentText("Gravitational constant (g)");
+            }
             else
             {
                 qDebug()<<" The unit type "<<unit<<" is not recognized";

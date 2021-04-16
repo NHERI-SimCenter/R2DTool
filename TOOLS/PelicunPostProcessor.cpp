@@ -47,6 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 #include "SimCenterMapGraphicsView.h"
+#include "Utils/PythonProgressDialog.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
@@ -88,12 +89,32 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     casualtiesChart = nullptr;
     RFDiagChart = nullptr;
     Losseschart = nullptr;
+    viewMenu = nullptr;
 
     // Create a view menu for the dockable windows
-    auto mainWindow = WorkflowAppR2D::getInstance()->getTheMainWindow();
-    viewMenu = mainWindow->menuBar()->addMenu(tr("&View"));
+    auto menuBar = WorkflowAppR2D::getInstance()->getTheMainWindow()->menuBar();
 
-    viewMenu->addAction(tr("&Restore"), this, &PelicunPostProcessor::restoreUI);
+    QMenu* resultsMenu = nullptr;
+    foreach (QAction *action, menuBar->actions()) {
+
+        auto actionMenu = action->menu();
+        if(actionMenu)
+        {
+            if(action->text().compare("&Results") == 0)
+                resultsMenu = actionMenu;
+        }
+    }
+
+    if(resultsMenu)
+    {
+        viewMenu = resultsMenu->addMenu(tr("&View"));
+        viewMenu->addAction(tr("&Restore"), this, &PelicunPostProcessor::restoreUI);
+    }
+    else
+    {
+        PythonProgressDialog::getInstance()->appendErrorMessage("Could not find the results menu bar in PelicunPostProcessor::");
+        return;
+    }
 
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&PelicunPostProcessor::assemblePDF);
 
@@ -132,7 +153,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     QDockWidget* summaryDock = new QDockWidget("Estimated Regional Totals",this);
     summaryDock->setObjectName("SummaryDock");
     summaryDock->setWidget(totalsWidget);
-    viewMenu->addAction(summaryDock->toggleViewAction());
     addDockWidget(Qt::RightDockWidgetArea, summaryDock);
 
     // Charts
@@ -147,10 +167,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     chartsDock3 = new QDockWidget(tr("Relative Freq. Losses"), this);
     chartsDock3->setObjectName("Relative Freq. Losses");
     chartsDock3->setContentsMargins(5,5,5,5);
-
-    viewMenu->addAction(chartsDock1->toggleViewAction());
-    viewMenu->addAction(chartsDock2->toggleViewAction());
-    viewMenu->addAction(chartsDock3->toggleViewAction());
 
     this->addDockWidget(Qt::RightDockWidgetArea,chartsDock1);
 
@@ -204,8 +220,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     tableDock->setMinimumWidth(475);
     addDockWidget(Qt::RightDockWidgetArea, tableDock);
 
-    viewMenu->addAction(tableDock->toggleViewAction());
-
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
@@ -213,7 +227,7 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 
     // Popup stuff
     // Once map is set, connect to MapQuickView mouse clicked signal
-//    connect(mapViewSubWidget.get(), &EmbeddedMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
+    //    connect(mapViewSubWidget.get(), &EmbeddedMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
 
     QDockWidget* mapViewDock = new QDockWidget("Regional Map",this);
     mapViewDock->setObjectName("MapViewDock");
@@ -221,7 +235,15 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     mapViewDock->setWidget(mapViewSubWidget.get());
     addDockWidget(Qt::LeftDockWidgetArea, mapViewDock);
 
-    viewMenu->addAction(mapViewDock->toggleViewAction());
+    if(viewMenu)
+    {
+        viewMenu->addAction(summaryDock->toggleViewAction());
+        viewMenu->addAction(chartsDock1->toggleViewAction());
+        viewMenu->addAction(chartsDock2->toggleViewAction());
+        viewMenu->addAction(chartsDock3->toggleViewAction());
+        viewMenu->addAction(tableDock->toggleViewAction());
+        viewMenu->addAction(mapViewDock->toggleViewAction());
+    }
 
     uiState = this->saveState();
 
@@ -546,7 +568,8 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
 void PelicunPostProcessor::setIsVisible(const bool value)
 {
-    viewMenu->menuAction()->setVisible(value);
+    if(viewMenu)
+        viewMenu->menuAction()->setVisible(value);
 }
 
 

@@ -765,7 +765,7 @@ void HurricaneSelectionWidget::createHurricaneVisuals(HurricaneObject* hurricane
         featureAttributes.insert("Latitude", lat);
         featureAttributes.insert("Longitude", lon);
 
-        hurricaneImportTool->createLandfallVisualization(lat,lon,featureAttributes, selectedHurricaneItem, selectedHurricaneLayer);
+        landfallItem = hurricaneImportTool->createLandfallVisualization(lat,lon,featureAttributes, selectedHurricaneItem, selectedHurricaneLayer);
     }
 }
 
@@ -1715,6 +1715,16 @@ void HurricaneSelectionWidget::handleAreaSelected(void)
 
         theVisualizationWidget->removeLayerFromMapAndTree(hurricaneTrackPointsItem->getItemID());
         hurricaneTrackPointsItem = nullptr;
+    }
+
+    // Check if the selected hurricane item is still there...
+    if(selectedHurricaneLayer)
+        selectedHurricaneItem = theVisualizationWidget->getLayersTree()->getTreeItem(selectedHurricaneLayer->layerId());
+
+    if(selectedHurricaneItem == nullptr)
+    {
+        delete selectedHurricaneLayer;
+        selectedHurricaneLayer = nullptr;
     }
 
     // Create the new hurricane layer

@@ -644,7 +644,7 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 }
                 else
                 {
-                    QString errMessage = appType + "no file found at: " + fileName;
+                    QString errMessage = appType + " no file found at: " + fileName;
                     this->errorMessage(errMessage);
                     return false;
                 }
@@ -657,7 +657,7 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (foundFile == true)
             selectComponentsLineEdit->selectComponents();
         else {
-            QString errMessage = appType + "no file found" + fileName;
+            QString errMessage = appType + " no file found: " + fileName;
             this->errorMessage(errMessage);
             return false;
         }

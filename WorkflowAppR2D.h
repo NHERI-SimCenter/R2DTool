@@ -59,7 +59,7 @@ class RandomVariablesContainer;
 class RemoteJobManager;
 class RemoteService;
 class ResultsWidget;
-//class RunLocalWidget;
+class LoadResultsDialog;
 class RunWidget;
 class SimCenterAppWidget;
 class SimCenterComponentSelection;
@@ -100,9 +100,10 @@ signals:
 
 public slots:  
     void clear(void);
+    void loadResults(void);
     void setUpForApplicationRun(QString &, QString &);
     void processResults(QString dakotaOut, QString dakotaTab, QString inputFile);
-    void loadFile(QString filename);
+    int loadFile(QString filename);
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
 
@@ -132,6 +133,7 @@ private:
     UQWidget* theUQWidget;
     RandomVariablesContainer* theRVs;
     ResultsWidget* theResultsWidget;
+    LoadResultsDialog* resultsDialog;
 
     //
     // Objects for running the workflow and obtaining results
