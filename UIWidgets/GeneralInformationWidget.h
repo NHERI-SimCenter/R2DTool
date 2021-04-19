@@ -63,11 +63,11 @@ public:
 
     void clear(void);
 
-    enum LengthUnit{m, cm, mm, in, ft};
+    enum LengthUnit{m, meter, cm, centimeter, mm, milimeter, in, inch, ft, foot};
     Q_ENUM(LengthUnit)
     enum ForceUnit{N, kN, lb, kips};
     Q_ENUM(ForceUnit)
-    enum TimeUnit{sec, min, hr};
+    enum TimeUnit{sec, seconds, min, minutes, hr, hour};
     Q_ENUM(TimeUnit)
     enum TemperatureUnit{C, F, K};
     Q_ENUM(TemperatureUnit)

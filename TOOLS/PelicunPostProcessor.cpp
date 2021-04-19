@@ -791,6 +791,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     // Define font styles
     QTextCharFormat normalFormat;
+    normalFormat.setFontPointSize(12);
     normalFormat.setFontWeight(QFont::Normal);
 
     QTextCharFormat titleFormat;
@@ -800,8 +801,12 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     QTextCharFormat captionFormat;
     captionFormat.setFontWeight(QFont::Light);
-    captionFormat.setFontPointSize(normalFormat.fontPointSize() / 2.0);
+    captionFormat.setFontPointSize(normalFormat.fontPointSize());
     captionFormat.setFontItalic(true);
+
+    QTextCharFormat disclaimerFormat;
+    disclaimerFormat.setFontWeight(QFont::Light);
+    disclaimerFormat.setFontPointSize(normalFormat.fontPointSize() / 1.5);
 
     QTextCharFormat boldFormat;
     boldFormat.setFontWeight(QFont::Bold);
@@ -836,9 +841,21 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("Results Summary\n",boldFormat);
 
+    alignLeft.setLineHeight(1, QTextBlockFormat::SingleHeight) ;
+
     cursor.setBlockFormat(alignLeft);
 
-    cursor.insertText("Employing Pelicun loss methodology to calculate seismic losses.\n",normalFormat);
+    QString disclaimerText = "Disclaimer: The presented simulation results are not representative of any individual building’s response. To understand the response of any individual building, "
+                                "please consult with a professional structural engineer. The presented tool does not assert the known condition of the building. Just as it cannot be used to predict the negative outcome of an individual "
+                                "building, prediction of safety or an undamaged state is not assured for an individual building. Any opinions, findings, and conclusions or recommendations expressed in this material are "
+                                "those of the author(s) and do not necessarily reflect the views of the National Science Foundation.\n";
+    cursor.insertText(disclaimerText,disclaimerFormat);
+
+    alignLeft.setLineHeight(lineSpacing, QTextBlockFormat::LineDistanceHeight);
+
+    cursor.setBlockFormat(alignLeft);
+
+    cursor.insertText("\nEmploying Pelicun loss methodology to calculate seismic losses.\n",normalFormat);
 
     QString currentDT = "Timestamp: " + QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss") + "\n";
     cursor.insertText(currentDT,normalFormat);
