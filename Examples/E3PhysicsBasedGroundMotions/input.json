@@ -9,14 +9,14 @@
     "EDP": true,
     "DM": true,
     "DV": true,
-    "every_realization": true
+    "every_realization": false
   },
   "Applications": {
     "Hazard": {
         "Application": "UserInputGM",
         "ApplicationData": {
-	    "eventFile": "/SW4/EventGrid.csv",
-	    "motionDir": "/SW4"
+	    "eventFile": "/SW4_filtered/EventGrid.csv",
+	    "motionDir": "/SW4_filtered"
 	}
     },			
     "Building": {
@@ -29,7 +29,7 @@
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "SW4/EventGrid.csv",
+        "filenameEVENTgrid": "SW4_filtered/EventGrid.csv",
         "samples": 3,
         "neighbors": 4
       }

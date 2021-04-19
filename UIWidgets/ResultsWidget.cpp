@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppR2D.h"
+#include <WorkflowAppR2D.h>
 #include "sectiontitle.h"
 
 #include <QCheckBox>
@@ -81,7 +81,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     label->setText(tr("Regional Results Summary"));
     label->setMinimumWidth(150);
 
-    auto disclaimerLabel = new QLabel("Disclaimer:\nThe presented simulation results are not representative of any individual building’s response. To understand the response of any individual building, "
+    auto disclaimerLabel = new QLabel("Disclaimer: The presented simulation results are not representative of any individual building’s response. To understand the response of any individual building, "
                                      "please consult with a professional structural engineer. The presented tool does not assert the known condition of the building. Just as it cannot be used to predict the negative outcome of an individual "
                                      "building, prediction of safety or an undamaged state is not assured for an individual building. Any opinions, findings, and conclusions or recommendations expressed in this material are "
                                      "those of the author(s) and do not necessarily reflect the views of the National Science Foundation.",this);
@@ -89,9 +89,9 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     disclaimerLabel->setWordWrap(true);
 
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(10,10);
     theHeaderLayout->addItem(spacer);
-    theHeaderLayout->addWidget(disclaimerLabel);
+    theHeaderLayout->addWidget(disclaimerLabel,Qt::AlignLeft);
 
     //    theHeaderLayout->addStretch(1);
 
@@ -262,12 +262,30 @@ int ResultsWidget::printToPDF(void)
         return -1;
     }
 
-    if(DVApp.compare("Pelicun") == 0)
-    {
-        auto res = thePelicunPostProcessor->printToPDF(outputFileName);
+    QDir theDir(outputFileName);
+    if (theDir.exists()) {
+        QMessageBox msgBox;
+        msgBox.setText("Output file is a directory. No file will be written.");
+        msgBox.exec();
+        return 0;
+    }
 
-        if(res != 0)
-        {
+    QFile theFile(outputFileName);
+    if (theFile.exists()) {
+     QMessageBox::StandardButton reply = QMessageBox::question(this,
+                                      "File Exists", "File Exists .. Do you want to overwrite?",
+                             QMessageBox::Yes | QMessageBox::No);
+       if(reply == QMessageBox::No) {
+           return 0;
+       }
+    }
+
+
+    if(DVApp.compare("Pelicun") == 0) {
+
+        int res = thePelicunPostProcessor->printToPDF(outputFileName);
+
+        if(res != 0) {
             QString err = "Error printing the PDF";
             this->userMessageDialog(err);
             return -1;

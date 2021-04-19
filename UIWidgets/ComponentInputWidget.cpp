@@ -98,8 +98,7 @@ void ComponentInputWidget::loadComponentData(void)
         if (!QFile(relPathToComponentFile).exists())
         {
             QString errMsg = "Cannot find the file: "+ pathToComponentInfoFile + "\n" +"Check your directory and try again.";
-            qDebug() << errMsg;
-            this->userMessageDialog(errMsg);
+            emit sendErrorMessage(errMsg);
             return;
         }
         else
@@ -116,12 +115,15 @@ void ComponentInputWidget::loadComponentData(void)
 
     if(!err.isEmpty())
     {
-        this->userMessageDialog(err);
+        emit sendErrorMessage(err);
         return;
     }
 
     if(data.empty())
+    {
+        emit sendErrorMessage("Input file is empty");
         return;
+    }
 
     // Get the header file
     QStringList tableHeadings = data.first();
@@ -131,6 +133,22 @@ void ComponentInputWidget::loadComponentData(void)
 
     auto numRows = data.size();
     auto numCols = tableHeadings.size();
+
+    if(numRows == 0)
+    {
+        emit sendErrorMessage("Input file is empty");
+        return;
+    }
+
+    auto firstRow = data.first();
+
+    if(firstRow.empty())
+    {
+        emit sendErrorMessage("First row is empty");
+        return;
+    }
+
+    auto initialID = firstRow.first().toInt();
 
     componentTableWidget->clear();
     componentTableWidget->setColumnCount(numCols);
@@ -145,6 +163,14 @@ void ComponentInputWidget::loadComponentData(void)
         if(rowStringList.size() != numCols)
         {
             this->userMessageDialog("Error, the number of items in row " + QString::number(i+1) + " does not equal number of headings in the file");
+            return;
+        }
+
+        auto currID = rowStringList.first().toInt();
+
+        if(initialID+i != currID)
+        {
+            this->userMessageDialog("Error, the asset IDs must be sequential");
             return;
         }
 
@@ -643,30 +669,30 @@ bool ComponentInputWidget::copyFiles(QString &destName)
 
 
     // Creates a csv file of only the selected components
-//     auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+    //     auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-//     QVector<QStringList> selectedData(selectedIDs.size()+1);
+    //     QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-//     selectedData[0] = headerInfo;
+    //     selectedData[0] = headerInfo;
 
-//     int i = 0;
-//     for(auto&& rowID : selectedIDs)
-//     {
-//         QStringList rowData;
-//         rowData.reserve(nCols);
+    //     int i = 0;
+    //     for(auto&& rowID : selectedIDs)
+    //     {
+    //         QStringList rowData;
+    //         rowData.reserve(nCols);
 
-//         for(int j = 0; j<nCols; ++j)
-//         {
-//             auto item = componentTableWidget->item(rowID,j)->data(0).toString();
+    //         for(int j = 0; j<nCols; ++j)
+    //         {
+    //             auto item = componentTableWidget->item(rowID,j)->data(0).toString();
 
-//             rowData<<item;
-//         }
-//         selectedData[i+1] = rowData;
+    //             rowData<<item;
+    //         }
+    //         selectedData[i+1] = rowData;
 
-//         ++i;
-//     }
+    //         ++i;
+    //     }
 
-//     csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+    //     csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
 
 
     return true;

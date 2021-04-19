@@ -15,21 +15,21 @@
     "Hazard": {
         "Application": "UserInputGM",
         "ApplicationData": {
-	    "eventFile": "/San_Andreas_Mw72/EventGrid.csv",
-	    "motionDir": "/San_Andreas_Mw72"
+	    "eventFile": "/San_Andreas_Mw72_filtered/EventGrid.csv",
+	    "motionDir": "/San_Andreas_Mw72_filtered"
 	}
     },	
     "Building": {
       "Application": "CSV_to_BIM",
       "ApplicationData": {
-        "filter": "1-2",
+        "filter": "8000-8024",
         "buildingSourceFile":"SanFrancisco_buildings.csv"
       }
     },
     "RegionalMapping": {
       "Application": "NearestNeighborEvents",
       "ApplicationData": {
-        "filenameEVENTgrid": "San_Andreas_Mw72/EventGrid.csv",
+        "filenameEVENTgrid": "San_Andreas_Mw72_filtered/EventGrid.csv",
         "samples": 100,
         "neighbors": 4
       }
