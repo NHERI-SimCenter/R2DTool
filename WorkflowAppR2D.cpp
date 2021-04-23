@@ -526,7 +526,7 @@ void WorkflowAppR2D::loadFile(const QString fileName){
     // check file exists & set apps current dir of it does
     QFileInfo fileInfo(fileName);
     if (!fileInfo.exists()){
-        emit errorMessage(QString("File foes not exist: ") + fileName);
+        emit errorMessage(QString("File does not exist: ") + fileName);
         return;
     }
 
