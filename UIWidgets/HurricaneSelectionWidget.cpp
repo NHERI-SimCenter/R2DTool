@@ -1586,7 +1586,7 @@ void HurricaneSelectionWidget::handleTerrainImport(void)
 
     SimpleFillSymbol* fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0, 255, 0, 75), this);
     SimpleRenderer* lineRenderer = new SimpleRenderer(fillSymbol, this);
-    lineRenderer->setLabel("Terrain Roughness Polygon");
+    lineRenderer->setLabel("Terrain roughness polygon");
 
     featureCollectionTable->setRenderer(lineRenderer);
 

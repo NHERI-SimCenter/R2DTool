@@ -538,7 +538,7 @@ LayerTreeItem* HurricanePreprocessor::createLandfallVisualization(const double l
 
     // Create renderer and set symbol to crossSymbol
     SimpleRenderer* landfallPointRenderer = new SimpleRenderer(landfallMarkerSymbol, theParent);
-    landfallPointRenderer->setLabel("Hurricane Landfall");
+    landfallPointRenderer->setLabel("Hurricane landfall");
 
     // Set the renderer for the feature layer
     landFallPntTable->setRenderer(landfallPointRenderer);
