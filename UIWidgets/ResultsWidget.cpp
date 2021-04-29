@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppR2D.h"
+#include <WorkflowAppR2D.h>
 #include "sectiontitle.h"
 
 #include <QCheckBox>
@@ -262,12 +262,30 @@ int ResultsWidget::printToPDF(void)
         return -1;
     }
 
-    if(DVApp.compare("Pelicun") == 0)
-    {
-        auto res = thePelicunPostProcessor->printToPDF(outputFileName);
+    QDir theDir(outputFileName);
+    if (theDir.exists()) {
+        QMessageBox msgBox;
+        msgBox.setText("Output file is a directory. No file will be written.");
+        msgBox.exec();
+        return 0;
+    }
 
-        if(res != 0)
-        {
+    QFile theFile(outputFileName);
+    if (theFile.exists()) {
+     QMessageBox::StandardButton reply = QMessageBox::question(this,
+                                      "File Exists", "File Exists .. Do you want to overwrite?",
+                             QMessageBox::Yes | QMessageBox::No);
+       if(reply == QMessageBox::No) {
+           return 0;
+       }
+    }
+
+
+    if(DVApp.compare("Pelicun") == 0) {
+
+        int res = thePelicunPostProcessor->printToPDF(outputFileName);
+
+        if(res != 0) {
             QString err = "Error printing the PDF";
             this->errorMessage(err);
             return -1;
