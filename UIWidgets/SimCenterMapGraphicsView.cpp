@@ -34,7 +34,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Frank McKenna, Stevan Gavrilovic
 
 #include "SimCenterMapGraphicsView.h"
 #include "GISLegendView.h"

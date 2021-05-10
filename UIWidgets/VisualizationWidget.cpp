@@ -342,7 +342,7 @@ void VisualizationWidget::createVisualizationWidget(void)
 
     visWidget->setStretchFactor(1,1);
 
-    // Now add the line to the splitter handle
+    // Now add the splitter handle
     // Note: index 0 handle is always hidden, index 1 is between the two widgets
     QSplitterHandle *handle = visWidget->handle(1);
 

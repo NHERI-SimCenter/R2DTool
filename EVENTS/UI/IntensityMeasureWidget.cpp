@@ -34,7 +34,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     //m_typeBox->setMaximumWidth(450);
     m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
-    QLabel* periodLabel = new QLabel(tr("Periods:"),this);
+    periodLabel = new QLabel(tr("Periods:"),this);
 
     // Set a validator to allow only numbers, periods, and spaces
     QRegExp regExpAllow("^([1-9][0-9]*|[1-9]*\\.[0-9]*|0\\.[0-9]*)*(([ ]*,[ ]*){0,1}([[1-9]*\\.[0-9]*|[1-9][0-9]*|0\\.[0-9]*))*");
@@ -70,6 +70,7 @@ void IntensityMeasureWidget::setupConnections()
     connect(this->periodsLineEdit, &QLineEdit::editingFinished, this, &IntensityMeasureWidget::commitPeriods);
     //    connect(this->periodsLineEdit, &QLineEdit::inputRejected, this->periodsLineEdit, &QLineEdit::undo);
 
+    connect(this->m_typeBox, &QComboBox::currentTextChanged, this, &IntensityMeasureWidget::handleTypeChanged);
 }
 
 
@@ -136,4 +137,19 @@ void IntensityMeasureWidget::commitPeriods()
     }
 
     m_intensityMeasure.setPeriods(periodArray);
+}
+
+
+void IntensityMeasureWidget::handleTypeChanged(const QString &val)
+{
+    if(val.compare("Spectral Accelerations (SA)") == 0)
+    {
+        periodsLineEdit->show();
+        periodLabel->show();
+    }
+    else
+    {
+        periodsLineEdit->hide();
+        periodLabel->hide();
+    }
 }

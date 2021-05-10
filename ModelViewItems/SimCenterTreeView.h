@@ -61,6 +61,10 @@ public:
 
     void selectRow(int i);
 
+    CheckableTreeModel *getTreeModel() const;
+
+    QVector<TreeItem*> getAllTreeItems(void);
+
 public slots:
     // Shows the "right-click" menu
     void showPopup(const QPoint &position);
@@ -74,7 +78,7 @@ private slots:
 
 private:
 
-    CheckableTreeModel* layersModel;
+    CheckableTreeModel* treeModel;
 };
 
 #endif // SimCenterTreeView_H

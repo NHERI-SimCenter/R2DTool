@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Frank McKenna, Stevan Gavrilovic
 
 #include "MapGraphicsView.h"
 

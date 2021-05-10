@@ -39,8 +39,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GridNode.h"
 #include "NodeHandle.h"
 #include "RectangleGrid.h"
-#include "RuptureWidget.h"
-#include "Site.h"
 #include "SiteConfig.h"
 #include "VisualizationWidget.h"
 

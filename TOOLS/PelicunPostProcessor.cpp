@@ -79,6 +79,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // GIS headers
 #include "Basemap.h"
 #include "FeatureTable.h"
+#include "FeatureCollectionLayer.h"
 #include "Map.h"
 #include "MapGraphicsView.h"
 
@@ -220,7 +221,7 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     tableDock->setMinimumWidth(475);
     addDockWidget(Qt::RightDockWidgetArea, tableDock);
 
-    // Create a map view that will be used for selecting the grid points
+    // Get the map view widget
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
     mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(nullptr);
@@ -1121,6 +1122,16 @@ void PelicunPostProcessor::setCurrentlyViewable(bool status){
 
     if (status == true)
         mapViewSubWidget->setCurrentlyViewable(status);
+
+    // Set the legend to display the selected building layer
+    auto buildingsWidget = theVisualizationWidget->getComponentWidget("BUILDINGS");
+
+    if(buildingsWidget)
+    {
+        auto selectedLayer = buildingsWidget->getSelectedFeatureLayer();
+
+        theVisualizationWidget->handleLegendChange(selectedLayer);
+    }
 }
 
 

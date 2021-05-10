@@ -147,6 +147,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     connect(remoteApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(theJobManager,SIGNAL(processResults(QString , QString, QString)), this, SLOT(processResults(QString, QString, QString)));
     connect(theJobManager,SIGNAL(loadFile(QString)), this, SLOT(loadFile(QString)));
+    connect(theJobManager,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
+    connect(theJobManager,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
 
