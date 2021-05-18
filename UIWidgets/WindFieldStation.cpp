@@ -100,6 +100,7 @@ void WindFieldStation::importWindFieldStation(void)
     auto indexPIH = tableHeadings.indexOf("PIH");
 
     peakWindSpeeds.resize(numRows);
+    peakInundationHeights.resize(numRows);
 
     // Get the data
     for(int i = 0; i<numRows; ++i)
