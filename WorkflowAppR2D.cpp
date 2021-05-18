@@ -400,7 +400,8 @@ void WorkflowAppR2D::onRunButtonClicked() {
     theRunWidget->hide();
     theRunWidget->setMinimumWidth(this->width()*0.5);
 
-    progressDialog->showDialog(true);
+    //    progressDialog->showDialog(true);
+    progressDialog->show();
     progressDialog->showProgressBar();
     theRunWidget->showLocalApplication();
     GoogleAnalytics::ReportLocalRun();

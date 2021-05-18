@@ -407,7 +407,8 @@ void GMWidget::runHazardSimulation(void)
 
     simulationComplete = false;
 
-    progressDialog->showDialog(true);
+    //progressDialog->showDialog(true);
+    progressDialog->show();    
 
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
