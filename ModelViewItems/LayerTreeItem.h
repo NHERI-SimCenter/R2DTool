@@ -64,7 +64,7 @@ public slots:
     void handleChangeOpacity(int value);
 
     // Zoom to the extents of the layer
-    void zoomToExtents();
+    void zoomtoLayer();
 
 signals:
 

@@ -74,7 +74,7 @@ win32::LIBS+=Advapi32.lib
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -134,11 +134,18 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SiteGridWidget.cpp \
             Events/UI/SiteWidget.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
+            GraphicElements/ConvexHull.cpp \
+            GraphicElements/PolygonBoundary.cpp \
+            ModelViewItems/CheckableTreeModel.cpp \
             ModelViewItems/GISLegendView.cpp \
+            ModelViewItems/SimCenterTreeView.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
+            Tools/ExampleDownloader.cpp \
+            Tools/HurricanePreprocessor.cpp \
             Tools/NGAW2Converter.cpp \
+            Tools/NetworkDownloadManager.cpp \
             Tools/PelicunPostProcessor.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
@@ -151,6 +158,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingDMWidget.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
+            UIWidgets/BuildingInputWidget.cpp \
+            UIWidgets/GasPipelineInputWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
             UIWidgets/BuildingSimulationWidget.cpp \
@@ -163,10 +172,13 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/GroundMotionStation.cpp \
+            UIWidgets/LoadResultsDialog.cpp \
+            UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
             UIWidgets/HazardToAssetWidget.cpp \
             UIWidgets/HazardsWidget.cpp \
+            UIWidgets/HurricaneParameterWidget.cpp \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
             UIWidgets/MDOF_LU.cpp \
             UIWidgets/MapViewSubWidget.cpp \
@@ -177,7 +189,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/OpenSeesPyBuildingModel.cpp \
             UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/PopUpWidget.cpp \
-            UIWidgets/ResultsMapViewWidget.cpp \
+            UIWidgets/EmbeddedMapViewWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/SecondaryComponentSelection.cpp \
             UIWidgets/ShakeMapWidget.cpp \
@@ -187,6 +199,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
             UIWidgets/UserInputGMWidget.cpp \
+            UIWidgets/HurricaneSelectionWidget.cpp \
             UIWidgets/UserInputHurricaneWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
             ModelViewItems/LayerTreeItem.cpp \
@@ -233,11 +246,18 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SiteGridWidget.h \
             Events/UI/SiteWidget.h \
             Events/UI/SpatialCorrelationWidget.h \
+            GraphicElements/ConvexHull.h \
+            GraphicElements/PolygonBoundary.h \
+            ModelViewItems/CheckableTreeModel.h \
             ModelViewItems/GISLegendView.h \
+            ModelViewItems/SimCenterTreeView.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
+            Tools/ExampleDownloader.h \
+            Tools/HurricanePreprocessor.h \
             Tools/NGAW2Converter.h \
+            Tools/NetworkDownloadManager.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
             Tools/TableNumberItem.h \
@@ -251,6 +271,8 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingDMWidget.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
+            UIWidgets/BuildingInputWidget.h \
+            UIWidgets/GasPipelineInputWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
             UIWidgets/BuildingModelingWidget.h \
             UIWidgets/BuildingSimulationWidget.h \
@@ -263,10 +285,13 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/GroundMotionStation.h \
+            UIWidgets/LoadResultsDialog.h \
+            UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \
             UIWidgets/HazardToAssetWidget.h \
             UIWidgets/HazardsWidget.h \
+            UIWidgets/HurricaneParameterWidget.h \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
             UIWidgets/MDOF_LU.h \
             UIWidgets/MapViewSubWidget.h \
@@ -277,7 +302,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
             UIWidgets/PelicunDLWidget.h \
             UIWidgets/PopUpWidget.h \
-            UIWidgets/ResultsMapViewWidget.h \
+            UIWidgets/EmbeddedMapViewWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/SecondaryComponentSelection.h \
             UIWidgets/ShakeMapWidget.h \
@@ -287,6 +312,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
             UIWidgets/UserInputGMWidget.h \
+            UIWidgets/HurricaneSelectionWidget.h \
             UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/VisualizationWidget.h \
             ModelViewItems/LayerTreeItem.h \
@@ -323,7 +349,7 @@ DISTFILES += \
     resources/docs/textAboutR2DT.html
 
 # External libraries
-macos:LIBS += /usr/lib/libcurl.dylib -llapack -lblas
+macos:LIBS += -lcurl -llapack -lblas
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
 
 # Path to build directory
@@ -332,40 +358,53 @@ DESTDIR = $$shell_path($$OUT_PWD)
 Release:DESTDIR = $$DESTDIR/release
 Debug:DESTDIR = $$DESTDIR/debug
 
-PATH_TO_BINARY=$$DESTDIR/Examples
+PATH_TO_EXAMPLES=$$DESTDIR/Examples
+PATH_TO_DATABASES=$$DESTDIR/Databases
 
 } else {
     mac {
-    PATH_TO_BINARY=$$OUT_PWD/R2D.app/Contents/MacOS
+    PATH_TO_EXAMPLES=$$OUT_PWD/R2D.app/Contents/MacOS
+    PATH_TO_DATABASES=$$OUT_PWD/R2D.app/Contents/MacOS
+
+    mkpath($$OUT_PWD/R2D.app/Contents/MacOS)
     }
 }
 
 win32 {
 
 # Copies over the examples folder into the build directory
-copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_BINARY))
-first.depends = $(first) copydata
+# Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+# first.depends = $(first) Copydata
 
 # Copies the dll files into the build directory
-CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
+# CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
+# first.depends += CopyDLLs
 
-first.depends += CopyDLLs
+# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+# first.depends += CopyDbs
 
-export(first.depends)
-export(CopyDLLs.commands)
-export(copydata.commands)
+# export(first.depends)
+# export(CopyDbs.commands)
+# export(CopyDLLs.commands)
 
-QMAKE_EXTRA_TARGETS += first copydata CopyDLLs
+# QMAKE_EXTRA_TARGETS += first Copydata CopyDbs CopyDLLs
 
 }else {
 mac {
 
-# Copies over the examples folder into the build directory
-copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
-first.depends = $(first) copydata
-export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
+# Copies the examples folder into the build directory
+#Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+
+# Copies the databases folder into the build directory
+# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+
+# first.depends += Copydata CopyDbs
+
+# export(first.depends)
+# export(Copydata.commands)
+# export(CopyDbs.commands)
+
+# QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
 }
 }

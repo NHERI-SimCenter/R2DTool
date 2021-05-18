@@ -34,7 +34,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Frank McKenna, Stevan Gavrilovic
 
 #include "SimCenterMapGraphicsView.h"
 #include "GISLegendView.h"
@@ -63,6 +63,8 @@ SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj) :theCurrentLayo
     theCurrentLayout = nullptr;
 
     legendView = new GISLegendView(this);
+
+    this->setContentsMargins(0,0,0,0);
 }
 
 

@@ -120,10 +120,12 @@ void TreeItem::remove()
     emit removeThisItem(itemID);
 }
 
+
 bool TreeItem::getIsCheckable() const
 {
     return isCheckable;
 }
+
 
 void TreeItem::setIsCheckable(bool value)
 {
@@ -197,8 +199,7 @@ void TreeItem::removeChild(TreeItem *child)
         }
     }
 
-    if(index != -1)
-        vecChildItems.remove(index);
+    this->removeChild(index);
 }
 
 
@@ -209,7 +210,14 @@ void TreeItem::removeChild(int row)
     if(row<0 || row>numChildren-1)
         return;
 
-//    auto child = vecChildItems.at(row);
+    auto child = vecChildItems.at(row);
+
+    emit removingChildItem(child->getItemID());
+
+    auto grandChildren = child->getChildItems();
+
+    for(auto&& it : grandChildren)
+        child->removeChild(it);
 
 //    delete child;
 

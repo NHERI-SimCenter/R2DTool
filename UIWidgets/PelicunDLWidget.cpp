@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QFileDialog>
+#include <QPushButton>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QIntValidator>
@@ -47,20 +49,24 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 
 PelicunDLWidget::PelicunDLWidget(QWidget *parent): SimCenterAppWidget(parent)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
-    QGroupBox* gmpeGroupBox = new QGroupBox(this);
-    gmpeGroupBox->setTitle("Pelicun Damage and Loss Prediction Methodology");
+    QGroupBox* groupBox = new QGroupBox(this);
+    groupBox->setTitle("Pelicun Damage and Loss Prediction Methodology");
 
-    QGridLayout* gridLayout = new QGridLayout(gmpeGroupBox);
+    QGridLayout* gridLayout = new QGridLayout(groupBox);
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
     DLTypeComboBox->addItem("HAZUS MH EQ");
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
+    DLTypeComboBox->addItem("HAZUS MH HU");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+
+    connect(DLTypeComboBox,&QComboBox::currentTextChanged, this, &PelicunDLWidget::handleComboBoxChanged);
 
     QLabel* realizationsLabel = new QLabel(tr("Number of realizations:"),this);
     realizationsLineEdit = new QLineEdit(this);
@@ -82,6 +88,19 @@ PelicunDLWidget::PelicunDLWidget(QWidget *parent): SimCenterAppWidget(parent)
     coupledEDPCheckBox = new QCheckBox("Coupled EDP",this);
     groundFailureCheckBox= new QCheckBox("Include ground failure",this);
 
+    autoPopulateScriptWidget = new QWidget(this);
+    auto autoPopulateScriptLayout = new QHBoxLayout(autoPopulateScriptWidget);
+    autoPopulationScriptLineEdit = new QLineEdit(this);
+    auto browseButton = new QPushButton("Browse",this);
+
+    connect(browseButton,&QPushButton::pressed,this,&PelicunDLWidget::handleBrowseButtonPressed);
+
+    auto autoPopScriptLabel = new QLabel("Auto populate script:");
+
+    autoPopulateScriptLayout->addWidget(autoPopScriptLabel);
+    autoPopulateScriptLayout->addWidget(autoPopulationScriptLineEdit);
+    autoPopulateScriptLayout->addWidget(browseButton);
+
     auto Vspacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     gridLayout->addWidget(typeLabel,0,0);
@@ -95,10 +114,13 @@ PelicunDLWidget::PelicunDLWidget(QWidget *parent): SimCenterAppWidget(parent)
     gridLayout->addWidget(logFileCheckBox,4,0);
     gridLayout->addWidget(coupledEDPCheckBox,5,0);
     gridLayout->addWidget(groundFailureCheckBox,6,0);
-    gridLayout->addItem(Vspacer,7,0,1,2);
+    gridLayout->addWidget(autoPopulateScriptWidget,7,0,1,2);
 
-    layout->addWidget(gmpeGroupBox);
-    this->setLayout(layout);
+    gridLayout->addItem(Vspacer,8,0,1,2);
+
+    layout->addWidget(groupBox);
+
+    autoPopulateScriptWidget->hide();
 }
 
 
@@ -116,6 +138,10 @@ bool PelicunDLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("coupled_EDP",coupledEDPCheckBox->isChecked());
     appDataObj.insert("event_time",eventTimeComboBox->currentText());
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
+
+    auto scriptPath = autoPopulationScriptLineEdit->text();
+    if(!scriptPath.isEmpty())
+        appDataObj.insert("auto_script",scriptPath);
 
     jsonObject.insert("ApplicationData",appDataObj);
 
@@ -154,10 +180,44 @@ bool PelicunDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (appData.contains("event_time"))
             eventTimeComboBox->setCurrentText(appData["event_time"].toString());
 
+        if (appData.contains("auto_script"))
+        {
+            auto pathToScript = appData["auto_script"].toString();
+
+            QFileInfo fileInfo;
+
+            if (fileInfo.exists(pathToScript))
+            {
+                autoPopulationScriptLineEdit->setText(pathToScript);
+            }
+            else
+            {
+                auto currPath = QDir::currentPath();
+
+                auto pathToComponentInfoFile = currPath + QDir::separator() + pathToScript;
+
+                if (fileInfo.exists(pathToComponentInfoFile))
+                {
+                    autoPopulationScriptLineEdit->setText(pathToComponentInfoFile);
+                }
+                else
+                {
+                    // adam .. adam .. adam
+                    pathToComponentInfoFile = currPath + QDir::separator()
+                            + "input_data" + QDir::separator() + pathToScript;
+
+                    if (fileInfo.exists(pathToComponentInfoFile))
+                        autoPopulationScriptLineEdit->setText(pathToComponentInfoFile);
+                    else
+                        this->infoMessage("Warning: the script file "+pathToScript+ " does not exist");
+                }
+            }
+        }
     }
 
     return true;
 }
+
 
 void PelicunDLWidget::clear(void)
 {
@@ -170,4 +230,51 @@ void PelicunDLWidget::clear(void)
     groundFailureCheckBox->setChecked(false);
 }
 
+
+
+bool PelicunDLWidget::copyFiles(QString &destName)
+{
+    auto compLineEditText = autoPopulationScriptLineEdit->text();
+
+    if(compLineEditText.isEmpty())
+        return true;
+
+    QFileInfo componentFile(compLineEditText);
+
+    if (!componentFile.exists())
+        return false;
+
+    // Do not copy the file, output a new csv which will have the changes that the user makes in the table
+    return this->copyFile(compLineEditText, destName);
+}
+
+
+void PelicunDLWidget::handleComboBoxChanged(const QString &text)
+{
+
+    if(text.compare("HAZUS MH HU") == 0)
+    {
+        groundFailureCheckBox->hide();
+        autoPopulateScriptWidget->show();
+    }
+    else
+    {
+        groundFailureCheckBox->show();
+        autoPopulateScriptWidget->hide();
+    }
+}
+
+
+void PelicunDLWidget::handleBrowseButtonPressed(void)
+{
+    QFileDialog dialog(this);
+    QString scriptFile = QFileDialog::getOpenFileName(this,tr("Auto-populate Script"));
+    dialog.close();
+
+    // Return if the user cancels or enters same file
+    if(scriptFile.isEmpty())
+        return;
+
+    autoPopulationScriptLineEdit->setText(scriptFile);
+}
 

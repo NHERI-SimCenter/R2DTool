@@ -113,9 +113,16 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
     //    DBPassLayout->addWidget(passwordBox, 1);
     //    dbsFormLayout->addRow("Password:", DBPassLayout);
 
+    QHBoxLayout* bottomLayout = new QHBoxLayout();
+
     closeButton = new QPushButton(tr("Close"), this);
-    layout->addWidget(closeButton);
-    layout->setAlignment(closeButton,Qt::AlignHCenter);
+    resetButton = new QPushButton(tr("Reset"), this);
+
+    bottomLayout->addWidget(closeButton);
+    bottomLayout->addWidget(resetButton);
+
+    layout->addLayout(bottomLayout);
+    layout->setAlignment(bottomLayout,Qt::AlignHCenter);
 
     // Reading current path
     workDirectoryBox->setText(appConfig->getWorkDirectoryPath());
@@ -170,6 +177,9 @@ void GmAppConfigWidget::setupConnections()
 
     connect(closeButton,&QAbstractButton::clicked,this, &QWidget::close);
     connect(closeButton,&QAbstractButton::clicked,this, &GmAppConfigWidget::saveConfig);
+
+    connect(resetButton,&QAbstractButton::clicked,this, &GmAppConfigWidget::resetConfig);
+    connect(resetButton,&QAbstractButton::clicked,this, &QWidget::close);
 }
 
 
@@ -177,3 +187,10 @@ void GmAppConfigWidget::saveConfig(void)
 {
     parentWidget->saveAppSettings();
 }
+
+
+void GmAppConfigWidget::resetConfig(void)
+{
+    parentWidget->resetAppSettings();
+}
+

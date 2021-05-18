@@ -57,6 +57,7 @@ signals:
 public slots:
 
     void saveConfig(void);
+    void resetConfig(void);
 
 private:
     GmAppConfig* appConfig;
@@ -68,6 +69,7 @@ private:
     QLineEdit* outputDirectoryBox;
     QPushButton* outputDirectoryButton;
     QPushButton* closeButton;
+    QPushButton* resetButton;
     //    QLineEdit* usernameBox;
     //    QLineEdit* passwordBox;
 

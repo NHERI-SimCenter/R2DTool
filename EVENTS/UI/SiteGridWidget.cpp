@@ -59,7 +59,7 @@ SiteGridWidget::SiteGridWidget(SiteGrid& siteGrid, QWidget *parent) : QWidget(pa
     m_longitudeDivBox->setValue(m_siteGrid.longitude().divisions());
     longitudeFormLayout->addField(tr("Divisions:"), this->m_longitudeDivBox);
 
-    selectGridButton = new QPushButton(tr("&Define Grid on Map"));
+    selectGridButton = new QPushButton(tr("&Define Grid on Map"),this);
 
     layout->addWidget(latitudeGroupBox,0,0);
     layout->addWidget(longitudeGroupBox,1,0);

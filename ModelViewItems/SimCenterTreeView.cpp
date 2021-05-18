@@ -48,8 +48,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 SimCenterTreeView::SimCenterTreeView(QWidget *parent, QString headerText) : QTreeView(parent)
 {
-    layersModel = new CheckableTreeModel(this, headerText);
-    this->setModel(layersModel);
+    treeModel = new CheckableTreeModel(this, headerText);
+    this->setModel(treeModel);
 
     this->setWordWrap(true);
     resizeColumnToContents(0);
@@ -73,7 +73,7 @@ SimCenterTreeView::SimCenterTreeView(QWidget *parent, QString headerText) : QTre
 
 TreeItem* SimCenterTreeView::addItemToTree(const QString itemText, const QString UID, TreeItem* parent)
 {
-    auto newItem = layersModel->addItemToTree(itemText, UID, parent);
+    auto newItem = treeModel->addItemToTree(itemText, UID, parent);
 
 
     return newItem;
@@ -82,7 +82,7 @@ TreeItem* SimCenterTreeView::addItemToTree(const QString itemText, const QString
 
 TreeItem* SimCenterTreeView::getTreeItem(const QString& itemName, const QString& parentName) const
 {
-    return layersModel->getTreeItem(itemName, parentName);
+    return treeModel->getTreeItem(itemName, parentName);
 }
 
 
@@ -95,7 +95,7 @@ void SimCenterTreeView::showPopup(const QPoint &position)
 
     auto parentName = itemIndex.parent().data(0).toString();
 
-    TreeItem *item = layersModel->getTreeItem(itemName,parentName);
+    TreeItem *item = treeModel->getTreeItem(itemName,parentName);
 
     if (!item)
         return;
@@ -174,19 +174,21 @@ void SimCenterTreeView::runAction()
 }
 
 
+CheckableTreeModel *SimCenterTreeView::getTreeModel() const
+{
+    return treeModel;
+}
 
 
 bool SimCenterTreeView::removeItemFromTree(const QString& itemID)
 {
-    return layersModel->removeItemFromTree(itemID);
+    return treeModel->removeItemFromTree(itemID);
 }
-
-
 
 
 void SimCenterTreeView::clear(void)
 {
-    layersModel->clear();
+    treeModel->clear();
 }
 
 
@@ -200,6 +202,12 @@ void SimCenterTreeView::itemSelected(const QModelIndex &index)
 
 void SimCenterTreeView::selectRow(int i)
 {
-    auto rowIndex = layersModel->index(i);
+    auto rowIndex = treeModel->index(i);
     this->setCurrentIndex(rowIndex);
+}
+
+
+QVector<TreeItem*> SimCenterTreeView::getAllTreeItems(void)
+{
+    return treeModel->getAllChildren();
 }

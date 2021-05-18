@@ -39,7 +39,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterAppWidget.h"
-#include "ResultsMapViewWidget.h"
 
 #include <memory>
 
@@ -73,7 +72,7 @@ public:
     UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputHurricaneWidget();
 
-    void showUserGMLayers(bool state);
+    void showUserWFLayers(bool state);
 
     QStackedWidget* getUserInputHurricaneWidget(void);
 
@@ -83,34 +82,32 @@ public:
 
     void clear(void);
 
-    void setCurrentlyViewable(bool status);
-
 public slots:
 
-    void showUserGMSelectDialog(void);
+    void showEventSelectDialog(void);
 
 private slots:
 
-    void handleHurricaneSelect(void);
-    void loadUserHurricaneData(void);
+    void loadUserWFData(void);
+    void loadHurricaneTrackData(void);
     void chooseEventFileDialog(void);
+    void chooseEventDirDialog(void);
 
 signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void outputDirectoryPathChanged(QString eventDir, QString eventFile);
     void loadingComplete(const bool value);
 
 private:
 
     std::unique_ptr<QStackedWidget> theStackedWidget;
-    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
-    QLineEdit *eventFileLineEdit;
+    QString eventDir;
 
-    QLabel* selectedHurricaneName;
-    QLabel* selectedHurricaneSID;
+    QLineEdit *eventFileLineEdit;
+    QLineEdit *eventDirLineEdit;
 
     QLabel* progressLabel;
     QWidget* progressBarWidget;

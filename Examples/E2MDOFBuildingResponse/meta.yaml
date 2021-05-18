@@ -1,9 +1,0 @@
-summary: |
-  This example uses ground motions from the 2018 earthquake in Anchorage, AK, to characterize the response of buildings with an idealized MDOF building model through story-level Engineering Demand Parameters (EDP). Exploiting the refinement in EDPs, a HAZUS-based story-level assessment is employed to evaluate the performance of 10 buildings.
-
-#<p>Tags: (Recorded ground motions | MDOF Building Response | HAZUS story-level D&L)<p>
-
-#[4k buildings in inventory with 10 selected for analysis]
-
-difficulty: 1
-

@@ -37,6 +37,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterPreferences.h"
+#include "Utils/RelativePathResolver.h"
+
 #include "AnalysisWidget.h"
 #include "AssetsWidget.h"
 #include "CustomizedItemModel.h"
@@ -63,6 +65,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "UQWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+#include "LoadResultsDialog.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -112,6 +115,8 @@ WorkflowAppR2D *WorkflowAppR2D::theInstance = nullptr;
 WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     : WorkflowAppWidget(theService, parent)
 {
+    resultsDialog = nullptr;
+
     // Set static pointer for global procedure
     theApp = this;
 
@@ -126,14 +131,6 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
 
     // connect signals and slots - error messages and signals
-    //    connect(theGI,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    //    connect(theGI,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    //    connect(theGI,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
-    connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    connect(theRunWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theRunWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
     connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
@@ -150,6 +147,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     connect(remoteApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(theJobManager,SIGNAL(processResults(QString , QString, QString)), this, SLOT(processResults(QString, QString, QString)));
     connect(theJobManager,SIGNAL(loadFile(QString)), this, SLOT(loadFile(QString)));
+    connect(theJobManager,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
+    connect(theJobManager,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
 
@@ -174,10 +173,34 @@ WorkflowAppR2D::~WorkflowAppR2D()
 
 void WorkflowAppR2D::initialize(void)
 {
-    // Clear action
-    QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
+
+    // Add the edit menu to the menu bar, make sure it comes before help
+    auto menuBar = theMainWindow->menuBar();
+
+    QAction* menuAfter = nullptr;
+    foreach (QAction *action, menuBar->actions()) {
+
+        // First check for an examples menu and if that does not exist put it before the help menu
+        auto actionText = action->text();
+        if(actionText.compare("&Examples") == 0)
+        {
+            menuAfter = action;
+            break;
+        }
+        else if(actionText.compare("&Help") == 0)
+        {
+            menuAfter = action;
+            break;
+        }
+    }
+
+    // Edit menu for the clear action
+    QMenu *resultsMenu = new QMenu(tr("&Results"),menuBar);
+
     // Set the path to the input file
-    editMenu->addAction("Clear", this, &WorkflowAppR2D::clear);
+    resultsMenu->addAction("&Load Results", this, &WorkflowAppR2D::loadResults);
+    menuBar->insertMenu(menuAfter, resultsMenu);
+
 
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
@@ -194,12 +217,8 @@ void WorkflowAppR2D::initialize(void)
     theUQWidget = new UQWidget(this, theRVs);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
 
-    connect(theVisualizationWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    connect(theVisualizationWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theVisualizationWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
-
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -345,7 +364,7 @@ void WorkflowAppR2D::clear(void)
     theDamageAndLossWidget->clear();
     theResultsWidget->clear();
     theVisualizationWidget->clear();
-    progressDialog->clear();
+    // progressDialog->clear();
     theComponentSelection->displayComponent("VIZ");
 }
 
@@ -357,7 +376,8 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     //
 
     if (theGeneralInformationWidget->inputFromJSON(jsonObject) == false) {
-        emit errorMessage("R2D: failed to read GeneralInformation");
+        this->errorMessage("R2D: failed to read GeneralInformation");
+        return false;
     }
 
 
@@ -365,13 +385,20 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
 
         QJsonObject apps = jsonObject["Applications"].toObject();
 
-        theUQWidget->inputAppDataFromJSON(apps);
-        theModelingWidget->inputAppDataFromJSON(apps);
-        theAnalysisWidget->inputAppDataFromJSON(apps);
-        theHazardToAssetWidget->inputAppDataFromJSON(apps);
-        theAssetsWidget->inputAppDataFromJSON(apps);
-        theHazardsWidget->inputAppDataFromJSON(apps);
-        theDamageAndLossWidget->inputAppDataFromJSON(apps);
+        if (theUQWidget->inputAppDataFromJSON(apps) == false)
+            return false;
+        if (theModelingWidget->inputAppDataFromJSON(apps) == false)
+            return false;
+        if (theAnalysisWidget->inputAppDataFromJSON(apps) == false)
+            return false;
+        if (theHazardToAssetWidget->inputAppDataFromJSON(apps) == false)
+            return false;
+        if (theAssetsWidget->inputAppDataFromJSON(apps) == false)
+            return false;
+        if (theHazardsWidget->inputAppDataFromJSON(apps) == false)
+            return false;
+        if (theDamageAndLossWidget->inputAppDataFromJSON(apps) == false)
+            return false;
 
     } else
         return false;
@@ -380,17 +407,18 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     ** Note to me - others
     */
 
-    theRunWidget->inputFromJSON(jsonObject);
+    if (theRunWidget->inputFromJSON(jsonObject) == false)
+        return false;
     //theModelingWidget->outputToJSON(jsonObjectTop);
-    theHazardsWidget->inputFromJSON(jsonObject);
+    if (theHazardsWidget->inputFromJSON(jsonObject) == false)
+        return false;
     //theAnalysisWidget->outputToJSON(jsonObjectTop);
     //theDamageAndLossWidget->outputToJSON(jsonObjectTop);
     //theHazardToAssetWidget->outputToJSON(jsonObjectTop);
     //theUQWidget->outputToJSON(jsonObjectTop);
     //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
-    theRVs->inputFromJSON(jsonObject);
-
-
+    if (theRVs->inputFromJSON(jsonObject) == false)
+        return false;
 
     return true;
 }
@@ -401,15 +429,18 @@ void WorkflowAppR2D::onRunButtonClicked() {
     theRunWidget->setMinimumWidth(this->width()*0.5);
 
     //    progressDialog->showDialog(true);
-    progressDialog->show();
+    // progressDialog->show();
+    progressDialog->setVisibility(true);
+
     progressDialog->showProgressBar();
+    progressDialog->setProgressBarValue(0);
+
     theRunWidget->showLocalApplication();
     GoogleAnalytics::ReportLocalRun();
 }
 
 
 void WorkflowAppR2D::onRemoteRunButtonClicked(){
-    //    emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
 
@@ -428,8 +459,6 @@ void WorkflowAppR2D::onRemoteRunButtonClicked(){
 
 void WorkflowAppR2D::onRemoteGetButtonClicked(){
 
-    // emit errorMessage("");
-
     bool loggedIn = theRemoteService->isLoggedIn();
 
     if (loggedIn == true) {
@@ -439,7 +468,7 @@ void WorkflowAppR2D::onRemoteGetButtonClicked(){
         theJobManager->show();
 
     } else {
-        errorMessage("ERROR - You need to Login");
+        this->errorMessage("ERROR - You need to Login");
     }
 }
 
@@ -515,20 +544,19 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     file.write(doc.toJson());
     file.close();
 
-
     statusMessage("Setup done. Now starting application.");
 
     emit setUpForApplicationRunDone(tmpDirectory, inputFile);
 }
 
 
-void WorkflowAppR2D::loadFile(const QString fileName){
+int WorkflowAppR2D::loadFile(const QString fileName){
 
     // check file exists & set apps current dir of it does
     QFileInfo fileInfo(fileName);
     if (!fileInfo.exists()){
-        emit errorMessage(QString("File does not exist: ") + fileName);
-        return;
+        this->errorMessage(QString("File does not exist: ") + fileName);
+        return -1;
     }
 
     QString dirPath = fileInfo.absoluteDir().absolutePath();
@@ -541,8 +569,8 @@ void WorkflowAppR2D::loadFile(const QString fileName){
 
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        emit errorMessage(QString("Could Not Open File: ") + fileName);
-        return;
+        this->errorMessage(QString("Could Not Open File: ") + fileName);
+        return -1;
     }
 
     //
@@ -560,14 +588,33 @@ void WorkflowAppR2D::loadFile(const QString fileName){
     progressDialog->showProgressBar();
     QApplication::processEvents();
 
-    this->inputFromJSON(jsonObj);
+    // Clear this before loading a new file
+    this->clear();
+
+    // Clean up and find the relative paths if the paths are wrong
+    SCUtils::ResolveAbsolutePaths(jsonObj, fileInfo.dir());
+    SCUtils::PathFinder(jsonObj,dirPath);
+
+    auto res = this->inputFromJSON(jsonObj);
+    if(res == false)
+    {
+        this->errorMessage("Failed to load the input file: " + fileName);
+        progressDialog->hideProgressBar();
+        return -1;
+    }
+
     progressDialog->hideProgressBar();
 
-    if(qobject_cast<RemoteJobManager*>(QObject::sender()) == nullptr)
-        this->statusMessage("Done loading. Click on the 'RUN' button to run an analysis.");
+    auto fileSender = qobject_cast<RemoteJobManager*>(QObject::sender());
+    if(fileSender == nullptr)
+        this->statusMessage("Done loading input file.  Click on the 'RUN' button to run an analysis.");
+    else
+        this->statusMessage("Done loading from remote.");
 
     // Automatically hide after n seconds
     // progressDialog->hideAfterElapsedTime(4);
+
+    return 0;
 }
 
 
@@ -630,6 +677,16 @@ void WorkflowAppR2D::fatalMessage(QString message)
 
 void WorkflowAppR2D::runComplete()
 {
-    progressDialog->hideAfterElapsedTime(2);
+    //    progressDialog->hideAfterElapsedTime(2);
+    progressDialog->hideProgressBar();
+}
+
+
+void WorkflowAppR2D::loadResults(void)
+{
+    if(resultsDialog == nullptr)
+        resultsDialog= new LoadResultsDialog(this);
+
+    resultsDialog->show();
 }
 

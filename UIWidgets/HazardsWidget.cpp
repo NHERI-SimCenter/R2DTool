@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GMWidget.h"
 #include "HazardsWidget.h"
 #include "ShakeMapWidget.h"
+#include "HurricaneSelectionWidget.h"
 #include "UserInputHurricaneWidget.h"
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
@@ -59,27 +60,26 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     : SimCenterAppSelection(QString("Hazard Selection"),QString("Hazard"), parent),
       theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
-    theShakeMapWidget = nullptr;
-    theEQSSWidget = nullptr;
-    theUserInputGMWidget = nullptr;
-    theUserInputHurricaneWidget = nullptr;
-
     this->setContentsMargins(0,0,0,0);
 
     theEQSSWidget = new GMWidget(this, theVisualizationWidget);
-    // theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
+    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
-    // theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget);
+    theHurricaneSelectionWidget = new HurricaneSelectionWidget(theVisualizationWidget);
+    theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget);
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
     this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);
-    // this->addComponent("User Specified Hurricanes", "UserInputHurricane", theUserInputHurricaneWidget);
+//    this->addComponent("Hurricane Scenario Simulation", "HurricaneSelection", theHurricaneSelectionWidget);
+//    this->addComponent("User Specified Wind Field", "UserInputWF", theUserInputHurricaneWidget);
+//    this->addComponent("ShakeMap Intensity Measures", "UserInputShakeMap", theShakeMapWidget);
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
     connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));    
+    connect(theUserInputHurricaneWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theHurricaneSelectionWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
 
-//    selectionChangedSlot("User Specified Hurricanes");
 }
 
 

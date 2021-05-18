@@ -69,7 +69,7 @@ LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : 
     connect(layersModel, &LayerTreeModel::rowPositionChanged, visWidget, &VisualizationWidget::changeLayerOrder);
 
     // Connect the layers tree with the function that turns the layers visibility on/off in the GIS map
-    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerSelection);
+    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerChecked);
 
     connect(this, &QWidget::customContextMenuRequested, this, &LayerTreeView::showPopup);
 
@@ -84,7 +84,8 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
 
     connect(newItem, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
     connect(newItem, &LayerTreeItem::zoomLayerExtents, theVisualizationWidget, &VisualizationWidget::zoomToLayer);
-    connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeLayer);
+    connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeItemFromTree);
+    connect(newItem, &TreeItem::removingChildItem, this, &LayerTreeView::removeLayer);
 
     return newItem;
 }
@@ -93,6 +94,12 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
 LayerTreeItem* LayerTreeView::getTreeItem(const QString& itemName, const QString& parentName) const
 {
     return layersModel->getLayerTreeItem(itemName, parentName);
+}
+
+
+LayerTreeItem* LayerTreeView::getTreeItem(const QString& itemID) const
+{
+    return layersModel->getLayerTreeItem(itemID);
 }
 
 
@@ -186,14 +193,15 @@ void LayerTreeView::runAction()
 
 void LayerTreeView::removeLayer(const QString& layerID)
 {
-    theVisualizationWidget->removeLayerFromMap(layerID);
-
-    this->removeItemFromTree(layerID);
+    if(!layerID.isEmpty())
+        theVisualizationWidget->removeLayerFromMap(layerID);
 }
 
 
 bool LayerTreeView::removeItemFromTree(const QString& itemID)
 {
+//    this->removeLayer(itemID);
+
     return layersModel->removeItemFromTree(itemID);
 }
 

@@ -67,9 +67,8 @@ public slots:
     void setEventType(QString);
 
 private:
-    QString eventType;
-
     QComboBox* unitsCombo;
+    QComboBox* eventTypeCombo;
 };
 
 #endif // SIM_CENTER_EVENT_REGIONAL_APP_H

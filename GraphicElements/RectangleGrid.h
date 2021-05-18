@@ -76,7 +76,7 @@ public:
     NodeHandle *getTopLeftNode() const;
     NodeHandle *getCenterNode() const;
 
-    void setGMSiteConfig(SiteConfig *value);
+    void setSiteGridConfig(SiteConfig *value);
     void setVisualizationWidget(VisualizationWidget *value);
 
     size_t getNumDivisionsHoriz() const;
@@ -124,7 +124,7 @@ private:
     NodeHandle* topLeftNode;
     NodeHandle* centerNode;
 
-    SiteConfig* GMSiteConfig;
+    SiteConfig* gridSiteConfig;
     VisualizationWidget* theVisWidget;
 
     QVector<GridNode*> gridNodeVec;

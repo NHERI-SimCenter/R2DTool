@@ -50,7 +50,6 @@ class GMPEWidget;
 class GmAppConfig;
 class IntensityMeasure;
 class IntensityMeasureWidget;
-class PythonProgressDialog;
 class MapViewSubWidget;
 class RecordSelectionConfig;
 class RecordSelectionWidget;
@@ -63,14 +62,6 @@ class VisualizationWidget;
 class QPushButton;
 class QStatusBar;
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class MapGraphicsView;
-}
-}
-
 class GMWidget : public SimCenterAppWidget
 {
     Q_OBJECT
@@ -82,7 +73,8 @@ public:
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
-    void saveAppSettings();
+    void saveAppSettings(void);
+    void resetAppSettings(void);
     void setCurrentlyViewable(bool status);
 
 signals:
@@ -136,7 +128,6 @@ private:
 
     VisualizationWidget* theVisualizationWidget;
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
     void setupConnections();
     void initAppConfig();
@@ -150,8 +141,6 @@ private:
     bool downloadComplete;
     QStringList recordsListToDownload;
     QJsonObject NGA2Results;
-
-    PythonProgressDialog* progressDialog;
 };
 
 #endif // GMWIDGET_H

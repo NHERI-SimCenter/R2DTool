@@ -201,9 +201,11 @@ void UserInputGMWidget::showUserGMLayers(bool state)
     // Check if there is a 'User Ground Motions' root item in the tree
     auto shakeMapTreeItem = layersTreeView->getTreeItem("User Ground Motions",nullptr);
 
+    auto itemUID = theVisualizationWidget->createUniqueID();
+
     // If there is no item, create one
     if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",QString());
+        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",itemUID);
 
 }
 
@@ -303,7 +305,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
     if(!err.isEmpty())
     {
-        this->userMessageDialog(err);
+        this->errorMessage(err);
         return;
     }
 
@@ -377,7 +379,7 @@ void UserInputGMWidget::loadUserGMData(void)
         if(!ok)
         {
             QString errMsg = "Error longitude to a double, check the value";
-            this->userMessageDialog(errMsg);
+            this->errorMessage(errMsg);
 
             userGMStackedWidget->setCurrentWidget(fileInputWidget);
             progressBarWidget->setVisible(false);
@@ -390,7 +392,7 @@ void UserInputGMWidget::loadUserGMData(void)
         if(!ok)
         {
             QString errMsg = "Error latitude to a double, check the value";
-            this->userMessageDialog(errMsg);
+            this->errorMessage(errMsg);
 
             userGMStackedWidget->setCurrentWidget(fileInputWidget);
             progressBarWidget->setVisible(false);
@@ -409,7 +411,7 @@ void UserInputGMWidget::loadUserGMData(void)
 
             auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
 
-            this->userMessageDialog(errorMessage);
+            this->errorMessage(errorMessage);
 
             userGMStackedWidget->setCurrentWidget(fileInputWidget);
             progressBarWidget->setVisible(false);
@@ -475,7 +477,10 @@ void UserInputGMWidget::loadUserGMData(void)
 
     // If there is no item, create one
     if(userInputTreeItem == nullptr)
-        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", QString());
+    {
+        auto itemUID = theVisualizationWidget->createUniqueID();
+        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", itemUID);
+    }
 
 
     // Add the event layer to the layer tree
@@ -528,7 +533,7 @@ void UserInputGMWidget::chooseEventFileDialog(void)
 
     if(!err.isEmpty())
     {
-        this->userMessageDialog(err);
+        this->errorMessage(err);
         return;
     }
 

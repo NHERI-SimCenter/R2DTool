@@ -117,6 +117,8 @@ public:
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
 
     void clear();
     bool copyFiles(QString &destDir);
@@ -129,7 +131,7 @@ public slots:
 
 private slots:
 
-    void loadShakeMapData(void);
+    int loadShakeMapData(void);
     void loadDataFromDirectory(const QString& dir);
     void chooseShakeMapDirectoryDialog(void);
 

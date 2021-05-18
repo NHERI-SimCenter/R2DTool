@@ -2,38 +2,38 @@
 
 SiteConfig::SiteConfig(QObject *parent) : QObject(parent)
 {
-    m_type = SiteType::Grid;
-    m_site.location().set(0.0, 0.0);
+    theType = SiteType::Grid;
+    theSite.location().set(0.0, 0.0);
 }
 
 Site &SiteConfig::site()
 {
-    return m_site;
+    return theSite;
 }
 
 SiteGrid &SiteConfig::siteGrid()
 {
-    return m_siteGrid;
+    return theSiteGrid;
 }
 
 SiteConfig::SiteType SiteConfig::getType() const
 {
-    return m_type;
+    return theType;
 }
 
 void SiteConfig::setType(const SiteType &type)
 {
-    if(m_type != type)
+    if(theType != type)
     {
-        m_type = type;
-        emit typeChanged(m_type);
+        theType = type;
+        emit typeChanged(theType);
     }
 }
 
 QJsonObject SiteConfig::getJson()
 {
-    if(m_type == SiteType::Single)
-        return m_site.getJson();
+    if(theType == SiteType::Single)
+        return theSite.getJson();
     else
-        return m_siteGrid.getJson();
+        return theSiteGrid.getJson();
 }

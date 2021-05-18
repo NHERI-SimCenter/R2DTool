@@ -36,11 +36,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
+#include "HurricanePreprocessor.h"
 #include "CSVReaderWriter.h"
 #include "LayerTreeView.h"
 #include "UserInputHurricaneWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+#include "WindFieldStation.h"
 
 // GIS Layers
 #include "FeatureCollectionLayer.h"
@@ -49,7 +51,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerListModel.h"
 #include "SimpleMarkerSymbol.h"
 #include "SimpleRenderer.h"
-#include "PolygonBuilder.h"
 
 #include <QApplication>
 #include <QDialog>
@@ -60,6 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QProgressBar>
+#include <QComboBox>
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QStackedWidget>
@@ -75,18 +77,12 @@ UserInputHurricaneWidget::UserInputHurricaneWidget(VisualizationWidget* visWidge
     progressBarWidget = nullptr;
     theStackedWidget = nullptr;
     progressLabel = nullptr;
-    selectedHurricaneName = nullptr;
-    selectedHurricaneSID = nullptr;
-
     eventFile = "";
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(this->getUserInputHurricaneWidget());
     layout->addStretch();
     this->setLayout(layout);
-
-//    eventFile = "/Users/steve/Desktop/ibtracs.last3years.list.v04r00.csv";
-//    this->loadUserHurricaneData();
 
 }
 
@@ -102,20 +98,15 @@ bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "UserInputHurricane";
 
     QJsonObject appData;
-    //    QFileInfo theFile(eventFile);
-    //    if (theFile.exists()) {
-    //        appData["eventFile"]=theFile.fileName();
-    //        appData["eventFileDir"]=theFile.path();
-    //    } else {
-    //        appData["eventFile"]=eventFile; // may be valid on others computer
-    //        appData["eventFileDir"]=QString("");
-    //    }
-    //    QFileInfo theDir(motionDir);
-    //    if (theDir.exists()) {
-    //        appData["motionDir"]=theDir.absoluteFilePath();
-    //    } else {
-    //        appData["motionDir"]=QString("None");
-    //    }
+    QFileInfo theFile(eventFile);
+    if (theFile.exists()) {
+        appData["eventFile"]=theFile.fileName();
+        appData["eventFileDir"]=theFile.path();
+    } else {
+        appData["eventFile"]=eventFile; // may be valid on others computer
+        appData["eventFileDir"]=QString("");
+    }
+
 
     jsonObject["ApplicationData"]=appData;
 
@@ -125,7 +116,7 @@ bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool UserInputHurricaneWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    // qDebug() << "USER GM outputPLAIN";
+
 
     return true;
 }
@@ -134,80 +125,83 @@ bool UserInputHurricaneWidget::outputToJSON(QJsonObject &jsonObj)
 bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
     if (jsonObj.contains("ApplicationData")) {
-        //        QJsonObject appData = jsonObj["ApplicationData"].toObject();
+        QJsonObject appData = jsonObj["ApplicationData"].toObject();
 
-        //        QString fileName;
-        //        QString pathToFile;
+        QString fileName;
+        QString pathToFile;
 
-        //        if (appData.contains("eventFile"))
-        //            fileName = appData["eventFile"].toString();
-        //        if (appData.contains("eventFileDir"))
-        //            pathToFile = appData["eventFileDir"].toString();
-        //        else
-        //            pathToFile=QDir::currentPath();
+        if (appData.contains("eventFile"))
+            fileName = appData["eventFile"].toString();
+        if (appData.contains("eventFileDir"))
+            pathToFile = appData["eventFileDir"].toString();
+        else
+            pathToFile = QDir::currentPath();
 
-        //        QString fullFilePath= pathToFile + QDir::separator() + fileName;
+        QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
-        //        // adam .. adam .. adam
-        //        if (!QFileInfo::exists(fullFilePath)){
-        //            fullFilePath = pathToFile + QDir::separator()
-        //                    + "input_data" + QDir::separator() + fileName;
+        // adam .. adam .. adam
+        if (!QFileInfo::exists(fullFilePath)){
+            fullFilePath = pathToFile + QDir::separator()
+                    + "input_data" + QDir::separator() + fileName;
 
-        //            if (!QFile::exists(fullFilePath)) {
-        //                qDebug() << "UserInputGM - could not find event file";
-        //                return false;
-        //            }
-        //        }
+            if (!QFile::exists(fullFilePath)) {
+                this->errorMessage("UserInputWF - could not find EventGrid.csv file");
+                return false;
+            }
+        }
 
-        //        eventFileLineEdit->setText(fullFilePath);
-        //        eventFile = fullFilePath;
+        eventFileLineEdit->setText(fullFilePath);
+        eventFile = fullFilePath;
 
-        //        if (appData.contains("motionDir"))
-        //            motionDir = appData["motionDir"].toString();
+        if (appData.contains("eventDir"))
+        {
+            eventDir = appData["eventDir"].toString();
 
-        //        QDir motionD(motionDir);
+            QDir evtD(eventDir);
 
-        //        if (!motionD.exists()){
-        //            QString trialDir = QDir::currentPath() +
-        //                    QDir::separator() + "input_data" + motionDir;
-        //            if (motionD.exists(trialDir)) {
-        //                motionDir = trialDir;
-        //                motionDirLineEdit->setText(trialDir);
-        //            } else {
-        //                qDebug() << "UserInputGM - could not find motion dir" << motionDir << " " << trialDir;
-        //                return false;
-        //            }
-        //        } else {
-        //            motionDirLineEdit->setText(motionDir);
-        //        }
+            if (!evtD.exists()){
+                QString trialDir = QDir::currentPath() +
+                        QDir::separator() + "input_data" + eventDir;
+                if (evtD.exists(trialDir)) {
+                    eventDir = trialDir;
+                    eventDirLineEdit->setText(trialDir);
+                } else {
+                    this->errorMessage("UserInputWF - could not find wind field dir" + eventDir + " " + trialDir);
+                    return false;
+                }
+            } else {
+                eventDirLineEdit->setText(eventDir);
+            }
+        }
 
-        //        this->loadUserGMData();
-        //        return true;
+        this->loadUserWFData();
+
+        return true;
     }
 
     return false;
 }
 
 
-void UserInputHurricaneWidget::showUserGMLayers(bool state)
+void UserInputHurricaneWidget::showUserWFLayers(bool state)
 {
     auto layersTreeView = theVisualizationWidget->getLayersTree();
 
 
     if(state == false)
     {
-        layersTreeView->removeItemFromTree("User Ground Motions");
+        layersTreeView->removeItemFromTree("User Wind Field");
 
         return;
     }
 
 
-    // Check if there is a 'User Ground Motions' root item in the tree
-    auto shakeMapTreeItem = layersTreeView->getTreeItem("User Ground Motions",nullptr);
+    // Check if there is a "User Wind Field" root item in the tree
+    auto shakeMapTreeItem = layersTreeView->getTreeItem("User Wind Field",nullptr);
 
     // If there is no item, create one
     if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",QString());
+        shakeMapTreeItem = layersTreeView->addItemToTree("User Wind Field",QString());
 
 }
 
@@ -218,7 +212,6 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
         return theStackedWidget.get();
 
     theStackedWidget = std::make_unique<QStackedWidget>();
-    theStackedWidget->setContentsMargins(0,0,0,0);
 
     //
     // file and dir input
@@ -226,40 +219,29 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
 
     fileInputWidget = new QWidget(this);
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
-    fileLayout->setContentsMargins(0,0,0,0);
+    fileInputWidget->setLayout(fileLayout);
 
-    QLabel* selectComponentsText = new QLabel("Event File Listing Hurricanes",this);
+
+    QLabel* selectComponentsText = new QLabel("Event File Listing Wind Field");
     eventFileLineEdit = new QLineEdit();
-    QPushButton *browseFileButton = new QPushButton("Browse",this);
+    QPushButton *browseFileButton = new QPushButton("Browse");
 
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
 
-    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr);
+    fileLayout->addWidget(selectComponentsText, 0,0);
+    fileLayout->addWidget(eventFileLineEdit,    0,1);
+    fileLayout->addWidget(browseFileButton,     0,2);
 
-    QHBoxLayout *selectedHurricaneLayout = new QHBoxLayout();
+    QLabel* selectFolderText = new QLabel("Folder Containing Wind Field Stations",this);
+    eventDirLineEdit = new QLineEdit();
+    QPushButton *browseFolderButton = new QPushButton("Browse",this);
 
-    QPushButton *selectHurricaneButton = new QPushButton("Select Hurricane",this);
+    connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseEventDirDialog()));
 
-    connect(selectHurricaneButton,&QPushButton::clicked,this,&UserInputHurricaneWidget::handleHurricaneSelect);
-
-    QLabel* selectedHurricaneLabel = new QLabel("Hurricane Selected For Analysis: ",this);
-    QLabel* SIDLabel = new QLabel(" - SID: ",this);
-
-    selectedHurricaneName = new QLabel("None",this);
-    selectedHurricaneSID = new QLabel("None",this);
-
-    selectedHurricaneLayout->addWidget(selectHurricaneButton);
-    selectedHurricaneLayout->addWidget(selectedHurricaneLabel);
-    selectedHurricaneLayout->addWidget(selectedHurricaneName);
-    selectedHurricaneLayout->addWidget(SIDLabel);
-    selectedHurricaneLayout->addWidget(selectedHurricaneSID);
-    selectedHurricaneLayout->addStretch(1);
-
-    fileLayout->addWidget(selectComponentsText,   0,0);
-    fileLayout->addWidget(eventFileLineEdit,      0,1);
-    fileLayout->addWidget(browseFileButton,       0,2);
-    fileLayout->addLayout(selectedHurricaneLayout, 1,0,1,3);
-    fileLayout->addWidget(mapViewSubWidget.get(), 2,0,1,3);
+    fileLayout->addWidget(selectFolderText,   1,0);
+    fileLayout->addWidget(eventDirLineEdit, 1,1);
+    fileLayout->addWidget(browseFolderButton, 1,2);
+    fileLayout->setRowStretch(2,1);
 
     //
     // progress bar
@@ -269,8 +251,8 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
     progressBarWidget->setLayout(progressBarLayout);
 
-    auto progressText = new QLabel("Loading user hurricane data. This may take a while.",progressBarWidget);
-    progressLabel =  new QLabel("",this);
+    auto progressText = new QLabel("Loading user wind field data.  This may take a while.",progressBarWidget);
+    progressLabel =  new QLabel(" ",this);
     progressBar = new QProgressBar(progressBarWidget);
 
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -287,16 +269,14 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
 
     theStackedWidget->addWidget(fileInputWidget);
     theStackedWidget->addWidget(progressBarWidget);
-
     theStackedWidget->setCurrentWidget(fileInputWidget);
-
-    theStackedWidget->setWindowTitle("Select folder containing hurricanes");
+    theStackedWidget->setWindowTitle("Select folder containing hurricane track");
 
     return theStackedWidget.get();
 }
 
 
-void UserInputHurricaneWidget::showUserGMSelectDialog(void)
+void UserInputHurricaneWidget::showEventSelectDialog(void)
 {
 
     if (!theStackedWidget)
@@ -310,8 +290,37 @@ void UserInputHurricaneWidget::showUserGMSelectDialog(void)
 }
 
 
-void UserInputHurricaneWidget::loadUserHurricaneData(void)
+void UserInputHurricaneWidget::loadHurricaneTrackData(void)
 {
+
+    HurricanePreprocessor hurricaneImportTool(progressBar, theVisualizationWidget, this);
+
+    theStackedWidget->setCurrentWidget(progressBarWidget);
+    progressBarWidget->setVisible(true);
+
+    QString errMsg;
+    auto res = hurricaneImportTool.loadHurricaneTrackData(eventFile,errMsg);
+
+    if(res != 0)
+        this->statusMessage(errMsg);
+
+    // Reset the widget back to the input pane and close
+    theStackedWidget->setCurrentWidget(fileInputWidget);
+    fileInputWidget->setVisible(true);
+
+    if(theStackedWidget->isModal())
+        theStackedWidget->close();
+
+    emit loadingComplete(true);
+
+    return;
+}
+
+
+void UserInputHurricaneWidget::loadUserWFData(void)
+{
+
+    this->statusMessage("Loading wind field data");
     CSVReaderWriter csvTool;
 
     QString err;
@@ -319,7 +328,7 @@ void UserInputHurricaneWidget::loadUserHurricaneData(void)
 
     if(!err.isEmpty())
     {
-        this->userMessageDialog(err);
+        this->errorMessage(err);
         return;
     }
 
@@ -329,259 +338,191 @@ void UserInputHurricaneWidget::loadUserHurricaneData(void)
     theStackedWidget->setCurrentWidget(progressBarWidget);
     progressBarWidget->setVisible(true);
 
-    // Get the header information to populate the fields
-    auto topHeaderData = data.at(0);
-    auto unitsData = data.at(1);
+    QApplication::processEvents();
 
-    auto numCol = topHeaderData.size();
+    //progressBar->setRange(0,inputFiles.size());
+    progressBar->setRange(0, data.count());
 
-    auto indexName = -1;
-    auto indexSID = -1;
-    auto indexLat = -1;
-    auto indexLon = -1;
-    auto indexSeason = -1;
-
-    for(int col = 0; col < numCol; ++col)
-    {
-        if(topHeaderData.at(col) == "LAT")
-            indexLat = col;
-        else if(topHeaderData.at(col) == "LON")
-            indexLon = col;
-        else if(topHeaderData.at(col) == "NAME")
-            indexName = col;
-        else if(topHeaderData.at(col) == "SID")
-            indexSID = col;
-        else if(topHeaderData.at(col) == "SEASON")
-            indexSeason = col;
-    }
-
-    if(indexName == -1 || indexSID == -1 || indexLat == -1 || indexLon == -1 || indexSeason == -1)
-    {
-        qDebug()<<"Could not find the required column indexes in the data file";
-        return;
-    }
+    progressBar->setValue(0);
 
     // Create the table to store the fields
     QList<Field> tableFields;
-
-    // Common fields
     tableFields.append(Field::createText("AssetType", "NULL",4));
     tableFields.append(Field::createText("TabName", "NULL",4));
-    tableFields.append(Field::createText("UID", "NULL",4));
+    tableFields.append(Field::createText("Station Name", "NULL",4));
+    tableFields.append(Field::createText("Latitude", "NULL",8));
+    tableFields.append(Field::createText("Longitude", "NULL",9));
+    tableFields.append(Field::createText("Peak Wind Speeds", "NULL",9));
+    tableFields.append(Field::createText("Peak Inundation Heights", "N/A",9));
 
-    for(auto&& it : topHeaderData)
+    auto gridFeatureCollection = new FeatureCollection(this);
+
+    // Create the feature collection table/layers
+    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
+    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
+
+    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+
+    gridLayer->setName("Wind Field Grid");
+    gridLayer->setAutoFetchLegendInfos(true);
+
+    // Create red cross SimpleMarkerSymbol
+    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
+
+    // Create renderer and set symbol to crossSymbol
+    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+    renderer->setLabel("Wind Field Grid Points");
+
+    // Set the renderer for the feature layer
+    gridFeatureCollectionTable->setRenderer(renderer);
+
+    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
+    // gridLayer->setMinScale(80000);
+
+    auto headerInfo = data.front();
+
+    auto latIndex = headerInfo.indexOf("Latitude");
+    auto lonIndex = headerInfo.indexOf("Longitude");
+
+    if(latIndex == -1 || lonIndex == -1)
     {
-        tableFields.append(Field::createText(it, "NULL",4));
-    }
-
-    // Pop off the first two rows that contain the header information
-    data.pop_front();
-    data.pop_front();
-
-    // Create the buildings group layer that will hold the sublayers
-    auto allHurricanesLayer = new GroupLayer(QList<Layer*>{},this);
-    allHurricanesLayer->setName("Hurricanes");
-
-    auto allHurricanesItem = theVisualizationWidget->addLayerToMap(allHurricanesLayer);
-
-    if(allHurricanesItem == nullptr)
-    {
-        qDebug()<<"Error adding item to the map";
+        this->errorMessage("Could not find the Latitude and Longitude headsers in the EventGrid.csv file");
         return;
     }
 
+    // Pop off the row that contains the header information
+    data.pop_front();
 
-    // Split the hurricanes up as they come in one long list
-    QVector<QVector<QStringList>> hurricanes;
+    auto numRows = data.size();
 
-    QVectorIterator<QStringList> i(data);
-    QString SID;
+    int count = 0;
 
-    QVector<QStringList> hurricane;
-    while (i.hasNext())
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
     {
-        auto row = i.next();
+        auto rowStr = data.at(i);
 
-        if(row.size() != numCol)
+        auto stationName = rowStr[0];
+
+        // Path to station files, e.g., site0.csv
+        auto stationPath = eventDir + QDir::separator() + stationName;
+
+        bool ok;
+        auto longitude = rowStr[lonIndex].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error longitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            theStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
             return;
-
-        auto currSID = row.at(indexSID);
-
-        if(SID.compare(currSID) != 0)
-        {
-            if(!hurricane.isEmpty())
-            {
-                hurricanes.push_back(hurricane);
-                hurricane.clear();
-            }
-
-            SID = currSID;
-        }
-        else
-        {
-            hurricane.push_back(row);
-        }
-    }
-
-
-    auto numHurricanes = hurricanes.size();
-
-    progressBar->setMinimum(0);
-    progressBar->setMaximum(numHurricanes);
-    progressBar->reset();
-    QApplication::processEvents();
-
-    for(int i = 0; i<numHurricanes; ++i)
-    {
-        progressBar->setValue(i);
-        QApplication::processEvents();
-
-        // Get the hurricane
-        auto hurricane = hurricanes.at(i);
-
-        auto numPnts = hurricane.size();
-
-        auto name = hurricane.front().at(indexName);
-        auto SID = hurricane.front().at(indexSID);
-        auto season = hurricane.front().at(indexSeason);
-
-        auto nameID = name+"-"+season;
-
-        auto thisHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
-        thisHurricaneLayer->setName(nameID);
-
-        auto thisHurricanesItem = theVisualizationWidget->addLayerToMap(thisHurricaneLayer,allHurricanesItem,allHurricanesLayer);
-
-        //        auto trackPntsFeatureCollection = new FeatureCollection(this);
-
-        //        // Create the feature collection table/layers
-        //        auto trackPntsFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
-        //        trackPntsFeatureCollection->tables()->append(trackPntsFeatureCollectionTable);
-
-        //        auto trackPntsLayer = new FeatureCollectionLayer(trackPntsFeatureCollection,this);
-
-        //        trackPntsLayer->setName(name+" - Points");
-
-        //        // Create cross SimpleMarkerSymbol
-        //        SimpleMarkerSymbol* markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor("black"), 4, this);
-
-        //        // Create renderer and set symbol to crossSymbol
-        //        SimpleRenderer* pointRenderer = new SimpleRenderer(markerSymbol, this);
-        //        pointRenderer->setLabel("Hurricane track points");
-
-        //        // Set the renderer for the feature layer
-        //        trackPntsFeatureCollectionTable->setRenderer(pointRenderer);
-
-        // Each row is a point on the hurricane track
-        PartCollection* trackCollection = new PartCollection(SpatialReference::wgs84(), this);
-        double latitude = 0.0;
-        double longitude = 0.0;
-        for(int j = 0; j<numPnts; ++j)
-        {
-            auto trackPoint = hurricane.at(j);
-
-            // create the feature attributes
-            //  QMap<QString, QVariant> featureAttributes;
-            //  for(int k = 0; k<numCol; ++k)
-            //  {
-            //      featureAttributes.insert(topHeaderData.at(k), trackPoint.at(k));
-            //  }
-
-            //  featureAttributes.insert("AssetType", buildingIDStr);
-            //  featureAttributes.insert("TabName", buildingIDStr);
-            //  featureAttributes.insert("UID", uid);
-
-            Point pointPrev(longitude,latitude);
-
-            // Create the geometry for visualization
-            latitude = trackPoint.at(indexLat).toDouble();
-            longitude = trackPoint.at(indexLon).toDouble();
-
-            Point point(longitude,latitude);
-
-            if(j != 0)
-            {
-                Part* partj = new Part(SpatialReference::wgs84(), this);
-                partj->addPoint(point);
-                partj->addPoint(pointPrev);
-
-                trackCollection->addPart(partj);
-            }
-
-            // Create the point feature
-            //            auto feature = trackPntsFeatureCollectionTable->createFeature(featureAttributes, point, this);
-
-            //            trackPntsFeatureCollectionTable->addFeature(feature);
         }
 
-        // Add the points layer
-        //        theVisualizationWidget->addLayerToMap(trackPntsLayer,thisHurricanesItem, thisHurricaneLayer);
+        auto latitude = rowStr[latIndex].toDouble(&ok);
 
-        PolygonBuilder polylineBuilder(SpatialReference::wgs84());
-        polylineBuilder.setParts(trackCollection);
+        if(!ok)
+        {
+            QString errMsg = "Error latitude to a double, check the value";
+            this->errorMessage(errMsg);
 
-        // Add the track polyline layer
-        // if(!polylineBuilder.isSketchValid())
-        // {
-        //     qDebug()<<"Error, cannot create a feature with the latitude and longitude provided";
-        //     return;
-        // }
+            theStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
 
-        // Create the feature collection table/layers
-        QList<Field> trackFields;
-        trackFields.append(Field::createText("NAME", "NULL",4));
-        trackFields.append(Field::createText("SID", "NULL",4));
-        trackFields.append(Field::createText("SEASON", "NULL",4));
-        trackFields.append(Field::createText("AssetType", "NULL",4));
-        trackFields.append(Field::createText("TabName", "NULL",4));
-        trackFields.append(Field::createText("UID", "NULL",4));
+            return;
+        }
+
+        WindFieldStation WFStation(stationName,latitude,longitude);
+
+        WFStation.setStationFilePath(stationPath);
+
+        try
+        {
+            WFStation.importWindFieldStation();
+        }
+        catch(QString msg)
+        {
+            auto errorMessage = "Error importing wind field file: " + stationName+"\n"+msg;
+
+            this->errorMessage(errorMessage);
+
+            theStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        auto pws = WFStation.getPeakWindSpeeds();
+
+        QString pwsStr;
+        for(int i = 0; i<pws.size()-1; ++i)
+        {
+            pwsStr += QString::number(pws[i]) + ", ";
+        }
+
+        pwsStr += QString::number(pws.back());
 
 
-        auto trackFeatureCollection = new FeatureCollection(this);
-        auto trackFeatureCollectionTable = new FeatureCollectionTable(trackFields, GeometryType::Polyline, SpatialReference::wgs84(), this);
-        trackFeatureCollection->tables()->append(trackFeatureCollectionTable);
+        auto pih = WFStation.getPeakInundationHeights();
 
-        auto trackLayer = new FeatureCollectionLayer(trackFeatureCollection,this);
+        QString pihStr;
+        for(int i = 0; i<pih.size()-1; ++i)
+        {
+            pihStr += QString::number(pih[i]) + ", ";
+        }
 
-        trackLayer->setName(nameID+" - Track");
+        pihStr += QString::number(pih.back());
 
-        // Create line symbol for the track
-        SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid,
-                                                            QColor(0, 0, 0),
-                                                            2.0f /*width*/,
-                                                            SimpleLineSymbolMarkerStyle::Arrow,
-                                                            SimpleLineSymbolMarkerPlacement::End,
-                                                            this);
 
-        // Create renderer and set symbol for the track
-        SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
-        lineRenderer->setLabel("Hurricane track");
-
-        // Set the renderer for the feature layer
-        trackFeatureCollectionTable->setRenderer(lineRenderer);
-
-        auto uid = theVisualizationWidget->createUniqueID();
-
+        // create the feature attributes
         QMap<QString, QVariant> featureAttributes;
-        featureAttributes.insert("NAME",name);
-        featureAttributes.insert("SID",SID);
-        featureAttributes.insert("SEASON",season);
-        featureAttributes.insert("TabName", nameID);
-        featureAttributes.insert("AssetType", "HURRICANE");
-        featureAttributes.insert("UID", uid);
+        featureAttributes.insert("Station Name", stationName);
+        featureAttributes.insert("AssetType", "WindfieldGridPoint");
+        featureAttributes.insert("TabName", "Wind Field Grid Point");
+        featureAttributes.insert("Latitude", latitude);
+        featureAttributes.insert("Longitude", longitude);
+        featureAttributes.insert("Peak Wind Speeds", pwsStr);
 
-        // Create the polyline feature
-        auto polyline =  polylineBuilder.toPolyline();
+        if(!pihStr.isEmpty())
+            featureAttributes.insert("Peak Inundation Heights", pihStr);
 
-        auto trackFeat = trackFeatureCollectionTable->createFeature(featureAttributes,polyline,this);
-        trackFeatureCollectionTable->addFeature(trackFeat);
+        // Create the point and add it to the feature table
+        Point point(longitude,latitude);
+        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
 
-        theVisualizationWidget->addLayerToMap(trackLayer, thisHurricanesItem, thisHurricaneLayer);
+        gridFeatureCollectionTable->addFeature(feature);
+        WFStation.setStationFeature(feature);
+
+        ++count;
+        progressLabel->clear();
+        progressBar->setValue(count);
+
+        QApplication::processEvents();
     }
 
+    // Create a new layer
+    auto layersTreeView = theVisualizationWidget->getLayersTree();
+
+    // Check if there is a 'User Ground Motions' root item in the tree
+    auto userInputTreeItem = layersTreeView->getTreeItem("User Wind Field", nullptr);
+
+    // If there is no item, create one
+    if(userInputTreeItem == nullptr)
+    {
+        auto itemUID = theVisualizationWidget->createUniqueID();
+        userInputTreeItem = layersTreeView->addItemToTree("User Wind Field", itemUID);
+    }
+
+
+    // Add the event layer to the layer tree
+    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
 
     progressLabel->setVisible(false);
 
+    // Add the event layer to the map
+    theVisualizationWidget->addLayerToMap(gridLayer,userInputTreeItem);
 
     // Reset the widget back to the input pane and close
     theStackedWidget->setCurrentWidget(fileInputWidget);
@@ -590,22 +531,51 @@ void UserInputHurricaneWidget::loadUserHurricaneData(void)
     if(theStackedWidget->isModal())
         theStackedWidget->close();
 
+    emit loadingComplete(true);
+
+    emit outputDirectoryPathChanged(eventDir, eventFile);
+
     return;
 }
 
 
-void UserInputHurricaneWidget::setCurrentlyViewable(bool status){
+void UserInputHurricaneWidget::chooseEventDirDialog(void)
+{
 
-    if (status == true)
-        mapViewSubWidget->setCurrentlyViewable(status);
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::Directory);
+    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing specified motions"));
+    dialog.close();
+
+    // Return if the user cancels or enters same dir
+    if(newPath.isEmpty() || newPath == eventDir)
+    {
+        return;
+    }
+
+    eventDir = newPath;
+    eventDirLineEdit->setText(eventDir);
+
+    // check if dir contains EventGrid.csv file, if it does set the file
+    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
+    if (eventFileInfo.exists()) {
+        eventFile = newPath + "/EventGrid.csv";
+        eventFileLineEdit->setText(eventFile);
+
+        this->loadUserWFData();
+    }
+
+    return;
 }
+
 
 
 void UserInputHurricaneWidget::chooseEventFileDialog(void)
 {
 
     QFileDialog dialog(this);
-    QString newEventFile = QFileDialog::getOpenFileName(this,tr("List of Hurricanes File"));
+    QString newEventFile = QFileDialog::getOpenFileName(this,tr("Event Grid File"));
     dialog.close();
 
     // Return if the user cancels or enters same file
@@ -615,45 +585,79 @@ void UserInputHurricaneWidget::chooseEventFileDialog(void)
     }
 
     // Set file name & entry in qLine edit
+
+    // if file
+    //    check valid
+    //    set motionDir if file in dir that contains all the motions
+    //    invoke loadUserGMData
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(newEventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
     eventFile = newEventFile;
     eventFileLineEdit->setText(eventFile);
 
-    this->loadUserHurricaneData();
+    // check if file in dir with all motions, if so set motionDir
+    // Pop off the row that contains the header information
+    data.pop_front();
+    auto numRows = data.size();
+    int count = 0;
+    QFileInfo eventFileInfo(eventFile);
+    QDir fileDir(eventFileInfo.absolutePath());
+    QStringList filesInDir = fileDir.entryList(QStringList() << "*", QDir::Files);
+
+    // check all files are there
+    bool allThere = true;
+    for(int i = 0; i<numRows; ++i) {
+        auto rowStr = data.at(i);
+        auto stationName = rowStr[0];
+        if (!filesInDir.contains(stationName)) {
+            allThere = false;
+            i=numRows;
+        }
+    }
+
+    if (allThere == true) {
+        eventDir = fileDir.path();
+        eventDirLineEdit->setText(fileDir.path());
+        this->loadUserWFData();
+    } else {
+        QDir motionDirDir(eventDir);
+        if (motionDirDir.exists()) {
+            QStringList filesInDir = motionDirDir.entryList(QStringList() << "*", QDir::Files);
+            bool allThere = true;
+            for(int i = 0; i<numRows; ++i) {
+                auto rowStr = data.at(i);
+                auto stationName = rowStr[0];
+                if (!filesInDir.contains(stationName)) {
+                    allThere = false;
+                    i=numRows;
+                }
+            }
+            if (allThere == true)
+                this->loadUserWFData();
+        }
+    }
 
     return;
 }
 
 
+
 void UserInputHurricaneWidget::clear(void)
 {
     eventFile.clear();
+
     eventFileLineEdit->clear();
-}
-
-
-void UserInputHurricaneWidget::handleHurricaneSelect(void)
-{
-    auto selectedFeatures = theVisualizationWidget->getSelectedFeaturesList();
-
-    if(selectedFeatures.empty())
-        return;
-
-    // Only select the first hurricane
-    for(auto&& it : selectedFeatures)
-    {
-        auto attrbList = it->attributes();
-
-        auto featType = attrbList->attributeValue("AssetType");
-
-        if(featType.toString() != "HURRICANE")
-            continue;
-
-        auto hurricaneName = attrbList->attributeValue("NAME").toString();
-        auto hurricaneSID = attrbList->attributeValue("SID").toString();
-
-        selectedHurricaneName->setText(hurricaneName);
-        selectedHurricaneSID->setText(hurricaneSID);
-
-    }
-
 }

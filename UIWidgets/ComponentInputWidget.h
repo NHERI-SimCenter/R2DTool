@@ -49,6 +49,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class AssetInputDelegate;
 
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class ClassBreaksRenderer;
+class SimpleRenderer;
+class Feature;
+class Geometry;
+}
+}
+
 class QGroupBox;
 class QLineEdit;
 class QTableWidget;
@@ -62,15 +73,29 @@ public:
     explicit ComponentInputWidget(QWidget *parent, QString componentType, QString appType = QString());
     virtual ~ComponentInputWidget();
 
+    virtual int loadComponentVisualization();
+
+    virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
+    virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
+
+    virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
+
     QGroupBox* getComponentsWidget(void);
 
     QTableWidget *getTableWidget() const;
+
+    // Set the filter string and select the components
+    void setFilterString(const QString& filter);
+    QString getFilterString(void);
 
     void insertSelectedComponent(const int ComponentID);
 
     int numberComponentsSelected(void);
 
     ComponentDatabase* getComponentDatabase();
+
+    void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
+    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
 
     // Set custom labels in widget
     void setComponentType(const QString &value);
@@ -89,9 +114,11 @@ public:
 
     QString getPathToComponentFile(void) const;
 
-    void clear(void);
+    virtual void clear(void);
 
     void setTheVisualizationWidget(VisualizationWidget *value);
+
+    QStringList getTableHorizontalHeadings() const;
 
 signals:
     void componentDataLoaded();
@@ -105,12 +132,30 @@ private slots:
     void loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
+    void clearLayerSelectedForAnalysis(void);
+
+protected:
+    VisualizationWidget* theVisualizationWidget;
+    QTableWidget* componentTableWidget;
+    ComponentDatabase theComponentDb;
+
+    // Returns a vector of sorted items that are unique
+    template <typename T>
+    void uniqueVec(std::vector<T>& vec)
+    {
+        std::sort(vec.begin(), vec.end());
+
+        // Using std::unique to get the unique items in the vector
+        auto ip = std::unique(vec.begin(), vec.end());
+
+        // Resizing the vector so as to remove the terms that became undefined after the unique operation
+        vec.resize(std::distance(vec.begin(), ip));
+    }
 
 private:
     QString pathToComponentInfoFile;
     QLineEdit* componentFileLineEdit;
     AssetInputDelegate* selectComponentsLineEdit;
-    QTableWidget* componentTableWidget;
     QLabel* componentInfoText;
     QGroupBox* componentGroupBox;
 
@@ -120,11 +165,12 @@ private:
     QString label2;
     QString label3;
 
+    QStringList tableHorizontalHeadings;
+
     void createComponentsBox(void);
 
-    ComponentDatabase theComponentDb;
-    VisualizationWidget* theVisualizationWidget;
-
+    // Map to store the selected features according to their UID
+    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
 };
 
 #endif // ComponentInputWidget_H

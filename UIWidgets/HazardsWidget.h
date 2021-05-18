@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class GMWidget;
 class RandomVariablesContainer;
 class ShakeMapWidget;
+class HurricaneSelectionWidget;
 class UserInputHurricaneWidget;
 class UserInputGMWidget;
 class VisualizationWidget;
@@ -76,6 +77,7 @@ private:
     ShakeMapWidget* theShakeMapWidget;
     UserInputGMWidget* theUserInputGMWidget;
     UserInputHurricaneWidget* theUserInputHurricaneWidget;
+    HurricaneSelectionWidget* theHurricaneSelectionWidget;
 };
 
 #endif // HAZARDS_WIDGET_H

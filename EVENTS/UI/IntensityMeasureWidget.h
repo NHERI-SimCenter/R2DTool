@@ -6,6 +6,7 @@
 #include <QWidget>
 
 class QComboBox;
+class QLabel;
 class QCheckBox;
 class QLineEdit;
 class QRegExpValidator;
@@ -23,11 +24,14 @@ public slots:
 
     void commitPeriods();
 
+    void handleTypeChanged(const QString &val);
+
 private:
     IntensityMeasure& m_intensityMeasure;
     QComboBox* m_typeBox;
     QLineEdit* periodsLineEdit;
     QRegExpValidator* LEValidator;
+    QLabel* periodLabel;
 
     void setupConnections();
 };

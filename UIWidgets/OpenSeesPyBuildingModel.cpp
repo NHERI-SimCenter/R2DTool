@@ -194,7 +194,7 @@ bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
         dataObj["filePath"] = theModelFile.absolutePath();
     } else {
         QString errorMessage("OpenSeesPyBuilding Model Generator - no modeling script set");
-        emit sendErrorMessage(errorMessage);
+        this->errorMessage(errorMessage);
         dataObj["mainScript"] = "None";
         dataObj["filePath"] = "";
         res = false;
@@ -269,11 +269,11 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
                 }
             }
         }
-        emit sendErrorMessage("OpenSeesPyBuilder could not find script file");
+        this->errorMessage("OpenSeesPyBuilder could not find script file");
         return false;
     }
 
-    emit sendErrorMessage("OpenSeesPyBuilder no ApplicationData");
+    this->errorMessage("OpenSeesPyBuilder no ApplicationData");
     return true;
 }
 

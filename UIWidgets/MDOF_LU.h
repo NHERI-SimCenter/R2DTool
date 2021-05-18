@@ -65,7 +65,7 @@ public:
     void setFileName(QString filnema1);
 
 public slots:
-   void clear(void);
+   void clear(void) override;
    void chooseFileName1(void);
 
 private:

@@ -241,7 +241,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
     }
     catch (const QString msg)
     {
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
 
         return -1;
     }
@@ -258,7 +258,7 @@ int ResultsWidget::printToPDF(void)
     if(outputFileName.isEmpty())
     {
         QString errMsg = "The file name is empty";
-        this->userMessageDialog(errMsg);
+        this->errorMessage(errMsg);
         return -1;
     }
 
@@ -287,7 +287,7 @@ int ResultsWidget::printToPDF(void)
 
         if(res != 0) {
             QString err = "Error printing the PDF";
-            this->userMessageDialog(err);
+            this->errorMessage(err);
             return -1;
         }
     }
@@ -306,7 +306,7 @@ void ResultsWidget::selectComponents(void)
     }
     catch (const QString msg)
     {
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
     }
 }
 
@@ -325,7 +325,7 @@ void ResultsWidget::handleComponentSelection(void)
     }
     catch (const QString msg)
     {
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
     }
 }
 

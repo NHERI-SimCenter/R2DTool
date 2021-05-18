@@ -63,7 +63,7 @@ QStringList LayerTreeItem::getActionList()
     QStringList actionList = TreeItem::getActionList();
 
     actionList << "&Change Opacity"
-               << "&Zoom To Extents"
+               << "&Zoom to Layer"
                << "Separator";
 
     return actionList;
@@ -109,7 +109,7 @@ void LayerTreeItem::changeOpacity()
 }
 
 
-void LayerTreeItem::zoomToExtents()
+void LayerTreeItem::zoomtoLayer()
 {
     if(itemID.isEmpty())
         return;

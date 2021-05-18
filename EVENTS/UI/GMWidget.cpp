@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -124,14 +124,11 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     m_settingButton = new QPushButton(tr("&Settings"));
 
     // Create a map view that will be used for selecting the grid points
-
-    // mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
-
     mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr);
 
     auto userGrid = mapViewSubWidget->getGrid();
     userGrid->createGrid();
-    userGrid->setGMSiteConfig(m_siteConfig);
+    userGrid->setSiteGridConfig(m_siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
 
     toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,1,3);
@@ -146,8 +143,6 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     toolsGridLayout->setHorizontalSpacing(5);
     //toolsGridLayout->setColumnStretch(4,1);
     this->setLayout(toolsGridLayout);
-
-    progressDialog = WorkflowAppR2D::getProgressDialog();
 
     setupConnections();
 
@@ -189,7 +184,7 @@ void GMWidget::setupConnections()
         if(type == SiteConfig::SiteType::Single)
         {
             QString msg = "Single site selection not supported yet";
-            this->userMessageDialog(msg);
+            this->infoMessage(msg);
             return;
         }
         else if(type == SiteConfig::SiteType::Grid)
@@ -197,7 +192,7 @@ void GMWidget::setupConnections()
             if(!m_siteConfigWidget->getSiteGridWidget()->getGridCreated())
             {
                 QString msg = "Please select a grid before continuing";
-                this->userMessageDialog(msg);
+                this->statusMessage(msg);
                 return;
             }
         }
@@ -213,8 +208,7 @@ void GMWidget::setupConnections()
 
     connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, [this](QString statusUpdate)
     {
-        if(progressDialog != nullptr)
-            progressDialog->appendText(statusUpdate);
+        this->statusMessage(statusUpdate);
     });
 
     connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
@@ -235,8 +229,6 @@ void GMWidget::initAppConfig()
 
     m_appConfig = new GmAppConfig(this);
 
-    //    auto regMapWidget = WorkflowAppR2D::getInstance()->getTheRegionalMappingWidget();
-    //    connect(m_appConfig,&GmAppConfig::outputDirectoryPathChanged,regMapWidget,&RegionalMappingWidget::handleFileNameChanged);
 
     //First, We will look into settings
     QSettings settings;
@@ -256,7 +248,7 @@ void GMWidget::initAppConfig()
         {
             QString errorMessage = QString("Set the Local Jobs Directory location in preferences.");
 
-            this->userMessageDialog(errorMessage);
+            this->errorMessage(errorMessage);
 
             return;
         }
@@ -269,12 +261,15 @@ void GMWidget::initAppConfig()
                 QString errorMessage = QString("Could not load the Working Directory: ") + workingDir
                         + QString(". Change the Local Jobs Directory location in preferences.");
 
-                this->userMessageDialog(errorMessage);
+                this->errorMessage(errorMessage);
 
                 return;
             }
 
-        m_appConfig->setWorkDirectoryPath(workingDir+"/HazardSimulation/");
+        // Store data in a ground motions folder under hazard simulation
+        workingDir += QDir::separator() + QString("HazardSimulation") + QDir::separator() + QString("GroundMotions");
+
+        m_appConfig->setWorkDirectoryPath(workingDir);
 
     }
 
@@ -287,7 +282,7 @@ void GMWidget::initAppConfig()
         {
             QString errorMessage = QString("Set the Local Jobs Directory location in preferences.");
 
-            this->userMessageDialog(errorMessage);
+            this->errorMessage(errorMessage);
 
             return;
         }
@@ -300,12 +295,14 @@ void GMWidget::initAppConfig()
                 QString errorMessage = QString("Could not load the Input File Directory: ") + workingDir
                         + QString(". Change the Local Jobs Directory location in preferences.");
 
-                this->userMessageDialog(errorMessage);
+                this->errorMessage(errorMessage);
 
                 return;
             }
 
-        m_appConfig->setInputFilePath(workingDir+"/HazardSimulation/Input/");
+        QString inputFilePath = workingDir + QDir::separator() + "HazardSimulation" +  QDir::separator() + "GroundMotions" +  QDir::separator() +  "Input";
+
+        m_appConfig->setInputFilePath(inputFilePath);
 
     }
 
@@ -318,7 +315,7 @@ void GMWidget::initAppConfig()
         {
             QString errorMessage = QString("Set the Local Jobs Directory location in preferences.");
 
-            this->userMessageDialog(errorMessage);
+            this->errorMessage(errorMessage);
 
             return;
         }
@@ -331,18 +328,20 @@ void GMWidget::initAppConfig()
                 QString errorMessage = QString("Could not load the Input File Directory: ") + workingDir
                         + QString(". Change the Local Jobs Directory location in preferences.");
 
-                this->userMessageDialog(errorMessage);
+                this->errorMessage(errorMessage);
 
                 return;
             }
 
-        m_appConfig->setOutputFilePath(workingDir+"/HazardSimulation/Output/");
+        QString outputFilePath = workingDir + QDir::separator() + "HazardSimulation" +  QDir::separator() + "GroundMotions" +  QDir::separator() +  "Output";
+
+        m_appConfig->setOutputFilePath(outputFilePath);
     }
 
 }
 
 
-void GMWidget::saveAppSettings()
+void GMWidget::saveAppSettings(void)
 {
     QSettings settings;
     settings.setValue("WorkingDirectoryPath", m_appConfig->getWorkDirectoryPath());
@@ -353,15 +352,19 @@ void GMWidget::saveAppSettings()
 }
 
 
+void GMWidget::resetAppSettings(void)
+{
+    QSettings settings;
+    settings.setValue("WorkingDirectoryPath", "");
+    settings.setValue("InputFilePath", "");
+    settings.setValue("OutputFilePath", "");
+    settings.setValue("RDBUsername", "");
+    settings.setValue("RDBPassword","");
+}
+
+
 void GMWidget::showGISWindow(void)
 {
-    /*
-    auto scene = mapViewMainWidget->scene();
-    auto sceneRect = scene->sceneRect();
-    if(sceneRect.isNull())
-        return;
-    */
-
     mapViewSubWidget->show();
     mapViewSubWidget->addGridToScene();
 
@@ -396,7 +399,7 @@ bool GMWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool GMWidget::inputFromJSON(QJsonObject &jsonObject){
+bool GMWidget::inputFromJSON(QJsonObject &/*jsonObject*/){
 
     return true;
 }
@@ -408,7 +411,8 @@ void GMWidget::runHazardSimulation(void)
     simulationComplete = false;
 
     //progressDialog->showDialog(true);
-    progressDialog->show();    
+    // progressDialog->show();    
+    this->getProgressDialog()->setVisibility(true);
 
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
@@ -434,7 +438,7 @@ void GMWidget::runHazardSimulation(void)
     QString err;
     if(!m_appConfig->validate(err))
     {
-        progressDialog->appendErrorMessage(err);
+        this->errorMessage(err);
         return;
     }
 
@@ -458,7 +462,7 @@ void GMWidget::runHazardSimulation(void)
     if(EqRupture.isEmpty())
     {
         QString err = "Error in getting the earthquake rupture .JSON";
-        progressDialog->appendErrorMessage(err);
+        this->errorMessage(err);
         return;
     }
 
@@ -481,7 +485,7 @@ void GMWidget::runHazardSimulation(void)
     if(numGM == -1)
     {
         QString err = "Error in getting the number of ground motions at a site";
-        progressDialog->appendErrorMessage(err);
+        this->errorMessage(err);
         return;
     }
 
@@ -519,7 +523,7 @@ void GMWidget::runHazardSimulation(void)
         if(!m_siteConfigWidget->getSiteGridWidget()->getGridCreated())
         {
             QString msg = "Select a grid before continuing";
-            this->userMessageDialog(msg);
+            this->statusMessage(msg);
             return;
         }
 
@@ -551,7 +555,7 @@ void GMWidget::runHazardSimulation(void)
         }
     }
 
-    QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + "SiteFile.csv";
+    QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "SiteFile.csv";
 
     CSVReaderWriter csvTool;
 
@@ -559,14 +563,14 @@ void GMWidget::runHazardSimulation(void)
 
     if(res != 0)
     {
-        progressDialog->appendErrorMessage(err);
+        this->errorMessage(err);
         return;
     }
 
     QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
 
     // Hazard sim
-    QString pathToConfigFile = m_appConfig->getInputDirectoryPath() + "EQHazardConfiguration.json";
+    QString pathToConfigFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "EQHazardConfiguration.json";
 
     QFile file(pathToConfigFile);
 
@@ -584,7 +588,7 @@ void GMWidget::runHazardSimulation(void)
 
     // TODO: make this a relative link once we figure out the folder structure
     // auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
-    //    auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
+    // auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
     QString pathToHazardSimScript = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
             + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
             + "regionalGroundMotion" + QDir::separator() + "HazardSimulation.py";
@@ -592,7 +596,7 @@ void GMWidget::runHazardSimulation(void)
     QFileInfo hazardFileInfo(pathToHazardSimScript);
     if (!hazardFileInfo.exists()) {
         QString errorMessage = QString("ERROR - hazardApp does not exist") + pathToHazardSimScript;
-        emit sendErrorMessage(errorMessage);
+        this->errorMessage(errorMessage);
         qDebug() << errorMessage;
         return;
     }
@@ -612,8 +616,8 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     if(exitStatus == QProcess::ExitStatus::CrashExit)
     {
         QString errText("Error, the process running the hazard simulation script crashed");
-        progressDialog->appendErrorMessage(errText);
-        progressDialog->hideProgressBar();
+        this->errorMessage(errText);
+        this->getProgressDialog()->hideProgressBar();
 
         return;
     }
@@ -621,13 +625,13 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     if(exitCode != 0)
     {
         QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
-        progressDialog->appendErrorMessage(errText);
-        progressDialog->hideProgressBar();
+        this->errorMessage(errText);
+        this->getProgressDialog()->hideProgressBar();
 
         return;
     }
 
-    progressDialog->appendText("Contacting PEER server to download ground motion records.");
+    this->statusMessage("Contacting PEER server to download ground motion records.");
 
     QApplication::processEvents();
 
@@ -641,8 +645,8 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     if(res != 0)
     {
         QString errText("Error downloading the ground motion records");
-        progressDialog->appendErrorMessage(errText);
-        progressDialog->hideProgressBar();
+        this->errorMessage(errText);
+        this->getProgressDialog()->hideProgressBar();
     }
 
 
@@ -651,7 +655,7 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
 
 void GMWidget::handleProcessStarted(void)
 {
-    progressDialog->appendText("Running script in the background");
+    this->statusMessage("Running script in the background");
     this->m_runButton->setEnabled(false);
 }
 
@@ -660,7 +664,7 @@ void GMWidget::handleProcessTextOutput(void)
 {
     QByteArray output = process->readAllStandardOutput();
 
-    progressDialog->appendText(QString(output));
+    this->statusMessage(QString(output));
 }
 
 
@@ -679,7 +683,7 @@ int GMWidget::downloadRecords(void)
     if (!theRecordsListFile.exists())
     {
         QString errorMessage = QString("GMWidget::Record selection failed, no file ") +  recordsListFilename + QString(" exists");
-        emit sendErrorMessage(errorMessage);
+        this->errorMessage(errorMessage);
         return -1;
     }
 
@@ -794,8 +798,8 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
     QApplication::processEvents();
 
-    progressDialog->setProgressBarRange(0,inputFiles.size());
-    progressDialog->setProgressBarValue(0);
+    this->getProgressDialog()->setProgressBarRange(0,inputFiles.size());
+    this->getProgressDialog()->setProgressBarValue(0);
 
     // Create the table to store the fields
     QList<Field> tableFields;
@@ -835,7 +839,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     // Get the data
     for(int i = 0; i<numRows; ++i)
     {
-        progressDialog->setProgressBarValue(i+1);
+        this->getProgressDialog()->setProgressBarValue(i+1);
 
         auto vecValues = data.at(i);
 
@@ -876,7 +880,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
         {
             auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
 
-            progressDialog->appendErrorMessage(errorMessage);
+            this->errorMessage(errorMessage);
 
             return -1;
         }
@@ -946,7 +950,7 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     if (result == false)
     {
         QString errMsg = "Error in unziping the downloaded ground motion files";
-        progressDialog->appendErrorMessage(errMsg);
+        this->errorMessage(errMsg);
         return -1;
     }
 
@@ -957,8 +961,8 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     auto res1 = tool.parseNGAW2SearchResults(pathToOutputDirectory,NGA2Results,errMsg);
     if(res1 != 0)
     {
+        this->errorMessage(errMsg);
         return -1;
-        progressDialog->appendErrorMessage(errMsg);
     }
 
     // if more records to download due to 100 record limit .. go download them
@@ -977,24 +981,24 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
             errMsg.prepend("Error downloading ground motion files from PEER server.\n");
         }
 
-        progressDialog->appendErrorMessage(errMsg);
+        this->errorMessage(errMsg);
         return res;
     }
 
     auto res2 = this->processDownloadedRecords(errMsg);
     if(res2 != 0)
     {
-        progressDialog->appendErrorMessage(errMsg);
+        this->errorMessage(errMsg);
         return res2;
     }
 
-    progressDialog->appendText("Download and parsing of ground motion records complete.");
+    this->statusMessage("Download and parsing of ground motion records complete.");
 
-    progressDialog->hideProgressBar();
+    this->getProgressDialog()->hideProgressBar();
 
-    progressDialog->appendText("The folder containing the results: "+m_appConfig->getOutputDirectoryPath());
+    this->statusMessage("The folder containing the results: "+m_appConfig->getOutputDirectoryPath());
 
-    progressDialog->appendText("Earthquake hazard simulation complete.");
+    this->statusMessage("Earthquake hazard simulation complete.");
 
     simulationComplete = true;
 

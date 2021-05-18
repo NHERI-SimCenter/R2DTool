@@ -132,13 +132,13 @@ void MDOF_LU::clear(void)
 }
 
 
-bool MDOF_LU::outputToJSON(QJsonObject &jsonObject)
+bool MDOF_LU::outputToJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
 
 
-bool MDOF_LU::inputFromJSON(QJsonObject &jsonObject)
+bool MDOF_LU::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
@@ -238,10 +238,10 @@ bool MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
                 }
             }
         }
-        emit sendErrorMessage("MDOF-LU could not find HazusData file");
+        this->errorMessage("MDOF-LU could not find HazusData file");
         return false;
     }
-    emit sendErrorMessage("MDOF-LU no ApplicationData section");
+    this->errorMessage("MDOF-LU no ApplicationData section");
     return false;
 }
 

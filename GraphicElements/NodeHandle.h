@@ -45,7 +45,7 @@ class NodeHandle : public QObject, public QGraphicsItem
 {
     Q_OBJECT
 public:
-    NodeHandle(QGraphicsItem *parent);
+    NodeHandle(QGraphicsItem *parent = nullptr);
 
     enum { Type = UserType + 1 };
     int type() const override { return Type; }
