@@ -84,6 +84,10 @@ public:
 
     QTableWidget *getTableWidget() const;
 
+    // Set the filter string and select the components
+    void setFilterString(const QString& filter);
+    QString getFilterString(void);
+
     void insertSelectedComponent(const int ComponentID);
 
     int numberComponentsSelected(void);
@@ -113,6 +117,8 @@ public:
     virtual void clear(void);
 
     void setTheVisualizationWidget(VisualizationWidget *value);
+
+    QStringList getTableHorizontalHeadings() const;
 
 signals:
     void componentDataLoaded();
@@ -158,6 +164,8 @@ private:
     QString label1;
     QString label2;
     QString label3;
+
+    QStringList tableHorizontalHeadings;
 
     void createComponentsBox(void);
 

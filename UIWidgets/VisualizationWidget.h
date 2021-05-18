@@ -99,15 +99,15 @@ public:
 
     SimCenterMapGraphicsView* getMapViewWidget() const;
 
-    void registerComponentWidget(const QString type, ComponentInputWidget* widget);
+    // Note: the component type must match the "AssetType" value set to the features
+    void registerComponentWidget(const QString assetType, ComponentInputWidget* widget);
 
     ComponentInputWidget* getComponentWidget(const QString type);
 
-    // Set the pipeline widget to the visualization engine
-    void setPipelineWidget(ComponentInputWidget *value);
-
     // Add component to 'selected layer'
     LayerTreeItem* addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::Layer* featLayer);
+
+    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddJsonLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, QColor color = QColor(0,0,0,255));
 
     // Adds a raster layer to the map
     Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
@@ -155,8 +155,6 @@ public:
 
     void clear(void);
 
-    ComponentInputWidget *getPipelineWidget() const;
-
     // Updates the value of an attribute for a selected component
     void updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value);
 
@@ -176,8 +174,15 @@ public:
     Esri::ArcGISRuntime::Geometry getRectGeometryFromPoint(const Esri::ArcGISRuntime::Point& pnt, const double sizeX, double sizeY = 0);
 
     // Returns a geometry from the geojson format
-    Esri::ArcGISRuntime::Geometry getGeometryFromJson(const QString& geoJson);
-    Esri::ArcGISRuntime::Geometry getGeometryFromJson(const QJsonArray& geoJson);
+    Esri::ArcGISRuntime::Geometry getPolygonGeometryFromJson(const QString& geoJson);
+    Esri::ArcGISRuntime::Geometry getPolygonGeometryFromJson(const QJsonArray& geoJson);
+
+    Esri::ArcGISRuntime::Geometry getMultilineStringGeometryFromJson(const QString& geoJson);
+    Esri::ArcGISRuntime::Geometry getMultilineStringGeometryFromJson(const QJsonArray& geoJson);
+    Esri::ArcGISRuntime::Geometry getMultiPolygonGeometryFromJson(const QJsonArray& geoJson);
+
+    Esri::ArcGISRuntime::FeatureCollectionTable* getMultilineFeatureTable(const QJsonObject& geomObject, const QJsonObject& featObj, const QString& layerName, const QColor color);
+    Esri::ArcGISRuntime::FeatureCollectionTable* getMultipolygonFeatureTable(const QJsonObject& geomObject, const QJsonObject& featObj, const QString& layerName, const QColor color);
 
     // Programatically set the visibility of a layer
     void setLayerVisibility(const QString& layerID, const bool val);
@@ -191,6 +196,9 @@ public:
     // Get the list of features saved from the latest query
     QList<Esri::ArcGISRuntime::FeatureQueryResult *> getFeaturesFromQueryList() const;
 
+    // Sets the view elevation above the ground level
+    void setViewElevation(double val);
+
 signals:
     // Emit a screen shot of the current GIS view
     void emitScreenshot(QImage img);
@@ -198,8 +206,7 @@ signals:
 
 public slots:    
     void zoomToLayer(const QString layerID);
-    void loadBuildingData(void);
-    void loadPipelineData(void);
+//    void loadPipelineData(void);
     void changeLayerOrder(const int from, const int to);
     void handleLayerChecked(LayerTreeItem* item);
     void handleOpacityChange(const QString& layerID, const double opacity);
@@ -238,8 +245,6 @@ private:
     // Map to hold the component input widgets (key = type of component or asset, e.g., BUILDINGS)
     QMap<QString, ComponentInputWidget*> componentWidgetsMap;
 
-    ComponentInputWidget* pipelineWidget;
-
     QComboBox* baseMapCombo;
 
     // This function runs a query on all features in a table
@@ -259,7 +264,6 @@ private:
     // Map to store the layers
     QMap<QString, Esri::ArcGISRuntime::Layer*> layersMap;
 
-    Esri::ArcGISRuntime::ClassBreaksRenderer* createPipelineRenderer(void);
     Esri::ArcGISRuntime::ClassBreaksRenderer* createPointRenderer(void);
 
     Esri::ArcGISRuntime::GroupLayer* selectedObjectsLayer = nullptr;

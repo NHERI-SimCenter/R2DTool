@@ -90,6 +90,8 @@ public:
 
     int updateFeatureAttribute(const QString& attribute, const QVariant& value);
 
+    QVector<double> getPeakInundationHeights() const;
+
 private:
 
     QString stationFilePath;
@@ -101,6 +103,7 @@ private:
     double longitude;
 
     QVector<double> peakWindSpeeds;
+    QVector<double> peakInundationHeights;
 
     Esri::ArcGISRuntime::Feature* stationFeature;
 

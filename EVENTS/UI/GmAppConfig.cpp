@@ -123,7 +123,7 @@ bool GmAppConfig::validate(QString& err)
     if(!QDir(workDirectoryPath).exists())
     {
         // Try to make the directory
-        auto res = QDir().mkdir(workDirectoryPath);
+        auto res = QDir().mkpath(workDirectoryPath);
 
         if(res == false)
         {
@@ -137,7 +137,7 @@ bool GmAppConfig::validate(QString& err)
     if(!QDir(inputDirectoryPath).exists())
     {
         // Try to make the directory
-        auto res = QDir().mkdir(inputDirectoryPath);
+        auto res = QDir().mkpath(inputDirectoryPath);
 
         if(res == false)
         {
@@ -151,7 +151,7 @@ bool GmAppConfig::validate(QString& err)
     if(!QDir(outputDirectoryPath).exists())
     {
         // Try to make the directory
-        auto res = QDir().mkdir(outputDirectoryPath);
+        auto res = QDir().mkpath(outputDirectoryPath);
 
         if(res == false)
         {

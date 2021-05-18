@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetsWidget.h"
 #include "BuildingInputWidget.h"
+#include "GasPipelineInputWidget.h"
 #include "ComponentInputWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "VisualizationWidget.h"
@@ -71,11 +72,10 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
     pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
-    ComponentInputWidget *csvPipelineWidget = new ComponentInputWidget(this,"Gas Pipelines","Gas Network");
+    GasPipelineInputWidget *csvPipelineInventory = new GasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
 
     visualizationWidget->registerComponentWidget("BUILDINGS",csvBuildingInventory);
-
-    visualizationWidget->setPipelineWidget(csvPipelineWidget);
+    visualizationWidget->registerComponentWidget("GASPIPELINES",csvPipelineInventory);
 
     // QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
     // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);

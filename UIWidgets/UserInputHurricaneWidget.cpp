@@ -42,7 +42,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "UserInputHurricaneWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+#include "WindFieldStation.h"
 
+// GIS Layers
+#include "FeatureCollectionLayer.h"
+#include "GroupLayer.h"
+#include "Layer.h"
+#include "LayerListModel.h"
+#include "SimpleMarkerSymbol.h"
+#include "SimpleRenderer.h"
 
 #include <QApplication>
 #include <QDialog>
@@ -60,6 +68,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QDir>
 
+using namespace Esri::ArcGISRuntime;
 
 UserInputHurricaneWidget::UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
@@ -126,7 +135,7 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         if (appData.contains("eventFileDir"))
             pathToFile = appData["eventFileDir"].toString();
         else
-            pathToFile=QDir::currentPath();
+            pathToFile = QDir::currentPath();
 
         QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
@@ -136,7 +145,7 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
                     + "input_data" + QDir::separator() + fileName;
 
             if (!QFile::exists(fullFilePath)) {
-                qDebug() << "UserInputGM - could not find event file";
+                this->errorMessage("UserInputWF - could not find EventGrid.csv file");
                 return false;
             }
         }
@@ -144,8 +153,28 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         eventFileLineEdit->setText(fullFilePath);
         eventFile = fullFilePath;
 
+        if (appData.contains("eventDir"))
+        {
+            eventDir = appData["eventDir"].toString();
 
-        this->loadHurricaneTrackData();
+            QDir evtD(eventDir);
+
+            if (!evtD.exists()){
+                QString trialDir = QDir::currentPath() +
+                        QDir::separator() + "input_data" + eventDir;
+                if (evtD.exists(trialDir)) {
+                    eventDir = trialDir;
+                    eventDirLineEdit->setText(trialDir);
+                } else {
+                    this->errorMessage("UserInputWF - could not find wind field dir" + eventDir + " " + trialDir);
+                    return false;
+                }
+            } else {
+                eventDirLineEdit->setText(eventDir);
+            }
+        }
+
+        this->loadUserWFData();
 
         return true;
     }
@@ -154,25 +183,25 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 }
 
 
-void UserInputHurricaneWidget::showUserGMLayers(bool state)
+void UserInputHurricaneWidget::showUserWFLayers(bool state)
 {
     auto layersTreeView = theVisualizationWidget->getLayersTree();
 
 
     if(state == false)
     {
-        layersTreeView->removeItemFromTree("User Ground Motions");
+        layersTreeView->removeItemFromTree("User Wind Field");
 
         return;
     }
 
 
-    // Check if there is a 'User Ground Motions' root item in the tree
-    auto shakeMapTreeItem = layersTreeView->getTreeItem("User Ground Motions",nullptr);
+    // Check if there is a "User Wind Field" root item in the tree
+    auto shakeMapTreeItem = layersTreeView->getTreeItem("User Wind Field",nullptr);
 
     // If there is no item, create one
     if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",QString());
+        shakeMapTreeItem = layersTreeView->addItemToTree("User Wind Field",QString());
 
 }
 
@@ -193,7 +222,7 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     fileInputWidget->setLayout(fileLayout);
 
 
-    QLabel* selectComponentsText = new QLabel("Hurricane Track Event File");
+    QLabel* selectComponentsText = new QLabel("Event File Listing Wind Field");
     eventFileLineEdit = new QLineEdit();
     QPushButton *browseFileButton = new QPushButton("Browse");
 
@@ -202,7 +231,17 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     fileLayout->addWidget(selectComponentsText, 0,0);
     fileLayout->addWidget(eventFileLineEdit,    0,1);
     fileLayout->addWidget(browseFileButton,     0,2);
-    fileLayout->setRowStretch(1,1);
+
+    QLabel* selectFolderText = new QLabel("Folder Containing Wind Field Stations",this);
+    eventDirLineEdit = new QLineEdit();
+    QPushButton *browseFolderButton = new QPushButton("Browse",this);
+
+    connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseEventDirDialog()));
+
+    fileLayout->addWidget(selectFolderText,   1,0);
+    fileLayout->addWidget(eventDirLineEdit, 1,1);
+    fileLayout->addWidget(browseFolderButton, 1,2);
+    fileLayout->setRowStretch(2,1);
 
     //
     // progress bar
@@ -212,7 +251,7 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
     progressBarWidget->setLayout(progressBarLayout);
 
-    auto progressText = new QLabel("Loading hurricane track data. This may take a while.", progressBarWidget);
+    auto progressText = new QLabel("Loading user wind field data.  This may take a while.",progressBarWidget);
     progressLabel =  new QLabel(" ",this);
     progressBar = new QProgressBar(progressBarWidget);
 
@@ -278,11 +317,265 @@ void UserInputHurricaneWidget::loadHurricaneTrackData(void)
 }
 
 
+void UserInputHurricaneWidget::loadUserWFData(void)
+{
+
+    this->statusMessage("Loading wind field data");
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    theStackedWidget->setCurrentWidget(progressBarWidget);
+    progressBarWidget->setVisible(true);
+
+    QApplication::processEvents();
+
+    //progressBar->setRange(0,inputFiles.size());
+    progressBar->setRange(0, data.count());
+
+    progressBar->setValue(0);
+
+    // Create the table to store the fields
+    QList<Field> tableFields;
+    tableFields.append(Field::createText("AssetType", "NULL",4));
+    tableFields.append(Field::createText("TabName", "NULL",4));
+    tableFields.append(Field::createText("Station Name", "NULL",4));
+    tableFields.append(Field::createText("Latitude", "NULL",8));
+    tableFields.append(Field::createText("Longitude", "NULL",9));
+    tableFields.append(Field::createText("Peak Wind Speeds", "NULL",9));
+    tableFields.append(Field::createText("Peak Inundation Heights", "N/A",9));
+
+    auto gridFeatureCollection = new FeatureCollection(this);
+
+    // Create the feature collection table/layers
+    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
+    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
+
+    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+
+    gridLayer->setName("Wind Field Grid");
+    gridLayer->setAutoFetchLegendInfos(true);
+
+    // Create red cross SimpleMarkerSymbol
+    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
+
+    // Create renderer and set symbol to crossSymbol
+    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+    renderer->setLabel("Wind Field Grid Points");
+
+    // Set the renderer for the feature layer
+    gridFeatureCollectionTable->setRenderer(renderer);
+
+    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
+    // gridLayer->setMinScale(80000);
+
+    auto headerInfo = data.front();
+
+    auto latIndex = headerInfo.indexOf("Latitude");
+    auto lonIndex = headerInfo.indexOf("Longitude");
+
+    if(latIndex == -1 || lonIndex == -1)
+    {
+        this->errorMessage("Could not find the Latitude and Longitude headsers in the EventGrid.csv file");
+        return;
+    }
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    int count = 0;
+
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        auto stationName = rowStr[0];
+
+        // Path to station files, e.g., site0.csv
+        auto stationPath = eventDir + QDir::separator() + stationName;
+
+        bool ok;
+        auto longitude = rowStr[lonIndex].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error longitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            theStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        auto latitude = rowStr[latIndex].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error latitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            theStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        WindFieldStation WFStation(stationName,latitude,longitude);
+
+        WFStation.setStationFilePath(stationPath);
+
+        try
+        {
+            WFStation.importWindFieldStation();
+        }
+        catch(QString msg)
+        {
+            auto errorMessage = "Error importing wind field file: " + stationName+"\n"+msg;
+
+            this->errorMessage(errorMessage);
+
+            theStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        auto pws = WFStation.getPeakWindSpeeds();
+
+        QString pwsStr;
+        for(int i = 0; i<pws.size()-1; ++i)
+        {
+            pwsStr += QString::number(pws[i]) + ", ";
+        }
+
+        pwsStr += QString::number(pws.back());
+
+
+        auto pih = WFStation.getPeakInundationHeights();
+
+        QString pihStr;
+        for(int i = 0; i<pih.size()-1; ++i)
+        {
+            pihStr += QString::number(pih[i]) + ", ";
+        }
+
+        pihStr += QString::number(pih.back());
+
+
+        // create the feature attributes
+        QMap<QString, QVariant> featureAttributes;
+        featureAttributes.insert("Station Name", stationName);
+        featureAttributes.insert("AssetType", "WindfieldGridPoint");
+        featureAttributes.insert("TabName", "Wind Field Grid Point");
+        featureAttributes.insert("Latitude", latitude);
+        featureAttributes.insert("Longitude", longitude);
+        featureAttributes.insert("Peak Wind Speeds", pwsStr);
+
+        if(!pihStr.isEmpty())
+            featureAttributes.insert("Peak Inundation Heights", pihStr);
+
+        // Create the point and add it to the feature table
+        Point point(longitude,latitude);
+        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+
+        gridFeatureCollectionTable->addFeature(feature);
+        WFStation.setStationFeature(feature);
+
+        ++count;
+        progressLabel->clear();
+        progressBar->setValue(count);
+
+        QApplication::processEvents();
+    }
+
+    // Create a new layer
+    auto layersTreeView = theVisualizationWidget->getLayersTree();
+
+    // Check if there is a 'User Ground Motions' root item in the tree
+    auto userInputTreeItem = layersTreeView->getTreeItem("User Wind Field", nullptr);
+
+    // If there is no item, create one
+    if(userInputTreeItem == nullptr)
+    {
+        auto itemUID = theVisualizationWidget->createUniqueID();
+        userInputTreeItem = layersTreeView->addItemToTree("User Wind Field", itemUID);
+    }
+
+
+    // Add the event layer to the layer tree
+    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
+
+    progressLabel->setVisible(false);
+
+    // Add the event layer to the map
+    theVisualizationWidget->addLayerToMap(gridLayer,userInputTreeItem);
+
+    // Reset the widget back to the input pane and close
+    theStackedWidget->setCurrentWidget(fileInputWidget);
+    fileInputWidget->setVisible(true);
+
+    if(theStackedWidget->isModal())
+        theStackedWidget->close();
+
+    emit loadingComplete(true);
+
+    emit outputDirectoryPathChanged(eventDir, eventFile);
+
+    return;
+}
+
+
+void UserInputHurricaneWidget::chooseEventDirDialog(void)
+{
+
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::Directory);
+    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing specified motions"));
+    dialog.close();
+
+    // Return if the user cancels or enters same dir
+    if(newPath.isEmpty() || newPath == eventDir)
+    {
+        return;
+    }
+
+    eventDir = newPath;
+    eventDirLineEdit->setText(eventDir);
+
+    // check if dir contains EventGrid.csv file, if it does set the file
+    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
+    if (eventFileInfo.exists()) {
+        eventFile = newPath + "/EventGrid.csv";
+        eventFileLineEdit->setText(eventFile);
+
+        this->loadUserWFData();
+    }
+
+    return;
+}
+
+
+
 void UserInputHurricaneWidget::chooseEventFileDialog(void)
 {
 
     QFileDialog dialog(this);
-    QString newEventFile = QFileDialog::getOpenFileName(this,tr("Hurricane Event File"));
+    QString newEventFile = QFileDialog::getOpenFileName(this,tr("Event Grid File"));
     dialog.close();
 
     // Return if the user cancels or enters same file
@@ -291,11 +584,71 @@ void UserInputHurricaneWidget::chooseEventFileDialog(void)
         return;
     }
 
-    eventFile = newEventFile;
+    // Set file name & entry in qLine edit
 
+    // if file
+    //    check valid
+    //    set motionDir if file in dir that contains all the motions
+    //    invoke loadUserGMData
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(newEventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    eventFile = newEventFile;
     eventFileLineEdit->setText(eventFile);
 
-    this->loadHurricaneTrackData();
+    // check if file in dir with all motions, if so set motionDir
+    // Pop off the row that contains the header information
+    data.pop_front();
+    auto numRows = data.size();
+    int count = 0;
+    QFileInfo eventFileInfo(eventFile);
+    QDir fileDir(eventFileInfo.absolutePath());
+    QStringList filesInDir = fileDir.entryList(QStringList() << "*", QDir::Files);
+
+    // check all files are there
+    bool allThere = true;
+    for(int i = 0; i<numRows; ++i) {
+        auto rowStr = data.at(i);
+        auto stationName = rowStr[0];
+        if (!filesInDir.contains(stationName)) {
+            allThere = false;
+            i=numRows;
+        }
+    }
+
+    if (allThere == true) {
+        eventDir = fileDir.path();
+        eventDirLineEdit->setText(fileDir.path());
+        this->loadUserWFData();
+    } else {
+        QDir motionDirDir(eventDir);
+        if (motionDirDir.exists()) {
+            QStringList filesInDir = motionDirDir.entryList(QStringList() << "*", QDir::Files);
+            bool allThere = true;
+            for(int i = 0; i<numRows; ++i) {
+                auto rowStr = data.at(i);
+                auto stationName = rowStr[0];
+                if (!filesInDir.contains(stationName)) {
+                    allThere = false;
+                    i=numRows;
+                }
+            }
+            if (allThere == true)
+                this->loadUserWFData();
+        }
+    }
 
     return;
 }

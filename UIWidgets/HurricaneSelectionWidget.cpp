@@ -814,7 +814,7 @@ void HurricaneSelectionWidget::handleGridSelected(void)
 
     gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
     gridLayer->setAutoFetchLegendInfos(true);
-    gridLayer->setName("Windfield");
+    gridLayer->setName("Wind Field Grid");
 
     // Create red cross SimpleMarkerSymbol
     SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
@@ -1281,7 +1281,13 @@ void HurricaneSelectionWidget::handleProcessFinished(int exitCode, QProcess::Exi
 
     this->statusMessage("Hazard Simulation Complete!");
 
-    this->loadResults();
+    // ##
+    QString outputDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
+
+    // Make a hurricanes folder under hazard simulation
+    outputDir += QDir::separator() + QString("HazardSimulation") + QDir::separator() + QString("Hurricanes") + QDir::separator() + "Output";
+
+    this->loadResults(outputDir);
 }
 
 
@@ -1302,16 +1308,11 @@ void HurricaneSelectionWidget::handleProcessTextOutput(void)
 }
 
 
-int HurricaneSelectionWidget::loadResults(void)
+int HurricaneSelectionWidget::loadResults(const QString& outputDir)
 {
     this->statusMessage("Loading windfield results");
 
-    QString outputDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
-
-    // Make a hurricanes folder under hazard simulation
-    outputDir += QDir::separator() + QString("HazardSimulation") + QDir::separator() + QString("Hurricanes") + QDir::separator() + "Output";
-
-    // Delete and create a new output directory
+    // Check if output directory exists
     QDir dirOutput(outputDir);
 
     if(!dirOutput.exists())
@@ -1379,7 +1380,7 @@ int HurricaneSelectionWidget::loadResults(void)
 
         if(vecValues.size() != 3)
         {
-            this->errorMessage("Error in importing ground motions");
+            this->errorMessage("Error in importing wind field");
             return -1;
         }
 
@@ -1420,6 +1421,7 @@ int HurricaneSelectionWidget::loadResults(void)
         station->updateFeatureAttribute(attribute,QVariant(pwsStr));
     }
 
+    emit outputDirectoryPathChanged(outputDir, resultsPath);
 
     this->statusMessage("Done loading results");
 
@@ -1545,11 +1547,11 @@ void HurricaneSelectionWidget::handleTerrainImport(void)
 
         auto coordArray = geom["coordinates"].toArray();
 
-        auto featGeom = theVisualizationWidget->getGeometryFromJson(coordArray);
+        auto featGeom = theVisualizationWidget->getPolygonGeometryFromJson(coordArray);
 
         if(featGeom.isEmpty())
         {
-            QString msg ="Error getting the building footprint geometry in: " + terrainPath;
+            QString msg ="Error getting the hurricane geometry in: " + terrainPath;
             this->errorMessage(msg);
             return;
         }

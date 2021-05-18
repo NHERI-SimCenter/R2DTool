@@ -93,6 +93,8 @@ public:
 
     void createHurricaneVisuals(HurricaneObject* hurricane);
 
+    int loadResults(const QString& outputDir);
+
 public slots:
 
     void showHurricaneSelectDialog(void);
@@ -128,6 +130,7 @@ private slots:
 
 signals:
     void loadingComplete(const bool value);
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
 
 private:
 
@@ -174,8 +177,6 @@ private:
 
     QProcess* process;
     QPushButton* runButton;
-
-    int loadResults(void);
 
     HurricaneObject selectedHurricaneObj;
 };

@@ -104,17 +104,17 @@ int BuildingInputWidget::loadComponentVisualization()
         theVisualizationWidget->addLayerToMap(newBuildingLayer,buildingsItem,buildingLayer);
     }
 
-    // First check if a footprint was provided
-    auto indexFootprint = -1;
-    for(int i = 0; i<componentTableWidget->columnCount(); ++i)
-    {
-        auto headerText = componentTableWidget->horizontalHeaderItem(i)->text();
+    auto headers = this->getTableHorizontalHeadings();
 
-        if(headerText.contains("Footprint"))
-        {
-            indexFootprint = i;
-            break;
-        }
+    // First check if a footprint was provided
+    auto indexFootprint = headers.indexOf("Footprint");
+    auto indexLatitude = headers.indexOf("Latitude");
+    auto indexLongitude = headers.indexOf("Longitude");
+
+    if(indexLongitude == -1 || indexLatitude == -1)
+    {
+        this->errorMessage("Could not find latitude and longitude in the header columns");
+        return -1;
     }
 
     for(int i = 0; i<nRows; ++i)
@@ -155,8 +155,8 @@ int BuildingInputWidget::loadComponentVisualization()
         featureAttributes.insert("TabName", buildingIDStr);
         featureAttributes.insert("UID", uid);
 
-        auto latitude = componentTableWidget->item(i,1)->data(0).toDouble();
-        auto longitude = componentTableWidget->item(i,2)->data(0).toDouble();
+        auto latitude = componentTableWidget->item(i,indexLatitude)->data(0).toDouble();
+        auto longitude = componentTableWidget->item(i,indexLongitude)->data(0).toDouble();
 
         // Get the feature collection table for this layer
         auto layerTag = componentTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
@@ -186,7 +186,7 @@ int BuildingInputWidget::loadComponentVisualization()
             }
             else
             {
-                auto geom = theVisualizationWidget->getGeometryFromJson(footprint);
+                auto geom = theVisualizationWidget->getPolygonGeometryFromJson(footprint);
 
                 if(geom.isEmpty())
                 {

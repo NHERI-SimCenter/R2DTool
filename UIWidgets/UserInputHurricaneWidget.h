@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "GroundMotionStation.h"
 #include "SimCenterAppWidget.h"
 
 #include <memory>
@@ -73,7 +72,7 @@ public:
     UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputHurricaneWidget();
 
-    void showUserGMLayers(bool state);
+    void showUserWFLayers(bool state);
 
     QStackedWidget* getUserInputHurricaneWidget(void);
 
@@ -89,10 +88,13 @@ public slots:
 
 private slots:
 
+    void loadUserWFData(void);
     void loadHurricaneTrackData(void);
     void chooseEventFileDialog(void);
+    void chooseEventDirDialog(void);
 
 signals:
+    void outputDirectoryPathChanged(QString eventDir, QString eventFile);
     void loadingComplete(const bool value);
 
 private:
@@ -102,8 +104,10 @@ private:
     VisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
+    QString eventDir;
 
     QLineEdit *eventFileLineEdit;
+    QLineEdit *eventDirLineEdit;
 
     QLabel* progressLabel;
     QWidget* progressBarWidget;

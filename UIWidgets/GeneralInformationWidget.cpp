@@ -110,6 +110,7 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     unitsObj["length"] = unitEnumToString(unitsLengthCombo->currentData().value<LengthUnit>());
     unitsObj["time"] = unitEnumToString(unitsTimeCombo->currentData().value<TimeUnit>());
     unitsObj["temperature"] = unitEnumToString(unitsTemperatureCombo->currentData().value<TemperatureUnit>());
+    unitsObj["speed"] = unitEnumToString(unitsSpeedCombo->currentData().value<SpeedUnit>());
 
     QJsonObject outputsObj;
     outputsObj.insert("EDP", EDPCheckBox->isChecked());
@@ -162,6 +163,10 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
         else
             unitsLengthCombo->setCurrentIndex(0);
 
+        QJsonValue unitsSpeedValue = unitsObj["speed"];
+        SpeedUnit speedUnit = unitStringToEnum<SpeedUnit>(unitsSpeedValue.toString());
+        int speedUnitIndex = unitsSpeedCombo->findData(speedUnit);
+        unitsSpeedCombo->setCurrentIndex(speedUnitIndex);
 
         QJsonValue unitsTimeValue = unitsObj["time"];
 
@@ -185,7 +190,7 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
         EDPCheckBox->setChecked(outObj["EDP"].toBool());
         DMCheckBox->setChecked(outObj["DM"].toBool());
         DVCheckBox->setChecked(outObj["DV"].toBool());
-        realizationCheckBox->setChecked(outObj["every_relization"].toBool());
+        realizationCheckBox->setChecked(outObj["every_realization"].toBool());
     }
 
     if (jsonObject.contains("assets")) {
@@ -237,6 +242,11 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     unitsLengthCombo->addItem("Feet", LengthUnit::ft);
     unitsLengthCombo->setCurrentIndex(3);
 
+    unitsSpeedCombo = new QComboBox(this);
+    unitsSpeedCombo->addItem("Miles per hour", SpeedUnit::mph);
+    unitsSpeedCombo->addItem("Kilometers per hour", SpeedUnit::kph);
+    unitsSpeedCombo->setCurrentIndex(0);
+
     unitsTemperatureCombo = new QComboBox(this);
     unitsTemperatureCombo->addItem("Celsius", TemperatureUnit::C);
     unitsTemperatureCombo->addItem("Fahrenheit", TemperatureUnit::F);
@@ -253,6 +263,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     QFormLayout* unitsFormLayout = new QFormLayout(unitsGroupBox);
     unitsFormLayout->addRow(tr("Force"), unitsForceCombo);
     unitsFormLayout->addRow(tr("Length"), unitsLengthCombo);
+    unitsFormLayout->addRow(tr("Speed"), unitsSpeedCombo);
     unitsFormLayout->addRow(tr("Temperature"), unitsTemperatureCombo);
     unitsFormLayout->addRow(tr("Time"), unitsTimeCombo);
     unitsFormLayout->setAlignment(Qt::AlignLeft);

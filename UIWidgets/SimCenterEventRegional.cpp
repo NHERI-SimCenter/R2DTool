@@ -42,25 +42,37 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 SimCenterEventRegional::SimCenterEventRegional(QWidget *parent)
-    :SimCenterAppWidget(parent), eventType("Earthquake")
+    :SimCenterAppWidget(parent)\
 {
-
     unitsCombo = new QComboBox(this);
     unitsCombo->addItem("Gravitational constant (g)","g");
     unitsCombo->addItem("Meter per second squared","mps2");
     unitsCombo->addItem("Feet per second squared","ftps2");
     unitsCombo->addItem("Inches per second squared","inchps2");
+    unitsCombo->addItem("Feet","ft");
+    unitsCombo->addItem("Meter","m");
+
     unitsCombo->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 
+    eventTypeCombo = new QComboBox(this);
+    eventTypeCombo->addItem("Earthquake","Earthquake");
+    eventTypeCombo->addItem("Hurricane","Hurricane");
+    eventTypeCombo->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
+
     QVBoxLayout *Vlayout = new QVBoxLayout(this);
-    QHBoxLayout *Hlayout = new QHBoxLayout();
 
+    QHBoxLayout *Unitslayout = new QHBoxLayout();
     QLabel* unitsLabel = new QLabel("Event Units:",this);
+    Unitslayout->addWidget(unitsLabel);
+    Unitslayout->addWidget(unitsCombo,Qt::AlignLeft);
 
-    Hlayout->addWidget(unitsLabel);
-    Hlayout->addWidget(unitsCombo,Qt::AlignLeft);
+    QHBoxLayout *Eventslayout = new QHBoxLayout();
+    QLabel* eventTypeLabel = new QLabel("Event Type:",this);
+    Eventslayout->addWidget(eventTypeLabel);
+    Eventslayout->addWidget(eventTypeCombo,Qt::AlignLeft);
 
-    Vlayout->addLayout(Hlayout);
+    Vlayout->addLayout(Unitslayout);
+    Vlayout->addLayout(Eventslayout);
 }
 
 
@@ -79,7 +91,7 @@ void SimCenterEventRegional::clear(void)
 bool SimCenterEventRegional::outputToJSON(QJsonObject &jsonObject)
 {
     // just need to send the class type here.. type needed in object in case user screws up
-    jsonObject["type"]= eventType;
+    jsonObject["type"]= eventTypeCombo->currentText();
 
     return true;
 }
@@ -101,7 +113,7 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject)
     //
 
     jsonObject["Application"] = "SimCenterEvent";
-    jsonObject["EventClassification"] = eventType;
+    jsonObject["EventClassification"] = eventTypeCombo->currentText();
     QJsonObject dataObj;
 
     auto units = unitsCombo->currentData().toString();
@@ -115,6 +127,32 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject)
 
 
 bool SimCenterEventRegional::inputAppDataFromJSON(QJsonObject &jsonObject) {
+
+
+    if (jsonObject.contains("EventClassification"))
+    {
+        auto eventType = jsonObject["EventClassification"].toString();
+
+        if(eventType.compare("Earthquake") == 0)
+        {
+            eventTypeCombo->setCurrentText("Earthquake");
+        }
+        else if(eventType.compare("Hurricane") == 0)
+        {
+            eventTypeCombo->setCurrentText("Hurricane");
+        }
+        else
+        {
+            this->errorMessage("The event classification type "+eventType+" is not recognized");
+            return false;
+        }
+    }
+    else
+    {
+        this->errorMessage("Missing the event classification type in the input file");
+        return false;
+    }
+
 
     if (jsonObject.contains("ApplicationData"))
     {
@@ -140,9 +178,17 @@ bool SimCenterEventRegional::inputAppDataFromJSON(QJsonObject &jsonObject) {
             {
                 unitsCombo->setCurrentText("Gravitational constant (g)");
             }
+            else if(unit.compare("ft") == 0)
+            {
+                unitsCombo->setCurrentText("Feet");
+            }
+            else if(unit.compare("m") == 0)
+            {
+                unitsCombo->setCurrentText("Meter");
+            }
             else
             {
-                qDebug()<<" The unit type "<<unit<<" is not recognized";
+                this->errorMessage("The unit type "+unit+" is not recognized");
                 return false;
             }
         }
@@ -165,8 +211,8 @@ bool SimCenterEventRegional::copyFiles(QString &dirName) {
 }
 
 
-void SimCenterEventRegional::setEventType(QString newType) {
-    eventType = newType;
-
+void SimCenterEventRegional::setEventType(QString newType)
+{
+    eventTypeCombo->setCurrentText(newType);
 }
 

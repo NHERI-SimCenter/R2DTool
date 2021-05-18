@@ -51,6 +51,11 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
     int width  = this->width()<int(0.25*rec.width())?int(0.25*rec.width()):this->width();
 
     this->resize(width, height);
+
+    // Test to remove
+    // inputFileLineEdit->setText("inputfile.json");
+    // resultsFolderLineEdit->setText("/ResultsDir");
+    // this->handleLoadResults();
 }
 
 

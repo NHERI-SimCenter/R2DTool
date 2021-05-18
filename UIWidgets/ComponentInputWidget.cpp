@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 
 #include <QCoreApplication>
+#include <QApplication>
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QTableWidget>
@@ -131,6 +132,8 @@ void ComponentInputWidget::loadComponentData(void)
     // Get the header file
     QStringList tableHeadings = data.first();
 
+    tableHorizontalHeadings = tableHeadings;
+
     // Pop off the row that contains the header information
     data.pop_front();
 
@@ -141,6 +144,10 @@ void ComponentInputWidget::loadComponentData(void)
     {
         this->errorMessage("Input file is empty");
         return;
+    }
+    else{
+        this->statusMessage("Loading " + QString::number(numRows)+ " assets");
+        QApplication::processEvents();
     }
 
     auto firstRow = data.first();
@@ -154,13 +161,21 @@ void ComponentInputWidget::loadComponentData(void)
     auto initialID = firstRow.first().toInt();
 
     componentTableWidget->clear();
-    componentTableWidget->setColumnCount(numCols);
     componentTableWidget->setRowCount(numRows);
+    componentTableWidget->setColumnCount(numCols);
     componentTableWidget->setHorizontalHeaderLabels(tableHeadings);
 
     // Fill in the cells
     for(int i = 0; i<numRows; ++i)
     {
+
+        // Display a status message every n assets
+        if((i+1)%1000 == 0)
+        {
+            this->statusMessage("Loading asset number: " + QString::number(i+1));
+            QApplication::processEvents();
+        }
+
         auto rowStringList = data[i];
 
         if(rowStringList.size() != numCols)
@@ -197,6 +212,9 @@ void ComponentInputWidget::loadComponentData(void)
     emit componentDataLoaded();
 
     this->loadComponentVisualization();
+
+    this->statusMessage("Done loading assets");
+    QApplication::processEvents();
 
     return;
 }
@@ -475,6 +493,11 @@ void ComponentInputWidget::clearLayerSelectedForAnalysis(void)
     selectedFeaturesForAnalysis.clear();
 }
 
+QStringList ComponentInputWidget::getTableHorizontalHeadings() const
+{
+    return tableHorizontalHeadings;
+}
+
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
@@ -573,7 +596,13 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
         data["buildingSourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
 
-        QString filterData = selectComponentsLineEdit->getComponentAnalysisList();
+        QString filterData = this->getFilterString();
+
+        if(filterData.isEmpty())
+        {
+            errorMessage("Please select components for analysis");
+            return false;
+        }
 
         data["filter"] = filterData;
     }
@@ -651,19 +680,34 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             }
         }
 
-        if (appData.contains("filter"))
-            selectComponentsLineEdit->setText(appData["filter"].toString());
-
-        if (foundFile == true)
-            selectComponentsLineEdit->selectComponents();
-        else {
+        if(foundFile == false)
+        {
             QString errMessage = appType + " no file found: " + fileName;
             this->errorMessage(errMessage);
             return false;
         }
+
+        if (appData.contains("filter"))
+            this->setFilterString(appData["filter"].toString());
+
     }
 
     return true;
+}
+
+
+void ComponentInputWidget::setFilterString(const QString& filter)
+{
+    selectComponentsLineEdit->setText(filter);
+    selectComponentsLineEdit->selectComponents();
+}
+
+
+QString ComponentInputWidget::getFilterString(void)
+{
+    QString filterData = selectComponentsLineEdit->getComponentAnalysisList();
+
+    return filterData;
 }
 
 
@@ -739,32 +783,32 @@ bool ComponentInputWidget::copyFiles(QString &destName)
         return false;
 
 
-    // Creates a csv file of only the selected components
-    //     auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+    // For testing, creates a csv file of only the selected components
+    //    qDebug()<<"Saving selected components to .csv";
+    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-    //     QVector<QStringList> selectedData(selectedIDs.size()+1);
+    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-    //     selectedData[0] = headerInfo;
+    //    selectedData[0] = headerInfo;
 
-    //     int i = 0;
-    //     for(auto&& rowID : selectedIDs)
-    //     {
-    //         QStringList rowData;
-    //         rowData.reserve(nCols);
+    //    int i = 0;
+    //    for(auto&& rowID : selectedIDs)
+    //    {
+    //        QStringList rowData;
+    //        rowData.reserve(nCols);
 
-    //         for(int j = 0; j<nCols; ++j)
-    //         {
-    //             auto item = componentTableWidget->item(rowID,j)->data(0).toString();
+    //        for(int j = 0; j<nCols; ++j)
+    //        {
+    //            auto item = componentTableWidget->item(rowID-1,j)->data(0).toString();
 
-    //             rowData<<item;
-    //         }
-    //         selectedData[i+1] = rowData;
+    //            rowData<<item;
+    //        }
+    //        selectedData[i+1] = rowData;
 
-    //         ++i;
-    //     }
+    //        ++i;
+    //    }
 
-    //     csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
-
+    //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
 
     return true;
 }
@@ -778,6 +822,7 @@ void ComponentInputWidget::clear(void)
     selectComponentsLineEdit->clear();
     componentTableWidget->clear();
     componentTableWidget->hide();
+    tableHorizontalHeadings.clear();
 }
 
 

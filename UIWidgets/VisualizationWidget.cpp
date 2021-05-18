@@ -91,6 +91,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QFileInfo>
+#include <QJsonDocument>
 #include <QJsonArray>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -133,8 +134,6 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //    theHeaderLayout->addStretch(1);
     //    mainLayout->addLayout(theHeaderLayout);
 
-    pipelineWidget = nullptr;
-
     // Create the Widget view
     //mapViewWidget = new MapGraphicsView(this);
     mapViewLayout = new QVBoxLayout();
@@ -164,7 +163,6 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //    Viewpoint UCB(61.216663, -149.907122, 100000.0);
 
     mapGIS->setInitialViewpoint(UCB);
-
 
     // Setup the various convex hull objects
     theConvexHullTool = std::make_unique<ConvexHull>(this);
@@ -377,32 +375,9 @@ PolygonBoundary* VisualizationWidget::getThePolygonBoundaryTool(void) const
 }
 
 
-ComponentInputWidget *VisualizationWidget::getPipelineWidget() const
-{
-    return pipelineWidget;
-}
-
-
 LayerTreeView *VisualizationWidget::getLayersTree() const
 {
     return layersTree;
-}
-
-
-void VisualizationWidget::setPipelineWidget(ComponentInputWidget *value)
-{
-    pipelineWidget = value;
-    pipelineWidget->setTheVisualizationWidget(this);
-
-    connect(pipelineWidget,&ComponentInputWidget::componentDataLoaded,this,&VisualizationWidget::loadPipelineData);
-}
-
-
-void VisualizationWidget::loadBuildingData(void)
-{
-
-
-
 }
 
 
@@ -412,174 +387,10 @@ void VisualizationWidget::changeLayerOrder(const int from, const int to)
 }
 
 
-void VisualizationWidget::loadPipelineData(void)
-{
-    auto pipelineTableWidget = pipelineWidget->getTableWidget();
-    auto thePipelineDb = pipelineWidget->getComponentDatabase();
-
-    QList<Field> fields;
-    fields.append(Field::createDouble("RepairRate", "0.0"));
-    fields.append(Field::createText("ID", "NULL",4));
-    fields.append(Field::createText("AssetType", "NULL",4));
-    fields.append(Field::createText("TabName", "NULL",4));
-    fields.append(Field::createText("UID", "NULL",4));
-
-    // Set the table headers as fields in the table
-    for(int i =0; i<pipelineTableWidget->columnCount(); ++i)
-    {
-        auto headerItem = pipelineTableWidget->horizontalHeaderItem(i);
-        auto fieldText = headerItem->text();
-        fields.append(Field::createText(fieldText, fieldText,fieldText.size()));
-    }
-
-    // Create the pipelines group layer that will hold the sublayers
-    auto pipelineLayer = new GroupLayer(QList<Layer*>{},this);
-    pipelineLayer->setName("Components");
-
-    // Add the pipeline layer to the map and get the root tree item
-    auto pipelinesItem = this->addLayerToMap(pipelineLayer);
-
-    if(pipelinesItem == nullptr)
-    {
-        qDebug()<<"Error adding item to the map";
-        return;
-    }
-
-    auto nRows = pipelineTableWidget->rowCount();
-
-    // Select a column that will define the layers
-    //    int columnToMapLayers = 0;
-
-    std::vector<std::string> vecLayerItems;
-    //    for(int i = 0; i<nRows; ++i)
-    //    {
-    //        // Organize the layers according to occupancy type
-    //        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
-
-    //        vecLayerItems.push_back(layerTag);
-    //    }
-
-    vecLayerItems.push_back("Pipeline Network");
-
-    //    this->uniqueVec<std::string>(vecLayerItems);
-
-    // Map to hold the feature tables
-    std::map<std::string, FeatureCollectionTable*> tablesMap;
-
-
-    for(auto&& it : vecLayerItems)
-    {
-        auto featureCollection = new FeatureCollection(this);
-
-        auto featureCollectionTable = new FeatureCollectionTable(fields, GeometryType::Polyline, SpatialReference::wgs84(),this);
-
-        featureCollection->tables()->append(featureCollectionTable);
-
-        auto newpipelineLayer = new FeatureCollectionLayer(featureCollection,this);
-
-        newpipelineLayer->setName(QString::fromStdString(it));
-
-        newpipelineLayer->setAutoFetchLegendInfos(true);
-
-        featureCollectionTable->setRenderer(this->createPipelineRenderer());
-
-        tablesMap.insert(std::make_pair(it,featureCollectionTable));
-
-        this->addLayerToMap(newpipelineLayer,pipelinesItem, pipelineLayer);
-    }
-
-    for(int i = 0; i<nRows; ++i)
-    {
-
-        // create the feature attributes
-        QMap<QString, QVariant> featureAttributes;
-
-        // Create a new pipeline
-        Component pipeline;
-
-        QString pipelineIDStr = pipelineTableWidget->item(i,0)->data(0).toString();
-
-        int pipelineID =  pipelineIDStr.toInt();
-
-        pipeline.ID = pipelineID;
-
-        QMap<QString, QVariant> pipelineAttributeMap;
-
-        // The feature attributes are the columns from the table
-        for(int j = 0; j<pipelineTableWidget->columnCount(); ++j)
-        {
-            auto attrbText = pipelineTableWidget->horizontalHeaderItem(j)->text();
-            auto attrbVal = pipelineTableWidget->item(i,j)->data(0);
-
-            pipelineAttributeMap.insert(attrbText,attrbVal.toString());
-
-            featureAttributes.insert(attrbText,attrbVal);
-        }
-
-        // Create a unique ID for the pipeline
-        auto uid = this->createUniqueID();
-
-        pipeline.ComponentAttributes = pipelineAttributeMap;
-
-        featureAttributes.insert("ID", pipelineIDStr);
-        featureAttributes.insert("RepairRate", 0.0);
-        featureAttributes.insert("AssetType", "PIPELINE");
-        featureAttributes.insert("TabName", pipelineTableWidget->item(i,0)->data(0).toString());
-        featureAttributes.insert("UID", uid);
-
-        // Get the feature collection table from the map
-        //        auto layerTag = pipelineTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
-        auto layerTag = "Pipeline Network";
-
-        auto featureCollectionTable = tablesMap.at(layerTag);
-
-        auto latitudeStart = pipelineTableWidget->item(i,3)->data(0).toDouble();
-        auto longitudeStart = pipelineTableWidget->item(i,4)->data(0).toDouble();
-
-        auto latitudeEnd = pipelineTableWidget->item(i,5)->data(0).toDouble();
-        auto longitudeEnd = pipelineTableWidget->item(i,6)->data(0).toDouble();
-
-        // Create the points and add it to the feature table
-        PolylineBuilder polylineBuilder(SpatialReference::wgs84());
-
-        // Get the two start and end points of the pipeline segment
-
-        Point point1(longitudeStart,latitudeStart);
-
-        Point point2(longitudeEnd,latitudeEnd);
-
-        polylineBuilder.addPoint(point1);
-        polylineBuilder.addPoint(point2);
-
-        if(!polylineBuilder.isSketchValid())
-        {
-            this->errorMessage("Error, cannot create a pipeline feature with the latitude and longitude provided");
-            return;
-        }
-
-        // Create the polyline feature
-        auto polyline =  polylineBuilder.toPolyline();
-
-        // Add the feature to the table
-        Feature* feature = featureCollectionTable->createFeature(featureAttributes, polyline, this);
-
-        pipeline.UID = uid;
-        pipeline.ComponentFeature = feature;
-
-        thePipelineDb->addComponent(pipelineID, pipeline);
-
-        featureCollectionTable->addFeature(feature);
-    }
-
-    layersTree->selectRow(1);
-}
-
-
 SimCenterMapGraphicsView* VisualizationWidget::getMapViewWidget() const
 {
     return mapViewWidget;
 }
-
 
 
 void VisualizationWidget::selectFeaturesForAnalysisQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult)
@@ -856,39 +667,6 @@ ClassBreaksRenderer* VisualizationWidget::createPointRenderer(void)
     classBreaks.append(classBreak5);
 
     return new ClassBreaksRenderer("LossRatio", classBreaks, this);
-}
-
-
-ClassBreaksRenderer* VisualizationWidget::createPipelineRenderer(void)
-{
-    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(0, 0, 0), 6.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol2 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(255,255,178), 6.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol3 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(253,204,92), 6.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol4 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(253,141,60),  6.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol5 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(240,59,32),  6.0f /*width*/, this);
-    SimpleLineSymbol* lineSymbol6 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(189,0,38),  6.0f /*width*/, this);
-
-    QList<ClassBreak*> classBreaks;
-
-    auto classBreak1 = new ClassBreak("0.0-0.001 number of repairs", "Loss Ratio less than 10%", -0.00001, 1E-03, lineSymbol1, this);
-    classBreaks.append(classBreak1);
-
-    auto classBreak2 = new ClassBreak("0.001-0.01 number of repairs", "Loss Ratio Between 10% and 25%", 1.00E-03, 1.00E-02, lineSymbol2, this);
-    classBreaks.append(classBreak2);
-
-    auto classBreak3 = new ClassBreak("0.01-0.1 number of repairs", "Loss Ratio Between 25% and 50%", 1.00E-02, 1.00E-01, lineSymbol3, this);
-    classBreaks.append(classBreak3);
-
-    auto classBreak4 = new ClassBreak("0.1-1.0 number of repairs", "Loss Ratio Between 50% and 75%", 1.00E-01, 1.00E+00, lineSymbol4, this);
-    classBreaks.append(classBreak4);
-
-    auto classBreak5 = new ClassBreak("1.0-10.0 number of repairs", "Loss Ratio Between 75% and 90%", 1.00E+00, 1.00E+01, lineSymbol5, this);
-    classBreaks.append(classBreak5);
-
-    auto classBreak6 = new ClassBreak("10.0-100.0 number of repairs", "Loss Ratio Between 75% and 90%", 1.00E+01, 1.00E+10, lineSymbol6, this);
-    classBreaks.append(classBreak6);
-
-    return new ClassBreaksRenderer("RepairRate", classBreaks, this);
 }
 
 
@@ -1457,41 +1235,109 @@ FeatureLayer* VisualizationWidget::createAndAddShapefileLayer(const QString& fil
 }
 
 
+Esri::ArcGISRuntime::FeatureCollectionLayer* VisualizationWidget::createAndAddJsonLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, QColor color)
+{
+    QFile file(filePath);
+
+    // Check if something at that path exists and cheack that it really is a file and not a directory
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QString msg = QString("Cannot open the file:") + filePath;
+        this->errorMessage(msg);
+        return nullptr;
+    }
+
+    // Place contents of file into json object
+    QString val;
+    val=file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(val.toUtf8());
+    QJsonObject jsonObj = doc.object();
+
+    // Extract the features
+    auto featureArray = jsonObj["features"].toArray();
+
+    auto numFeat = featureArray.size();
+
+    if(numFeat == 0)
+    {
+        QString msg = "Could find any features in: " + filePath;
+        this->errorMessage(msg);
+        return nullptr;
+    }
+
+    auto featureCollection = new FeatureCollection(this);
+
+    for(auto&& it : featureArray)
+    {
+        auto featObj = it.toObject();
+
+        auto geom = featObj["geometry"].toObject();
+
+        auto type = geom["type"].toString();
+
+        FeatureCollectionTable* featureCollectionTable = nullptr;
+        if(type.compare("MultiLineString") == 0)
+            featureCollectionTable = this->getMultilineFeatureTable(geom,featObj,layerName, color);
+        else if (type.compare("MultiPolygon") == 0)
+            featureCollectionTable = this->getMultipolygonFeatureTable(geom,featObj,layerName, color);
+        else
+        {
+            QString msg ="Error, the import of the type of geometry "+type+" is not yet suppported for " + filePath;
+            this->errorMessage(msg);
+            return nullptr;
+        }
+
+        if(featureCollectionTable == nullptr)
+            return nullptr;
+
+        featureCollection->tables()->append(featureCollectionTable);
+    }
+
+    // New geo json layer
+    auto newGeojsonLayer = new FeatureCollectionLayer(featureCollection,this);
+
+    newGeojsonLayer->setName(layerName);
+
+    newGeojsonLayer->setAutoFetchLegendInfos(true);
+
+    this->addLayerToMap(newGeojsonLayer,parentItem);
+
+    return newGeojsonLayer;
+}
+
+
 ArcGISMapImageLayer* VisualizationWidget::createAndAddMapServerLayer(const QString& url, const QString& layerName, LayerTreeItem* parentItem)
 {
     ArcGISMapImageLayer* layer  = new ArcGISMapImageLayer(QUrl(url), this);
 
-    // Add the layers to the layer tree
-    auto layerID = this->createUniqueID();
-    auto layerLayerTreeItem = layersTree->addItemToTree(layerName, layerID, parentItem);
 
-    connect(layer, &ArcGISMapImageLayer::doneLoading, this, [this, layer, layerLayerTreeItem](Error loadError)
-    {
-        if (!loadError.isEmpty())
-        {
-            auto msg = loadError.message() + loadError.additionalMessage();
-            this->errorMessage(msg);
+    //    connect(layer, &ArcGISMapImageLayer::doneLoading, this, [this, layer, layerLayerTreeItem](Error loadError)
+    //    {
+    //        if (!loadError.isEmpty())
+    //        {
+    //            auto msg = loadError.message() + loadError.additionalMessage();
+    //            this->errorMessage(msg);
 
-            return;
-        }
+    //            return;
+    //        }
 
-        auto subLayers = layer->subLayerContents();
+    //        auto subLayers = layer->subLayerContents();
 
-        for(auto&& it : subLayers)
-        {
-            auto subLayerName = it->name();
+    //        for(auto&& it : subLayers)
+    //        {
+    //            auto subLayerName = it->name();
 
-            layersTree->addItemToTree(subLayerName, QString(), layerLayerTreeItem);
-        }
+    //            layersTree->addItemToTree(subLayerName, QString(), layerLayerTreeItem);
+    //        }
 
 
-        // If the layer was loaded successfully, set the map extent to the full extent of the layer
-        mapViewWidget->setViewpointCenter(layer->fullExtent().center(), 80000);
-    });
+    //        // If the layer was loaded successfully, set the map extent to the full extent of the layer
+    //        mapViewWidget->setViewpointCenter(layer->fullExtent().center(), 80000);
+    //    });
 
     layer->setName(layerName);
-    layer->setLayerId(layerID);
 
+    this->addLayerToMap(layer,parentItem);
 
     return layer;
 }
@@ -1738,6 +1584,8 @@ void VisualizationWidget::removeLayerFromMap(const QString layerID)
 
 bool VisualizationWidget::removeLayerFromMapAndTree(const QString layerID)
 {
+    this->removeLayerFromMap(layerID);
+
     return layersTree->removeItemFromTree(layerID);
 }
 
@@ -1871,7 +1719,7 @@ GISLegendView *VisualizationWidget::getLegendView() const
 }
 
 
-Esri::ArcGISRuntime::Geometry VisualizationWidget::getGeometryFromJson(const QString& geoJson)
+Esri::ArcGISRuntime::Geometry VisualizationWidget::getPolygonGeometryFromJson(const QString& geoJson)
 {
     QRegularExpression rx("[^\\[\\]]+(?=\\])");
 
@@ -1918,7 +1766,7 @@ Esri::ArcGISRuntime::Geometry VisualizationWidget::getGeometryFromJson(const QSt
 }
 
 
-Esri::ArcGISRuntime::Geometry VisualizationWidget::getGeometryFromJson(const QJsonArray& geoJson)
+Esri::ArcGISRuntime::Geometry VisualizationWidget::getPolygonGeometryFromJson(const QJsonArray& geoJson)
 {
 
     if(geoJson.size() == 0)
@@ -1945,6 +1793,169 @@ Esri::ArcGISRuntime::Geometry VisualizationWidget::getGeometryFromJson(const QJs
     }
 
     return polygonBuilder.toGeometry();
+}
+
+
+Esri::ArcGISRuntime::Geometry VisualizationWidget::getMultilineStringGeometryFromJson(const QJsonArray& geoJson)
+{
+    if(geoJson.size() == 0)
+        return Geometry();
+
+
+    PolylineBuilder theMultiPartBuilder(SpatialReference::wgs84());
+
+    PartCollection* pCollection = new PartCollection(theMultiPartBuilder.spatialReference(), this);
+
+    for(auto&& it : geoJson)
+    {
+        Part* newPart = new Part(theMultiPartBuilder.spatialReference(), this);
+
+        auto points = it.toArray();
+
+        if(points.size() < 2)
+        {
+            delete pCollection;
+            delete newPart;
+            return Geometry();
+        }
+
+        for(auto&& it2 : points)
+        {
+            auto point = it2.toArray();
+
+            double lat = point.at(0).toDouble(360.0);
+            double lon = point.at(1).toDouble(360.0);
+
+            if(lat == 360.0 || lon == 360.0)
+            {
+                delete pCollection;
+                delete newPart;
+                return Geometry();
+            }
+
+            newPart->addPoint(lat,lon);
+        }
+
+        pCollection->addPart(newPart);
+    }
+
+    theMultiPartBuilder.setParts(pCollection);
+
+    if(!theMultiPartBuilder.isSketchValid())
+    {
+        delete pCollection;
+        return Geometry();
+    }
+
+    return theMultiPartBuilder.toGeometry();
+}
+
+
+Esri::ArcGISRuntime::Geometry VisualizationWidget::getMultilineStringGeometryFromJson(const QString& geoJson)
+{
+    QRegularExpression rx("[^\\[\\]]+(?=\\])");
+
+    QRegularExpressionMatchIterator i = rx.globalMatch(geoJson);
+
+    QStringList pointsList;
+    while (i.hasNext())
+    {
+        QRegularExpressionMatch match = i.next();
+
+        if(!match.hasMatch())
+            continue;
+
+        QString word = match.captured(0);
+        pointsList << word;
+    }
+
+    if(pointsList.empty())
+        return Geometry();
+
+    PolylineBuilder polylineBuilder(SpatialReference::wgs84());
+
+    for(auto&& it : pointsList)
+    {
+        auto points = it.split(",");
+
+        if(points.size() < 3)
+            return Geometry();
+
+        bool OK = false;
+        double lat = points.at(0).toDouble(&OK);
+
+        if(!OK)
+            return Geometry();
+
+        double lon = points.at(1).toDouble(&OK);
+        if(!OK)
+            return Geometry();
+
+        polylineBuilder.addPoint(lat,lon);
+    }
+
+    return polylineBuilder.toGeometry();
+}
+
+
+Esri::ArcGISRuntime::Geometry VisualizationWidget::getMultiPolygonGeometryFromJson(const QJsonArray& geoJson)
+{
+    if(geoJson.size() == 0)
+        return Geometry();
+
+
+    PolygonBuilder theMultiPartBuilder(SpatialReference::wgs84());
+
+    PartCollection* pCollection = new PartCollection(theMultiPartBuilder.spatialReference(), this);
+
+    for(auto&& it : geoJson)
+    {
+        // Number of polygons in the multi-part polygon
+        auto polygons = it.toArray();
+
+        for(auto&& it2 : polygons)
+        {
+            Part* newPart = new Part(theMultiPartBuilder.spatialReference(), this);
+
+            auto polygon = it2.toArray();
+
+            for(auto&& it3 : polygon)
+            {
+                auto points = it3.toArray();
+
+                if(points.size() < 2)
+                {
+                    delete pCollection;
+                    delete newPart;
+                    return Geometry();
+                }
+
+                double lat = points.at(0).toDouble(360.0);
+                double lon = points.at(1).toDouble(360.0);
+
+                if(lat == 360.0 || lon == 360.0)
+                {
+                    delete pCollection;
+                    delete newPart;
+                    return Geometry();
+                }
+
+                newPart->addPoint(lat,lon);
+            }
+
+            pCollection->addPart(newPart);
+        }
+    }
+
+    theMultiPartBuilder.setParts(pCollection);
+
+    if(!theMultiPartBuilder.isSketchValid())
+    {
+        delete pCollection;
+        return Geometry();
+    }
+
+    return theMultiPartBuilder.toGeometry();
 }
 
 
@@ -2021,9 +2032,9 @@ void VisualizationWidget::clearSelection(void)
 }
 
 
-void VisualizationWidget::registerComponentWidget(QString type, ComponentInputWidget* widget)
+void VisualizationWidget::registerComponentWidget(QString assetType, ComponentInputWidget* widget)
 {
-    componentWidgetsMap[type] = widget;
+    componentWidgetsMap[assetType] = widget;
 
     widget->setTheVisualizationWidget(this);
 }
@@ -2034,6 +2045,150 @@ ComponentInputWidget* VisualizationWidget::getComponentWidget(const QString type
     return componentWidgetsMap.value(type, nullptr);
 }
 
+
+void VisualizationWidget::setViewElevation(double val)
+{
+    mapViewWidget->setViewpointScale(val);
+}
+
+
+Esri::ArcGISRuntime::FeatureCollectionTable* VisualizationWidget::getMultilineFeatureTable(const QJsonObject& geomObject, const QJsonObject& featObj, const QString& layerName, const QColor color)
+{
+    auto coordArray = geomObject["coordinates"].toArray();
+
+    Esri::ArcGISRuntime::Geometry featGeom = this->getMultilineStringGeometryFromJson(coordArray);
+
+    if(featGeom.isEmpty())
+    {
+        QString msg ="Error getting the feature geometry for " + layerName;
+        this->errorMessage(msg);
+        return nullptr;
+    }
+
+    auto properties = featObj["properties"].toObject();
+
+    QMap<QString, QVariant> featureAttributes;
+    featureAttributes.insert("AssetType", "USER_GEOJSON");
+    featureAttributes.insert("TabName", layerName);
+
+    auto propertiesMap = properties.toVariantMap();
+
+    featureAttributes.insert(propertiesMap);
+
+    QList<Field> tableFields;
+    tableFields.append(Field::createText("AssetType", "NULL",4));
+    tableFields.append(Field::createText("TabName", "NULL",4));
+
+    // Use the property map from the first object to populate the fields.
+    auto keys = propertiesMap.keys();
+    for(auto&& it : keys)
+        tableFields.append(Field::createText(it, "NULL",4));
+
+    auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polyline, SpatialReference::wgs84(),this);
+
+    // Try to get the color if there is one
+    auto colorStr =  properties["color"].toString();
+
+    QColor featureColor = color;
+
+    if(!colorStr.isEmpty())
+        featureColor = QColor(colorStr);
+
+    auto weight = properties["weight"].toDouble(3.0);
+
+    auto legendLabel = layerName;
+
+    QVariant valueVar = properties["value"].toVariant();
+
+    if(!valueVar.toString().isEmpty())
+        legendLabel = valueVar.toString();
+    else if(properties["value"].toDouble(-1.0) == -1.0)
+        legendLabel = QString::number(valueVar.toDouble());
+
+    if(legendLabel.isEmpty())
+        legendLabel = layerName;
+
+    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, featureColor, weight, this);
+    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
+    lineRenderer->setLabel(legendLabel);
+
+    featureCollectionTable->setRenderer(lineRenderer);
+
+    auto feature = featureCollectionTable->createFeature(featureAttributes, featGeom, this);
+
+    featureCollectionTable->addFeature(feature);
+
+    return featureCollectionTable;
+}
+
+
+Esri::ArcGISRuntime::FeatureCollectionTable* VisualizationWidget::getMultipolygonFeatureTable(const QJsonObject& geomObject, const QJsonObject& featObj, const QString& layerName, const QColor color)
+{
+    auto coordArray = geomObject["coordinates"].toArray();
+
+    Esri::ArcGISRuntime::Geometry featGeom = this->getMultiPolygonGeometryFromJson(coordArray);
+
+    if(featGeom.isEmpty())
+    {
+        QString msg ="Error getting the feature geometry for " + layerName;
+        this->errorMessage(msg);
+        return nullptr;
+    }
+
+    auto properties = featObj["properties"].toObject();
+
+    QMap<QString, QVariant> featureAttributes;
+    featureAttributes.insert("AssetType", "USER_GEOJSON");
+    featureAttributes.insert("TabName", layerName);
+
+    auto propertiesMap = properties.toVariantMap();
+
+    featureAttributes.insert(propertiesMap);
+
+    QList<Field> tableFields;
+    tableFields.append(Field::createText("AssetType", "NULL",4));
+    tableFields.append(Field::createText("TabName", "NULL",4));
+
+    // Use the property map from the first object to populate the fields.
+    auto keys = propertiesMap.keys();
+    for(auto&& it : keys)
+        tableFields.append(Field::createText(it, "NULL",4));
+
+    auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polygon, SpatialReference::wgs84(),this);
+
+    // Try to get the color if there is one
+    auto colorStr =  properties["color"].toString();
+
+    // Black color by default
+    QColor featureColor = color;
+
+    if(!colorStr.isEmpty())
+        featureColor = QColor(colorStr);
+
+    auto legendLabel = layerName;
+
+    QVariant valueVar = properties["value"].toVariant();
+
+    if(!valueVar.toString().isEmpty())
+        legendLabel = valueVar.toString();
+    else if(properties["value"].toDouble(-1.0) == -1.0)
+        legendLabel = QString::number(valueVar.toDouble());
+
+    if(legendLabel.isEmpty())
+        legendLabel = layerName;
+
+    SimpleFillSymbol* lineSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, featureColor, this);
+    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
+    lineRenderer->setLabel(legendLabel);
+
+    featureCollectionTable->setRenderer(lineRenderer);
+
+    auto feature = featureCollectionTable->createFeature(featureAttributes, featGeom, this);
+
+    featureCollectionTable->addFeature(feature);
+
+    return featureCollectionTable;
+}
 
 //     connect to the mouse clicked signal on the MapQuickView
 //     This code snippet adds a point to where the mouse click is

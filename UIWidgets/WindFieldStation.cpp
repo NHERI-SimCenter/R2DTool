@@ -97,6 +97,8 @@ void WindFieldStation::importWindFieldStation(void)
     if(indexPWS == -1)
         throw "Could not find the peak wind speed (PWS) header";
 
+    auto indexPIH = tableHeadings.indexOf("PIH");
+
     peakWindSpeeds.resize(numRows);
 
     // Get the data
@@ -108,6 +110,9 @@ void WindFieldStation::importWindFieldStation(void)
             throw "The number of columns in the row " + QString::number(i) + " should be " + QString::number(numCols);
 
         peakWindSpeeds[i] = this->objectToDouble(rowStringList[indexPWS]);
+
+        if(indexPIH != -1)
+            peakInundationHeights[i] = this->objectToDouble(rowStringList[indexPIH]);
     }
 }
 
@@ -143,4 +148,9 @@ int WindFieldStation::updateFeatureAttribute(const QString& attribute, const QVa
     stationFeature->featureTable()->updateFeature(stationFeature);
 
     return 0;
+}
+
+QVector<double> WindFieldStation::getPeakInundationHeights() const
+{
+    return peakInundationHeights;
 }
