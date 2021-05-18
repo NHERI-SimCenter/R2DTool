@@ -373,21 +373,21 @@ PATH_TO_DATABASES=$$DESTDIR/Databases
 win32 {
 
 # Copies over the examples folder into the build directory
-Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
-first.depends = $(first) Copydata
+# Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+# first.depends = $(first) Copydata
 
 # Copies the dll files into the build directory
-CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
-first.depends += CopyDLLs
+# CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
+# first.depends += CopyDLLs
 
-CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
-first.depends += CopyDbs
+# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+# first.depends += CopyDbs
 
-export(first.depends)
-export(CopyDbs.commands)
-export(CopyDLLs.commands)
+# export(first.depends)
+# export(CopyDbs.commands)
+# export(CopyDLLs.commands)
 
-QMAKE_EXTRA_TARGETS += first Copydata CopyDbs CopyDLLs
+# QMAKE_EXTRA_TARGETS += first Copydata CopyDbs CopyDLLs
 
 }else {
 mac {
@@ -396,15 +396,15 @@ mac {
 #Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
 
 # Copies the databases folder into the build directory
-CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
 
-first.depends += Copydata CopyDbs
+# first.depends += Copydata CopyDbs
 
-export(first.depends)
-export(Copydata.commands)
-export(CopyDbs.commands)
+# export(first.depends)
+# export(Copydata.commands)
+# export(CopyDbs.commands)
 
-QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
+# QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
 }
 }

@@ -430,6 +430,8 @@ void WorkflowAppR2D::onRunButtonClicked() {
 
     progressDialog->setVisibility(true);
     progressDialog->showProgressBar();
+    progressDialog->setProgressBarValue(0);
+
     theRunWidget->showLocalApplication();
     GoogleAnalytics::ReportLocalRun();
 }

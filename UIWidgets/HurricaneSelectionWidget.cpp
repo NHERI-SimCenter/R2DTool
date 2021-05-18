@@ -300,7 +300,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     selectHurricaneLayout->addWidget(selectedHurricaneSeason,2,1);
     selectHurricaneLayout->addWidget(SIDLabel,3,0);
     selectHurricaneLayout->addWidget(selectedHurricaneSID,3,1);
-    selectHurricaneLayout->rowStretch(4);
+    selectHurricaneLayout->rowStretch(3);
 
     // Widget to specify hurricane track
     specifyHurricaneWidget = new QWidget(this);
