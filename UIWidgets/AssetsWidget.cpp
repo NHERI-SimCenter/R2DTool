@@ -73,6 +73,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
     pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
     GasPipelineInputWidget *csvPipelineInventory = new GasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
+    pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
 
     visualizationWidget->registerComponentWidget("BUILDINGS",csvBuildingInventory);
     visualizationWidget->registerComponentWidget("GASPIPELINES",csvPipelineInventory);

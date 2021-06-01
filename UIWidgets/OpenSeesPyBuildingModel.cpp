@@ -220,6 +220,11 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
             responseNodes->setText(appData["dofMap"].toString());
         if (appData.contains("ndm"))
             ndm->setText(QString::number(appData["ndm"].toInt()));
+        if (appData.contains("ndf"))
+            ndf->setText(QString::number(appData["ndf"].toInt()));
+        else
+            ndf->setText("6");
+
         // FMK if (appData.contains("columnLine"))
         //        columnLine->setText(appData["columnLine"].toString());
 

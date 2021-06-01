@@ -164,9 +164,12 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
             unitsLengthCombo->setCurrentIndex(0);
 
         QJsonValue unitsSpeedValue = unitsObj["speed"];
-        SpeedUnit speedUnit = unitStringToEnum<SpeedUnit>(unitsSpeedValue.toString());
-        int speedUnitIndex = unitsSpeedCombo->findData(speedUnit);
-        unitsSpeedCombo->setCurrentIndex(speedUnitIndex);
+        if(!unitsSpeedValue.isNull())
+        {
+            SpeedUnit speedUnit = unitStringToEnum<SpeedUnit>(unitsSpeedValue.toString());
+            int speedUnitIndex = unitsSpeedCombo->findData(speedUnit);
+            unitsSpeedCombo->setCurrentIndex(speedUnitIndex);
+        }
 
         QJsonValue unitsTimeValue = unitsObj["time"];
 
@@ -279,13 +282,13 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     transportationCheckBox = new QCheckBox("Transportation Network",this);
 
     soilCheckBox->setCheckable(false);
-    gasCheckBox->setCheckable(false);
+    //    gasCheckBox->setCheckable(false);
     waterCheckBox->setCheckable(false);
     sewerCheckBox->setCheckable(false);
     transportationCheckBox->setCheckable(false);
 
     soilCheckBox->setEnabled(false);
-    gasCheckBox->setEnabled(false);
+    //    gasCheckBox->setEnabled(false);
     waterCheckBox->setEnabled(false);
     sewerCheckBox->setEnabled(false);
     transportationCheckBox->setEnabled(false);

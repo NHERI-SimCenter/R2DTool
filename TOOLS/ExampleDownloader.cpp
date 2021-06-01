@@ -47,6 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 #include <QUuid>
 #include <QPushButton>
+#include <QApplication>
 #include <QVBoxLayout>
 
 ExampleDownloader::ExampleDownloader(MainWindowWorkflowApp *parent) : QDialog(nullptr)
@@ -116,6 +117,11 @@ void ExampleDownloader::addExampleToDownload(const QString url, const QString na
 
 void ExampleDownloader::updateExamples(void)
 {
+
+    QString msg = "Updating examples...  please wait.";
+    statusDialog->appendText(msg);
+    QApplication::processEvents();
+
     QStringList downloadUrlList;
     QStringList fileNameList;
 

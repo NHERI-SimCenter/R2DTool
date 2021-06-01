@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "Utils/PythonProgressDialog.h"
 
 #include <QJsonDocument>
+#include <QApplication>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QProgressBar>
@@ -170,6 +171,8 @@ void NetworkDownloadManager::downloadAllFiles(void)
 
     QString msg = "Starting download of "+ QString::number(fileDownloadUrls.size()) + " examples ";
     statusMessage(msg);
+
+    QApplication::processEvents();
 
     this->getProgressDialog()->showProgressBar();
     this->getProgressDialog()->setProgressBarRange(0, fileDownloadUrls.size());
