@@ -43,7 +43,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeView.h"
 #include "LayerTreeModel.h"
 #include "VisualizationWidget.h"
-#include "XMLAdaptor.h"
 #include "ConvexHull.h"
 #include "PolygonBoundary.h"
 
@@ -152,6 +151,8 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     mapGIS->setAutoFetchLegendInfos(false);
 
     mapGIS->setObjectName("MainMap");
+
+    mapViewWidget->setZoomByPinchingEnabled(true);
 
     mapViewWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
@@ -1284,11 +1285,15 @@ Esri::ArcGISRuntime::FeatureCollectionLayer* VisualizationWidget::createAndAddJs
         {
             QString msg ="Error, the import of the type of geometry "+type+" is not yet suppported for " + filePath;
             this->errorMessage(msg);
+            delete featureCollection;
             return nullptr;
         }
 
         if(featureCollectionTable == nullptr)
+        {
+            delete featureCollection;
             return nullptr;
+        }
 
         featureCollection->tables()->append(featureCollectionTable);
     }
@@ -1416,33 +1421,6 @@ KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, co
     layersTree->addItemToTree(layerName, layerID, parentItem);
 
     return kmlLayer;
-}
-
-
-// Add a shakemap grid given as an XML file
-FeatureCollectionLayer* VisualizationWidget::createAndAddXMLShakeMapLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem)
-{
-    XMLAdaptor XMLImportAdaptor;
-
-    QString errMess;
-    auto XMLlayer = XMLImportAdaptor.parseXMLFile(filePath, errMess, this);
-
-    if(XMLlayer == nullptr)
-    {
-        this->errorMessage(errMess);
-        return nullptr;
-    }
-
-    XMLlayer->setName(layerName);
-
-    auto layerID = this->createUniqueID();
-
-    XMLlayer->setLayerId(layerID);
-
-    // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName, layerID, parentItem);
-
-    return XMLlayer;
 }
 
 
@@ -2089,7 +2067,12 @@ Esri::ArcGISRuntime::FeatureCollectionTable* VisualizationWidget::getMultilineFe
     // Try to get the color if there is one
     auto colorStr =  properties["color"].toString();
 
-    QColor featureColor = color;
+    QColor featureColor;
+
+    if(color.alpha() == 0)
+        featureColor = QColor(rand() % 255,rand() % 255,rand() % 255);
+    else
+        featureColor = color;
 
     if(!colorStr.isEmpty())
         featureColor = QColor(colorStr);

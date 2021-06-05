@@ -164,7 +164,7 @@ bool HurricaneSelectionWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool HurricaneSelectionWidget::outputToJSON(QJsonObject &/*jsonObj*/)
 {
-    // qDebug() << "USER GM outputPLAIN";
+    // qDebug() << "USER Hurricane outputPLAIN";
 
     return true;
 }
@@ -886,8 +886,8 @@ void HurricaneSelectionWidget::handleGridSelected(void)
     }
 
     // Add the event layer to the layer tree
-    //    auto eventID = theVisualizationWidget->createUniqueID();
-    //    auto eventItem = layersTreeView->addItemToTree("Windfield Grid", eventID, hurricaneGridItem);
+    // auto eventID = theVisualizationWidget->createUniqueID();
+    // auto eventItem = layersTreeView->addItemToTree("Windfield Grid", eventID, hurricaneGridItem);
 
     // Add the event layer to the map
     theVisualizationWidget->addLayerToMap(gridLayer,hurricaneMainItem);
@@ -1000,7 +1000,6 @@ void HurricaneSelectionWidget::clearLandfallFromMap(void)
 
 void HurricaneSelectionWidget::runHazardSimulation(void)
 {
-    this->getProgressDialog()->setVisibility(true);
 
     QString workingDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
 
@@ -1206,10 +1205,9 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
 
     QString err2;
     auto res2 = csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err2);
-
     if(res2 != 0)
     {
-        this->errorMessage(err);
+        this->errorMessage(err2);
         return;
     }
 

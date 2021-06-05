@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // This class imports a XML ShakeMap grid into a ArcGIS feature collection layer
 
+#include "GroundMotionStation.h"
+
 #include <QString>
 
 class QObject;
@@ -61,10 +63,14 @@ public:
 
     QString getEventName() const;
 
+    QVector<GroundMotionStation> getStationList() const;
+
 private:
     QString eventName;
 
     QString shakemapID;
+
+    QVector<GroundMotionStation> stationList;
 };
 
 #endif // XMLADAPTOR_H

@@ -39,6 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "VisualizationWidget.h"
 #include "CustomListWidget.h"
+#include "XMLAdaptor.h"
+#include "CSVReaderWriter.h"
+#include "TreeItem.h"
 
 #ifdef OpenSRA
 #include "OpenSRAPreferences.h"
@@ -275,7 +278,7 @@ int ShakeMapWidget::loadShakeMapData(void)
 
     auto inputDir = inputDirInfo.absoluteFilePath();
 
-    QDirIterator iter(inputDir, QDirIterator::Subdirectories);
+    QDirIterator iter(inputDir, QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
 
     while(iter.hasNext() )
     {
@@ -297,9 +300,9 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     if(!QDir(dir).exists())
         return;
 
-    const QFileInfo inputDir(dir);
+    const QFileInfo inputDirInfo(dir);
 
-    if (!inputDir.exists() || !inputDir.isDir())
+    if (!inputDirInfo.exists() || !inputDirInfo.isDir())
     {
         QString errMsg ="A directory does not exist at the path: " + dir;
         this->errorMessage(errMsg);
@@ -308,7 +311,9 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
     QStringList acceptableFileExtensions = {"*.kmz", "*.xml", "*.shp", "*.json"};
 
-    QStringList inputFiles = inputDir.dir().entryList(acceptableFileExtensions,QDir::Files);
+    QDir inputDir(dir);
+
+    QStringList inputFiles = inputDir.entryList(acceptableFileExtensions, QDir::Files);
 
     if(inputFiles.empty())
     {
@@ -317,7 +322,7 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
         return;
     }
 
-    QString eventName = inputDir.dir().dirName();
+    QString eventName = inputDir.dirName();
 
     // Check if the shake map already exists
     if(shakeMapContainer.contains(eventName))
@@ -339,11 +344,10 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
     // If there is no item, create one
     if(shakeMapLayerTreeItem == nullptr)
-        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map", QString());
-
+        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map", theVisualizationWidget->createUniqueID());
 
     // Add the event layer to the layer tree
-    auto eventItem = layersTreeView->addItemToTree(eventName, QString(), shakeMapLayerTreeItem);
+    auto eventItem = layersTreeView->addItemToTree(eventName, theVisualizationWidget->createUniqueID(), shakeMapLayerTreeItem);
 
     // Create the root event group layer
     inputShakeMap->eventLayer = new GroupLayer(QList<Layer*>{});
@@ -371,11 +375,31 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
         if(filename.compare("grid.xml") == 0) // XML grid
         {
             progressLabel->setText("Loading Grid Layer");
+            this->statusMessage("Loading Grid Layer");
             progressLabel->setVisible(true);
             QApplication::processEvents();
 
-            inputShakeMap->gridLayer = theVisualizationWidget->createAndAddXMLShakeMapLayer(inFilePath, "Grid", eventItem);
+            XMLAdaptor XMLImportAdaptor;
+
+            QString errMess;
+            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, this);
+
+            if(XMLlayer == nullptr)
+            {
+                this->errorMessage(errMess);
+                return;
+            }
+
+            XMLlayer->setName("Grid");
+
+            XMLlayer->setAutoFetchLegendInfos(true);
+
+            theVisualizationWidget->addLayerToMap(XMLlayer,eventItem);
+
+            inputShakeMap->gridLayer = XMLlayer;
             eventLayer->layers()->append(inputShakeMap->gridLayer);
+
+            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
         }
         else if(filename.compare("cont_pga.json") == 0) // PGA contours layer
         {
@@ -405,24 +429,10 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
                 if(simpleRenderer == nullptr)
                     continue;
 
-                auto featureIt = table->iterator();
+                auto labelVal = simpleRenderer->label();
 
-                // Prevent a crash if there is no features
-                if(!featureIt.hasNext())
-                    continue;
-
-                auto featAttributes = featureIt.next()->attributes();
-
-                bool res = false;
-                auto pgaVal = (*featAttributes)["value"].toDouble(&res);
-
-                if(res)
-                {
-                    auto pgaStr = QString::number(pgaVal);
-
-                    auto labelStr = "PGA " + pgaStr + " %g  ";
-                    simpleRenderer->setLabel(labelStr);
-                }
+                QString labelStr = "PGA (%g) " + labelVal;
+                simpleRenderer->setLabel(labelStr);
             }
 
             inputShakeMap->pgaContourLayer = layer;
@@ -528,7 +538,14 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     // Insert the ShakeMap into its container
     shakeMapContainer.insert(eventName,inputShakeMap);
 
-    listWidget->addItem(eventName);
+    auto addedItem = listWidget->addItem(eventName);
+
+    if(addedItem == nullptr)
+        return;
+
+    auto itemID = addedItem->getItemID();
+
+    listWidget->setCurrentItem(itemID);
 
     // Add the event layer to the map
     //    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
@@ -571,6 +588,9 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     jsonObject["Application"] = "UserInputGM";
+
+
+
 
     //    QJsonObject appData;
     //    QFileInfo theFile(eventFile);
@@ -628,21 +648,118 @@ bool ShakeMapWidget::inputFromJSON(QJsonObject &jsonObject)
 
 bool ShakeMapWidget::copyFiles(QString &destDir)
 {
-    const QFileInfo inputDirInfo(pathToShakeMapDirectory);
+    // const QFileInfo inputDirInfo(pathToShakeMapDirectory);
 
-    auto sourcePath = inputDirInfo.absoluteFilePath();
+    // auto sourcePath = inputDirInfo.absoluteFilePath();
 
-    auto targetPath = destDir + QDir::separator() + "ShakeMap";
+    // auto targetPath = destDir + QDir::separator() + "ShakeMap";
 
-    auto res = this->recursiveCopy(sourcePath, targetPath);
+    // auto res = this->recursiveCopy(sourcePath, targetPath);
 
-    if(!res)
+    // if(!res)
+    // {
+    //     QString msg = "Error copying ShakeMap files over to the directory " + destDir;
+    //     errorMessage(msg);
+
+    //     return res;
+    // }
+
+    QString IMtag = "PGA";
+
+    auto currentItem = listWidget->getCurrentItem();
+
+    auto currItemName = currentItem->getName();
+
+    auto selectedShakeMap = shakeMapContainer.value(currItemName,nullptr);
+
+    if(selectedShakeMap == nullptr)
     {
-        QString msg = "Error copying ShakeMap files over to the directory " + destDir;
-        errorMessage(msg);
-
-        return res;
+        this->errorMessage("Could not find the ShakeMap "+currItemName);
+        return false;
     }
+
+    CSVReaderWriter csvTool;
+
+    auto stationList = selectedShakeMap->stationList;
+
+    if(stationList.empty())
+    {
+        this->errorMessage("Error, the station list is empty for "+currItemName);
+        return false;
+    }
+
+    // First create the event grid file
+    QVector<QStringList> gridData;
+
+    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
+    gridData.push_back(headerRow);
+
+    QStringList stationHeader = {"PGA"};
+
+    this->statusMessage("Creating ground motion station files from ShakeMap, this may take some time.");
+
+    QApplication::processEvents();
+
+    for(int i = 0; i<stationList.size(); ++i)
+    {
+        auto stationFile = "Site_"+QString::number(i)+".csv";
+
+        auto station = stationList.at(i);
+
+        auto lat = QString::number(station.getLatitude());
+        auto lon = QString::number(station.getLongitude());
+
+        QStringList stationRow = {stationFile, lon, lat};
+
+        gridData.push_back(stationRow);
+
+        QStringList IMstrList;
+
+        if(IMtag.compare("PGA") == 0)
+        {
+            bool Ok = false;
+            auto PGAval = station.getAttributeValue(IMtag).toDouble(&Ok);
+
+            if(!Ok)
+            {
+                this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
+                return false;
+            }
+
+            // Convert from pct g into g
+            PGAval /= 100.0;
+
+            auto PGAstr = QString::number(PGAval);
+            IMstrList.append(PGAstr);
+
+        }
+
+        QVector<QStringList> stationData = {stationHeader,IMstrList};
+
+        QString pathToStationFile = destDir + QDir::separator() + stationFile;
+
+        QString err;
+        auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
+        if(res2 != 0)
+        {
+            this->errorMessage(err);
+            return false;
+        }
+
+    }
+
+    // Now save the site grid .csv file
+    QString pathToEventFile = destDir + QDir::separator() + "EventGrid.csv";
+
+    QString err2;
+    auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
+    if(res2 != 0)
+    {
+        this->errorMessage(err2);
+        return false;
+    }
+
+    emit outputDirectoryPathChanged(destDir, pathToEventFile);
 
     return true;
 }

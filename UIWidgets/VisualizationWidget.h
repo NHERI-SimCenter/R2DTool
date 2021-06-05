@@ -107,7 +107,7 @@ public:
     // Add component to 'selected layer'
     LayerTreeItem* addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::Layer* featLayer);
 
-    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddJsonLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, QColor color = QColor(0,0,0,255));
+    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddJsonLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, QColor color = QColor(0,0,0,0));
 
     // Adds a raster layer to the map
     Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
@@ -120,9 +120,6 @@ public:
 
     // From a geodatabase
     void createAndAddGeoDatabaseLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem = nullptr);
-
-    // Add a shakemap grid given as an XML file
-    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddXMLShakeMapLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
 
     // Create a layer from a map server URL
     Esri::ArcGISRuntime::ArcGISMapImageLayer* createAndAddMapServerLayer(const QString& url, const QString& layerName, LayerTreeItem* parentItem);

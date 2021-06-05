@@ -428,7 +428,6 @@ void WorkflowAppR2D::onRunButtonClicked() {
     theRunWidget->hide();
     theRunWidget->setMinimumWidth(this->width()*0.5);
 
-    progressDialog->setVisibility(true);
     progressDialog->showProgressBar();
     progressDialog->setProgressBarValue(0);
 
@@ -508,14 +507,63 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     //    theSIM->copyFiles(templateDirectory);
     //    theEventSelection->copyFiles(templateDirectory);
     //    theAnalysisSelection->copyFiles(templateDirectory);
-    theUQWidget->copyFiles(templateDirectory);
-    theModelingWidget->copyFiles(templateDirectory);
-    theAssetsWidget->copyFiles(templateDirectory);
-    //theHazardsWidget->outputAppDataToJSON(apps);
-    theAnalysisWidget->copyFiles(templateDirectory);
-    theDamageAndLossWidget->copyFiles(templateDirectory);
-    theHazardToAssetWidget->copyFiles(templateDirectory);
-    theDamageAndLossWidget->copyFiles(templateDirectory);
+
+    bool res = false;
+    res = theUQWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theUQWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theModelingWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theModelingWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theAssetsWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theAssetsWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theHazardsWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theHazardsWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theAnalysisWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theAnalysisWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theHazardToAssetWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theHazardToAssetWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theDamageAndLossWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theDamageAndLossWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
     //    theEDP_Selection->copyFiles(templateDirectory);
 
     //
@@ -529,6 +577,7 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     QFile file(inputFile);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         //errorMessage();
+        progressDialog->hideProgressBar();
         return;
     }
     QJsonObject json;

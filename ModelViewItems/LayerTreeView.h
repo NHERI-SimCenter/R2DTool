@@ -63,6 +63,8 @@ public:
 
     void selectRow(int i);
 
+    int setCurrentItem(const QString& itemID);
+
 public slots:
     // Shows the "right-click" menu
     void showPopup(const QPoint &position);

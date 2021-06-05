@@ -46,6 +46,8 @@ class TreeItem;
 
 class CustomListWidget : public QTreeView
 {
+    Q_OBJECT
+
 public:
     CustomListWidget(QWidget *parent = nullptr, QString headerText = QString());
 
@@ -56,6 +58,12 @@ public:
     QVariantList getListOfWeights(TreeItem* parentItem = nullptr) const;
 
     int getNumberOfItems();
+
+    TreeItem* getCurrentItem();
+
+    int setCurrentItem(const QString& itemID);
+
+    void selectRow(int i);
 
 public slots:
 

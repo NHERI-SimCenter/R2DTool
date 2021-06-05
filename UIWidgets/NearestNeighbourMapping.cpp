@@ -163,5 +163,7 @@ bool NearestNeighbourMapping::copyFiles(QString &destName)
     if (theFile.exists()) {
         return this->copyPath(theFile.path(), destName, false);
     }
+
+    return false;
 }
 

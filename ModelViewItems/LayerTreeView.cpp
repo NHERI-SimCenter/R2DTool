@@ -234,3 +234,17 @@ void LayerTreeView::selectRow(int i)
     auto rowIndex = layersModel->index(i);
     this->setCurrentIndex(rowIndex);
 }
+
+
+int LayerTreeView::setCurrentItem(const QString& itemID)
+{
+    auto currItem = layersModel->getLayerTreeItem(itemID);
+
+    if(currItem == nullptr)
+        return -1;
+
+    auto row = currItem->row();
+
+    this->selectRow(row);
+}
+

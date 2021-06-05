@@ -68,6 +68,8 @@ public:
 
     TreeItem *getRootItem() const;
 
+    TreeItem *getItem(const QString& itemID) const;
+
     // If parent item is not provided, the item will get added to the root of the tree
     TreeItem* addItemToTree(const QString itemText, TreeItem* parent = nullptr);
 
@@ -83,6 +85,8 @@ public:
     QVector<TreeItem *> getAllChildren(void);
 
     int getNumberOfItems();
+
+    QString uidItem(const QModelIndex &index);
 
 signals:
 

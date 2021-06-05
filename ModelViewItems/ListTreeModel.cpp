@@ -182,6 +182,43 @@ TreeItem* ListTreeModel::addItemToTree(const QString itemText, TreeItem* parent)
 }
 
 
+TreeItem *ListTreeModel::getItem(const QString& itemID) const
+{
+    std::function<TreeItem*(TreeItem*, const QString&)> nestedItemFinder = [&](TreeItem* item, const QString& ID) -> TreeItem*
+    {
+        // First check for this item
+        auto thisItemID = item->getItemID();
+
+        if(ID.compare(thisItemID) == 0)
+            return item;
+
+        // Then check any and all children
+        QVector<TreeItem *> children = item->getChildItems();
+        for(int i = 0; i<children.size(); ++i)
+        {
+            auto child = children.at(i);
+            auto childID = child->getItemID();
+
+            if(ID.compare(childID) == 0)
+                return child;
+
+            auto grandChild = nestedItemFinder(child,ID);
+
+            if(grandChild)
+                return grandChild;
+        }
+
+
+        // if we got this far then item not found
+        return nullptr;
+    };
+
+    auto res = nestedItemFinder(rootItem, itemID);
+
+    return res;
+}
+
+
 bool ListTreeModel::removeItemFromTree(const QString& itemID)
 {
     std::function<bool(TreeItem*, const QString&)> nestedDeleter = [&](TreeItem* item, const QString& ID)
@@ -331,4 +368,15 @@ int ListTreeModel::getNumberOfItems()
     auto res = rootItem->childCount();
 
     return res;
+}
+
+
+QString ListTreeModel::uidItem(const QModelIndex &index)
+{
+    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
+
+    if(item == nullptr)
+        return QString();
+
+    return item->getItemID();
 }

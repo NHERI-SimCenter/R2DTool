@@ -410,8 +410,6 @@ void GMWidget::runHazardSimulation(void)
 
     simulationComplete = false;
 
-    this->getProgressDialog()->setVisibility(true);
-
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
     // Remove old csv files in the output folder
