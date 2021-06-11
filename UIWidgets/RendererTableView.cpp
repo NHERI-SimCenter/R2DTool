@@ -1,5 +1,3 @@
-#ifndef LayerTreeItem_H
-#define LayerTreeItem_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,47 +36,53 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "TreeItem.h"
+#include "RendererTableView.h"
+#include "RendererModel.h"
 
-#include <QModelIndex>
-#include <QObject>
-#include <QVariant>
-#include <QVector>
+#include <QHeaderView>
 
-class QDialog;
-
-class LayerTreeItem : public TreeItem
+RendererTableView::RendererTableView(QWidget* parent) : QTableView(parent)
 {
-    Q_OBJECT
+    dataModel = new RendererModel(this);
+    this->setModel(dataModel);
 
-public:
-    explicit LayerTreeItem(const QVector<QVariant> &data, const QString& ID/* = QString()*/, TreeItem *parentItem = nullptr);
-    ~LayerTreeItem();
+    this->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    QStringList getActionList();
+    this->verticalHeader()->hide();
 
-public slots:
+    colorDelegate = std::make_unique<ColorDialogDelegate>();
+    esriTypeComboDelegate = std::make_unique<RendererComboBoxItemDelegate>();
 
-    // Change the opacity of a layer
-    void changeOpacity();
-    void handleChangeOpacity(int value);
+    this->setItemDelegateForColumn(6, colorDelegate.get());
 
-    // Change the plot color(s) for a layer
-    void manageLayer();
+    this->setItemDelegateForColumn(4, esriTypeComboDelegate.get());
+    this->setItemDelegateForColumn(5, esriTypeComboDelegate.get());
 
-    // Zoom to the extents of the layer
-    void zoomtoLayer();
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-signals:
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-void opacityChanged(const QString& layerID, const double opacity);
-void plotColorChanged(const QString& layerID);
+    this->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    this->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-void zoomLayerExtents(QString itemID);
-
-private:
-    QDialog* opacityDialog;
-};
+    this->horizontalHeader()->setSectionResizeMode(6,QHeaderView::ResizeToContents);
+}
 
 
-#endif // LayerTreeItem_H
+void RendererTableView::setRenderer(Esri::ArcGISRuntime::ClassBreaksRenderer* renderer)
+{
+    dataModel->setRenderer(renderer);
+    esriTypeComboDelegate->setRenderer(renderer);
+
+    int width = this->verticalHeader()->width();
+    for(int column = 0; column < dataModel->columnCount(); ++column)
+        width = width + this->columnWidth(column);
+
+    int height = this->horizontalHeader()->height();
+    for(int row = 0; row < dataModel->rowCount(); ++row)
+        height += this->rowHeight(row);
+
+    this->setMinimumWidth(600);
+    this->setMinimumHeight(height);
+}

@@ -81,8 +81,8 @@ class ComponentInputWidget;
 class LayerTreeView;
 class LayerTreeItem;
 class SimCenterMapGraphicsView;
-
 class TreeModel;
+
 class QGroupBox;
 class QComboBox;
 class QTreeView;
@@ -207,6 +207,7 @@ public slots:
     void changeLayerOrder(const int from, const int to);
     void handleLayerChecked(LayerTreeItem* item);
     void handleOpacityChange(const QString& layerID, const double opacity);
+    void handlePlotColorChange(const QString& layerID);
 
     void exportImageComplete(QUuid id, QImage img);
     void onMouseClicked(QMouseEvent& mouseEvent);
@@ -272,9 +273,6 @@ private:
 
     // The legend view
     GISLegendView* legendView;
-
-    // Map to store the legend of a layer according to the layers UID
-    QMap<QString, RoleProxyModel*> legendModels;
 
     Esri::ArcGISRuntime::GraphicsOverlay* selectedFeaturesOverlay = nullptr;
     QList<Esri::ArcGISRuntime::Feature*> selectedFeaturesList;

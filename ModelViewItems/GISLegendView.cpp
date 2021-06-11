@@ -5,7 +5,9 @@
 
 GISLegendView::GISLegendView(QWidget *parent) : QTreeView(parent)
 {
-    currModel = nullptr;
+
+    proxyModel = new RoleProxyModel(this);
+    this->setModel(proxyModel);
 
     this->setSizeAdjustPolicy(SizeAdjustPolicy::AdjustToContents);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
@@ -42,28 +44,14 @@ QSize GISLegendView::sizeHint() const
 }
 
 
-void GISLegendView::setModel(QAbstractItemModel* model)
-{
-    if(currModel == model)
-        return;
-    else
-       currModel = model;
-
-    QTreeView::setModel(model);
-
-    this->resize(this->sizeHint());
-}
-
 
 void GISLegendView::clear(void)
 {
-    currModel = nullptr;
-
     this->hide();
 }
 
-
-QAbstractItemModel *GISLegendView::getModel() const
+RoleProxyModel *GISLegendView::getProxyModel() const
 {
-    return currModel;
+    return proxyModel;
 }
+

@@ -228,6 +228,7 @@ void PelicunDLWidget::clear(void)
     logFileCheckBox->setChecked(false);
     coupledEDPCheckBox->setChecked(false);
     groundFailureCheckBox->setChecked(false);
+    autoPopulationScriptLineEdit->clear();
 }
 
 

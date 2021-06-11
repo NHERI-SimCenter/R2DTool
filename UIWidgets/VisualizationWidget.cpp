@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "ConvexHull.h"
 #include "PolygonBoundary.h"
+#include "LayerManagerDialog.h"
 
 // GIS headers
 #include "ArcGISMapImageLayer.h"
@@ -508,6 +509,34 @@ void VisualizationWidget::handleOpacityChange(const QString& layerID, const doub
 }
 
 
+void VisualizationWidget::handlePlotColorChange(const QString& layerID)
+{
+    if(layerID.isEmpty())
+        return;
+
+    auto layer = dynamic_cast<FeatureCollectionLayer*>(this->getLayer(layerID));
+
+    if(layer == nullptr)
+        return;
+
+    LayerManagerDialog colorSelectDialog(this);
+
+    colorSelectDialog.changeLayer(layer);
+
+    // Update the legend info
+    if(layer->isAutoFetchLegendInfos())
+    {
+        auto legendInfos = layer->legendInfos();
+        if(legendInfos == nullptr)
+            return;
+
+        legendInfos->clear();
+        legendInfos->fetchLegendInfos();
+    }
+
+}
+
+
 Esri::ArcGISRuntime::Layer* VisualizationWidget::getLayer(const QString& layerID)
 {
     auto layers = mapGIS->operationalLayers();
@@ -877,29 +906,27 @@ void VisualizationWidget::handleAsyncLayerLoad(Esri::ArcGISRuntime::Error layerL
     }
 
     auto layerID = layerSender->layerId();
-    auto layerName = layerSender->name();
+    // auto layerName = layerSender->name();
 
     // Populate the legend info for that layer
     if(layerSender->isAutoFetchLegendInfos())
     {
-        layerSender->legendInfos();
-
         auto legendInfos = layerSender->legendInfos();
         if(legendInfos == nullptr)
             return;
 
         legendInfos->setProperty("UID",layerID);
 
-        connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
+        connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo);
     }
 
     layerLoadMap.remove(layerID);
 
     // Only zoom to extents when all of the layers are loaded
-    if(layerLoadMap.empty())
-    {
-        //        this->zoomToExtents();
-    }
+    // if(layerLoadMap.empty())
+    // {
+    //        this->zoomToExtents();
+    // }
 }
 
 
@@ -1597,7 +1624,6 @@ void VisualizationWidget::clear(void)
     taskIDMap.clear();
     layerLoadMap.clear();
     layersMap.clear();
-    legendModels.clear();
 
     featuresFromQueryList.clear();
 
@@ -1640,17 +1666,6 @@ void VisualizationWidget::setLegendInfo()
 
     QString layerUID = obj->property("UID").toString();
 
-    // set the legend info list model
-    RoleProxyModel* roleModel = new RoleProxyModel(this);
-
-    if(roleModel == nullptr)
-        return;
-
-    roleModel->setObjectName(layerUID);
-    roleModel->setSourceModel(legendInfo);
-
-    legendModels.insert(layerUID,roleModel);
-
     this->handleLegendChange(layerUID);
 }
 
@@ -1676,16 +1691,35 @@ void VisualizationWidget::handleLegendChange(const QString layerUID)
         return;
     }
 
+    auto layer = this->getLayer(layerUID);
 
-    RoleProxyModel* roleModel = legendModels.value(layerUID,nullptr);
-
-    if(roleModel == nullptr)
+    if(layer == nullptr)
     {
         legendView->hide();
         return;
     }
 
-    legendView->setModel(roleModel);
+    auto legendInfo = layer->legendInfos();
+
+    if(legendView == nullptr || legendInfo == nullptr)
+    {
+        legendView->hide();
+        return;
+    }
+
+    if(legendInfo->size() == 0)
+    {
+        legendView->hide();
+        return;
+    }
+
+    // Need to hide first so that the legend resizes on show (bug in esri or Qt)
+    legendView->hide();
+
+    auto roleModel = legendView->getProxyModel();
+
+    roleModel->setObjectName(layerUID);
+    roleModel->setSourceModel(legendInfo);
 
     legendView->show();
 }

@@ -63,6 +63,7 @@ QStringList LayerTreeItem::getActionList()
     QStringList actionList = TreeItem::getActionList();
 
     actionList << "&Change Opacity"
+               << "&Manage Layer"
                << "&Zoom to Layer"
                << "Separator";
 
@@ -127,5 +128,11 @@ void LayerTreeItem::handleChangeOpacity(int value)
     auto opacity = static_cast<double>(value+1)/100.0;
 
     emit opacityChanged(itemID, opacity);
+}
+
+
+void LayerTreeItem::manageLayer()
+{
+    emit plotColorChanged(itemID);
 }
 

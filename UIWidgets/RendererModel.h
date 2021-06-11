@@ -1,5 +1,5 @@
-#ifndef LayerTreeItem_H
-#define LayerTreeItem_H
+#ifndef RENDERERMODEL_H
+#define RENDERERMODEL_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,47 +38,40 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "TreeItem.h"
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class ClassBreaksRenderer;
+}
+}
 
-#include <QModelIndex>
-#include <QObject>
-#include <QVariant>
-#include <QVector>
+#include <QAbstractTableModel>
 
-class QDialog;
 
-class LayerTreeItem : public TreeItem
+class RendererModel : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    explicit LayerTreeItem(const QVector<QVariant> &data, const QString& ID/* = QString()*/, TreeItem *parentItem = nullptr);
-    ~LayerTreeItem();
+    RendererModel(QObject* parent);
+    void setRenderer(Esri::ArcGISRuntime::ClassBreaksRenderer* renderer);
 
-    QStringList getActionList();
+    // QAbstractItemModel interface
+public:
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-public slots:
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    // Change the opacity of a layer
-    void changeOpacity();
-    void handleChangeOpacity(int value);
+    QVariant data(const QModelIndex &index, int role) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    // Change the plot color(s) for a layer
-    void manageLayer();
-
-    // Zoom to the extents of the layer
-    void zoomtoLayer();
-
-signals:
-
-void opacityChanged(const QString& layerID, const double opacity);
-void plotColorChanged(const QString& layerID);
-
-void zoomLayerExtents(QString itemID);
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 private:
-    QDialog* opacityDialog;
+    Esri::ArcGISRuntime::ClassBreaksRenderer* m_renderer = nullptr;
+
 };
 
-
-#endif // LayerTreeItem_H
+#endif // RENDERERMODEL_H

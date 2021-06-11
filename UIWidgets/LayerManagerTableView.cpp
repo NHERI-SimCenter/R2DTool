@@ -1,5 +1,3 @@
-#ifndef LayerTreeItem_H
-#define LayerTreeItem_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,47 +36,52 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "TreeItem.h"
+#include "LayerManagerTableView.h"
+#include "LayerManagerModel.h"
+#include "FeatureCollectionLayer.h"
 
-#include <QModelIndex>
-#include <QObject>
-#include <QVariant>
-#include <QVector>
+#include <QHeaderView>
 
-class QDialog;
-
-class LayerTreeItem : public TreeItem
+LayerManagerTableView::LayerManagerTableView(QWidget* parent) : QTableView(parent)
 {
-    Q_OBJECT
+    dataModel = new LayerManagerModel(this);
+    this->setModel(dataModel);
 
-public:
-    explicit LayerTreeItem(const QVector<QVariant> &data, const QString& ID/* = QString()*/, TreeItem *parentItem = nullptr);
-    ~LayerTreeItem();
+    this->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    QStringList getActionList();
+    this->verticalHeader()->hide();
 
-public slots:
+    colorDelegate = std::make_unique<ColorDialogDelegate>();
+    markerTypeComboDelegate = std::make_unique<LayerComboBoxItemDelegate>();
 
-    // Change the opacity of a layer
-    void changeOpacity();
-    void handleChangeOpacity(int value);
+    this->setItemDelegate(markerTypeComboDelegate.get());
+    this->setItemDelegateForColumn(3, colorDelegate.get());
 
-    // Change the plot color(s) for a layer
-    void manageLayer();
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    // Zoom to the extents of the layer
-    void zoomtoLayer();
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-signals:
+    this->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    this->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-void opacityChanged(const QString& layerID, const double opacity);
-void plotColorChanged(const QString& layerID);
-
-void zoomLayerExtents(QString itemID);
-
-private:
-    QDialog* opacityDialog;
-};
+    this->horizontalHeader()->setSectionResizeMode(3,QHeaderView::ResizeToContents);
+}
 
 
-#endif // LayerTreeItem_H
+void LayerManagerTableView::setLayer(Esri::ArcGISRuntime::FeatureCollectionLayer* layer)
+{
+    dataModel->setLayer(layer);
+    markerTypeComboDelegate->setLayer(layer);
+
+    int width = this->verticalHeader()->width();
+    for(int column = 0; column < dataModel->columnCount(); ++column)
+        width = width + this->columnWidth(column);
+
+    int height = this->horizontalHeader()->height();
+    for(int row = 0; row < dataModel->rowCount(); ++row)
+        height += this->rowHeight(row);
+
+    this->setMinimumWidth(600);
+    this->setMinimumHeight(height);
+}

@@ -159,6 +159,9 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
             UIWidgets/BuildingInputWidget.cpp \
+            UIWidgets/ColorDialogDelegate.cpp \
+            UIWidgets/LayerComboBoxItemDelegate.cpp \
+            UIWidgets/RendererComboBoxItemDelegate.cpp \
             UIWidgets/GasPipelineInputWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
@@ -172,7 +175,12 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/GroundMotionStation.cpp \
+            UIWidgets/LayerManagerDialog.cpp \
+            UIWidgets/RendererModel.cpp \
             UIWidgets/LoadResultsDialog.cpp \
+            UIWidgets/RendererTableView.cpp \
+            UIWidgets/LayerManagerTableView.cpp \
+            UIWidgets/LayerManagerModel.cpp \
             UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
@@ -272,6 +280,10 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
             UIWidgets/BuildingInputWidget.h \
+            UIWidgets/ColorDialogDelegate.h \
+            UIWidgets/LayerComboBoxItemDelegate.h \
+            UIWidgets/RendererComboBoxItemDelegate.h \
+            UIWidgets/GISObjectTypeMapping.h \
             UIWidgets/GasPipelineInputWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
             UIWidgets/BuildingModelingWidget.h \
@@ -285,7 +297,12 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/GroundMotionStation.h \
+            UIWidgets/LayerManagerDialog.h \
+            UIWidgets/RendererModel.h \
             UIWidgets/LoadResultsDialog.h \
+            UIWidgets/RendererTableView.h \
+            UIWidgets/LayerManagerTableView.h \
+            UIWidgets/LayerManagerModel.h \
             UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \

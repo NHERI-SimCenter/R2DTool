@@ -55,15 +55,13 @@ public:
 
     QSize sizeHint() const;
 
-    void setModel(QAbstractItemModel* model);
-
     void clear();
 
-    QAbstractItemModel *getModel() const;
+    RoleProxyModel *getProxyModel() const;
 
 private:
 
-    QAbstractItemModel* currModel;
+    RoleProxyModel* proxyModel;
 
 };
 

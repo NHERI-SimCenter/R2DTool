@@ -1,5 +1,5 @@
-#ifndef LayerTreeItem_H
-#define LayerTreeItem_H
+#ifndef RendererComboBoxItemDelegate_H
+#define RendererComboBoxItemDelegate_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,47 +38,35 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "TreeItem.h"
+#include <QStyledItemDelegate>
 
-#include <QModelIndex>
-#include <QObject>
-#include <QVariant>
-#include <QVector>
-
-class QDialog;
-
-class LayerTreeItem : public TreeItem
+namespace Esri
 {
-    Q_OBJECT
+namespace ArcGISRuntime
+{
+class ClassBreaksRenderer;
+}
+}
 
+class RendererComboBoxItemDelegate : public QStyledItemDelegate
+{
 public:
-    explicit LayerTreeItem(const QVector<QVariant> &data, const QString& ID/* = QString()*/, TreeItem *parentItem = nullptr);
-    ~LayerTreeItem();
+    RendererComboBoxItemDelegate(QObject *parent = nullptr);
 
-    QStringList getActionList();
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
-public slots:
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
 
-    // Change the opacity of a layer
-    void changeOpacity();
-    void handleChangeOpacity(int value);
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
-    // Change the plot color(s) for a layer
-    void manageLayer();
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
-    // Zoom to the extents of the layer
-    void zoomtoLayer();
-
-signals:
-
-void opacityChanged(const QString& layerID, const double opacity);
-void plotColorChanged(const QString& layerID);
-
-void zoomLayerExtents(QString itemID);
+    void setRenderer(Esri::ArcGISRuntime::ClassBreaksRenderer *renderer);
 
 private:
-    QDialog* opacityDialog;
+
+    Esri::ArcGISRuntime::ClassBreaksRenderer* m_renderer = nullptr;
+
 };
 
-
-#endif // LayerTreeItem_H
+#endif // RendererComboBoxItemDelegate_H
