@@ -61,8 +61,6 @@ Vs30Widget::Vs30Widget(Vs30& vs30, SiteConfig& siteConfig, QWidget *parent): QWi
 //    formLayout->addStretch(1);
 
     vs30GroupBox->setLayout(formLayout);
-    //FMK gmpeGroupBox->setMinimumWidth(400);
-    //FMK gmpeGroupBox->setMaximumWidth(500);
 
     layout->addWidget(vs30GroupBox);
     this->setLayout(layout);

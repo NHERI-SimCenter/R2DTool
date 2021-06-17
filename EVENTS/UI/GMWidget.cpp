@@ -637,6 +637,21 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
+    // Checking if the ground motion selection is requested by the user
+    if (m_selectionconfig->getDatabase().size() == 0)
+    {
+        // ground motion selection is not requested -> completed the job
+        this->statusMessage("The folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n");
+        this->statusMessage("Earthquake hazard simulation complete.\n");
+        simulationComplete = true;
+        // Saving the event grid path
+        auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
+        emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
+        this->getProgressDialog()->hideProgressBar();
+
+        return;
+    }
+
     this->statusMessage("Contacting PEER server to download ground motion records.");
 
     QApplication::processEvents();
