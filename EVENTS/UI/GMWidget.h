@@ -58,6 +58,8 @@ class SiteConfig;
 class SiteConfigWidget;
 class SpatialCorrelationWidget;
 class VisualizationWidget;
+class Vs30; // vs30 info
+class Vs30Widget; // vs30 setup widget
 
 class QPushButton;
 class QStatusBar;
@@ -125,6 +127,8 @@ private:
     QPushButton* m_runButton;
     QPushButton* m_settingButton;
     GmAppConfig* m_appConfig;
+    Vs30* m_vs30;
+    Vs30Widget* m_vs30Widget;
 
     VisualizationWidget* theVisualizationWidget;
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;

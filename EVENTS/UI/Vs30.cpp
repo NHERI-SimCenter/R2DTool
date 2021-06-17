@@ -34,41 +34,63 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "RecordSelectionWidget.h"
+#include "Vs30.h"
 
-RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent) : QWidget(parent), m_selectionConfig(selectionConfig)
+Vs30::Vs30(QObject *parent) : QObject(parent)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    QGroupBox* selectionGroupBox = new QGroupBox(this);
-    selectionGroupBox->setTitle("Record Selection");
-    selectionGroupBox->setContentsMargins(0,0,0,0);
-
-    //selectionGroupBox->setMinimumWidth(400);
-    //selectionGroupBox->setMaximumWidth(500);
-
-    QGridLayout* formLayout = new QGridLayout(selectionGroupBox);
-
-    QLabel* databaseLabel = new QLabel(tr("Database:"),this);
-    m_dbBox = new QComboBox(this);
-    m_dbBox->addItem("PEER NGA West 2");
-    m_dbBox->addItem("None"); // add "None" for skipping the ground motion selection
-    connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
-    m_dbBox->setCurrentText("PEER NGA West 2");
-    m_selectionConfig.setDatabase("PEER NGA West 2");
-    m_dbBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-
-    formLayout->addWidget(databaseLabel,0,0);
-    formLayout->addWidget(m_dbBox,0,1);
-
-    selectionGroupBox->setLayout(formLayout);
-
-    layout->addWidget(selectionGroupBox);
-
-    this->setLayout(layout);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
-
+    this->m_type = "CGS/Wills Vs30 (Wills et al., 2015)";
 }
 
 
+QString Vs30::type() const
+{
+    return m_type;
+}
+
+
+bool Vs30::setType(const QString &type)
+{
+    if(m_type!= type && this->validTypes().contains(type, Qt::CaseInsensitive))
+    {
+        m_type = type;
+        emit typeChanged(m_type);
+        return true;
+    }
+
+    return false;
+}
+
+
+QJsonObject Vs30::getJson()
+{
+    QJsonObject vs30;
+    vs30.insert("Type", m_type);
+    vs30.insert("Parameters", QJsonObject());
+
+    return vs30;
+}
+
+
+const QStringList &Vs30::validTypesUser()
+{
+    static QStringList validTypes = QStringList()
+            << "CGS/Wills Vs30 (Wills et al., 2015)"
+            << "Thompson California Vs30 (Thompson et al., 2018)"
+            << "Global Vs30 (Heath et al., 2020)"
+            << "User Defined";
+
+    return validTypes;
+}
+
+
+const QStringList &Vs30::validTypes()
+{
+    static QStringList validTypes = QStringList()
+            << "CGS/Wills Vs30 (Wills et al., 2015)"
+            << "Thompson California Vs30 (Thompson et al., 2018)"
+            << "Global Vs30 (Heath et al., 2020)";
+
+    return validTypes;
+}

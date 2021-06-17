@@ -1,3 +1,5 @@
+#ifndef VS30WIDGET_H
+#define VS30WIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,39 +38,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RecordSelectionWidget.h"
+#include "Vs30.h"
+#include "SiteConfig.h"
 
-RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent) : QWidget(parent), m_selectionConfig(selectionConfig)
+#include <QWidget>
+#include <QtWidgets>
+
+class Vs30Widget : public QWidget
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    QGroupBox* selectionGroupBox = new QGroupBox(this);
-    selectionGroupBox->setTitle("Record Selection");
-    selectionGroupBox->setContentsMargins(0,0,0,0);
+    Q_OBJECT
+public:
+    explicit Vs30Widget(Vs30& vs30, SiteConfig& siteConfig, QWidget *parent = nullptr);
 
-    //selectionGroupBox->setMinimumWidth(400);
-    //selectionGroupBox->setMaximumWidth(500);
+signals:
 
-    QGridLayout* formLayout = new QGridLayout(selectionGroupBox);
+public slots:
 
-    QLabel* databaseLabel = new QLabel(tr("Database:"),this);
-    m_dbBox = new QComboBox(this);
-    m_dbBox->addItem("PEER NGA West 2");
-    m_dbBox->addItem("None"); // add "None" for skipping the ground motion selection
-    connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
-    m_dbBox->setCurrentText("PEER NGA West 2");
-    m_selectionConfig.setDatabase("PEER NGA West 2");
-    m_dbBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+private:
+    Vs30& m_vs30;
+    QComboBox* m_typeBox;
 
-    formLayout->addWidget(databaseLabel,0,0);
-    formLayout->addWidget(m_dbBox,0,1);
+    void setupConnections();
+};
 
-    selectionGroupBox->setLayout(formLayout);
-
-    layout->addWidget(selectionGroupBox);
-
-    this->setLayout(layout);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
-
-}
-
-
+#endif // VS30WIDGET_H

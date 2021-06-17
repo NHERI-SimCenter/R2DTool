@@ -52,10 +52,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #include "SiteConfigWidget.h"
 #include "SiteGridWidget.h"
+#include "SiteScatterWidget.h"
 #include "SiteWidget.h"
 #include "SpatialCorrelationWidget.h"
 #include "LayerTreeView.h"
 #include "VisualizationWidget.h"
+#include "Vs30Widget.h"
 #include "WorkflowAppR2D.h"
 
 #ifdef INCLUDE_USER_PASS
@@ -126,19 +128,24 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     // Create a map view that will be used for selecting the grid points
     mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr);
 
+    // Adding vs30 widget
+    this->m_vs30 = new Vs30();
+    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig, this);
+
     auto userGrid = mapViewSubWidget->getGrid();
     userGrid->createGrid();
     userGrid->setSiteGridConfig(m_siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
 
     toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,1,3);
+    toolsGridLayout->addWidget(this->m_vs30Widget, 1,0,1,3); // vs30 widget
     toolsGridLayout->addWidget(this->spatialCorrWidget,  0,3);
-    toolsGridLayout->addWidget(this->m_ruptureWidget,    1,0,2,3);
+    toolsGridLayout->addWidget(this->m_ruptureWidget,    2,0,2,3);
     toolsGridLayout->addWidget(this->m_selectionWidget,  1,3);
     toolsGridLayout->addWidget(this->m_gmpeWidget,        2,3);
-    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,3,0,1,4);
-    toolsGridLayout->addWidget(this->m_settingButton, 4,0,1,2);
-    toolsGridLayout->addWidget(this->m_runButton,     4,2,1,2);
+    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,4,0,1,4);
+    toolsGridLayout->addWidget(this->m_settingButton, 5,0,1,2);
+    toolsGridLayout->addWidget(this->m_runButton,     5,2,1,2);
 
     toolsGridLayout->setHorizontalSpacing(5);
     //toolsGridLayout->setColumnStretch(4,1);
@@ -192,6 +199,15 @@ void GMWidget::setupConnections()
             if(!m_siteConfigWidget->getSiteGridWidget()->getGridCreated())
             {
                 QString msg = "Please select a grid before continuing";
+                this->statusMessage(msg);
+                return;
+            }
+        }
+        else if(type == SiteConfig::SiteType::Scatter)
+        {
+            if(!m_siteConfigWidget->getSiteScatterWidget()->copySiteFile())
+            {
+                QString msg = "Please choose a site file before continuing";
                 this->statusMessage(msg);
                 return;
             }
@@ -438,14 +454,25 @@ void GMWidget::runHazardSimulation(void)
         return;
     }
 
-    int maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+    //int maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+    int minID = 0;
+    int maxID = 1;
+    if(m_siteConfig->getType() == SiteConfig::SiteType::Grid)
+    {
+        maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+    }
+    else if(m_siteConfig->getType() == SiteConfig::SiteType::Scatter)
+    {
+        minID = m_siteConfigWidget->getSiteScatterWidget()->getMinID();
+        maxID = m_siteConfigWidget->getSiteScatterWidget()->getMaxID();
+    }
 
     //    maxID = 5;
 
     QJsonObject siteObj;
     siteObj.insert("Type", "From_CSV");
     siteObj.insert("input_file", "SiteFile.csv");
-    siteObj.insert("min_ID", 0);
+    siteObj.insert("min_ID", minID);
     siteObj.insert("max_ID", maxID);
 
     QJsonObject scenarioObj;
@@ -466,6 +493,10 @@ void GMWidget::runHazardSimulation(void)
 
     // Get the GMPE Json object
     auto GMPEobj = m_gmpe->getJson();
+
+    // Get the Vs30 Json object
+    auto Vs30obj = m_vs30->getJson();
+    siteObj.insert("Vs30", Vs30obj);
 
     // Get the correlation model Json object
     auto corrModObj = spatialCorrWidget->getJsonCorr();
@@ -551,16 +582,24 @@ void GMWidget::runHazardSimulation(void)
         }
     }
 
-    QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "SiteFile.csv";
+    bool writeSiteFile = true;
+    if(type == SiteConfig::SiteType::Scatter)
+        // site file has been copied to the input directory
+        writeSiteFile = false;
 
-    CSVReaderWriter csvTool;
-
-    auto res = csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err);
-
-    if(res != 0)
+    if(writeSiteFile)
     {
-        this->errorMessage(err);
-        return;
+        QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "SiteFile.csv";
+
+        CSVReaderWriter csvTool;
+
+        auto res = csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err);
+
+        if(res != 0)
+        {
+            this->errorMessage(err);
+            return;
+        }
     }
 
     QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
@@ -622,6 +661,21 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
     {
         QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
         this->errorMessage(errText);
+        this->getProgressDialog()->hideProgressBar();
+
+        return;
+    }
+
+    // Checking if the ground motion selection is requested by the user
+    if (m_selectionconfig->getDatabase().size() == 0)
+    {
+        // ground motion selection is not requested -> completed the job
+        this->statusMessage("The folder containing the results: "+m_appConfig->getOutputDirectoryPath() + "\n");
+        this->statusMessage("Earthquake hazard simulation complete.\n");
+        simulationComplete = true;
+        // Saving the event grid path
+        auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
+        emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
         this->getProgressDialog()->hideProgressBar();
 
         return;

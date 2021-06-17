@@ -4,6 +4,7 @@
 #include <QObject>
 #include <Site.h>
 #include <SiteGrid.h>
+#include <SiteScatter.h>
 #include <JsonSerializable.h>
 
 class SiteConfig : public QObject, public JsonSerializable
@@ -14,10 +15,11 @@ class SiteConfig : public QObject, public JsonSerializable
 
 public:
     explicit SiteConfig(QObject *parent = nullptr);
-    enum SiteType {Single = 0, Grid = 1};
+    enum SiteType {Single = 0, Grid = 1, Scatter = 2};
 
     Site& site();
     SiteGrid& siteGrid();
+    SiteScatter& siteScatter();
     SiteType getType() const;
 
 signals:
@@ -29,6 +31,7 @@ public slots:
 private:
     Site theSite;
     SiteGrid theSiteGrid;
+    SiteScatter theSiteScatter;
     SiteType theType;
 
     // JsonSerializable interface

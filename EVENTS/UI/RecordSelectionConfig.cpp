@@ -52,6 +52,8 @@ QString RecordSelectionConfig::getDatabase() const
 
     if(m_database.compare("PEER NGA West 2") == 0)
         db =  "NGAWest2";
+    else if(m_database.compare("None") == 0)
+        db = ""; // this would let backend to skip ground motion selection
     else
     {
         qDebug()<<"Error, the type of database "+m_database+" is not recognized";

@@ -34,41 +34,52 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "RecordSelectionWidget.h"
+#include "Vs30Widget.h"
 
-RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent) : QWidget(parent), m_selectionConfig(selectionConfig)
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QSizePolicy>
+
+Vs30Widget::Vs30Widget(Vs30& vs30, SiteConfig& siteConfig, QWidget *parent): QWidget(parent), m_vs30(vs30)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
-    QGroupBox* selectionGroupBox = new QGroupBox(this);
-    selectionGroupBox->setTitle("Record Selection");
-    selectionGroupBox->setContentsMargins(0,0,0,0);
+    QGroupBox* vs30GroupBox = new QGroupBox(this);
+    vs30GroupBox->setTitle("Vs30 Model (if no Vs30 provided by users)");
 
-    //selectionGroupBox->setMinimumWidth(400);
-    //selectionGroupBox->setMaximumWidth(500);
+    QHBoxLayout* formLayout = new QHBoxLayout(vs30GroupBox);
+    m_typeBox = new QComboBox(this);
 
-    QGridLayout* formLayout = new QGridLayout(selectionGroupBox);
+    m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    QLabel* databaseLabel = new QLabel(tr("Database:"),this);
-    m_dbBox = new QComboBox(this);
-    m_dbBox->addItem("PEER NGA West 2");
-    m_dbBox->addItem("None"); // add "None" for skipping the ground motion selection
-    connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
-    m_dbBox->setCurrentText("PEER NGA West 2");
-    m_selectionConfig.setDatabase("PEER NGA West 2");
-    m_dbBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    QLabel* typeLabel = new QLabel(tr("Type:"),this);
 
-    formLayout->addWidget(databaseLabel,0,0);
-    formLayout->addWidget(m_dbBox,0,1);
+    formLayout->addWidget(typeLabel);
+    formLayout->addWidget(m_typeBox);
+//    formLayout->addStretch(1);
 
-    selectionGroupBox->setLayout(formLayout);
+    vs30GroupBox->setLayout(formLayout);
 
-    layout->addWidget(selectionGroupBox);
-
+    layout->addWidget(vs30GroupBox);
     this->setLayout(layout);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
+    QStringList validType;
+    validType = this->m_vs30.validTypes();
+
+    QStringListModel* typeModel = new QStringListModel(validType);
+    m_typeBox->setModel(typeModel);
+    m_typeBox->setCurrentIndex(validType.indexOf(m_vs30.type()));
+    this->setupConnections();
 }
 
 
+void Vs30Widget::setupConnections()
+{
+    connect(this->m_typeBox, &QComboBox::currentTextChanged,
+            &this->m_vs30, &Vs30::setType);
+
+    connect(&this->m_vs30, &Vs30::typeChanged,
+            this->m_typeBox, &QComboBox::setCurrentText);
+}

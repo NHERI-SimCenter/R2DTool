@@ -1,3 +1,6 @@
+#ifndef VS30_H
+#define VS30_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -34,41 +37,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "RecordSelectionWidget.h"
+#include "JsonSerializable.h"
 
-RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent) : QWidget(parent), m_selectionConfig(selectionConfig)
+#include <QObject>
+
+class Vs30 : public QObject, JsonSerializable
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    QGroupBox* selectionGroupBox = new QGroupBox(this);
-    selectionGroupBox->setTitle("Record Selection");
-    selectionGroupBox->setContentsMargins(0,0,0,0);
+    Q_OBJECT
+public:
+    explicit Vs30(QObject *parent = nullptr);
 
-    //selectionGroupBox->setMinimumWidth(400);
-    //selectionGroupBox->setMaximumWidth(500);
+    QString type() const;
+    const QStringList& validTypes();
+    const QStringList& validTypesUser();
 
-    QGridLayout* formLayout = new QGridLayout(selectionGroupBox);
+signals:
+    void typeChanged(QString newType);
 
-    QLabel* databaseLabel = new QLabel(tr("Database:"),this);
-    m_dbBox = new QComboBox(this);
-    m_dbBox->addItem("PEER NGA West 2");
-    m_dbBox->addItem("None"); // add "None" for skipping the ground motion selection
-    connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
-    m_dbBox->setCurrentText("PEER NGA West 2");
-    m_selectionConfig.setDatabase("PEER NGA West 2");
-    m_dbBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+public slots:
+    bool setType(const QString &type);
 
-    formLayout->addWidget(databaseLabel,0,0);
-    formLayout->addWidget(m_dbBox,0,1);
+private:
+    QString m_type;
 
-    selectionGroupBox->setLayout(formLayout);
+public:
+    QJsonObject getJson();
+};
 
-    layout->addWidget(selectionGroupBox);
-
-    this->setLayout(layout);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
-
-}
-
-
+#endif // VS30_H
