@@ -53,6 +53,7 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
     QLabel* databaseLabel = new QLabel(tr("Database:"),this);
     m_dbBox = new QComboBox(this);
     m_dbBox->addItem("PEER NGA West 2");
+    m_dbBox->addItem("None"); // add "None" for skipping the ground motion selection
     connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
     m_dbBox->setCurrentText("PEER NGA West 2");
     m_selectionConfig.setDatabase("PEER NGA West 2");
