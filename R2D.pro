@@ -74,7 +74,7 @@ win32::LIBS+=Advapi32.lib
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -132,8 +132,12 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SiteConfigWidget.cpp \
             Events/UI/SiteGrid.cpp \
             Events/UI/SiteGridWidget.cpp \
+            Events/UI/SiteScatter.cpp \
+            Events/UI/SiteScatterWidget.cpp \
             Events/UI/SiteWidget.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
+            Events/UI/Vs30.cpp \
+            Events/UI/Vs30Widget.cpp \
             GraphicElements/ConvexHull.cpp \
             GraphicElements/PolygonBoundary.cpp \
             ModelViewItems/CheckableTreeModel.cpp \
@@ -252,7 +256,12 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SiteConfigWidget.h \
             Events/UI/SiteGrid.h \
             Events/UI/SiteGridWidget.h \
+            Events/UI/SiteScatter.h \
+            Events/UI/SiteScatterWidget.h \
             Events/UI/SiteWidget.h \
+            Events/UI/SpatialCorrelationWidget.h \
+            Events/UI/Vs30.h \
+            Events/UI/Vs30Widget.h \
             Events/UI/SpatialCorrelationWidget.h \
             GraphicElements/ConvexHull.h \
             GraphicElements/PolygonBoundary.h \

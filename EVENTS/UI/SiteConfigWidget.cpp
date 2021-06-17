@@ -1,6 +1,7 @@
 #include "SiteConfigWidget.h"
 #include "SiteWidget.h"
 #include "SiteGridWidget.h"
+#include "SiteScatterWidget.h"
 
 #include <QtWidgets>
 #include <QValidator>
@@ -24,8 +25,10 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QWidget *parent) : QW
 
     QRadioButton* siteRadioButton = new QRadioButton(tr("Single Location"));
     QRadioButton* gridRadioButton = new QRadioButton(tr("Grid of Locations"));
+    QRadioButton* scatRadioButton = new QRadioButton(tr("Scattering Locations"));
     m_typeButtonsGroup->addButton(siteRadioButton, 0);
     m_typeButtonsGroup->addButton(gridRadioButton, 1);
+    m_typeButtonsGroup->addButton(scatRadioButton, 2);
 
     QWidget* typeGroupBox = new QWidget(this);
     typeGroupBox->setStyleSheet("QGroupBox { font-weight: normal;}");
@@ -33,6 +36,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QWidget *parent) : QW
     typeGroupBox->setLayout(typeLayout);
     typeLayout->addWidget(siteRadioButton);
     typeLayout->addWidget(gridRadioButton);
+    typeLayout->addWidget(scatRadioButton);
     typeLayout->addWidget(numGMLabel);
     typeLayout->addWidget(numGMLineEdit);
     typeLayout->addStretch(1);
@@ -50,6 +54,10 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QWidget *parent) : QW
     siteGridWidget = new SiteGridWidget(siteconfig.siteGrid());
     m_stackedWidgets->addWidget(siteGridWidget);
 
+    //we will also add a scatter widget
+    siteScatWidget = new SiteScatterWidget(siteconfig.siteScatter());
+    m_stackedWidgets->addWidget(siteScatWidget);
+
     groupLayout->addWidget(m_stackedWidgets);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
@@ -60,10 +68,15 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QWidget *parent) : QW
         m_typeButtonsGroup->button(0)->setChecked(true);
         m_stackedWidgets->setCurrentIndex(0);
     }
-    else
+    else if (m_siteConfig.getType() == SiteConfig::SiteType::Grid)
     {
         m_typeButtonsGroup->button(1)->setChecked(true);
         m_stackedWidgets->setCurrentIndex(1);
+    }
+    else if (m_siteConfig.getType() == SiteConfig::SiteType::Scatter)
+    {
+        m_typeButtonsGroup->button(2)->setChecked(true);
+        m_stackedWidgets->setCurrentIndex(2);
     }
 
     setupConnections();
@@ -74,14 +87,22 @@ SiteGridWidget *SiteConfigWidget::getSiteGridWidget() const
     return siteGridWidget;
 }
 
+// Getting the site scatter widget
+SiteScatterWidget *SiteConfigWidget::getSiteScatterWidget() const
+{
+    return siteScatWidget;
+}
+
 void SiteConfigWidget::setupConnections()
 {
     connect(m_typeButtonsGroup, QOverload<int>::of(&QButtonGroup::buttonReleased), [this](int id)
     {
         if(id == 0)
             m_siteConfig.setType(SiteConfig::SiteType::Single);
-        else
+        else if (id == 1)
             m_siteConfig.setType(SiteConfig::SiteType::Grid);
+        else if (id == 2)
+            m_siteConfig.setType(SiteConfig::SiteType::Scatter);
     });
 
     connect(&m_siteConfig, &SiteConfig::typeChanged, [this](SiteConfig::SiteType type)
@@ -91,10 +112,15 @@ void SiteConfigWidget::setupConnections()
             m_typeButtonsGroup->button(0)->setChecked(true);
             m_stackedWidgets->setCurrentIndex(0);
         }
-        else
+        else if (type == SiteConfig::SiteType::Grid)
         {
             m_typeButtonsGroup->button(1)->setChecked(true);
             m_stackedWidgets->setCurrentIndex(1);
+        }
+        else if (type == SiteConfig::SiteType::Scatter)
+        {
+            m_typeButtonsGroup->button(2)->setChecked(true);
+            m_stackedWidgets->setCurrentIndex(2);
         }
     });
 }

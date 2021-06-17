@@ -52,6 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #include "SiteConfigWidget.h"
 #include "SiteGridWidget.h"
+#include "SiteScatterWidget.h"
 #include "SiteWidget.h"
 #include "SpatialCorrelationWidget.h"
 #include "LayerTreeView.h"
@@ -198,6 +199,15 @@ void GMWidget::setupConnections()
             if(!m_siteConfigWidget->getSiteGridWidget()->getGridCreated())
             {
                 QString msg = "Please select a grid before continuing";
+                this->statusMessage(msg);
+                return;
+            }
+        }
+        else if(type == SiteConfig::SiteType::Scatter)
+        {
+            if(!m_siteConfigWidget->getSiteScatterWidget()->copySiteFile())
+            {
+                QString msg = "Please choose a site file before continuing";
                 this->statusMessage(msg);
                 return;
             }
@@ -444,14 +454,25 @@ void GMWidget::runHazardSimulation(void)
         return;
     }
 
-    int maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+    //int maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+    int minID = 0;
+    int maxID = 1;
+    if(m_siteConfig->getType() == SiteConfig::SiteType::Grid)
+    {
+        maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+    }
+    else if(m_siteConfig->getType() == SiteConfig::SiteType::Scatter)
+    {
+        minID = m_siteConfigWidget->getSiteScatterWidget()->getMinID();
+        maxID = m_siteConfigWidget->getSiteScatterWidget()->getMaxID();
+    }
 
     //    maxID = 5;
 
     QJsonObject siteObj;
     siteObj.insert("Type", "From_CSV");
     siteObj.insert("input_file", "SiteFile.csv");
-    siteObj.insert("min_ID", 0);
+    siteObj.insert("min_ID", minID);
     siteObj.insert("max_ID", maxID);
 
     QJsonObject scenarioObj;
@@ -561,16 +582,24 @@ void GMWidget::runHazardSimulation(void)
         }
     }
 
-    QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "SiteFile.csv";
+    bool writeSiteFile = true;
+    if(type == SiteConfig::SiteType::Scatter)
+        // site file has been copied to the input directory
+        writeSiteFile = false;
 
-    CSVReaderWriter csvTool;
-
-    auto res = csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err);
-
-    if(res != 0)
+    if(writeSiteFile)
     {
-        this->errorMessage(err);
-        return;
+        QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "SiteFile.csv";
+
+        CSVReaderWriter csvTool;
+
+        auto res = csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err);
+
+        if(res != 0)
+        {
+            this->errorMessage(err);
+            return;
+        }
     }
 
     QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
