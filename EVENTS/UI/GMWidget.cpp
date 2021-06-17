@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SpatialCorrelationWidget.h"
 #include "LayerTreeView.h"
 #include "VisualizationWidget.h"
+#include "Vs30Widget.h"
 #include "WorkflowAppR2D.h"
 
 #ifdef INCLUDE_USER_PASS
@@ -126,19 +127,24 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     // Create a map view that will be used for selecting the grid points
     mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr);
 
+    // Adding vs30 widget
+    this->m_vs30 = new Vs30();
+    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig, this);
+
     auto userGrid = mapViewSubWidget->getGrid();
     userGrid->createGrid();
     userGrid->setSiteGridConfig(m_siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
 
     toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,1,3);
+    toolsGridLayout->addWidget(this->m_vs30Widget, 1,0,1,3); // vs30 widget
     toolsGridLayout->addWidget(this->spatialCorrWidget,  0,3);
-    toolsGridLayout->addWidget(this->m_ruptureWidget,    1,0,2,3);
+    toolsGridLayout->addWidget(this->m_ruptureWidget,    2,0,2,3);
     toolsGridLayout->addWidget(this->m_selectionWidget,  1,3);
     toolsGridLayout->addWidget(this->m_gmpeWidget,        2,3);
-    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,3,0,1,4);
-    toolsGridLayout->addWidget(this->m_settingButton, 4,0,1,2);
-    toolsGridLayout->addWidget(this->m_runButton,     4,2,1,2);
+    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,4,0,1,4);
+    toolsGridLayout->addWidget(this->m_settingButton, 5,0,1,2);
+    toolsGridLayout->addWidget(this->m_runButton,     5,2,1,2);
 
     toolsGridLayout->setHorizontalSpacing(5);
     //toolsGridLayout->setColumnStretch(4,1);
@@ -466,6 +472,10 @@ void GMWidget::runHazardSimulation(void)
 
     // Get the GMPE Json object
     auto GMPEobj = m_gmpe->getJson();
+
+    // Get the Vs30 Json object
+    auto Vs30obj = m_vs30->getJson();
+    siteObj.insert("Vs30", Vs30obj);
 
     // Get the correlation model Json object
     auto corrModObj = spatialCorrWidget->getJsonCorr();
