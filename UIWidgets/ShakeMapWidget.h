@@ -134,7 +134,7 @@ public slots:
 private slots:
 
     int loadShakeMapData(void);
-    void loadDataFromDirectory(const QString& dir);
+    int loadDataFromDirectory(const QString& dir);
     void chooseShakeMapDirectoryDialog(void);
 
 signals:
@@ -154,6 +154,9 @@ private:
     QWidget* directoryInputWidget;
     QProgressBar* progressBar;
     QString pathToShakeMapDirectory;
+
+    QString motionDir;
+    QString pathToEventFile;
 
     QMap<QString,ShakeMap*> shakeMapContainer;
 

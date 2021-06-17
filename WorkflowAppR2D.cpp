@@ -122,8 +122,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     theInstance = this;
 
-    localApp = new LocalApplication("R2DTool_workflow.py");
-    remoteApp = new RemoteApplication("R2DTool_workflow.py", theService);
+    localApp = new LocalApplication("rWHALE.py");
+    remoteApp = new RemoteApplication("rWHALE.py", theService);
 
     theJobManager = new RemoteJobManager(theService);
 
@@ -580,8 +580,15 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
         progressDialog->hideProgressBar();
         return;
     }
+
     QJsonObject json;
-    this->outputToJSON(json);
+    res = this->outputToJSON(json);
+    if(!res)
+    {
+        errorMessage("Error in creating .json input file");
+        progressDialog->hideProgressBar();
+        return;
+    }
 
     json["runDir"]=tmpDirectory;
     json["WorkflowType"]="Regional Simulation";

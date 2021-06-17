@@ -103,6 +103,8 @@ void LoadResultsDialog::handleGetPathToResultsFolder(void)
 
 void LoadResultsDialog::handleLoadResults(void)
 {
+    this->hide();
+
     auto statusDialog = PythonProgressDialog::getInstance();
 
     auto filePath = inputFileLineEdit->text();
@@ -131,7 +133,5 @@ void LoadResultsDialog::handleLoadResults(void)
     workflowWidget->processResults(resultsPath,QString(),QString());
 
     statusDialog->appendText("Done loading the results");
-
-    this->hide();
 }
 

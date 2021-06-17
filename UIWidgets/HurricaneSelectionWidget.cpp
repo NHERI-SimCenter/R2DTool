@@ -256,9 +256,8 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     userGrid->setSiteGridConfig(siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
 
-
     QComboBox* simulationTypeComboBox = new QComboBox(this);
-    simulationTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    simulationTypeComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
     simulationTypeComboBox->addItem("Specify Hurricane Track");
     simulationTypeComboBox->addItem("Select Hurricane Track from Database");
@@ -314,27 +313,11 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 
     connect(browseTrackButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleHurricaneTrackImport);
 
-    QLabel* terrainLabel = new QLabel("Terrain (.geojson)");
+    QLabel* terrainLabel = new QLabel("Terrain Roughness (.geojson)");
     terrainLineEdit = new QLineEdit();
     QPushButton *browseTerrainButton = new QPushButton("Browse");
 
     connect(browseTerrainButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleTerrainImport);
-
-    QPushButton *defineLandfall = new QPushButton("Define Landfall on Map");
-    QPushButton *clearLandfall = new QPushButton("Clear Landfall");
-    QPushButton *selectLandfall = new QPushButton("Select Landfall");
-
-    connect(defineLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::showPointOnMap);
-    connect(selectLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleLandfallPointSelected);
-    connect(clearLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::clearLandfallFromMap);
-
-    QLabel* landfallLabel = new QLabel("Specify Hurricane Landfall:",this);
-
-    QHBoxLayout* selectLandfallLayout = new QHBoxLayout();
-    selectLandfallLayout->addWidget(landfallLabel);
-    selectLandfallLayout->addWidget(defineLandfall);
-    selectLandfallLayout->addWidget(selectLandfall);
-    selectLandfallLayout->addWidget(clearLandfall);
 
     specifyHurricaneLayout->addWidget(trackLabel,0,0);
     specifyHurricaneLayout->addWidget(trackLineEdit,0,1);
@@ -342,7 +325,6 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     specifyHurricaneLayout->addWidget(terrainLabel,1,0);
     specifyHurricaneLayout->addWidget(terrainLineEdit,1,1);
     specifyHurricaneLayout->addWidget(browseTerrainButton,1,2);
-    specifyHurricaneLayout->addLayout(selectLandfallLayout,2,0,1,3);
 
     //    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
 
@@ -365,7 +347,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     connect(selectGridButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleGridSelected);
     connect(clearGridButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::clearGridFromMap);
 
-    QLabel* gridLabel = new QLabel("Specify Windfield Grid:",this);
+    QLabel* gridLabel = new QLabel("Specify Wind Field Grid:",this);
 
     QFrame* gridGroupBox = new QFrame(this);
     //    gridGroupBox->setObjectName("TopLine");
@@ -434,15 +416,16 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     gridLayout->addWidget(numIMsLabel,0,7);
     gridLayout->addWidget(numIMsLineEdit,0,8);
 
-    runButton = new QPushButton(tr("&Run Hurricane Simulation"), this);
-    connect(runButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::runHazardSimulation);
 
-    gridLayout->addWidget(runButton,0,9);
+    auto scenarioTypeLabel = new QLabel("Hurricane Definition",this);
 
-    QFrame* runFrame = new QFrame(this);
-    //    runFrame->setObjectName("TopLine");
-    //    runFrame->setStyleSheet("#TopLine { border-top: 2px solid black; }");
-    runFrame->setContentsMargins(0,0,0,0);
+    auto topLayout = new QHBoxLayout();
+    topLayout->addWidget(scenarioTypeLabel);
+    topLayout->addWidget(simulationTypeComboBox);
+
+
+    QFrame* bottomWidget = new QFrame(this);
+    bottomWidget->setContentsMargins(0,0,0,0);
 
     // Functionality to truncate the track
     auto truncTrackSelectButton = new QPushButton(tr("&Select Area on Map"),this);
@@ -457,29 +440,54 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 
     auto truncLabel = new QLabel("Truncate Hurricane Track:");
 
-    auto runLayout = new QHBoxLayout(runFrame);\
+    auto bottomLayout = new QHBoxLayout(bottomWidget);
 
-    runLayout->addWidget(truncLabel);
-    runLayout->addWidget(truncTrackSelectButton);
-    runLayout->addWidget(truncTrackApplyButton);
-    runLayout->addWidget(truncTrackClearButton);
+    bottomLayout->addWidget(truncLabel);
+    bottomLayout->addWidget(truncTrackSelectButton);
+    bottomLayout->addWidget(truncTrackApplyButton);
+    bottomLayout->addWidget(truncTrackClearButton);
 
-    auto scenarioTypeLabel = new QLabel("Hurricane Scenario Type",this);
+    QFrame* line1 = new QFrame();
+    line1->setFrameShape(QFrame::VLine);
+    line1->setFrameShadow(QFrame::Sunken);
+    bottomLayout->addWidget(line1);
 
-    auto topLayout = new QHBoxLayout();
-    topLayout->addWidget(scenarioTypeLabel);
-    topLayout->addWidget(simulationTypeComboBox);
+    // Landfall layout
+    QPushButton *defineLandfall = new QPushButton("Define Landfall on Map");
+    QPushButton *clearLandfall = new QPushButton("Clear Landfall");
+    QPushButton *selectLandfall = new QPushButton("Select Landfall");
+
+    connect(defineLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::showPointOnMap);
+    connect(selectLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleLandfallPointSelected);
+    connect(clearLandfall,&QPushButton::clicked,this,&HurricaneSelectionWidget::clearLandfallFromMap);
+
+    QLabel* landfallLabel = new QLabel("Specify Hurricane Landfall:",this);
+
+    bottomLayout->addWidget(landfallLabel);
+    bottomLayout->addWidget(defineLandfall);
+    bottomLayout->addWidget(selectLandfall);
+    bottomLayout->addWidget(clearLandfall);
+
+    QFrame* line2 = new QFrame();
+    line2->setFrameShape(QFrame::VLine);
+    line2->setFrameShadow(QFrame::Sunken);
+    bottomLayout->addWidget(line2);
+
+    QLabel* runLabel = new QLabel("Run Hurricane Simulation:",this);
+
+    runButton = new QPushButton(tr("&Run"), this);
+    connect(runButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::runHazardSimulation);
+
+    bottomLayout->addWidget(runLabel);
+    bottomLayout->addWidget(runButton);
+
 
     mainLayout->addLayout(topLayout, 0,0);
-
     mainLayout->addWidget(hurricaneParamsWidget, 0,1,2,1);
-
-    mainLayout->addWidget(typeOfScenarioWidget, 1,0,2,1);
-    mainLayout->addWidget(runFrame, 2,1);
-
-    mainLayout->addWidget(gridGroupBox, 3,0,1,4);
-
-    mainLayout->addWidget(mapViewSubWidget.get(), 4,0,1,4);
+    mainLayout->addWidget(typeOfScenarioWidget, 1,0,1,1);
+    mainLayout->addWidget(bottomWidget, 2,0,1,2);
+    mainLayout->addWidget(gridGroupBox, 3,0,1,2);
+    mainLayout->addWidget(mapViewSubWidget.get(), 4,0,1,2);
 
     //
     // progress bar
@@ -826,7 +834,7 @@ void HurricaneSelectionWidget::handleGridSelected(void)
     // Set the renderer for the feature layer
     gridFeatureCollectionTable->setRenderer(renderer);
 
-    QStringList headerRow = {"Station", "Latitude", "Longitude"};
+    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
     gridData.push_back(headerRow);
 
     for(int i = 0; i<gridNodeVec.size(); ++i)
@@ -1231,12 +1239,10 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
     // Get the path to the Python
     auto pythonPath = SimCenterPreferences::getInstance()->getPython();
 
-    // TODO: make this a relative link once we figure out the folder structure
-    auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/SimCenterBackEndKuanshi/applications/performRegionalEventSimulation/regionalWindField/HurricaneSimulation.py";
-    // auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
-    //    QString pathToHazardSimScript = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-    //            + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-    //            + "regionalWindField" + QDir::separator() + "HurricaneSimulation.py";
+    // auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/SimCenterBackEndKuanshi/applications/performRegionalEventSimulation/regionalWindField/HurricaneSimulation.py";
+    QString pathToHazardSimScript = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+            + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
+            + "regionalWindField" + QDir::separator() + "HurricaneSimulation.py";
 
     QFileInfo hazardFileInfo(pathToHazardSimScript);
     if (!hazardFileInfo.exists()) {
@@ -1355,7 +1361,7 @@ int HurricaneSelectionWidget::loadResults(const QString& outputDir)
 
     auto headerFields = data.front();
 
-    auto stationIndex = headerFields.indexOf("Station");
+    auto stationIndex = headerFields.indexOf("GP_file");
     auto latIndex = headerFields.indexOf("Latitude");
     auto lonIndex = headerFields.indexOf("Longitude");
 
