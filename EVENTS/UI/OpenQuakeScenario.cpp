@@ -36,16 +36,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Kuanshi Zhong
 
+#include "OpenQuakeScenario.h"
+#include "SimCenterPreferences.h"
+
 #include <QFile>
 #include <QFileInfo>
 #include <QString>
 #include <QDir>
 #include <QMessageBox>
-#include "OpenQuakeScenario.h"
-#include "SimCenterPreferences.h"
 
-OpenQuakeScenario::OpenQuakeScenario(double rMesh, double aMesh, double maxDist, QString rFile, QObject *parent) :
-    QObject(parent), rupMesh(rMesh), areaMesh(aMesh), maxDistance(maxDist), rupFilename(rFile)
+OpenQuakeScenario::OpenQuakeScenario(double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent) :
+    SimCenterWidget(parent), rupMesh(rMesh), areaMesh(aMesh), maxDistance(maxDist), rupFilename(rFile)
 {
 
 }
@@ -123,7 +124,7 @@ QJsonObject OpenQuakeScenario::getJson()
     {
         QString errMsg = "Cannot copy the rupture file.";
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return rupture;
     }
 
@@ -141,7 +142,7 @@ bool OpenQuakeScenario::copyRupFile()
         {
             QString errMsg = QString("Could not make the input directory.");
             qDebug() << errMsg;
-            this->messageDialog(errMsg);
+            this->errorMessage(errMsg);
             return false;
         }
 
@@ -152,7 +153,7 @@ bool OpenQuakeScenario::copyRupFile()
     if (! fileToCopy.exists()) {
         QString errMsg = "Cannot find the rupture file." + QString(filename);
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return false;
     }
 
@@ -170,16 +171,5 @@ bool OpenQuakeScenario::copyRupFile()
     }
 
     return fileToCopy.copy(destinationDir + QDir::separator() + theFile);
-}
-
-void OpenQuakeScenario::messageDialog(const QString& messageString)
-{
-    if(messageString.isEmpty())
-        return;
-
-    QMessageBox msgBox;
-    msgBox.setText(messageString);
-    msgBox.setStandardButtons(QMessageBox::Close);
-    msgBox.exec();
 }
 

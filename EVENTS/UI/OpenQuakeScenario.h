@@ -1,6 +1,5 @@
 #ifndef OpenQuakeScenario_H
 #define OpenQuakeScenario_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,15 +38,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Kuanshi Zhong
 
-#include <QObject>
 #include "JsonSerializable.h"
+#include "SimCenterWidget.h"
 
-class OpenQuakeScenario : public QObject, JsonSerializable
+class OpenQuakeScenario : public SimCenterWidget, JsonSerializable
 {
     Q_OBJECT
 
 public:
-    OpenQuakeScenario(double rMesh, double aMesh, double maxDist, QString rFile, QObject *parent = nullptr);
+    OpenQuakeScenario(double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent = nullptr);
 
     double getRupMesh() const;
     double getAreaMesh() const;
@@ -72,7 +71,6 @@ private:
     QString rupFilename;
 
     bool copyRupFile();
-    void messageDialog(const QString& messageString);
 
 };
 

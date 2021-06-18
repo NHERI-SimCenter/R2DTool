@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Kuanshi Zhong
 
-#include <QWidget>
+#include "SimCenterWidget.h"
 
 class OpenQuakeScenario;
 
@@ -48,7 +48,7 @@ class QLineEdit;
 class QPushButton;
 class QDoubleSpinBox;
 
-class OpenQuakeScenarioWidget : public QWidget
+class OpenQuakeScenarioWidget : public SimCenterWidget
 {
     Q_OBJECT
 
@@ -56,8 +56,6 @@ public:
     explicit OpenQuakeScenarioWidget(QWidget *parent = nullptr);
 
     OpenQuakeScenario* getRuptureSource() const;
-
-    void messageDialog(const QString& messageString);
 
 signals:
 

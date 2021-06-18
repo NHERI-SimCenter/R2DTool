@@ -49,8 +49,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QMessageBox>
 
-OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : QWidget(parent)
+OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterWidget(parent)
 {
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
     //We use a grid layout for the Rupture widget
     QGridLayout* layout = new QGridLayout(this);
 
@@ -83,8 +85,6 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : QWidget(pare
     browseFileButton->setMaximumWidth(150);
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(loadRupFile()));
 
-    // Add a horizontal
-    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
     // if line-type ruptures are defined -> mesh size in length
     layout->addWidget(rupMeshLabel,0,0);
     layout->addWidget(m_rupMeshBox,0,1);
@@ -97,12 +97,10 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : QWidget(pare
     layout->addWidget(distMaxLabel,0,4);
     layout->addWidget(m_maxDistanceBox,0,5);
 
-    layout->addItem(hspacer,0,6);
-
     // rupture definition (.xml)
     layout->addWidget(filenameLabel,1,0);
-    layout->addWidget(FilenameLineEdit,1,1,1,5);
-    layout->addWidget(browseFileButton,1,6);
+    layout->addWidget(FilenameLineEdit,1,1,1,4);
+    layout->addWidget(browseFileButton,1,5);
 
     this->setLayout(layout);
 
@@ -116,7 +114,6 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : QWidget(pare
 
     this->setupConnections();
 }
-
 
 
 OpenQuakeScenario* OpenQuakeScenarioWidget::getRuptureSource() const
@@ -164,7 +161,7 @@ void OpenQuakeScenarioWidget::loadRupFile()
     {
         QString errMsg = "Please choose a Rupture File (.xml)";
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return;
     }
     else
@@ -174,18 +171,5 @@ void OpenQuakeScenarioWidget::loadRupFile()
 
     //this->transferFile();
 }
-
-void OpenQuakeScenarioWidget::messageDialog(const QString& messageString)
-{
-    if(messageString.isEmpty())
-        return;
-
-    QMessageBox msgBox;
-    msgBox.setText(messageString);
-    msgBox.setStandardButtons(QMessageBox::Close);
-    msgBox.exec();
-}
-
-
 
 
