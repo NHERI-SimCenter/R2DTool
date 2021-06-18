@@ -1,6 +1,5 @@
 #ifndef VS30_H
 #define VS30_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.

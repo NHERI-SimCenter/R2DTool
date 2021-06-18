@@ -11,7 +11,8 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QWidget *parent) : QW
     QGroupBox* siteGroupBox = new QGroupBox(tr("Site"));
 
     QVBoxLayout* groupLayout = new QVBoxLayout(siteGroupBox);
-    groupLayout->setContentsMargins(5,0,5,5);
+    groupLayout->setContentsMargins(3,0,3,0);
+    groupLayout->setSpacing(0);
 
     //First we need to add type radio buttons
     m_typeButtonsGroup = new QButtonGroup(this);
@@ -31,6 +32,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QWidget *parent) : QW
     m_typeButtonsGroup->addButton(scatRadioButton, 2);
 
     QWidget* typeGroupBox = new QWidget(this);
+    typeGroupBox->setContentsMargins(0,0,0,0);
     typeGroupBox->setStyleSheet("QGroupBox { font-weight: normal;}");
     QHBoxLayout* typeLayout = new QHBoxLayout(typeGroupBox);
     typeGroupBox->setLayout(typeLayout);

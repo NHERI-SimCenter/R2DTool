@@ -36,13 +36,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
 #include "Vs30.h"
 #include "SiteConfig.h"
 
 #include <QWidget>
-#include <QtWidgets>
+
+class QComboBox;
 
 class Vs30Widget : public QWidget
 {

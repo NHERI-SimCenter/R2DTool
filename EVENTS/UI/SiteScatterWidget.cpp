@@ -1,9 +1,56 @@
+/* *****************************************************************************
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Kuanshi Zhong, Stevan Gavrilovic
+
 #include "SiteScatter.h"
 #include "SiteScatterWidget.h"
 #include "HBoxFormLayout.h"
 #include "SimCenterPreferences.h"
 
-SiteScatterWidget::SiteScatterWidget(SiteScatter& siteScatter, QWidget *parent) : QWidget(parent), m_siteScatter(siteScatter)
+#include <QLabel>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QIntValidator>
+#include <QGroupBox>
+#include <QTableWidget>
+#include <QFileDialog>
+#include <QHeaderView>
+
+SiteScatterWidget::SiteScatterWidget(SiteScatter& siteScatter, QWidget *parent) : SimCenterWidget(parent), m_siteScatter(siteScatter)
 {
     fileLoaded = false;
 
@@ -14,6 +61,7 @@ SiteScatterWidget::SiteScatterWidget(SiteScatter& siteScatter, QWidget *parent) 
     // Site File box
     QLabel* filenameLabel = new QLabel(tr("Site File (.csv):"),this);
     FilenameLineEdit = new QLineEdit(this);
+    FilenameLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     browseFileButton = new QPushButton();
 
     browseFileButton->setText(tr("Browse"));
@@ -34,10 +82,16 @@ SiteScatterWidget::SiteScatterWidget(SiteScatter& siteScatter, QWidget *parent) 
     minIDLineEdit->setValidator(new QIntValidator(0, 1000000, this));
     maxIDLineEdit->setValidator(new QIntValidator(0, 1000000, this));
 
+    minIDLineEdit->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+    maxIDLineEdit->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+
     // Preview of the site file
     auto previewGroup = new QGroupBox(tr("Preview Sites"));
     auto previewLayout = new QGridLayout(previewGroup);
     siteSpreadSheet = new QTableWidget();
+    siteSpreadSheet->verticalHeader()->setVisible(false);
+    siteSpreadSheet->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    siteSpreadSheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     previewLayout->addWidget(siteSpreadSheet,0,0);
     siteSpreadSheet->setColumnCount(7);
@@ -52,20 +106,28 @@ SiteScatterWidget::SiteScatterWidget(SiteScatter& siteScatter, QWidget *parent) 
     for (int i = 0; i != defaultCSVHeader.length(); ++i)
         attributeIndex.insert(defaultCSVHeader[i], i);
 
-    layout->addWidget(filenameLabel,0,0);
-    layout->addWidget(FilenameLineEdit,0,1,1,6);
-    layout->addWidget(browseFileButton,0,7);
+    QHBoxLayout* fileNameLayout = new QHBoxLayout();
 
-    layout->addWidget(minIDLabel,2,6);
-    layout->addWidget(minIDLineEdit,2,7,1,2);
-    layout->addWidget(maxIDLabel,3,6);
-    layout->addWidget(maxIDLineEdit,3,7,1,2);
+    fileNameLayout->addWidget(filenameLabel,0,Qt::AlignLeft);
+    fileNameLayout->addWidget(FilenameLineEdit,1);
+    fileNameLayout->addWidget(browseFileButton,0,Qt::AlignRight);
 
-    layout->addWidget(previewGroup,1,0,3,6);
+    QGridLayout* labelsLayout = new QGridLayout();
+    labelsLayout->addWidget(minIDLabel,0,0);
+    labelsLayout->addWidget(minIDLineEdit,0,1);
+    labelsLayout->addWidget(maxIDLabel,1,0);
+    labelsLayout->addWidget(maxIDLineEdit,1,1);
+
+    layout->addLayout(fileNameLayout,0,0,1,2);
+
+    layout->addWidget(previewGroup,1,0);
+    layout->addLayout(labelsLayout,1,1,1,1,Qt::AlignRight);
+
 
     //Now we need to setup the connections
     setupConnections();
 }
+
 
 void SiteScatterWidget::setupConnections()
 {
@@ -90,7 +152,7 @@ void SiteScatterWidget::setMinID()
     {
         QString errMsg = "Please provide Min ID.";
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return;
     }
     else
@@ -106,7 +168,7 @@ void SiteScatterWidget::setMaxID()
     {
         QString errMsg = "Please provide Max ID.";
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return;
     }
     else
@@ -138,7 +200,7 @@ void SiteScatterWidget::loadSiteFile()
     {
         QString errMsg = "Please choose a Site File (.csv)";
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return;
     }
     else
@@ -152,11 +214,11 @@ void SiteScatterWidget::loadSiteFile()
     {
         QString errMsg = "File: " + this->siteFilePath + " cannot be parsed.";
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return;
     }
     else
-        this->messageDialog("Site file loaded.");
+        this->errorMessage("Site file loaded.");
 }
 
 
@@ -200,7 +262,7 @@ int SiteScatterWidget::parseSiteFile(const QString& pathToFile)
         {
             QString errMsg = "Please include the \"Station\" in the site file.";
             qDebug() << errMsg;
-            this->messageDialog(errMsg);
+            this->errorMessage(errMsg);
             return 1;
         }
         if (colName.contains("Latitude"))
@@ -211,7 +273,7 @@ int SiteScatterWidget::parseSiteFile(const QString& pathToFile)
         {
             QString errMsg = "Please include the \"Latitude\" in the site file.";
             qDebug() << errMsg;
-            this->messageDialog(errMsg);
+            this->errorMessage(errMsg);
             return 1;
         }
         if (colName.contains("Longitude"))
@@ -222,7 +284,7 @@ int SiteScatterWidget::parseSiteFile(const QString& pathToFile)
         {
             QString errMsg = "Please include the \"Longitude\" in the site file.";
             qDebug() << errMsg;
-            this->messageDialog(errMsg);
+            this->errorMessage(errMsg);
             return 1;
         }
 
@@ -247,7 +309,7 @@ int SiteScatterWidget::parseSiteFile(const QString& pathToFile)
         m_siteScatter.addSite(site);
     }
 
-    this->messageDialog("Site file parsed.");
+    this->statusMessage("Site file parsed.");
 
     // update the table
     tmpData.pop_front();
@@ -267,7 +329,7 @@ QVector<QStringList> SiteScatterWidget::parseCSVFile(const QString &pathToFile)
     {
         QString errMsg = "Cannot find the file: " + pathToFile + "\nCheck your directory and try again.";
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return returnVec;
     }
 
@@ -282,7 +344,9 @@ QVector<QStringList> SiteScatterWidget::parseCSVFile(const QString &pathToFile)
     auto numRows = rowLines.size();
     if(numRows == 0)
     {
-        qDebug()<<"Error in parsing the .csv file "<<pathToFile<<" in "<<__FUNCSIG__;
+        QString errMsg = "Error in parsing the .csv file "+pathToFile;
+        qDebug()<<errMsg;
+        this->errorMessage(errMsg);
         return returnVec;
     }
 
@@ -441,7 +505,7 @@ bool SiteScatterWidget::copySiteFile()
         {
             QString errMsg = QString("Could not make the input directory.");
             qDebug() << errMsg;
-            this->messageDialog(errMsg);
+            this->errorMessage(errMsg);
             return false;
         }
 
@@ -452,7 +516,7 @@ bool SiteScatterWidget::copySiteFile()
     if (! fileToCopy.exists()) {
         QString errMsg = "Cannot find the site file." + QString(filename);
         qDebug() << errMsg;
-        this->messageDialog(errMsg);
+        this->errorMessage(errMsg);
         return false;
     }
 
@@ -466,6 +530,7 @@ bool SiteScatterWidget::copySiteFile()
         distFile.remove();
         QString warnMsg = "Overwriting the existing site file in the input directory.";
         qDebug() << warnMsg;
+        this->infoMessage(warnMsg);
     }
 
     // Copy
@@ -485,14 +550,3 @@ int SiteScatterWidget::getMaxID()
     return maxID;
 }
 
-
-void SiteScatterWidget::messageDialog(const QString& messageString)
-{
-    if(messageString.isEmpty())
-        return;
-
-    QMessageBox msgBox;
-    msgBox.setText(messageString);
-    msgBox.setStandardButtons(QMessageBox::Close);
-    msgBox.exec();
-}

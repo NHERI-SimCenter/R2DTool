@@ -39,6 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "Vs30Widget.h"
 
 #include <QHBoxLayout>
+#include <QGroupBox>
+#include <QStringListModel>
+#include <QComboBox>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QSizePolicy>

@@ -86,6 +86,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDialog>
 #include <QJsonObject>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QStringList>
 #include <QString>
 
@@ -122,7 +123,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     this->m_selectionconfig = new RecordSelectionConfig();
     this->m_selectionWidget = new RecordSelectionWidget(*this->m_selectionconfig, this);
 
-    m_runButton = new QPushButton(tr("&Run"));
+    m_runButton = new QPushButton(tr("&Run Hazard Simulation"));
     m_settingButton = new QPushButton(tr("&Settings"));
 
     // Create a map view that will be used for selecting the grid points
@@ -137,18 +138,24 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     userGrid->setSiteGridConfig(m_siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
 
-    toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,1,3);
-    toolsGridLayout->addWidget(this->m_vs30Widget, 1,0,1,3); // vs30 widget
-    toolsGridLayout->addWidget(this->spatialCorrWidget,  0,3);
-    toolsGridLayout->addWidget(this->m_ruptureWidget,    2,0,2,3);
-    toolsGridLayout->addWidget(this->m_selectionWidget,  1,3);
-    toolsGridLayout->addWidget(this->m_gmpeWidget,        2,3);
-    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,4,0,1,4);
-    toolsGridLayout->addWidget(this->m_settingButton, 5,0,1,2);
-    toolsGridLayout->addWidget(this->m_runButton,     5,2,1,2);
+    auto buttonsLayout = new QHBoxLayout();
+    buttonsLayout->addWidget(this->m_settingButton);
+    buttonsLayout->addWidget(this->m_runButton);
+
+
+    toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,2,1);
+    toolsGridLayout->addWidget(this->m_ruptureWidget, 3,0,4,1);
+
+    toolsGridLayout->addWidget(this->spatialCorrWidget,  0,1);
+    toolsGridLayout->addWidget(this->m_selectionWidget,  1,1);
+    toolsGridLayout->addWidget(this->m_vs30Widget, 3,1,1,1); // vs30 widget
+    toolsGridLayout->addWidget(this->m_gmpeWidget,        4,1,1,1);
+    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,5,1,1,1);
+    toolsGridLayout->addLayout(buttonsLayout,6,1,1,1);
 
     toolsGridLayout->setHorizontalSpacing(5);
-    //toolsGridLayout->setColumnStretch(4,1);
+    toolsGridLayout->setVerticalSpacing(0);
+
     this->setLayout(toolsGridLayout);
 
     setupConnections();
