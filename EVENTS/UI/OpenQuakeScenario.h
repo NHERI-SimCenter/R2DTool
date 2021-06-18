@@ -1,5 +1,6 @@
-#ifndef RUPTUREWIDGET_H
-#define RUPTUREWIDGET_H
+#ifndef OpenQuakeScenario_H
+#define OpenQuakeScenario_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,36 +37,43 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "SimCenterAppWidget.h"
+#include <QObject>
+#include "JsonSerializable.h"
 
-class PointSourceRuptureWidget;
-class EarthquakeRuptureForecastWidget;
-class OpenQuakeScenarioWidget;
-
-class QGroupBox;
-class QComboBox;
-class QStackedWidget;
-
-class RuptureWidget : public SimCenterAppWidget
+class OpenQuakeScenario : public QObject, JsonSerializable
 {
     Q_OBJECT
-public:
-    explicit RuptureWidget(QWidget *parent = nullptr);
 
-    QJsonObject getJson(void);
+public:
+    OpenQuakeScenario(double rMesh, double aMesh, double maxDist, QString rFile, QObject *parent = nullptr);
+
+    double getRupMesh() const;
+    double getAreaMesh() const;
+    double getMaxDistance() const;
+    QString getRupFilename() const;
+
+    QJsonObject getJson();
+
+signals:
 
 public slots:
-    void handleSelectionChanged(const QString& selection);
+    void setRupMesh(double magnitude);
+    void setAreaMesh(double magnitude);
+    void setMaxDistance(double value);
+    void setRupFilename(const QString &value);
 
 private:
-    QGroupBox* ruptureGroupBox;
-    QComboBox* ruptureSelectionCombo;
-    QStackedWidget* theRootStackedWidget;
-    PointSourceRuptureWidget* pointSourceWidget;
-    EarthquakeRuptureForecastWidget* erfWidget;
-    OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
+    double rupMesh;
+    double areaMesh;
+    double maxDistance;
+
+    QString rupFilename;
+
+    bool copyRupFile();
+    void messageDialog(const QString& messageString);
+
 };
 
-#endif // RUPTUREWIDGET_H
+#endif // OpenQuakeScenario_H
