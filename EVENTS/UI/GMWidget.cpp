@@ -481,6 +481,8 @@ void GMWidget::runHazardSimulation(void)
     siteObj.insert("input_file", "SiteFile.csv");
     siteObj.insert("min_ID", minID);
     siteObj.insert("max_ID", maxID);
+    // add an output_file field for preparing OpenQuake site model
+    siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
 
     QJsonObject scenarioObj;
     scenarioObj.insert("Type", "Earthquake");

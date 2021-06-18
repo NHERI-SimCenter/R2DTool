@@ -1,5 +1,6 @@
-#ifndef RUPTUREWIDGET_H
-#define RUPTUREWIDGET_H
+#ifndef OpenQuakeScenarioWidget_H
+#define OpenQuakeScenarioWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,36 +37,46 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "SimCenterAppWidget.h"
+#include <QWidget>
 
-class PointSourceRuptureWidget;
-class EarthquakeRuptureForecastWidget;
-class OpenQuakeScenarioWidget;
+class OpenQuakeScenario;
 
-class QGroupBox;
 class QComboBox;
-class QStackedWidget;
+class QLineEdit;
+class QPushButton;
+class QDoubleSpinBox;
 
-class RuptureWidget : public SimCenterAppWidget
+class OpenQuakeScenarioWidget : public QWidget
 {
     Q_OBJECT
-public:
-    explicit RuptureWidget(QWidget *parent = nullptr);
 
-    QJsonObject getJson(void);
+public:
+    explicit OpenQuakeScenarioWidget(QWidget *parent = nullptr);
+
+    OpenQuakeScenario* getRuptureSource() const;
+
+    void messageDialog(const QString& messageString);
+
+signals:
 
 public slots:
-    void handleSelectionChanged(const QString& selection);
+    void loadRupFile();
 
 private:
-    QGroupBox* ruptureGroupBox;
-    QComboBox* ruptureSelectionCombo;
-    QStackedWidget* theRootStackedWidget;
-    PointSourceRuptureWidget* pointSourceWidget;
-    EarthquakeRuptureForecastWidget* erfWidget;
-    OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
+    OpenQuakeScenario* m_eqRupture;
+    QComboBox* ModelTypeCombo;
+    QLineEdit* FilenameLineEdit;
+    QString rupFilePath;
+    QDoubleSpinBox* m_rupMeshBox;
+    QDoubleSpinBox* m_areaMeshBox;
+    QDoubleSpinBox* m_maxDistanceBox;
+    QPushButton* browseFileButton;
+
+    void setupConnections();
+    void setRupFile(QString dirPath);
+
 };
 
-#endif // RUPTUREWIDGET_H
+#endif // OpenQuakeScenarioWidget_H

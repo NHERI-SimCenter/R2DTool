@@ -38,6 +38,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "EarthquakeRuptureForecast.h"
 #include "EarthquakeRuptureForecastWidget.h"
+#include "OpenQuakeScenario.h"
+#include "OpenQuakeScenarioWidget.h"
 #include "PointSourceRupture.h"
 #include "PointSourceRuptureWidget.h"
 #include "RuptureWidget.h"
@@ -54,9 +56,13 @@ RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
 
     pointSourceWidget = new PointSourceRuptureWidget(this);
     erfWidget = new EarthquakeRuptureForecastWidget(this);
+    // add widgets connecting the OpenQuake-type hazard
+    // OpenQuake scenario-based
+    oqsbWidget = new OpenQuakeScenarioWidget(this);
 
     theRootStackedWidget->addWidget(pointSourceWidget);
     theRootStackedWidget->addWidget(erfWidget);
+    theRootStackedWidget->addWidget(oqsbWidget);
 
     theRootStackedWidget->setCurrentWidget(erfWidget);
 
@@ -67,6 +73,7 @@ RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
 
     ruptureSelectionCombo->addItem("Earthquake Rupture Forecast");
     ruptureSelectionCombo->addItem("Point Source");
+    ruptureSelectionCombo->addItem("OpenQuake Scenario-Based");
 
     connect(ruptureSelectionCombo,&QComboBox::currentTextChanged,this,&RuptureWidget::handleSelectionChanged);
 
@@ -87,6 +94,8 @@ QJsonObject RuptureWidget::getJson(void)
         ruptureObj = pointSourceWidget->getRuptureSource()->getJson();
     else if(ruptureSelectionCombo->currentText().compare("Earthquake Rupture Forecast") == 0)
         ruptureObj = erfWidget->getRuptureSource()->getJson();
+    else if(ruptureSelectionCombo->currentText().compare("OpenQuake Scenario-Based") == 0)
+        ruptureObj = oqsbWidget->getRuptureSource()->getJson();
 
     return ruptureObj;
 }
@@ -98,5 +107,7 @@ void RuptureWidget::handleSelectionChanged(const QString& selection)
         theRootStackedWidget->setCurrentWidget(pointSourceWidget);
     else if(selection.compare("Earthquake Rupture Forecast") == 0)
         theRootStackedWidget->setCurrentWidget(erfWidget);
+    else if(selection.compare("OpenQuake Scenario-Based") == 0)
+        theRootStackedWidget->setCurrentWidget(oqsbWidget);
 
 }
