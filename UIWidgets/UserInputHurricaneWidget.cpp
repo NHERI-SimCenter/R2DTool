@@ -153,9 +153,9 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         eventFileLineEdit->setText(fullFilePath);
         eventFile = fullFilePath;
 
-        if (appData.contains("eventDir"))
+        if (appData.contains("eventFileDir"))
         {
-            eventDir = appData["eventDir"].toString();
+            eventDir = appData["eventFileDir"].toString();
 
             QDir evtD(eventDir);
 

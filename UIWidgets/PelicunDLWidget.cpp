@@ -140,8 +140,17 @@ bool PelicunDLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
 
     auto scriptPath = autoPopulationScriptLineEdit->text();
+    // test separating the path and filename of auto-population codes (KZ)
+    QFileInfo test_auto(autoPopulationScriptLineEdit->text());
+    if(test_auto.exists())
+    {
+        appDataObj.insert("auto_script",test_auto.fileName());
+        appDataObj.insert("path_to_auto_script",test_auto.path());
+    }
+    /*
     if(!scriptPath.isEmpty())
         appDataObj.insert("auto_script",scriptPath);
+    */
 
     jsonObject.insert("ApplicationData",appDataObj);
 
@@ -192,7 +201,12 @@ bool PelicunDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             }
             else
             {
-                auto currPath = QDir::currentPath();
+                // test separating the path and filename of auto-population codes (KZ)
+                QString currPath;
+                if (appData.contains("path_to_auto_script"))
+                    currPath = appData["path_to_auto_script"].toString();
+                else
+                    auto currPath = QDir::currentPath();
 
                 auto pathToComponentInfoFile = currPath + QDir::separator() + pathToScript;
 
