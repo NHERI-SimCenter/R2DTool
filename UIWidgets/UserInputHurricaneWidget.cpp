@@ -106,6 +106,12 @@ bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
         appData["eventFile"]=eventFile; // may be valid on others computer
         appData["eventFileDir"]=QString("");
     }
+    QFileInfo theDir(eventDir);
+    if (theDir.exists()) {
+        appData["eventDir"]=theDir.absoluteFilePath();
+    } else {
+        appData["eventDir"]=QString("None");
+    }
 
 
     jsonObject["ApplicationData"]=appData;
