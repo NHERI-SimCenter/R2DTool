@@ -218,7 +218,7 @@ void SiteScatterWidget::loadSiteFile()
         return;
     }
     else
-        this->errorMessage("Site file loaded.");
+        this->statusMessage("Site file loaded.");
 }
 
 
@@ -494,13 +494,25 @@ bool SiteScatterWidget::getFileLoaded() const
 }
 
 
-bool SiteScatterWidget::copySiteFile()
+bool SiteScatterWidget::siteFileExists()
 {
-    // Destination directory
-    QString destinationDir;
-    destinationDir = SimCenterPreferences::getInstance()->getLocalWorkDir() + "/HazardSimulation/Input";
+    QString filename = this->siteFilePath;
+
+    QFile fileToCopy(filename);
+
+    if (! fileToCopy.exists())
+        return false;
+
+    return true;
+}
+
+
+bool SiteScatterWidget::copySiteFile(const QString& destinationDir)
+{
+
     QDir dirInput(destinationDir);
     if (!dirInput.exists())
+    {
         if (!dirInput.mkpath(destinationDir))
         {
             QString errMsg = QString("Could not make the input directory.");
@@ -508,20 +520,19 @@ bool SiteScatterWidget::copySiteFile()
             this->errorMessage(errMsg);
             return false;
         }
+    }
 
     QString filename = this->siteFilePath;
 
-    QFile fileToCopy(filename);
-
-    if (! fileToCopy.exists()) {
+    if(!this->siteFileExists())
+    {
         QString errMsg = "Cannot find the site file." + QString(filename);
         qDebug() << errMsg;
         this->errorMessage(errMsg);
         return false;
     }
 
-    QFileInfo fileInfo(filename);
-    QString theFile = fileInfo.fileName();
+    QFile fileToCopy(filename);
 
     // Overwriting check
     QFile distFile(destinationDir + QDir::separator() + "SiteFile.csv");
@@ -535,7 +546,6 @@ bool SiteScatterWidget::copySiteFile()
 
     // Copy
     return fileToCopy.copy(destinationDir + QDir::separator() + "SiteFile.csv");
-
 }
 
 

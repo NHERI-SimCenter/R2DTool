@@ -41,6 +41,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "JsonSerializable.h"
 #include "SimCenterWidget.h"
 
+class GMWidget;
+
 class OpenQuakeScenario : public SimCenterWidget, JsonSerializable
 {
     Q_OBJECT
@@ -71,6 +73,8 @@ private:
     QString rupFilename;
 
     bool copyRupFile();
+
+    GMWidget* gmWidget;
 
 };
 

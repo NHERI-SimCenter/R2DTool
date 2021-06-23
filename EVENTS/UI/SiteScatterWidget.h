@@ -53,7 +53,9 @@ public:
 
     bool getFileLoaded() const;
 
-    bool copySiteFile();
+    bool copySiteFile(const QString& destinationDir);
+
+    bool siteFileExists();
 
     int getMinID();
     int getMaxID();

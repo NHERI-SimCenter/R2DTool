@@ -105,7 +105,7 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterWid
     this->setLayout(layout);
 
     //We need to set initial values
-    m_eqRupture = new OpenQuakeScenario(1.0, 10.0, 500.0, "", this);
+    m_eqRupture = new OpenQuakeScenario(1.0, 10.0, 500.0, "", parent);
 
     this->m_rupMeshBox->setValue(m_eqRupture->getRupMesh());
     this->m_areaMeshBox->setValue(m_eqRupture->getAreaMesh());

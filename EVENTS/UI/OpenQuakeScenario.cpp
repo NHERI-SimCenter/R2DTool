@@ -38,6 +38,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "OpenQuakeScenario.h"
 #include "SimCenterPreferences.h"
+#include "GMWidget.h"
+#include "GmAppConfig.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -48,7 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 OpenQuakeScenario::OpenQuakeScenario(double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent) :
     SimCenterWidget(parent), rupMesh(rMesh), areaMesh(aMesh), maxDistance(maxDist), rupFilename(rFile)
 {
-
+    gmWidget = dynamic_cast<GMWidget*>(parent);
 }
 
 
@@ -133,9 +135,17 @@ QJsonObject OpenQuakeScenario::getJson()
 
 bool OpenQuakeScenario::copyRupFile()
 {
+
+    if(gmWidget == nullptr)
+    {
+        QString errMsg = QString("Could not get the GMWidget.");
+        this->errorMessage(errMsg);
+        return false;
+    }
+
     // Destination directory
-    QString destinationDir;
-    destinationDir = SimCenterPreferences::getInstance()->getLocalWorkDir() + "/HazardSimulation/Input/";
+    QString destinationDir = gmWidget->appConfig()->getInputDirectoryPath() + QDir::separator();
+
     QDir dirInput(destinationDir);
     if (!dirInput.exists())
         if (!dirInput.mkpath(destinationDir))

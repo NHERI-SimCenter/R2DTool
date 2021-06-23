@@ -79,6 +79,8 @@ public:
     void resetAppSettings(void);
     void setCurrentlyViewable(bool status);
 
+    GmAppConfig *appConfig() const;
+
 signals:
     void locationsChanged(void);
     void sceneViewChanged(void);

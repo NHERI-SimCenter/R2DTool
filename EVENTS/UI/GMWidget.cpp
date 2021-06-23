@@ -212,7 +212,7 @@ void GMWidget::setupConnections()
         }
         else if(type == SiteConfig::SiteType::Scatter)
         {
-            if(!m_siteConfigWidget->getSiteScatterWidget()->copySiteFile())
+            if(!m_siteConfigWidget->getSiteScatterWidget()->siteFileExists())
             {
                 QString msg = "Please choose a site file before continuing";
                 this->statusMessage(msg);
@@ -241,7 +241,8 @@ void GMWidget::setupConnections()
 
     connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString zipFile)
     {
-        this->parseDownloadedRecords(zipFile);
+       this->parseDownloadedRecords(zipFile);
+       this->getProgressDialog()->hideProgressBar();
     });
 
 }
@@ -449,6 +450,18 @@ void GMWidget::runHazardSimulation(void)
         file.remove();
     }
 
+    // Clean out any existing input files
+    auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
+
+    QStringList nameFilters = {"SiteFile.csv","OpenQuakeSiteModel.csv","sites_oq.csv","EQHazardConfiguration.json","oq_job.ini","rupture_model_example.xml"};
+
+    QDir dir(pathToInputDir);
+    dir.setNameFilters(nameFilters);
+    dir.setFilter(QDir::Files);
+    foreach(QString dirFile, dir.entryList())
+    {
+        dir.remove(dirFile);
+    }
 
     // Remove the grid from the visualization screen
     mapViewSubWidget->removeGridFromScene();
@@ -550,6 +563,8 @@ void GMWidget::runHazardSimulation(void)
 
     gridData.push_back(headerRow);
 
+    bool writeSiteFile = true;
+
     if(type == SiteConfig::SiteType::Single)
     {
         qDebug()<<"Single site selection not supported yet";
@@ -590,15 +605,20 @@ void GMWidget::runHazardSimulation(void)
             gridData.push_back(stationRow);
         }
     }
-
-    bool writeSiteFile = true;
-    if(type == SiteConfig::SiteType::Scatter)
-        // site file has been copied to the input directory
+    else if(type == SiteConfig::SiteType::Scatter)
+    {
+        // Site file will be copied to the input directory
         writeSiteFile = false;
+
+        if(!m_siteConfigWidget->getSiteScatterWidget()->copySiteFile(pathToInputDir))
+        {
+            this->errorMessage("Error copying site file to inputput directory");
+        }
+    }
 
     if(writeSiteFile)
     {
-        QString pathToSiteLocationFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "SiteFile.csv";
+        QString pathToSiteLocationFile = pathToInputDir + QDir::separator() + "SiteFile.csv";
 
         CSVReaderWriter csvTool;
 
@@ -614,7 +634,7 @@ void GMWidget::runHazardSimulation(void)
     QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
 
     // Hazard sim
-    QString pathToConfigFile = m_appConfig->getInputDirectoryPath() + QDir::separator() + "EQHazardConfiguration.json";
+    QString pathToConfigFile = pathToInputDir + QDir::separator() + "EQHazardConfiguration.json";
 
     QFile file(pathToConfigFile);
 
@@ -647,6 +667,8 @@ void GMWidget::runHazardSimulation(void)
     QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
 
     qDebug()<<"Hazard Simulation Command:"<<args[0]<<" "<<args[1]<<" "<<args[2];
+
+    this->getProgressDialog()->showProgressBar();
 
     process->start(pythonPath, args);
     process->waitForStarted();
@@ -890,6 +912,18 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
     // gridLayer->setMinScale(80000);
 
+    auto headers = data.front();
+
+    auto indexFile = headers.indexOf("GP_file");
+    auto indexLon = headers.indexOf("Longitude");
+    auto indexLat = headers.indexOf("Latitude");
+
+    if(indexLon == -1 || indexLat == -1 || indexFile == -1)
+    {
+        errorMessage = "Error could not find latitude and longitude in headers";
+        return -1;
+    }
+
     // Pop off the row that contains the header information
     data.pop_front();
 
@@ -902,14 +936,14 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
         auto vecValues = data.at(i);
 
-        if(vecValues.size() != 3)
+        if(vecValues.size() < 3)
         {
-            qDebug()<<"Error in importing ground motions";
+            errorMessage = "Error in importing ground motions";
             return -1;
         }
 
         bool ok;
-        auto lon = vecValues[1].toDouble(&ok);
+        auto lon = vecValues[indexLon].toDouble(&ok);
 
         if(!ok)
         {
@@ -917,7 +951,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
             return -1;
         }
 
-        auto lat = vecValues[2].toDouble(&ok);
+        auto lat = vecValues[indexLat].toDouble(&ok);
 
         if(!ok)
         {
@@ -925,7 +959,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
             return -1;
         }
 
-        auto stationName = vecValues[0];
+        auto stationName = vecValues[indexFile];
 
         auto stationPath = inputFile.dir().absolutePath() + QDir::separator() + stationName;
 
@@ -1053,8 +1087,6 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
 
     this->statusMessage("Download and parsing of ground motion records complete.");
 
-    this->getProgressDialog()->hideProgressBar();
-
     this->statusMessage("The folder containing the results: "+m_appConfig->getOutputDirectoryPath());
 
     this->statusMessage("Earthquake hazard simulation complete.");
@@ -1067,6 +1099,11 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     // progressDialog->hide();
 
     return 0;
+}
+
+GmAppConfig *GMWidget::appConfig() const
+{
+    return m_appConfig;
 }
 
 

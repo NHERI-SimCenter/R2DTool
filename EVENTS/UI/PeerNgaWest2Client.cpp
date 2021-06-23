@@ -532,7 +532,7 @@ void PeerNgaWest2Client::processDownloadRecordsReply()
     file.write(downloadRecordsReply->readAll());
     file.close();
 
-    emit statusUpdated("Ground Motions Downloaded Sucessfully");
+    emit statusUpdated("Ground Motions Downloaded Successfully");
     emit recordsDownloaded(recordsPath);
 }
 

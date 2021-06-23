@@ -54,11 +54,11 @@ RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
     theRootStackedWidget = new QStackedWidget(this);
     theRootStackedWidget->setContentsMargins(0,0,0,0);
 
-    pointSourceWidget = new PointSourceRuptureWidget(this);
-    erfWidget = new EarthquakeRuptureForecastWidget(this);
+    pointSourceWidget = new PointSourceRuptureWidget(parent);
+    erfWidget = new EarthquakeRuptureForecastWidget(parent);
     // add widgets connecting the OpenQuake-type hazard
     // OpenQuake scenario-based
-    oqsbWidget = new OpenQuakeScenarioWidget(this);
+    oqsbWidget = new OpenQuakeScenarioWidget(parent);
 
     theRootStackedWidget->addWidget(pointSourceWidget);
     theRootStackedWidget->addWidget(erfWidget);
