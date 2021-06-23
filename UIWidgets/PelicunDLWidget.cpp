@@ -206,7 +206,7 @@ bool PelicunDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 if (appData.contains("path_to_auto_script"))
                     currPath = appData["path_to_auto_script"].toString();
                 else
-                    auto currPath = QDir::currentPath();
+                    currPath = QDir::currentPath();
 
                 auto pathToComponentInfoFile = currPath + QDir::separator() + pathToScript;
 
