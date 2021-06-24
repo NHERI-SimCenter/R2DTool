@@ -73,7 +73,8 @@ RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
 
     ruptureSelectionCombo->addItem("Earthquake Rupture Forecast");
     ruptureSelectionCombo->addItem("Point Source");
-    ruptureSelectionCombo->addItem("OpenQuake Scenario-Based");
+
+    //    ruptureSelectionCombo->addItem("OpenQuake Scenario-Based");
 
     connect(ruptureSelectionCombo,&QComboBox::currentTextChanged,this,&RuptureWidget::handleSelectionChanged);
 
