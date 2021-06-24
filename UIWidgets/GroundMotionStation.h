@@ -40,6 +40,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "GroundMotionTimeHistory.h"
 
+#include <QMap>
+#include <QVariant>
+
 class GroundMotionStation
 {
 public:
@@ -53,6 +56,11 @@ public:
     void importGroundMotions(void);
 
     QVector<GroundMotionTimeHistory> getStationGroundMotions() const;
+
+    QVariant getAttributeValue(const QString& key)
+    {
+        return stationAttributes.value(key,QVariant());
+    }
 
     // Function to convert a QString and QVariant to double
     // Throws an error exception if conversion fails
@@ -72,6 +80,10 @@ public:
         return val;
     }
 
+    // Map to store the attributes of a given station
+    QMap<QString, QVariant> getStationAttributes() const;
+    void setStationAttributes(const QMap<QString, QVariant> &value);
+
 private:
 
     void importGroundMotionTimeHistory(const QString& filePath, const double scalingFactor);
@@ -82,7 +94,11 @@ private:
 
     double longitude;
 
-    QVector<GroundMotionTimeHistory> stationGroundMotions;
+    // Vector to store time histories at a given station
+    QVector<GroundMotionTimeHistory> groundMotionTimeHistories;
+
+    // Map to store potential PGA, PGV, etc., values
+    QMap<QString, QVariant> stationAttributes;
 
 };
 

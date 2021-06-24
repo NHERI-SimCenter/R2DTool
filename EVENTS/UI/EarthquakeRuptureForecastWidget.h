@@ -1,6 +1,5 @@
 #ifndef EarthquakeRuptureForecastWidget_H
 #define EarthquakeRuptureForecastWidget_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.

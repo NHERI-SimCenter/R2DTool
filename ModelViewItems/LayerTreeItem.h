@@ -63,12 +63,17 @@ public slots:
     void changeOpacity();
     void handleChangeOpacity(int value);
 
+    // Change the plot color(s) for a layer
+    void manageLayer();
+
     // Zoom to the extents of the layer
     void zoomtoLayer();
 
 signals:
 
 void opacityChanged(const QString& layerID, const double opacity);
+void plotColorChanged(const QString& layerID);
+
 void zoomLayerExtents(QString itemID);
 
 private:

@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class PointSourceRuptureWidget;
 class EarthquakeRuptureForecastWidget;
+class OpenQuakeScenarioWidget;
 
 class QGroupBox;
 class QComboBox;
@@ -64,6 +65,7 @@ private:
     QStackedWidget* theRootStackedWidget;
     PointSourceRuptureWidget* pointSourceWidget;
     EarthquakeRuptureForecastWidget* erfWidget;
+    OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
 };
 
 #endif // RUPTUREWIDGET_H

@@ -67,6 +67,7 @@ public slots:
     void handleBrowseButtonPressed(void);
 
 private:
+    QWidget* autoPopulateScriptWidget;
 
     QComboBox* DLTypeComboBox;
     QLineEdit* realizationsLineEdit;
@@ -75,8 +76,6 @@ private:
     QCheckBox* logFileCheckBox;
     QCheckBox* coupledEDPCheckBox;
     QCheckBox* groundFailureCheckBox;
-
-    QWidget* autoPopulateScriptWidget;
     QLineEdit* autoPopulationScriptLineEdit;
 };
 

@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "GroundMotionStation.h"
 
 #include <QMap>
 
@@ -99,6 +100,7 @@ struct ShakeMap{
         return layers;
     }
 
+    QVector<GroundMotionStation> stationList;
 };
 
 class ShakeMapWidget : public SimCenterAppWidget
@@ -132,11 +134,12 @@ public slots:
 private slots:
 
     int loadShakeMapData(void);
-    void loadDataFromDirectory(const QString& dir);
+    int loadDataFromDirectory(const QString& dir);
     void chooseShakeMapDirectoryDialog(void);
 
 signals:
 
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
     void loadingComplete(const bool value);
 
 private:
@@ -151,6 +154,9 @@ private:
     QWidget* directoryInputWidget;
     QProgressBar* progressBar;
     QString pathToShakeMapDirectory;
+
+    QString motionDir;
+    QString pathToEventFile;
 
     QMap<QString,ShakeMap*> shakeMapContainer;
 

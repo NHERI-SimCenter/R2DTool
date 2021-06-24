@@ -43,9 +43,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeView.h"
 #include "LayerTreeModel.h"
 #include "VisualizationWidget.h"
-#include "XMLAdaptor.h"
 #include "ConvexHull.h"
 #include "PolygonBoundary.h"
+#include "LayerManagerDialog.h"
 
 // GIS headers
 #include "ArcGISMapImageLayer.h"
@@ -152,6 +152,8 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     mapGIS->setAutoFetchLegendInfos(false);
 
     mapGIS->setObjectName("MainMap");
+
+    mapViewWidget->setZoomByPinchingEnabled(true);
 
     mapViewWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
@@ -503,6 +505,34 @@ void VisualizationWidget::handleOpacityChange(const QString& layerID, const doub
         layer->setOpacity(opacity);
     //    else
     //        qDebug()<<"Warning, could not find the layer "<<layerName;
+
+}
+
+
+void VisualizationWidget::handlePlotColorChange(const QString& layerID)
+{
+    if(layerID.isEmpty())
+        return;
+
+    auto layer = dynamic_cast<FeatureCollectionLayer*>(this->getLayer(layerID));
+
+    if(layer == nullptr)
+        return;
+
+    LayerManagerDialog colorSelectDialog(this);
+
+    colorSelectDialog.changeLayer(layer);
+
+    // Update the legend info
+    if(layer->isAutoFetchLegendInfos())
+    {
+        auto legendInfos = layer->legendInfos();
+        if(legendInfos == nullptr)
+            return;
+
+        legendInfos->clear();
+        legendInfos->fetchLegendInfos();
+    }
 
 }
 
@@ -876,29 +906,27 @@ void VisualizationWidget::handleAsyncLayerLoad(Esri::ArcGISRuntime::Error layerL
     }
 
     auto layerID = layerSender->layerId();
-    auto layerName = layerSender->name();
+    // auto layerName = layerSender->name();
 
     // Populate the legend info for that layer
     if(layerSender->isAutoFetchLegendInfos())
     {
-        layerSender->legendInfos();
-
         auto legendInfos = layerSender->legendInfos();
         if(legendInfos == nullptr)
             return;
 
         legendInfos->setProperty("UID",layerID);
 
-        connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo, Qt::UniqueConnection);
+        connect(legendInfos, &LegendInfoListModel::fetchLegendInfosCompleted, this, &VisualizationWidget::setLegendInfo);
     }
 
     layerLoadMap.remove(layerID);
 
     // Only zoom to extents when all of the layers are loaded
-    if(layerLoadMap.empty())
-    {
-        //        this->zoomToExtents();
-    }
+    // if(layerLoadMap.empty())
+    // {
+    //        this->zoomToExtents();
+    // }
 }
 
 
@@ -1284,11 +1312,15 @@ Esri::ArcGISRuntime::FeatureCollectionLayer* VisualizationWidget::createAndAddJs
         {
             QString msg ="Error, the import of the type of geometry "+type+" is not yet suppported for " + filePath;
             this->errorMessage(msg);
+            delete featureCollection;
             return nullptr;
         }
 
         if(featureCollectionTable == nullptr)
+        {
+            delete featureCollection;
             return nullptr;
+        }
 
         featureCollection->tables()->append(featureCollectionTable);
     }
@@ -1416,33 +1448,6 @@ KmlLayer*  VisualizationWidget::createAndAddKMLLayer(const QString& filePath, co
     layersTree->addItemToTree(layerName, layerID, parentItem);
 
     return kmlLayer;
-}
-
-
-// Add a shakemap grid given as an XML file
-FeatureCollectionLayer* VisualizationWidget::createAndAddXMLShakeMapLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem)
-{
-    XMLAdaptor XMLImportAdaptor;
-
-    QString errMess;
-    auto XMLlayer = XMLImportAdaptor.parseXMLFile(filePath, errMess, this);
-
-    if(XMLlayer == nullptr)
-    {
-        this->errorMessage(errMess);
-        return nullptr;
-    }
-
-    XMLlayer->setName(layerName);
-
-    auto layerID = this->createUniqueID();
-
-    XMLlayer->setLayerId(layerID);
-
-    // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName, layerID, parentItem);
-
-    return XMLlayer;
 }
 
 
@@ -1619,7 +1624,6 @@ void VisualizationWidget::clear(void)
     taskIDMap.clear();
     layerLoadMap.clear();
     layersMap.clear();
-    legendModels.clear();
 
     featuresFromQueryList.clear();
 
@@ -1662,17 +1666,6 @@ void VisualizationWidget::setLegendInfo()
 
     QString layerUID = obj->property("UID").toString();
 
-    // set the legend info list model
-    RoleProxyModel* roleModel = new RoleProxyModel(this);
-
-    if(roleModel == nullptr)
-        return;
-
-    roleModel->setObjectName(layerUID);
-    roleModel->setSourceModel(legendInfo);
-
-    legendModels.insert(layerUID,roleModel);
-
     this->handleLegendChange(layerUID);
 }
 
@@ -1698,16 +1691,35 @@ void VisualizationWidget::handleLegendChange(const QString layerUID)
         return;
     }
 
+    auto layer = this->getLayer(layerUID);
 
-    RoleProxyModel* roleModel = legendModels.value(layerUID,nullptr);
-
-    if(roleModel == nullptr)
+    if(layer == nullptr)
     {
         legendView->hide();
         return;
     }
 
-    legendView->setModel(roleModel);
+    auto legendInfo = layer->legendInfos();
+
+    if(legendView == nullptr || legendInfo == nullptr)
+    {
+        legendView->hide();
+        return;
+    }
+
+    if(legendInfo->size() == 0)
+    {
+        legendView->hide();
+        return;
+    }
+
+    // Need to hide first so that the legend resizes on show (bug in esri or Qt)
+    legendView->hide();
+
+    auto roleModel = legendView->getProxyModel();
+
+    roleModel->setObjectName(layerUID);
+    roleModel->setSourceModel(legendInfo);
 
     legendView->show();
 }
@@ -2089,7 +2101,12 @@ Esri::ArcGISRuntime::FeatureCollectionTable* VisualizationWidget::getMultilineFe
     // Try to get the color if there is one
     auto colorStr =  properties["color"].toString();
 
-    QColor featureColor = color;
+    QColor featureColor;
+
+    if(color.alpha() == 0)
+        featureColor = QColor(rand() % 255,rand() % 255,rand() % 255);
+    else
+        featureColor = color;
 
     if(!colorStr.isEmpty())
         featureColor = QColor(colorStr);

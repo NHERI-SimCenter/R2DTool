@@ -58,6 +58,8 @@ class SiteConfig;
 class SiteConfigWidget;
 class SpatialCorrelationWidget;
 class VisualizationWidget;
+class Vs30; // vs30 info
+class Vs30Widget; // vs30 setup widget
 
 class QPushButton;
 class QStatusBar;
@@ -76,6 +78,8 @@ public:
     void saveAppSettings(void);
     void resetAppSettings(void);
     void setCurrentlyViewable(bool status);
+
+    GmAppConfig *appConfig() const;
 
 signals:
     void locationsChanged(void);
@@ -125,6 +129,8 @@ private:
     QPushButton* m_runButton;
     QPushButton* m_settingButton;
     GmAppConfig* m_appConfig;
+    Vs30* m_vs30;
+    Vs30Widget* m_vs30Widget;
 
     VisualizationWidget* theVisualizationWidget;
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;

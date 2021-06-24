@@ -81,8 +81,8 @@ class ComponentInputWidget;
 class LayerTreeView;
 class LayerTreeItem;
 class SimCenterMapGraphicsView;
-
 class TreeModel;
+
 class QGroupBox;
 class QComboBox;
 class QTreeView;
@@ -107,7 +107,7 @@ public:
     // Add component to 'selected layer'
     LayerTreeItem* addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::Layer* featLayer);
 
-    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddJsonLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, QColor color = QColor(0,0,0,255));
+    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddJsonLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, QColor color = QColor(0,0,0,0));
 
     // Adds a raster layer to the map
     Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
@@ -120,9 +120,6 @@ public:
 
     // From a geodatabase
     void createAndAddGeoDatabaseLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem = nullptr);
-
-    // Add a shakemap grid given as an XML file
-    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddXMLShakeMapLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
 
     // Create a layer from a map server URL
     Esri::ArcGISRuntime::ArcGISMapImageLayer* createAndAddMapServerLayer(const QString& url, const QString& layerName, LayerTreeItem* parentItem);
@@ -210,6 +207,7 @@ public slots:
     void changeLayerOrder(const int from, const int to);
     void handleLayerChecked(LayerTreeItem* item);
     void handleOpacityChange(const QString& layerID, const double opacity);
+    void handlePlotColorChange(const QString& layerID);
 
     void exportImageComplete(QUuid id, QImage img);
     void onMouseClicked(QMouseEvent& mouseEvent);
@@ -275,9 +273,6 @@ private:
 
     // The legend view
     GISLegendView* legendView;
-
-    // Map to store the legend of a layer according to the layers UID
-    QMap<QString, RoleProxyModel*> legendModels;
 
     Esri::ArcGISRuntime::GraphicsOverlay* selectedFeaturesOverlay = nullptr;
     QList<Esri::ArcGISRuntime::Feature*> selectedFeaturesList;

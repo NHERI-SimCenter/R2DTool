@@ -16,6 +16,12 @@ SiteGrid &SiteConfig::siteGrid()
     return theSiteGrid;
 }
 
+// Scattering sites
+SiteScatter &SiteConfig::siteScatter()
+{
+    return theSiteScatter;
+}
+
 SiteConfig::SiteType SiteConfig::getType() const
 {
     return theType;
@@ -34,6 +40,8 @@ QJsonObject SiteConfig::getJson()
 {
     if(theType == SiteType::Single)
         return theSite.getJson();
-    else
+    else if(theType == SiteType::Grid)
         return theSiteGrid.getJson();
+    else
+        return theSiteScatter.getJson();
 }

@@ -5,6 +5,7 @@
 #include "SiteConfig.h"
 
 class SiteGridWidget;
+class SiteScatterWidget;
 
 class QButtonGroup;
 class QStackedWidget;
@@ -17,6 +18,7 @@ public:
     explicit SiteConfigWidget(SiteConfig& siteconfig, QWidget *parent = nullptr);
 
     SiteGridWidget *getSiteGridWidget() const;
+    SiteScatterWidget *getSiteScatterWidget() const;
 
     int getNumberOfGMPerSite(void);
 
@@ -29,6 +31,7 @@ private:
     QButtonGroup* m_typeButtonsGroup;
     QStackedWidget* m_stackedWidgets;
     SiteGridWidget* siteGridWidget;
+    SiteScatterWidget* siteScatWidget;
     QLineEdit* numGMLineEdit;
 
     void setupConnections();

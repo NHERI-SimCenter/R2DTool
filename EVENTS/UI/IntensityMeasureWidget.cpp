@@ -42,7 +42,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
 
     periodsLineEdit = new QLineEdit(this);
     periodsLineEdit->setText("0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.5, 10.0");
-    periodsLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    periodsLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     QList<double> periodArray = {0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.5, 10.0};
     im.setPeriods(periodArray);
 

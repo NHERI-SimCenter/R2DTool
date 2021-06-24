@@ -327,10 +327,10 @@ ClassBreaksRenderer* BuildingInputWidget::createSelectedBuildingRenderer(double 
 
     QList<ClassBreak*> classBreaks;
 
-    auto classBreak1 = new ClassBreak("0.00-0.05 Loss Ratio", "Loss Ratio less than 10%", -0.00001, 0.05, symbol1,this);
+    auto classBreak1 = new ClassBreak("0.00-0.05 Loss Ratio", "Loss Ratio less than 5%", -0.00001, 0.05, symbol1,this);
     classBreaks.append(classBreak1);
 
-    auto classBreak2 = new ClassBreak("0.05-0.25 Loss Ratio", "Loss Ratio Between 10% and 25%", 0.05, 0.25, symbol2,this);
+    auto classBreak2 = new ClassBreak("0.05-0.25 Loss Ratio", "Loss Ratio Between 5% and 25%", 0.05, 0.25, symbol2,this);
     classBreaks.append(classBreak2);
 
     auto classBreak3 = new ClassBreak("0.25-0.50 Loss Ratio", "Loss Ratio Between 25% and 50%", 0.25, 0.5,symbol3,this);
@@ -339,7 +339,7 @@ ClassBreaksRenderer* BuildingInputWidget::createSelectedBuildingRenderer(double 
     auto classBreak4 = new ClassBreak("0.50-0.75 Loss Ratio", "Loss Ratio Between 50% and 75%", 0.50, 0.75,symbol4,this);
     classBreaks.append(classBreak4);
 
-    auto classBreak5 = new ClassBreak("0.75-1.00 Loss Ratio", "Loss Ratio Between 75% and 90%", 0.75, 1.0,symbol5,this);
+    auto classBreak5 = new ClassBreak("0.75-1.00 Loss Ratio", "Loss Ratio Between 75% and 100%", 0.75, 1.0,symbol5,this);
     classBreaks.append(classBreak5);
 
     return new ClassBreaksRenderer("LossRatio", classBreaks, this);

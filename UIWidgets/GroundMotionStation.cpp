@@ -227,14 +227,26 @@ void GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,
 
     newGM.setScalingFactor(scalingFactor);
 
-    stationGroundMotions.push_back(std::move(newGM));
+    groundMotionTimeHistories.push_back(std::move(newGM));
 
+}
+
+
+QMap<QString, QVariant> GroundMotionStation::getStationAttributes() const
+{
+    return stationAttributes;
+}
+
+
+void GroundMotionStation::setStationAttributes(const QMap<QString, QVariant> &value)
+{
+    stationAttributes = value;
 }
 
 
 QVector<GroundMotionTimeHistory> GroundMotionStation::getStationGroundMotions() const
 {
-    return stationGroundMotions;
+    return groundMotionTimeHistories;
 }
 
 

@@ -298,8 +298,6 @@ int ResultsWidget::printToPDF(void)
 
 void ResultsWidget::selectComponents(void)
 {
-    selectComponentsLineEdit->clear();
-
     try
     {
         selectComponentsLineEdit->selectComponents();

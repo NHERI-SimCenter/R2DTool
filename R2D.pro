@@ -43,7 +43,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 # Information about the app
 TARGET = R2D
 TEMPLATE = app
-VERSION=1.0.0
+VERSION=1.1.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # C++17 support
@@ -74,7 +74,7 @@ win32::LIBS+=Advapi32.lib
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_COMMON=../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -119,6 +119,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/IntensityMeasure.cpp \
             Events/UI/IntensityMeasureWidget.cpp \
             Events/UI/Location.cpp \
+            Events/UI/OpenQuakeScenario.cpp \
+            Events/UI/OpenQuakeScenarioWidget.cpp \
             Events/UI/PeerLoginDialog.cpp \
             Events/UI/PeerNGAWest2Client.cpp \
             Events/UI/PointSourceRupture.cpp \
@@ -132,8 +134,12 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SiteConfigWidget.cpp \
             Events/UI/SiteGrid.cpp \
             Events/UI/SiteGridWidget.cpp \
+            Events/UI/SiteScatter.cpp \
+            Events/UI/SiteScatterWidget.cpp \
             Events/UI/SiteWidget.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
+            Events/UI/Vs30.cpp \
+            Events/UI/Vs30Widget.cpp \
             GraphicElements/ConvexHull.cpp \
             GraphicElements/PolygonBoundary.cpp \
             ModelViewItems/CheckableTreeModel.cpp \
@@ -159,6 +165,9 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
             UIWidgets/BuildingInputWidget.cpp \
+            UIWidgets/ColorDialogDelegate.cpp \
+            UIWidgets/LayerComboBoxItemDelegate.cpp \
+            UIWidgets/RendererComboBoxItemDelegate.cpp \
             UIWidgets/GasPipelineInputWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
@@ -172,7 +181,12 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/GroundMotionStation.cpp \
+            UIWidgets/LayerManagerDialog.cpp \
+            UIWidgets/RendererModel.cpp \
             UIWidgets/LoadResultsDialog.cpp \
+            UIWidgets/RendererTableView.cpp \
+            UIWidgets/LayerManagerTableView.cpp \
+            UIWidgets/LayerManagerModel.cpp \
             UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
@@ -231,6 +245,8 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/IntensityMeasureWidget.h \
             Events/UI/JsonSerializable.h \
             Events/UI/Location.h \
+            Events/UI/OpenQuakeScenario.h \
+            Events/UI/OpenQuakeScenarioWidget.h \
             Events/UI/PeerLoginDialog.h \
             Events/UI/PeerNGAWest2Client.h \
             Events/UI/PointSourceRupture.h \
@@ -244,7 +260,12 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SiteConfigWidget.h \
             Events/UI/SiteGrid.h \
             Events/UI/SiteGridWidget.h \
+            Events/UI/SiteScatter.h \
+            Events/UI/SiteScatterWidget.h \
             Events/UI/SiteWidget.h \
+            Events/UI/SpatialCorrelationWidget.h \
+            Events/UI/Vs30.h \
+            Events/UI/Vs30Widget.h \
             Events/UI/SpatialCorrelationWidget.h \
             GraphicElements/ConvexHull.h \
             GraphicElements/PolygonBoundary.h \
@@ -272,6 +293,10 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
             UIWidgets/BuildingInputWidget.h \
+            UIWidgets/ColorDialogDelegate.h \
+            UIWidgets/LayerComboBoxItemDelegate.h \
+            UIWidgets/RendererComboBoxItemDelegate.h \
+            UIWidgets/GISObjectTypeMapping.h \
             UIWidgets/GasPipelineInputWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
             UIWidgets/BuildingModelingWidget.h \
@@ -285,7 +310,12 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/GroundMotionStation.h \
+            UIWidgets/LayerManagerDialog.h \
+            UIWidgets/RendererModel.h \
             UIWidgets/LoadResultsDialog.h \
+            UIWidgets/RendererTableView.h \
+            UIWidgets/LayerManagerTableView.h \
+            UIWidgets/LayerManagerModel.h \
             UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \

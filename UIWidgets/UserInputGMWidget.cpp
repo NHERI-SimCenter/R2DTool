@@ -149,7 +149,7 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
                     + "input_data" + QDir::separator() + fileName;
 
             if (!QFile::exists(fullFilePath)) {
-                qDebug() << "UserInputGM - could not find event file";
+                this->errorMessage("UserInputGM - could not find event file");
                 return false;
             }
         }
@@ -169,7 +169,7 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
                 motionDir = trialDir;
                 motionDirLineEdit->setText(trialDir);
             } else {
-                qDebug() << "UserInputGM - could not find motion dir" << motionDir << " " << trialDir;
+                this->errorMessage("UserInputGM - could not find motion dir" + motionDir + " " + trialDir);
                 return false;
             }
         } else {

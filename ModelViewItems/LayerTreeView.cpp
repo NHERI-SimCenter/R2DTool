@@ -83,6 +83,7 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
     auto newItem = layersModel->addItemToTree(itemText, layerID, parent);
 
     connect(newItem, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
+    connect(newItem, &LayerTreeItem::plotColorChanged, theVisualizationWidget, &VisualizationWidget::handlePlotColorChange);
     connect(newItem, &LayerTreeItem::zoomLayerExtents, theVisualizationWidget, &VisualizationWidget::zoomToLayer);
     connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeItemFromTree);
     connect(newItem, &TreeItem::removingChildItem, this, &LayerTreeView::removeLayer);
@@ -234,3 +235,17 @@ void LayerTreeView::selectRow(int i)
     auto rowIndex = layersModel->index(i);
     this->setCurrentIndex(rowIndex);
 }
+
+
+int LayerTreeView::setCurrentItem(const QString& itemID)
+{
+    auto currItem = layersModel->getLayerTreeItem(itemID);
+
+    if(currItem == nullptr)
+        return -1;
+
+    auto row = currItem->row();
+
+    this->selectRow(row);
+}
+
