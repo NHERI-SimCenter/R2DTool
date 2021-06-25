@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("1.1.0");
 
-    //    GoogleAnalytics::SetTrackingId("UA-186298856-1");
+    // GoogleAnalytics::SetTrackingId("UA-186298856-1");
     GoogleAnalytics::StartSession();
     GoogleAnalytics::ReportStart();
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
     QString version("Version 1.1.0");
     w.setVersion(version);
 
-    QString citeText("Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Wael Elhaddad, & Kuanshi Zhong. (2021, January 31). NHERI-SimCenter/R2DTool: Version 1.0.0 (Version v1.0.0). Zenodo. http://doi.org/10.5281/zenodo.4483615");
+    QString citeText("Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Kuanshi Zhong, & Wael Elhaddad. (2021, June 25). NHERI-SimCenter/R2DTool: Version 1.1.0 (Version v1.1.0). Zenodo. http://doi.org/10.5281/zenodo.5033626");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
