@@ -52,6 +52,11 @@ public:
     QString type() const;
     const QStringList& validTypes();
 
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
+
 signals:
     void typeChanged(QString newType);
 
@@ -61,8 +66,6 @@ public slots:
 private:
     QString m_type;
 
-public:
-    QJsonObject getJson();
 };
 
 #endif // GMPE_H

@@ -1,6 +1,5 @@
 #ifndef JSONSERIALIZABLE_H
 #define JSONSERIALIZABLE_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,12 +38,41 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
+// This class is used when we need to have Json input/output functionality but we cannot derive from a class with a QWidget baseclass
+
 #include <QJsonObject>
+#include <Utils/PythonProgressDialog.h>
 
 class JsonSerializable
 {
 public:
-    virtual QJsonObject getJson() = 0;
+    virtual bool outputToJSON(QJsonObject &jsonObject) = 0;
+
+    virtual bool inputFromJSON(QJsonObject &jsonObject) = 0;
+
+    virtual void reset(void) = 0;
+
+#ifdef OpenSRA
+   inline void errorMessage(const QString& message)
+   {
+       if(message.isEmpty())
+           return;
+
+       PythonProgressDialog::getInstance()->appendErrorMessage(message);
+   }
+
+   inline void statusMessage(const QString& message)
+   {
+       if(message.isEmpty())
+           return;
+
+       PythonProgressDialog::getInstance()->appendText(message);
+   }
+#endif
+
+
+private:
+
 };
 
 #endif // JSONSERIALIZABLE_H

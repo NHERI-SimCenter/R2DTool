@@ -86,18 +86,23 @@ RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
 }
 
 
-QJsonObject RuptureWidget::getJson(void)
+
+bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
 {
-    QJsonObject ruptureObj;
-
     if(ruptureSelectionCombo->currentText().compare("Point Source") == 0)
-        ruptureObj = pointSourceWidget->getRuptureSource()->getJson();
+        pointSourceWidget->getRuptureSource()->outputToJSON(jsonObject);
     else if(ruptureSelectionCombo->currentText().compare("Earthquake Rupture Forecast") == 0)
-        ruptureObj = erfWidget->getRuptureSource()->getJson();
+        erfWidget->getRuptureSource()->outputToJSON(jsonObject);
     else if(ruptureSelectionCombo->currentText().compare("OpenQuake Scenario-Based") == 0)
-        ruptureObj = oqsbWidget->getRuptureSource()->getJson();
+        oqsbWidget->getRuptureSource()->outputToJSON(jsonObject);
 
-    return ruptureObj;
+    return true;
+}
+
+
+bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
 }
 
 

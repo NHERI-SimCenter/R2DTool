@@ -108,18 +108,17 @@ double OpenQuakeScenario::getMaxDistance() const
 }
 
 
-QJsonObject OpenQuakeScenario::getJson()
+bool OpenQuakeScenario::outputToJSON(QJsonObject &jsonObject)
 {
     // Extract the filename from the path
     QString filename;
     filename = this->rupFilename.section('/', -1);
 
-    QJsonObject rupture;
-    rupture.insert("Type", "OpenQuakeScenario");
-    rupture.insert("Filename",filename);
-    rupture.insert("RupMesh", rupMesh);
-    rupture.insert("AreaMesh", areaMesh);
-    rupture.insert("max_Dist", maxDistance);
+    jsonObject.insert("Type", "OpenQuakeScenario");
+    jsonObject.insert("Filename",filename);
+    jsonObject.insert("RupMesh", rupMesh);
+    jsonObject.insert("AreaMesh", areaMesh);
+    jsonObject.insert("max_Dist", maxDistance);
 
     //Also need to copy rupture file for OpenQuake runs
     if (! this->copyRupFile())
@@ -127,11 +126,18 @@ QJsonObject OpenQuakeScenario::getJson()
         QString errMsg = "Cannot copy the rupture file.";
         qDebug() << errMsg;
         this->errorMessage(errMsg);
-        return rupture;
+        return false;
     }
 
-    return rupture;
+    return true;
 }
+
+
+bool OpenQuakeScenario::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
+}
+
 
 bool OpenQuakeScenario::copyRupFile()
 {
@@ -181,5 +187,11 @@ bool OpenQuakeScenario::copyRupFile()
     }
 
     return fileToCopy.copy(destinationDir + QDir::separator() + theFile);
+}
+
+
+void OpenQuakeScenario::reset(void)
+{
+    gmWidget->clear();
 }
 

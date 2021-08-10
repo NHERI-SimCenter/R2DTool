@@ -69,9 +69,14 @@ class ComponentInputWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
+private:
+    static ComponentInputWidget *theInstance;
+
 public:
     explicit ComponentInputWidget(QWidget *parent, QString componentType, QString appType = QString());
     virtual ~ComponentInputWidget();
+
+    static ComponentInputWidget *getInstance();
 
     virtual int loadComponentVisualization();
 
@@ -118,10 +123,11 @@ public:
 
     void setTheVisualizationWidget(VisualizationWidget *value);
 
-    QStringList getTableHorizontalHeadings() const;
+    QStringList getTableHorizontalHeadings();
 
 signals:
     void componentDataLoaded();
+    void headingValuesChanged(QStringList);
 
 public slots:
     void handleComponentSelection(void);

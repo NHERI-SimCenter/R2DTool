@@ -502,7 +502,8 @@ void GMWidget::runHazardSimulation(void)
     scenarioObj.insert("Number", 1);
     scenarioObj.insert("Generator", "Selection");
 
-    auto EqRupture = m_ruptureWidget->getJson();
+    QJsonObject EqRupture;
+    m_ruptureWidget->outputToJSON(EqRupture);
 
     if(EqRupture.isEmpty())
     {
@@ -514,10 +515,12 @@ void GMWidget::runHazardSimulation(void)
     scenarioObj.insert("EqRupture",EqRupture);
 
     // Get the GMPE Json object
-    auto GMPEobj = m_gmpe->getJson();
+    QJsonObject GMPEobj;
+    m_gmpe->outputToJSON(GMPEobj);
 
     // Get the Vs30 Json object
-    auto Vs30obj = m_vs30->getJson();
+    QJsonObject Vs30obj;
+    m_vs30->outputToJSON(Vs30obj);
     siteObj.insert("Vs30", Vs30obj);
 
     // Get the correlation model Json object

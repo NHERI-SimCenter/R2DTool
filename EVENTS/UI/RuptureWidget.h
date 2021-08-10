@@ -54,7 +54,8 @@ class RuptureWidget : public SimCenterAppWidget
 public:
     explicit RuptureWidget(QWidget *parent = nullptr);
 
-    QJsonObject getJson(void);
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
 
 public slots:
     void handleSelectionChanged(const QString& selection);

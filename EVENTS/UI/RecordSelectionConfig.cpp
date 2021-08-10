@@ -90,11 +90,21 @@ void RecordSelectionConfig::setError(const ErrorMetric &error)
 }
 
 
-QJsonObject RecordSelectionConfig::getJson()
+bool RecordSelectionConfig::outputToJSON(QJsonObject &jsonObject)
 {
-    QJsonObject db;
+    jsonObject.insert("Database", this->getDatabase());
 
-    db.insert("Database", this->getDatabase());
+    return true;
+}
 
-    return db;
+
+bool RecordSelectionConfig::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
+}
+
+
+void RecordSelectionConfig::reset(void)
+{
+    this->m_error = ErrorMetric::RMSE;
 }

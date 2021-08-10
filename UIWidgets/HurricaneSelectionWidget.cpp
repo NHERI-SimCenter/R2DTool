@@ -121,7 +121,7 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
     eventDatabaseFile = "";
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->setContentsMargins(0,0,0,0);
+    layout->setContentsMargins(5,0,0,0);
 
     layout->addWidget(this->getHurricaneSelectionWidget());
     layout->addStretch();

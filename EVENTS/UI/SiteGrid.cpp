@@ -1,3 +1,41 @@
+/* *****************************************************************************
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written: Stevan Gavrilovic
+
 #include "SiteGrid.h"
 
 SiteGrid::SiteGrid(QObject *parent) : QObject(parent)
@@ -6,20 +44,24 @@ SiteGrid::SiteGrid(QObject *parent) : QObject(parent)
     m_longitude.set(0.0, 0.0, 5);
 }
 
+
 GridDivision &SiteGrid::latitude()
 {
     return m_latitude;
 }
+
 
 GridDivision &SiteGrid::longitude()
 {
     return m_longitude;
 }
 
+
 int SiteGrid::getNumSites()
 {
     return (latitude().divisions() + 1) * (longitude().divisions() + 1);
 }
+
 
 void SiteGrid::setCenter(double latitude, double longitude)
 {
@@ -54,20 +96,22 @@ void SiteGrid::setCenter(double latitude, double longitude)
     }
 }
 
+
 GridDivision *SiteGrid::getLatitudePtr()
 {
     return &m_latitude;
 }
+
 
 GridDivision *SiteGrid::getLongitudePtr()
 {
     return &m_longitude;
 }
 
-QJsonObject SiteGrid::getJson()
+
+bool SiteGrid::outputToJSON(QJsonObject &jsonObject)
 {
-    QJsonObject siteJson;
-    siteJson.insert("Type","Grid");
+    jsonObject.insert("Type","Grid");
 
     QJsonObject gridJson;
     QJsonObject latitudeJson;
@@ -82,6 +126,20 @@ QJsonObject SiteGrid::getJson()
     longitudeJson.insert("Divisions", m_longitude.divisions());
     gridJson.insert("Longitude", longitudeJson);
 
-    siteJson.insert("Grid", gridJson);
-    return siteJson;
+    jsonObject.insert("Grid", gridJson);
+
+    return true;
 }
+
+
+bool SiteGrid::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
+}
+
+
+void SiteGrid::reset(void)
+{
+
+}
+

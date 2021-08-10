@@ -52,6 +52,11 @@ public:
     const QStringList& validTypes();
     const QStringList& validTypesUser();
 
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
+
 signals:
     void typeChanged(QString newType);
 
@@ -61,8 +66,6 @@ public slots:
 private:
     QString m_type;
 
-public:
-    QJsonObject getJson();
 };
 
 #endif // VS30_H

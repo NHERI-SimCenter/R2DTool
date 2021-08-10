@@ -62,6 +62,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace Esri::ArcGISRuntime;
 
+
+ComponentInputWidget *ComponentInputWidget::theInstance = nullptr;
+
+ComponentInputWidget *ComponentInputWidget::getInstance() {
+    return theInstance;
+}
+
 ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
 {
     label1 = "Load information from a CSV file";
@@ -74,6 +81,8 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentTyp
     componentGroupBox = nullptr;
     theVisualizationWidget = nullptr;
     this->createComponentsBox();
+
+    theInstance = this;
 }
 
 
@@ -133,6 +142,8 @@ void ComponentInputWidget::loadComponentData(void)
     QStringList tableHeadings = data.first();
 
     tableHorizontalHeadings = tableHeadings;
+
+    emit headingValuesChanged(tableHeadings);
 
     // Pop off the row that contains the header information
     data.pop_front();
@@ -493,7 +504,7 @@ void ComponentInputWidget::clearLayerSelectedForAnalysis(void)
     selectedFeaturesForAnalysis.clear();
 }
 
-QStringList ComponentInputWidget::getTableHorizontalHeadings() const
+QStringList ComponentInputWidget::getTableHorizontalHeadings()
 {
     return tableHorizontalHeadings;
 }

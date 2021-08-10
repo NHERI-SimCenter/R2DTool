@@ -57,6 +57,11 @@ public:
 
     RuptureLocation& location();
 
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
+
 signals:
     void magnitudeChanged(double newMagnitude);
     void dipChanged(double newDip);
@@ -74,8 +79,6 @@ private:
     RuptureLocation m_location;
     Location* getLocationPtr(){return &m_location;}
 
-public:
-    QJsonObject getJson();
 };
 
 #endif // POINTSOURCERUPTURE_H

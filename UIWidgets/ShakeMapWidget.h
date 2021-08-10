@@ -52,6 +52,7 @@ class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
+class QSplitter;
 
 namespace Esri
 {
@@ -145,6 +146,8 @@ signals:
 private:
 
     std::unique_ptr<QStackedWidget> shakeMapStackedWidget;
+
+    QStringList shakeMapList;
 
     CustomListWidget *listWidget;
     VisualizationWidget* theVisualizationWidget;

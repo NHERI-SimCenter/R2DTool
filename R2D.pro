@@ -243,7 +243,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/HBoxFormLayout.h \
             Events/UI/IntensityMeasure.h \
             Events/UI/IntensityMeasureWidget.h \
-            Events/UI/JsonSerializable.h \
+            Events/UI/JsonSerializableWidget.h \
             Events/UI/Location.h \
             Events/UI/OpenQuakeScenario.h \
             Events/UI/OpenQuakeScenarioWidget.h \

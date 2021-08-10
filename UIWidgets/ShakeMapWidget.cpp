@@ -83,13 +83,11 @@ ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent) 
     directoryInputWidget = nullptr;
     progressBarWidget = nullptr;
     progressLabel = nullptr;
+    listWidget = nullptr;
     pathToShakeMapDirectory = "NULL";
 
     auto mainLayout = new QVBoxLayout(this);
-
-    this->getStackedWidget();
-
-    auto mainWidget  = this->getShakeMapWidget();
+    auto mainWidget = this->getShakeMapWidget();
 
     mainLayout->addWidget(mainWidget);
 }
@@ -149,9 +147,9 @@ void ShakeMapWidget::showShakeMapLayers(bool state)
 
 QWidget* ShakeMapWidget::getShakeMapWidget(void)
 {
-    QSplitter *splitter = new QSplitter(this);
+    QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
 
-    listWidget = new CustomListWidget(this, "List of Imported ShakeMaps");
+    listWidget = new CustomListWidget("List of Imported ShakeMaps");
 
     splitter->addWidget(this->getStackedWidget());
     splitter->addWidget(listWidget);
@@ -289,15 +287,25 @@ int ShakeMapWidget::loadShakeMapData(void)
     // First load files from the current directory
     this->loadDataFromDirectory(inputDir);
 
-
-    // Then iterate through sub-dirs to try to find additional shakemap dirs
-    QDirIterator iter(inputDir, QDir::Dirs | QDir::NoDotAndDotDot/*, QDirIterator::Subdirectories*/);
-
-    while(iter.hasNext() )
+    // Then check to see if an array of events was provided
+    if(!shakeMapList.empty())
     {
-        auto dir = iter.next();
+        for(auto&& event : shakeMapList)
+        {
+            auto dir = pathToShakeMapDirectory + QDir::separator() + event;
+            this->loadDataFromDirectory(dir);
+        }
+    }
+    else // If no list provided iterate through sub-dirs to try to find additional shakemap dirs
+    {
+        QDirIterator iter(inputDir, QDir::Dirs | QDir::NoDotAndDotDot/*, QDirIterator::Subdirectories*/);
 
-        this->loadDataFromDirectory(dir);
+        while(iter.hasNext() )
+        {
+            auto dir = iter.next();
+
+            this->loadDataFromDirectory(dir);
+        }
     }
 
     emit loadingComplete(true);
@@ -641,11 +649,12 @@ bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
 bool ShakeMapWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
-    auto appData = jsonObject["ApplicationData"].toObject();
+    auto appData = jsonObject.value("ApplicationData").toObject();
 
-    pathToShakeMapDirectory = appData["Directory"].toString();
+    pathToShakeMapDirectory = appData.value("Directory").toString();
 
     shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
+
 
     auto res = this->loadShakeMapData();
 
@@ -660,9 +669,16 @@ bool ShakeMapWidget::inputFromJSON(QJsonObject &jsonObject)
 {
 
 #ifdef OpenSRA
-    pathToShakeMapDirectory = jsonObject["Directory"].toString();
+    auto thisObject = jsonObject.value("ShakeMap").toObject();
+
+    pathToShakeMapDirectory = thisObject.value("Directory").toString();
 
     shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
+
+    auto eventsArray = thisObject.value("Events").toArray().toVariantList();
+
+    for(auto&& event : eventsArray)
+        shakeMapList<<event.toString();
 
     auto res = this->loadShakeMapData();
 
@@ -845,4 +861,5 @@ void ShakeMapWidget::clear()
     eventsVec.clear();
     motionDir.clear();
     pathToEventFile.clear();
+    shakeMapList.clear();
 }

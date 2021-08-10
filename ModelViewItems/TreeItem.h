@@ -83,8 +83,10 @@ public:
 
     TreeItem *findChild(QString name);
 
+    // The item text
     QString getName() const;
 
+    // The uid of the item
     QString getItemID() const;
 
     bool getIsCheckable() const;
