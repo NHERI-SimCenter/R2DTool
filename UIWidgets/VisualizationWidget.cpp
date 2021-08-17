@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ArcGISMapImageLayer.h"
 #include "ArcGISTiledLayer.h"
 #include "Basemap.h"
+#include "BlendRenderer.h"
 #include "ClassBreaksRenderer.h"
 #include "CoordinateFormatter.h"
 #include "FeatureCollection.h"
@@ -210,16 +211,14 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //    this->addLayerToMap(buildingsLayer,buildingsItem);
 
 
-    //   QString layerName = "Bathymetry";
-    //   QString layerID = this->createUniqueID();
-    //   LayerTreeItem* LayerTreeItem = layersTree->addItemToTree(layerName,layerID);
+    //    QString parentLayerName = "Raster Layers";
+    //    QString layerID = this->createUniqueID();
+    //    LayerTreeItem* LayerTreeItem = layersTree->addItemToTree(parentLayerName,layerID);
 
-    //   QString filePath = "/Users/steve/Downloads/GEBCO_2020_18_Nov_2020_f103650dc2c4/gebco_2020_n30.0_s15.0_w-179.0_e-152.0.tif";
-    //   auto rastLayer = this->createAndAddRasterLayer(filePath, layerName, LayerTreeItem) ;
-    //   rastLayer->setLayerId(layerID);
-    //   rastLayer->setName(layerName);
-    //   this->addLayerToMap(rastLayer,LayerTreeItem);
-
+    //    QString layerName = "Raster";
+    //    QString filePath = "/Users/steve/Downloads/WSpeed/wspeed_day_CNRM-CM5_rcp85_r1i1p1_2006-2100.crop.bc.srs.1x1.bc.srs.ds.postds_bc.tif";
+    //    auto layer = this->createAndAddRasterLayer(filePath, layerName, LayerTreeItem) ;
+    //    layer->setAutoFetchLegendInfos(true);
 }
 
 
@@ -503,8 +502,10 @@ void VisualizationWidget::handleOpacityChange(const QString& layerID, const doub
 
     if(layer)
         layer->setOpacity(opacity);
-    //    else
-    //        qDebug()<<"Warning, could not find the layer "<<layerName;
+    else if(layersMap.contains(layerID))
+        layersMap.value(layerID)->setOpacity(opacity);
+    else
+        qDebug()<<"Warning, could not find the layer "<<layerID;
 
 }
 
@@ -807,7 +808,7 @@ void VisualizationWidget::identifyLayersCompleted(QUuid taskID, const QList<Iden
         }
 
         // Create a table to display the attributes of this element
-        auto attributeTableWidget = new QTableWidget();
+        auto attributeTableWidget = new QTableWidget(popUp.get());
         attributeTableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
         attributeTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
         attributeTableWidget->horizontalHeader()->hide();
@@ -1220,11 +1221,50 @@ RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePat
     });
 
     layer->setName(layerName);
-    auto layerID = this->createUniqueID();
-    layer->setLayerId(layerID);
+
+    int colorRampTypeVal = 0;
+    int slopeTypeVal = 1;
+
+    PresetColorRampType colorRampType = static_cast<PresetColorRampType>(colorRampTypeVal);
+
+    QList<double> outputMinValues{1};
+    QList<double> outputMaxValues{255};
+    QList<double> sourceMinValues;
+    QList<double> sourceMaxValues;
+    QList<double> noDataValues;
+    QList<double> gammas;
+    double zFactor = 1.;
+    double pixelSizeFactor = 1.;
+    double pixelSizePower = 1.;
+    int outputBitDepth = 8;
+    ColorRamp* colorRamp = ColorRamp::create(colorRampType, 175, this);
+
+    double altitude= 40.0;
+    double azimuth = 10.0;
+
+    SlopeType slopeType = static_cast<SlopeType>(slopeTypeVal);
+
+    BlendRenderer* renderer = new BlendRenderer(raster,
+                                                outputMinValues,
+                                                outputMaxValues,
+                                                sourceMinValues,
+                                                sourceMaxValues,
+                                                noDataValues,
+                                                gammas,
+                                                colorRamp,
+                                                altitude,
+                                                azimuth,
+                                                zFactor,
+                                                slopeType,
+                                                pixelSizeFactor,
+                                                pixelSizePower,
+                                                outputBitDepth,
+                                                this);
+
+    layer->setRenderer(renderer);
 
     // Add the layers to the layer tree
-    layersTree->addItemToTree(layerName,layerID,parentItem);
+    this->addLayerToMap(layer,parentItem);
 
     return layer;
 }

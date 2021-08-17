@@ -145,6 +145,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             ModelViewItems/CheckableTreeModel.cpp \
             ModelViewItems/GISLegendView.cpp \
             ModelViewItems/SimCenterTreeView.cpp \
+            ModelViewItems/ComponentTableModel.cpp \
+            ModelViewItems/ComponentTableView.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
@@ -272,6 +274,8 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             ModelViewItems/CheckableTreeModel.h \
             ModelViewItems/GISLegendView.h \
             ModelViewItems/SimCenterTreeView.h \
+            ModelViewItems/ComponentTableModel.h \
+            ModelViewItems/ComponentTableView.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \

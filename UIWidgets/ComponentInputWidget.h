@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QObject>
 
 class AssetInputDelegate;
+class ComponentTableView;
 
 namespace Esri
 {
@@ -64,6 +65,10 @@ class QGroupBox;
 class QLineEdit;
 class QTableWidget;
 class QLabel;
+
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
 
 class ComponentInputWidget : public  SimCenterAppWidget
 {
@@ -85,9 +90,7 @@ public:
 
     virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
 
-    QGroupBox* getComponentsWidget(void);
-
-    QTableWidget *getTableWidget() const;
+    ComponentTableView *getTableWidget() const;
 
     // Set the filter string and select the components
     void setFilterString(const QString& filter);
@@ -106,7 +109,7 @@ public:
     void setComponentType(const QString &value);
     void setLabel1(const QString &value);
     void setLabel2(const QString &value);
-    void setLabel3(const QString &value);  
+    void setLabel3(const QString &value);
     void setGroupBoxText(const QString &value);
 
     void loadFileFromPath(QString& path);
@@ -126,12 +129,11 @@ public:
     QStringList getTableHorizontalHeadings();
 
 signals:
-    void componentDataLoaded();
     void headingValuesChanged(QStringList);
 
 public slots:
     void handleComponentSelection(void);
-    void handleCellChanged(int row, int column);
+    void handleCellChanged(const int row, const int col);
 
 private slots:
     void selectComponents(void);
@@ -142,7 +144,8 @@ private slots:
 
 protected:
     VisualizationWidget* theVisualizationWidget;
-    QTableWidget* componentTableWidget;
+    ComponentTableView* componentTableWidget;
+
     ComponentDatabase theComponentDb;
 
     // Returns a vector of sorted items that are unique
@@ -177,6 +180,10 @@ private:
 
     // Map to store the selected features according to their UID
     QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
+
+#ifdef OpenSRA
+    JsonGroupBoxWidget* locationWidget;
+#endif
 };
 
 #endif // ComponentInputWidget_H

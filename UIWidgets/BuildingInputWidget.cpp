@@ -1,4 +1,5 @@
 #include "BuildingInputWidget.h"
+#include "ComponentTableView.h"
 
 #include "Field.h"
 #include "GroupLayer.h"
@@ -9,8 +10,6 @@
 #include "ClassBreaksRenderer.h"
 #include "SimpleFillSymbol.h"
 #include "SimpleLineSymbol.h"
-
-#include <QTableWidget>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -38,9 +37,7 @@ int BuildingInputWidget::loadComponentVisualization()
     // Set the table headers as fields in the table
     for(int i = 1; i<componentTableWidget->columnCount(); ++i)
     {
-        auto headerItem = componentTableWidget->horizontalHeaderItem(i);
-
-        auto fieldText = headerItem->text();
+        auto fieldText = componentTableWidget->horizontalHeaderItem(i);
 
         if(fieldText.compare(columnFilter) == 0)
             columnToMapLayers = i;
@@ -66,7 +63,7 @@ int BuildingInputWidget::loadComponentVisualization()
     for(int i = 0; i<nRows; ++i)
     {
         // Organize the layers according to occupancy type
-        auto occupancyType = componentTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+        auto occupancyType = componentTableWidget->item(i,columnToMapLayers).toString().toStdString();
 
         vecLayerItems.push_back(occupancyType);
     }
@@ -125,7 +122,7 @@ int BuildingInputWidget::loadComponentVisualization()
         // Create a new building
         Component building;
 
-        QString buildingIDStr = componentTableWidget->item(i,0)->data(0).toString();
+        QString buildingIDStr = componentTableWidget->item(i,0).toString();
 
         int buildingID = buildingIDStr.toInt();
 
@@ -136,8 +133,8 @@ int BuildingInputWidget::loadComponentVisualization()
         // The feature attributes are the columns from the table
         for(int j = 1; j<componentTableWidget->columnCount(); ++j)
         {
-            auto attrbText = componentTableWidget->horizontalHeaderItem(j)->text();
-            auto attrbVal = componentTableWidget->item(i,j)->data(0);
+            auto attrbText = componentTableWidget->horizontalHeaderItem(j);
+            auto attrbVal = componentTableWidget->item(i,j).toString();
 
             buildingAttributeMap.insert(attrbText,attrbVal);
 
@@ -155,11 +152,11 @@ int BuildingInputWidget::loadComponentVisualization()
         featureAttributes.insert("TabName", buildingIDStr);
         featureAttributes.insert("UID", uid);
 
-        auto latitude = componentTableWidget->item(i,indexLatitude)->data(0).toDouble();
-        auto longitude = componentTableWidget->item(i,indexLongitude)->data(0).toDouble();
+        auto latitude = componentTableWidget->item(i,indexLatitude).toDouble();
+        auto longitude = componentTableWidget->item(i,indexLongitude).toDouble();
 
         // Get the feature collection table for this layer
-        auto layerTag = componentTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+        auto layerTag = componentTableWidget->item(i,columnToMapLayers).toString().toStdString();
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
@@ -168,7 +165,7 @@ int BuildingInputWidget::loadComponentVisualization()
         // If a footprint is given use that
         if(indexFootprint != -1)
         {
-            QString footprint = componentTableWidget->item(i,indexFootprint)->data(0).toString();
+            QString footprint = componentTableWidget->item(i,indexFootprint).toString();
 
             if(footprint.compare("NA") == 0)
             {

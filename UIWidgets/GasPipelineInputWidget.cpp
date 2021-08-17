@@ -1,4 +1,5 @@
 #include "GasPipelineInputWidget.h"
+#include "ComponentTableView.h"
 
 #include "Field.h"
 #include "GroupLayer.h"
@@ -10,8 +11,6 @@
 #include "SimpleFillSymbol.h"
 #include "SimpleLineSymbol.h"
 #include "PolylineBuilder.h"
-
-#include <QTableWidget>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -35,11 +34,13 @@ int GasPipelineInputWidget::loadComponentVisualization()
     fields.append(Field::createText("TabName", "NULL",4));
     fields.append(Field::createText("UID", "NULL",4));
 
+    auto nCols = componentTableWidget->columnCount();
+
     // Set the table headers as fields in the table
-    for(int i =0; i<componentTableWidget->columnCount(); ++i)
+    for(int i =0; i<nCols; ++i)
     {
         auto headerItem = componentTableWidget->horizontalHeaderItem(i);
-        auto fieldText = headerItem->text();
+        auto fieldText = headerItem;
         fields.append(Field::createText(fieldText, fieldText,fieldText.size()));
     }
 
@@ -128,7 +129,7 @@ int GasPipelineInputWidget::loadComponentVisualization()
         // Create a new pipeline
         Component pipeline;
 
-        QString pipelineIDStr = componentTableWidget->item(i,0)->data(0).toString();
+        QString pipelineIDStr = componentTableWidget->item(i,0).toString();
 
         int pipelineID =  pipelineIDStr.toInt();
 
@@ -137,10 +138,10 @@ int GasPipelineInputWidget::loadComponentVisualization()
         QMap<QString, QVariant> pipelineAttributeMap;
 
         // The feature attributes are the columns from the table
-        for(int j = 0; j<componentTableWidget->columnCount(); ++j)
+        for(int j = 0; j<nCols; ++j)
         {
-            auto attrbText = componentTableWidget->horizontalHeaderItem(j)->text();
-            auto attrbVal = componentTableWidget->item(i,j)->data(0);
+            auto attrbText = componentTableWidget->horizontalHeaderItem(j);
+            auto attrbVal = componentTableWidget->item(i,j);
 
             pipelineAttributeMap.insert(attrbText,attrbVal.toString());
 
@@ -155,7 +156,7 @@ int GasPipelineInputWidget::loadComponentVisualization()
         featureAttributes.insert("ID", pipelineIDStr);
         featureAttributes.insert("RepairRate", 0.0);
         featureAttributes.insert("AssetType", "GASPIPELINES");
-        featureAttributes.insert("TabName", componentTableWidget->item(i,0)->data(0).toString());
+        featureAttributes.insert("TabName", componentTableWidget->item(i,0).toString());
         featureAttributes.insert("UID", uid);
 
         // Get the feature collection table from the map
@@ -164,11 +165,11 @@ int GasPipelineInputWidget::loadComponentVisualization()
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
-        auto latitudeStart = componentTableWidget->item(i,indexLatStart)->data(0).toDouble();
-        auto longitudeStart = componentTableWidget->item(i,indexLonStart)->data(0).toDouble();
+        auto latitudeStart = componentTableWidget->item(i,indexLatStart).toDouble();
+        auto longitudeStart = componentTableWidget->item(i,indexLonStart).toDouble();
 
-        auto latitudeEnd = componentTableWidget->item(i,indexLatEnd)->data(0).toDouble();
-        auto longitudeEnd = componentTableWidget->item(i,indexLonEnd)->data(0).toDouble();
+        auto latitudeEnd = componentTableWidget->item(i,indexLatEnd).toDouble();
+        auto longitudeEnd = componentTableWidget->item(i,indexLonEnd).toDouble();
 
         // Create the points and add it to the feature table
         PolylineBuilder polylineBuilder(SpatialReference::wgs84());

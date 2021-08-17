@@ -17,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,73 +34,67 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include "AssetsWidget.h"
-#include "BuildingInputWidget.h"
-#include "GasPipelineInputWidget.h"
-#include "ComponentInputWidget.h"
-#include "SecondaryComponentSelection.h"
+#include "ComponentTableModel.h"
+#include "ComponentTableView.h"
 #include "VisualizationWidget.h"
-#include "sectiontitle.h"
-#include "SimCenterAppSelection.h"
 
-// Qt headers
-#include <QCheckBox>
-#include <QColorTransform>
 #include <QDebug>
-#include <QFileDialog>
-#include <QGroupBox>
-#include <QHBoxLayout>
+#include <QMenu>
+#include <QVariant>
 #include <QHeaderView>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QVBoxLayout>
 
-AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentR2D(parent), visualizationWidget(visWidget)
+ComponentTableView::ComponentTableView(QWidget *parent) : QTableView(parent)
 {
-    buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Building"), this);
-    BuildingInputWidget *csvBuildingInventory = new BuildingInputWidget(this,"Buildings","CSV_to_BIM");
-    buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
+    tableModel = new ComponentTableModel(this);
+    this->setModel(tableModel);
 
-    pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
-    GasPipelineInputWidget *csvPipelineInventory = new GasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
-    pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+    this->hide();
+    this->setToolTip("Component details");
+    this->verticalHeader()->setVisible(false);
+    this->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    visualizationWidget->registerComponentWidget("BUILDINGS",csvBuildingInventory);
-    visualizationWidget->registerComponentWidget("GASPIPELINES",csvPipelineInventory);
+    this->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    // QString pathToPipelineInfoFile = "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-    // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
+    this->setEditTriggers(EditTrigger::DoubleClicked);
+    this->setSelectionMode(SelectionMode::SingleSelection);
+}
 
-    this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",pipelineWidget);
-    this->hideAll();
+void ComponentTableView::clear(void)
+{
+    tableModel->clear();
 }
 
 
-AssetsWidget::~AssetsWidget()
+int ComponentTableView::columnCount(void)
 {
-
+    return tableModel->columnCount();
 }
 
 
-void AssetsWidget::clear(void)
+int ComponentTableView::rowCount(void)
 {
-    buildingWidget->clear();
-    pipelineWidget->clear();
+    return tableModel->rowCount();
 }
 
 
+QString ComponentTableView::horizontalHeaderItem(int section)
+{
+    auto headerData = tableModel->headerData(section, Qt::Horizontal);
+
+    return headerData.toString();
+}
 
 
+ComponentTableModel *ComponentTableView::getTableModel() const
+{
+    return tableModel;
+}
 
 
-
+QVariant ComponentTableView::item(int row, int col)
+{
+    return tableModel->item(row,col);
+}

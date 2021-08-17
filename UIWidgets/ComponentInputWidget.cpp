@@ -40,19 +40,24 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentInputWidget.h"
 #include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
+#include "ComponentTableView.h"
+#include "ComponentTableModel.h"
+
+// Test to remove
+#include <chrono>
+using namespace std::chrono;
 
 #include <QCoreApplication>
 #include <QApplication>
 #include <QFileDialog>
 #include <QLineEdit>
-#include <QTableWidget>
 #include <QLabel>
 #include <QGroupBox>
 #include <QGridLayout>
 #include <QPushButton>
-#include <QHeaderView>
 #include <QFileInfo>
 #include <QJsonObject>
+#include <QHeaderView>
 
 #include "FeatureCollectionLayer.h"
 
@@ -60,8 +65,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <string>
 #include <algorithm>
 
-using namespace Esri::ArcGISRuntime;
 
+#ifdef OpenSRA
+#include "WorkflowAppOpenSRA.h"
+#include "WidgetFactory.h"
+#include "JsonGroupBoxWidget.h"
+#endif
 
 ComponentInputWidget *ComponentInputWidget::theInstance = nullptr;
 
@@ -69,8 +78,12 @@ ComponentInputWidget *ComponentInputWidget::getInstance() {
     return theInstance;
 }
 
-ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
+ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentType, QString appType) : SimCenterAppWidget(parent), appType(appType), componentType(componentType)
 {
+    theInstance = this;
+
+    this->setContentsMargins(0,0,0,0);
+
     label1 = "Load information from a CSV file";
     label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
     "Define a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
@@ -81,8 +94,6 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentTyp
     componentGroupBox = nullptr;
     theVisualizationWidget = nullptr;
     this->createComponentsBox();
-
-    theInstance = this;
 }
 
 
@@ -121,6 +132,8 @@ void ComponentInputWidget::loadComponentData(void)
         }
     }
 
+    auto start = high_resolution_clock::now();
+
     CSVReaderWriter csvTool;
 
     QString err;
@@ -143,13 +156,14 @@ void ComponentInputWidget::loadComponentData(void)
 
     tableHorizontalHeadings = tableHeadings;
 
+    tableHeadings.push_front("N/A");
+
     emit headingValuesChanged(tableHeadings);
 
     // Pop off the row that contains the header information
     data.pop_front();
 
     auto numRows = data.size();
-    auto numCols = tableHeadings.size();
 
     if(numRows == 0)
     {
@@ -157,7 +171,7 @@ void ComponentInputWidget::loadComponentData(void)
         return;
     }
     else{
-        this->statusMessage("Loading " + QString::number(numRows)+ " assets");
+        this->statusMessage("Loading visualization for " + QString::number(numRows)+ " assets");
         QApplication::processEvents();
     }
 
@@ -169,60 +183,19 @@ void ComponentInputWidget::loadComponentData(void)
         return;
     }
 
-    auto initialID = firstRow.first().toInt();
-
     componentTableWidget->clear();
-    componentTableWidget->setRowCount(numRows);
-    componentTableWidget->setColumnCount(numCols);
-    componentTableWidget->setHorizontalHeaderLabels(tableHeadings);
-
-    // Fill in the cells
-    for(int i = 0; i<numRows; ++i)
-    {
-
-        // Display a status message every n assets
-        if((i+1)%1000 == 0)
-        {
-            this->statusMessage("Loading asset number: " + QString::number(i+1));
-            QApplication::processEvents();
-        }
-
-        auto rowStringList = data[i];
-
-        if(rowStringList.size() != numCols)
-        {
-            this->statusMessage("Error, the number of items in row " + QString::number(i+1) + " does not equal number of headings in the file");
-            return;
-        }
-
-        auto currID = rowStringList.first().toInt();
-
-        if(initialID+i != currID)
-        {
-            this->statusMessage("Error, the asset IDs must be sequential");
-            return;
-        }
-
-        for(int j = 0; j<numCols; ++j)
-        {
-            auto cellData = rowStringList[j];
-
-            auto item = new QTableWidgetItem(cellData);
-
-            // Make the first three columns (ID, lat, lon) uneditable
-            if(j < 3)
-                item->setFlags(item->flags() ^ (Qt::ItemIsEditable | Qt::ItemIsEnabled));
-
-            componentTableWidget->setItem(i,j, item);
-        }
-    }
+    componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
 
     componentInfoText->show();
     componentTableWidget->show();
-
-    emit componentDataLoaded();
+    componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
     this->loadComponentVisualization();
+
+    // Test to remove
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+    this->statusMessage("Done ALL "+QString::number(duration.count()));
 
     this->statusMessage("Done loading assets");
     QApplication::processEvents();
@@ -254,23 +227,13 @@ void ComponentInputWidget::chooseComponentInfoFileDialog(void)
 // Implement in subclass
 int ComponentInputWidget::loadComponentVisualization()
 {
-
     return 0;
 }
 
 
-QTableWidget *ComponentInputWidget::getTableWidget() const
+ComponentTableView *ComponentInputWidget::getTableWidget() const
 {
     return componentTableWidget;
-}
-
-
-QGroupBox* ComponentInputWidget::getComponentsWidget(void)
-{
-    if(componentGroupBox == nullptr)
-        this->createComponentsBox();
-
-    return componentGroupBox;
 }
 
 
@@ -278,11 +241,14 @@ void ComponentInputWidget::createComponentsBox(void)
 {
     componentGroupBox = new QGroupBox(componentType);
     componentGroupBox->setFlat(true);
+    componentGroupBox->setContentsMargins(0,0,0,0);
 
-    QGridLayout* gridLayout = new QGridLayout();
+    QVBoxLayout* gridLayout = new QVBoxLayout();
+    gridLayout->setMargin(0);
+    gridLayout->setSpacing(5);
+    gridLayout->setContentsMargins(10,0,0,0);
+
     componentGroupBox->setLayout(gridLayout);
-
-    auto smallVSpacer = new QSpacerItem(0,10);
 
     QLabel* topText = new QLabel();
     topText->setText(label1);
@@ -291,7 +257,7 @@ void ComponentInputWidget::createComponentsBox(void)
     pathText->setText("Import Path:");
 
     componentFileLineEdit = new QLineEdit();
-    componentFileLineEdit->setMaximumWidth(750);
+    //    componentFileLineEdit->setMaximumWidth(750);
     componentFileLineEdit->setMinimumWidth(400);
     componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -302,7 +268,7 @@ void ComponentInputWidget::createComponentsBox(void)
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));
 
     // Add a horizontal spacer after the browse and load buttons
-    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
+    //    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     QLabel* selectComponentsText = new QLabel();
     selectComponentsText->setText(label2);
@@ -328,32 +294,108 @@ void ComponentInputWidget::createComponentsBox(void)
     componentInfoText->hide();
 
     // Create the table that will show the Component information
-    componentTableWidget = new QTableWidget();
-    componentTableWidget->hide();
-    componentTableWidget->setToolTip("Component details");
-    componentTableWidget->verticalHeader()->setVisible(false);
-    componentTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    componentTableWidget = new ComponentTableView(this);
 
-    componentTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    componentTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
+    connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &ComponentInputWidget::handleCellChanged);
 
-    connect(componentTableWidget, &QTableWidget::cellChanged, this, &ComponentInputWidget::handleCellChanged);
+#ifdef OpenSRA
+    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
+
+    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["SiteLocationParams"].toObject();
+
+    if(thisObj.isEmpty())
+    {
+        this->errorMessage("Json object is empty in " + QString(__PRETTY_FUNCTION__));
+        return;
+    }
+
+    auto theWidgetFactory = std::make_unique<WidgetFactory>(this);
+
+    QJsonObject paramsObj = thisObj["Params"].toObject();
+
+    // The string given in the Methods and params json file
+    QString nameStr = "SiteLocationParams";
+
+    auto widgetLabelText = thisObj["NameToDisplay"].toString();
+
+    if(widgetLabelText.isEmpty())
+    {
+        this->errorMessage("Could not find the *NameToDisplay* key in object json for " + nameStr);
+        return;
+    }
+
+    locationWidget = new JsonGroupBoxWidget(this);
+    locationWidget->setObjectName(nameStr);
+
+    locationWidget->setTitle(widgetLabelText);
+
+    QJsonObject paramsLat;
+    paramsLat["LatBegin"] = paramsObj.value("LatBegin");
+    paramsLat["LatMid"] = paramsObj.value("LatMid");
+    paramsLat["LatEnd"] = paramsObj.value("LatEnd");
+
+    QJsonObject paramsLon;
+    paramsLon["LonBegin"] = paramsObj.value("LonBegin");
+    paramsLon["LonMid"] = paramsObj.value("LonMid");
+    paramsLon["LonEnd"] = paramsObj.value("LonEnd");
+    paramsLon["Length"] = paramsObj.value("Length");
+
+    auto latLayout = theWidgetFactory->getLayoutFromParams(paramsLat,nameStr,locationWidget, Qt::Horizontal);
+    auto lonLayout = theWidgetFactory->getLayoutFromParams(paramsLon,nameStr,locationWidget, Qt::Horizontal);
+
+    QVBoxLayout* latLonLayout = new QVBoxLayout();
+    latLonLayout->addLayout(latLayout);
+    latLonLayout->addLayout(lonLayout);
+
+    locationWidget->setLayout(latLonLayout);
+
+    QHBoxLayout* pathLayout = new QHBoxLayout();
+    pathLayout->addWidget(pathText);
+    pathLayout->addWidget(componentFileLineEdit);
+    pathLayout->addWidget(browseFileButton);
 
     // Add a vertical spacer at the bottom to push everything up
-    gridLayout->addItem(smallVSpacer,0,0,1,5);
-    gridLayout->addWidget(topText,1,0,1,5);
-    gridLayout->addWidget(pathText,2,0);
-    gridLayout->addWidget(componentFileLineEdit,2,1);
-    gridLayout->addWidget(browseFileButton,2,2);
-    gridLayout->addItem(hspacer, 2, 4);
-    gridLayout->addWidget(selectComponentsText, 3, 0, 1, 4);
-    gridLayout->addWidget(selectComponentsLineEdit, 4, 0, 1, 2);
-    gridLayout->addWidget(selectComponentsButton, 4, 2);
-    gridLayout->addWidget(clearSelectionButton, 4, 3);
-    gridLayout->addItem(smallVSpacer,5,0,1,5);
-    gridLayout->addWidget(componentInfoText,6,0,1,5,Qt::AlignCenter);
-    gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5,Qt::AlignCenter);
-    gridLayout->setRowStretch(8, 1);
+    gridLayout->addWidget(topText);
+    gridLayout->addLayout(pathLayout);
+    gridLayout->addWidget(selectComponentsText);
+
+    gridLayout->addWidget(selectComponentsText);
+
+    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
+    selectComponentsLayout->addWidget(selectComponentsLineEdit);
+    selectComponentsLayout->addWidget(selectComponentsButton);
+    selectComponentsLayout->addWidget(clearSelectionButton);
+
+    gridLayout->addLayout(selectComponentsLayout);
+    gridLayout->addWidget(locationWidget);
+    gridLayout->addWidget(componentInfoText,0,Qt::AlignCenter);
+    gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
+
+#else
+    QHBoxLayout* pathLayout = new QHBoxLayout();
+    pathLayout->addWidget(pathText);
+    pathLayout->addWidget(componentFileLineEdit);
+    pathLayout->addWidget(browseFileButton);
+
+    // Add a vertical spacer at the bottom to push everything up
+    gridLayout->addWidget(topText);
+    gridLayout->addLayout(pathLayout);
+    gridLayout->addWidget(selectComponentsText);
+
+    gridLayout->addWidget(selectComponentsText);
+
+    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
+    selectComponentsLayout->addWidget(selectComponentsLineEdit);
+    selectComponentsLayout->addWidget(selectComponentsButton);
+    selectComponentsLayout->addWidget(clearSelectionButton);
+
+    gridLayout->addLayout(selectComponentsLayout);
+    gridLayout->addWidget(componentInfoText,0,Qt::AlignCenter);
+    gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
+
+    gridLayout->addStretch();
+#endif
+
     this->setLayout(gridLayout);
 }
 
@@ -387,7 +429,7 @@ void ComponentInputWidget::handleComponentSelection(void)
 
     // Get the ID of the first and last component
     bool OK;
-    auto firstID = componentTableWidget->item(0,0)->data(0).toInt(&OK);
+    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
 
     if(!OK)
     {
@@ -396,7 +438,7 @@ void ComponentInputWidget::handleComponentSelection(void)
         return;
     }
 
-    auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toInt(&OK);
+    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
 
     if(!OK)
     {
@@ -503,6 +545,7 @@ void ComponentInputWidget::clearLayerSelectedForAnalysis(void)
 
     selectedFeaturesForAnalysis.clear();
 }
+
 
 QStringList ComponentInputWidget::getTableHorizontalHeadings()
 {
@@ -731,7 +774,12 @@ bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 
 bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
+#ifdef OpenSRA
+    locationWidget->inputFromJSON(rvObject);
+#else
     Q_UNUSED(rvObject);
+#endif
+
     return true;
 }
 
@@ -753,37 +801,15 @@ bool ComponentInputWidget::copyFiles(QString &destName)
     auto pathToSaveFile = destName + QDir::separator() + componentFile.fileName();
 
     auto nRows = componentTableWidget->rowCount();
-    auto nCols = componentTableWidget->columnCount();
 
     if(nRows == 0)
         return false;
 
+    auto data = componentTableWidget->getTableModel()->getTableData();
 
-    QVector<QStringList> data(nRows+1);
+    auto headerValues = componentTableWidget->getTableModel()->getHeaderStringList();
 
-    QStringList headerInfo;
-
-    for(int i = 0; i<nCols; ++i)
-    {
-        auto headerText = componentTableWidget->horizontalHeaderItem(i)->data(0).toString();
-        headerInfo << headerText;
-    }
-
-    data[0] = headerInfo;
-
-    for(int i = 0; i<nRows; ++i)
-    {
-        QStringList rowData;
-        rowData.reserve(nCols);
-
-        for(int j = 0; j<nCols; ++j)
-        {
-            auto item = componentTableWidget->item(i,j)->data(0).toString();
-
-            rowData<<item;
-        }
-        data[i+1] = rowData;
-    }
+    data.push_front(headerValues);
 
     CSVReaderWriter csvTool;
 
@@ -843,23 +869,14 @@ ComponentDatabase* ComponentInputWidget::getComponentDatabase()
 }
 
 
-void ComponentInputWidget::handleCellChanged(int row, int column)
+void ComponentInputWidget::handleCellChanged(const int row, const int col)
 {
-    // Cannot change the ID, lat, or long
-    if(column < 3)
-        return;
 
-    auto item = componentTableWidget->item(row,column);
+    auto ID = componentTableWidget->item(row,0).toInt();
 
-    // Only update when the user selects the cell and changes it, inefficient to update programatically
-    if(!item->isSelected())
-        return;
+    auto attrib = componentTableWidget->horizontalHeaderItem(col);
 
-    auto ID = componentTableWidget->item(row,0)->data(0).toInt();
-
-    auto attrib = componentTableWidget->horizontalHeaderItem(column)->data(0).toString();
-
-    auto attribVal = item->data(0);
+    auto attribVal = componentTableWidget->item(row,col);
 
     theComponentDb.updateComponentAttribute(ID,attrib,attribVal);
 
@@ -874,7 +891,7 @@ void ComponentInputWidget::handleCellChanged(int row, int column)
 }
 
 
-Feature* ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Geometry& /*geom*/)
+Esri::ArcGISRuntime::Feature* ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Esri::ArcGISRuntime::Geometry& /*geom*/)
 {
     return nullptr;
 }
@@ -913,7 +930,7 @@ void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid,
     }
 
     // Get the feature
-    Feature* feat = selectedFeaturesForAnalysis[uid];
+    Esri::ArcGISRuntime::Feature* feat = selectedFeaturesForAnalysis[uid];
 
     if(feat == nullptr)
     {

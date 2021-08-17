@@ -63,13 +63,14 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     : SimCenterAppWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Hazard to Local Asset Event"));
     label->setMinimumWidth(150);
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
@@ -108,7 +109,6 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
 
     mainLayout->addStretch();
     this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
     this->setMaximumWidth(750);
 }
 
