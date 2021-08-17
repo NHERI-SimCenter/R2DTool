@@ -43,7 +43,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 # Information about the app
 TARGET = R2D
 TEMPLATE = app
-VERSION=1.0.0
+VERSION=1.1.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # C++17 support
