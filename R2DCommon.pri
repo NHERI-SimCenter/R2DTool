@@ -7,7 +7,9 @@
 
 INCLUDEPATH +=  $$PATH_TO_COMMON/Workflow/UQ \
                 $$PATH_TO_COMMON/Workflow/ANALYSIS \
-                $$PATH_TO_COMMON/Workflow/WORKFLOW \
+                $$PATH_TO_COMMON/Workflow/WORKFLOW \	
+                $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems \
+                $$PATH_TO_COMMON/Workflow/WORKFLOW/Utils \		
                 $$PATH_TO_COMMON/Workflow/GRAPHICS \
                 $$PATH_TO_COMMON/Workflow/EXECUTION \
                 $$PATH_TO_COMMON/Workflow/EDP \
@@ -44,6 +46,14 @@ SOURCES +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterLineEdit.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterFileInput.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterRVLineEdit.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/Utils/ExampleDownloader.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/Utils/NetworkDownloadManager.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/CheckableTreeModel.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/SimCenterTreeView.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeItem.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeViewStyle.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeModel.cpp \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeItem.cpp \    	    
             $$PATH_TO_COMMON/Workflow/ANALYSIS/InputWidgetOpenSeesAnalysis.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/RunLocalWidget.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/AgaveCurl.cpp \
@@ -98,6 +108,16 @@ HEADERS +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterLineEdit.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterFileInput.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterRVLineEdit.h \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/Utils/ExampleDownloader.h \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/Utils/NetworkDownloadManager.h \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/CheckableTreeModel.h \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/SimCenterTreeView.h \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeItem.h \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeViewStyle.h \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeModel.h \
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeItem.h \    	    
+            $$PATH_TO_COMMON/Workflow/ANALYSIS/InputWidgetOpenSeesAnalysis.h \
+	    
             $$PATH_TO_COMMON/Workflow/ANALYSIS/InputWidgetOpenSeesAnalysis.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/RunLocalWidget.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/AgaveCurl.h \
@@ -118,5 +138,3 @@ HEADERS +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.h \
             $$PATH_TO_COMMON/Workflow/EDP/EDP.h \
             $$PATH_TO_COMMON/Workflow/SIM/OpenSeesBuildingModel.h \
             $$PATH_TO_COMMON/Workflow/SIM/OpenSeesParser.h
-#            $$PATH_TO_COMMON/Workflow/SIM/MDOF_BuildingModel.h \
-
