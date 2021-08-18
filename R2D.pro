@@ -142,16 +142,12 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/Vs30Widget.cpp \
             GraphicElements/ConvexHull.cpp \
             GraphicElements/PolygonBoundary.cpp \
-            ModelViewItems/CheckableTreeModel.cpp \
             ModelViewItems/GISLegendView.cpp \
-            ModelViewItems/SimCenterTreeView.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
-            Tools/ExampleDownloader.cpp \
             Tools/HurricanePreprocessor.cpp \
             Tools/NGAW2Converter.cpp \
-            Tools/NetworkDownloadManager.cpp \
             Tools/PelicunPostProcessor.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
@@ -216,12 +212,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/HurricaneSelectionWidget.cpp \
             UIWidgets/UserInputHurricaneWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
-            ModelViewItems/LayerTreeItem.cpp \
-            ModelViewItems/TreeItem.cpp \
             ModelViewItems/ListTreeModel.cpp \
-            ModelViewItems/LayerTreeModel.cpp \
             ModelViewItems/LayerTreeView.cpp \
-            ModelViewItems/TreeViewStyle.cpp \
             ModelViewItems/CustomListWidget.cpp \
             GraphicElements/NodeHandle.cpp \
             GraphicElements/RectangleGrid.cpp \
@@ -269,16 +261,12 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SpatialCorrelationWidget.h \
             GraphicElements/ConvexHull.h \
             GraphicElements/PolygonBoundary.h \
-            ModelViewItems/CheckableTreeModel.h \
             ModelViewItems/GISLegendView.h \
-            ModelViewItems/SimCenterTreeView.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
-            Tools/ExampleDownloader.h \
             Tools/HurricanePreprocessor.h \
             Tools/NGAW2Converter.h \
-            Tools/NetworkDownloadManager.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
             Tools/TableNumberItem.h \
@@ -345,12 +333,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/HurricaneSelectionWidget.h \
             UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/VisualizationWidget.h \
-            ModelViewItems/LayerTreeItem.h \
-            ModelViewItems/TreeItem.h \
-            ModelViewItems/ListTreeModel.h \
-            ModelViewItems/LayerTreeModel.h \
             ModelViewItems/LayerTreeView.h \
-            ModelViewItems/TreeViewStyle.h \
             ModelViewItems/CustomListWidget.h \
             GraphicElements/GridNode.h \
             GraphicElements/NodeHandle.h \
