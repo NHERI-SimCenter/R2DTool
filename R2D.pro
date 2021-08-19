@@ -333,6 +333,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/HurricaneSelectionWidget.h \
             UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/VisualizationWidget.h \
+            ModelViewItems/ListTreeModel.h \
             ModelViewItems/LayerTreeView.h \
             ModelViewItems/CustomListWidget.h \
             GraphicElements/GridNode.h \
