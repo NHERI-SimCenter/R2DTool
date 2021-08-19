@@ -9,7 +9,7 @@ INCLUDEPATH +=  $$PATH_TO_COMMON/Workflow/UQ \
                 $$PATH_TO_COMMON/Workflow/ANALYSIS \
                 $$PATH_TO_COMMON/Workflow/WORKFLOW \	
                 $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems \
-                $$PATH_TO_COMMON/Workflow/WORKFLOW/Utils \		
+                $$PATH_TO_COMMON/Workflow/WORKFLOW/Utils \	
                 $$PATH_TO_COMMON/Workflow/GRAPHICS \
                 $$PATH_TO_COMMON/Workflow/EXECUTION \
                 $$PATH_TO_COMMON/Workflow/EDP \
@@ -53,7 +53,7 @@ SOURCES +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.cpp \
 	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeItem.cpp \
 	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeViewStyle.cpp \
 	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeModel.cpp \
-	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeItem.cpp \    	    
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeItem.cpp \
             $$PATH_TO_COMMON/Workflow/ANALYSIS/InputWidgetOpenSeesAnalysis.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/RunLocalWidget.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/AgaveCurl.cpp \
@@ -115,9 +115,7 @@ HEADERS +=  $$PATH_TO_COMMON/Workflow/UQ/DakotaResults.h \
 	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeItem.h \
 	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeViewStyle.h \
 	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeModel.h \
-	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeItem.h \    	    
-            $$PATH_TO_COMMON/Workflow/ANALYSIS/InputWidgetOpenSeesAnalysis.h \
-	    
+	    $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/LayerTreeItem.h \
             $$PATH_TO_COMMON/Workflow/ANALYSIS/InputWidgetOpenSeesAnalysis.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/RunLocalWidget.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/AgaveCurl.h \
