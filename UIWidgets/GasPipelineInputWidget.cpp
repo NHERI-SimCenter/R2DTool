@@ -287,7 +287,7 @@ Esri::ArcGISRuntime::FeatureCollectionLayer *GasPipelineInputWidget::getSelected
 
 Renderer* GasPipelineInputWidget::createPipelineRenderer(void)
 {
-    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(125, 125, 125), 4.0f /*width*/, this);
+    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(85, 85, 85), 4.0f /*width*/, this);
 
     SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol1, this);
 

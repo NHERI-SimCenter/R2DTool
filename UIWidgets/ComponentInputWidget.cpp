@@ -305,7 +305,7 @@ void ComponentInputWidget::createComponentsBox(void)
 
     if(thisObj.isEmpty())
     {
-        this->errorMessage("Json object is empty in " + QString(__PRETTY_FUNCTION__));
+        this->errorMessage("Json object is empty in " + QString(__FUNCTION__));
         return;
     }
 
@@ -885,6 +885,8 @@ void ComponentInputWidget::clear(void)
     componentTableWidget->clear();
     componentTableWidget->hide();
     tableHorizontalHeadings.clear();
+
+    emit headingValuesChanged(QStringList{"N/A"});
 }
 
 

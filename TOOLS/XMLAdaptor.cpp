@@ -178,7 +178,14 @@ FeatureCollectionLayer* XMLAdaptor::parseXMLFile(const QString& filePath, QStrin
     {
         ++count;
 
+        // Change for windows compilation
+        gp.remove("\r");
+
+        if(gp.isEmpty())
+            continue;
+
         auto pointData = gp.split(" ");
+
 
         if(pointData.size() != numFields)
         {

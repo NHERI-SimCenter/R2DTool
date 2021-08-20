@@ -391,6 +391,7 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     {
         auto inFilePath = dir + QDir::separator() + filename;
 
+#ifndef OpenSRA
         // Create the XML grid
         if(filename.compare("grid.xml") == 0) // XML grid
         {
@@ -421,7 +422,8 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
             inputShakeMap->stationList = XMLImportAdaptor.getStationList();
         }
-        else if(filename.compare("cont_pga.json") == 0) // PGA contours layer
+#endif
+        if(filename.compare("cont_pga.json") == 0) // PGA contours layer
         {
             progressLabel->setText("Loading PGA Contour Layer");
             this->statusMessage("Loading PGA Contour Layer");
