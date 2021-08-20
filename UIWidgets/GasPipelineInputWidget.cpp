@@ -279,6 +279,11 @@ Renderer* GasPipelineInputWidget::createSelectedPipelineRenderer(double outlineW
     return new ClassBreaksRenderer("RepairRate", classBreaks, this);
 }
 
+Esri::ArcGISRuntime::FeatureCollectionLayer *GasPipelineInputWidget::getSelectedFeaturesLayer() const
+{
+    return selectedFeaturesLayer;
+}
+
 
 Renderer* GasPipelineInputWidget::createPipelineRenderer(void)
 {

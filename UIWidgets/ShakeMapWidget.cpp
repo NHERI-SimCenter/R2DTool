@@ -614,6 +614,16 @@ void ShakeMapWidget::chooseShakeMapDirectoryDialog(void)
 
 bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 {
+
+    jsonObject["Directory"] = pathToShakeMapDirectory;
+
+    QJsonArray eventsArray;
+
+    for(auto&& it : eventsVec)
+        eventsArray.append(it);
+
+    jsonObject["Events"] = eventsArray;
+
     return true;
 }
 
@@ -717,6 +727,7 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
         return res;
     }
 
+#ifndef OpenSRA
     QString IMtag = "PGA";
 
     auto currentItem = listWidget->getCurrentItem();
@@ -809,6 +820,7 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
         this->errorMessage(err2);
         return false;
     }
+#endif
 
     return true;
 }

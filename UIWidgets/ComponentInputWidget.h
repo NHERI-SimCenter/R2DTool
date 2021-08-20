@@ -128,6 +128,11 @@ public:
 
     QStringList getTableHorizontalHeadings();
 
+    // Selects all of the components for analysis
+    void selectAllComponents(void);
+
+    int getNumberOfComponents(void);
+
 signals:
     void headingValuesChanged(QStringList);
 
@@ -161,6 +166,10 @@ protected:
         vec.resize(std::distance(vec.begin(), ip));
     }
 
+#ifdef OpenSRA
+    JsonGroupBoxWidget* locationWidget;
+#endif
+
 private:
     QString pathToComponentInfoFile;
     QLineEdit* componentFileLineEdit;
@@ -181,9 +190,7 @@ private:
     // Map to store the selected features according to their UID
     QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
 
-#ifdef OpenSRA
-    JsonGroupBoxWidget* locationWidget;
-#endif
+
 };
 
 #endif // ComponentInputWidget_H

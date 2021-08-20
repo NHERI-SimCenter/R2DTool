@@ -28,6 +28,8 @@ public:
 
     void clear();
 
+    Esri::ArcGISRuntime::FeatureCollectionLayer *getSelectedFeaturesLayer() const;
+
 private:
 
     Esri::ArcGISRuntime::Renderer* createPipelineRenderer(void);

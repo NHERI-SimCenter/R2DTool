@@ -196,6 +196,8 @@ public:
     // Sets the view elevation above the ground level
     void setViewElevation(double val);
 
+    Esri::ArcGISRuntime::GroupLayer *getSelectedObjectsLayer() const;
+
 signals:
     // Emit a screen shot of the current GIS view
     void emitScreenshot(QImage img);

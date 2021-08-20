@@ -765,9 +765,34 @@ QString ComponentInputWidget::getFilterString(void)
 }
 
 
+void ComponentInputWidget::selectAllComponents(void)
+{
+    // Get the ID of the first and last component
+    auto firstID = componentTableWidget->item(0,0).toString();
+
+    auto nRows = componentTableWidget->rowCount();
+    auto lastID = componentTableWidget->item(nRows-1,0).toString();
+
+    QString filter = firstID + "-" + lastID;
+
+    selectComponentsLineEdit->setText(filter);
+    selectComponentsLineEdit->selectComponents();
+}
+
+
+int ComponentInputWidget::getNumberOfComponents(void)
+{
+    return theComponentDb.getNumberOfComponents();
+}
+
+
 bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 {
+#ifdef OpenSRA
+    locationWidget->outputToJSON(rvObject);
+#else
     Q_UNUSED(rvObject);
+#endif
     return true;
 }
 
@@ -917,6 +942,7 @@ void ComponentInputWidget::updateComponentAttribute(const int uid, const QString
 
 void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
 {
+
     if(selectedFeaturesForAnalysis.empty())
     {
         qDebug()<<"Selected features map is empty";

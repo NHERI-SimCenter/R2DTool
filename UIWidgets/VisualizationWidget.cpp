@@ -83,6 +83,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimpleRenderer.h"
 #include "TransformationCatalog.h"
 #include "sectiontitle.h"
+#include "RGBRenderer.h"
+#include "PercentClipStretchParameters.h"
+#include "StandardDeviationStretchParameters.h"
+#include "MinMaxStretchParameters.h"
+#include "ColormapRenderer.h"
+
 // Convex Hull
 #include "GeometryEngine.h"
 #include "MultipointBuilder.h"
@@ -215,8 +221,11 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
     //    QString layerID = this->createUniqueID();
     //    LayerTreeItem* LayerTreeItem = layersTree->addItemToTree(parentLayerName,layerID);
 
-    //    QString layerName = "Raster";
-    //    QString filePath = "/Users/steve/Downloads/WSpeed/wspeed_day_CNRM-CM5_rcp85_r1i1p1_2006-2100.crop.bc.srs.1x1.bc.srs.ds.postds_bc.tif";
+    //    QString layerName = "Maximum Annual Precipitation";
+    ////    QString filePath = "/Users/steve/Desktop/virtualmachines/VMShared/OpenSRAExFiles/Max\ Temp/tasmax_year_ACCESS1-0_rcp85_r1i1p1_2075.LOCA_2016-04-02.16th.CA_NV.tif";
+    //    //      QString filePath = "/Users/steve/Desktop/virtualmachines/VMShared/OpenSRAExFiles/Min\ Temp/tasmin_year_ACCESS1-0_rcp85_r1i1p1_2075.LOCA_2016-04-02.16th.CA_NV.tif";
+    //    QString filePath = "/Users/steve/Desktop/virtualmachines/VMShared/OpenSRAExFiles/Pr/pr_year_ACCESS1-0_rcp85_r1i1p1_2075.LOCA_2016-04-02.16th.CA_NV.tif";
+
     //    auto layer = this->createAndAddRasterLayer(filePath, layerName, LayerTreeItem) ;
     //    layer->setAutoFetchLegendInfos(true);
 }
@@ -698,6 +707,11 @@ ClassBreaksRenderer* VisualizationWidget::createPointRenderer(void)
     classBreaks.append(classBreak5);
 
     return new ClassBreaksRenderer("LossRatio", classBreaks, this);
+}
+
+Esri::ArcGISRuntime::GroupLayer *VisualizationWidget::getSelectedObjectsLayer() const
+{
+    return selectedObjectsLayer;
 }
 
 
@@ -1217,49 +1231,95 @@ RasterLayer* VisualizationWidget::createAndAddRasterLayer(const QString& filePat
             return;
         }
 
-        mapViewWidget->setViewpointCenter(layer->fullExtent().center(), 80000);
+        mapViewWidget->setViewpointCenter(layer->fullExtent().center(), 1000000);
     });
 
     layer->setName(layerName);
 
-    int colorRampTypeVal = 0;
-    int slopeTypeVal = 1;
+//        RasterFunction* rasterFunction = new RasterFunction("/Users/steve/Downloads/color.json", this);
 
-    PresetColorRampType colorRampType = static_cast<PresetColorRampType>(colorRampTypeVal);
+//        if (!rasterFunction)
+//           qDebug()<<"Error";
 
-    QList<double> outputMinValues{1};
-    QList<double> outputMaxValues{255};
-    QList<double> sourceMinValues;
-    QList<double> sourceMaxValues;
-    QList<double> noDataValues;
-    QList<double> gammas;
-    double zFactor = 1.;
-    double pixelSizeFactor = 1.;
-    double pixelSizePower = 1.;
-    int outputBitDepth = 8;
-    ColorRamp* colorRamp = ColorRamp::create(colorRampType, 175, this);
+//        // set the number of rasters required - 2 in this case
+//        rasterFunction->arguments()->setRaster("raster", raster);
+//        rasterFunction->arguments()->setRaster("raster", raster);
 
-    double altitude= 40.0;
-    double azimuth = 10.0;
 
-    SlopeType slopeType = static_cast<SlopeType>(slopeTypeVal);
+    // ** Blend renderer **
 
-    BlendRenderer* renderer = new BlendRenderer(raster,
-                                                outputMinValues,
-                                                outputMaxValues,
-                                                sourceMinValues,
-                                                sourceMaxValues,
-                                                noDataValues,
-                                                gammas,
-                                                colorRamp,
-                                                altitude,
-                                                azimuth,
-                                                zFactor,
-                                                slopeType,
-                                                pixelSizeFactor,
-                                                pixelSizePower,
-                                                outputBitDepth,
-                                                this);
+        int colorRampTypeVal = 0;
+        int slopeTypeVal = 1;
+
+        PresetColorRampType colorRampType = static_cast<PresetColorRampType>(colorRampTypeVal);
+
+        QList<double> outputMinValues{200,0,0};
+        QList<double> outputMaxValues{255,255,20};
+        QList<double> sourceMinValues;
+        QList<double> sourceMaxValues;
+        QList<double> noDataValues;
+        QList<double> gammas;
+        double zFactor = 1e9;
+        double pixelSizeFactor = 1.;
+        double pixelSizePower = 1.;
+        int outputBitDepth = 8;
+        ColorRamp* colorRamp = ColorRamp::create(colorRampType, 80000, this);
+
+        double altitude= 50;
+        double azimuth = 315;
+
+        SlopeType slopeType = static_cast<SlopeType>(slopeTypeVal);
+        BlendRenderer* renderer = new BlendRenderer(raster,
+                                                    outputMinValues,
+                                                    outputMaxValues,
+                                                    sourceMinValues,
+                                                    sourceMaxValues,
+                                                    noDataValues,
+                                                    gammas,
+                                                    colorRamp,
+                                                    altitude,
+                                                    azimuth,
+                                                    zFactor,
+                                                    slopeType,
+                                                    pixelSizeFactor,
+                                                    pixelSizePower,
+                                                    outputBitDepth,
+                                                    this);
+
+    // ** Hillshade renderer **
+
+    // HillshadeRenderer(double altitude, double azimuth, double zFactor, SlopeType slopeType, double pixelSizeFactor, double pixelSizePower, int outputBitDepth, QObject* parent = nullptr);
+
+//    constexpr double altitude = 45.0;
+//    constexpr double azimuth = 315.0;
+//    constexpr double zFactor = 1e8;
+//    constexpr SlopeType slopeType = SlopeType::None;
+//    constexpr double pixelSizeFactor = 1.0;
+//    constexpr double pixelSizePower = 1.0;
+//    constexpr int outputBitDepth = 8;
+//    HillshadeRenderer* renderer = new HillshadeRenderer(altitude,azimuth,zFactor, slopeType, pixelSizeFactor, pixelSizePower,outputBitDepth,this);
+
+    // ** RgbRenderer  **
+//    double min = 0;
+//    double max = 0.001;
+//    double factor = 0.1;
+//    StandardDeviationStretchParameters stretchParams(factor);
+//      QList<int> bandIndexes;
+//      QList<double> gammas;
+////    PercentClipStretchParameters stretchParams(min, max);
+////    MinMaxStretchParameters stretchParams(QList<double>{min}, QList<double>{max});
+//    RGBRenderer* renderer = new RGBRenderer(stretchParams,bandIndexes,gammas,true, this);
+
+    // ** Color map Renderer  **
+    // create a color map where values 0-150 are red and 150-250 are yellow
+//    QList<QColor> colors;
+//    colors.reserve(250);
+//    for (int i = 0; i < 250; ++i)
+//    {
+//      colors.append( i < 150 ? Qt::red : Qt::yellow);
+//    }
+//    // create a colormap renderer
+//    ColormapRenderer* renderer = new ColormapRenderer(colors, this);
 
     layer->setRenderer(renderer);
 
@@ -1930,7 +1990,7 @@ Esri::ArcGISRuntime::Geometry VisualizationWidget::getMultilineStringGeometryFro
     {
         auto points = it.split(",");
 
-        if(points.size() < 3)
+        if(points.size() < 2)
             return Geometry();
 
         bool OK = false;
