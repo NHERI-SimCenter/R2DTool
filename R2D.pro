@@ -159,17 +159,15 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
             Events/UI/Vs30.cpp \
             Events/UI/Vs30Widget.cpp \
-            ModelViewItems/CheckableTreeModel.cpp \
-            ModelViewItems/SimCenterTreeView.cpp \
             ModelViewItems/ComponentTableModel.cpp \
             ModelViewItems/ComponentTableView.cpp \
             ModelViewItems/GISLegendView.cpp \
+            ModelViewItems/ListTreeModel.cpp \
+            ModelViewItems/CustomListWidget.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
-            Tools/ExampleDownloader.cpp \
             Tools/NGAW2Converter.cpp \
-            Tools/NetworkDownloadManager.cpp \
             Tools/PelicunPostProcessor.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
@@ -183,7 +181,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
             UIWidgets/ColorDialogDelegate.cpp \
-            UIWidgets/LayerComboBoxItemDelegate.cpp \
             UIWidgets/RendererComboBoxItemDelegate.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
@@ -197,12 +194,9 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/GroundMotionStation.cpp \
-            UIWidgets/LayerManagerDialog.cpp \
             UIWidgets/RendererModel.cpp \
             UIWidgets/LoadResultsDialog.cpp \
             UIWidgets/RendererTableView.cpp \
-            UIWidgets/LayerManagerTableView.cpp \
-            UIWidgets/LayerManagerModel.cpp \
             UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
@@ -231,11 +225,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/UserInputGMWidget.cpp \
             UIWidgets/HurricaneSelectionWidget.cpp \
             UIWidgets/UserInputHurricaneWidget.cpp \
-            UIWidgets/VisualizationWidget.cpp \
-            ModelViewItems/TreeItem.cpp \
-            ModelViewItems/ListTreeModel.cpp \      
-            ModelViewItems/TreeViewStyle.cpp \
-            ModelViewItems/CustomListWidget.cpp \
+            UIWidgets/VisualizationWidget.cpp \        
             GraphicElements/NodeHandle.cpp \
             GraphicElements/RectangleGrid.cpp \
             GraphicElements/GridNode.cpp \
@@ -279,18 +269,14 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SpatialCorrelationWidget.h \
             Events/UI/Vs30.h \
             Events/UI/Vs30Widget.h \
-            Events/UI/SpatialCorrelationWidget.h \
-            ModelViewItems/CheckableTreeModel.h \
-            ModelViewItems/SimCenterTreeView.h \
-            ModelViewItems/ComponentTableModel.h \
-            ModelViewItems/ComponentTableView.h \
-            ModelViewItems/GISLegendView.h \
+            Events/UI/SpatialCorrelationWidget.h \      
+            GraphicElements/ConvexHull.h \
+            GraphicElements/PolygonBoundary.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
-            Tools/ExampleDownloader.h \
+            Tools/HurricanePreprocessor.h \
             Tools/NGAW2Converter.h \
-            Tools/NetworkDownloadManager.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
             Tools/TableNumberItem.h \
@@ -305,7 +291,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
             UIWidgets/ColorDialogDelegate.h \
-            UIWidgets/LayerComboBoxItemDelegate.h \
             UIWidgets/RendererComboBoxItemDelegate.h \
             UIWidgets/GISObjectTypeMapping.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
@@ -320,12 +305,9 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/GroundMotionStation.h \
-            UIWidgets/LayerManagerDialog.h \
             UIWidgets/RendererModel.h \
             UIWidgets/LoadResultsDialog.h \
             UIWidgets/RendererTableView.h \
-            UIWidgets/LayerManagerTableView.h \
-            UIWidgets/LayerManagerModel.h \
             UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \
@@ -356,16 +338,16 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/HurricaneObject.h \
             UIWidgets/VisualizationWidget.h \
-            ModelViewItems/TreeItem.h \
-            ModelViewItems/ListTreeModel.h \            
-            ModelViewItems/TreeViewStyle.h \
             ModelViewItems/CustomListWidget.h \
+            ModelViewItems/ComponentTableModel.h \
+            ModelViewItems/ComponentTableView.h \
+            ModelViewItems/GISLegendView.h \
+            ModelViewItems/ListTreeModel.h \
             GraphicElements/GridNode.h \
             GraphicElements/NodeHandle.h \
             GraphicElements/RectangleGrid.h \
             WorkflowAppR2D.h \
             RunWidget.h \
-
 
 contains(DEFINES, ARC_GIS)  {
 
@@ -373,25 +355,29 @@ SOURCES +=  ModelViewItems/ArcGISLegendView.cpp \
             UIWidgets/ArcGISVisualizationWidget.cpp \
             GraphicElements/ConvexHull.cpp \
             GraphicElements/PolygonBoundary.cpp \
-            ModelViewItems/LayerTreeModel.cpp \
             ModelViewItems/LayerTreeView.cpp \
-            ModelViewItems/LayerTreeItem.cpp \
             UIWidgets/ArcGISBuildingInputWidget.cpp \
             UIWidgets/ArcGISGasPipelineInputWidget.cpp \
             Tools/ArcGISHurricanePreprocessor.cpp \
             UIWidgets/ArcGISHurricaneSelectionWidget.cpp \
+            UIWidgets/LayerManagerDialog.cpp \
+            UIWidgets/LayerManagerTableView.cpp \
+            UIWidgets/LayerManagerModel.cpp \
+            UIWidgets/LayerComboBoxItemDelegate.cpp \
 
 HEADERS +=  ModelViewItems/ArcGISLegendView.h \
             UIWidgets/ArcGISVisualizationWidget.h \
             GraphicElements/ConvexHull.h \
             GraphicElements/PolygonBoundary.h \
-            ModelViewItems/LayerTreeModel.h \
             ModelViewItems/LayerTreeView.h \
-            ModelViewItems/LayerTreeItem.h \
             Tools/ArcGISHurricanePreprocessor.h \
             UIWidgets/ArcGISBuildingInputWidget.h \
             UIWidgets/ArcGISGasPipelineInputWidget.h \
             UIWidgets/ArcGISHurricaneSelectionWidget.h \
+            UIWidgets/LayerManagerDialog.h \
+            UIWidgets/LayerManagerTableView.h \
+            UIWidgets/LayerManagerModel.h \
+            UIWidgets/LayerComboBoxItemDelegate.h \
 }
 
 
