@@ -5,10 +5,6 @@
 
 GISLegendView::GISLegendView(QWidget *parent) : QTreeView(parent)
 {
-
-    proxyModel = new RoleProxyModel(this);
-    this->setModel(proxyModel);
-
     this->setSizeAdjustPolicy(SizeAdjustPolicy::AdjustToContents);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
@@ -50,8 +46,9 @@ void GISLegendView::clear(void)
     this->hide();
 }
 
-RoleProxyModel *GISLegendView::getProxyModel() const
+
+QIdentityProxyModel *GISLegendView::getProxyModel() const
 {
-    return proxyModel;
+    return nullptr;
 }
 

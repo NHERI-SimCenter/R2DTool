@@ -40,7 +40,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 #include "ComponentDatabase.h"
-#include "VisualizationWidget.h"
 
 #include <set>
 
@@ -49,17 +48,24 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class AssetInputDelegate;
 class ComponentTableView;
+class VisualizationWidget;
+
+#ifdef ARC_GIS
+
+class ArcGISVisualizationWidget;
 
 namespace Esri
 {
 namespace ArcGISRuntime
 {
 class ClassBreaksRenderer;
+class FeatureCollectionLayer;
 class SimpleRenderer;
 class Feature;
 class Geometry;
 }
 }
+#endif
 
 class QGroupBox;
 class QLineEdit;
@@ -85,10 +91,11 @@ public:
 
     virtual int loadComponentVisualization();
 
+#ifdef ARC_GIS
     virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
     virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
-
     virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
+#endif
 
     ComponentTableView *getTableWidget() const;
 
@@ -148,7 +155,13 @@ private slots:
     void clearLayerSelectedForAnalysis(void);
 
 protected:
-    VisualizationWidget* theVisualizationWidget;
+
+#ifdef ARC_GIS
+    ArcGISVisualizationWidget* theVisualizationWidget;
+#else
+    QGISVisualizationWidget* theVisualizationWidget;
+#endif
+
     ComponentTableView* componentTableWidget;
 
     ComponentDatabase theComponentDb;
@@ -187,9 +200,10 @@ private:
 
     void createComponentsBox(void);
 
+#ifdef ARC_GIS
     // Map to store the selected features according to their UID
     QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
-
+#endif
 
 };
 

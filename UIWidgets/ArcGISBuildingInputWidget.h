@@ -1,3 +1,6 @@
+#ifndef ArcGISBuildingInputWidget_H
+#define ArcGISBuildingInputWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -34,69 +37,41 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna, Stevan Gavrilovic
+// Written by: Stevan Gavrilovic
 
-#include "SimCenterMapGraphicsView.h"
-#include "GISLegendView.h"
+#include "ComponentInputWidget.h"
 
-#ifdef ARC_GIS
-#include "ArcGISLegendView.h"
-#endif
-
-// Qt headers
-#include <QApplication>
-#include <QPushButton>
-#include <QThread>
-#include <QVBoxLayout>
-#include <QListView>
-
-SimCenterMapGraphicsView *SimCenterMapGraphicsView::theInstance(0);
-
-
-SimCenterMapGraphicsView * SimCenterMapGraphicsView::getInstance() {
-
-    if (theInstance == 0)
-        theInstance = new SimCenterMapGraphicsView(nullptr);
-
-    return theInstance;
-}
-
-
-SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj) :theCurrentLayout(nullptr)
+namespace Esri
 {
-    theCurrentLayout = nullptr;
-
-#ifdef ARC_GIS
-    legendView = new ArcGISLegendView(this);
-#endif
-
-    this->setContentsMargins(0,0,0,0);
-}
-
-
-GISLegendView *SimCenterMapGraphicsView::getLegendView() const
+namespace ArcGISRuntime
 {
-    return legendView;
+class ClassBreaksRenderer;
+class SimpleRenderer;
+class Feature;
+class FeatureCollectionTable;
+class Geometry;
+}
 }
 
-
-SimCenterMapGraphicsView::~SimCenterMapGraphicsView()
+class ArcGISBuildingInputWidget : public ComponentInputWidget
 {
+public:
+    ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType = QString());
 
-}
+    int loadComponentVisualization();
 
+    Esri::ArcGISRuntime::Feature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
+    int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
+    Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
 
-void SimCenterMapGraphicsView::setCurrentLayout(QVBoxLayout *layout)
-{
-    if (theCurrentLayout != 0) {
-        theCurrentLayout->removeWidget(theInstance);
-    }
+    void clear();
 
-    theCurrentLayout = layout;
+private:
 
-    if (theCurrentLayout != 0) {
-        theCurrentLayout->addWidget(theInstance);
-        this->scene()->addSimpleText("");
-        qApp->processEvents();
-    }
-}
+    Esri::ArcGISRuntime::SimpleRenderer* createBuildingRenderer(void);
+    Esri::ArcGISRuntime::ClassBreaksRenderer* createSelectedBuildingRenderer(double outlineWidth = 0.0);
+    Esri::ArcGISRuntime::FeatureCollectionLayer* selectedBuildingsLayer = nullptr;
+    Esri::ArcGISRuntime::FeatureCollectionTable* selectedBuildingsTable = nullptr;
+};
+
+#endif // ArcGISBuildingInputWidget_H

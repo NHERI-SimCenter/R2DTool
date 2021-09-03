@@ -377,6 +377,7 @@ QString XMLAdaptor::getEventName() const
     return eventName;
 }
 
+
 QVector<GroundMotionStation> XMLAdaptor::getStationList() const
 {
     return stationList;

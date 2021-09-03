@@ -45,6 +45,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 
+#ifdef ARC_GIS
+#include "ArcGISHurricaneSelectionWidget.h"
+#endif
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGridLayout>
@@ -65,8 +69,11 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     theEQSSWidget = new GMWidget(this, theVisualizationWidget);
     theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
-    theHurricaneSelectionWidget = new HurricaneSelectionWidget(theVisualizationWidget);
     theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget);
+
+#ifdef ARC_GIS
+    theHurricaneSelectionWidget = new ArcGISHurricaneSelectionWidget(theVisualizationWidget);
+#endif
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
     this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);

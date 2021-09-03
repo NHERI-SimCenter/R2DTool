@@ -73,8 +73,6 @@ public:
     UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputGMWidget();
 
-    void showUserGMLayers(bool state);
-
     QStackedWidget* getUserInputGMWidget(void);
 
     bool outputToJSON(QJsonObject &jsonObj);

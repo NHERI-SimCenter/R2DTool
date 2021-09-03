@@ -72,8 +72,6 @@ public:
     UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputHurricaneWidget();
 
-    void showUserWFLayers(bool state);
-
     QStackedWidget* getUserInputHurricaneWidget(void);
 
     bool outputToJSON(QJsonObject &jsonObj);

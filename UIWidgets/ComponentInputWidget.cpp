@@ -59,7 +59,10 @@ using namespace std::chrono;
 #include <QJsonObject>
 #include <QHeaderView>
 
+#ifdef ARC_GIS
+#include "ArcGISVisualizationWidget.h"
 #include "FeatureCollectionLayer.h"
+#endif
 
 // Std library headers
 #include <string>
@@ -402,7 +405,18 @@ void ComponentInputWidget::createComponentsBox(void)
 
 void ComponentInputWidget::setTheVisualizationWidget(VisualizationWidget *value)
 {
-    theVisualizationWidget = value;
+#ifdef ARC_GIS
+        theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(value);
+
+        if(theVisualizationWidget == nullptr)
+        {
+            qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+            return;
+        }
+#else
+        qDebug()<<"Implement me";
+#endif
+
 }
 
 
@@ -917,7 +931,7 @@ void ComponentInputWidget::handleCellChanged(const int row, const int col)
 
 }
 
-
+#ifdef ARC_GIS
 Esri::ArcGISRuntime::Feature* ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Esri::ArcGISRuntime::Geometry& /*geom*/)
 {
     return nullptr;
@@ -934,6 +948,7 @@ Esri::ArcGISRuntime::FeatureCollectionLayer* ComponentInputWidget::getSelectedFe
 {
     return nullptr;
 }
+#endif
 
 
 void ComponentInputWidget::updateComponentAttribute(const int uid, const QString& attribute, const QVariant& value)

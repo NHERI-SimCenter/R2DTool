@@ -1,4 +1,6 @@
-#include "GasPipelineInputWidget.h"
+#include "ArcGISGasPipelineInputWidget.h"
+#include "ArcGISVisualizationWidget.h"
+
 #include "ComponentTableView.h"
 
 #include "Field.h"
@@ -14,13 +16,13 @@
 
 using namespace Esri::ArcGISRuntime;
 
-GasPipelineInputWidget::GasPipelineInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
+ArcGISGasPipelineInputWidget::ArcGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
 {
 
 }
 
 
-int GasPipelineInputWidget::loadComponentVisualization()
+int ArcGISGasPipelineInputWidget::loadComponentVisualization()
 {
     // Select a column that will define the pipeline layers
     //    int columnToMapLayers = 0;
@@ -211,7 +213,7 @@ int GasPipelineInputWidget::loadComponentVisualization()
 }
 
 
-Feature* GasPipelineInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Geometry& geom)
+Feature* ArcGISGasPipelineInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Geometry& geom)
 {
     Feature* feat = selectedFeaturesTable->createFeature(featureAttributes,geom,this);
     selectedFeaturesTable->addFeature(feat);
@@ -220,7 +222,7 @@ Feature* GasPipelineInputWidget::addFeatureToSelectedLayer(QMap<QString, QVarian
 }
 
 
-int GasPipelineInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
+int ArcGISGasPipelineInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
 {
     selectedFeaturesTable->deleteFeature(feat);
 
@@ -228,13 +230,13 @@ int GasPipelineInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::
 }
 
 
-Esri::ArcGISRuntime::FeatureCollectionLayer* GasPipelineInputWidget::getSelectedFeatureLayer(void)
+Esri::ArcGISRuntime::FeatureCollectionLayer* ArcGISGasPipelineInputWidget::getSelectedFeatureLayer(void)
 {
     return selectedFeaturesLayer;
 }
 
 
-void GasPipelineInputWidget::clear()
+void ArcGISGasPipelineInputWidget::clear()
 {
     delete selectedFeaturesLayer;
     delete selectedFeaturesTable;
@@ -246,7 +248,7 @@ void GasPipelineInputWidget::clear()
 }
 
 
-Renderer* GasPipelineInputWidget::createSelectedPipelineRenderer(double outlineWidth)
+Renderer* ArcGISGasPipelineInputWidget::createSelectedPipelineRenderer(double outlineWidth)
 {
 
     SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(0, 0, 0), 5.0f /*width*/, this);
@@ -279,13 +281,13 @@ Renderer* GasPipelineInputWidget::createSelectedPipelineRenderer(double outlineW
     return new ClassBreaksRenderer("RepairRate", classBreaks, this);
 }
 
-Esri::ArcGISRuntime::FeatureCollectionLayer *GasPipelineInputWidget::getSelectedFeaturesLayer() const
+Esri::ArcGISRuntime::FeatureCollectionLayer *ArcGISGasPipelineInputWidget::getSelectedFeaturesLayer() const
 {
     return selectedFeaturesLayer;
 }
 
 
-Renderer* GasPipelineInputWidget::createPipelineRenderer(void)
+Renderer* ArcGISGasPipelineInputWidget::createPipelineRenderer(void)
 {
     SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(85, 85, 85), 4.0f /*width*/, this);
 

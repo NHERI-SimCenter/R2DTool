@@ -1,5 +1,5 @@
-#ifndef VISUALIZATIONWIDGET_H
-#define VISUALIZATIONWIDGET_H
+#ifndef UserInputGMWidget_H
+#define UserInputGMWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,80 +38,84 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
+#include "GroundMotionStation.h"
 #include "SimCenterAppWidget.h"
-#include "GISLegendView.h"
+
+#include <memory>
 
 #include <QMap>
-#include <QObject>
-#include <QUuid>
 
-class SimCenterMapGraphicsView;
-class ComponentInputWidget;
+class VisualizationWidget;
 
-class VisualizationWidget : public  SimCenterAppWidget
+class QStackedWidget;
+class QLineEdit;
+class QProgressBar;
+class QLabel;
+
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class ArcGISMapImageLayer;
+class GroupLayer;
+class FeatureCollectionLayer;
+class KmlLayer;
+class Layer;
+}
+}
+
+
+class UserInputGMWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit VisualizationWidget(QWidget* parent);
-    virtual ~VisualizationWidget();
+    UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~UserInputGMWidget();
 
-    SimCenterMapGraphicsView* getMapViewWidget() const;
+    void showUserGMLayers(bool state);
 
-    // Note: the component type must match the "AssetType" value set to the features
-    void registerComponentWidget(const QString assetType, ComponentInputWidget* widget);
+    QStackedWidget* getUserInputGMWidget(void);
 
-    ComponentInputWidget* getComponentWidget(const QString type);
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
 
+    void clear(void);
 
-    // Get the visualization widget
-    virtual QWidget *getVisWidget() = 0;
+public slots:
 
-    // Get the latitude or longitude from a point on the screen
-    virtual double getLatFromScreenPoint(const QPointF& point) = 0;
-    virtual double getLongFromScreenPoint(const QPointF& point) = 0;
-
-    virtual QPointF getScreenPointFromLatLong(const double& latitude, const double& longitude) = 0;
-
-    QString createUniqueID(void);
-
-    virtual void takeScreenShot(void);
-
-    virtual void clear(void) = 0;
-
-    // Clear the currently selected features (i.e., features highlighted by clicking on them)
-    virtual void clearSelection(void) = 0;
-
-    // Updates the value of an attribute for a selected component
-    void updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value);
-
-    void setLegendView(GISLegendView* legndView);
-    GISLegendView *getLegendView() const;
-
-    // Hides the map legend
-    void hideLegend(void);
-
-signals:
-    // Emit a screen shot of the current GIS view
-    void emitScreenshot(QImage img);
-
-public slots:    
-
-    virtual void setCurrentlyViewable(bool status) = 0;
-    virtual void handleLegendChange(const QString layerUID) = 0;
+    void showUserGMSelectDialog(void);
 
 private slots:
 
-protected:
+    void loadUserGMData(void);
+    void chooseEventFileDialog(void);
+    void chooseMotionDirDialog(void);
 
-    // Map to hold the component input widgets (key = type of component or asset, e.g., BUILDINGS)
-    QMap<QString, ComponentInputWidget*> componentWidgetsMap;
+signals:
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void loadingComplete(const bool value);
 
-    SimCenterMapGraphicsView *mapViewWidget = nullptr;
+private:
 
-    // The legend view
-    GISLegendView* legendView;
+    std::unique_ptr<QStackedWidget> userGMStackedWidget;
+
+    VisualizationWidget* theVisualizationWidget;
+
+    QString eventFile;
+    QString motionDir;
+
+    QLineEdit *eventFileLineEdit;
+    QLineEdit *motionDirLineEdit;
+
+    QLabel* progressLabel;
+    QWidget* progressBarWidget;
+    QWidget* fileInputWidget;
+    QProgressBar* progressBar;
+
+    QVector<GroundMotionStation> stationList;
 
 };
 
-#endif // VISUALIZATIONWIDGET_H
+#endif // UserInputGMWidget_H

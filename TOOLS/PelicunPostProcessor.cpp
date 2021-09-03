@@ -76,12 +76,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextTable>
 #include <QValueAxis>
 
-// GIS headers
+#ifdef ARC_GIS
 #include "Basemap.h"
 #include "FeatureTable.h"
 #include "FeatureCollectionLayer.h"
 #include "Map.h"
 #include "MapGraphicsView.h"
+#include "ArcGISVisualizationWidget.h"
+#endif
 
 using namespace QtCharts;
 
@@ -1175,9 +1177,21 @@ void PelicunPostProcessor::setCurrentlyViewable(bool status){
 
     if(buildingsWidget)
     {
+#ifdef ARC_GIS
         auto selectedLayer = buildingsWidget->getSelectedFeatureLayer();
 
-        theVisualizationWidget->handleLegendChange(selectedLayer);
+        auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
+
+        if(arcVizWidget == nullptr)
+        {
+            qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+            return;
+        }
+
+        arcVizWidget->handleLegendChange(selectedLayer);
+#else
+        qDebug()<<"Implement me";
+#endif
     }
 }
 

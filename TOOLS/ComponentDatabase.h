@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 #include <QVariant>
 
+#ifdef ARC_GIS
 #include <Feature.h>
 #include <FeatureTable.h>
 
@@ -51,6 +52,7 @@ namespace ArcGISRuntime
 class Feature;
 }
 }
+#endif
 
 struct Component
 {
@@ -103,8 +105,10 @@ public:
     // Unique id of this component
     QString UID = "NULL";
 
+#ifdef ARC_GIS
     // The Component feature in the GIS widget
     Esri::ArcGISRuntime::Feature* ComponentFeature = nullptr;
+#endif
 
     // Map to store the Component attributes
     QMap<QString, QVariant> ComponentAttributes;

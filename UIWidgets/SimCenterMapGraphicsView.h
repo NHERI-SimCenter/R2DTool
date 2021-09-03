@@ -44,7 +44,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class GISLegendView;
 
+#ifdef ARC_GIS
 class SimCenterMapGraphicsView: public  Esri::ArcGISRuntime::MapGraphicsView
+#endif
 {
     Q_OBJECT
 

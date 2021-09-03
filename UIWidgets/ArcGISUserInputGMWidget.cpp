@@ -38,15 +38,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "CSVReaderWriter.h"
 #include "LayerTreeView.h"
-#include "UserInputGMWidget.h"
+#include "ArcGISUserInputGMWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+
+// GIS Layers
+#include "FeatureCollectionLayer.h"
+#include "GroupLayer.h"
+#include "Layer.h"
+#include "LayerListModel.h"
+#include "SimpleMarkerSymbol.h"
+#include "SimpleRenderer.h"
 
 #include <QApplication>
 #include <QDialog>
 #include <QFile>
 #include <QFileDialog>
-#include <QJsonObject>
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QLabel>
@@ -59,19 +66,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QDir>
 
-#ifdef ARC_GIS
-#include "ArcGISVisualizationWidget.h"
-#include "FeatureCollectionLayer.h"
-#include "GroupLayer.h"
-#include "Layer.h"
-#include "LayerListModel.h"
-#include "SimpleMarkerSymbol.h"
-#include "SimpleRenderer.h"
-#endif
-
 using namespace Esri::ArcGISRuntime;
 
-UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+ArcGISUserInputGMWidget::ArcGISUserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     progressBar = nullptr;
     fileInputWidget = nullptr;
@@ -82,20 +79,20 @@ UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *pa
     motionDir = "";
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(this->getUserInputGMWidget());
+    layout->addWidget(this->getArcGISUserInputGMWidget());
     layout->addStretch();
     this->setLayout(layout);
 
 }
 
 
-UserInputGMWidget::~UserInputGMWidget()
+ArcGISUserInputGMWidget::~ArcGISUserInputGMWidget()
 {
 
 }
 
 
-bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
+bool ArcGISUserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     jsonObject["Application"] = "UserInputGM";
 
@@ -121,7 +118,7 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 }
 
 
-bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
+bool ArcGISUserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
     // qDebug() << "USER GM outputPLAIN";
 
@@ -129,7 +126,7 @@ bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
+bool ArcGISUserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
     if (jsonObj.contains("ApplicationData")) {
         QJsonObject appData = jsonObj["ApplicationData"].toObject();
@@ -188,7 +185,32 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 }
 
 
-QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
+void ArcGISUserInputGMWidget::showUserGMLayers(bool state)
+{
+    auto layersTreeView = theVisualizationWidget->getLayersTree();
+
+
+    if(state == false)
+    {
+        layersTreeView->removeItemFromTree("User Ground Motions");
+
+        return;
+    }
+
+
+    // Check if there is a 'User Ground Motions' root item in the tree
+    auto shakeMapTreeItem = layersTreeView->getTreeItem("User Ground Motions",nullptr);
+
+    auto itemUID = theVisualizationWidget->createUniqueID();
+
+    // If there is no item, create one
+    if(shakeMapTreeItem == nullptr)
+        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",itemUID);
+
+}
+
+
+QStackedWidget* ArcGISUserInputGMWidget::getArcGISUserInputGMWidget(void)
 {
     if (userGMStackedWidget)
         return userGMStackedWidget.get();
@@ -260,12 +282,12 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
 }
 
 
-void UserInputGMWidget::showUserGMSelectDialog(void)
+void ArcGISUserInputGMWidget::showUserGMSelectDialog(void)
 {
 
     if (!userGMStackedWidget)
     {
-        this->getUserInputGMWidget();
+        this->getArcGISUserInputGMWidget();
     }
 
     userGMStackedWidget->show();
@@ -274,145 +296,8 @@ void UserInputGMWidget::showUserGMSelectDialog(void)
 }
 
 
-void UserInputGMWidget::chooseEventFileDialog(void)
+void ArcGISUserInputGMWidget::loadUserGMData(void)
 {
-
-    QFileDialog dialog(this);
-    QString newEventFile = QFileDialog::getOpenFileName(this,tr("Event Grid File"));
-    dialog.close();
-
-    // Return if the user cancels or enters same file
-    if(newEventFile.isEmpty() || newEventFile == eventFile)
-    {
-        return;
-    }
-
-    // Set file name & entry in qLine edit
-
-    // if file
-    //    check valid
-    //    set motionDir if file in dir that contains all the motions
-    //    invoke loadUserGMData
-
-    CSVReaderWriter csvTool;
-
-    QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(newEventFile, err);
-
-    if(!err.isEmpty())
-    {
-        this->errorMessage(err);
-        return;
-    }
-
-    if(data.empty())
-        return;
-
-    eventFile = newEventFile;
-    eventFileLineEdit->setText(eventFile);
-
-    // check if file in dir with all motions, if so set motionDir
-    // Pop off the row that contains the header information
-    data.pop_front();
-    auto numRows = data.size();
-    int count = 0;
-    QFileInfo eventFileInfo(eventFile);
-    QDir fileDir(eventFileInfo.absolutePath());
-    QStringList filesInDir = fileDir.entryList(QStringList() << "*", QDir::Files);
-
-    // check all files are there
-    bool allThere = true;
-    for(int i = 0; i<numRows; ++i) {
-        auto rowStr = data.at(i);
-        auto stationName = rowStr[0];
-        if (!filesInDir.contains(stationName)) {
-            allThere = false;
-            i=numRows;
-        }
-    }
-
-    if (allThere == true) {
-        motionDir = fileDir.path();
-        motionDirLineEdit->setText(fileDir.path());
-        this->loadUserGMData();
-    } else {
-        QDir motionDirDir(motionDir);
-        if (motionDirDir.exists()) {
-            QStringList filesInDir = motionDirDir.entryList(QStringList() << "*", QDir::Files);
-            bool allThere = true;
-            for(int i = 0; i<numRows; ++i) {
-                auto rowStr = data.at(i);
-                auto stationName = rowStr[0];
-                if (!filesInDir.contains(stationName)) {
-                    allThere = false;
-                    i=numRows;
-                }
-            }
-            if (allThere == true)
-                this->loadUserGMData();
-        }
-    }
-
-    return;
-}
-
-
-void UserInputGMWidget::chooseMotionDirDialog(void)
-{
-
-    QFileDialog dialog(this);
-
-    dialog.setFileMode(QFileDialog::Directory);
-    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing specified motions"));
-    dialog.close();
-
-    // Return if the user cancels or enters same dir
-    if(newPath.isEmpty() || newPath == motionDir)
-    {
-        return;
-    }
-
-    motionDir = newPath;
-    motionDirLineEdit->setText(motionDir);
-
-    // check if dir contains EventGrid.csv file, if it does set the file
-    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
-    if (eventFileInfo.exists()) {
-        eventFile = newPath + "/EventGrid.csv";
-        eventFileLineEdit->setText(eventFile);
-    }
-
-    // could check files exist if eventFile set, but need something to give an error if not all there
-    this->loadUserGMData();
-
-    return;
-}
-
-
-void UserInputGMWidget::clear(void)
-{
-    eventFile.clear();
-    motionDir.clear();
-
-    eventFileLineEdit->clear();
-    motionDirLineEdit->clear();
-
-    stationList.clear();
-}
-
-
-#ifdef ARC_GIS
-void UserInputGMWidget::loadUserGMData(void)
-{
-
-    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
-
-    if(arcVizWidget == nullptr)
-    {
-        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
-        return;
-    }
-
     CSVReaderWriter csvTool;
 
     QString err;
@@ -585,7 +470,7 @@ void UserInputGMWidget::loadUserGMData(void)
     }
 
     // Create a new layer
-    auto layersTreeView = arcVizWidget->getLayersTree();
+    auto layersTreeView = theVisualizationWidget->getLayersTree();
 
     // Check if there is a 'User Ground Motions' root item in the tree
     auto userInputTreeItem = layersTreeView->getTreeItem("User Ground Motions", nullptr);
@@ -604,7 +489,7 @@ void UserInputGMWidget::loadUserGMData(void)
     progressLabel->setVisible(false);
 
     // Add the event layer to the map
-    arcVizWidget->addLayerToMap(gridLayer,userInputTreeItem);
+    theVisualizationWidget->addLayerToMap(gridLayer,userInputTreeItem);
 
     // Reset the widget back to the input pane and close
     userGMStackedWidget->setCurrentWidget(fileInputWidget);
@@ -619,4 +504,130 @@ void UserInputGMWidget::loadUserGMData(void)
 
     return;
 }
-#endif
+
+
+void ArcGISUserInputGMWidget::chooseEventFileDialog(void)
+{
+
+    QFileDialog dialog(this);
+    QString newEventFile = QFileDialog::getOpenFileName(this,tr("Event Grid File"));
+    dialog.close();
+
+    // Return if the user cancels or enters same file
+    if(newEventFile.isEmpty() || newEventFile == eventFile)
+    {
+        return;
+    }
+
+    // Set file name & entry in qLine edit
+
+    // if file
+    //    check valid
+    //    set motionDir if file in dir that contains all the motions
+    //    invoke loadUserGMData
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(newEventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    eventFile = newEventFile;
+    eventFileLineEdit->setText(eventFile);
+
+    // check if file in dir with all motions, if so set motionDir
+    // Pop off the row that contains the header information
+    data.pop_front();
+    auto numRows = data.size();
+    int count = 0;
+    QFileInfo eventFileInfo(eventFile);
+    QDir fileDir(eventFileInfo.absolutePath());
+    QStringList filesInDir = fileDir.entryList(QStringList() << "*", QDir::Files);
+
+    // check all files are there
+    bool allThere = true;
+    for(int i = 0; i<numRows; ++i) {
+        auto rowStr = data.at(i);
+        auto stationName = rowStr[0];
+        if (!filesInDir.contains(stationName)) {
+            allThere = false;
+            i=numRows;
+        }
+    }
+
+    if (allThere == true) {
+        motionDir = fileDir.path();
+        motionDirLineEdit->setText(fileDir.path());
+        this->loadUserGMData();
+    } else {
+        QDir motionDirDir(motionDir);
+        if (motionDirDir.exists()) {
+            QStringList filesInDir = motionDirDir.entryList(QStringList() << "*", QDir::Files);
+            bool allThere = true;
+            for(int i = 0; i<numRows; ++i) {
+                auto rowStr = data.at(i);
+                auto stationName = rowStr[0];
+                if (!filesInDir.contains(stationName)) {
+                    allThere = false;
+                    i=numRows;
+                }
+            }
+            if (allThere == true)
+                this->loadUserGMData();
+        }
+    }
+
+    return;
+}
+
+
+void ArcGISUserInputGMWidget::chooseMotionDirDialog(void)
+{
+
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::Directory);
+    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing specified motions"));
+    dialog.close();
+
+    // Return if the user cancels or enters same dir
+    if(newPath.isEmpty() || newPath == motionDir)
+    {
+        return;
+    }
+
+    motionDir = newPath;
+    motionDirLineEdit->setText(motionDir);
+
+    // check if dir contains EventGrid.csv file, if it does set the file
+    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
+    if (eventFileInfo.exists()) {
+        eventFile = newPath + "/EventGrid.csv";
+        eventFileLineEdit->setText(eventFile);
+    }
+
+    // could check files exist if eventFile set, but need something to give an error if not all there
+    this->loadUserGMData();
+
+    return;
+}
+
+
+void ArcGISUserInputGMWidget::clear(void)
+{
+    eventFile.clear();
+    motionDir.clear();
+
+    eventFileLineEdit->clear();
+    motionDirLineEdit->clear();
+
+    stationList.clear();
+}

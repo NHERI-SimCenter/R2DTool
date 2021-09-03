@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "HurricanePreprocessor.h"
+
 #include "CSVReaderWriter.h"
 #include "LayerTreeView.h"
 #include "UserInputHurricaneWidget.h"
@@ -44,6 +44,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppR2D.h"
 #include "WindFieldStation.h"
 
+#ifdef ARC_GIS
+#include "ArcGISHurricanePreprocessor.h"
+#include "ArcGISVisualizationWidget.h"
 // GIS Layers
 #include "FeatureCollectionLayer.h"
 #include "GroupLayer.h"
@@ -51,6 +54,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerListModel.h"
 #include "SimpleMarkerSymbol.h"
 #include "SimpleRenderer.h"
+#endif
 
 #include <QApplication>
 #include <QDialog>
@@ -189,29 +193,6 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 }
 
 
-void UserInputHurricaneWidget::showUserWFLayers(bool state)
-{
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
-
-
-    if(state == false)
-    {
-        layersTreeView->removeItemFromTree("User Wind Field");
-
-        return;
-    }
-
-
-    // Check if there is a "User Wind Field" root item in the tree
-    auto shakeMapTreeItem = layersTreeView->getTreeItem("User Wind Field",nullptr);
-
-    // If there is no item, create one
-    if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("User Wind Field",QString());
-
-}
-
-
 QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
 {
     if (theStackedWidget)
@@ -298,8 +279,17 @@ void UserInputHurricaneWidget::showEventSelectDialog(void)
 
 void UserInputHurricaneWidget::loadHurricaneTrackData(void)
 {
+    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
 
-    HurricanePreprocessor hurricaneImportTool(progressBar, theVisualizationWidget, this);
+    if(arcVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return;
+    }
+
+#ifdef ARC_GIS
+    ArcGISHurricanePreprocessor hurricaneImportTool(progressBar, arcVizWidget, this);
+#endif
 
     theStackedWidget->setCurrentWidget(progressBarWidget);
     progressBarWidget->setVisible(true);
@@ -323,8 +313,138 @@ void UserInputHurricaneWidget::loadHurricaneTrackData(void)
 }
 
 
+void UserInputHurricaneWidget::chooseEventDirDialog(void)
+{
+
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::Directory);
+    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing specified motions"));
+    dialog.close();
+
+    // Return if the user cancels or enters same dir
+    if(newPath.isEmpty() || newPath == eventDir)
+    {
+        return;
+    }
+
+    eventDir = newPath;
+    eventDirLineEdit->setText(eventDir);
+
+    // check if dir contains EventGrid.csv file, if it does set the file
+    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
+    if (eventFileInfo.exists()) {
+        eventFile = newPath + "/EventGrid.csv";
+        eventFileLineEdit->setText(eventFile);
+
+        this->loadUserWFData();
+    }
+
+    return;
+}
+
+
+void UserInputHurricaneWidget::chooseEventFileDialog(void)
+{
+
+    QFileDialog dialog(this);
+    QString newEventFile = QFileDialog::getOpenFileName(this,tr("Event Grid File"));
+    dialog.close();
+
+    // Return if the user cancels or enters same file
+    if(newEventFile.isEmpty() || newEventFile == eventFile)
+    {
+        return;
+    }
+
+    // Set file name & entry in qLine edit
+
+    // if file
+    //    check valid
+    //    set motionDir if file in dir that contains all the motions
+    //    invoke loadUserGMData
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(newEventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    eventFile = newEventFile;
+    eventFileLineEdit->setText(eventFile);
+
+    // check if file in dir with all motions, if so set motionDir
+    // Pop off the row that contains the header information
+    data.pop_front();
+    auto numRows = data.size();
+    int count = 0;
+    QFileInfo eventFileInfo(eventFile);
+    QDir fileDir(eventFileInfo.absolutePath());
+    QStringList filesInDir = fileDir.entryList(QStringList() << "*", QDir::Files);
+
+    // check all files are there
+    bool allThere = true;
+    for(int i = 0; i<numRows; ++i) {
+        auto rowStr = data.at(i);
+        auto stationName = rowStr[0];
+        if (!filesInDir.contains(stationName)) {
+            allThere = false;
+            i=numRows;
+        }
+    }
+
+    if (allThere == true) {
+        eventDir = fileDir.path();
+        eventDirLineEdit->setText(fileDir.path());
+        this->loadUserWFData();
+    } else {
+        QDir motionDirDir(eventDir);
+        if (motionDirDir.exists()) {
+            QStringList filesInDir = motionDirDir.entryList(QStringList() << "*", QDir::Files);
+            bool allThere = true;
+            for(int i = 0; i<numRows; ++i) {
+                auto rowStr = data.at(i);
+                auto stationName = rowStr[0];
+                if (!filesInDir.contains(stationName)) {
+                    allThere = false;
+                    i=numRows;
+                }
+            }
+            if (allThere == true)
+                this->loadUserWFData();
+        }
+    }
+
+    return;
+}
+
+
+void UserInputHurricaneWidget::clear(void)
+{
+    eventFile.clear();
+
+    eventFileLineEdit->clear();
+}
+
+
+#ifdef ARC_GIS
 void UserInputHurricaneWidget::loadUserWFData(void)
 {
+    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(arcVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return;
+    }
 
     this->statusMessage("Loading wind field data");
     CSVReaderWriter csvTool;
@@ -509,7 +629,7 @@ void UserInputHurricaneWidget::loadUserWFData(void)
     }
 
     // Create a new layer
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
+    auto layersTreeView = arcVizWidget->getLayersTree();
 
     // Check if there is a 'User Ground Motions' root item in the tree
     auto userInputTreeItem = layersTreeView->getTreeItem("User Wind Field", nullptr);
@@ -528,7 +648,7 @@ void UserInputHurricaneWidget::loadUserWFData(void)
     progressLabel->setVisible(false);
 
     // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(gridLayer,userInputTreeItem);
+    arcVizWidget->addLayerToMap(gridLayer,userInputTreeItem);
 
     // Reset the widget back to the input pane and close
     theStackedWidget->setCurrentWidget(fileInputWidget);
@@ -543,127 +663,4 @@ void UserInputHurricaneWidget::loadUserWFData(void)
 
     return;
 }
-
-
-void UserInputHurricaneWidget::chooseEventDirDialog(void)
-{
-
-    QFileDialog dialog(this);
-
-    dialog.setFileMode(QFileDialog::Directory);
-    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing specified motions"));
-    dialog.close();
-
-    // Return if the user cancels or enters same dir
-    if(newPath.isEmpty() || newPath == eventDir)
-    {
-        return;
-    }
-
-    eventDir = newPath;
-    eventDirLineEdit->setText(eventDir);
-
-    // check if dir contains EventGrid.csv file, if it does set the file
-    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
-    if (eventFileInfo.exists()) {
-        eventFile = newPath + "/EventGrid.csv";
-        eventFileLineEdit->setText(eventFile);
-
-        this->loadUserWFData();
-    }
-
-    return;
-}
-
-
-
-void UserInputHurricaneWidget::chooseEventFileDialog(void)
-{
-
-    QFileDialog dialog(this);
-    QString newEventFile = QFileDialog::getOpenFileName(this,tr("Event Grid File"));
-    dialog.close();
-
-    // Return if the user cancels or enters same file
-    if(newEventFile.isEmpty() || newEventFile == eventFile)
-    {
-        return;
-    }
-
-    // Set file name & entry in qLine edit
-
-    // if file
-    //    check valid
-    //    set motionDir if file in dir that contains all the motions
-    //    invoke loadUserGMData
-
-    CSVReaderWriter csvTool;
-
-    QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(newEventFile, err);
-
-    if(!err.isEmpty())
-    {
-        this->errorMessage(err);
-        return;
-    }
-
-    if(data.empty())
-        return;
-
-    eventFile = newEventFile;
-    eventFileLineEdit->setText(eventFile);
-
-    // check if file in dir with all motions, if so set motionDir
-    // Pop off the row that contains the header information
-    data.pop_front();
-    auto numRows = data.size();
-    int count = 0;
-    QFileInfo eventFileInfo(eventFile);
-    QDir fileDir(eventFileInfo.absolutePath());
-    QStringList filesInDir = fileDir.entryList(QStringList() << "*", QDir::Files);
-
-    // check all files are there
-    bool allThere = true;
-    for(int i = 0; i<numRows; ++i) {
-        auto rowStr = data.at(i);
-        auto stationName = rowStr[0];
-        if (!filesInDir.contains(stationName)) {
-            allThere = false;
-            i=numRows;
-        }
-    }
-
-    if (allThere == true) {
-        eventDir = fileDir.path();
-        eventDirLineEdit->setText(fileDir.path());
-        this->loadUserWFData();
-    } else {
-        QDir motionDirDir(eventDir);
-        if (motionDirDir.exists()) {
-            QStringList filesInDir = motionDirDir.entryList(QStringList() << "*", QDir::Files);
-            bool allThere = true;
-            for(int i = 0; i<numRows; ++i) {
-                auto rowStr = data.at(i);
-                auto stationName = rowStr[0];
-                if (!filesInDir.contains(stationName)) {
-                    allThere = false;
-                    i=numRows;
-                }
-            }
-            if (allThere == true)
-                this->loadUserWFData();
-        }
-    }
-
-    return;
-}
-
-
-
-void UserInputHurricaneWidget::clear(void)
-{
-    eventFile.clear();
-
-    eventFileLineEdit->clear();
-}
+#endif

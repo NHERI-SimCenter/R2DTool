@@ -112,8 +112,6 @@ public:
     ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~ShakeMapWidget();
 
-    void showShakeMapLayers(bool state);
-
     QWidget* getShakeMapWidget(void);
 
     QStackedWidget* getStackedWidget(void);

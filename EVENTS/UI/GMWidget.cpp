@@ -55,28 +55,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SiteScatterWidget.h"
 #include "SiteWidget.h"
 #include "SpatialCorrelationWidget.h"
-#include "LayerTreeView.h"
 #include "VisualizationWidget.h"
 #include "Vs30Widget.h"
 #include "WorkflowAppR2D.h"
+#include "PeerNgaWest2Client.h"
+#include "PeerLoginDialog.h"
+#include "ZipUtils.h"
 
 #ifdef INCLUDE_USER_PASS
 #include "R2DUserPass.h"
 #else
 #include "SampleUserPass.h"
 #endif
-
-// GIS includes
-#include "MapGraphicsView.h"
-#include "Map.h"
-#include "Point.h"
-#include "FeatureCollection.h"
-#include "FeatureCollectionLayer.h"
-#include "SimpleRenderer.h"
-#include "SimpleMarkerSymbol.h"
-#include "PeerNgaWest2Client.h"
-#include "PeerLoginDialog.h"
-#include "ZipUtils.h"
 
 #include <QDir>
 #include <QFile>
@@ -90,7 +80,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStringList>
 #include <QString>
 
+
+#ifdef ARC_GIS
+// GIS includes
+#include "MapGraphicsView.h"
+#include "Map.h"
+#include "Point.h"
+#include "FeatureCollection.h"
+#include "FeatureCollectionLayer.h"
+#include "SimpleRenderer.h"
+#include "SimpleMarkerSymbol.h"
+#include "LayerTreeView.h"
+#include "ArcGISVisualizationWidget.h"
 using namespace Esri::ArcGISRuntime;
+#endif
 
 GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
@@ -840,9 +843,18 @@ void GMWidget::downloadRecordBatch(void)
     }
 }
 
-
+#ifdef ARC_GIS
 int GMWidget::processDownloadedRecords(QString& errorMessage)
 {
+
+    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(arcVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return -1;
+    }
+
     auto pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator() + "EventGrid.csv";
 
     const QFileInfo inputFile(pathToOutputDirectory);
@@ -1020,7 +1032,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     }
 
     // Create a new layer
-    LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
+    LayerTreeView *layersTreeView = arcVizWidget->getLayersTree();
 
     // Check if there is a 'User Ground Motions' root item in the tree
     auto userInputTreeItem = layersTreeView->getTreeItem("EQ Hazard Simulation Grid", nullptr);
@@ -1033,10 +1045,13 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     auto eventItem = layersTreeView->addItemToTree(fileName, QString(), userInputTreeItem);
 
     // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(gridLayer,eventItem);
+    arcVizWidget->addLayerToMap(gridLayer,eventItem);
 
     return 0;
 }
+#endif
+
+
 
 
 int GMWidget::parseDownloadedRecords(QString zipFile)

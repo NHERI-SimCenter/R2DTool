@@ -43,8 +43,14 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 # Information about the app
 TARGET = R2D
 TEMPLATE = app
-VERSION=1.1.0
+VERSION = 1.1.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
+# Select one of the following GIS librarys
+DEFINES += ARC_GIS #Q_GIS
+
+# Does this build include the secret user pass for PEER database access?
+DEFINES += INCLUDE_USER_PASS
 
 # C++17 support
 CONFIG += c++17
@@ -59,9 +65,6 @@ equals(QT_MAJOR_VERSION, 5) {
         }
 }
 
-
-DEFINES += INCLUDE_USER_PASS
-
 win32:DEFINES +=  CURL_STATICLIB
 
 #win32::include($$PWD/R2D.user.pri)
@@ -74,7 +77,7 @@ win32::LIBS+=Advapi32.lib
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -86,9 +89,25 @@ win32 {
 }
 
 # GIS library
-ARCGIS_RUNTIME_VERSION = 100.9
-#include($$PWD/arcgisruntime.pri)
-include(./arcgisruntime.pri)
+
+
+contains(DEFINES, ARC_GIS)  {
+
+    message("Building with ArcGIS GIS library")
+
+    ARCGIS_RUNTIME_VERSION = 100.9
+    include(./arcgisruntime.pri)
+
+} contains(DEFINES, Q_GIS)  {
+
+    message("Building with QGIS library")
+    include(./arcgisruntime.pri)
+
+} else {
+    message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS")
+}
+
+
 
 # Simcenter dependencies
 include($$PATH_TO_COMMON/Common/Common.pri)
@@ -140,18 +159,15 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
             Events/UI/Vs30.cpp \
             Events/UI/Vs30Widget.cpp \
-            GraphicElements/ConvexHull.cpp \
-            GraphicElements/PolygonBoundary.cpp \
             ModelViewItems/CheckableTreeModel.cpp \
-            ModelViewItems/GISLegendView.cpp \
             ModelViewItems/SimCenterTreeView.cpp \
             ModelViewItems/ComponentTableModel.cpp \
             ModelViewItems/ComponentTableView.cpp \
+            ModelViewItems/GISLegendView.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
             Tools/ExampleDownloader.cpp \
-            Tools/HurricanePreprocessor.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/NetworkDownloadManager.cpp \
             Tools/PelicunPostProcessor.cpp \
@@ -166,11 +182,9 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingDMWidget.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
-            UIWidgets/BuildingInputWidget.cpp \
             UIWidgets/ColorDialogDelegate.cpp \
             UIWidgets/LayerComboBoxItemDelegate.cpp \
             UIWidgets/RendererComboBoxItemDelegate.cpp \
-            UIWidgets/GasPipelineInputWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
             UIWidgets/BuildingSimulationWidget.cpp \
@@ -218,11 +232,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/HurricaneSelectionWidget.cpp \
             UIWidgets/UserInputHurricaneWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
-            ModelViewItems/LayerTreeItem.cpp \
             ModelViewItems/TreeItem.cpp \
-            ModelViewItems/ListTreeModel.cpp \
-            ModelViewItems/LayerTreeModel.cpp \
-            ModelViewItems/LayerTreeView.cpp \
+            ModelViewItems/ListTreeModel.cpp \      
             ModelViewItems/TreeViewStyle.cpp \
             ModelViewItems/CustomListWidget.cpp \
             GraphicElements/NodeHandle.cpp \
@@ -269,18 +280,15 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/Vs30.h \
             Events/UI/Vs30Widget.h \
             Events/UI/SpatialCorrelationWidget.h \
-            GraphicElements/ConvexHull.h \
-            GraphicElements/PolygonBoundary.h \
             ModelViewItems/CheckableTreeModel.h \
-            ModelViewItems/GISLegendView.h \
             ModelViewItems/SimCenterTreeView.h \
             ModelViewItems/ComponentTableModel.h \
             ModelViewItems/ComponentTableView.h \
+            ModelViewItems/GISLegendView.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
             Tools/ExampleDownloader.h \
-            Tools/HurricanePreprocessor.h \
             Tools/NGAW2Converter.h \
             Tools/NetworkDownloadManager.h \
             Tools/PelicunPostProcessor.h \
@@ -296,12 +304,10 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingDMWidget.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
-            UIWidgets/BuildingInputWidget.h \
             UIWidgets/ColorDialogDelegate.h \
             UIWidgets/LayerComboBoxItemDelegate.h \
             UIWidgets/RendererComboBoxItemDelegate.h \
             UIWidgets/GISObjectTypeMapping.h \
-            UIWidgets/GasPipelineInputWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
             UIWidgets/BuildingModelingWidget.h \
             UIWidgets/BuildingSimulationWidget.h \
@@ -348,12 +354,10 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/UserInputGMWidget.h \
             UIWidgets/HurricaneSelectionWidget.h \
             UIWidgets/UserInputHurricaneWidget.h \
+            UIWidgets/HurricaneObject.h \
             UIWidgets/VisualizationWidget.h \
-            ModelViewItems/LayerTreeItem.h \
             ModelViewItems/TreeItem.h \
-            ModelViewItems/ListTreeModel.h \
-            ModelViewItems/LayerTreeModel.h \
-            ModelViewItems/LayerTreeView.h \
+            ModelViewItems/ListTreeModel.h \            
             ModelViewItems/TreeViewStyle.h \
             ModelViewItems/CustomListWidget.h \
             GraphicElements/GridNode.h \
@@ -361,6 +365,34 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             GraphicElements/RectangleGrid.h \
             WorkflowAppR2D.h \
             RunWidget.h \
+
+
+contains(DEFINES, ARC_GIS)  {
+
+SOURCES +=  ModelViewItems/ArcGISLegendView.cpp \
+            UIWidgets/ArcGISVisualizationWidget.cpp \
+            GraphicElements/ConvexHull.cpp \
+            GraphicElements/PolygonBoundary.cpp \
+            ModelViewItems/LayerTreeModel.cpp \
+            ModelViewItems/LayerTreeView.cpp \
+            ModelViewItems/LayerTreeItem.cpp \
+            UIWidgets/ArcGISBuildingInputWidget.cpp \
+            UIWidgets/ArcGISGasPipelineInputWidget.cpp \
+            Tools/ArcGISHurricanePreprocessor.cpp \
+            UIWidgets/ArcGISHurricaneSelectionWidget.cpp \
+
+HEADERS +=  ModelViewItems/ArcGISLegendView.h \
+            UIWidgets/ArcGISVisualizationWidget.h \
+            GraphicElements/ConvexHull.h \
+            GraphicElements/PolygonBoundary.h \
+            ModelViewItems/LayerTreeModel.h \
+            ModelViewItems/LayerTreeView.h \
+            ModelViewItems/LayerTreeItem.h \
+            Tools/ArcGISHurricanePreprocessor.h \
+            UIWidgets/ArcGISBuildingInputWidget.h \
+            UIWidgets/ArcGISGasPipelineInputWidget.h \
+            UIWidgets/ArcGISHurricaneSelectionWidget.h \
+}
 
 
 contains(DEFINES, INCLUDE_USER_PASS) {

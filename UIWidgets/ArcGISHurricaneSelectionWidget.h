@@ -1,5 +1,5 @@
-#ifndef PolygonBoundary_H
-#define PolygonBoundary_H
+#ifndef ArcGISHurricaneSelectionWidget_H
+#define ArcGISHurricaneSelectionWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,66 +38,85 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QMouseEvent>
-#include <QObject>
+#include "HurricaneSelectionWidget.h"
+#include "EmbeddedMapViewWidget.h"
+#include "ArcGISHurricanePreprocessor.h"
+#include "WindFieldStation.h"
 
-class ArcGISVisualizationWidget;
-class SimCenterMapGraphicsView;
+#include <memory>
+
+#include <QProcess>
+#include <QMap>
+
+class VisualizationWidget;
 
 namespace Esri
 {
 namespace ArcGISRuntime
 {
-class GraphicsOverlay;
-class SimpleMarkerSymbol;
-class Graphic;
-class Point;
-class SimpleLineSymbol;
-class SimpleFillSymbol;
-class MultipointBuilder;
-class Geometry;
-class Map;
+class Feature;
+class FeatureCollectionLayer;
+class FeatureCollectionTable;
+class SimpleRenderer;
 }
 }
 
-class PolygonBoundary : public QObject
+
+class ArcGISHurricaneSelectionWidget : public HurricaneSelectionWidget
 {
     Q_OBJECT
 
 public:
-    PolygonBoundary(ArcGISVisualizationWidget* visualizationWidget);
+    ArcGISHurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~ArcGISHurricaneSelectionWidget();
 
-    void setupPolygonBoundaryObjects();
+    QStackedWidget* getArcGISHurricaneSelectionWidget(void);
 
-    bool getSelectingPoints() const;
-    void setSelectingPoints(bool value);
 
-signals:
-    void selectionStart();
-    void selectionEnd();
+    void clear(void);
+
+    void createHurricaneVisuals(HurricaneObject* hurricane);
+
+    int loadResults(const QString& outputDir);
 
 public slots:
-    void plotPolygonBoundary();
-    void getPolygonBoundaryInputs();
-    void resetPolygonBoundary();
-    void getItemsInPolygonBoundary();
-    void PolygonBoundaryPointSelector(QMouseEvent& e);
+    // Handle the area selection for track truncation
+    void handleSelectAreaMap(void);
+    void handleClearSelectAreaMap(void);
+    void handleAreaSelected(void);
+
+    int importHurricaneTrackData(const QString &eventFile, QString &err);
+
+private slots:
+
+    void handleHurricaneSelect(void);
+    void handleGridSelected(void);
+    void handleLandfallPointSelected(void);
+    void clearGridFromMap(void);
+    void clearLandfallFromMap(void);
+
+    void handleTerrainImport(void);
+
+signals:
+    void loadingComplete(const bool value);
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
 
 private:
 
-    // Create a graphic to display the convex hull selection
-    Esri::ArcGISRuntime::GraphicsOverlay* m_graphicsOverlay = nullptr;
-    Esri::ArcGISRuntime::SimpleMarkerSymbol* m_markerSymbol = nullptr;
-    Esri::ArcGISRuntime::Graphic* m_inputsGraphic = nullptr;
-    Esri::ArcGISRuntime::Graphic* m_PolygonBoundaryGraphic = nullptr;
-    Esri::ArcGISRuntime::SimpleLineSymbol* m_lineSymbol = nullptr;
-    Esri::ArcGISRuntime::SimpleFillSymbol* m_fillSymbol = nullptr;
-    Esri::ArcGISRuntime::MultipointBuilder* m_multipointBuilder = nullptr;
-    bool selectingPolygonBoundary;
+    std::unique_ptr<ArcGISHurricanePreprocessor> hurricaneImportTool;
+    ArcGISVisualizationWidget* theVisualizationWidget;
 
-    Esri::ArcGISRuntime::Map *mapGIS = nullptr;
-    ArcGISVisualizationWidget* theVisualizationWidget = nullptr;
-    SimCenterMapGraphicsView *mapViewWidget = nullptr;
+    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
+
+    QMap<QString,WindFieldStation> stationMap;
+
+    Esri::ArcGISRuntime::Feature* selectedHurricaneFeature;
+    Esri::ArcGISRuntime::GroupLayer* selectedHurricaneLayer;
+    LayerTreeItem* selectedHurricaneItem;
+    LayerTreeItem* landfallItem;
+    LayerTreeItem* hurricaneTrackItem;
+    LayerTreeItem* hurricaneTrackPointsItem;
+
 };
 
-#endif // PolygonBoundary_H
+#endif // ArcGISHurricaneSelectionWidget_H

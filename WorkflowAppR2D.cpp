@@ -63,9 +63,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
 #include "UQWidget.h"
-#include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 #include "LoadResultsDialog.h"
+
+#include "VisualizationWidget.h"
+
+#ifdef ARC_GIS
+#include "ArcGISVisualizationWidget.h"
+#elif QGIS
+#include "QGISVisualizationWidget.h"
+#endif
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -205,7 +212,11 @@ void WorkflowAppR2D::initialize(void)
     // Create the various widgets
     theGeneralInformationWidget = new GeneralInformationWidget(this);
     theRVs = new RandomVariablesContainer();
-    theVisualizationWidget = new VisualizationWidget(this);
+#ifdef ARC_GIS
+    theVisualizationWidget = new ArcGISVisualizationWidget(this);
+#elif
+    theVisualizationWidget = new QGISVisualizationWidget(this);
+#endif
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
     theHazardToAssetWidget = new HazardToAssetWidget(this, theVisualizationWidget);
     theModelingWidget = new ModelWidget(this, theRVs);

@@ -36,9 +36,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "HurricanePreprocessor.h"
+#include "ArcGISHurricanePreprocessor.h"
 #include "CSVReaderWriter.h"
-#include "VisualizationWidget.h"
+#include "ArcGISVisualizationWidget.h"
 
 #include <QProgressBar>
 #include <QList>
@@ -58,13 +58,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace Esri::ArcGISRuntime;
 
-HurricanePreprocessor::HurricanePreprocessor(QProgressBar* pBar, VisualizationWidget* visWidget, QObject* parent) : theProgressBar(pBar), theVisualizationWidget(visWidget), theParent(parent)
+ArcGISHurricanePreprocessor::ArcGISHurricanePreprocessor(QProgressBar* pBar, ArcGISVisualizationWidget* visWidget, QObject* parent) : theProgressBar(pBar), theVisualizationWidget(visWidget), theParent(parent)
 {
     allHurricanesLayer = nullptr;
 }
 
 
-int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QString &err)
+int ArcGISHurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QString &err)
 {
     CSVReaderWriter csvTool;
 
@@ -172,7 +172,6 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
         return -1;
     }
 
-
     // Create the feature collection table/layers
     QList<Field> trackFields;
     trackFields.append(Field::createText("NAME", "NULL",4));
@@ -258,7 +257,7 @@ int HurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QStr
 }
 
 
-void HurricanePreprocessor::clear(void)
+void ArcGISHurricanePreprocessor::clear(void)
 {
     hurricanes.clear();
     delete allHurricanesLayer;
@@ -266,7 +265,7 @@ void HurricanePreprocessor::clear(void)
 }
 
 
-LayerTreeItem* HurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
+LayerTreeItem* ArcGISHurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
 {
     auto numPnts = hurricane->size();
 
@@ -336,7 +335,7 @@ LayerTreeItem* HurricanePreprocessor::createTrackVisualization(HurricaneObject* 
 }
 
 
-Geometry HurricanePreprocessor::getTrackGeometry(HurricaneObject* hurricane, QString& err)
+Geometry ArcGISHurricanePreprocessor::getTrackGeometry(HurricaneObject* hurricane, QString& err)
 {
     // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
     // Get the parameter labels or header data
@@ -405,7 +404,7 @@ Geometry HurricanePreprocessor::getTrackGeometry(HurricaneObject* hurricane, QSt
 }
 
 
-LayerTreeItem*  HurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
+LayerTreeItem*  ArcGISHurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, GroupLayer* parentLayer, QString& err)
 {
     auto numPnts = hurricane->size();
 
@@ -514,7 +513,7 @@ LayerTreeItem*  HurricanePreprocessor::createTrackPointsVisualization(HurricaneO
 }
 
 
-LayerTreeItem* HurricanePreprocessor::createLandfallVisualization(const double latitude,const double longitude, const QMap<QString, QVariant>& featureAttributes, LayerTreeItem* parentItem, GroupLayer* parentLayer)
+LayerTreeItem* ArcGISHurricanePreprocessor::createLandfallVisualization(const double latitude,const double longitude, const QMap<QString, QVariant>& featureAttributes, LayerTreeItem* parentItem, GroupLayer* parentLayer)
 {
 
     QList<Field> pointFields;
@@ -556,7 +555,7 @@ LayerTreeItem* HurricanePreprocessor::createLandfallVisualization(const double l
 }
 
 
-HurricaneObject* HurricanePreprocessor::getHurricane(const QString& SID)
+HurricaneObject* ArcGISHurricanePreprocessor::getHurricane(const QString& SID)
 {
     for(auto&& it : hurricanes)
     {
@@ -568,7 +567,7 @@ HurricaneObject* HurricanePreprocessor::getHurricane(const QString& SID)
 }
 
 
-Esri::ArcGISRuntime::Layer *HurricanePreprocessor::getAllHurricanesLayer() const
+Esri::ArcGISRuntime::Layer *ArcGISHurricanePreprocessor::getAllHurricanesLayer() const
 {
     return allHurricanesLayer;
 }

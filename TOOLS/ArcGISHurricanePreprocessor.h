@@ -1,5 +1,5 @@
-#ifndef PolygonBoundary_H
-#define PolygonBoundary_H
+#ifndef ArcGISHurricanePreprocessor_H
+#define ArcGISHurricanePreprocessor_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,66 +38,63 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QMouseEvent>
-#include <QObject>
+#include "HurricaneObject.h"
+
+#include <QString>
+#include <QStringList>
+#include <QVector>
+#include <QVariant>
 
 class ArcGISVisualizationWidget;
-class SimCenterMapGraphicsView;
+class LayerTreeItem;
+
+class QObject;
+class QProgressBar;
 
 namespace Esri
 {
 namespace ArcGISRuntime
 {
-class GraphicsOverlay;
-class SimpleMarkerSymbol;
-class Graphic;
-class Point;
-class SimpleLineSymbol;
-class SimpleFillSymbol;
-class MultipointBuilder;
+class Layer;
+class GroupLayer;
 class Geometry;
-class Map;
 }
 }
 
-class PolygonBoundary : public QObject
+class ArcGISHurricanePreprocessor
 {
-    Q_OBJECT
-
 public:
-    PolygonBoundary(ArcGISVisualizationWidget* visualizationWidget);
+    ArcGISHurricanePreprocessor(QProgressBar* pBar, ArcGISVisualizationWidget* visWidget, QObject* parent);
 
-    void setupPolygonBoundaryObjects();
+    int loadHurricaneTrackData(const QString &eventFile, QString &err);
 
-    bool getSelectingPoints() const;
-    void setSelectingPoints(bool value);
+    void clear(void);
 
-signals:
-    void selectionStart();
-    void selectionEnd();
+    // Gets the hurricane of the given storm id
+    HurricaneObject* getHurricane(const QString& SID);
 
-public slots:
-    void plotPolygonBoundary();
-    void getPolygonBoundaryInputs();
-    void resetPolygonBoundary();
-    void getItemsInPolygonBoundary();
-    void PolygonBoundaryPointSelector(QMouseEvent& e);
+    Esri::ArcGISRuntime::Layer *getAllHurricanesLayer() const;
+
+    // Creates a hurricane visualization of the track and track points if desired
+    LayerTreeItem* createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
+
+    // Note that including track points may take a long time, moreover not all hurricanes have a landfall
+    LayerTreeItem*  createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
+
+    LayerTreeItem* createLandfallVisualization(const double latitude,
+                                               const double longitude,
+                                               const QMap<QString, QVariant>& featureAttributes,
+                                               LayerTreeItem* parentItem,
+                                               Esri::ArcGISRuntime::GroupLayer* parentLayer);
 
 private:
 
-    // Create a graphic to display the convex hull selection
-    Esri::ArcGISRuntime::GraphicsOverlay* m_graphicsOverlay = nullptr;
-    Esri::ArcGISRuntime::SimpleMarkerSymbol* m_markerSymbol = nullptr;
-    Esri::ArcGISRuntime::Graphic* m_inputsGraphic = nullptr;
-    Esri::ArcGISRuntime::Graphic* m_PolygonBoundaryGraphic = nullptr;
-    Esri::ArcGISRuntime::SimpleLineSymbol* m_lineSymbol = nullptr;
-    Esri::ArcGISRuntime::SimpleFillSymbol* m_fillSymbol = nullptr;
-    Esri::ArcGISRuntime::MultipointBuilder* m_multipointBuilder = nullptr;
-    bool selectingPolygonBoundary;
-
-    Esri::ArcGISRuntime::Map *mapGIS = nullptr;
-    ArcGISVisualizationWidget* theVisualizationWidget = nullptr;
-    SimCenterMapGraphicsView *mapViewWidget = nullptr;
+    Esri::ArcGISRuntime::Geometry getTrackGeometry(HurricaneObject* hurricane, QString& err);
+    Esri::ArcGISRuntime::Layer* allHurricanesLayer;
+    QProgressBar* theProgressBar;
+    ArcGISVisualizationWidget* theVisualizationWidget;
+    QObject* theParent;
+    QVector<HurricaneObject> hurricanes;
 };
 
-#endif // PolygonBoundary_H
+#endif // ArcGISHurricanePreprocessor_H
