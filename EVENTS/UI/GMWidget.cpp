@@ -843,6 +843,16 @@ void GMWidget::downloadRecordBatch(void)
     }
 }
 
+#ifdef Q_GIS
+int GMWidget::processDownloadedRecords(QString& errorMessage)
+{
+
+    qDebug()<<"GMWidget::processDownloadedRecords";
+
+    return 0;
+}
+#endif
+
 #ifdef ARC_GIS
 int GMWidget::processDownloadedRecords(QString& errorMessage)
 {

@@ -39,8 +39,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "WindFieldStation.h"
 
-#include "Feature.h"
-#include "FeatureTable.h"
+#ifdef ARC_GIS
+#include <Feature.h>
+#include <FeatureTable.h>
+#endif
+
+#ifdef Q_GIS
+#include <qgsfeature.h>
+#endif
 
 #include <QFileInfo>
 #include <QString>
@@ -122,6 +128,8 @@ QVector<double> WindFieldStation::getPeakWindSpeeds() const
     return peakWindSpeeds;
 }
 
+
+#ifdef ARC_GIS
 Esri::ArcGISRuntime::Feature *WindFieldStation::getStationFeature() const
 {
     return stationFeature;
@@ -131,6 +139,22 @@ void WindFieldStation::setStationFeature(Esri::ArcGISRuntime::Feature *value)
 {
     stationFeature = value;
 }
+
+#endif
+
+
+#ifdef Q_GIS
+QgsFeature *WindFieldStation::getStationFeature() const
+{
+    return stationFeature;
+}
+
+void WindFieldStation::setStationFeature(QgsFeature *value)
+{
+    stationFeature = value;
+}
+#endif
+
 
 void WindFieldStation::setStationFilePath(const QString &value)
 {
@@ -145,8 +169,15 @@ QString WindFieldStation::getStationFilePath() const
 
 int WindFieldStation::updateFeatureAttribute(const QString& attribute, const QVariant& value)
 {
+
+#ifdef ARC_GIS
     stationFeature->attributes()->replaceAttribute(attribute,value);
     stationFeature->featureTable()->updateFeature(stationFeature);
+#endif
+
+#ifdef Q_GIS
+    stationFeature->setAttribute(attribute,value);
+#endif
 
     return 0;
 }

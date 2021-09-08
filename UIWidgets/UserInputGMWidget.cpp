@@ -400,6 +400,13 @@ void UserInputGMWidget::clear(void)
     stationList.clear();
 }
 
+#ifdef Q_GIS
+void UserInputGMWidget::loadUserGMData(void)
+{
+    qDebug()<<"Implement me in UserInputGMWidget::loadUserGMData";
+    return ;
+}
+#endif
 
 #ifdef ARC_GIS
 void UserInputGMWidget::loadUserGMData(void)

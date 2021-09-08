@@ -277,6 +277,15 @@ int ShakeMapWidget::loadShakeMapData(void)
     return 0;
 }
 
+#ifdef Q_GIS
+int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
+{
+    qDebug()<<"Implement me in ShakeMapWidget::loadDataFromDirectory";
+    return 0;
+}
+#endif
+
+
 #ifdef ARC_GIS
 int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 {

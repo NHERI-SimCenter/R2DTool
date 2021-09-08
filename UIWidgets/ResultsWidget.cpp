@@ -62,8 +62,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QFileDialog>
 
-using namespace Esri::ArcGISRuntime;
-
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     DVApp = "Pelicun";

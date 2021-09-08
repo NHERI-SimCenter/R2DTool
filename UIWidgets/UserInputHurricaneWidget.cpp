@@ -47,13 +47,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifdef ARC_GIS
 #include "ArcGISHurricanePreprocessor.h"
 #include "ArcGISVisualizationWidget.h"
+
 // GIS Layers
-#include "FeatureCollectionLayer.h"
-#include "GroupLayer.h"
-#include "Layer.h"
-#include "LayerListModel.h"
-#include "SimpleMarkerSymbol.h"
-#include "SimpleRenderer.h"
+#include <FeatureCollectionLayer.h>
+#include <GroupLayer.h>
+#include <Layer.h>
+#include <LayerListModel.h>
+#include <SimpleMarkerSymbol.h>
+#include <SimpleRenderer.h>
+
+using namespace Esri::ArcGISRuntime;
+#endif
+
+#ifdef Q_GIS
+#include "QGISHurricanePreprocessor.h"
+#include "QGISVisualizationWidget.h"
+
 #endif
 
 #include <QApplication>
@@ -65,14 +74,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QProgressBar>
+#include <QJsonObject>
 #include <QComboBox>
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QDir>
-
-using namespace Esri::ArcGISRuntime;
 
 UserInputHurricaneWidget::UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
@@ -279,6 +287,8 @@ void UserInputHurricaneWidget::showEventSelectDialog(void)
 
 void UserInputHurricaneWidget::loadHurricaneTrackData(void)
 {
+
+#ifdef ARC_GIS
     auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
 
     if(arcVizWidget == nullptr)
@@ -287,8 +297,20 @@ void UserInputHurricaneWidget::loadHurricaneTrackData(void)
         return;
     }
 
-#ifdef ARC_GIS
     ArcGISHurricanePreprocessor hurricaneImportTool(progressBar, arcVizWidget, this);
+#endif
+
+
+#ifdef Q_GIS
+    auto qgisVizWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(qgisVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return;
+    }
+
+    QGISHurricanePreprocessor hurricaneImportTool(progressBar, qgisVizWidget, this);
 #endif
 
     theStackedWidget->setCurrentWidget(progressBarWidget);
@@ -433,6 +455,14 @@ void UserInputHurricaneWidget::clear(void)
 
     eventFileLineEdit->clear();
 }
+
+
+#ifdef Q_GIS
+void UserInputHurricaneWidget::loadUserWFData(void)
+{
+    qDebug()<<"Implement me in UserInputHurricaneWidget::loadUserWFData";
+}
+#endif
 
 
 #ifdef ARC_GIS

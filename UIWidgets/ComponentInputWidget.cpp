@@ -61,7 +61,13 @@ using namespace std::chrono;
 
 #ifdef ARC_GIS
 #include "ArcGISVisualizationWidget.h"
-#include "FeatureCollectionLayer.h"
+#include <FeatureCollectionLayer.h>
+#endif
+
+#ifdef Q_GIS
+#include "QGISVisualizationWidget.h"
+#include <qgsfield.h>
+#include <qgsfields.h>
 #endif
 
 // Std library headers
@@ -410,11 +416,20 @@ void ComponentInputWidget::setTheVisualizationWidget(VisualizationWidget *value)
 
         if(theVisualizationWidget == nullptr)
         {
-            qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+            this->errorMessage("Failed to cast to QISVisualizationWidget");
             return;
         }
-#else
-        qDebug()<<"Implement me";
+#endif
+
+#ifdef Q_GIS
+
+        theVisualizationWidget = static_cast<QGISVisualizationWidget*>(value);
+
+        if(theVisualizationWidget == nullptr)
+        {
+            this->errorMessage("Failed to cast to QISVisualizationWidget");
+            return;
+        }
 #endif
 
 }
@@ -435,6 +450,9 @@ void ComponentInputWidget::selectComponents(void)
 
 void ComponentInputWidget::handleComponentSelection(void)
 {
+    qDebug()<<"Implement me in ComponentInputWidget::handleComponentSelection";
+
+    return;
 
     auto nRows = componentTableWidget->rowCount();
 
@@ -496,7 +514,10 @@ void ComponentInputWidget::handleComponentSelection(void)
         if(feature == nullptr)
             continue;
 
+        QMap<QString, QVariant> featureAttributes;
+#ifdef ARC_GIS
         auto atrb = feature->attributes()->attributesMap();
+
         auto id = atrb.value("UID").toString();
 
         if(selectedFeaturesForAnalysis.contains(id))
@@ -507,7 +528,6 @@ void ComponentInputWidget::handleComponentSelection(void)
 
         // qDebug()<<"Num atributes: "<<atrb.size();
 
-        QMap<QString, QVariant> featureAttributes;
         for(int i = 0; i<atrb.size();++i)
         {
             auto key = atrKeys.at(i);
@@ -521,6 +541,35 @@ void ComponentInputWidget::handleComponentSelection(void)
 
             featureAttributes[key] = val;
         }
+#endif
+
+#ifdef Q_GIS
+
+        auto id =feature->attribute("UID").toString();
+
+        if(selectedFeaturesForAnalysis.contains(id))
+            continue;
+
+        auto atrb = feature->attributes();
+        auto fields = feature->fields().names();
+
+        // qDebug()<<"Num atributes: "<<atrb.size();
+
+        for(int i = 0; i<atrb.size();++i)
+        {
+
+            auto key = fields.at(i);
+            auto val = atrb.value(i);
+
+            // Including the ObjectID causes a crash!!! Do not include it when creating an object
+            if(key == "ObjectID")
+                continue;
+
+            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
+
+            featureAttributes[key] = val;
+        }
+#endif
 
         auto geom = feature->geometry();
 
@@ -539,11 +588,19 @@ void ComponentInputWidget::handleComponentSelection(void)
         return;
     }
 
+#ifdef ARC_GIS
     // Add the layer to the map if it does not already exist
     auto layerExists = theVisualizationWidget->getLayer(selecFeatLayer->layerId());
 
     if(layerExists == nullptr)
         theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
+#endif
+
+#ifdef Q_GIS
+
+    qDebug()<<"Implement me in ComponentInputWidget::handleComponentSelection";
+
+#endif
 }
 
 
@@ -569,20 +626,8 @@ QStringList ComponentInputWidget::getTableHorizontalHeadings()
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
-    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
-
-    QList<Esri::ArcGISRuntime::Feature*> selectedFeatures;
-    for(auto&& it : selectedComponentIDs)
-    {
-        auto component = theComponentDb.getComponent(it);
-
-        auto feature = component.ComponentFeature;
-
-        selectedFeatures<<feature;
-    }
 
     this->clearLayerSelectedForAnalysis();
-
 
     auto nRows = componentTableWidget->rowCount();
 
@@ -593,7 +638,6 @@ void ComponentInputWidget::clearComponentSelection(void)
     }
 
     selectComponentsLineEdit->clear();
-
 }
 
 
@@ -957,6 +1001,28 @@ void ComponentInputWidget::updateComponentAttribute(const int uid, const QString
 }
 
 
+QgsFeature*  ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom)
+{
+    Q_UNUSED(featureAttributes);
+    Q_UNUSED(geom);
+
+    return nullptr;
+}
+
+
+int ComponentInputWidget::removeFeatureFromSelectedLayer(QgsFeature* feat)
+{
+    Q_UNUSED(feat);
+    return -1;
+}
+
+
+QgsVectorLayer* ComponentInputWidget::getSelectedFeatureLayer(void)
+{
+    return nullptr;
+}
+
+
 void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
 {
 
@@ -972,6 +1038,7 @@ void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid,
         return;
     }
 
+#ifdef ARC_GIS
     // Get the feature
     Esri::ArcGISRuntime::Feature* feat = selectedFeaturesForAnalysis[uid];
 
@@ -989,4 +1056,25 @@ void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid,
         qDebug()<<"Failed to update feature "<<feat->attributes()->attributeValue("ID").toString();
         return;
     }
+#endif
+
+#ifdef Q_GIS
+    // Get the feature
+    QgsFeature* feat = selectedFeaturesForAnalysis[uid];
+
+    if(feat == nullptr)
+    {
+        qDebug()<<"Feature is a nullptr";
+        return;
+    }
+
+    auto res = feat->setAttribute(attribute,value);
+
+    if(res == false)
+    {
+        qDebug()<<"Failed to update feature "<<feat->attribute("ID").toString();
+        return;
+    }
+#endif
+
 }

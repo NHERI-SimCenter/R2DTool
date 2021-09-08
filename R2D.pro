@@ -36,7 +36,7 @@
 
 # Written by: Stevan Gavrilovic, Frank McKenna
 
-QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel 3dcore 3drender 3dextras charts xml
+QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel xml 3dcore 3drender 3dextras
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -47,10 +47,19 @@ VERSION = 1.1.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # Select one of the following GIS librarys
-DEFINES += ARC_GIS #Q_GIS
+DEFINES +=  Q_GIS #ARC_GIS
 
 # Does this build include the secret user pass for PEER database access?
 DEFINES += INCLUDE_USER_PASS
+
+# Specify the path to the Simcenter common directory
+PATH_TO_COMMON=../../SimCenterCommon
+
+# Specify the path to the R2D tool examples folder
+PATH_TO_EXAMPLES=../../R2DExamples
+
+
+## ADVANCED USAGE BELOW ##
 
 # C++17 support
 CONFIG += c++17
@@ -68,16 +77,12 @@ equals(QT_MAJOR_VERSION, 5) {
 win32:DEFINES +=  CURL_STATICLIB
 
 #win32::include($$PWD/R2D.user.pri)
-#win32::include($$PWD/R2D.user.pri)
 win32::include($$PWD/ConanHelper.pri)
 
 win32::LIBS+=Advapi32.lib
 
 # Full optimization on release
 QMAKE_CXXFLAGS_RELEASE += -O3
-
-# Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../../SimCenterCommon
 
 # Application Icons
 win32 {
@@ -93,7 +98,7 @@ win32 {
 
 contains(DEFINES, ARC_GIS)  {
 
-    message("Building with ArcGIS GIS library")
+    message("Building with ArcGIS library")
 
     ARCGIS_RUNTIME_VERSION = 100.9
     include(./arcgisruntime.pri)
@@ -101,7 +106,19 @@ contains(DEFINES, ARC_GIS)  {
 } contains(DEFINES, Q_GIS)  {
 
     message("Building with QGIS library")
-    include(./arcgisruntime.pri)
+
+    #Change these to the appropriate folders
+    PATH_TO_QGIS_ROOT=/Users/steve/Desktop/C++Libraries/QGIS
+    PATH_TO_QGIS_DEPS=/opt/QGIS/qgis-deps-0.8.0/stage
+    PATH_TO_QGIS_PLUGIN=../../QGISPlugin/QGISPlugin
+
+    # Do not change. Keep the folder format where there is a QGIS root folder and in it there is a build, source, and install folder
+    PATH_TO_QGIS=$$PATH_TO_QGIS_ROOT/QGIS
+    PATH_TO_QGIS_SRC=$$PATH_TO_QGIS/src
+    PATH_TO_QGIS_DEPS_INC=$$PATH_TO_QGIS_DEPS/include
+    PATH_TO_QGIS_BUILD=$$PATH_TO_QGIS_ROOT/build
+
+    include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 } else {
     message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS")
@@ -181,7 +198,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
             UIWidgets/ColorDialogDelegate.cpp \
-            UIWidgets/RendererComboBoxItemDelegate.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
             UIWidgets/BuildingSimulationWidget.cpp \
@@ -194,9 +210,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
             UIWidgets/GroundMotionStation.cpp \
-            UIWidgets/RendererModel.cpp \
             UIWidgets/LoadResultsDialog.cpp \
-            UIWidgets/RendererTableView.cpp \
             UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
@@ -246,7 +260,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/HBoxFormLayout.h \
             Events/UI/IntensityMeasure.h \
             Events/UI/IntensityMeasureWidget.h \
-            Events/UI/JsonSerializableWidget.h \
             Events/UI/Location.h \
             Events/UI/OpenQuakeScenario.h \
             Events/UI/OpenQuakeScenarioWidget.h \
@@ -269,13 +282,9 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SpatialCorrelationWidget.h \
             Events/UI/Vs30.h \
             Events/UI/Vs30Widget.h \
-            Events/UI/SpatialCorrelationWidget.h \      
-            GraphicElements/ConvexHull.h \
-            GraphicElements/PolygonBoundary.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
-            Tools/HurricanePreprocessor.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
@@ -291,7 +300,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
             UIWidgets/ColorDialogDelegate.h \
-            UIWidgets/RendererComboBoxItemDelegate.h \
             UIWidgets/GISObjectTypeMapping.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
             UIWidgets/BuildingModelingWidget.h \
@@ -305,9 +313,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
             UIWidgets/GroundMotionStation.h \
-            UIWidgets/RendererModel.h \
             UIWidgets/LoadResultsDialog.h \
-            UIWidgets/RendererTableView.h \
             UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \
@@ -364,6 +370,9 @@ SOURCES +=  ModelViewItems/ArcGISLegendView.cpp \
             UIWidgets/LayerManagerTableView.cpp \
             UIWidgets/LayerManagerModel.cpp \
             UIWidgets/LayerComboBoxItemDelegate.cpp \
+            UIWidgets/RendererModel.cpp \
+            UIWidgets/RendererTableView.cpp \
+            UIWidgets/RendererComboBoxItemDelegate.cpp \
 
 HEADERS +=  ModelViewItems/ArcGISLegendView.h \
             UIWidgets/ArcGISVisualizationWidget.h \
@@ -378,6 +387,24 @@ HEADERS +=  ModelViewItems/ArcGISLegendView.h \
             UIWidgets/LayerManagerTableView.h \
             UIWidgets/LayerManagerModel.h \
             UIWidgets/LayerComboBoxItemDelegate.h \
+            UIWidgets/RendererModel.h \
+            UIWidgets/RendererTableView.h \
+            UIWidgets/RendererComboBoxItemDelegate.h \
+}
+
+
+contains(DEFINES, Q_GIS)  {
+
+SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
+            UIWidgets/QGISGasPipelineInputWidget.cpp \
+            UIWidgets/QGISBuildingInputWidget.cpp \
+            UIWidgets/QGISHurricaneSelectionWidget.cpp \
+
+HEADERS +=  Tools/QGISHurricanePreprocessor.h \
+            UIWidgets/QGISGasPipelineInputWidget.h \
+            UIWidgets/QGISBuildingInputWidget.h \
+            UIWidgets/QGISHurricaneSelectionWidget.h \
+
 }
 
 
@@ -410,13 +437,13 @@ DESTDIR = $$shell_path($$OUT_PWD)
 Release:DESTDIR = $$DESTDIR/release
 Debug:DESTDIR = $$DESTDIR/debug
 
-PATH_TO_EXAMPLES=$$DESTDIR/Examples
-PATH_TO_DATABASES=$$DESTDIR/Databases
+EXAMPLES_DIR=$$DESTDIR/Examples
+DATABASE_DIR=$$DESTDIR/Databases
 
 } else {
     mac {
-    PATH_TO_EXAMPLES=$$OUT_PWD/R2D.app/Contents/MacOS
-    PATH_TO_DATABASES=$$OUT_PWD/R2D.app/Contents/MacOS
+    EXAMPLES_DIR=$$OUT_PWD/R2D.app/Contents/MacOS
+    DATABASE_DIR=$$OUT_PWD/R2D.app/Contents/MacOS
 
     mkpath($$OUT_PWD/R2D.app/Contents/MacOS)
     }
@@ -425,14 +452,14 @@ PATH_TO_DATABASES=$$DESTDIR/Databases
 win32 {
 
 # Copies over the examples folder into the build directory
-# Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+# Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples)) $$shell_quote($$shell_path($$EXAMPLES_DIR))
 # first.depends = $(first) Copydata
 
 # Copies the dll files into the build directory
 # CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
 # first.depends += CopyDLLs
 
-# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$DATABASE_DIR))
 # first.depends += CopyDbs
 
 # export(first.depends)
@@ -444,19 +471,21 @@ win32 {
 }else {
 mac {
 
+mkpath($$EXAMPLES_DIR/Examples)
+
 # Copies the examples folder into the build directory
-#Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples.json)) $$shell_quote($$shell_path($$EXAMPLES_DIR/Examples))
 
 # Copies the databases folder into the build directory
-# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$DATABASE_DIR))
 
-# first.depends += Copydata CopyDbs
+first.depends += Copydata CopyDbs
 
-# export(first.depends)
-# export(Copydata.commands)
-# export(CopyDbs.commands)
+export(first.depends)
+export(Copydata.commands)
+export(CopyDbs.commands)
 
-# QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
+QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
 }
 }

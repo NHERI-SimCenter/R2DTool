@@ -51,6 +51,7 @@ class QLineEdit;
 class QProgressBar;
 class QLabel;
 
+#ifdef Arc_GIS
 namespace Esri
 {
 namespace ArcGISRuntime
@@ -62,7 +63,7 @@ class KmlLayer;
 class Layer;
 }
 }
-
+#endif
 
 class UserInputHurricaneWidget : public SimCenterAppWidget
 {

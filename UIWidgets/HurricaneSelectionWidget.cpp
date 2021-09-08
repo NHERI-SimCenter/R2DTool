@@ -50,14 +50,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "Utils/PythonProgressDialog.h"
 
-#include "GroupLayer.h"
-#include "Feature.h"
-#include "FeatureCollection.h"
-#include "FeatureCollectionLayer.h"
-#include "SimpleRenderer.h"
-#include "SimpleFillSymbol.h"
-#include "SimpleMarkerSymbol.h"
-
 #include <QApplication>
 #include <QJsonDocument>
 #include <QJsonObject>

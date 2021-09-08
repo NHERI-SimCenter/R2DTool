@@ -61,14 +61,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <utility>
 
-using namespace Esri::ArcGISRuntime;
 
 VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {    
     legendView = nullptr;
     this->setContentsMargins(0,0,0,0);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
 
     setAcceptDrops(true);

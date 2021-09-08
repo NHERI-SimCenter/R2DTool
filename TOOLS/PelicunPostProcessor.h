@@ -56,6 +56,7 @@ class QTableWidget;
 class QGridLayout;
 class QLabel;
 class QComboBox;
+class QGraphicsView;
 
 namespace QtCharts
 {
@@ -63,16 +64,6 @@ class QChartView;
 class QBarSet;
 class QChart;
 }
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Map;
-class MapGraphicsView;
-}
-}
-
 
 class PelicunPostProcessor : public QMainWindow
 {
@@ -175,7 +166,8 @@ private:
     QComboBox* sortComboBox;
 
     std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
+
+    QGraphicsView* mapViewMainWidget;
 
     QtCharts::QChart *casualtiesChart;
     QtCharts::QChart *RFDiagChart;

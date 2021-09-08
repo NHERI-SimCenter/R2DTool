@@ -38,7 +38,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna, Stevan Gavrilovic
 
+#ifdef ARC_GIS
 #include "MapGraphicsView.h"
+#endif
+
+#ifdef Q_GIS
+#include <QGraphicsView>
+#endif
 
 #include <QVBoxLayout>
 
@@ -46,6 +52,10 @@ class GISLegendView;
 
 #ifdef ARC_GIS
 class SimCenterMapGraphicsView: public  Esri::ArcGISRuntime::MapGraphicsView
+#endif
+
+#ifdef Q_GIS
+class SimCenterMapGraphicsView: public QGraphicsView
 #endif
 {
     Q_OBJECT

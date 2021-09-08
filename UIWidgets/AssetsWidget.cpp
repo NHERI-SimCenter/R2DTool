@@ -48,6 +48,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ArcGISGasPipelineInputWidget.h"
 #endif
 
+#ifdef Q_GIS
+#include "QGISBuildingInputWidget.h"
+#include "QGISGasPipelineInputWidget.h"
+#endif
+
 // Qt headers
 #include <QCheckBox>
 #include <QColorTransform>
@@ -76,10 +81,21 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 #endif
 
+
+#ifdef Q_GIS
+    QGISBuildingInputWidget *csvBuildingInventory = new QGISBuildingInputWidget(this,"Buildings","CSV_to_BIM");
+    buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
+#endif
+
     pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
 
 #ifdef ARC_GIS
     ArcGISGasPipelineInputWidget *csvPipelineInventory = new ArcGISGasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
+    pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+#endif
+
+#ifdef Q_GIS
+    QGISGasPipelineInputWidget *csvPipelineInventory = new QGISGasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
     pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
 #endif
 

@@ -49,6 +49,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ArcGISHurricaneSelectionWidget.h"
 #endif
 
+#ifdef Q_GIS
+#include "QGISHurricaneSelectionWidget.h"
+#endif
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGridLayout>
@@ -73,6 +77,10 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 
 #ifdef ARC_GIS
     theHurricaneSelectionWidget = new ArcGISHurricaneSelectionWidget(theVisualizationWidget);
+#endif
+
+#ifdef Q_GIS
+    theHurricaneSelectionWidget = new QGISHurricaneSelectionWidget(theVisualizationWidget);
 #endif
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);

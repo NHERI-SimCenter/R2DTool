@@ -563,8 +563,14 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         auto atrb = "LossRatio";
         auto atrbVal = QVariant(lossRatio);
 
+#ifdef ARC_GIS
         buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
         buildingFeature->featureTable()->updateFeature(buildingFeature);
+#endif
+
+#ifdef Q_GIS
+        buildingFeature->setAttribute("LossRatio",lossRatio);
+#endif
 
         // Get the feature UID
         auto uid = building.UID;

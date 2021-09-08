@@ -1,5 +1,5 @@
-#ifndef XMLADAPTOR_H
-#define XMLADAPTOR_H
+#ifndef QGISHurricaneSelectionWidget_H
+#define QGISHurricaneSelectionWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,49 +38,74 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-// This class imports a XML ShakeMap grid into a ArcGIS feature collection layer
+#include "HurricaneSelectionWidget.h"
+#include "EmbeddedMapViewWidget.h"
+#include "QGISHurricanePreprocessor.h"
+#include "WindFieldStation.h"
 
-#include "GroundMotionStation.h"
+#include <memory>
 
-#include <QString>
+#include <QProcess>
+#include <QMap>
 
-class QObject;
+class VisualizationWidget;
 
-#ifdef ARC_GIS
-namespace Esri
+
+class QGISHurricaneSelectionWidget : public HurricaneSelectionWidget
 {
-namespace ArcGISRuntime
-{
-class FeatureCollectionLayer;
-}
-}
-#endif
+    Q_OBJECT
 
-#ifdef Q_GIS
-class QgsVectorLayer;
-#endif
-
-class XMLAdaptor
-{
 public:
-    XMLAdaptor();
+    QGISHurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~QGISHurricaneSelectionWidget();
 
-#ifdef ARC_GIS
-    Esri::ArcGISRuntime::FeatureCollectionLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
-#endif
+    QStackedWidget* getQGISHurricaneSelectionWidget(void);
 
-    QgsVectorLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
 
-    QString getEventName() const;
+    void clear(void);
 
-    QVector<GroundMotionStation> getStationList() const;
+    void createHurricaneVisuals(HurricaneObject* hurricane);
+
+    int loadResults(const QString& outputDir);
+
+public slots:
+    // Handle the area selection for track truncation
+    void handleSelectAreaMap(void);
+    void handleClearSelectAreaMap(void);
+    void handleAreaSelected(void);
+
+    int importHurricaneTrackData(const QString &eventFile, QString &err);
+
+private slots:
+
+    void handleHurricaneSelect(void);
+    void handleGridSelected(void);
+    void handleLandfallPointSelected(void);
+    void clearGridFromMap(void);
+    void clearLandfallFromMap(void);
+
+    void handleTerrainImport(void);
+
+signals:
+    void loadingComplete(const bool value);
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
 
 private:
-    QString eventName;
 
-    QString shakemapID;
+    std::unique_ptr<QGISHurricanePreprocessor> hurricaneImportTool;
+    QGISVisualizationWidget* theVisualizationWidget;
 
-    QVector<GroundMotionStation> stationList;
+//    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
+
+    QMap<QString,WindFieldStation> stationMap;
+
+//    Esri::ArcGISRuntime::Feature* selectedHurricaneFeature;
+//    Esri::ArcGISRuntime::GroupLayer* selectedHurricaneLayer;
+//    LayerTreeItem* selectedHurricaneItem;
+//    LayerTreeItem* landfallItem;
+//    LayerTreeItem* hurricaneTrackItem;
+//    LayerTreeItem* hurricaneTrackPointsItem;
+
 };
 
-#endif // XMLADAPTOR_H
+#endif // QGISHurricaneSelectionWidget_H

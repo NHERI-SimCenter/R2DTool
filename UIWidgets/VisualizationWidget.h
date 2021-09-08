@@ -48,6 +48,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class SimCenterMapGraphicsView;
 class ComponentInputWidget;
 
+class QVBoxLayout;
+
 class VisualizationWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
@@ -111,6 +113,8 @@ protected:
 
     // The legend view
     GISLegendView* legendView;
+
+    QVBoxLayout *mainLayout;
 
 };
 

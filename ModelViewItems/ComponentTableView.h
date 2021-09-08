@@ -57,6 +57,8 @@ public:
 
     QString horizontalHeaderItem(int section);
 
+    QVariant horizontalHeaderItemVariant(int section);
+
     ComponentTableModel *getTableModel() const;
 
     QVariant item(int row, int col);

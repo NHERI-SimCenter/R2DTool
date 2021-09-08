@@ -54,6 +54,14 @@ class Feature;
 }
 #endif
 
+
+#ifdef Q_GIS
+#include <qgsfeature.h>
+#include <qgsattributes.h>
+
+class QgsFeature;
+#endif
+
 struct Component
 {
 public:
@@ -78,11 +86,10 @@ public:
         ComponentAttributes[attribute] = value;
 
         if(ComponentFeature != nullptr)
-        {
-            ComponentFeature->attributes()->replaceAttribute(attribute,value);
-            ComponentFeature->featureTable()->updateFeature(ComponentFeature);
+        {            
+            auto res = ComponentFeature->setAttribute(attribute,value);
 
-            if(ComponentFeature->attributes()->attributeValue(attribute).isNull())
+            if(res == false)
             {
                 qDebug()<<"Failed to update feature "<<attribute<<" in component "<<ID;
                 return -1;
@@ -108,6 +115,10 @@ public:
 #ifdef ARC_GIS
     // The Component feature in the GIS widget
     Esri::ArcGISRuntime::Feature* ComponentFeature = nullptr;
+#endif
+
+#ifdef Q_GIS
+    QgsFeature* ComponentFeature = nullptr;
 #endif
 
     // Map to store the Component attributes

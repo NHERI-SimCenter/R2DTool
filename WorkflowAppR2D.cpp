@@ -70,7 +70,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #ifdef ARC_GIS
 #include "ArcGISVisualizationWidget.h"
-#elif QGIS
+#endif
+
+#ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
 #endif
 
@@ -214,8 +216,10 @@ void WorkflowAppR2D::initialize(void)
     theRVs = new RandomVariablesContainer();
 #ifdef ARC_GIS
     theVisualizationWidget = new ArcGISVisualizationWidget(this);
-#elif
-    theVisualizationWidget = new QGISVisualizationWidget(this);
+#endif
+
+#ifdef Q_GIS
+    theVisualizationWidget = new QGISVisualizationWidget(theMainWindow);
 #endif
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
     theHazardToAssetWidget = new HazardToAssetWidget(this, theVisualizationWidget);

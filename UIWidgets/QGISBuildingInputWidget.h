@@ -1,5 +1,5 @@
-#ifndef XMLADAPTOR_H
-#define XMLADAPTOR_H
+#ifndef QGISBuildingInputWidget_H
+#define QGISBuildingInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,49 +38,31 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-// This class imports a XML ShakeMap grid into a ArcGIS feature collection layer
+#include "ComponentInputWidget.h"
 
-#include "GroundMotionStation.h"
-
-#include <QString>
-
-class QObject;
-
-#ifdef ARC_GIS
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class FeatureCollectionLayer;
-}
-}
-#endif
-
-#ifdef Q_GIS
 class QgsVectorLayer;
-#endif
+class QgsFeature;
+class QgsGeometry;
 
-class XMLAdaptor
+class QGISBuildingInputWidget : public ComponentInputWidget
 {
 public:
-    XMLAdaptor();
+    QGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType = QString());
 
-#ifdef ARC_GIS
-    Esri::ArcGISRuntime::FeatureCollectionLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
-#endif
+    int loadComponentVisualization();
 
-    QgsVectorLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
+    QgsFeature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom);
+    int removeFeatureFromSelectedLayer(QgsFeature* feat);
+    QgsVectorLayer* getSelectedFeatureLayer(void);
 
-    QString getEventName() const;
-
-    QVector<GroundMotionStation> getStationList() const;
+    void clear();
 
 private:
-    QString eventName;
 
-    QString shakemapID;
+//    Esri::ArcGISRuntime::SimpleRenderer* createBuildingRenderer(void);
+//    Esri::ArcGISRuntime::ClassBreaksRenderer* createSelectedBuildingRenderer(double outlineWidth = 0.0);
+    QgsVectorLayer* selectedBuildingsLayer = nullptr;
 
-    QVector<GroundMotionStation> stationList;
 };
 
-#endif // XMLADAPTOR_H
+#endif // QGISBuildingInputWidget_H

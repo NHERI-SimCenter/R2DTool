@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterMapGraphicsView.h"
 
 #include <QGraphicsSimpleTextItem>
+#include <QDragEnterEvent>
 #include <QDebug>
 
 EmbeddedMapViewWidget::EmbeddedMapViewWidget(QWidget* parent) : QWidget(parent)

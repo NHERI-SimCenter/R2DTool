@@ -128,18 +128,6 @@ ArcGISVisualizationWidget::ArcGISVisualizationWidget(QWidget* parent) : Visualiz
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
 
-    // Create the header layout and add it to the main layout
-    //    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
-    //    SectionTitle *label = new SectionTitle();
-    //    label->setText(QString("Visualization"));
-    //    label->setMinimumWidth(150);
-
-    //    theHeaderLayout->addWidget(label);
-    //    QSpacerItem *spacer = new QSpacerItem(50,10);
-    //    theHeaderLayout->addItem(spacer);
-    //    theHeaderLayout->addStretch(1);
-    //    mainLayout->addLayout(theHeaderLayout);
-
     // Create the Widget view
     //mapViewWidget = new MapGraphicsView(this);
     mapViewLayout = new QVBoxLayout();

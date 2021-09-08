@@ -67,6 +67,13 @@ class Geometry;
 }
 #endif
 
+#ifdef Q_GIS
+class QgsFeature;
+class QGISVisualizationWidget;
+class QgsVectorLayer;
+class QgsGeometry;
+#endif
+
 class QGroupBox;
 class QLineEdit;
 class QTableWidget;
@@ -95,6 +102,13 @@ public:
     virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
     virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
     virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
+#endif
+
+
+#ifdef Q_GIS
+    virtual QgsFeature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom);
+    virtual int removeFeatureFromSelectedLayer(QgsFeature* feat);
+    virtual QgsVectorLayer* getSelectedFeatureLayer(void);
 #endif
 
     ComponentTableView *getTableWidget() const;
@@ -158,7 +172,9 @@ protected:
 
 #ifdef ARC_GIS
     ArcGISVisualizationWidget* theVisualizationWidget;
-#else
+#endif
+
+#ifdef Q_GIS
     QGISVisualizationWidget* theVisualizationWidget;
 #endif
 
@@ -203,6 +219,11 @@ private:
 #ifdef ARC_GIS
     // Map to store the selected features according to their UID
     QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
+#endif
+
+#ifdef Q_GIS
+    // Map to store the selected features according to their UID
+    QMap<QString, QgsFeature*> selectedFeaturesForAnalysis;
 #endif
 
 };

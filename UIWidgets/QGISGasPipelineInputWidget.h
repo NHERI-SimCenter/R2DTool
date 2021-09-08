@@ -1,5 +1,5 @@
-#ifndef XMLADAPTOR_H
-#define XMLADAPTOR_H
+#ifndef QGISGasPipelineInputWidget_H
+#define QGISGasPipelineInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,49 +38,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-// This class imports a XML ShakeMap grid into a ArcGIS feature collection layer
+#include "ComponentInputWidget.h"
 
-#include "GroundMotionStation.h"
-
-#include <QString>
-
-class QObject;
-
-#ifdef ARC_GIS
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class FeatureCollectionLayer;
-}
-}
-#endif
-
-#ifdef Q_GIS
 class QgsVectorLayer;
-#endif
+class QgsFeature;
+class QgsGeometry;
 
-class XMLAdaptor
+class QGISGasPipelineInputWidget : public ComponentInputWidget
 {
 public:
-    XMLAdaptor();
+    QGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType = QString());
 
-#ifdef ARC_GIS
-    Esri::ArcGISRuntime::FeatureCollectionLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
-#endif
+    int loadComponentVisualization();
 
-    QgsVectorLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
+    QgsFeature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom);
+    int removeFeatureFromSelectedLayer(QgsFeature* feat);
+    QgsVectorLayer* getSelectedFeatureLayer(void);
 
-    QString getEventName() const;
+    void clear();
 
-    QVector<GroundMotionStation> getStationList() const;
+    QgsVectorLayer *getSelectedFeaturesLayer() const;
 
 private:
-    QString eventName;
 
-    QString shakemapID;
+//    Esri::ArcGISRuntime::Renderer* createPipelineRenderer(void);
+//    Esri::ArcGISRuntime::Renderer* createSelectedPipelineRenderer(double outlineWidth = 0.0);
 
-    QVector<GroundMotionStation> stationList;
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
 };
 
-#endif // XMLADAPTOR_H
+#endif // QGISGasPipelineInputWidget_H

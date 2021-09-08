@@ -1,5 +1,5 @@
-#ifndef XMLADAPTOR_H
-#define XMLADAPTOR_H
+#ifndef QGISHurricanePreprocessor_H
+#define QGISHurricanePreprocessor_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,49 +38,55 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-// This class imports a XML ShakeMap grid into a ArcGIS feature collection layer
+#include "HurricaneObject.h"
 
-#include "GroundMotionStation.h"
+#include <qgsgeometry.h>
+
+class QgsVectorLayer;
 
 #include <QString>
+#include <QStringList>
+#include <QVector>
+#include <QVariant>
+
+class QGISVisualizationWidget;
 
 class QObject;
+class QProgressBar;
 
-#ifdef ARC_GIS
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class FeatureCollectionLayer;
-}
-}
-#endif
-
-#ifdef Q_GIS
-class QgsVectorLayer;
-#endif
-
-class XMLAdaptor
+class QGISHurricanePreprocessor
 {
 public:
-    XMLAdaptor();
+    QGISHurricanePreprocessor(QProgressBar* pBar, QGISVisualizationWidget* visWidget, QObject* parent);
 
-#ifdef ARC_GIS
-    Esri::ArcGISRuntime::FeatureCollectionLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
-#endif
+    int loadHurricaneTrackData(const QString &eventFile, QString &err);
 
-    QgsVectorLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
+    void clear(void);
 
-    QString getEventName() const;
+    // Gets the hurricane of the given storm id
+    HurricaneObject* getHurricane(const QString& SID);
 
-    QVector<GroundMotionStation> getStationList() const;
+    QgsVectorLayer *getAllHurricanesLayer() const;
+
+   // Creates a hurricane visualization of the track and track points if desired
+    QgsVectorLayer* createTrackVisualization(HurricaneObject* hurricane, QgsVectorLayer* parentLayer, QString& err);
+
+    // Note that including track points may take a long time, moreover not all hurricanes have a landfall
+    QgsVectorLayer*  createTrackPointsVisualization(HurricaneObject* hurricane, QgsVectorLayer* parentLayer, QString& err);
+
+    QgsVectorLayer* createLandfallVisualization(const double latitude,
+                                               const double longitude,
+                                               const QMap<QString, QVariant>& featureAttributes,
+                                               QgsVectorLayer* parentLayer);
 
 private:
-    QString eventName;
 
-    QString shakemapID;
-
-    QVector<GroundMotionStation> stationList;
+    QgsGeometry getTrackGeometry(HurricaneObject* hurricane, QString& err);
+    QgsVectorLayer* allHurricanesLayer;
+    QProgressBar* theProgressBar;
+    QGISVisualizationWidget* theVisualizationWidget;
+    QObject* theParent;
+    QVector<HurricaneObject> hurricanes;
 };
 
-#endif // XMLADAPTOR_H
+#endif // QGISHurricanePreprocessor_H

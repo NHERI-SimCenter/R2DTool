@@ -82,9 +82,15 @@ int ComponentTableView::rowCount(void)
 
 QString ComponentTableView::horizontalHeaderItem(int section)
 {
+    return this->horizontalHeaderItemVariant(section).toString();
+}
+
+
+QVariant ComponentTableView::horizontalHeaderItemVariant(int section)
+{
     auto headerData = tableModel->headerData(section, Qt::Horizontal);
 
-    return headerData.toString();
+    return headerData;
 }
 
 
