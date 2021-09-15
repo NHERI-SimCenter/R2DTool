@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISHurricaneSelectionWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "VisualizationWidget.h"
+#include "SimCenterMapcanvasWidget.h"
 
 #include "WorkflowAppR2D.h"
 #include "HurricaneParameterWidget.h"
@@ -275,14 +276,11 @@ void QGISHurricaneSelectionWidget::createHurricaneVisuals(HurricaneObject* hurri
 void QGISHurricaneSelectionWidget::handleGridSelected(void)
 {
 
-    // Create the objects needed to visualize the grid in the GIS
-    auto siteGrid = mapViewSubWidget->getGrid();
-
-    if(!siteGrid->isVisible())
+    if(!userGrid->isVisible())
         return;
 
     // Get the vector of grid nodes
-    auto gridNodeVec = siteGrid->getGridNodeVec();
+    auto gridNodeVec = userGrid->getGridNodeVec();
 
     if(gridNodeVec.isEmpty())
         return;
@@ -382,31 +380,31 @@ void QGISHurricaneSelectionWidget::handleGridSelected(void)
 //    // Add the event layer to the map
 //    theVisualizationWidget->addLayerToMap(gridLayer,hurricaneMainItem);
 
-    mapViewSubWidget->removeGridFromScene();
+    userGrid->hide();
 }
 
 
 void QGISHurricaneSelectionWidget::handleLandfallPointSelected(void)
 {
 
-    // Create the objects needed to visualize the grid in the GIS
-    auto landfallPoint = mapViewSubWidget->getPoint();
+//    // Create the objects needed to visualize the grid in the GIS
+//    auto landfallPoint = mapViewSubWidget->getPoint();
 
-    if(!landfallPoint->isVisible())
-        return;
+//    if(!landfallPoint->isVisible())
+//        return;
 
-    // Get the vector of grid nodes
-    auto posNodeVec = landfallPoint->pos();
+//    // Get the vector of grid nodes
+//    auto posNodeVec = landfallPoint->pos();
 
-    if(posNodeVec.isNull())
-        return;
+//    if(posNodeVec.isNull())
+//        return;
 
-    // The latitude and longitude
-    auto longitude = theVisualizationWidget->getLongFromScreenPoint(posNodeVec);
-    auto latitude = theVisualizationWidget->getLatFromScreenPoint(posNodeVec);
+//    // The latitude and longitude
+//    auto longitude = theVisualizationWidget->getLongFromScreenPoint(posNodeVec);
+//    auto latitude = theVisualizationWidget->getLatFromScreenPoint(posNodeVec);
 
-    hurricaneParamsWidget->setLandfallLat(latitude);
-    hurricaneParamsWidget->setLandfallLon(longitude);
+//    hurricaneParamsWidget->setLandfallLat(latitude);
+//    hurricaneParamsWidget->setLandfallLon(longitude);
 
 //    // create the feature attributes
 //    QMap<QString, QVariant> featureAttributes;
@@ -435,9 +433,9 @@ void QGISHurricaneSelectionWidget::handleLandfallPointSelected(void)
 
 //    landfallItem = hurricaneImportTool->createLandfallVisualization(latitude,longitude,featureAttributes, selectedHurricaneItem,selectedHurricaneLayer);
 
-    mapViewSubWidget->removePointFromScene();
+//    mapViewSubWidget->removePointFromScene();
 
-    theVisualizationWidget->hideLegend();
+//    theVisualizationWidget->hideLegend();
 }
 
 
@@ -454,7 +452,7 @@ void QGISHurricaneSelectionWidget::clearGridFromMap(void)
 
     stationMap.clear();
     gridData.clear();
-    mapViewSubWidget->removeGridFromScene();
+    userGrid->hide();
 }
 
 
@@ -484,7 +482,7 @@ void QGISHurricaneSelectionWidget::clearLandfallFromMap(void)
 //        }
 //    }
 
-    mapViewSubWidget->removePointFromScene();
+//    mapViewSubWidget->removePointFromScene();
 }
 
 

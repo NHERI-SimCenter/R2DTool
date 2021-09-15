@@ -1,4 +1,4 @@
-﻿/* *****************************************************************************
+/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -80,9 +80,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStringList>
 #include <QString>
 
+#ifdef Q_GIS
+#include "SimCenterMapcanvasWidget.h"
+#include "MapViewWindow.h"
+#include <qgsmapcanvas.h>
+#endif
 
 #ifdef ARC_GIS
 // GIS includes
+#include "SimCenterMapGraphicsView.h"
 #include "MapGraphicsView.h"
 #include "Map.h"
 #include "Point.h"
@@ -97,6 +103,8 @@ using namespace Esri::ArcGISRuntime;
 
 GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    mapViewSubWidget = nullptr;
+
     initAppConfig();
 
     simulationComplete = false;
@@ -129,22 +137,25 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     m_runButton = new QPushButton(tr("&Run Hazard Simulation"));
     m_settingButton = new QPushButton(tr("&Settings"));
 
-    // Create a map view that will be used for selecting the grid points
-    mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr);
+#ifdef ARC_GIS
+    auto mapView = theVisualizationWidget->getMapViewWidget();
 
-    // Adding vs30 widget
-    this->m_vs30 = new Vs30();
-    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig, this);
+    // Create a map view that will be used for selecting the grid points
+    mapViewSubWidget = std::make_unique<MapViewSubWidget>(mapView);
 
     auto userGrid = mapViewSubWidget->getGrid();
     userGrid->createGrid();
     userGrid->setSiteGridConfig(m_siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
+#endif
+
+    // Adding vs30 widget
+    this->m_vs30 = new Vs30();
+    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig, this);
 
     auto buttonsLayout = new QHBoxLayout();
     buttonsLayout->addWidget(this->m_settingButton);
     buttonsLayout->addWidget(this->m_runButton);
-
 
     toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,2,1);
     toolsGridLayout->addWidget(this->m_ruptureWidget, 3,0,4,1);
@@ -244,8 +255,8 @@ void GMWidget::setupConnections()
 
     connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString zipFile)
     {
-       this->parseDownloadedRecords(zipFile);
-       this->getProgressDialog()->hideProgressBar();
+        this->parseDownloadedRecords(zipFile);
+        this->getProgressDialog()->hideProgressBar();
     });
 
 }
@@ -253,9 +264,7 @@ void GMWidget::setupConnections()
 
 void GMWidget::initAppConfig()
 {
-
     m_appConfig = new GmAppConfig(this);
-
 
     //First, We will look into settings
     QSettings settings;
@@ -392,10 +401,29 @@ void GMWidget::resetAppSettings(void)
 
 void GMWidget::showGISWindow(void)
 {
-    mapViewSubWidget->show();
-    mapViewSubWidget->addGridToScene();
+    //    theVisualizationWidget->testNewMapCanvas();
 
-    mapViewSubWidget->setWindowTitle(QApplication::translate("toplevel", "Select ground motion grid"));
+#ifdef ARC_GIS
+    mapViewSubWidget->addGridToScene();
+#endif
+
+#ifdef Q_GIS
+    if(mapViewSubWidget == nullptr)
+    {
+        auto mapViewWidget = theVisualizationWidget->getMapViewWidget("Select grid on map");
+        mapViewSubWidget = std::make_unique<MapViewWindow>(mapViewWidget);
+
+        auto mapCanvas = mapViewWidget->mapCanvas();
+
+        userGrid = std::make_unique<RectangleGrid>(mapCanvas);
+        userGrid->createGrid();
+        userGrid->setSiteGridConfig(m_siteConfig);
+        userGrid->setVisualizationWidget(theVisualizationWidget);
+    }
+#endif
+
+    mapViewSubWidget->show();
+    userGrid->show();
 }
 
 
@@ -467,7 +495,14 @@ void GMWidget::runHazardSimulation(void)
     }
 
     // Remove the grid from the visualization screen
+#ifdef ARC_GIS
     mapViewSubWidget->removeGridFromScene();
+#endif
+
+#ifdef Q_GIS
+    if(userGrid)
+        userGrid->hide();
+#endif
 
     // First check if the settings are valid
     QString err;
@@ -584,11 +619,18 @@ void GMWidget::runHazardSimulation(void)
             return;
         }
 
+#ifdef ARC_GIS
         // Create the objects needed to visualize the grid in the GIS
         auto siteGrid = mapViewSubWidget->getGrid();
 
         // Get the vector of grid nodes
         auto gridNodeVec = siteGrid->getGridNodeVec();
+#endif
+
+#ifdef Q_GIS
+        // Get the vector of grid nodes
+        auto gridNodeVec = userGrid->getGridNodeVec();
+#endif
 
         for(int i = 0; i<gridNodeVec.size(); ++i)
         {
@@ -1135,8 +1177,10 @@ GmAppConfig *GMWidget::appConfig() const
 }
 
 
+#ifdef ARC_GIS
 void GMWidget::setCurrentlyViewable(bool status){
 
     if (status == true)
         mapViewSubWidget->setCurrentlyViewable(status);
 }
+#endif

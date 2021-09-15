@@ -42,6 +42,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SiteConfig.h"
 #include "VisualizationWidget.h"
 
+#include <qgsmapcanvas.h>
+#include <qgsmapmouseevent.h>
+
 #include <QApplication>
 #include <QBitmap>
 #include <QCursor>
@@ -55,7 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QRandomGenerator>
 #include <QWidget>
 
-RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
+RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanvas(parent)
 {
     gridSiteConfig = nullptr;
 
@@ -100,12 +103,137 @@ RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
     connect(centerNode,&NodeHandle::positionChanged,this,&RectangleGrid::handleCenterNodeChanged);
 
     this->updateGeometry();
+
+    // Important! Otherwise events will not get passed down to scene
+    mapCanvas->setEnabled(true);
+
+    // Also important to get events from QGIS
+    mapCanvas->setMapTool(this);
 }
 
 
 RectangleGrid::~RectangleGrid()
 {
 
+}
+
+
+void RectangleGrid::show()
+{
+    QGraphicsScene* mapCanvasScene = mapCanvas->scene();
+
+    auto sceneRect = mapCanvasScene->sceneRect();
+
+    auto centerScene = sceneRect.center();
+
+    auto sceneWidth = sceneRect.width();
+    auto sceneHeight = sceneRect.height();
+
+    // Set the initial grid size if it has not already been set
+    if(this->getBottomLeftNode()->pos().isNull() || this->getTopRightNode()->pos().isNull() || this->getTopLeftNode()->pos().isNull() || this->getBottomRightNode()->pos().isNull() )
+    {
+        this->setWidth(0.5*sceneWidth);
+        this->setHeight(0.5*sceneHeight);
+        this->setPos(centerScene.toPoint());
+
+        mapCanvasScene->addItem(this);
+    }
+
+    this->setVisible(true);
+}
+
+
+void RectangleGrid::removeGridFromScene(void)
+{
+    QGraphicsScene* mapCanvasScene = mapCanvas->scene();
+
+    mapCanvasScene->removeItem(this);
+}
+
+void RectangleGrid::canvasPressEvent( QgsMapMouseEvent *event )
+{
+    // Store some of the event's button-down data.
+    auto mousePressViewPoint = event->pos();
+    auto mousePressScenePoint = mapCanvas->mapToScene(mousePressViewPoint);
+    auto mousePressScreenPoint = event->globalPos();
+    auto lastMouseMoveScenePoint = mousePressScenePoint;
+    auto lastMouseMoveScreenPoint = mousePressScreenPoint;
+    auto mousePressButton = event->button();
+
+    // Convert and deliver the mouse event to the scene.
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMousePress);
+    mouseEvent.setWidget(mapCanvas->viewport());
+    mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
+    mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
+    mouseEvent.setScenePos(mousePressScenePoint);
+    mouseEvent.setScreenPos(mousePressScreenPoint);
+    mouseEvent.setLastScenePos(lastMouseMoveScenePoint);
+    mouseEvent.setLastScreenPos(lastMouseMoveScreenPoint);
+    mouseEvent.setButtons(event->buttons());
+    mouseEvent.setButton(event->button());
+    mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(mapCanvas->scene(), &mouseEvent);
+
+    // Update the original mouse event accepted state.
+    bool isAccepted = mouseEvent.isAccepted();
+    event->setAccepted(isAccepted);
+}
+
+
+void RectangleGrid::canvasMoveEvent( QgsMapMouseEvent *event )
+{
+    // Store some of the event's button-down data.
+    auto mousePressViewPoint = event->pos();
+    auto mousePressScenePoint = mapCanvas->mapToScene(mousePressViewPoint);
+    auto mousePressScreenPoint = event->globalPos();
+    auto lastMouseMoveScenePoint = mousePressScenePoint;
+    auto lastMouseMoveScreenPoint = mousePressScreenPoint;
+    auto mousePressButton = event->button();
+
+    // Convert and deliver the mouse event to the scene.
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
+    mouseEvent.setWidget(mapCanvas->viewport());
+    mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
+    mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
+    mouseEvent.setScenePos(mousePressScenePoint);
+    mouseEvent.setScreenPos(mousePressScreenPoint);
+    mouseEvent.setLastScenePos(lastMouseMoveScenePoint);
+    mouseEvent.setLastScreenPos(lastMouseMoveScreenPoint);
+    mouseEvent.setButtons(event->buttons());
+    mouseEvent.setButton(event->button());
+    mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(mapCanvas->scene(), &mouseEvent);
+}
+
+void RectangleGrid::canvasReleaseEvent( QgsMapMouseEvent *event )
+{
+    // Store some of the event's button-down data.
+    auto mousePressViewPoint = event->pos();
+    auto mousePressScenePoint = mapCanvas->mapToScene(mousePressViewPoint);
+    auto mousePressScreenPoint = event->globalPos();
+    auto lastMouseMoveScenePoint = mousePressScenePoint;
+    auto lastMouseMoveScreenPoint = mousePressScreenPoint;
+    auto mousePressButton = event->button();
+
+    // Convert and deliver the mouse event to the scene.
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseRelease);
+    mouseEvent.setWidget(mapCanvas->viewport());
+    mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
+    mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
+    mouseEvent.setScenePos(mousePressScenePoint);
+    mouseEvent.setScreenPos(mousePressScreenPoint);
+    mouseEvent.setLastScenePos(lastMouseMoveScenePoint);
+    mouseEvent.setLastScreenPos(lastMouseMoveScreenPoint);
+    mouseEvent.setButtons(event->buttons());
+    mouseEvent.setButton(event->button());
+    mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(mapCanvas->scene(), &mouseEvent);
 }
 
 
@@ -257,13 +385,15 @@ QVariant RectangleGrid::itemChange(GraphicsItemChange change, const QVariant &va
 }
 
 
-void RectangleGrid::mousePressEvent(QGraphicsSceneMouseEvent *)
+void RectangleGrid::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    QGraphicsItem::mousePressEvent(event);
 }
 
 
-void RectangleGrid::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void RectangleGrid::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    QGraphicsItem::mouseReleaseEvent(event);
 }
 
 

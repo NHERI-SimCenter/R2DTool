@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "XMLAdaptor.h"
 #include "VisualizationWidget.h"
-#include "SimCenterMapGraphicsView.h"
 
 #ifdef ARC_GIS
 // GIS headers

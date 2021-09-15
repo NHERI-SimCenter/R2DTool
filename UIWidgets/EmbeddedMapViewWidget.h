@@ -41,24 +41,41 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RectangleGrid.h"
 #include "NodeHandle.h"
 
+#ifdef ARC_GIS
+class SimCenterMapGraphicsView;
+#endif
+
 #include <QObject>
 #include <QWidget>
 
-class SimCenterMapGraphicsView;
+#ifdef Q_GIS
+class QgsMapCanvas;
+class SimCenterMapcanvasWidget;
+#endif
+
 class RectangleGrid;
 class QGraphicsSimpleTextItem;
 class QVBoxLayout;
+class QGraphicsView;
 
 class EmbeddedMapViewWidget : public QWidget
 {
     Q_OBJECT
 public:
-    EmbeddedMapViewWidget(QWidget* parent);
+#ifdef ARC_GIS
+    EmbeddedMapViewWidget(QGraphicsView* parent);
+#endif
+
+#ifdef Q_GIS
+    EmbeddedMapViewWidget(SimCenterMapcanvasWidget* mapCanvasWidget);
+#endif
 
     RectangleGrid* getGrid(void);
     NodeHandle* getPoint(void);
 
+#ifdef ARC_GIS
     virtual void setCurrentlyViewable(bool status);
+#endif
 
 public slots:
 
@@ -70,21 +87,24 @@ public slots:
 
 protected:
 
-    // Custom zoom implementation to get around a bug in the wheel event causing zoom to occur only in one direction
-    void dragEnterEvent(QDragEnterEvent *event) override;
-    void dragLeaveEvent(QDragLeaveEvent *event) override;
-    void dragMoveEvent(QDragMoveEvent *event) override;
-    void dropEvent(QDropEvent *event) override;
-
     // Override widget events
-    void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+
     QVBoxLayout *theViewLayout;
     QGraphicsSimpleTextItem* displayText;
-    std::unique_ptr<RectangleGrid> grid; 
+    std::unique_ptr<RectangleGrid> grid;
     std::unique_ptr<NodeHandle> point;
+
+#ifdef ARC_GIS
     SimCenterMapGraphicsView *theNewView;
+#endif
+
+#ifdef Q_GIS
+    QgsMapCanvas* mapCanvas;
+    SimCenterMapcanvasWidget* mapCanvasWidget;
+#endif
+
 };
 
 #endif // EmbeddedMapViewWidget_H

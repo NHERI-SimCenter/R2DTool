@@ -37,18 +37,39 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "MapViewSubWidget.h"
-#include "SimCenterMapGraphicsView.h"
 
 #include <QPushButton>
+#include <QVBoxLayout>
+#include <QGraphicsView>
+#include <QMouseEvent>
 
-MapViewSubWidget::MapViewSubWidget(QWidget* parent) : EmbeddedMapViewWidget(parent)
+#ifdef Q_GIS
+MapViewSubWidget::MapViewSubWidget(SimCenterMapcanvasWidget* parent) : EmbeddedMapViewWidget(parent)
+#endif
+#ifdef ARC_GIS
+MapViewSubWidget::MapViewSubWidget(QGraphicsView* parent) : EmbeddedMapViewWidget(parent)
+#endif
 {
     closeButton = new QPushButton("Close",this);
     connect(closeButton,&QPushButton::pressed,this,&EmbeddedMapViewWidget::close);
 }
 
 
+void MapViewSubWidget::showEvent(QShowEvent *event)
+{
+    theViewLayout->addWidget(closeButton,Qt::AlignBottom);
+    EmbeddedMapViewWidget::showEvent(event);
+}
 
+
+void MapViewSubWidget::closeEvent(QCloseEvent *event)
+{
+    theViewLayout->removeWidget(closeButton);
+    EmbeddedMapViewWidget::closeEvent(event);
+}
+
+
+#ifdef ARC_GIS
 void MapViewSubWidget::setCurrentlyViewable(bool status)
 {
     if (status == true)
@@ -63,3 +84,4 @@ void MapViewSubWidget::setCurrentlyViewable(bool status)
         this->hide();
     }
 }
+#endif

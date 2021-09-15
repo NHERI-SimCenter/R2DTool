@@ -58,7 +58,9 @@ public:
     HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
     ~HazardsWidget();
 
+#ifdef ARC_GIS
     void setCurrentlyViewable(bool status);
+#endif
 
 signals:
     void gridFileChangedSignal(QString motionDir, QString eventFile);

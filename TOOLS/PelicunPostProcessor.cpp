@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "TableNumberItem.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
-#include "SimCenterMapGraphicsView.h"
 #include "Utils/PythonProgressDialog.h"
 
 #include <QBarCategoryAxis>
@@ -83,6 +82,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "Map.h"
 #include "MapGraphicsView.h"
 #include "ArcGISVisualizationWidget.h"
+#include "SimCenterMapGraphicsView.h"
 #endif
 
 using namespace QtCharts;
@@ -224,9 +224,9 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     addDockWidget(Qt::RightDockWidgetArea, tableDock);
 
     // Get the map view widget
-    mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
+//    mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
-    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(nullptr);
+//    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(mapViewMainWidget);
 
     // Popup stuff
     // Once map is set, connect to MapQuickView mouse clicked signal
@@ -1175,15 +1175,15 @@ void PelicunPostProcessor::restoreUI(void)
 
 void PelicunPostProcessor::setCurrentlyViewable(bool status){
 
-    if (status == true)
-        mapViewSubWidget->setCurrentlyViewable(status);
-
     // Set the legend to display the selected building layer
     auto buildingsWidget = theVisualizationWidget->getComponentWidget("BUILDINGS");
 
     if(buildingsWidget)
     {
-#ifdef ARC_GIS
+#ifdef ARC_GIS    
+        if (status == true)
+            mapViewSubWidget->setCurrentlyViewable(status);
+
         auto selectedLayer = buildingsWidget->getSelectedFeatureLayer();
 
         auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);

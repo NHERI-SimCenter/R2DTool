@@ -49,7 +49,7 @@ NodeHandle::NodeHandle(QGraphicsItem *parent) : QGraphicsItem(parent)
     setFlag(ItemIsMovable);
     setFlag(ItemSendsGeometryChanges);
     setCacheMode(DeviceCoordinateCache);
-    setZValue(-1);
+    setZValue(0);
 
     setAcceptedMouseButtons(Qt::LeftButton);
     setCursor(Qt::OpenHandCursor);

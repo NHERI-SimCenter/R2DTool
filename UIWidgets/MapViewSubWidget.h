@@ -46,9 +46,18 @@ class MapViewSubWidget: public EmbeddedMapViewWidget
 {
     Q_OBJECT
 public:
-    MapViewSubWidget(QWidget* parent);
+    MapViewSubWidget(SimCenterMapcanvasWidget* parent);
+
+#ifdef ARC_GIS
+    MapViewSubWidget(QGraphicsView* parent);
 
     void setCurrentlyViewable(bool status);
+#endif
+
+protected:
+
+    void showEvent(QShowEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
 private:
 

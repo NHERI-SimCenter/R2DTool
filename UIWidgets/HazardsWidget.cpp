@@ -127,6 +127,8 @@ void HazardsWidget::gridFileChangedSlot(QString motionD, QString eventF)
 }
 
 
+#ifdef ARC_GIS
 void HazardsWidget::setCurrentlyViewable(bool status) {
     this->SimCenterAppSelection::setCurrentlyViewable(status);
 }
+#endif

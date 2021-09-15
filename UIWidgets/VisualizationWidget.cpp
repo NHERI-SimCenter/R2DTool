@@ -36,8 +36,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "ComponentInputWidget.h"
+#ifdef ARC_GIS
 #include "SimCenterMapGraphicsView.h"
+#endif
+
+#include "ComponentInputWidget.h"
 #include "VisualizationWidget.h"
 
 #include <QComboBox>
@@ -76,14 +79,15 @@ VisualizationWidget::VisualizationWidget(QWidget* parent) : SimCenterAppWidget(p
 
 VisualizationWidget::~VisualizationWidget()
 {
-    mapViewWidget->setCurrentLayout(nullptr);
+
 }
 
-
+#ifdef ARC_GIS
 SimCenterMapGraphicsView* VisualizationWidget::getMapViewWidget() const
 {
     return mapViewWidget;
 }
+#endif
 
 
 void VisualizationWidget::updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value)

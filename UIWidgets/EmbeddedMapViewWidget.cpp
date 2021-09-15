@@ -37,21 +37,43 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "EmbeddedMapViewWidget.h"
+
+#ifdef ARC_GIS
 #include "SimCenterMapGraphicsView.h"
+#endif
 
 #include <QGraphicsSimpleTextItem>
+#include <QGraphicsView>
+#include <QVBoxLayout>
 #include <QDragEnterEvent>
 #include <QDebug>
+#include <QGraphicsSceneMouseEvent>
+#include <QApplication>
+#include <QGraphicsItemGroup>
 
-EmbeddedMapViewWidget::EmbeddedMapViewWidget(QWidget* parent) : QWidget(parent)
+#ifdef Q_GIS
+#include "SimCenterMapcanvasWidget.h"
+#include <qgsmapcanvas.h>
+#include <qgsmapcanvasdockwidget.h>
+#endif
+
+#ifdef ARC_GIS
+EmbeddedMapViewWidget::EmbeddedMapViewWidget(QGraphicsView* parent)
+#endif
+
+#ifdef Q_GIS
+EmbeddedMapViewWidget::EmbeddedMapViewWidget(SimCenterMapcanvasWidget* mapCanvasWidget)
+#endif
 {
+    mapCanvas = mapCanvasWidget->mapCanvas();
+
     theViewLayout = new QVBoxLayout(this);
     theViewLayout->setSpacing(0);
     theViewLayout->setMargin(0);
 
-    this->setAcceptDrops(true);
-    this->setObjectName("MapSubwindow");
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+#ifdef ARC_GIS
     theNewView = SimCenterMapGraphicsView::getInstance();
     theNewView->setAcceptDrops(true);
     //theNewView->setObjectName("MapSubwindow");
@@ -62,14 +84,20 @@ EmbeddedMapViewWidget::EmbeddedMapViewWidget(QWidget* parent) : QWidget(parent)
     theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
-    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
     grid = std::make_unique<RectangleGrid>(theNewView);
+#endif
+
+#ifdef Q_GIS
+    theViewLayout->addWidget(mapCanvasWidget);
+
+    grid = std::make_unique<RectangleGrid>(mapCanvas);
+#endif
 
     point = std::make_unique<NodeHandle>();
 }
 
 
+#ifdef ARC_GIS
 void EmbeddedMapViewWidget::setCurrentlyViewable(bool status)
 {
     if (status == true)
@@ -78,13 +106,21 @@ void EmbeddedMapViewWidget::setCurrentlyViewable(bool status)
         this->hide();
     }
 }
+#endif
 
 
 void EmbeddedMapViewWidget::addGridToScene(void)
 {
-    auto scene = theNewView->scene();
 
-    auto sceneRect = scene->sceneRect();
+#ifdef ARC_GIS
+    auto scene = theNewView->scene();
+#endif
+
+#ifdef Q_GIS
+    QGraphicsScene* mapCanvasScene = mapCanvas->scene();
+#endif
+
+    auto sceneRect = mapCanvasScene->sceneRect();
 
     auto centerScene = sceneRect.center();
 
@@ -98,7 +134,7 @@ void EmbeddedMapViewWidget::addGridToScene(void)
         grid->setHeight(0.5*sceneHeight);
         grid->setPos(centerScene.toPoint());
 
-        scene->addItem(grid.get());
+        mapCanvasScene->addItem(grid.get());
     }
 
     grid->show();
@@ -109,6 +145,8 @@ RectangleGrid* EmbeddedMapViewWidget::getGrid(void)
 {
     return grid.get();
 }
+
+
 
 
 NodeHandle* EmbeddedMapViewWidget::getPoint(void)
@@ -123,41 +161,13 @@ void EmbeddedMapViewWidget::removeGridFromScene(void)
 }
 
 
-void EmbeddedMapViewWidget::dragEnterEvent(QDragEnterEvent *event)
-{
-    event->accept();
-}
-
-
-void EmbeddedMapViewWidget::dragMoveEvent(QDragMoveEvent* event)
-{
-    event->accept();
-
-}
-
-
-void EmbeddedMapViewWidget::dragLeaveEvent(QDragLeaveEvent *event)
-{
-    event->accept();
-}
-
-
-void EmbeddedMapViewWidget::dropEvent(QDropEvent */*event*/)
-{
-
-}
-
-
-void EmbeddedMapViewWidget::resizeEvent(QResizeEvent *event)
-{
-    this->QWidget::resizeEvent(event);
-}
-
 
 void EmbeddedMapViewWidget::showEvent(QShowEvent *event)
 {
+    mapCanvas->zoomToFullExtent();
     this->QWidget::showEvent(event);
 }
+
 
 
 void EmbeddedMapViewWidget::closeEvent(QCloseEvent *event)
@@ -170,21 +180,28 @@ void EmbeddedMapViewWidget::closeEvent(QCloseEvent *event)
 
 void EmbeddedMapViewWidget::addPointToScene(void)
 {
+    return;
+#ifdef ARC_GIS
     auto scene = theNewView->scene();
+#endif
 
-    auto sceneRect = scene->sceneRect();
+//#ifdef Q_GIS
+//    QGraphicsScene* scene = mapView->scene();
+//#endif
 
-    auto centerScene = sceneRect.center();
+//    auto sceneRect = scene->sceneRect();
 
-    // Set the initial grid size if it has not already been set
-    if(point->pos().isNull() )
-    {
-        point->setPos(centerScene.toPoint());
+//    auto centerScene = sceneRect.center();
 
-        scene->addItem(point.get());
-    }
+//    // Set the initial grid size if it has not already been set
+//    if(point->pos().isNull() )
+//    {
+//        point->setPos(centerScene.toPoint());
 
-    point->show();
+//        scene->addItem(point.get());
+//    }
+
+//    point->show();
 }
 
 

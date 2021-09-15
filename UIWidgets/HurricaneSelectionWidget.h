@@ -39,7 +39,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-#include "EmbeddedMapViewWidget.h"
 #include "WindFieldStation.h"
 #include "HurricaneObject.h"
 
@@ -48,9 +47,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QProcess>
 #include <QMap>
 
+#ifdef ARC_GIS
+#include "EmbeddedMapViewWidget.h"
+#endif
+
+#ifdef Q_GIS
+class SimCenterMapcanvasWidget;
+class RectangleGrid;
+#endif
+
 class VisualizationWidget;
 class HurricaneParameterWidget;
 class SiteGrid;
+class SiteConfig;
 
 class QStackedWidget;
 class QLineEdit;
@@ -76,7 +85,9 @@ public:
 
     void clear(void);
 
+#ifdef ARC_GIS
     void setCurrentlyViewable(bool status);
+#endif
 
     int loadResults(const QString& outputDir);
 
@@ -117,6 +128,8 @@ signals:
 
 protected:
 
+    void showEvent(QShowEvent *e);
+
     QJsonArray getTerrainData(void);
 
     QPushButton* truncTrackSelectButton = nullptr;
@@ -131,7 +144,15 @@ protected:
     QVector<QStringList> gridData;
 
     HurricaneObject selectedHurricaneObj;
+#ifdef ARC_GIS
     std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
+#endif
+
+#ifdef Q_GIS
+    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+    std::unique_ptr<RectangleGrid> userGrid;
+#endif
+
     HurricaneParameterWidget* hurricaneParamsWidget;
 
     QProgressBar* progressBar;
@@ -162,6 +183,8 @@ private:
 
     QProcess* process;
     QPushButton* runButton;
+
+    VisualizationWidget* theVizWidget;
 };
 
 #endif // HurricaneSelectionWidget_H

@@ -42,7 +42,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentTableView.h"
 
 #include <qgsfield.h>
+#include <qgsfillsymbol.h>
 #include <qgsvectorlayer.h>
+#include <qgsmarkersymbol.h>
 
 QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
 {
@@ -81,8 +83,8 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     auto nRows = componentTableWidget->rowCount();
 
-//    selectedBuildingsLayer = new QgsVectorLayer(this);
-//    selectedBuildingsLayer->setName("Selected Buildings");
+    //    selectedBuildingsLayer = new QgsVectorLayer(this);
+    //    selectedBuildingsLayer->setName("Selected Buildings");
 
     auto pr = buildingLayer->dataProvider();
 
@@ -114,7 +116,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     for(int i = 0; i<nRows; ++i)
     {
-        // create the feature attributes        
+        // create the feature attributes
         QgsAttributes featureAttributes(numAtrb);
         QMap<QString, QVariant> buildingAttributeMap;
 
@@ -206,7 +208,24 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     buildingLayer->updateExtents();
 
-//    theVisualizationWidget->zoomToLayer(buildingLayer->layerId());
+    auto attrName = "OccupancyClass";
+
+    auto indexOcc = headers.indexOf(attrName);
+
+    if(indexOcc != -1)
+    {
+        QgsSymbol* markerSymbol = nullptr;
+
+        if(indexFootprint != -1)
+            markerSymbol = new QgsFillSymbol();
+        else
+            markerSymbol = new QgsMarkerSymbol();
+
+        theVisualizationWidget->createCategoryRenderer(attrName, buildingLayer, markerSymbol);
+
+    }
+
+    theVisualizationWidget->zoomToLayer(buildingLayer);
 
     return 0;
 }
@@ -214,8 +233,8 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
 QgsFeature* QGISBuildingInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom)
 {
-//    QgsFeature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
-//    selectedBuildingsTable->addFeature(feat);
+    //    QgsFeature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
+    //    selectedBuildingsTable->addFeature(feat);
 
     return nullptr;
 }
@@ -223,7 +242,7 @@ QgsFeature* QGISBuildingInputWidget::addFeatureToSelectedLayer(QMap<QString, QVa
 
 int QGISBuildingInputWidget::removeFeatureFromSelectedLayer(QgsFeature* feat)
 {
-//    selectedBuildingsTable->deleteFeature(feat);
+    //    selectedBuildingsTable->deleteFeature(feat);
 
     return 0;
 }
@@ -248,7 +267,7 @@ QgsVectorLayer* QGISBuildingInputWidget::getSelectedFeatureLayer(void)
 
 
 void QGISBuildingInputWidget::clear()
-{
+{    
     delete selectedBuildingsLayer;
 
     selectedBuildingsLayer = nullptr;

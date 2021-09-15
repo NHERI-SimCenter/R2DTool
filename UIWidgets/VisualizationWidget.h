@@ -45,9 +45,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QObject>
 #include <QUuid>
 
+#ifdef ARC_GIS
 class SimCenterMapGraphicsView;
-class ComponentInputWidget;
+#endif
 
+#ifdef Q_GIS
+class SimCenterMapcanvasWidget;
+#endif
+
+class ComponentInputWidget;
+class QGraphicsView;
 class QVBoxLayout;
 
 class VisualizationWidget : public  SimCenterAppWidget
@@ -58,13 +65,23 @@ public:
     explicit VisualizationWidget(QWidget* parent);
     virtual ~VisualizationWidget();
 
+#ifdef ARC_GIS
     SimCenterMapGraphicsView* getMapViewWidget() const;
+#endif
+
+#ifdef Q_GIS
+    virtual SimCenterMapcanvasWidget* getMapViewWidget(const QString& name) const = 0;
+
+    virtual SimCenterMapcanvasWidget* testNewMapCanvas() = 0;
+    virtual void testNewMapCanvas2() = 0;
+    virtual void markDirty() = 0;
+
+#endif
 
     // Note: the component type must match the "AssetType" value set to the features
     void registerComponentWidget(const QString assetType, ComponentInputWidget* widget);
 
     ComponentInputWidget* getComponentWidget(const QString type);
-
 
     // Get the visualization widget
     virtual QWidget *getVisWidget() = 0;
@@ -99,8 +116,8 @@ signals:
 
 public slots:    
 
-    virtual void setCurrentlyViewable(bool status) = 0;
     virtual void handleLegendChange(const QString layerUID) = 0;
+    virtual void zoomToLayer(const QString layerID) = 0;
 
 private slots:
 
@@ -109,7 +126,9 @@ protected:
     // Map to hold the component input widgets (key = type of component or asset, e.g., BUILDINGS)
     QMap<QString, ComponentInputWidget*> componentWidgetsMap;
 
+#ifdef ARC_GIS
     SimCenterMapGraphicsView *mapViewWidget = nullptr;
+#endif
 
     // The legend view
     GISLegendView* legendView;

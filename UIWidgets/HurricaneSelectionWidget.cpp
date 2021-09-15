@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GridNode.h"
 #include "NodeHandle.h"
 #include "LayerTreeItem.h"
-#include "PolygonBoundary.h"
 #include "CSVReaderWriter.h"
 #include "Utils/PythonProgressDialog.h"
 
@@ -71,9 +70,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QDir>
 
-using namespace Esri::ArcGISRuntime;
+#ifdef Q_GIS
+#include "SimCenterMapcanvasWidget.h"
+#include "RectangleGrid.h"
+#include <qgsmapcanvas.h>
+#endif
 
-HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
+#ifdef ARC_GIS
+using namespace Esri::ArcGISRuntime;
+#include "PolygonBoundary.h"
+#endif
+
+HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent) : theVizWidget(visWidget), SimCenterAppWidget(parent)
 {
     fileInputWidget = nullptr;
 
@@ -115,10 +123,19 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
     layout->addStretch();
     this->setLayout(layout);
 
+#ifdef ARC_GIS
     auto userGrid = mapViewSubWidget->getGrid();
+#endif
+
+#ifdef Q_GIS
+    auto mapCanvas = mapViewSubWidget->mapCanvas();
+    userGrid = std::make_unique<RectangleGrid>(mapCanvas);
+#endif
+
     userGrid->createGrid();
     userGrid->setSiteGridConfig(siteConfig);
-    userGrid->setVisualizationWidget(visWidget);
+    userGrid->setVisualizationWidget(theVizWidget);
+
 }
 
 
@@ -228,18 +245,29 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     theStackedWidget = std::make_unique<QStackedWidget>();
     theStackedWidget->setContentsMargins(0,0,0,0);
 
+    theStackedWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
     //
     // file and dir input
     //
 
     fileInputWidget = new QWidget(this);
+    fileInputWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     fileInputWidget->setContentsMargins(0,0,0,0);
 
     QGridLayout *mainLayout = new QGridLayout(fileInputWidget);
     mainLayout->setContentsMargins(0,0,0,0);
     mainLayout->setSpacing(0);
 
-    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(nullptr);
+#ifdef ARC_GIS
+    auto mapView = theVizWidget->getMapViewWidget("HurricaneSelectionWidget");
+    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(mapView);
+#endif
+
+#ifdef Q_GIS
+    auto mapView = theVizWidget->getMapViewWidget("HurricaneSelectionWidget");
+    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
+#endif
 
     QComboBox* simulationTypeComboBox = new QComboBox(this);
     simulationTypeComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -466,6 +494,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     mainLayout->addWidget(gridGroupBox, 3,0,1,2);
     mainLayout->addWidget(mapViewSubWidget.get(), 4,0,1,2);
 
+
     //
     // progress bar
     //
@@ -498,6 +527,17 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     theStackedWidget->setWindowTitle("Hurricane track selection");
 
     return theStackedWidget.get();
+}
+
+
+void HurricaneSelectionWidget::showEvent(QShowEvent *e)
+{
+    auto mainCanvas = mapViewSubWidget->getMainCanvas();
+
+    auto mainExtent = mainCanvas->extent();
+
+    mapViewSubWidget->mapCanvas()->zoomToFeatureExtent(mainExtent);
+    SimCenterAppWidget::showEvent(e);
 }
 
 
@@ -541,6 +581,7 @@ void HurricaneSelectionWidget::loadHurricaneTrackData(void)
 }
 
 
+#ifdef ARC_GIS
 void HurricaneSelectionWidget::setCurrentlyViewable(bool status){
 
     if (status == true)
@@ -548,6 +589,7 @@ void HurricaneSelectionWidget::setCurrentlyViewable(bool status){
     else
         mapViewSubWidget->removeGridFromScene();
 }
+#endif
 
 
 void HurricaneSelectionWidget::loadHurricaneButtonClicked(void)
@@ -604,16 +646,27 @@ void HurricaneSelectionWidget::clear(void)
 
 void HurricaneSelectionWidget::showGridOnMap(void)
 {
+#ifdef ARC_GIS
     mapViewSubWidget->addGridToScene();
+#endif
+
+#ifdef Q_GIS
+    userGrid->show();
+#endif
+
 }
 
 
 void HurricaneSelectionWidget::showPointOnMap(void)
 {
+#ifdef ARC_GIS
     mapViewSubWidget->addPointToScene();
+#endif
+
+#ifdef Q_GIS
+    qDebug()<<"Implement me HurricaneSelectionWidget::showPointOnMap";
+#endif
 }
-
-
 
 
 void HurricaneSelectionWidget::runHazardSimulation(void)

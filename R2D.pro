@@ -219,7 +219,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/HurricaneParameterWidget.cpp \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
             UIWidgets/MDOF_LU.cpp \
-            UIWidgets/MapViewSubWidget.cpp \
             UIWidgets/ModelWidget.cpp \
             UIWidgets/MultiComponentR2D.cpp \
             UIWidgets/NearestNeighbourMapping.cpp \
@@ -227,12 +226,11 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/OpenSeesPyBuildingModel.cpp \
             UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/PopUpWidget.cpp \
-            UIWidgets/EmbeddedMapViewWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/SecondaryComponentSelection.cpp \
             UIWidgets/ShakeMapWidget.cpp \
+            UIWidgets/SimCenterMapcanvasWidget.cpp \
             UIWidgets/SimCenterEventRegional.cpp \
-            UIWidgets/SimCenterMapGraphicsView.cpp \
             UIWidgets/StructuralModelingWidget.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
@@ -322,7 +320,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/HurricaneParameterWidget.h \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
             UIWidgets/MDOF_LU.h \
-            UIWidgets/MapViewSubWidget.h \
             UIWidgets/ModelWidget.h \
             UIWidgets/MultiComponentR2D.h \
             UIWidgets/NearestNeighbourMapping.h \
@@ -330,12 +327,11 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
             UIWidgets/PelicunDLWidget.h \
             UIWidgets/PopUpWidget.h \
-            UIWidgets/EmbeddedMapViewWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/SecondaryComponentSelection.h \
             UIWidgets/ShakeMapWidget.h \
             UIWidgets/SimCenterEventRegional.h \
-            UIWidgets/SimCenterMapGraphicsView.h \
+            UIWidgets/SimCenterMapcanvasWidget.h \
             UIWidgets/StructuralModelingWidget.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
@@ -373,6 +369,9 @@ SOURCES +=  ModelViewItems/ArcGISLegendView.cpp \
             UIWidgets/RendererModel.cpp \
             UIWidgets/RendererTableView.cpp \
             UIWidgets/RendererComboBoxItemDelegate.cpp \
+            UIWidgets/SimCenterMapGraphicsView.cpp \
+            UIWidgets/EmbeddedMapViewWidget.cpp \
+            UIWidgets/MapViewSubWidget.cpp \
 
 HEADERS +=  ModelViewItems/ArcGISLegendView.h \
             UIWidgets/ArcGISVisualizationWidget.h \
@@ -390,6 +389,9 @@ HEADERS +=  ModelViewItems/ArcGISLegendView.h \
             UIWidgets/RendererModel.h \
             UIWidgets/RendererTableView.h \
             UIWidgets/RendererComboBoxItemDelegate.h \
+            UIWidgets/SimCenterMapGraphicsView.h \
+            UIWidgets/EmbeddedMapViewWidget.h \
+            UIWidgets/MapViewSubWidget.h \
 }
 
 
@@ -399,11 +401,13 @@ SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
             UIWidgets/QGISGasPipelineInputWidget.cpp \
             UIWidgets/QGISBuildingInputWidget.cpp \
             UIWidgets/QGISHurricaneSelectionWidget.cpp \
+            UIWidgets/MapViewWindow.cpp \
 
 HEADERS +=  Tools/QGISHurricanePreprocessor.h \
             UIWidgets/QGISGasPipelineInputWidget.h \
             UIWidgets/QGISBuildingInputWidget.h \
             UIWidgets/QGISHurricaneSelectionWidget.h \
+            UIWidgets/MapViewWindow.h \
 
 }
 

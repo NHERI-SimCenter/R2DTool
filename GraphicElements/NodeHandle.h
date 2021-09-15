@@ -69,6 +69,8 @@ private:
     QRectF nodeGeometry;
     QColor nodeColor;
     double diameter;
+
+    friend class RectangleGrid;
 };
 
 

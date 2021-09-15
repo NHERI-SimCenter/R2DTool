@@ -41,16 +41,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGraphicsItem>
 #include <QObject>
 
+#include <qgsmaptool.h>
+
+class QgsMapCanvas;
 class NodeHandle;
 class GridNode;
 class SiteConfig;
 class VisualizationWidget;
 
-class RectangleGrid : public QObject, public QGraphicsItem
+class RectangleGrid : public QgsMapTool, public QGraphicsItem
 {
     Q_OBJECT
 public:
-    RectangleGrid(QObject* parent);
+    RectangleGrid(QgsMapCanvas* parent);
     ~RectangleGrid();
 
     QRectF boundingRect() const override;
@@ -90,6 +93,20 @@ public:
 
     QVector<GridNode *> getGridNodeVec() const;
 
+    void canvasPressEvent( QgsMapMouseEvent *e ) override;
+    void canvasMoveEvent( QgsMapMouseEvent *e ) override;
+    void canvasReleaseEvent( QgsMapMouseEvent *e ) override;
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+
+    void show();
+
+    void removeGridFromScene(void);
+
+signals:
+
+
 private slots:
     void handleBottomLeftCornerChanged(const QPointF& pos);
     void handleBottomRightCornerChanged(const QPointF& pos);
@@ -101,8 +118,6 @@ private slots:
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
     void updateGeometry(void);
 
@@ -133,6 +148,8 @@ private:
     double lonMin;
     double latMax;
     double lonMax;
+
+    QgsMapCanvas* mapCanvas;
 
 };
 
