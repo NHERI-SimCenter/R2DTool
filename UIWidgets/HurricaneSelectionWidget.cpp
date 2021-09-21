@@ -49,6 +49,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "Utils/PythonProgressDialog.h"
 
+//Test
+#include <qgisapp.h>
+
 #include <QApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -120,7 +123,6 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
     siteGrid = &siteConfig->siteGrid();
 
     layout->addWidget(this->getHurricaneSelectionWidget());
-    layout->addStretch();
     this->setLayout(layout);
 
 #ifdef ARC_GIS
@@ -267,6 +269,9 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 #ifdef Q_GIS
     auto mapView = theVizWidget->getMapViewWidget("HurricaneSelectionWidget");
     mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
+
+    // Enable the selection tool
+    mapViewSubWidget->enableSelectionTool();
 #endif
 
     QComboBox* simulationTypeComboBox = new QComboBox(this);
@@ -493,7 +498,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     mainLayout->addWidget(bottomWidget, 2,0,1,2);
     mainLayout->addWidget(gridGroupBox, 3,0,1,2);
     mainLayout->addWidget(mapViewSubWidget.get(), 4,0,1,2);
-
+    mainLayout->setRowStretch(4,1);
 
     //
     // progress bar
@@ -513,7 +518,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressBar);
     progressBarLayout->addItem(vspacer);
-    progressBarLayout->addStretch(1);
+    //    progressBarLayout->addStretch(1);
 
     //
     // add file and progress widgets to stacked widgets, then set defaults
@@ -602,7 +607,10 @@ void HurricaneSelectionWidget::loadHurricaneButtonClicked(void)
 
     // Return if database does not exist
     if(!file.exists())
+    {
+        this->errorMessage("The hurricane database does not exist");
         return;
+    }
 
     // Set database if it exists
     eventDatabaseFile = pathToHurricaneDb;
@@ -1098,17 +1106,19 @@ int HurricaneSelectionWidget::loadResults(const QString& outputDir)
 
 void HurricaneSelectionWidget::handleHurricaneTrackImport(void)
 {
-    QFileDialog dialog(this);
-    QString trackFilePath = QFileDialog::getOpenFileName(this,tr("Hurricane track file (.csv)"),QString(),QString("*.csv"));
-    dialog.close();
+    //    QFileDialog dialog(this);
+    //    QString trackFilePath = QFileDialog::getOpenFileName(this,tr("Hurricane track file (.csv)"),QString(),QString("*.csv"));
+    //    dialog.close();
 
-    auto oldTrackFilePath = trackLineEdit->text();
+    //    auto oldTrackFilePath = trackLineEdit->text();
 
-    // Return if the user cancels or enters same file
-    if(trackFilePath.isEmpty() || trackFilePath == oldTrackFilePath)
-    {
-        return;
-    }
+    //    // Return if the user cancels or enters same file
+    //    if(trackFilePath.isEmpty() || trackFilePath == oldTrackFilePath)
+    //    {
+    //        return;
+    //    }
+
+    auto trackFilePath = trackLineEdit->text();
 
     trackLineEdit->setText(trackFilePath);
 

@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "HurricaneObject.h"
 
+class QGISVisualizationWidget;
+
 #include <qgsgeometry.h>
 
 class QgsVectorLayer;
@@ -49,8 +51,6 @@ class QgsVectorLayer;
 #include <QVector>
 #include <QVariant>
 
-class QGISVisualizationWidget;
-
 class QObject;
 class QProgressBar;
 
@@ -59,7 +59,7 @@ class QGISHurricanePreprocessor
 public:
     QGISHurricanePreprocessor(QProgressBar* pBar, QGISVisualizationWidget* visWidget, QObject* parent);
 
-    int loadHurricaneTrackData(const QString &eventFile, QString &err);
+    QgsVectorLayer* loadHurricaneDatabaseData(const QString &eventFile, QString &err);
 
     void clear(void);
 
@@ -69,15 +69,14 @@ public:
     QgsVectorLayer *getAllHurricanesLayer() const;
 
    // Creates a hurricane visualization of the track and track points if desired
-    QgsVectorLayer* createTrackVisualization(HurricaneObject* hurricane, QgsVectorLayer* parentLayer, QString& err);
+    QgsVectorLayer* createTrackVisualization(HurricaneObject* hurricane, QString& err);
 
     // Note that including track points may take a long time, moreover not all hurricanes have a landfall
-    QgsVectorLayer*  createTrackPointsVisualization(HurricaneObject* hurricane, QgsVectorLayer* parentLayer, QString& err);
+    QgsVectorLayer*  createTrackPointsVisualization(HurricaneObject* hurricane, QString& err);
 
     QgsVectorLayer* createLandfallVisualization(const double latitude,
                                                const double longitude,
-                                               const QMap<QString, QVariant>& featureAttributes,
-                                               QgsVectorLayer* parentLayer);
+                                               const QMap<QString, QVariant>& featureAttributes);
 
 private:
 

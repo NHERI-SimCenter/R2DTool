@@ -54,6 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifdef Q_GIS
 class SimCenterMapcanvasWidget;
 class RectangleGrid;
+
+class QgsVectorLayer;
 #endif
 
 class VisualizationWidget;
@@ -91,9 +93,15 @@ public:
 
     int loadResults(const QString& outputDir);
 
-    virtual void createHurricaneVisuals(HurricaneObject* hurricane) = 0;
+    virtual int createHurricaneVisuals(HurricaneObject* hurricane) = 0;
 
+#ifdef ARC_GIS
     virtual int importHurricaneTrackData(const QString &eventFile, QString &err) = 0;
+#endif
+
+#ifdef Q_GIS
+    virtual QgsVectorLayer* importHurricaneTrackData(const QString &eventFile, QString &err) = 0;
+#endif
 
 public slots:
 
@@ -108,7 +116,7 @@ public slots:
     // Displays the text output of the process in the dialog
     void handleProcessTextOutput(void);
 
-private slots:
+protected slots:
 
     void runHazardSimulation(void);
     void handleHurricaneTrackImport(void);
@@ -157,7 +165,7 @@ protected:
 
     QProgressBar* progressBar;
 
-private:
+protected:
 
     std::unique_ptr<QStackedWidget> theStackedWidget;
 

@@ -59,8 +59,6 @@ public:
 
 private:
 
-//    Esri::ArcGISRuntime::SimpleRenderer* createBuildingRenderer(void);
-//    Esri::ArcGISRuntime::ClassBreaksRenderer* createSelectedBuildingRenderer(double outlineWidth = 0.0);
     QgsVectorLayer* selectedBuildingsLayer = nullptr;
 
 };

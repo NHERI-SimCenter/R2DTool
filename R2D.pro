@@ -446,7 +446,7 @@ DATABASE_DIR=$$DESTDIR/Databases
 
 } else {
     mac {
-    EXAMPLES_DIR=$$OUT_PWD/R2D.app/Contents/MacOS
+    EXAMPLES_DIR=$$OUT_PWD/R2D.app/Contents/MacOS/Examples
     DATABASE_DIR=$$OUT_PWD/R2D.app/Contents/MacOS
 
     mkpath($$OUT_PWD/R2D.app/Contents/MacOS)
@@ -475,10 +475,12 @@ win32 {
 }else {
 mac {
 
-mkpath($$EXAMPLES_DIR/Examples)
+mkpath($$EXAMPLES_DIR)
+
+message($PATH_TO_EXAMPLES)
 
 # Copies the examples folder into the build directory
-Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples.json)) $$shell_quote($$shell_path($$EXAMPLES_DIR/Examples))
+Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples.json)) $$shell_quote($$shell_path($$EXAMPLES_DIR))
 
 # Copies the databases folder into the build directory
 CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$DATABASE_DIR))

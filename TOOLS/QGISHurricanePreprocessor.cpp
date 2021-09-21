@@ -40,19 +40,28 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "QGISVisualizationWidget.h"
 
+#include <qgsfield.h>
+#include <qgsfeature.h>
+#include <qgsvectorlayer.h>
+#include <qgslinesymbol.h>
+#include <qgsmarkersymbol.h>
+
+
+#include <QApplication>
 #include <QProgressBar>
 #include <QList>
-#include <QApplication>
-#include <QObject>
-
 
 QGISHurricanePreprocessor::QGISHurricanePreprocessor(QProgressBar* pBar, QGISVisualizationWidget* visWidget, QObject* parent) : theProgressBar(pBar), theVisualizationWidget(visWidget), theParent(parent)
 {
     allHurricanesLayer = nullptr;
+
+    QMap<QString, QVariant> featureAttributes;
+    featureAttributes.insert("test","test");
+    createLandfallVisualization(37.8717450069,-122.2609607382,featureAttributes);
 }
 
 
-int QGISHurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, QString &err)
+QgsVectorLayer* QGISHurricanePreprocessor::loadHurricaneDatabaseData(const QString &eventFile, QString &err)
 {
     CSVReaderWriter csvTool;
 
@@ -60,13 +69,13 @@ int QGISHurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, 
 
     if(!err.isEmpty())
     {
-        return -1;
+        return nullptr;
     }
 
     if(data.empty())
     {
         err = "Hurricane data is empty";
-        return -1;
+        return nullptr;
     }
 
     // Get the header information to populate the fields
@@ -92,7 +101,7 @@ int QGISHurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, 
     if(indexLandfall == -1 || indexSID == -1)
     {
         err = "Could not find the required column indexes in the data file";
-        return -1;
+        return nullptr;
     }
 
     // While iterating through the hurricane points, save the data at first landfall
@@ -104,7 +113,7 @@ int QGISHurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, 
         if(row.size() != numCol)
         {
             err = "Error, inconsistency in the data in the row and number of columns";
-            return -1;
+            return nullptr;
         }
 
         // Not all hurricanes will make landfall
@@ -156,92 +165,103 @@ int QGISHurricanePreprocessor::loadHurricaneTrackData(const QString &eventFile, 
     // Check that the indexes are found
     if(indexName == -1 || indexSID == -1 || indexSeason == -1)
     {
-        err = "Could not find the required column indexes in the data file";
-        return -1;
+        err = "Error adding a vector layer";
+        return nullptr;
     }
 
-//    // Create the feature collection table/layers
-//    QList<Field> trackFields;
-//    trackFields.append(Field::createText("NAME", "NULL",4));
-//    trackFields.append(Field::createText("SID", "NULL",4));
-//    trackFields.append(Field::createText("SEASON", "NULL",4));
-//    trackFields.append(Field::createText("AssetType", "NULL",4));
-//    trackFields.append(Field::createText("TabName", "NULL",4));
-//    trackFields.append(Field::createText("UID", "NULL",4));
-
-//    auto trackFeatureCollection = new FeatureCollection(theParent);
-//    auto trackFeatureCollectionTable = new FeatureCollectionTable(trackFields, GeometryType::Polyline, SpatialReference::wgs84(), theParent);
-//    trackFeatureCollection->tables()->append(trackFeatureCollectionTable);
-
-//    allHurricanesLayer = new FeatureCollectionLayer(trackFeatureCollection,theParent);
-//    allHurricanesLayer->setName("All Hurricanes");
+    // Create the hurricane track fields
+    QList<QgsField> attrib;
+    attrib.append(QgsField("NAME", QVariant::String));
+    attrib.append(QgsField("SID", QVariant::String));
+    attrib.append(QgsField("SEASON", QVariant::String));
+    attrib.append(QgsField("TabName", QVariant::String));
+    attrib.append(QgsField("AssetType", QVariant::String));
+    attrib.append(QgsField("UID", QVariant::String));
 
 
-//    auto allHurricanesItem = theVisualizationWidget->addLayerToMap(allHurricanesLayer);
+    auto numAtrb = attrib.size();
 
-//    if(allHurricanesItem == nullptr)
-//    {
-//        err = "Error adding item to the map";
-//        return -1;
-//    }
+    QgsFeatureList featList;
 
+    featList.reserve(numHurricanes);
 
-//    // Create line symbol for the track
-//    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid,
-//                                                        QColor(0, 0, 0),
-//                                                        2.0f /*width*/,
-//                                                        SimpleLineSymbolMarkerStyle::Arrow,
-//                                                        SimpleLineSymbolMarkerPlacement::End,
-//                                                        theParent);
+    for(int i = 0; i<numHurricanes; ++i)
+    {
+        theProgressBar->setValue(i);
+        QApplication::processEvents();
 
-//    // Create renderer and set symbol for the track
-//    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, theParent);
-//    lineRenderer->setLabel("Hurricane track");
+        // Get the hurricane
+        HurricaneObject& hurricane = hurricanes[i];
 
-//    // Set the renderer for the feature layer
-//    trackFeatureCollectionTable->setRenderer(lineRenderer);
+        auto name = hurricane.front().at(indexName);
+        auto SID = hurricane.front().at(indexSID);
+        auto season = hurricane.front().at(indexSeason);
 
+        hurricane.name = name;
+        hurricane.SID = SID;
+        hurricane.season = season;
+        auto nameID = name+"-"+season;
 
-//    for(int i = 0; i<numHurricanes; ++i)
-//    {
-//        theProgressBar->setValue(i);
-//        QApplication::processEvents();
+        // Create a unique ID for this track
+        auto uid = theVisualizationWidget->createUniqueID();
 
-//        // Get the hurricane
-//        HurricaneObject& hurricane = hurricanes[i];
+        QgsAttributes featureAttributes(numAtrb);
+        featureAttributes[0] = name;
+        featureAttributes[1] = SID;
+        featureAttributes[2] = season;
+        featureAttributes[3] = nameID;
+        featureAttributes[4] = "HURRICANE";
+        featureAttributes[5] = uid;
 
-//        auto name = hurricane.front().at(indexName);
-//        auto SID = hurricane.front().at(indexSID);
-//        auto season = hurricane.front().at(indexSeason);
+        QgsFeature feature;
 
-//        hurricane.name = name;
-//        hurricane.SID = SID;
-//        hurricane.season = season;
-//        auto nameID = name+"-"+season;
+        auto polyline = this->getTrackGeometry(&hurricane, err);
 
-//        // Create a unique ID for this track
-//        auto uid = theVisualizationWidget->createUniqueID();
+        if(polyline.isEmpty())
+            return nullptr;
 
-//        QMap<QString, QVariant> featureAttributes;
-//        featureAttributes.insert("NAME",name);
-//        featureAttributes.insert("SID",SID);
-//        featureAttributes.insert("SEASON",season);
-//        featureAttributes.insert("TabName", nameID);
-//        featureAttributes.insert("AssetType", "HURRICANE");
-//        featureAttributes.insert("UID", uid);
+        feature.setGeometry(polyline);
 
-//        auto polyline = this->getTrackGeometry(&hurricane, err);
+        feature.setAttributes(featureAttributes);
 
-//        if(polyline.isEmpty())
-//            return -1;
+        featList.push_back(feature);
 
-//        auto trackFeat = trackFeatureCollectionTable->createFeature(featureAttributes,polyline,theParent);
-//        trackFeatureCollectionTable->addFeature(trackFeat);
-//    }
+    }
 
-//    theVisualizationWidget->zoomToLayer(allHurricanesLayer->layerId());
+    // Create the buildings group layer that will hold the sublayers
+    allHurricanesLayer = theVisualizationWidget->addVectorLayer("LineString","All Hurricanes");
 
-    return 0;
+    if(allHurricanesLayer == nullptr)
+    {
+        err = "Error adding item to the map";
+        return nullptr;
+    }
+
+    auto pr = allHurricanesLayer->dataProvider();
+
+    auto res = pr->addAttributes(attrib);
+    if(!res)
+    {
+        err = "Error adding attributes";
+        theVisualizationWidget->removeLayer(allHurricanesLayer);
+        return nullptr;
+    }
+
+    allHurricanesLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    pr->addFeatures(featList);
+
+    allHurricanesLayer->updateExtents();
+
+    auto lineSymbol = new QgsLineSymbol();
+
+    lineSymbol->setWidth(0.75);
+
+    theVisualizationWidget->createSimpleRenderer(lineSymbol,allHurricanesLayer);
+
+    theVisualizationWidget->zoomToLayer(allHurricanesLayer);
+
+    return allHurricanesLayer;
 }
 
 
@@ -253,7 +273,7 @@ void QGISHurricanePreprocessor::clear(void)
 }
 
 
-QgsVectorLayer* QGISHurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, QgsVectorLayer* parentLayer, QString& err)
+QgsVectorLayer* QGISHurricanePreprocessor::createTrackVisualization(HurricaneObject* hurricane, QString& err)
 {
     auto numPnts = hurricane->size();
 
@@ -263,69 +283,82 @@ QgsVectorLayer* QGISHurricanePreprocessor::createTrackVisualization(HurricaneObj
         return nullptr;
     }
 
+    auto geom = this->getTrackGeometry(hurricane, err);
+
+    if(geom.isEmpty())
+        return nullptr;
+
+    // Create the hurricane track fields
+    QList<QgsField> attrib;
+    attrib.append(QgsField("NAME", QVariant::String));
+    attrib.append(QgsField("SID", QVariant::String));
+    attrib.append(QgsField("SEASON", QVariant::String));
+    attrib.append(QgsField("TabName", QVariant::String));
+    attrib.append(QgsField("AssetType", QVariant::String));
+    attrib.append(QgsField("UID", QVariant::String));
+
     // Name and storm ID
     auto name = hurricane->name;
     auto SID = hurricane->SID;
     auto season = hurricane->season;
     auto nameID = name+"-"+season;
-
     auto uid = theVisualizationWidget->createUniqueID();
 
-//    QMap<QString, QVariant> featureAttributes;
-//    featureAttributes.insert("NAME",name);
-//    featureAttributes.insert("SID",SID);
-//    featureAttributes.insert("SEASON",season);
-//    featureAttributes.insert("TabName", nameID);
-//    featureAttributes.insert("AssetType", "HURRICANE_TRACK");
-//    featureAttributes.insert("UID", uid);
+    auto numAtrb = attrib.size();
 
-//    auto polyline = this->getTrackGeometry(hurricane, err);
+    QgsAttributes featureAttributes(numAtrb);
+    featureAttributes[0] = name;
+    featureAttributes[1] = SID;
+    featureAttributes[2] = season;
+    featureAttributes[3] = nameID;
+    featureAttributes[4] = "HURRICANE_TRACK";
+    featureAttributes[5] = uid;
 
-//    if(polyline.isEmpty())
-//        return nullptr;
+    // Create the group layer that will hold the sublayers
+    auto trackLayer = theVisualizationWidget->addVectorLayer("LineString","Track");
 
-//    // Create the feature collection table/layers
-//    QList<Field> trackFields;
-//    trackFields.append(Field::createText("NAME", "NULL",4));
-//    trackFields.append(Field::createText("SID", "NULL",4));
-//    trackFields.append(Field::createText("SEASON", "NULL",4));
-//    trackFields.append(Field::createText("AssetType", "NULL",4));
-//    trackFields.append(Field::createText("TabName", "NULL",4));
-//    trackFields.append(Field::createText("UID", "NULL",4));
+    if(trackLayer == nullptr)
+    {
+        err = "Error adding a vector layer";
+        return nullptr;
+    }
 
-//    auto trackFeatureCollection = new FeatureCollection(theParent);
-//    auto trackFeatureCollectionTable = new FeatureCollectionTable(trackFields, GeometryType::Polyline, SpatialReference::wgs84(), theParent);
-//    trackFeatureCollection->tables()->append(trackFeatureCollectionTable);
+    QgsFeature feature;
 
-//    auto trackLayer = new FeatureCollectionLayer(trackFeatureCollection,theParent);
-//    trackLayer->setAutoFetchLegendInfos(true);
-//    trackLayer->setName("Track");
+    // Set the feature geometry
+    feature.setGeometry(geom);
 
-//    // Create line symbol for the track
-//    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid,
-//                                                        QColor(0, 0, 0),
-//                                                        2.0f /*width*/,
-//                                                        SimpleLineSymbolMarkerStyle::Arrow,
-//                                                        SimpleLineSymbolMarkerPlacement::End,
-//                                                        theParent);
+    // Set the feature attributes
+    feature.setAttributes(featureAttributes);
 
-//    // Create renderer and set symbol for the track
-//    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, theParent);
-//    lineRenderer->setLabel("Hurricane track");
+    QgsFeatureList featList;
+    featList.push_back(feature);
 
-//    // Set the renderer for the feature layer
-//    trackFeatureCollectionTable->setRenderer(lineRenderer);
+    auto pr = trackLayer->dataProvider();
 
-//    auto trackFeat = trackFeatureCollectionTable->createFeature(featureAttributes,polyline,theParent);
-//    trackFeatureCollectionTable->addFeature(trackFeat);
+    auto res = pr->addAttributes(attrib);
 
-//    return theVisualizationWidget->addLayerToMap(trackLayer, parentItem, parentLayer);
+    if(!res)
+        qDebug()<<"Error adding attributes";
 
-    return nullptr;
+    trackLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    pr->addFeatures(featList);
+
+    trackLayer->updateExtents();
+
+    auto lineSymbol = new QgsLineSymbol();
+
+    lineSymbol->setWidth(0.75);
+
+    theVisualizationWidget->createSimpleRenderer(lineSymbol,trackLayer);
+
+
+    return trackLayer;
 }
 
 
-QgsVectorLayer*  QGISHurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurricane, QgsVectorLayer* parentLayer, QString& err)
+QgsVectorLayer*  QGISHurricanePreprocessor::createTrackPointsVisualization(HurricaneObject* hurricane, QString& err)
 {
     auto numPnts = hurricane->size();
 
@@ -351,128 +384,137 @@ QgsVectorLayer*  QGISHurricanePreprocessor::createTrackPointsVisualization(Hurri
         return nullptr;
     }
 
-//    // Create the table to store the fields
-//    QList<Field> pointFields;
-//    // Common fields
-//    pointFields.append(Field::createText("AssetType", "NULL",4));
-//    pointFields.append(Field::createText("TabName", "NULL",4));
-//    pointFields.append(Field::createText("UID", "NULL",4));
-
-//    // Full fields
-//    for(auto&& it : headerData)
-//    {
-//        pointFields.append(Field::createText(it, "NULL",4));
-//    }
-
-//    // Create the feature collection table/layers
-//    auto trackPntsFeatureCollection = new FeatureCollection(theParent);
-//    auto trackPntsTable = new FeatureCollectionTable(pointFields, GeometryType::Point, SpatialReference::wgs84(), theParent);
-//    trackPntsFeatureCollection->tables()->append(trackPntsTable);
-
-//    auto trackPntsLayer = new FeatureCollectionLayer(trackPntsFeatureCollection,theParent);
-//    trackPntsLayer->setAutoFetchLegendInfos(true);
-//    trackPntsLayer->setName("Track Points");
-
-//    // Create cross SimpleMarkerSymbol
-//    SimpleMarkerSymbol* markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor("black"), 6, theParent);
-
-//    // Create renderer and set symbol to crossSymbol
-//    SimpleRenderer* pointRenderer = new SimpleRenderer(markerSymbol, theParent);
-//    pointRenderer->setLabel("Hurricane track points");
-
-//    // Set the renderer for the feature layer
-//    trackPntsTable->setRenderer(pointRenderer);
+    // Create the table to store the fields
+    QList<QgsField> attrib = {QgsField("AssetType", QVariant::String),
+                              QgsField("TabName",  QVariant::String),
+                              QgsField("UID", QVariant::String)};
 
 
-//    // Each row is a point on the hurricane track
-//    for(int j = 0; j<numPnts; ++j)
-//    {
-
-//        QStringList trackPoint = (*hurricane)[j];
-
-//        //create the feature attributes
-//        QMap<QString, QVariant> featureAttributes;
-//        for(int k = 0; k<headerData.size(); ++k)
-//        {
-//            if(!trackPoint.at(k).isEmpty())
-//                featureAttributes.insert(headerData.at(k), trackPoint.at(k));
-//        }
-
-//        auto uid = theVisualizationWidget->createUniqueID();
-
-//        featureAttributes.insert("AssetType", "HURRICANE_TRACK_POINT");
-//        featureAttributes.insert("TabName", "Track Point");
-//        featureAttributes.insert("UID", uid);
-
-//        // Create the geometry for visualization
-//        // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
-//        auto latitude = trackPoint.at(indexLat).toDouble();
-//        auto longitude = trackPoint.at(indexLon).toDouble();
-
-//        //  if(latitude == 0.0 || longitude == 0.0)
-//        //  {
-//        //      latitude = trackPoint.at(indexLat).toDouble();
-//        //      longitude = trackPoint.at(indexLon).toDouble();
-
-//        //      if(latitude == 0.0 || longitude == 0.0)
-//        //      {
-//        //          err = "Error getting the latitude and longitude";
-//        //          return -1;
-//        //      }
-//        //  }
-
-//        Point point(longitude,latitude);
-
-//        auto feature = trackPntsTable->createFeature(featureAttributes, point, theParent);
-//        trackPntsTable->addFeature(feature);
-//    }
+    // Append Full fields
+    for(auto&& it : headerData)
+        attrib.append(QgsField(it, QVariant::String));
 
 
-//    LayerTreeItem* trackPointsItem = theVisualizationWidget->addLayerToMap(trackPntsLayer,parentItem, parentLayer);
+    auto layer = theVisualizationWidget->addVectorLayer("Point", "Track Points");
 
-    return nullptr;
+    auto pr = layer->dataProvider();
+
+    auto res = pr->addAttributes(attrib);
+
+    if(!res)
+        qDebug()<<"Error adding attributes";
+
+    pr->addAttributes(attrib);
+
+    layer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    QgsFeatureList featList;
+
+    // Each row is a point on the hurricane track
+    for(int j = 0; j<numPnts; ++j)
+    {
+        QStringList trackPoint = (*hurricane)[j];
+
+        //create the feature attributes
+        QgsAttributes featAttrb(attrib.size());
+
+        auto uid = theVisualizationWidget->createUniqueID();
+
+        featAttrb[0] = "HURRICANE_TRACK_POINT";
+        featAttrb[1]  = "Track Point";
+        featAttrb[2] = uid;
+
+        for(int k = 0; k<headerData.size(); ++k)
+        {
+            if(!trackPoint.at(k).isEmpty())
+                featAttrb[3+k] = trackPoint.at(k);
+        }
+
+        // Create the geometry for visualization
+        // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
+        auto latitude = trackPoint.at(indexLat).toDouble();
+        auto longitude = trackPoint.at(indexLon).toDouble();
+
+        QgsFeature fet;
+        fet.setGeometry(QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude)));
+
+        fet.setAttributes(featAttrb);
+
+        featList.append(fet);
+
+
+        //  if(latitude == 0.0 || longitude == 0.0)
+        //  {
+        //      latitude = trackPoint.at(indexLat).toDouble();
+        //      longitude = trackPoint.at(indexLon).toDouble();
+
+        //      if(latitude == 0.0 || longitude == 0.0)
+        //      {
+        //          err = "Error getting the latitude and longitude";
+        //          return -1;
+        //      }
+        //  }
+    }
+
+    pr->addFeatures(featList);
+
+    layer->updateExtents();
+
+    QgsMarkerSymbol* pointMarkerSymbol = new QgsMarkerSymbol();
+
+    pointMarkerSymbol->setColor(Qt::green);
+
+    theVisualizationWidget->createSimpleRenderer(pointMarkerSymbol,layer);
+
+    return layer;
 }
 
 
-QgsVectorLayer* QGISHurricanePreprocessor::createLandfallVisualization(const double latitude,const double longitude, const QMap<QString, QVariant>& featureAttributes, QgsVectorLayer* parentLayer)
+QgsVectorLayer* QGISHurricanePreprocessor::createLandfallVisualization(const double latitude,const double longitude, const QMap<QString, QVariant>& featureAttributes)
 {
+    // Create the table to store the fields
+    QList<QgsField> attrib;
 
-//    QList<Field> pointFields;
+    QMap<QString, QVariant>::const_iterator it;
+    for (it = featureAttributes.begin(); it != featureAttributes.end(); ++it)
+        attrib.append(QgsField(it.key(),it.value().type()));
 
-//    auto fieldKeys = featureAttributes.keys();
+    auto layer = theVisualizationWidget->addVectorLayer("Point", "Landfall");
 
-//    for(auto&& it : fieldKeys)
-//        pointFields.append(Field::createText(it, "NULL",4));
+    auto pr = layer->dataProvider();
 
-//    // Create the feature collection table/layers
-//    auto landfallFeatCollection = new FeatureCollection(theParent);
-//    auto landFallPntTable = new FeatureCollectionTable(pointFields, GeometryType::Point, SpatialReference::wgs84(), theParent);
-//    landfallFeatCollection->tables()->append(landFallPntTable);
+    auto res = pr->addAttributes(attrib);
 
-//    auto landFallPointLayer = new FeatureCollectionLayer(landfallFeatCollection,theParent);
-//    landFallPointLayer->setAutoFetchLegendInfos(true);
-//    landFallPointLayer->setName("Landfall");
+    if(!res)
+        qDebug()<<"Error adding attributes";
 
-//    // Create cross SimpleMarkerSymbol
-//    SimpleMarkerSymbol* landfallMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Diamond, QColor("blue"), 12, theParent);
+    layer->updateFields(); // tell the vector layer to fetch changes from the provider
 
-//    // Create renderer and set symbol to crossSymbol
-//    SimpleRenderer* landfallPointRenderer = new SimpleRenderer(landfallMarkerSymbol, theParent);
-//    landfallPointRenderer->setLabel("Hurricane landfall");
+    QgsFeatureList featList;
 
-//    // Set the renderer for the feature layer
-//    landFallPntTable->setRenderer(landfallPointRenderer);
+    QgsFeature fet;
+    fet.setGeometry(QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude)));
 
-//    // Create the point geometry
-//    Point point(longitude,latitude);
+    //create the feature attributes
+    QgsAttributes featAttrb;
 
-//    auto feature = landFallPntTable->createFeature(featureAttributes, point, theParent);
-//    landFallPntTable->addFeature(feature);
+    featAttrb.reserve(attrib.size());
 
-//    // Add the point layer
-//    LayerTreeItem* landfallItem = theVisualizationWidget->addLayerToMap(landFallPointLayer,parentItem, parentLayer);
+    QMap<QString, QVariant>::const_iterator it2;
+    for (it2 = featureAttributes.begin(); it2 != featureAttributes.end(); ++it2)
+        featAttrb.push_back(it2.value());
 
-    return nullptr;
+    fet.setAttributes(featAttrb);
+
+    featList.append(fet);
+
+    pr->addFeatures(featList);
+
+    layer->updateExtents();
+
+    theVisualizationWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Diamond,Qt::blue,4.0,layer);
+
+    return layer;
 }
 
 
@@ -493,3 +535,74 @@ QgsVectorLayer *QGISHurricanePreprocessor::getAllHurricanesLayer() const
     return allHurricanesLayer;
 }
 
+
+
+QgsGeometry QGISHurricanePreprocessor::getTrackGeometry(HurricaneObject* hurricane, QString& err)
+{
+    // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
+    // Get the parameter labels or header data
+    auto headerData = hurricane->parameterLabels;
+
+    auto indexUSALat = headerData.indexOf("USA_LAT");
+    auto indexUSALon = headerData.indexOf("USA_LON");
+    auto indexLat = headerData.indexOf("LAT");
+    auto indexLon = headerData.indexOf("LON");
+
+    // Check that the indexes are found
+    if((indexLat == -1 || indexLon == -1) && (indexUSALat == -1 || indexUSALon == -1))
+    {
+        err = "Could not find the required column indexes in the data file";
+        return QgsGeometry();
+    }
+
+    // Each row is a point on the hurricane track
+    //    PartCollection* trackCollection = new PartCollection(SpatialReference::wgs84(), theParent);
+    double latitude = 0.0;
+    double longitude = 0.0;
+
+    QgsPolylineXY polyLine;
+
+    for(int j = 0; j<hurricane->size(); ++j)
+    {
+        QStringList trackPoint = (*hurricane)[j];
+
+        //        QgsPointXY pointPrev(longitude,latitude);
+
+        // Create the geometry for visualization
+        // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
+        latitude = trackPoint.at(indexLat).toDouble();
+        longitude = trackPoint.at(indexLon).toDouble();
+
+
+        QgsPointXY pointNow(longitude,latitude);
+
+        polyLine.push_back(pointNow);
+
+        //  if(latitude == 0.0 || longitude == 0.0)
+        //  {
+        //      latitude = trackPoint.at(indexLat).toDouble();
+        //      longitude = trackPoint.at(indexLon).toDouble();
+
+        //      if(latitude == 0.0 || longitude == 0.0)
+        //      {
+        //          err = "Error getting the latitude and longitude";
+        //          return -1;
+        //      }
+        //  }
+
+        //        Point point(longitude,latitude);
+
+        //        if(j != 0)
+        //        {
+        //            Part* partj = new Part(SpatialReference::wgs84(), theParent);
+        //            partj->addPoint(point);
+        //            partj->addPoint(pointPrev);
+
+        //            trackCollection->addPart(partj);
+        //        }
+    }
+
+    QgsGeometry geom = QgsGeometry::fromPolylineXY(polyLine);
+
+    return geom;
+}

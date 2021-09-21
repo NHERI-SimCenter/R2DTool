@@ -36,64 +36,41 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-
 #include "QGISHurricaneSelectionWidget.h"
 #include "QGISVisualizationWidget.h"
-#include "VisualizationWidget.h"
 #include "SimCenterMapcanvasWidget.h"
-
-#include "WorkflowAppR2D.h"
 #include "HurricaneParameterWidget.h"
-#include "SimCenterPreferences.h"
-#include "SiteConfig.h"
-#include "GridNode.h"
-#include "NodeHandle.h"
-#include "LayerTreeItem.h"
-#include "CSVReaderWriter.h"
-#include "Utils/PythonProgressDialog.h"
 
-#include <QApplication>
-#include <QJsonDocument>
-#include <QJsonObject>
+#include "RectangleGrid.h"
+
 #include <QJsonArray>
-#include <QComboBox>
-#include <QDialog>
-#include <QFile>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QGridLayout>
-#include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
-#include <QProgressBar>
-#include <QPushButton>
-#include <QSpinBox>
-#include <QSpacerItem>
-#include <QStackedWidget>
-#include <QVBoxLayout>
-#include <QDir>
 
+#include <qgsvectorlayer.h>
 
 QGISHurricaneSelectionWidget::QGISHurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent) : HurricaneSelectionWidget(visWidget, parent)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
 
-//    gridLayer = nullptr;
-//    landfallItem = nullptr;
-//    hurricaneTrackItem = nullptr;
-//    hurricaneTrackPointsItem = nullptr;
+    //    gridLayer = nullptr;
+    landfallLayer = nullptr;
+    hurricaneTrackLayer = nullptr;
+    hurricaneTrackPointsLayer = nullptr;
 
     hurricaneImportTool = std::make_unique<QGISHurricanePreprocessor>(progressBar, theVisualizationWidget, this);
 
-//    auto thePolygonBoundaryTool = theVisualizationWidget->getThePolygonBoundaryTool();
-//    connect(truncTrackApplyButton,SIGNAL(clicked()),thePolygonBoundaryTool,SLOT(getItemsInPolygonBoundary())); // Asynchronous task
-//    connect(truncTrackSelectButton,&QPushButton::clicked,this,&QGISHurricaneSelectionWidget::handleSelectAreaMap);
-//    connect(truncTrackClearButton,&QPushButton::clicked,this,&QGISHurricaneSelectionWidget::handleClearSelectAreaMap);
-//    connect(browseTerrainButton,&QPushButton::clicked,this,&QGISHurricaneSelectionWidget::handleTerrainImport);
+    //    auto thePolygonBoundaryTool = theVisualizationWidget->getThePolygonBoundaryTool();
+    //    connect(truncTrackApplyButton,SIGNAL(clicked()),thePolygonBoundaryTool,SLOT(getItemsInPolygonBoundary())); // Asynchronous task
+    //    connect(truncTrackSelectButton,&QPushButton::clicked,this,&QGISHurricaneSelectionWidget::handleSelectAreaMap);
+    //    connect(truncTrackClearButton,&QPushButton::clicked,this,&QGISHurricaneSelectionWidget::handleClearSelectAreaMap);
+    //    connect(browseTerrainButton,&QPushButton::clicked,this,&QGISHurricaneSelectionWidget::handleTerrainImport);
 
-//    selectedHurricaneFeature = nullptr;
-//    selectedHurricaneLayer = nullptr;
-//    selectedHurricaneItem = nullptr;
+    //    selectedHurricaneFeature = nullptr;
+    //    selectedHurricaneItem = nullptr;
+
+//    trackLineEdit->setText("/Users/steve/Desktop/SimCenter/Examples/HurricaneExample/wind_input/Track.csv");
+//    this->handleHurricaneTrackImport();
 }
 
 
@@ -103,173 +80,189 @@ QGISHurricaneSelectionWidget::~QGISHurricaneSelectionWidget()
 }
 
 
-int QGISHurricaneSelectionWidget::importHurricaneTrackData(const QString &eventFile, QString &err)
+QgsVectorLayer* QGISHurricaneSelectionWidget::importHurricaneTrackData(const QString &eventFile, QString &err)
 {
-    return hurricaneImportTool->loadHurricaneTrackData(eventFile,err);
-}
+    auto allHurricanesLayer = hurricaneImportTool->loadHurricaneDatabaseData(eventFile,err);
 
+    // Set as the current layer so selection of tracks will register
+    mapViewSubWidget->setCurrentLayer(allHurricanesLayer);
+
+    return allHurricanesLayer;
+}
 
 void QGISHurricaneSelectionWidget::clear(void)
 {
-
     HurricaneSelectionWidget::clear();
 
     hurricaneImportTool->clear();
 
-//    delete selectedHurricaneLayer;
-//    selectedHurricaneLayer = nullptr;
-//    selectedHurricaneItem = nullptr;
-//    hurricaneTrackPointsItem = nullptr;
-//    hurricaneTrackItem = nullptr;
+    //    delete selectedHurricaneLayer;
+    //    selectedHurricaneLayer = nullptr;
+    //    selectedHurricaneItem = nullptr;
+    //    hurricaneTrackPointsItem = nullptr;
+    //    hurricaneTrackItem = nullptr;
 
 }
 
 
 void QGISHurricaneSelectionWidget::handleHurricaneSelect(void)
 {
-//    auto selectedFeatures = theVisualizationWidget->getSelectedFeaturesList();
+    auto selectedHurricanes = mapViewSubWidget->getSelectedIds();
 
-//    if(selectedFeatures.empty())
-//        return;
+    if(selectedHurricanes.empty())
+        return;
 
-//    QString hurricaneSID;
+    auto allHurricanesLayer = hurricaneImportTool->getAllHurricanesLayer();
+    auto selectedFeatIt = allHurricanesLayer->getFeatures(selectedHurricanes);
 
-//    // Only select the first hurricane, if there is more than one selected
-//    for(auto&& it : selectedFeatures)
-//    {
-//        auto attrbList = it->attributes();
+    QString hurricaneSID;
 
-//        auto featType = attrbList->attributeValue("AssetType");
+    QgsFeature feat;
+    while (selectedFeatIt.nextFeature(feat))
+    {
 
-//        if(featType.toString() != "HURRICANE")
-//            continue;
+        auto assetType = feat.attribute("AssetType").toString();
 
-//        if(selectedHurricaneFeature == it)
-//            return;
-//        else
-//            selectedHurricaneFeature = it;
+        if(assetType != "HURRICANE")
+            continue;
 
-//        auto hurricaneName = attrbList->attributeValue("NAME").toString();
-//        hurricaneSID = attrbList->attributeValue("SID").toString();
-//        auto hurricaneSeason = attrbList->attributeValue("SEASON").toString();
+        if(selectedHurricaneFeature == feat)
+            return;
+        else
+            selectedHurricaneFeature = feat;
 
-//        selectedHurricaneName->setText(hurricaneName);
-//        selectedHurricaneSID->setText(hurricaneSID);
-//        selectedHurricaneSeason->setText(hurricaneSeason);
+        auto hurricaneName = feat.attribute("NAME").toString();
+        hurricaneSID = feat.attribute("SID").toString();
+        auto hurricaneSeason = feat.attribute("SEASON").toString();
 
-//        break;
-//    }
+        selectedHurricaneName->setText(hurricaneName);
+        selectedHurricaneSID->setText(hurricaneSID);
+        selectedHurricaneSeason->setText(hurricaneSeason);
 
-//    // Get the selected hurricane from the preprocessor
-//    auto importedHurricane = hurricaneImportTool->getHurricane(hurricaneSID);
+        break;
+    }
 
-//    if(importedHurricane == nullptr)
-//    {
-//        QString err = "Could not find the hurricane with the SID " + hurricaneSID;
-//        qDebug()<<err;
-//        return;
-//    }
 
-//    selectedHurricaneObj = *importedHurricane;
+    // Get the selected hurricane from the preprocessor
+    auto importedHurricane = hurricaneImportTool->getHurricane(hurricaneSID);
 
-//    // Populate the landfall parameters
-//    auto pressure = selectedHurricaneObj.getPressureAtLandfall();
-//    auto lat = selectedHurricaneObj.getLatitudeAtLandfall();
-//    auto lon = selectedHurricaneObj.getLongitudeAtLandfall();
-//    auto stormDir = selectedHurricaneObj.getLandingAngle();
-//    auto stormSpeed = selectedHurricaneObj.getStormSpeedAtLandfall();
-//    auto radius = selectedHurricaneObj.getRadiusAtLandfall();
+    if(importedHurricane == nullptr)
+    {
+        QString err = "Could not find the hurricane with the SID " + hurricaneSID;
+        qDebug()<<err;
+        return;
+    }
 
-//    if(lat == 0.0 || lon == 0.0)
-//    {
-//        QString err = "The latitude and/or longitude should not be 0";
-//        qDebug()<<err;
-//    }
+    selectedHurricaneObj = *importedHurricane;
 
-//    if(radius == 0.0)
-//    {
-//        QString warn = "Warning: The storm radius is 0.0 from the database, assuming a radius of 50 nmile";
-//        qDebug()<<warn;
-//        radius = 50.0;
-//    }
+    // Populate the landfall parameters
+    auto pressure = selectedHurricaneObj.getPressureAtLandfall();
+    auto lat = selectedHurricaneObj.getLatitudeAtLandfall();
+    auto lon = selectedHurricaneObj.getLongitudeAtLandfall();
+    auto stormDir = selectedHurricaneObj.getLandingAngle();
+    auto stormSpeed = selectedHurricaneObj.getStormSpeedAtLandfall();
+    auto radius = selectedHurricaneObj.getRadiusAtLandfall();
 
-//    hurricaneParamsWidget->setLandfallLat(lat);
-//    hurricaneParamsWidget->setLandfallLon(lon);
-//    hurricaneParamsWidget->setLandfallPress(pressure);
-//    hurricaneParamsWidget->setLandingAngle(stormDir);
-//    hurricaneParamsWidget->setLandfallSpeed(stormSpeed);
-//    hurricaneParamsWidget->setLandfallRadius(radius);
+    if(lat == 0.0 || lon == 0.0)
+    {
+        QString err = "The latitude and/or longitude should not be 0";
+        qDebug()<<err;
+    }
 
-//    this->createHurricaneVisuals(&selectedHurricaneObj);
+    if(radius == 0.0)
+    {
+        QString warn = "Warning: The storm radius is 0.0 from the database, assuming a radius of 50 nmile";
+        qDebug()<<warn;
+        radius = 50.0;
+    }
 
-//    // Set the all hurricanes layer to off
-//    auto allHurricanesLayer = hurricaneImportTool->getAllHurricanesLayer();
-//    theVisualizationWidget->setLayerVisibility(allHurricanesLayer->layerId(), false);
-//    theVisualizationWidget->clearSelection();
+    hurricaneParamsWidget->setLandfallLat(lat);
+    hurricaneParamsWidget->setLandfallLon(lon);
+    hurricaneParamsWidget->setLandfallPress(pressure);
+    hurricaneParamsWidget->setLandingAngle(stormDir);
+    hurricaneParamsWidget->setLandfallSpeed(stormSpeed);
+    hurricaneParamsWidget->setLandfallRadius(radius);
+
+    this->createHurricaneVisuals(&selectedHurricaneObj);
+
+    // Set the all hurricanes layer to off
+    theVisualizationWidget->setLayerVisibility(allHurricanesLayer, false);
+    theVisualizationWidget->clearSelection();
 }
 
 
-void QGISHurricaneSelectionWidget::createHurricaneVisuals(HurricaneObject* hurricane)
+int QGISHurricaneSelectionWidget::createHurricaneVisuals(HurricaneObject* hurricane)
 {
-//    // Get the hurricane description
-//    auto name = hurricane->name;
-//    auto landfallData = hurricane->landfallData;
+    // Get the hurricane description
+    auto name = hurricane->name;
 
-//    if(selectedHurricaneLayer == nullptr)
-//    {
-//        selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
-//        selectedHurricaneLayer->setName("Hurricane " + name);
-//        selectedHurricaneLayer->setAutoFetchLegendInfos(true);
+    auto layerGroupName = "Hurricane " + name;
 
-//        selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
-//    }
+    QVector<QgsMapLayer*> layerGroup;
 
-//    // Track
-//    QString err;
-//    hurricaneTrackItem = hurricaneImportTool->createTrackVisualization(hurricane,selectedHurricaneItem,selectedHurricaneLayer, err);
-//    if(hurricaneTrackItem == nullptr)
-//    {
-//        this->errorMessage(err);
-//        return;
-//    }
+    // Track
+    QString err;
+    hurricaneTrackLayer = hurricaneImportTool->createTrackVisualization(hurricane, err);
+    if(hurricaneTrackLayer == nullptr)
+    {
+        this->errorMessage(err);
+        return -1;
+    }
 
-//    // Track points
-//    hurricaneTrackPointsItem = hurricaneImportTool->createTrackPointsVisualization(hurricane,selectedHurricaneItem, selectedHurricaneLayer,err);
-//    if(hurricaneTrackPointsItem == nullptr)
-//    {
-//        this->errorMessage(err);
-//        return;
-//    }
+    layerGroup.push_back(hurricaneTrackLayer);
 
-//    auto lat = hurricane->getLatitudeAtLandfall();
-//    auto lon = hurricane->getLongitudeAtLandfall();
+    // Track points
+    hurricaneTrackPointsLayer = hurricaneImportTool->createTrackPointsVisualization(hurricane, err);
+    if(hurricaneTrackPointsLayer == nullptr)
+    {
+        this->errorMessage(err);
+        return -1;
+    }
 
-//    // Landfall
-//    if(!landfallData.empty())
-//    {
-//        auto lfParams = hurricane->parameterLabels;
+    layerGroup.push_back(hurricaneTrackPointsLayer);
 
-//        QMap<QString, QVariant> featureAttributes;
-//        for(int i = 0; i < landfallData.size(); ++i)
-//        {
-//            auto dataVal = landfallData.at(i);
+    auto landfallData = hurricane->landfallData;
 
-//            if(!dataVal.isEmpty())
-//                featureAttributes.insert(lfParams.at(i), landfallData.at(i));
-//        }
+    auto lat = hurricane->getLatitudeAtLandfall();
+    auto lon = hurricane->getLongitudeAtLandfall();
 
-//        featureAttributes.insert("Station Name", "Landfall");
-//        featureAttributes.insert("AssetType", "HURRICANE_LANDFALL");
-//        featureAttributes.insert("TabName", "Landfall Point");
-//        featureAttributes.insert("Latitude", lat);
-//        featureAttributes.insert("Longitude", lon);
+    // Landfall
+    if(!landfallData.empty())
+    {
+        auto lfParams = hurricane->parameterLabels;
 
-//        landfallItem = hurricaneImportTool->createLandfallVisualization(lat,lon,featureAttributes, selectedHurricaneItem, selectedHurricaneLayer);
-//    }
+        QMap<QString, QVariant> featureAttributes;
+        for(int i = 0; i < landfallData.size(); ++i)
+        {
+            auto dataVal = landfallData.at(i);
 
-//    selectedHurricaneLayer->load();
+            if(!dataVal.isEmpty())
+                featureAttributes.insert(lfParams.at(i), landfallData.at(i));
+        }
 
-//    theVisualizationWidget->zoomToLayer(selectedHurricaneLayer->layerId());
+        featureAttributes.insert("Station Name", "Landfall");
+        featureAttributes.insert("AssetType", "HURRICANE_LANDFALL");
+        featureAttributes.insert("TabName", "Landfall Point");
+        featureAttributes.insert("Latitude", lat);
+        featureAttributes.insert("Longitude", lon);
+
+        landfallLayer = hurricaneImportTool->createLandfallVisualization(lat, lon, featureAttributes);
+
+        if(landfallLayer == nullptr)
+        {
+            err = "Error creating the landfall layer";
+            this->errorMessage(err);
+            return -1;
+        }
+
+        layerGroup.push_back(landfallLayer);
+    }
+
+    theVisualizationWidget->createLayerGroup(layerGroup,layerGroupName);
+
+    theVisualizationWidget->zoomToLayer(hurricaneTrackLayer);
+
+    return 0;
 }
 
 
@@ -285,100 +278,100 @@ void QGISHurricaneSelectionWidget::handleGridSelected(void)
     if(gridNodeVec.isEmpty())
         return;
 
-//    // Create the table to store the fields
-//    QList<Field> tableFields;
-//    tableFields.append(Field::createText("AssetType", "NULL",4));
-//    tableFields.append(Field::createText("TabName", "NULL",4));
-//    tableFields.append(Field::createText("Station Name", "NULL",4));
-//    tableFields.append(Field::createText("Latitude", "NULL",8));
-//    tableFields.append(Field::createText("Longitude", "NULL",9));
-//    tableFields.append(Field::createText("Peak Wind Speeds", "NULL",9));
+    //    // Create the table to store the fields
+    //    QList<Field> tableFields;
+    //    tableFields.append(Field::createText("AssetType", "NULL",4));
+    //    tableFields.append(Field::createText("TabName", "NULL",4));
+    //    tableFields.append(Field::createText("Station Name", "NULL",4));
+    //    tableFields.append(Field::createText("Latitude", "NULL",8));
+    //    tableFields.append(Field::createText("Longitude", "NULL",9));
+    //    tableFields.append(Field::createText("Peak Wind Speeds", "NULL",9));
 
-//    auto gridFeatureCollection = new FeatureCollection(this);
+    //    auto gridFeatureCollection = new FeatureCollection(this);
 
-//    // Create the feature collection table/layers
-//    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
-//    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
+    //    // Create the feature collection table/layers
+    //    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
+    //    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
 
-//    gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
-//    gridLayer->setAutoFetchLegendInfos(true);
-//    gridLayer->setName("Wind Field Grid");
+    //    gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+    //    gridLayer->setAutoFetchLegendInfos(true);
+    //    gridLayer->setName("Wind Field Grid");
 
-//    // Create red cross SimpleMarkerSymbol
-//    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
+    //    // Create red cross SimpleMarkerSymbol
+    //    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
 
-//    // Create renderer and set symbol to crossSymbol
-//    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
-//    renderer->setLabel("Windfield Grid Point");
+    //    // Create renderer and set symbol to crossSymbol
+    //    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+    //    renderer->setLabel("Windfield Grid Point");
 
-//    // Set the renderer for the feature layer
-//    gridFeatureCollectionTable->setRenderer(renderer);
+    //    // Set the renderer for the feature layer
+    //    gridFeatureCollectionTable->setRenderer(renderer);
 
-//    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
-//    gridData.push_back(headerRow);
+    //    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
+    //    gridData.push_back(headerRow);
 
-//    for(int i = 0; i<gridNodeVec.size(); ++i)
-//    {
-//        auto gridNode = gridNodeVec.at(i);
+    //    for(int i = 0; i<gridNodeVec.size(); ++i)
+    //    {
+    //        auto gridNode = gridNodeVec.at(i);
 
-//        // The station id
-//        auto stationName = QString::number(i+1);
+    //        // The station id
+    //        auto stationName = QString::number(i+1);
 
-//        auto screenPoint = gridNode->getPoint();
+    //        auto screenPoint = gridNode->getPoint();
 
-//        // The latitude and longitude
-//        auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint);
-//        auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint);
+    //        // The latitude and longitude
+    //        auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint);
+    //        auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint);
 
-//        WindFieldStation station(stationName,latitude,longitude);
+    //        WindFieldStation station(stationName,latitude,longitude);
 
-//        // create the feature attributes
-//        QMap<QString, QVariant> featureAttributes;
-//        featureAttributes.insert("Station Name", stationName);
-//        featureAttributes.insert("AssetType", "WindfieldGridPoint");
-//        featureAttributes.insert("TabName", "Wind Field Grid Point");
-//        featureAttributes.insert("Latitude", latitude);
-//        featureAttributes.insert("Longitude", longitude);
-//        featureAttributes.insert("Peak Wind Speeds", "N/A");
+    //        // create the feature attributes
+    //        QMap<QString, QVariant> featureAttributes;
+    //        featureAttributes.insert("Station Name", stationName);
+    //        featureAttributes.insert("AssetType", "WindfieldGridPoint");
+    //        featureAttributes.insert("TabName", "Wind Field Grid Point");
+    //        featureAttributes.insert("Latitude", latitude);
+    //        featureAttributes.insert("Longitude", longitude);
+    //        featureAttributes.insert("Peak Wind Speeds", "N/A");
 
-//        // Create the point and add it to the feature table
-//        Point point(longitude,latitude);
-//        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+    //        // Create the point and add it to the feature table
+    //        Point point(longitude,latitude);
+    //        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
 
-//        station.setStationFeature(feature);
+    //        station.setStationFeature(feature);
 
-//        gridFeatureCollectionTable->addFeature(feature);
+    //        gridFeatureCollectionTable->addFeature(feature);
 
-//        QStringList stationRow;
-//        stationRow.push_back(stationName);
-//        stationRow.push_back(QString::number(latitude));
-//        stationRow.push_back(QString::number(longitude));
+    //        QStringList stationRow;
+    //        stationRow.push_back(stationName);
+    //        stationRow.push_back(QString::number(latitude));
+    //        stationRow.push_back(QString::number(longitude));
 
-//        stationMap.insert(stationName,station);
+    //        stationMap.insert(stationName,station);
 
-//        gridData.push_back(stationRow);
-//    }
+    //        gridData.push_back(stationRow);
+    //    }
 
 
-//    // Create a new layer
-//    LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
+    //    // Create a new layer
+    //    LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
 
-//    // Check if there is a 'User Ground Motions' root item in the tree
-//    auto hurricaneMainItem = layersTreeView->getTreeItem("Hurricanes", nullptr);
+    //    // Check if there is a 'User Ground Motions' root item in the tree
+    //    auto hurricaneMainItem = layersTreeView->getTreeItem("Hurricanes", nullptr);
 
-//    // If there is no item, create one
-//    if(hurricaneMainItem == nullptr)
-//    {
-//        auto gridID = theVisualizationWidget->createUniqueID();
-//        hurricaneMainItem = layersTreeView->addItemToTree("Hurricanes", gridID);
-//    }
+    //    // If there is no item, create one
+    //    if(hurricaneMainItem == nullptr)
+    //    {
+    //        auto gridID = theVisualizationWidget->createUniqueID();
+    //        hurricaneMainItem = layersTreeView->addItemToTree("Hurricanes", gridID);
+    //    }
 
-//    // Add the event layer to the layer tree
-//    // auto eventID = theVisualizationWidget->createUniqueID();
-//    // auto eventItem = layersTreeView->addItemToTree("Windfield Grid", eventID, hurricaneGridItem);
+    //    // Add the event layer to the layer tree
+    //    // auto eventID = theVisualizationWidget->createUniqueID();
+    //    // auto eventItem = layersTreeView->addItemToTree("Windfield Grid", eventID, hurricaneGridItem);
 
-//    // Add the event layer to the map
-//    theVisualizationWidget->addLayerToMap(gridLayer,hurricaneMainItem);
+    //    // Add the event layer to the map
+    //    theVisualizationWidget->addLayerToMap(gridLayer,hurricaneMainItem);
 
     userGrid->hide();
 }
@@ -387,68 +380,68 @@ void QGISHurricaneSelectionWidget::handleGridSelected(void)
 void QGISHurricaneSelectionWidget::handleLandfallPointSelected(void)
 {
 
-//    // Create the objects needed to visualize the grid in the GIS
-//    auto landfallPoint = mapViewSubWidget->getPoint();
+    //    // Create the objects needed to visualize the grid in the GIS
+    //    auto landfallPoint = mapViewSubWidget->getPoint();
 
-//    if(!landfallPoint->isVisible())
-//        return;
+    //    if(!landfallPoint->isVisible())
+    //        return;
 
-//    // Get the vector of grid nodes
-//    auto posNodeVec = landfallPoint->pos();
+    //    // Get the vector of grid nodes
+    //    auto posNodeVec = landfallPoint->pos();
 
-//    if(posNodeVec.isNull())
-//        return;
+    //    if(posNodeVec.isNull())
+    //        return;
 
-//    // The latitude and longitude
-//    auto longitude = theVisualizationWidget->getLongFromScreenPoint(posNodeVec);
-//    auto latitude = theVisualizationWidget->getLatFromScreenPoint(posNodeVec);
+    //    // The latitude and longitude
+    //    auto longitude = theVisualizationWidget->getLongFromScreenPoint(posNodeVec);
+    //    auto latitude = theVisualizationWidget->getLatFromScreenPoint(posNodeVec);
 
-//    hurricaneParamsWidget->setLandfallLat(latitude);
-//    hurricaneParamsWidget->setLandfallLon(longitude);
+    //    hurricaneParamsWidget->setLandfallLat(latitude);
+    //    hurricaneParamsWidget->setLandfallLon(longitude);
 
-//    // create the feature attributes
-//    QMap<QString, QVariant> featureAttributes;
-//    featureAttributes.insert("Station Name", "Landfall");
-//    featureAttributes.insert("AssetType", "HURRICANE_LANDFALL");
-//    featureAttributes.insert("TabName", "Landfall Point");
-//    featureAttributes.insert("Latitude", latitude);
-//    featureAttributes.insert("Longitude", longitude);
-
-
-//    // Create a new hurricane layer
-//    if(selectedHurricaneLayer == nullptr)
-//    {
-//        auto name =selectedHurricaneObj.name;
-
-//        if(name.isEmpty())
-//            name = "USER SPECIFIED";
-
-//        selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
-//        selectedHurricaneLayer->setName("Hurricane " + name);
-//        selectedHurricaneLayer->setAutoFetchLegendInfos(true);
-
-//        selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
-//    }
+    //    // create the feature attributes
+    //    QMap<QString, QVariant> featureAttributes;
+    //    featureAttributes.insert("Station Name", "Landfall");
+    //    featureAttributes.insert("AssetType", "HURRICANE_LANDFALL");
+    //    featureAttributes.insert("TabName", "Landfall Point");
+    //    featureAttributes.insert("Latitude", latitude);
+    //    featureAttributes.insert("Longitude", longitude);
 
 
-//    landfallItem = hurricaneImportTool->createLandfallVisualization(latitude,longitude,featureAttributes, selectedHurricaneItem,selectedHurricaneLayer);
+    //    // Create a new hurricane layer
+    //    if(selectedHurricaneLayer == nullptr)
+    //    {
+    //        auto name =selectedHurricaneObj.name;
 
-//    mapViewSubWidget->removePointFromScene();
+    //        if(name.isEmpty())
+    //            name = "USER SPECIFIED";
 
-//    theVisualizationWidget->hideLegend();
+    //        selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
+    //        selectedHurricaneLayer->setName("Hurricane " + name);
+    //        selectedHurricaneLayer->setAutoFetchLegendInfos(true);
+
+    //        selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
+    //    }
+
+
+    //    landfallItem = hurricaneImportTool->createLandfallVisualization(latitude,longitude,featureAttributes, selectedHurricaneItem,selectedHurricaneLayer);
+
+    //    mapViewSubWidget->removePointFromScene();
+
+    //    theVisualizationWidget->hideLegend();
 }
 
 
 void QGISHurricaneSelectionWidget::clearGridFromMap(void)
 {
-//    if(gridLayer)
-//    {
-//        LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
-//        layersTreeView->removeItemFromTree(gridLayer->layerId());
+    //    if(gridLayer)
+    //    {
+    //        LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
+    //        layersTreeView->removeItemFromTree(gridLayer->layerId());
 
-//        delete gridLayer;
-//        gridLayer = nullptr;
-//    }
+    //        delete gridLayer;
+    //        gridLayer = nullptr;
+    //    }
 
     stationMap.clear();
     gridData.clear();
@@ -458,31 +451,31 @@ void QGISHurricaneSelectionWidget::clearGridFromMap(void)
 
 void QGISHurricaneSelectionWidget::clearLandfallFromMap(void)
 {
-//    if(landfallItem)
-//    {
-//        LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
-//        auto res = layersTreeView->removeItemFromTree(landfallItem->getItemID());
+    //    if(landfallItem)
+    //    {
+    //        LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
+    //        auto res = layersTreeView->removeItemFromTree(landfallItem->getItemID());
 
-//        if(res == false)
-//            qDebug()<<"Error removing landfall item from tree";
+    //        if(res == false)
+    //            qDebug()<<"Error removing landfall item from tree";
 
-//        landfallItem = nullptr;
+    //        landfallItem = nullptr;
 
-//        hurricaneParamsWidget->setLandfallLat(0.0);
-//        hurricaneParamsWidget->setLandfallLon(0.0);
+    //        hurricaneParamsWidget->setLandfallLat(0.0);
+    //        hurricaneParamsWidget->setLandfallLon(0.0);
 
-//        // Check if the selected hurricane item is still there...
-//        if(selectedHurricaneLayer)
-//            selectedHurricaneItem = theVisualizationWidget->getLayersTree()->getTreeItem(selectedHurricaneLayer->layerId());
+    //        // Check if the selected hurricane item is still there...
+    //        if(selectedHurricaneLayer)
+    //            selectedHurricaneItem = theVisualizationWidget->getLayersTree()->getTreeItem(selectedHurricaneLayer->layerId());
 
-//        if(selectedHurricaneItem == nullptr)
-//        {
-//            delete selectedHurricaneLayer;
-//            selectedHurricaneLayer = nullptr;
-//        }
-//    }
+    //        if(selectedHurricaneItem == nullptr)
+    //        {
+    //            delete selectedHurricaneLayer;
+    //            selectedHurricaneLayer = nullptr;
+    //        }
+    //    }
 
-//    mapViewSubWidget->removePointFromScene();
+    //    mapViewSubWidget->removePointFromScene();
 }
 
 
@@ -496,203 +489,203 @@ void QGISHurricaneSelectionWidget::handleTerrainImport(void)
     if(numFeat == 0)
         return;
 
-//    std::vector<Esri::ArcGISRuntime::Geometry> geomVec;
-//    std::vector<QVariantMap> propertiesMapVec;
+    //    std::vector<Esri::ArcGISRuntime::Geometry> geomVec;
+    //    std::vector<QVariantMap> propertiesMapVec;
 
-//    for(auto&& it : featureArray)
-//    {
-//        auto featObj = it.toObject();
+    //    for(auto&& it : featureArray)
+    //    {
+    //        auto featObj = it.toObject();
 
-//        auto geom = featObj["geometry"].toObject();
+    //        auto geom = featObj["geometry"].toObject();
 
-//        auto coordArray = geom["coordinates"].toArray();
+    //        auto coordArray = geom["coordinates"].toArray();
 
-//        auto featGeom = theVisualizationWidget->getPolygonGeometryFromJson(coordArray);
+    //        auto featGeom = theVisualizationWidget->getPolygonGeometryFromJson(coordArray);
 
-//        if(featGeom.isEmpty())
-//        {
-//            QString msg ="Error getting the hurricane geometry in terrain import";
-//            this->errorMessage(msg);
-//            return;
-//        }
+    //        if(featGeom.isEmpty())
+    //        {
+    //            QString msg ="Error getting the hurricane geometry in terrain import";
+    //            this->errorMessage(msg);
+    //            return;
+    //        }
 
-//        geomVec.push_back(featGeom);
+    //        geomVec.push_back(featGeom);
 
-//        auto properties = featObj["properties"].toObject();
-//        propertiesMapVec.push_back(properties.toVariantMap());
-//    }
+    //        auto properties = featObj["properties"].toObject();
+    //        propertiesMapVec.push_back(properties.toVariantMap());
+    //    }
 
-//    QList<Field> tableFields;
-//    tableFields.append(Field::createText("AssetType", "NULL",4));
-//    tableFields.append(Field::createText("TabName", "NULL",4));
+    //    QList<Field> tableFields;
+    //    tableFields.append(Field::createText("AssetType", "NULL",4));
+    //    tableFields.append(Field::createText("TabName", "NULL",4));
 
-//    // Use the property map from the first object to populate the fields. This assumes that all features have the same properties.
+    //    // Use the property map from the first object to populate the fields. This assumes that all features have the same properties.
 
-//    if(!propertiesMapVec.empty())
-//    {
-//        auto keys = propertiesMapVec.begin()->keys();
-//        for(auto&& it : keys)
-//            tableFields.append(Field::createText(it, "NULL",4));
-//    }
+    //    if(!propertiesMapVec.empty())
+    //    {
+    //        auto keys = propertiesMapVec.begin()->keys();
+    //        for(auto&& it : keys)
+    //            tableFields.append(Field::createText(it, "NULL",4));
+    //    }
 
-//    auto featureCollection = new FeatureCollection(this);
+    //    auto featureCollection = new FeatureCollection(this);
 
-//    auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polygon, SpatialReference::wgs84(),this);
+    //    auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polygon, SpatialReference::wgs84(),this);
 
-//    featureCollection->tables()->append(featureCollectionTable);
+    //    featureCollection->tables()->append(featureCollectionTable);
 
-//    auto newGeojsonLayer = new FeatureCollectionLayer(featureCollection,this);
+    //    auto newGeojsonLayer = new FeatureCollectionLayer(featureCollection,this);
 
-//    newGeojsonLayer->setName("Terrain Roughness");
-//    newGeojsonLayer->setAutoFetchLegendInfos(true);
+    //    newGeojsonLayer->setName("Terrain Roughness");
+    //    newGeojsonLayer->setAutoFetchLegendInfos(true);
 
-//    SimpleFillSymbol* fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0, 255, 0, 75), this);
-//    SimpleRenderer* lineRenderer = new SimpleRenderer(fillSymbol, this);
-//    lineRenderer->setLabel("Terrain roughness polygon");
+    //    SimpleFillSymbol* fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0, 255, 0, 75), this);
+    //    SimpleRenderer* lineRenderer = new SimpleRenderer(fillSymbol, this);
+    //    lineRenderer->setLabel("Terrain roughness polygon");
 
-//    featureCollectionTable->setRenderer(lineRenderer);
+    //    featureCollectionTable->setRenderer(lineRenderer);
 
-//    if(propertiesMapVec.size() != geomVec.size())
-//    {
-//        QString msg ="Error, inconsistency in geometry and properties vector size";
-//        this->errorMessage(msg);
-//        return;
-//    }
+    //    if(propertiesMapVec.size() != geomVec.size())
+    //    {
+    //        QString msg ="Error, inconsistency in geometry and properties vector size";
+    //        this->errorMessage(msg);
+    //        return;
+    //    }
 
-//    for(size_t i = 0;i<propertiesMapVec.size(); ++i)
-//    {
-//        auto geom = geomVec.at(i);
-//        auto prop = propertiesMapVec.at(i);
+    //    for(size_t i = 0;i<propertiesMapVec.size(); ++i)
+    //    {
+    //        auto geom = geomVec.at(i);
+    //        auto prop = propertiesMapVec.at(i);
 
-//        QMap<QString, QVariant> featureAttributes;
-//        featureAttributes.insert("AssetType", "HURRICANE_TERRAIN_GEOJSON");
-//        featureAttributes.insert("TabName", "Terrain Polygon");
+    //        QMap<QString, QVariant> featureAttributes;
+    //        featureAttributes.insert("AssetType", "HURRICANE_TERRAIN_GEOJSON");
+    //        featureAttributes.insert("TabName", "Terrain Polygon");
 
-//        featureAttributes.insert(prop);
+    //        featureAttributes.insert(prop);
 
-//        auto feature = featureCollectionTable->createFeature(featureAttributes, geom, this);
+    //        auto feature = featureCollectionTable->createFeature(featureAttributes, geom, this);
 
-//        featureCollectionTable->addFeature(feature);
-//    }
+    //        featureCollectionTable->addFeature(feature);
+    //    }
 
 
-//    // Create a new hurricane layer
-//    if(selectedHurricaneLayer == nullptr)
-//    {
-//        auto name =selectedHurricaneObj.name;
+    //    // Create a new hurricane layer
+    //    if(selectedHurricaneLayer == nullptr)
+    //    {
+    //        auto name =selectedHurricaneObj.name;
 
-//        if(name.isEmpty())
-//            name = "USER SPECIFIED";
+    //        if(name.isEmpty())
+    //            name = "USER SPECIFIED";
 
-//        selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
-//        selectedHurricaneLayer->setName("Hurricane " + name);
-//        selectedHurricaneLayer->setAutoFetchLegendInfos(true);
+    //        selectedHurricaneLayer = new GroupLayer(QList<Layer*>{},this);
+    //        selectedHurricaneLayer->setName("Hurricane " + name);
+    //        selectedHurricaneLayer->setAutoFetchLegendInfos(true);
 
-//        selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
-//    }
+    //        selectedHurricaneItem = theVisualizationWidget->addSelectedFeatureLayerToMap(selectedHurricaneLayer);
+    //    }
 
-//    theVisualizationWidget->addLayerToMap(newGeojsonLayer,selectedHurricaneItem, selectedHurricaneLayer);
+    //    theVisualizationWidget->addLayerToMap(newGeojsonLayer,selectedHurricaneItem, selectedHurricaneLayer);
 
 }
 
 
 void QGISHurricaneSelectionWidget::handleClearSelectAreaMap(void)
 {
-//    auto thePolygonBoundaryTool = theVisualizationWidget->getThePolygonBoundaryTool();
-//    thePolygonBoundaryTool->resetPolygonBoundary();
-//    disconnect(theVisualizationWidget,&ArcGISVisualizationWidget::taskSelectionComplete,this,&QGISHurricaneSelectionWidget::handleAreaSelected);
+    //    auto thePolygonBoundaryTool = theVisualizationWidget->getThePolygonBoundaryTool();
+    //    thePolygonBoundaryTool->resetPolygonBoundary();
+    //    disconnect(theVisualizationWidget,&ArcGISVisualizationWidget::taskSelectionComplete,this,&QGISHurricaneSelectionWidget::handleAreaSelected);
 }
 
 
 void QGISHurricaneSelectionWidget::handleSelectAreaMap(void)
 {
-//    connect(theVisualizationWidget,&ArcGISVisualizationWidget::taskSelectionComplete,this,&QGISHurricaneSelectionWidget::handleAreaSelected);
+    //    connect(theVisualizationWidget,&ArcGISVisualizationWidget::taskSelectionComplete,this,&QGISHurricaneSelectionWidget::handleAreaSelected);
 
-//    auto thePolygonBoundaryTool = theVisualizationWidget->getThePolygonBoundaryTool();
+    //    auto thePolygonBoundaryTool = theVisualizationWidget->getThePolygonBoundaryTool();
 
-//    thePolygonBoundaryTool->getPolygonBoundaryInputs();
+    //    thePolygonBoundaryTool->getPolygonBoundaryInputs();
 }
 
 
 void QGISHurricaneSelectionWidget::handleAreaSelected(void)
 {
-//    // Get the features from the selection query
-//    auto selectedFeatures = theVisualizationWidget->getFeaturesFromQueryList();
+    //    // Get the features from the selection query
+    //    auto selectedFeatures = theVisualizationWidget->getFeaturesFromQueryList();
 
-//    HurricaneObject newHurricaneObj = selectedHurricaneObj;
+    //    HurricaneObject newHurricaneObj = selectedHurricaneObj;
 
-//    QVector<QStringList>& hurricaneData = newHurricaneObj.getHurricaneData();
+    //    QVector<QStringList>& hurricaneData = newHurricaneObj.getHurricaneData();
 
-//    hurricaneData.clear();
+    //    hurricaneData.clear();
 
-//    // Save only the features that are track points
-//    QList<Feature*> featureList;
-//    for(auto&& it : selectedFeatures)
-//    {
-//        FeatureIterator iter = it->iterator();
-//        while (iter.hasNext())
-//        {
-//            Feature* feature = iter.next();
+    //    // Save only the features that are track points
+    //    QList<Feature*> featureList;
+    //    for(auto&& it : selectedFeatures)
+    //    {
+    //        FeatureIterator iter = it->iterator();
+    //        while (iter.hasNext())
+    //        {
+    //            Feature* feature = iter.next();
 
-//            auto atrbList = feature->attributes();
+    //            auto atrbList = feature->attributes();
 
-//            auto artbMap = atrbList->attributesMap();
+    //            auto artbMap = atrbList->attributesMap();
 
-//            auto assetType = artbMap.value("AssetType").toString();
+    //            auto assetType = artbMap.value("AssetType").toString();
 
-//            if(assetType.compare("HURRICANE_TRACK_POINT") == 0)
-//                featureList.push_back(feature);
+    //            if(assetType.compare("HURRICANE_TRACK_POINT") == 0)
+    //                featureList.push_back(feature);
 
-//        }
-//    }
+    //        }
+    //    }
 
-//    if(featureList.empty())
-//        return;
+    //    if(featureList.empty())
+    //        return;
 
-//    for(auto&& it : featureList)
-//    {
-//        auto atrbList = it->attributes();
+    //    for(auto&& it : featureList)
+    //    {
+    //        auto atrbList = it->attributes();
 
-//        auto artbMap = atrbList->attributesMap();
+    //        auto artbMap = atrbList->attributesMap();
 
-//        auto lat = artbMap.value("LAT").toDouble();
-//        auto lon = artbMap.value("LON").toDouble();
+    //        auto lat = artbMap.value("LAT").toDouble();
+    //        auto lon = artbMap.value("LON").toDouble();
 
-//        QStringList trackPoint = selectedHurricaneObj.trackPointAtLatLon(lat,lon);
+    //        QStringList trackPoint = selectedHurricaneObj.trackPointAtLatLon(lat,lon);
 
-//        if(trackPoint.isEmpty())
-//        {
-//            this->errorMessage("Could not get the track point");
-//            return;
-//        }
+    //        if(trackPoint.isEmpty())
+    //        {
+    //            this->errorMessage("Could not get the track point");
+    //            return;
+    //        }
 
-//        hurricaneData.push_back(trackPoint);
-//    }
+    //        hurricaneData.push_back(trackPoint);
+    //    }
 
-//    // Delete the old hurricane layer
-//    if(hurricaneTrackItem != nullptr)
-//    {
-//        theVisualizationWidget->removeLayerFromMapAndTree(hurricaneTrackItem->getItemID());
-//        hurricaneTrackItem = nullptr;
+    //    // Delete the old hurricane layer
+    //    if(hurricaneTrackItem != nullptr)
+    //    {
+    //        theVisualizationWidget->removeLayerFromMapAndTree(hurricaneTrackItem->getItemID());
+    //        hurricaneTrackItem = nullptr;
 
-//        theVisualizationWidget->removeLayerFromMapAndTree(hurricaneTrackPointsItem->getItemID());
-//        hurricaneTrackPointsItem = nullptr;
-//    }
+    //        theVisualizationWidget->removeLayerFromMapAndTree(hurricaneTrackPointsItem->getItemID());
+    //        hurricaneTrackPointsItem = nullptr;
+    //    }
 
-//    // Check if the selected hurricane item is still there...
-//    if(selectedHurricaneLayer)
-//        selectedHurricaneItem = theVisualizationWidget->getLayersTree()->getTreeItem(selectedHurricaneLayer->layerId());
+    //    // Check if the selected hurricane item is still there...
+    //    if(selectedHurricaneLayer)
+    //        selectedHurricaneItem = theVisualizationWidget->getLayersTree()->getTreeItem(selectedHurricaneLayer->layerId());
 
-//    if(selectedHurricaneItem == nullptr)
-//    {
-//        delete selectedHurricaneLayer;
-//        selectedHurricaneLayer = nullptr;
-//    }
+    //    if(selectedHurricaneItem == nullptr)
+    //    {
+    //        delete selectedHurricaneLayer;
+    //        selectedHurricaneLayer = nullptr;
+    //    }
 
-//    // Create the new hurricane layer
-//    this->createHurricaneVisuals(&newHurricaneObj);
+    //    // Create the new hurricane layer
+    //    this->createHurricaneVisuals(&newHurricaneObj);
 
-//    disconnect(theVisualizationWidget,&ArcGISVisualizationWidget::taskSelectionComplete,this,&QGISHurricaneSelectionWidget::handleAreaSelected);
+    //    disconnect(theVisualizationWidget,&ArcGISVisualizationWidget::taskSelectionComplete,this,&QGISHurricaneSelectionWidget::handleAreaSelected);
 
-//    selectedHurricaneObj = newHurricaneObj;
+    //    selectedHurricaneObj = newHurricaneObj;
 }

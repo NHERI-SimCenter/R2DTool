@@ -317,7 +317,7 @@ void UserInputHurricaneWidget::loadHurricaneTrackData(void)
     progressBarWidget->setVisible(true);
 
     QString errMsg;
-    auto res = hurricaneImportTool.loadHurricaneTrackData(eventFile,errMsg);
+    auto res = hurricaneImportTool.loadHurricaneDatabaseData(eventFile,errMsg);
 
     if(res != 0)
         this->statusMessage(errMsg);

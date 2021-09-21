@@ -1,24 +1,32 @@
-#include "SimCenterMapcanvasWidget.h"
+﻿#include "SimCenterMapcanvasWidget.h"
+#include "QGISVisualizationWidget.h"
 
-#include "qgsmapcanvas.h"
+#include <qgsmapcanvas.h>
+#include <qgsvectorlayer.h>
+#include <qgsappmaptools.h>
 
 #include <QVBoxLayout>
 
-SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QgsMapCanvas *mainMapCanvas) : mainCanvas(mainMapCanvas)
+SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisualizationWidget *mainVisWidget) : theVisualizationWidget(mainVisWidget)
 {
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     setWindowTitle(name);
     thisMapCanvas = new QgsMapCanvas(this);
 
-    thisMapCanvas->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    mainCanvas = theVisualizationWidget->getMainCanvas();
+
+    thisMapCanvas->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     this->setAcceptDrops(true);
     thisMapCanvas->setAcceptDrops(true);
 
-    auto mainLayout = new QVBoxLayout(this);
+    auto mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
 
     mainLayout->addWidget(thisMapCanvas);
+
+    mMapTools = std::make_unique<QgsAppMapTools>(thisMapCanvas, nullptr);
 }
 
 
@@ -28,21 +36,7 @@ QgsMapCanvas *SimCenterMapcanvasWidget::mapCanvas()
 }
 
 
-void SimCenterMapcanvasWidget::resizeEvent( QResizeEvent * e)
-{
-    QWidget::resizeEvent(e);
-}
-
-
-void SimCenterMapcanvasWidget::showEvent(QShowEvent* e)
-{
-    auto sizeCanvas = thisMapCanvas->size();
-
-    this->resize(sizeCanvas);
-}
-
-
-void SimCenterMapcanvasWidget::showLabels( bool show )
+void SimCenterMapcanvasWidget::showLabels(bool show)
 {
     QgsMapSettings::Flags flags = thisMapCanvas->mapSettings().flags();
     if ( show )
@@ -58,9 +52,62 @@ void SimCenterMapcanvasWidget::showAnnotations(bool show)
     thisMapCanvas->setAnnotationsVisible(show);
 }
 
+
+void SimCenterMapcanvasWidget::clear(void)
+{
+    selectedIds.clear();
+    deselectedIds.clear();
+}
+
+
+QgsFeatureIds SimCenterMapcanvasWidget::getSelectedIds() const
+{
+    return selectedIds;
+}
+
+
 QgsMapCanvas *SimCenterMapcanvasWidget::getMainCanvas() const
 {
     return mainCanvas;
 }
+
+
+void SimCenterMapcanvasWidget::enableSelectionTool(void)
+{
+    thisMapCanvas->setMapTool(mMapTools->mapTool(QgsAppMapTools::SelectFeatures));
+}
+
+
+void SimCenterMapcanvasWidget::setCurrentLayer(QgsVectorLayer* layer)
+{
+    if(currentLayer != nullptr)
+        disconnect(currentLayer,&QgsVectorLayer::selectionChanged,this, &SimCenterMapcanvasWidget::selectionChanged);
+
+    currentLayer = layer;
+    thisMapCanvas->setCurrentLayer(layer);
+
+    connect(currentLayer,&QgsVectorLayer::selectionChanged,this, &SimCenterMapcanvasWidget::selectionChanged);
+}
+
+
+void SimCenterMapcanvasWidget::selectionChanged(const QgsFeatureIds &selected, const QgsFeatureIds &deselected, bool /*clearAndSelect*/)
+{
+
+    if(!selected.isEmpty())
+    {
+        auto isVectorLayer = dynamic_cast<QgsVectorLayer*>(QObject::sender());
+
+        if(isVectorLayer)
+        {
+            auto featureIt = isVectorLayer->getFeatures(selected);
+
+            theVisualizationWidget->showFeaturePopUp(featureIt);
+        }
+    }
+
+    selectedIds = selected;
+    deselectedIds = deselected;
+}
+
 
 

@@ -70,12 +70,10 @@ public:
 #endif
 
 #ifdef Q_GIS
-    virtual SimCenterMapcanvasWidget* getMapViewWidget(const QString& name) const = 0;
+    virtual SimCenterMapcanvasWidget* getMapViewWidget(const QString& name) = 0;
 
     virtual SimCenterMapcanvasWidget* testNewMapCanvas() = 0;
     virtual void testNewMapCanvas2() = 0;
-    virtual void markDirty() = 0;
-
 #endif
 
     // Note: the component type must match the "AssetType" value set to the features

@@ -39,9 +39,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "HurricaneSelectionWidget.h"
-#include "EmbeddedMapViewWidget.h"
 #include "QGISHurricanePreprocessor.h"
 #include "WindFieldStation.h"
+
+#include <qgsfeature.h>
 
 #include <memory>
 
@@ -49,7 +50,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 
 class VisualizationWidget;
-
 
 class QGISHurricaneSelectionWidget : public HurricaneSelectionWidget
 {
@@ -61,10 +61,9 @@ public:
 
     QStackedWidget* getQGISHurricaneSelectionWidget(void);
 
-
     void clear(void);
 
-    void createHurricaneVisuals(HurricaneObject* hurricane);
+    int createHurricaneVisuals(HurricaneObject* hurricane);
 
     int loadResults(const QString& outputDir);
 
@@ -74,7 +73,7 @@ public slots:
     void handleClearSelectAreaMap(void);
     void handleAreaSelected(void);
 
-    int importHurricaneTrackData(const QString &eventFile, QString &err);
+    QgsVectorLayer* importHurricaneTrackData(const QString &eventFile, QString &err);
 
 private slots:
 
@@ -95,16 +94,14 @@ private:
     std::unique_ptr<QGISHurricanePreprocessor> hurricaneImportTool;
     QGISVisualizationWidget* theVisualizationWidget;
 
-//    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
+    //    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
 
     QMap<QString,WindFieldStation> stationMap;
 
-//    Esri::ArcGISRuntime::Feature* selectedHurricaneFeature;
-//    Esri::ArcGISRuntime::GroupLayer* selectedHurricaneLayer;
-//    LayerTreeItem* selectedHurricaneItem;
-//    LayerTreeItem* landfallItem;
-//    LayerTreeItem* hurricaneTrackItem;
-//    LayerTreeItem* hurricaneTrackPointsItem;
+    QgsFeature selectedHurricaneFeature;
+    QgsVectorLayer* landfallLayer;
+    QgsVectorLayer* hurricaneTrackLayer;
+    QgsVectorLayer* hurricaneTrackPointsLayer;
 
 };
 

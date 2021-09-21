@@ -106,9 +106,6 @@ RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanv
 
     // Important! Otherwise events will not get passed down to scene
     mapCanvas->setEnabled(true);
-
-    // Also important to get events from QGIS
-    mapCanvas->setMapTool(this);
 }
 
 

@@ -170,6 +170,8 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     toolsGridLayout->setHorizontalSpacing(5);
     toolsGridLayout->setVerticalSpacing(0);
 
+    toolsGridLayout->setRowStretch(7,1);
+
     this->setLayout(toolsGridLayout);
 
     setupConnections();
@@ -416,6 +418,8 @@ void GMWidget::showGISWindow(void)
         auto mapCanvas = mapViewWidget->mapCanvas();
 
         userGrid = std::make_unique<RectangleGrid>(mapCanvas);
+        // Also important to get events from QGIS
+        mapCanvas->setMapTool(userGrid.get());
         userGrid->createGrid();
         userGrid->setSiteGridConfig(m_siteConfig);
         userGrid->setVisualizationWidget(theVisualizationWidget);

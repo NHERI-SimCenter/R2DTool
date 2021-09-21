@@ -144,7 +144,6 @@ GISLegendView *VisualizationWidget::getLegendView() const
 }
 
 
-
 void VisualizationWidget::registerComponentWidget(QString assetType, ComponentInputWidget* widget)
 {
     componentWidgetsMap[assetType] = widget;
