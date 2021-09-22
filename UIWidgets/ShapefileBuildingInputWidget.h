@@ -1,5 +1,5 @@
-#ifndef ComponentInputWidget_H
-#define ComponentInputWidget_H
+#ifndef ShapefileBuildingInputWidget_H
+#define ShapefileBuildingInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -50,61 +50,27 @@ class AssetInputDelegate;
 class ComponentTableView;
 class VisualizationWidget;
 
-#ifdef ARC_GIS
-
-class ArcGISVisualizationWidget;
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ClassBreaksRenderer;
-class FeatureCollectionLayer;
-class SimpleRenderer;
-class Feature;
-class Geometry;
-}
-}
-#endif
-
-#ifdef Q_GIS
 class QgsFeature;
 class QGISVisualizationWidget;
 class QgsVectorLayer;
 class QgsGeometry;
-#endif
 
 class QGroupBox;
 class QLineEdit;
 class QTableWidget;
 class QLabel;
 
-#ifdef OpenSRA
-class JsonGroupBoxWidget;
-#endif
-
-class ComponentInputWidget : public  SimCenterAppWidget
+class ShapefileBuildingInputWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-    virtual ~ComponentInputWidget();
+    explicit ShapefileBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    virtual ~ShapefileBuildingInputWidget();
 
-    virtual int loadComponentVisualization() = 0;
-
-#ifdef ARC_GIS
-    virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
-    virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
-    virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
-#endif
-
-
-#ifdef Q_GIS
     virtual QgsFeature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom);
     virtual int removeFeatureFromSelectedLayer(QgsFeature* feat);
     virtual QgsVectorLayer* getSelectedFeatureLayer(void);
-#endif
 
     ComponentTableView *getTableWidget() const;
 
@@ -161,13 +127,7 @@ private slots:
 
 protected:
 
-#ifdef ARC_GIS
-    ArcGISVisualizationWidget* theVisualizationWidget;
-#endif
-
-#ifdef Q_GIS
     QGISVisualizationWidget* theVisualizationWidget;
-#endif
 
     ComponentTableView* componentTableWidget;
 
@@ -186,12 +146,8 @@ protected:
         vec.resize(std::distance(vec.begin(), ip));
     }
 
-#ifdef OpenSRA
-    JsonGroupBoxWidget* locationWidget;
-#endif
-
 private:
-    QString pathToComponentInfoFile;
+    QString pathToComponentInputFile;
     QLineEdit* componentFileLineEdit;
     AssetInputDelegate* selectComponentsLineEdit;
     QLabel* componentInfoText;
@@ -207,16 +163,9 @@ private:
 
     void createComponentsBox(void);
 
-#ifdef ARC_GIS
-    // Map to store the selected features according to their UID
-    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
-#endif
-
-#ifdef Q_GIS
     // Map to store the selected features according to their UID
     QMap<QString, QgsFeature*> selectedFeaturesForAnalysis;
-#endif
 
 };
 
-#endif // ComponentInputWidget_H
+#endif // ShapefileBuildingInputWidget_H

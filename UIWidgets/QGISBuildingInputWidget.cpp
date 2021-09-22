@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "QGISBuildingInputWidget.h"
 #include "QGISVisualizationWidget.h"
-
+#include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
 
 #include <qgsfield.h>
@@ -46,9 +46,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
+QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
-
+    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 }
 
 
@@ -197,7 +197,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         building.UID = uid;
         building.ComponentFeature = &feature;
 
-        theComponentDb.addComponent(buildingID, building);
+        theComponentDb->addComponent(buildingID, building);
 
         featList.push_back(feature);
     }

@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ArcGISVisualizationWidget.h"
 
 #include "ComponentTableView.h"
+#include "ComponentDatabaseManager.h"
 
 #include "Field.h"
 #include "GroupLayer.h"
@@ -55,7 +56,7 @@ using namespace Esri::ArcGISRuntime;
 
 ArcGISBuildingInputWidget::ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
 {
-
+    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 }
 
 

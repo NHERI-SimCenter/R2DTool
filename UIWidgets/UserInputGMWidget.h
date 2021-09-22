@@ -97,7 +97,10 @@ signals:
 
 private:
 
-    std::unique_ptr<QStackedWidget> userGMStackedWidget;
+    void showProgressBar(void);
+    void hideProgressBar(void);
+
+    std::unique_ptr<QStackedWidget> theStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
 

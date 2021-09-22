@@ -1,13 +1,13 @@
 #include "QGISGasPipelineInputWidget.h"
 #include "QGISVisualizationWidget.h"
-
+#include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
 
 
 
-QGISGasPipelineInputWidget::QGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
+QGISGasPipelineInputWidget::QGISGasPipelineInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
-
+    theComponentDb = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
 }
 
 

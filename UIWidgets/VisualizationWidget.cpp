@@ -93,18 +93,16 @@ SimCenterMapGraphicsView* VisualizationWidget::getMapViewWidget() const
 void VisualizationWidget::updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value)
 {
 
-    auto inputWidget = componentWidgetsMap.value(assetType,nullptr);
+//    auto inputWidget = componentWidgetsMap.value(assetType,nullptr);
 
-    if(inputWidget)
-    {
-        inputWidget->updateSelectedComponentAttribute(uid,attribute,value);
-    }
-    else
-    {
-        QString err = "Could not find the widget for the corresponding asset type";
-        qDebug()<<err;
-        return;
-    }
+//    if(inputWidget)
+//    {
+//        inputWidget->updateSelectedComponentAttribute(uid,attribute,value);
+//    }
+//    else
+//    {
+        this->errorMessage("Could not find the widget for the corresponding asset type");
+//    }
 
 }
 
@@ -142,21 +140,5 @@ GISLegendView *VisualizationWidget::getLegendView() const
 {
     return legendView;
 }
-
-
-void VisualizationWidget::registerComponentWidget(QString assetType, ComponentInputWidget* widget)
-{
-    componentWidgetsMap[assetType] = widget;
-
-    widget->setTheVisualizationWidget(this);
-}
-
-
-ComponentInputWidget* VisualizationWidget::getComponentWidget(const QString type)
-{
-    return componentWidgetsMap.value(type, nullptr);
-}
-
-
 
 

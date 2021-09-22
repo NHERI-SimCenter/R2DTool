@@ -52,9 +52,7 @@ class Feature;
 #endif
 
 #ifdef Q_GIS
-
-class QgsFeature;
-
+#include <qgsfeature.h>
 #endif
 
 class WindFieldStation
@@ -99,8 +97,8 @@ public:
 #endif
 
 #ifdef Q_GIS
-    QgsFeature *getStationFeature() const;
-    void setStationFeature(QgsFeature *value);
+    QgsFeature getStationFeature() const;
+    void setStationFeature(QgsFeature value);
 #endif
 
 
@@ -126,7 +124,7 @@ private:
 #endif
 
 #ifdef Q_GIS
-    QgsFeature* stationFeature;
+    QgsFeature stationFeature;
 #endif
 
 

@@ -47,7 +47,7 @@ class QgsGeometry;
 class QGISGasPipelineInputWidget : public ComponentInputWidget
 {
 public:
-    QGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType = QString());
+    QGISGasPipelineInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
     int loadComponentVisualization();
 

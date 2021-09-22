@@ -63,6 +63,7 @@ using namespace Esri::ArcGISRuntime;
 #include "QGISHurricanePreprocessor.h"
 #include "QGISVisualizationWidget.h"
 
+#include <qgsvectorlayer.h>
 #endif
 
 #include <QApplication>
@@ -460,7 +461,212 @@ void UserInputHurricaneWidget::clear(void)
 #ifdef Q_GIS
 void UserInputHurricaneWidget::loadUserWFData(void)
 {
-    qDebug()<<"Implement me in UserInputHurricaneWidget::loadUserWFData";
+    auto QGsVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(QGsVisWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to QGISVisualizationWidget";
+        return;
+    }
+
+    this->statusMessage("Loading wind field data");
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    this->showProgressBar();
+
+    QApplication::processEvents();
+
+    //progressBar->setRange(0,inputFiles.size());
+    progressBar->setRange(0, data.count());
+
+    progressBar->setValue(0);
+
+    // Create the fields
+    QList<QgsField> attribFields;
+    attribFields.push_back(QgsField("AssetType", QVariant::String));
+    attribFields.push_back(QgsField("TabName", QVariant::String));
+    attribFields.push_back(QgsField("Station Name", QVariant::String));
+    attribFields.push_back(QgsField("Latitude", QVariant::Double));
+    attribFields.push_back(QgsField("Longitude", QVariant::Double));
+    attribFields.push_back(QgsField("Peak Wind Speeds", QVariant::String));
+    attribFields.push_back(QgsField("Peak Inundation Heights", QVariant::String));
+
+    auto headerInfo = data.front();
+
+    auto latIndex = headerInfo.indexOf("Latitude");
+    auto lonIndex = headerInfo.indexOf("Longitude");
+
+    if(latIndex == -1 || lonIndex == -1)
+    {
+        this->errorMessage("Could not find the Latitude and Longitude headsers in the EventGrid.csv file");
+        this->hideProgressBar();
+        return;
+    }
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    int count = 0;
+
+    QgsFeatureList featureList;
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        auto stationName = rowStr[0];
+
+        // Path to station files, e.g., site0.csv
+        auto stationPath = eventDir + QDir::separator() + stationName;
+
+        bool ok;
+        auto longitude = rowStr[lonIndex].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error casting longitude to a double, check the input value";
+            this->errorMessage(errMsg);
+
+            this->hideProgressBar();
+
+            return;
+        }
+
+        auto latitude = rowStr[latIndex].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error casting latitude to a double, check the input value";
+            this->errorMessage(errMsg);
+
+            this->hideProgressBar();
+
+            return;
+        }
+
+        WindFieldStation WFStation(stationName,latitude,longitude);
+
+        WFStation.setStationFilePath(stationPath);
+
+        try
+        {
+            WFStation.importWindFieldStation();
+        }
+        catch(QString msg)
+        {
+            auto errorMessage = "Error importing wind field file: " + stationName+"\n"+msg;
+
+            this->errorMessage(errorMessage);
+
+            this->hideProgressBar();
+
+            return;
+        }
+
+        auto pws = WFStation.getPeakWindSpeeds();
+
+        QString pwsStr;
+        for(int i = 0; i<pws.size()-1; ++i)
+        {
+            pwsStr += QString::number(pws[i]) + ", ";
+        }
+
+        pwsStr += QString::number(pws.back());
+
+
+        auto pih = WFStation.getPeakInundationHeights();
+
+        QString pihStr;
+        for(int i = 0; i<pih.size()-1; ++i)
+        {
+            pihStr += QString::number(pih[i]) + ", ";
+        }
+
+        pihStr += QString::number(pih.back());
+
+
+        // create the feature attributes
+        QgsAttributes featAttributes(attribFields.size());
+
+        featAttributes[0] = "WindfieldGridPoint"; // AssetType
+        featAttributes[1] = "Wind Field Grid Point"; // TabName
+        featAttributes[2] = stationName; // Station Name
+        featAttributes[3] = latitude; // Latitude
+        featAttributes[4] = longitude; // Longitude
+        featAttributes[5] = pwsStr; // Peak Wind Speeds
+        featAttributes[6] = pihStr; // Peak Inundation Heights
+
+        // Create the point and add it to the feature table
+        QgsFeature feature;
+        feature.setGeometry(QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude)));
+        feature.setAttributes(featAttributes);
+        featureList.append(feature);
+
+        WFStation.setStationFeature(feature);
+
+        ++count;
+        progressLabel->clear();
+        progressBar->setValue(count);
+
+        QApplication::processEvents();
+    }
+
+
+    auto vectorLayer = QGsVisWidget->addVectorLayer("Point", "Ground Motion Grid");
+
+    if(vectorLayer == nullptr)
+    {
+        this->errorMessage("Error creating a layer");
+        this->hideProgressBar();
+        return;
+    }
+
+
+    auto dProvider = vectorLayer->dataProvider();
+    auto res = dProvider->addAttributes(attribFields);
+
+    if(!res)
+    {
+        this->errorMessage("Error adding attribute fields to layer");
+        QGsVisWidget->removeLayer(vectorLayer);
+        this->hideProgressBar();
+        return;
+    }
+
+    vectorLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    dProvider->addFeatures(featureList);
+    vectorLayer->updateExtents();
+
+    QGsVisWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+
+    progressLabel->setVisible(false);
+
+    // Reset the widget back to the input pane and close
+    this->hideProgressBar();
+
+    if(theStackedWidget->isModal())
+        theStackedWidget->close();
+
+    emit loadingComplete(true);
+
+    emit outputDirectoryPathChanged(eventDir, eventFile);
+
+    return;
 }
 #endif
 
@@ -694,3 +900,19 @@ void UserInputHurricaneWidget::loadUserWFData(void)
     return;
 }
 #endif
+
+
+void UserInputHurricaneWidget::showProgressBar(void)
+{
+    theStackedWidget->setCurrentWidget(progressBarWidget);
+    fileInputWidget->setVisible(false);
+    progressBarWidget->setVisible(true);
+}
+
+
+void UserInputHurricaneWidget::hideProgressBar(void)
+{
+    theStackedWidget->setCurrentWidget(fileInputWidget);
+    progressBarWidget->setVisible(false);
+    fileInputWidget->setVisible(true);
+}

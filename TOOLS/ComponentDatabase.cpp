@@ -50,6 +50,12 @@ int ComponentDatabase::getNumberOfComponents()
 }
 
 
+bool ComponentDatabase::isEmpty(void)
+{
+    return ComponentMap.isEmpty();
+}
+
+
 void ComponentDatabase::addComponent(int ID, Component& asset)
 {
     ComponentMap.insert(ID, asset);

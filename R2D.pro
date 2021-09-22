@@ -184,6 +184,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Tools/AssetInputDelegate.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
+            Tools/ComponentDatabaseManager.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/PelicunPostProcessor.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
@@ -203,6 +204,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingSimulationWidget.cpp \
             UIWidgets/CSVtoBIMModelingWidget.cpp \
             UIWidgets/ComponentInputWidget.cpp \
+            UIWidgets/ShapefileBuildingInputWidget.cpp \
             UIWidgets/DLWidget.cpp \
             UIWidgets/DamageMeasureWidget.cpp \
             UIWidgets/DecisionVariableWidget.cpp \
@@ -283,6 +285,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Tools/AssetInputDelegate.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
+            Tools/ComponentDatabaseManager.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
@@ -304,6 +307,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingSimulationWidget.h \
             UIWidgets/CSVtoBIMModelingWidget.h \
             UIWidgets/ComponentInputWidget.h \
+            UIWidgets/ShapefileBuildingInputWidget.h \
             UIWidgets/DLWidget.h \
             UIWidgets/DamageMeasureWidget.h \
             UIWidgets/DecisionVariableWidget.h \

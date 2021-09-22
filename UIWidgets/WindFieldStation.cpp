@@ -44,10 +44,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <FeatureTable.h>
 #endif
 
-#ifdef Q_GIS
-#include <qgsfeature.h>
-#endif
-
 #include <QFileInfo>
 #include <QString>
 #include <QDir>
@@ -59,7 +55,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 WindFieldStation::WindFieldStation(QString name, double lat, double lon) : stationName(name), latitude(lat), longitude(lon)
 {
-    stationFeature = nullptr;
 }
 
 
@@ -144,12 +139,12 @@ void WindFieldStation::setStationFeature(Esri::ArcGISRuntime::Feature *value)
 
 
 #ifdef Q_GIS
-QgsFeature *WindFieldStation::getStationFeature() const
+QgsFeature WindFieldStation::getStationFeature() const
 {
     return stationFeature;
 }
 
-void WindFieldStation::setStationFeature(QgsFeature *value)
+void WindFieldStation::setStationFeature(QgsFeature value)
 {
     stationFeature = value;
 }
@@ -176,7 +171,7 @@ int WindFieldStation::updateFeatureAttribute(const QString& attribute, const QVa
 #endif
 
 #ifdef Q_GIS
-    stationFeature->setAttribute(attribute,value);
+    stationFeature.setAttribute(attribute,value);
 #endif
 
     return 0;

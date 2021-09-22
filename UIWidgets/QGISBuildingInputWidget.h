@@ -47,7 +47,7 @@ class QgsGeometry;
 class QGISBuildingInputWidget : public ComponentInputWidget
 {
 public:
-    QGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType = QString());
+    QGISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
     int loadComponentVisualization();
 

@@ -82,7 +82,7 @@ UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *pa
     progressBar = nullptr;
     fileInputWidget = nullptr;
     progressBarWidget = nullptr;
-    userGMStackedWidget = nullptr;
+    theStackedWidget = nullptr;
     progressLabel = nullptr;
     eventFile = "";
     motionDir = "";
@@ -196,10 +196,10 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
 {
-    if (userGMStackedWidget)
-        return userGMStackedWidget.get();
+    if (theStackedWidget)
+        return theStackedWidget.get();
 
-    userGMStackedWidget = std::make_unique<QStackedWidget>();
+    theStackedWidget = std::make_unique<QStackedWidget>();
 
     //
     // file and dir input
@@ -255,28 +255,28 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     // add file and progress widgets to stacked widgets, then set defaults
     //
 
-    userGMStackedWidget->addWidget(fileInputWidget);
-    userGMStackedWidget->addWidget(progressBarWidget);
+    theStackedWidget->addWidget(fileInputWidget);
+    theStackedWidget->addWidget(progressBarWidget);
 
-    userGMStackedWidget->setCurrentWidget(fileInputWidget);
+    theStackedWidget->setCurrentWidget(fileInputWidget);
 
-    userGMStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
+    theStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
 
-    return userGMStackedWidget.get();
+    return theStackedWidget.get();
 }
 
 
 void UserInputGMWidget::showUserGMSelectDialog(void)
 {
 
-    if (!userGMStackedWidget)
+    if (!theStackedWidget)
     {
         this->getUserInputGMWidget();
     }
 
-    userGMStackedWidget->show();
-    userGMStackedWidget->raise();
-    userGMStackedWidget->activateWindow();
+    theStackedWidget->show();
+    theStackedWidget->raise();
+    theStackedWidget->activateWindow();
 }
 
 
@@ -431,17 +431,15 @@ void UserInputGMWidget::loadUserGMData(void)
     if(data.empty())
         return;
 
-    userGMStackedWidget->setCurrentWidget(progressBarWidget);
-    progressBarWidget->setVisible(true);
+    this->showProgressBar();
 
     QApplication::processEvents();
 
     //progressBar->setRange(0,inputFiles.size());
     progressBar->setRange(0, data.count());
-
     progressBar->setValue(0);
 
-    // Create the table to store the fields
+    // Create the fields
     QList<QgsField> attribFields;
     attribFields.push_back(QgsField("AssetType", QVariant::String));
     attribFields.push_back(QgsField("TabName", QVariant::String));
@@ -480,8 +478,7 @@ void UserInputGMWidget::loadUserGMData(void)
             QString errMsg = "Error longitude to a double, check the value";
             this->errorMessage(errMsg);
 
-            userGMStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
+            this->hideProgressBar();
 
             return;
         }
@@ -493,8 +490,7 @@ void UserInputGMWidget::loadUserGMData(void)
             QString errMsg = "Error latitude to a double, check the value";
             this->errorMessage(errMsg);
 
-            userGMStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
+            this->hideProgressBar();
 
             return;
         }
@@ -507,13 +503,10 @@ void UserInputGMWidget::loadUserGMData(void)
         }
         catch(QString msg)
         {
-
             auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
-
             this->errorMessage(errorMessage);
 
-            userGMStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
+            this->hideProgressBar();
 
             return;
         }
@@ -540,13 +533,13 @@ void UserInputGMWidget::loadUserGMData(void)
         auto latitude = GMStation.getLatitude();
         auto longitude = GMStation.getLongitude();
 
-        featAttributes[0]= "GroundMotionGridPoint";     // "AssetType"
-        featAttributes[1]= "Ground Motion Grid Point";  // "TabName"
-        featAttributes[2]= stationName;                 // "Station Name"
-        featAttributes[3]= latitude;                    // "Latitude"
-        featAttributes[4]= longitude;                   // "Longitude"
-        featAttributes[5]= vecGMs.size();               // "Number of Ground Motions"
-        featAttributes[6]= GMNames;                     // "Ground Motions"
+        featAttributes[0] = "GroundMotionGridPoint";     // "AssetType"
+        featAttributes[1] = "Ground Motion Grid Point";  // "TabName"
+        featAttributes[2] = stationName;                 // "Station Name"
+        featAttributes[3] = latitude;                    // "Latitude"
+        featAttributes[4] = longitude;                   // "Longitude"
+        featAttributes[5] = vecGMs.size();               // "Number of Ground Motions"
+        featAttributes[6] = GMNames;                     // "Ground Motions"
 
         // Create the feature
         QgsFeature feature;
@@ -567,6 +560,7 @@ void UserInputGMWidget::loadUserGMData(void)
     if(vectorLayer == nullptr)
     {
         this->errorMessage("Error creating a layer");
+        this->hideProgressBar();
         return;
     }
 
@@ -577,6 +571,7 @@ void UserInputGMWidget::loadUserGMData(void)
     {
         this->errorMessage("Error adding attribute fields to layer");
         qgisVizWidget->removeLayer(vectorLayer);
+        this->hideProgressBar();
         return;
     }
 
@@ -590,11 +585,10 @@ void UserInputGMWidget::loadUserGMData(void)
     progressLabel->setVisible(false);
 
     // Reset the widget back to the input pane and close
-    userGMStackedWidget->setCurrentWidget(fileInputWidget);
-    fileInputWidget->setVisible(true);
+    this->hideProgressBar();
 
-    if(userGMStackedWidget->isModal())
-        userGMStackedWidget->close();
+    if(theStackedWidget->isModal())
+        theStackedWidget->close();
 
     emit loadingComplete(true);
 
@@ -823,3 +817,19 @@ void UserInputGMWidget::loadUserGMData(void)
     return;
 }
 #endif
+
+
+void UserInputGMWidget::showProgressBar(void)
+{
+    theStackedWidget->setCurrentWidget(progressBarWidget);
+    fileInputWidget->setVisible(false);
+    progressBarWidget->setVisible(true);
+}
+
+
+void UserInputGMWidget::hideProgressBar(void)
+{
+    theStackedWidget->setCurrentWidget(fileInputWidget);
+    progressBarWidget->setVisible(false);
+    fileInputWidget->setVisible(true);
+}

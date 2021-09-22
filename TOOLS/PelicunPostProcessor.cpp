@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "CSVReaderWriter.h"
-#include "ComponentInputWidget.h"
+#include "ComponentDatabaseManager.h"
 #include "GeneralInformationWidget.h"
 #include "MainWindowWorkflowApp.h"
 #include "PelicunPostProcessor.h"
@@ -440,20 +440,19 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
     REmpiricalProbabilityDistribution theProbDist;
 
-    auto buildingsWidget = theVisualizationWidget->getComponentWidget("BUILDINGS");
-
-    if(buildingsWidget == nullptr)
-    {
-        QString msg = "Error getting the building buildings widget from the visualization widget";
-        throw msg;
-    }
-
     // Get the buildings database
-    auto theBuildingDB = buildingsWidget->getComponentDatabase();
+    auto theBuildingDB = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 
     if(theBuildingDB == nullptr)
     {
         QString msg = "Error getting the building database from the input widget!";
+        throw msg;
+    }
+
+
+    if(theBuildingDB->isEmpty())
+    {
+        QString msg = "Building database is empty";
         throw msg;
     }
 
@@ -1204,12 +1203,13 @@ void PelicunPostProcessor::restoreUI(void)
 
 void PelicunPostProcessor::setCurrentlyViewable(bool status){
 
+
+#ifdef ARC_GIS    
     // Set the legend to display the selected building layer
     auto buildingsWidget = theVisualizationWidget->getComponentWidget("BUILDINGS");
 
     if(buildingsWidget)
     {
-#ifdef ARC_GIS    
         if (status == true)
             mapViewSubWidget->setCurrentlyViewable(status);
 
@@ -1224,10 +1224,11 @@ void PelicunPostProcessor::setCurrentlyViewable(bool status){
         }
 
         arcVizWidget->handleLegendChange(selectedLayer);
-#else
-        qDebug()<<"Implement me";
-#endif
     }
+#else
+    Q_UNUSED(status);
+#endif
+
 }
 
 

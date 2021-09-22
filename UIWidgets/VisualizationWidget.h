@@ -76,11 +76,6 @@ public:
     virtual void testNewMapCanvas2() = 0;
 #endif
 
-    // Note: the component type must match the "AssetType" value set to the features
-    void registerComponentWidget(const QString assetType, ComponentInputWidget* widget);
-
-    ComponentInputWidget* getComponentWidget(const QString type);
-
     // Get the visualization widget
     virtual QWidget *getVisWidget() = 0;
 
@@ -120,9 +115,6 @@ public slots:
 private slots:
 
 protected:
-
-    // Map to hold the component input widgets (key = type of component or asset, e.g., BUILDINGS)
-    QMap<QString, ComponentInputWidget*> componentWidgetsMap;
 
 #ifdef ARC_GIS
     SimCenterMapGraphicsView *mapViewWidget = nullptr;

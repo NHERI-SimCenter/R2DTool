@@ -139,6 +139,8 @@ public:
 
     Component getComponent(const QString UID);
 
+    bool isEmpty(void);
+
     int getNumberOfComponents();
 
     void addComponent(int ID, Component& asset);

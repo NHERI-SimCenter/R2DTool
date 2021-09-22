@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifdef Q_GIS
 #include "QGISBuildingInputWidget.h"
 #include "QGISGasPipelineInputWidget.h"
+#include "ShapefileBuildingInputWidget.h"
 #endif
 
 // Qt headers
@@ -75,6 +76,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Building"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
 
 #ifdef ARC_GIS
     ArcGISBuildingInputWidget *csvBuildingInventory = new ArcGISBuildingInputWidget(this,"Buildings","CSV_to_BIM");
@@ -83,11 +85,12 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
 
 #ifdef Q_GIS
-    QGISBuildingInputWidget *csvBuildingInventory = new QGISBuildingInputWidget(this,"Buildings","CSV_to_BIM");
+    QGISBuildingInputWidget *csvBuildingInventory = new QGISBuildingInputWidget(this, visualizationWidget, "Buildings","CSV_to_BIM");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
-#endif
 
-    pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
+    ShapefileBuildingInputWidget *shapefileBuildingInventory = new ShapefileBuildingInputWidget(this,visualizationWidget,"Buildings","CSV_to_BIM");
+    buildingWidget->addComponent(QString("Shape File to BIM"), QString("CSV_to_BIM"), shapefileBuildingInventory);
+#endif
 
 #ifdef ARC_GIS
     ArcGISGasPipelineInputWidget *csvPipelineInventory = new ArcGISGasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
@@ -95,12 +98,10 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 #endif
 
 #ifdef Q_GIS
-    QGISGasPipelineInputWidget *csvPipelineInventory = new QGISGasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
+    QGISGasPipelineInputWidget *csvPipelineInventory = new QGISGasPipelineInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
     pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
 #endif
 
-    visualizationWidget->registerComponentWidget("BUILDINGS",csvBuildingInventory);
-    visualizationWidget->registerComponentWidget("GASPIPELINES",csvPipelineInventory);
 
     // QString pathToPipelineInfoFile = "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
     // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
