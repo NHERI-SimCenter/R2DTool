@@ -170,7 +170,6 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
             this, SLOT(replyFinished(QNetworkReply*)));
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
-
 }
 
 
@@ -266,6 +265,8 @@ void WorkflowAppR2D::initialize(void)
 
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidget->setAssetTypeState("Buildings", true);
+
+//    loadResults();
 }
 
 

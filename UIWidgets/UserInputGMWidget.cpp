@@ -69,6 +69,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimpleRenderer.h"
 #endif
 
+#ifdef Q_GIS
+#include "QGISVisualizationWidget.h"
+
+#include <qgsvectorlayer.h>
+#endif
+
 using namespace Esri::ArcGISRuntime;
 
 UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
@@ -403,8 +409,198 @@ void UserInputGMWidget::clear(void)
 #ifdef Q_GIS
 void UserInputGMWidget::loadUserGMData(void)
 {
-    qDebug()<<"Implement me in UserInputGMWidget::loadUserGMData";
-    return ;
+    auto qgisVizWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(qgisVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return;
+    }
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    userGMStackedWidget->setCurrentWidget(progressBarWidget);
+    progressBarWidget->setVisible(true);
+
+    QApplication::processEvents();
+
+    //progressBar->setRange(0,inputFiles.size());
+    progressBar->setRange(0, data.count());
+
+    progressBar->setValue(0);
+
+    // Create the table to store the fields
+    QList<QgsField> attribFields;
+    attribFields.push_back(QgsField("AssetType", QVariant::String));
+    attribFields.push_back(QgsField("TabName", QVariant::String));
+    attribFields.push_back(QgsField("Station Name", QVariant::String));
+    attribFields.push_back(QgsField("Latitude", QVariant::Double));
+    attribFields.push_back(QgsField("Longitude", QVariant::Double));
+    attribFields.push_back(QgsField("Number of Ground Motions", QVariant::Int));
+    attribFields.push_back(QgsField("Ground Motions", QVariant::String));
+
+    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
+    // gridLayer->setMinScale(80000);
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    int count = 0;
+
+    QgsFeatureList featureList;
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        auto stationName = rowStr[0];
+
+        // Path to station files, e.g., site0.csv
+        auto stationPath = motionDir + QDir::separator() + stationName;
+
+        bool ok;
+        auto lon = rowStr[1].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error longitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        auto lat = rowStr[2].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error latitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        GroundMotionStation GMStation(stationPath,lat,lon);
+
+        try
+        {
+            GMStation.importGroundMotions();
+        }
+        catch(QString msg)
+        {
+
+            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
+
+            this->errorMessage(errorMessage);
+
+            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        stationList.push_back(GMStation);
+
+        auto vecGMs = GMStation.getStationGroundMotions();
+
+        QString GMNames;
+        for(int i = 0; i<vecGMs.size(); ++i)
+        {
+            auto GMName = vecGMs.at(i).getName();
+
+            GMNames.append(GMName);
+
+            if(i != vecGMs.size()-1)
+                GMNames.append(", ");
+
+        }
+
+        // create the feature attributes
+        QgsAttributes featAttributes(attribFields.size());
+
+        auto latitude = GMStation.getLatitude();
+        auto longitude = GMStation.getLongitude();
+
+        featAttributes[0]= "GroundMotionGridPoint";     // "AssetType"
+        featAttributes[1]= "Ground Motion Grid Point";  // "TabName"
+        featAttributes[2]= stationName;                 // "Station Name"
+        featAttributes[3]= latitude;                    // "Latitude"
+        featAttributes[4]= longitude;                   // "Longitude"
+        featAttributes[5]= vecGMs.size();               // "Number of Ground Motions"
+        featAttributes[6]= GMNames;                     // "Ground Motions"
+
+        // Create the feature
+        QgsFeature feature;
+        feature.setGeometry(QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude)));
+        feature.setAttributes(featAttributes);
+        featureList.append(feature);
+
+        ++count;
+        progressLabel->clear();
+        progressBar->setValue(count);
+
+        QApplication::processEvents();
+    }
+
+
+    auto vectorLayer = qgisVizWidget->addVectorLayer("Point", "Ground Motion Grid");
+
+    if(vectorLayer == nullptr)
+    {
+        this->errorMessage("Error creating a layer");
+        return;
+    }
+
+    auto dProvider = vectorLayer->dataProvider();
+    auto res = dProvider->addAttributes(attribFields);
+
+    if(!res)
+    {
+        this->errorMessage("Error adding attribute fields to layer");
+        qgisVizWidget->removeLayer(vectorLayer);
+        return;
+    }
+
+    vectorLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    dProvider->addFeatures(featureList);
+    vectorLayer->updateExtents();
+
+    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+
+    progressLabel->setVisible(false);
+
+    // Reset the widget back to the input pane and close
+    userGMStackedWidget->setCurrentWidget(fileInputWidget);
+    fileInputWidget->setVisible(true);
+
+    if(userGMStackedWidget->isModal())
+        userGMStackedWidget->close();
+
+    emit loadingComplete(true);
+
+    emit outputDirectoryPathChanged(motionDir, eventFile);
+
+    return;
 }
 #endif
 

@@ -44,8 +44,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentTableModel.h"
 
 // Test to remove
-#include <chrono>
-using namespace std::chrono;
+//#include <chrono>
+//using namespace std::chrono;
 
 #include <QCoreApplication>
 #include <QApplication>
@@ -141,7 +141,7 @@ void ComponentInputWidget::loadComponentData(void)
         }
     }
 
-    auto start = high_resolution_clock::now();
+    //    auto start = high_resolution_clock::now();
 
     CSVReaderWriter csvTool;
 
@@ -202,9 +202,9 @@ void ComponentInputWidget::loadComponentData(void)
     this->loadComponentVisualization();
 
     // Test to remove
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(stop - start);
-    this->statusMessage("Done ALL "+QString::number(duration.count()));
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    this->statusMessage("Done ALL "+QString::number(duration.count()));
 
     this->statusMessage("Done loading assets");
     QApplication::processEvents();
@@ -412,24 +412,24 @@ void ComponentInputWidget::createComponentsBox(void)
 void ComponentInputWidget::setTheVisualizationWidget(VisualizationWidget *value)
 {
 #ifdef ARC_GIS
-        theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(value);
+    theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(value);
 
-        if(theVisualizationWidget == nullptr)
-        {
-            this->errorMessage("Failed to cast to QISVisualizationWidget");
-            return;
-        }
+    if(theVisualizationWidget == nullptr)
+    {
+        this->errorMessage("Failed to cast to QISVisualizationWidget");
+        return;
+    }
 #endif
 
 #ifdef Q_GIS
 
-        theVisualizationWidget = static_cast<QGISVisualizationWidget*>(value);
+    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(value);
 
-        if(theVisualizationWidget == nullptr)
-        {
-            this->errorMessage("Failed to cast to QISVisualizationWidget");
-            return;
-        }
+    if(theVisualizationWidget == nullptr)
+    {
+        this->errorMessage("Failed to cast to QISVisualizationWidget");
+        return;
+    }
 #endif
 
 }

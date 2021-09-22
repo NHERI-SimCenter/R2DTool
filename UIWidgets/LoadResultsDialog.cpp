@@ -53,9 +53,9 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
     this->resize(width, height);
 
     // Test to remove
-    // inputFileLineEdit->setText("inputfile.json");
-    // resultsFolderLineEdit->setText("/ResultsDir");
-    // this->handleLoadResults();
+     inputFileLineEdit->setText("/Users/steve/Desktop/untitled\ folder/inputRWHALE.json");
+     resultsFolderLineEdit->setText("/Users/steve/Desktop/untitled\ folder/Results");
+     this->handleLoadResults();
 }
 
 

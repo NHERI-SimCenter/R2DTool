@@ -85,6 +85,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterMapGraphicsView.h"
 #endif
 
+
+#ifdef Q_GIS
+#include <qgsmapcanvas.h>
+#endif
+
+
 using namespace QtCharts;
 
 PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : QMainWindow(parent), theVisualizationWidget(visWidget)
@@ -223,14 +229,21 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     tableDock->setMinimumWidth(475);
     addDockWidget(Qt::RightDockWidgetArea, tableDock);
 
+#ifdef Q_GIS
     // Get the map view widget
-//    mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
+    auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
+    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
 
-//    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(mapViewMainWidget);
+    // Enable the selection tool
+    mapViewSubWidget->enableSelectionTool();
+#endif
 
-    // Popup stuff
-    // Once map is set, connect to MapQuickView mouse clicked signal
-    //    connect(mapViewSubWidget.get(), &EmbeddedMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
+#ifdef ARC_GIS
+    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(mapViewMainWidget);
+
+    // Popup stuff Once map is set, connect to MapQuickView mouse clicked signal
+    connect(mapViewSubWidget.get(), &EmbeddedMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
+#endif
 
     QDockWidget* mapViewDock = new QDockWidget("Regional Map",this);
     mapViewDock->setObjectName("MapViewDock");
@@ -317,6 +330,19 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
     }
 
 }
+
+
+void PelicunPostProcessor::showEvent(QShowEvent *e)
+{
+    auto mainCanvas = mapViewSubWidget->getMainCanvas();
+
+    auto mainExtent = mainCanvas->extent();
+
+    mapViewSubWidget->mapCanvas()->zoomToFeatureExtent(mainExtent);
+    QMainWindow::showEvent(e);
+}
+
+
 
 
 int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults)
@@ -558,23 +584,26 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
         pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
 
-        auto buildingFeature = building.ComponentFeature;
+        //        auto buildingFeature = building.ComponentFeature;
 
-        auto atrb = "LossRatio";
-        auto atrbVal = QVariant(lossRatio);
+        //        if(buildingFeature != nullptr)
+        //        {
+        //            auto atrb = "LossRatio";
+        //            auto atrbVal = QVariant(lossRatio);
 
-#ifdef ARC_GIS
-        buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
-        buildingFeature->featureTable()->updateFeature(buildingFeature);
-#endif
+        //#ifdef ARC_GIS
+        //            buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
+        //            buildingFeature->featureTable()->updateFeature(buildingFeature);
+        //#endif
 
-#ifdef Q_GIS
-        buildingFeature->setAttribute("LossRatio",lossRatio);
-#endif
+        //#ifdef Q_GIS
+        //            buildingFeature->setAttribute("LossRatio",lossRatio);
+        //#endif
 
-        // Get the feature UID
-        auto uid = building.UID;
-        theVisualizationWidget->updateSelectedComponent("BUILDINGS",uid,atrb,atrbVal);
+        //            // Get the feature UID
+        //            auto uid = building.UID;
+        //            theVisualizationWidget->updateSelectedComponent("BUILDINGS",uid,atrb,atrbVal);
+        //        }
     }
 
     //  CASUALTIES

@@ -84,6 +84,9 @@ using namespace Esri::ArcGISRuntime;
 #ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
 
+#include <qgslinesymbol.h>
+#include <qgsvectorlayer.h>
+#include <qgsfillsymbol.h>
 #endif
 
 ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
@@ -329,25 +332,6 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
     inputShakeMap->eventName = eventName;
 
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
-
-    // Check if there is a 'Shake Map' root item in the tree
-    auto shakeMapLayerTreeItem = layersTreeView->getTreeItem("Shake Map", nullptr);
-
-    // If there is no item, create one
-    if(shakeMapLayerTreeItem == nullptr)
-        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map", theVisualizationWidget->createUniqueID());
-
-    // Add the event layer to the layer tree
-    auto eventItem = layersTreeView->addItemToTree(eventName, theVisualizationWidget->createUniqueID(), shakeMapLayerTreeItem);
-
-    // Create the root event group layer
-    inputShakeMap->eventLayer = new GroupLayer(QList<Layer*>{});
-
-    auto eventLayer = inputShakeMap->eventLayer;
-
-    eventLayer->setName(eventName);
-
     shakeMapStackedWidget->setCurrentWidget(progressBarWidget);
 
     progressBarWidget->setVisible(true);
@@ -358,12 +342,13 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
     progressBar->setValue(0);
 
+    QVector<QgsMapLayer*> layerGroup;
+
     int count = 0;
     foreach(QString filename, inputFiles)
     {
         auto inFilePath = dir + QDir::separator() + filename;
 
-#ifndef OpenSRA
         // Create the XML grid
         if(filename.compare("grid.xml") == 0) // XML grid
         {
@@ -375,7 +360,7 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
             XMLAdaptor XMLImportAdaptor;
 
             QString errMess;
-            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, this);
+            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, qGsVisWidget);
 
             if(XMLlayer == nullptr)
             {
@@ -385,54 +370,33 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
             XMLlayer->setName("Grid");
 
-            XMLlayer->setAutoFetchLegendInfos(true);
-
-            theVisualizationWidget->addLayerToMap(XMLlayer,eventItem);
+            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
 
             inputShakeMap->gridLayer = XMLlayer;
-            eventLayer->layers()->append(inputShakeMap->gridLayer);
-
-            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
+            layerGroup.push_back(XMLlayer);
         }
-#endif
+
         if(filename.compare("cont_pga.json") == 0) // PGA contours layer
         {
             progressLabel->setText("Loading PGA Contour Layer");
             this->statusMessage("Loading PGA Contour Layer");
 
             QApplication::processEvents();
-            auto layer = theVisualizationWidget->createAndAddJsonLayer(inFilePath, "PGA Contours", eventItem);
+            auto contPGAlayer = qGsVisWidget->addVectorLayer(inFilePath, "PGA Contours", "ogr");
 
-            if(layer == nullptr)
+            if(contPGAlayer == nullptr)
             {
                 errorMessage("Failed to create the PGA contour layer");
                 continue;
             }
 
-            auto featCollection = layer->featureCollection();
+            // Set the category renderer
+            QgsLineSymbol* lineSymbol = new QgsLineSymbol();
+            lineSymbol->setWidth(1.0);
+            qGsVisWidget->createCategoryRenderer("value",contPGAlayer,lineSymbol);
 
-            auto tables = featCollection->tables();
-
-            for(int i = 0;i<tables->size(); ++i)
-            {
-                auto table = tables->at(i);
-
-                // Get the renderer
-                Renderer* tableRenderer = table->renderer();
-
-                auto simpleRenderer = dynamic_cast<SimpleRenderer*>(tableRenderer);
-
-                if(simpleRenderer == nullptr)
-                    continue;
-
-                auto labelVal = simpleRenderer->label();
-
-                QString labelStr = "PGA (%g) " + labelVal;
-                simpleRenderer->setLabel(labelStr);
-            }
-
-            inputShakeMap->pgaContourLayer = layer;
-            eventLayer->layers()->append(inputShakeMap->pgaContourLayer);
+            inputShakeMap->pgaContourLayer = contPGAlayer;
+            layerGroup.push_back(contPGAlayer);
         }
         else if(filename.compare("rupture.json") == 0) // Rupture layer
         {
@@ -441,37 +405,23 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
             QApplication::processEvents();
 
-            QColor color(0,0,255,40);
-            auto layer = theVisualizationWidget->createAndAddJsonLayer(inFilePath, "Rupture", eventItem,color);
+            auto rupLayer = qGsVisWidget->addVectorLayer(inFilePath, "Rupture", "ogr");
 
-            if(layer == nullptr)
+            if(rupLayer == nullptr)
             {
                 errorMessage("Failed to create the rupture layer");
                 continue;
             }
 
-            auto featCollection = layer->featureCollection();
+            inputShakeMap->faultLayer = rupLayer;
 
-            auto tables = featCollection->tables();
+            // Set the simple fill renderer
+            QgsFillSymbol* fillSymbol = new QgsFillSymbol();
+            QColor color(0,0,255,40);
+            fillSymbol->setColor(color);
+            qGsVisWidget->createSimpleRenderer(fillSymbol,rupLayer);
 
-            for(int i = 0;i<tables->size(); ++i)
-            {
-                auto table = tables->at(i);
-
-                // Get the renderer
-                Renderer* tableRenderer = table->renderer();
-
-                auto simpleRenderer = dynamic_cast<SimpleRenderer*>(tableRenderer);
-
-                if(simpleRenderer == nullptr)
-                    continue;
-
-                auto labelStr = "Rupture";
-                simpleRenderer->setLabel(labelStr);
-            }
-
-            inputShakeMap->faultLayer = layer;
-            eventLayer->layers()->append(inputShakeMap->faultLayer);
+            layerGroup.push_back(rupLayer);
         }
         //        else if(filename.contains("_se.kmz")) // Event layer
         //        {
@@ -522,7 +472,6 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
             continue;
         }
 
-
         ++count;
         progressLabel->clear();
         progressBar->setValue(count);
@@ -530,8 +479,9 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
         QApplication::processEvents();
     }
 
-    progressLabel->setVisible(false);
+    qGsVisWidget->createLayerGroup(layerGroup,eventName);
 
+    progressLabel->setVisible(false);
 
     // Insert the ShakeMap into its container
     shakeMapContainer.insert(eventName,inputShakeMap);
@@ -544,9 +494,6 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     auto itemID = addedItem->getItemID();
 
     listWidget->setCurrentItem(itemID);
-
-    // Add the event layer to the map
-    //    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
 
     // Reset the widget back to the input pane and close
     shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
@@ -1035,8 +982,16 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
 
         if(IMtag.compare("PGA") == 0)
         {
+            auto attribVal = station.getAttributeValue(IMtag);
+
+            if(attribVal.isNull())
+            {
+                this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
+                return false;
+            }
+
             bool Ok = false;
-            auto PGAval = station.getAttributeValue(IMtag).toDouble(&Ok);
+            auto PGAval = attribVal.toDouble(&Ok);
 
             if(!Ok)
             {

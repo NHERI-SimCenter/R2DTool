@@ -57,6 +57,7 @@ class FeatureCollectionLayer;
 #endif
 
 #ifdef Q_GIS
+class QGISVisualizationWidget;
 class QgsVectorLayer;
 #endif
 
@@ -69,7 +70,7 @@ public:
     Esri::ArcGISRuntime::FeatureCollectionLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
 #endif
 
-    QgsVectorLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
+    QgsVectorLayer* parseXMLFile(const QString& filePath, QString& errMessage, QGISVisualizationWidget* GISVisWidget);
 
     QString getEventName() const;
 

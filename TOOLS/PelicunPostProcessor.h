@@ -39,7 +39,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ComponentDatabase.h"
+
+#ifdef ARC_GIS
 #include "EmbeddedMapViewWidget.h"
+#endif
+
+#ifdef Q_GIS
+#include "SimCenterMapcanvasWidget.h"
+#endif
 
 #include <QString>
 #include <QMainWindow>
@@ -48,7 +55,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <set>
 
 class REmpiricalProbabilityDistribution;
-class EmbeddedMapViewWidget;
 class VisualizationWidget;
 
 class QDockWidget;
@@ -128,6 +134,10 @@ private slots:
 
     void restoreUI(void);
 
+protected:
+
+    void showEvent(QShowEvent *e);
+
 private:
 
     int processDVResults(const QVector<QStringList>& DVResults);
@@ -165,7 +175,7 @@ private:
 
     QComboBox* sortComboBox;
 
-    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
+    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
 
     QGraphicsView* mapViewMainWidget;
 

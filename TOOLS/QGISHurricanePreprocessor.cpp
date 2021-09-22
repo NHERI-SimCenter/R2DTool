@@ -55,9 +55,9 @@ QGISHurricanePreprocessor::QGISHurricanePreprocessor(QProgressBar* pBar, QGISVis
 {
     allHurricanesLayer = nullptr;
 
-    QMap<QString, QVariant> featureAttributes;
-    featureAttributes.insert("test","test");
-    createLandfallVisualization(37.8717450069,-122.2609607382,featureAttributes);
+//    QMap<QString, QVariant> featureAttributes;
+//    featureAttributes.insert("test","test");
+//    createLandfallVisualization(37.8717450069,-122.2609607382,featureAttributes);
 }
 
 
