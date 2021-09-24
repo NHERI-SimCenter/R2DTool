@@ -24,7 +24,7 @@ public:
     int loadComponentVisualization();
 
     Esri::ArcGISRuntime::Feature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
-    int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
+    int removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
     Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
 
     void clear();

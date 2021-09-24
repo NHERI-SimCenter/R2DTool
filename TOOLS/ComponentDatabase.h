@@ -1,4 +1,4 @@
-#ifndef ComponentDATABASE_H
+﻿#ifndef ComponentDATABASE_H
 #define ComponentDATABASE_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
@@ -85,9 +85,9 @@ public:
     {
         ComponentAttributes[attribute] = value;
 
-        if(ComponentFeature != nullptr)
+        if(ComponentFeature.isValid())
         {            
-            auto res = ComponentFeature->setAttribute(attribute,value);
+            auto res = ComponentFeature.setAttribute(attribute,value);
 
             if(res == false)
             {
@@ -101,7 +101,7 @@ public:
 
     bool isValid(void)
     {
-        if(ComponentFeature == nullptr || ComponentAttributes.empty())
+        if(!ComponentFeature.isValid() || ComponentAttributes.empty())
             return false;
 
         return true;
@@ -118,7 +118,7 @@ public:
 #endif
 
 #ifdef Q_GIS
-    QgsFeature* ComponentFeature = nullptr;
+    QgsFeature ComponentFeature;
 #endif
 
     // Map to store the Component attributes
@@ -155,6 +155,8 @@ private:
 
     QMap<int,Component> ComponentMap;
 
+//    // Map to link R2D ids with QGIS feature ids
+//    QMap<QgsFeatureId, int> mapFeatures;
 };
 
 #endif // ComponentDATABASE_H

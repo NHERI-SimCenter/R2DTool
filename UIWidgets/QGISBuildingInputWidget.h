@@ -51,15 +51,15 @@ public:
 
     int loadComponentVisualization();
 
-    bool addFeatureToSelectedLayer(QgsFeature& feature);
-    int removeFeatureFromSelectedLayer(QgsFeature& feat);
+    bool removeFeaturesFromSelectedLayer(QgsFeatureIds& features);
+    bool clearSelectedLayer(void);
+
     QgsVectorLayer* getSelectedFeatureLayer(void);
 
     void clear();
 
 private:
 
-    QgsVectorLayer* selectedBuildingsLayer = nullptr;
 
 };
 

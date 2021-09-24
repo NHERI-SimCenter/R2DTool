@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "GISSelectableComponent.h"
 #include "ComponentDatabase.h"
 
 #include <set>
@@ -83,7 +84,7 @@ class QLabel;
 class JsonGroupBoxWidget;
 #endif
 
-class ComponentInputWidget : public  SimCenterAppWidget
+class ComponentInputWidget : public  SimCenterAppWidget, public GISSelectableComponent
 {
     Q_OBJECT
 
@@ -101,20 +102,13 @@ public:
 #endif
 
 
-#ifdef Q_GIS
-    virtual bool  addFeatureToSelectedLayer(QgsFeature& feature);
-    virtual int removeFeatureFromSelectedLayer(QgsFeature& feature);
-    virtual QgsVectorLayer* getSelectedFeatureLayer(void);
-    void updateSelectedComponentAttribute(const QgsFeatureId& id, const QString& attribute, const QVariant& value);
-#endif
-
     ComponentTableView *getTableWidget() const;
 
     // Set the filter string and select the components
     void setFilterString(const QString& filter);
     QString getFilterString(void);
 
-    void insertSelectedComponent(const int ComponentID);
+    void insertSelectedComponent(QgsFeatureId& featureId);
 
     int numberComponentsSelected(void);
 
@@ -158,7 +152,6 @@ private slots:
     void loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
-    void clearLayerSelectedForAnalysis(void);
 
 protected:
 
@@ -166,13 +159,9 @@ protected:
     ArcGISVisualizationWidget* theVisualizationWidget;
 #endif
 
-#ifdef Q_GIS
-    QGISVisualizationWidget* theVisualizationWidget;
-#endif
-
     ComponentTableView* componentTableWidget;
 
-    ComponentDatabase* theComponentDb;
+    ComponentDatabase*  theComponentDb;
 
     // Returns a vector of sorted items that are unique
     template <typename T>
@@ -211,11 +200,6 @@ private:
 #ifdef ARC_GIS
     // Map to store the selected features according to their UID
     QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
-#endif
-
-#ifdef Q_GIS
-    // Map to store the selected features according to their UID
-    QMap<QgsFeatureId, QgsFeature*> selectedFeaturesForAnalysis;
 #endif
 
 };

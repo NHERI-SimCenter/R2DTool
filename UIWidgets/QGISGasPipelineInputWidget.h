@@ -52,7 +52,7 @@ public:
     int loadComponentVisualization();
 
     QgsFeature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom);
-    int removeFeatureFromSelectedLayer(QgsFeature* feat);
+    int removeFeaturesFromSelectedLayer(QgsFeature* feat);
     QgsVectorLayer* getSelectedFeatureLayer(void);
 
     void clear();

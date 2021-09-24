@@ -164,7 +164,7 @@ private:
     void createComponentsBox(void);
 
     // Map to store the selected features according to their UID
-    QMap<QString, QgsFeature*> selectedFeaturesForAnalysis;
+    QMap<QgsFeatureId, QgsFeature> selectedFeaturesForAnalysis;
 
 };
 

@@ -51,7 +51,7 @@ public:
 
     std::set<int> getSelectedComponentIDs() const;
 
-    void insertSelectedCompoonent(const int id);
+    void insertSelectedComponent(const int id);
 
     void clear();
 

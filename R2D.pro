@@ -211,6 +211,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EarthquakeInputWidget.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
+            UIWidgets/GISSelectableComponent.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/LoadResultsDialog.cpp \
             UIWidgets/WindFieldStation.cpp \
@@ -314,6 +315,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EarthquakeInputWidget.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
+            UIWidgets/GISSelectableComponent.h \
             UIWidgets/GroundMotionStation.h \
             UIWidgets/LoadResultsDialog.h \
             UIWidgets/WindFieldStation.h \

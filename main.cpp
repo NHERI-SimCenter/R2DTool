@@ -99,7 +99,10 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
     }
 
     if (type == QtFatalMsg)
+    {
+        qDebug()<<msg;
         abort();
+    }
 }
 
 

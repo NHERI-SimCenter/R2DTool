@@ -69,7 +69,7 @@ void AssetInputDelegate::clear()
 }
 
 
-void AssetInputDelegate::insertSelectedCompoonent(const int id)
+void AssetInputDelegate::insertSelectedComponent(const int id)
 {
     selectedComponentIDs.insert(id);
 

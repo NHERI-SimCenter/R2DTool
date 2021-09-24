@@ -222,7 +222,7 @@ Feature* ArcGISGasPipelineInputWidget::addFeatureToSelectedLayer(QMap<QString, Q
 }
 
 
-int ArcGISGasPipelineInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
+int ArcGISGasPipelineInputWidget::removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
 {
     selectedFeaturesTable->deleteFeature(feat);
 

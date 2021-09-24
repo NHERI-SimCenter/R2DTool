@@ -275,7 +275,7 @@ Feature* ArcGISBuildingInputWidget::addFeatureToSelectedLayer(QMap<QString, QVar
 }
 
 
-int ArcGISBuildingInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
+int ArcGISBuildingInputWidget::removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
 {
     selectedBuildingsTable->deleteFeature(feat);
 

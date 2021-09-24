@@ -211,7 +211,7 @@ QgsFeature* QGISGasPipelineInputWidget::addFeatureToSelectedLayer(QMap<QString, 
 }
 
 
-int QGISGasPipelineInputWidget::removeFeatureFromSelectedLayer(QgsFeature* feat)
+int QGISGasPipelineInputWidget::removeFeaturesFromSelectedLayer(QgsFeature* feat)
 {
 //    selectedFeaturesTable->deleteFeature(feat);
 

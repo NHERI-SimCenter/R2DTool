@@ -68,6 +68,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISVisualizationWidget.h"
 #include <qgsfield.h>
 #include <qgsfields.h>
+#include <qgsvectorlayer.h>
 #endif
 
 // Std library headers
@@ -80,7 +81,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "JsonGroupBoxWidget.h"
 #endif
 
-ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), appType(appType), componentType(componentType)
+ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), GISSelectableComponent(visWidget), appType(appType), componentType(componentType)
 {
 #ifdef ARC_GIS
     theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(visWidget);
@@ -89,16 +90,6 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
     {
         this->errorMessage("Failed to cast to QISVisualizationWidget");
         return;
-    }
-#endif
-
-#ifdef Q_GIS
-
-    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
-
-    if(theVisualizationWidget == nullptr)
-    {
-        this->errorMessage("Failed to cast to QISVisualizationWidget");
     }
 #endif
 
@@ -424,6 +415,7 @@ void ComponentInputWidget::selectComponents(void)
     }
 }
 
+
 #ifdef ARC_GIS
 void ComponentInputWidget::handleComponentSelection(void)
 {
@@ -489,7 +481,6 @@ void ComponentInputWidget::handleComponentSelection(void)
             continue;
         
         QMap<QString, QVariant> featureAttributes;
-#ifdef ARC_GIS
         auto atrb = feature->attributes()->attributesMap();
         
         auto id = atrb.value("UID").toString();
@@ -515,35 +506,7 @@ void ComponentInputWidget::handleComponentSelection(void)
             
             featureAttributes[key] = val;
         }
-#endif
-        
-#ifdef Q_GIS
 
-        auto id = feature->id();
-        
-        if(selectedFeaturesForAnalysis.contains(id))
-            continue;
-        
-        auto atrb = feature->attributes();
-        auto fields = feature->fields().names();
-        
-        // qDebug()<<"Num atributes: "<<atrb.size();
-        
-        for(int i = 0; i<atrb.size();++i)
-        {
-            
-            auto key = fields.at(i);
-            auto val = atrb.value(i);
-            
-            // Including the ObjectID causes a crash!!! Do not include it when creating an object
-            if(key == "ObjectID")
-                continue;
-            
-            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
-            
-            featureAttributes[key] = val;
-        }
-#endif
         
         //        auto geom = feature->geometry();
         
@@ -564,19 +527,12 @@ void ComponentInputWidget::handleComponentSelection(void)
         return;
     }
 
-#ifdef ARC_GIS
     // Add the layer to the map if it does not already exist
     auto layerExists = theVisualizationWidget->getLayer(selecFeatLayer->layerId());
 
     if(layerExists == nullptr)
         theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
-#endif
 
-#ifdef Q_GIS
-
-    qDebug()<<"Implement me in ComponentInputWidget::handleComponentSelection";
-
-#endif
 }
 #endif
 
@@ -642,41 +598,22 @@ void ComponentInputWidget::handleComponentSelection(void)
 
         auto feature = component.ComponentFeature;
 
-        if(feature == nullptr)
+        if(feature.isValid() == false)
         {
             this->errorMessage("Error getting the feature from the database");
             continue;
         }
 
-        auto id = feature->id();
-
-        if(selectedFeaturesForAnalysis.contains(id))
-            continue;
-
-        auto res = this->addFeatureToSelectedLayer(*feature);
+        auto res = this->addFeatureToSelectedLayer(feature);
 
         if(res == false)
-            this->errorMessage("Error adding feature to selected feature layer");
-        else
-            selectedFeaturesForAnalysis.insert(id,feature);
+            return;
     }
 
+    selectedFeaturesLayer->updateExtents();
 }
 #endif
 
-
-void ComponentInputWidget::clearLayerSelectedForAnalysis(void)
-{
-    if(selectedFeaturesForAnalysis.empty())
-        return;
-
-    for(auto&& it : selectedFeaturesForAnalysis)
-    {
-        this->removeFeatureFromSelectedLayer(*it);
-    }
-
-    selectedFeaturesForAnalysis.clear();
-}
 
 
 QStringList ComponentInputWidget::getTableHorizontalHeadings()
@@ -732,9 +669,10 @@ void ComponentInputWidget::setComponentType(const QString &value)
 }
 
 
-void ComponentInputWidget::insertSelectedComponent(const int ComponentID)
+void ComponentInputWidget::insertSelectedComponent(QgsFeatureId& featureId)
 {
-    selectComponentsLineEdit->insertSelectedCompoonent(ComponentID);
+
+//    selectComponentsLineEdit->insertSelectedComponent(ComponentID);
 }
 
 
@@ -1032,14 +970,16 @@ void ComponentInputWidget::handleCellChanged(const int row, const int col)
 #ifdef Q_GIS
     auto feat = component.ComponentFeature;
 
-    if(feat == nullptr)
+    if(!feat.isValid())
     {
         this->errorMessage("Error getting feature from database");
         return;
     }
 
-    auto id = feat->id();
-    this->updateSelectedComponentAttribute(id,attrib,attribVal);
+    auto id = feat.id();
+
+    auto field = feat.fieldNameIndex(attrib);
+    this->updateSelectedComponentAttribute(id,field,attribVal);
 #endif
 
 }
@@ -1068,29 +1008,6 @@ void ComponentInputWidget::updateComponentAttribute(const int uid, const QString
 {
     theComponentDb->updateComponentAttribute(uid,attribute,value);
 }
-
-
-#ifdef Q_GIS
-bool  ComponentInputWidget::addFeatureToSelectedLayer(QgsFeature& feature)
-{
-    Q_UNUSED(feature);
-    return nullptr;
-}
-
-
-int ComponentInputWidget::removeFeatureFromSelectedLayer(QgsFeature& feature)
-{
-    Q_UNUSED(feature);
-    return -1;
-}
-
-
-QgsVectorLayer* ComponentInputWidget::getSelectedFeatureLayer(void)
-{
-    return nullptr;
-}
-#endif
-
 
 
 #ifdef ARC_GIS
@@ -1126,44 +1043,6 @@ void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid,
         qDebug()<<"Failed to update feature "<<feat->attributes()->attributeValue("ID").toString();
         return;
     }
-}
-#endif
-
-
-#ifdef Q_GIS
-void ComponentInputWidget::updateSelectedComponentAttribute(const QgsFeatureId& id, const QString& attribute, const QVariant& value)
-{
-
-    if(selectedFeaturesForAnalysis.empty())
-    {
-        this->statusMessage("Selected features map is empty, nothing to update");
-        return;
-    }
-
-    if(!selectedFeaturesForAnalysis.contains(id))
-    {
-        this->statusMessage("Feature not found in selected components map");
-        return;
-    }
-
-
-    // Get the feature
-    QgsFeature* feat = selectedFeaturesForAnalysis[id];
-
-    if(feat == nullptr)
-    {
-        this->errorMessage("Error, could not get feature");
-        return;
-    }
-
-    auto res = feat->setAttribute(attribute,value);
-
-    if(res == false)
-    {
-        this->errorMessage("Failed to update feature "+QString::number(feat->id()));
-        return;
-    }
-
 }
 #endif
 

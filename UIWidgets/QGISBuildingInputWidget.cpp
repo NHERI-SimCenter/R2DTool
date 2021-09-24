@@ -70,7 +70,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         attrib.append(QgsField(fieldText.toString(),fieldText.type()));
     }
 
-    // Create the buildings group layer that will hold the sublayers
+    // Create the buildings layer
     auto buildingLayer = theVisualizationWidget->addVectorLayer("polygon","Buildings");
 
     if(buildingLayer == nullptr)
@@ -104,10 +104,6 @@ int QGISBuildingInputWidget::loadComponentVisualization()
     }
 
     auto numAtrb = attrib.size();
-
-    QgsFeatureList featList;
-
-    featList.reserve(nRows);
 
     for(int i = 0; i<nRows; ++i)
     {
@@ -191,15 +187,25 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
         feature.setAttributes(featureAttributes);
 
+        if(!feature.isValid())
+            return -1;
+
+        auto res = pr->addFeature(feature);
+        if(!res)
+        {
+            this->errorMessage("Error adding the feature to the layer");
+            return -1;
+        }
+
+        auto featId = feature.id();
+
         building.UID = uid;
-        building.ComponentFeature = &feature;
+        building.ComponentFeature = feature;
 
         theComponentDb->addComponent(buildingID, building);
 
-        featList.push_back(feature);
-    }
 
-    pr->addFeatures(featList);
+    }
 
     buildingLayer->updateExtents();
 
@@ -217,77 +223,41 @@ int QGISBuildingInputWidget::loadComponentVisualization()
             markerSymbol = new QgsMarkerSymbol();
 
         theVisualizationWidget->createCategoryRenderer(attrName, buildingLayer, markerSymbol);
-
     }
 
     theVisualizationWidget->zoomToLayer(buildingLayer);
 
+    buildingLayer->id();
+
     // Create the selected building layer
-    selectedBuildingsLayer = new QgsVectorLayer("polygon","Selected Buildings","memory");
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("polygon","Selected Buildings");
 
-    QgsFillSymbol* fillSymbol = new QgsFillSymbol();
-    fillSymbol->setColor(Qt::yellow);
-    theVisualizationWidget->createSimpleRenderer(fillSymbol,selectedBuildingsLayer);
-
-    if(selectedBuildingsLayer == nullptr)
+    if(selectedFeaturesLayer == nullptr)
     {
         this->errorMessage("Error adding the selected assets vector layer");
         return -1;
     }
 
-    auto pr2 = selectedBuildingsLayer->dataProvider();
+    QgsFillSymbol* fillSymbol = new QgsFillSymbol();
+    fillSymbol->setColor(Qt::yellow);
+    theVisualizationWidget->createSimpleRenderer(fillSymbol,selectedFeaturesLayer);
+
+    auto pr2 = selectedFeaturesLayer->dataProvider();
 
     auto res2 = pr2->addAttributes(attrib);
 
     if(!res2)
         this->errorMessage("Error adding attributes to the layer");
 
-    buildingLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+    selectedFeaturesLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
     return 0;
 }
 
-
-bool QGISBuildingInputWidget::addFeatureToSelectedLayer(QgsFeature& feature)
-{
-    auto res = selectedBuildingsLayer->addFeature(feature);
-
-    return res;
-}
-
-
-int QGISBuildingInputWidget::removeFeatureFromSelectedLayer(QgsFeature& feat)
-{
-    //    selectedBuildingsTable->deleteFeature(feat);
-
-    return 0;
-}
-
-
-//SimpleRenderer* QGISBuildingInputWidget::createBuildingRenderer(void)
-//{
-//    SimpleFillSymbol* fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0, 0, 255, 125), this);
-
-//    SimpleRenderer* lineRenderer = new SimpleRenderer(fillSymbol, this);
-
-//    lineRenderer->setLabel("Building footprint");
-
-//    return lineRenderer;
-//}
-
-
-QgsVectorLayer* QGISBuildingInputWidget::getSelectedFeatureLayer(void)
-{
-    return selectedBuildingsLayer;
-}
 
 
 void QGISBuildingInputWidget::clear()
 {    
-    delete selectedBuildingsLayer;
-
-    selectedBuildingsLayer = nullptr;
-
     ComponentInputWidget::clear();
 }
 

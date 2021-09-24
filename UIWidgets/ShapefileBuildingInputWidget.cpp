@@ -85,9 +85,9 @@ ShapefileBuildingInputWidget::ShapefileBuildingInputWidget(QWidget *parent, Visu
     componentGroupBox = nullptr;
     this->createComponentsBox();
 
-    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonBuildings/galveston-bldg-v7.shp";
-    componentFileLineEdit->setText(pathToComponentInputFile);
-    this->loadComponentData();
+//    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonBuildings/galveston-bldg-v7.shp";
+//    componentFileLineEdit->setText(pathToComponentInputFile);
+//    this->loadComponentData();
 }
 
 
@@ -466,72 +466,22 @@ void ShapefileBuildingInputWidget::handleComponentSelection(void)
 
         auto feature = component.ComponentFeature;
 
-        if(feature == nullptr)
+        if(feature.isValid())
             continue;
 
         QMap<QString, QVariant> featureAttributes;
-#ifdef ARC_GIS
-        auto atrb = feature->attributes()->attributesMap();
 
-        auto id = atrb.value("UID").toString();
+        auto id = feature.id();
 
-        if(selectedFeaturesForAnalysis.contains(id))
-            continue;
+//        if(selectedFeaturesForAnalysis.contains(id))
+//            continue;
 
-        auto atrVals = atrb.values();
-        auto atrKeys = atrb.keys();
+//        auto geom = feature->geometry();
 
-        // qDebug()<<"Num atributes: "<<atrb.size();
+//        auto feat = this->addFeatureToSelectedLayer(featureAttributes,geom);
 
-        for(int i = 0; i<atrb.size();++i)
-        {
-            auto key = atrKeys.at(i);
-            auto val = atrVals.at(i);
-
-            // Including the ObjectID causes a crash!!! Do not include it when creating an object
-            if(key == "ObjectID")
-                continue;
-
-            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
-
-            featureAttributes[key] = val;
-        }
-#endif
-
-#ifdef Q_GIS
-
-        auto id =feature->attribute("UID").toString();
-
-        if(selectedFeaturesForAnalysis.contains(id))
-            continue;
-
-        auto atrb = feature->attributes();
-        auto fields = feature->fields().names();
-
-        // qDebug()<<"Num atributes: "<<atrb.size();
-
-        for(int i = 0; i<atrb.size();++i)
-        {
-
-            auto key = fields.at(i);
-            auto val = atrb.value(i);
-
-            // Including the ObjectID causes a crash!!! Do not include it when creating an object
-            if(key == "ObjectID")
-                continue;
-
-            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
-
-            featureAttributes[key] = val;
-        }
-#endif
-
-        auto geom = feature->geometry();
-
-        auto feat = this->addFeatureToSelectedLayer(featureAttributes,geom);
-
-        if(feat)
-            selectedFeaturesForAnalysis.insert(id,feat);
+//        if(feat)
+//            selectedFeaturesForAnalysis.insert(id,feat);
     }
 
     auto selecFeatLayer = this->getSelectedFeatureLayer();
@@ -542,34 +492,20 @@ void ShapefileBuildingInputWidget::handleComponentSelection(void)
         qDebug()<<err;
         return;
     }
-
-#ifdef ARC_GIS
-    // Add the layer to the map if it does not already exist
-    auto layerExists = theVisualizationWidget->getLayer(selecFeatLayer->layerId());
-
-    if(layerExists == nullptr)
-        theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
-#endif
-
-#ifdef Q_GIS
-
-    qDebug()<<"Implement me in ShapefileBuildingInputWidget::handleComponentSelection";
-
-#endif
 }
 
 
 void ShapefileBuildingInputWidget::clearLayerSelectedForAnalysis(void)
 {
-    if(selectedFeaturesForAnalysis.empty())
-        return;
+//    if(selectedFeaturesForAnalysis.empty())
+//        return;
 
-    for(auto&& it : selectedFeaturesForAnalysis)
-    {
-        this->removeFeatureFromSelectedLayer(it);
-    }
+//    for(auto&& it : selectedFeaturesForAnalysis)
+//    {
+//        this->removeFeatureFromSelectedLayer(it);
+//    }
 
-    selectedFeaturesForAnalysis.clear();
+//    selectedFeaturesForAnalysis.clear();
 }
 
 
@@ -628,7 +564,7 @@ void ShapefileBuildingInputWidget::setComponentType(const QString &value)
 
 void ShapefileBuildingInputWidget::insertSelectedComponent(const int ComponentID)
 {
-    selectComponentsLineEdit->insertSelectedCompoonent(ComponentID);
+    selectComponentsLineEdit->insertSelectedComponent(ComponentID);
 }
 
 
@@ -962,49 +898,30 @@ void ShapefileBuildingInputWidget::updateSelectedComponentAttribute(const QStrin
         return;
     }
 
-    if(!selectedFeaturesForAnalysis.contains(uid))
-    {
-        qDebug()<<"Feature not found in selected components map";
-        return;
-    }
+//    if(!selectedFeaturesForAnalysis.contains(uid))
+//    {
+//        qDebug()<<"Feature not found in selected components map";
+//        return;
+//    }
 
-#ifdef ARC_GIS
-    // Get the feature
-    Esri::ArcGISRuntime::Feature* feat = selectedFeaturesForAnalysis[uid];
 
-    if(feat == nullptr)
-    {
-        qDebug()<<"Feature is a nullptr";
-        return;
-    }
+//#ifdef Q_GIS
+//    // Get the feature
+//    QgsFeature feat = selectedFeaturesForAnalysis[uid];
 
-    feat->attributes()->replaceAttribute(attribute,value);
-    feat->featureTable()->updateFeature(feat);
+//    if(feat == nullptr)
+//    {
+//        qDebug()<<"Feature is a nullptr";
+//        return;
+//    }
 
-    if(feat->attributes()->attributeValue(attribute).isNull())
-    {
-        qDebug()<<"Failed to update feature "<<feat->attributes()->attributeValue("ID").toString();
-        return;
-    }
-#endif
+//    auto res = feat->setAttribute(attribute,value);
 
-#ifdef Q_GIS
-    // Get the feature
-    QgsFeature* feat = selectedFeaturesForAnalysis[uid];
-
-    if(feat == nullptr)
-    {
-        qDebug()<<"Feature is a nullptr";
-        return;
-    }
-
-    auto res = feat->setAttribute(attribute,value);
-
-    if(res == false)
-    {
-        qDebug()<<"Failed to update feature "<<feat->attribute("ID").toString();
-        return;
-    }
-#endif
+//    if(res == false)
+//    {
+//        qDebug()<<"Failed to update feature "<<feat->attribute("ID").toString();
+//        return;
+//    }
+//#endif
 
 }

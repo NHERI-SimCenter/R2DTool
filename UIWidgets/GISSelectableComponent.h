@@ -1,6 +1,5 @@
-#ifndef ArcGISBuildingInputWidget_H
-#define ArcGISBuildingInputWidget_H
-
+#ifndef GISSelectableComponent_H
+#define GISSelectableComponent_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -20,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -39,39 +38,47 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include <qgsfeature.h>
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ClassBreaksRenderer;
-class SimpleRenderer;
-class Feature;
-class FeatureCollectionTable;
-class Geometry;
-}
-}
+class VisualizationWidget;
+class PythonProgressDialog;
 
-class ArcGISBuildingInputWidget : public ComponentInputWidget
+class QgsFeature;
+class QGISVisualizationWidget;
+class QgsVectorLayer;
+
+class GISSelectableComponent
 {
+
 public:
-    ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType = QString());
+    explicit GISSelectableComponent(VisualizationWidget* visualizationWidget);
+    virtual ~GISSelectableComponent();
 
-    int loadComponentVisualization();
+    virtual void insertSelectedComponent(QgsFeatureId& featureId) = 0;
 
-    Esri::ArcGISRuntime::Feature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
-    int removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
-    Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
+    bool addFeatureToSelectedLayer(QgsFeature& feature);
+    bool removeFeaturesFromSelectedLayer(QgsFeatureIds& featureIds);
+    bool clearSelectedLayer(void);
 
-    void clear();
+    QgsVectorLayer* getSelectedFeatureLayer(void);
+
+    void clearLayerSelectedForAnalysis(void);
+
+    void clear(void);
+
+    bool updateSelectedComponentAttribute(QgsFeatureId id, int field, const QVariant& value);
+
+protected:
+
+    QGISVisualizationWidget* theVisualizationWidget;
+
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
 
 private:
 
-    Esri::ArcGISRuntime::SimpleRenderer* createBuildingRenderer(void);
-    Esri::ArcGISRuntime::ClassBreaksRenderer* createSelectedBuildingRenderer(double outlineWidth = 0.0);
-    Esri::ArcGISRuntime::FeatureCollectionLayer* selectedBuildingsLayer = nullptr;
-    Esri::ArcGISRuntime::FeatureCollectionTable* selectedBuildingsTable = nullptr;
+    // Selected feature set
+    QSet<QgsFeatureId> selectedFeaturesForAnalysis;
+    PythonProgressDialog* messageHandler;
 };
 
-#endif // ArcGISBuildingInputWidget_H
+#endif // GISSelectableComponent_H
