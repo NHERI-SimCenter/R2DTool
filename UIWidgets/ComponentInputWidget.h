@@ -97,13 +97,15 @@ public:
     virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
     virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
     virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
+    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
 #endif
 
 
 #ifdef Q_GIS
-    virtual QgsFeature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom);
-    virtual int removeFeatureFromSelectedLayer(QgsFeature* feat);
+    virtual bool  addFeatureToSelectedLayer(QgsFeature& feature);
+    virtual int removeFeatureFromSelectedLayer(QgsFeature& feature);
     virtual QgsVectorLayer* getSelectedFeatureLayer(void);
+    void updateSelectedComponentAttribute(const QgsFeatureId& id, const QString& attribute, const QVariant& value);
 #endif
 
     ComponentTableView *getTableWidget() const;
@@ -117,7 +119,6 @@ public:
     int numberComponentsSelected(void);
 
     void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
-    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
 
     // Set custom labels in widget
     void setComponentType(const QString &value);
@@ -214,7 +215,7 @@ private:
 
 #ifdef Q_GIS
     // Map to store the selected features according to their UID
-    QMap<QString, QgsFeature*> selectedFeaturesForAnalysis;
+    QMap<QgsFeatureId, QgsFeature*> selectedFeaturesForAnalysis;
 #endif
 
 };

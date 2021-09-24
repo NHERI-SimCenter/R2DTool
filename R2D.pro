@@ -188,6 +188,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/PelicunPostProcessor.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
+            Tools/SimCenterUnitsCombo.cpp \
             Tools/TablePrinter.cpp \
             Tools/XMLAdaptor.cpp \
             Tools/ShakeMapClient.cpp \
@@ -204,7 +205,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingSimulationWidget.cpp \
             UIWidgets/CSVtoBIMModelingWidget.cpp \
             UIWidgets/ComponentInputWidget.cpp \
-            UIWidgets/ShapefileBuildingInputWidget.cpp \
             UIWidgets/DLWidget.cpp \
             UIWidgets/DamageMeasureWidget.cpp \
             UIWidgets/DecisionVariableWidget.cpp \
@@ -289,6 +289,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
+            Tools/SimCenterUnitsCombo.h \
             Tools/TableNumberItem.h \
             Tools/TablePrinter.h \
             Tools/XMLAdaptor.h \
@@ -307,7 +308,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingSimulationWidget.h \
             UIWidgets/CSVtoBIMModelingWidget.h \
             UIWidgets/ComponentInputWidget.h \
-            UIWidgets/ShapefileBuildingInputWidget.h \
             UIWidgets/DLWidget.h \
             UIWidgets/DamageMeasureWidget.h \
             UIWidgets/DecisionVariableWidget.h \
@@ -404,13 +404,17 @@ contains(DEFINES, Q_GIS)  {
 SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
             UIWidgets/QGISGasPipelineInputWidget.cpp \
             UIWidgets/QGISBuildingInputWidget.cpp \
+            UIWidgets/RasterHazardInputWidget.cpp \
             UIWidgets/QGISHurricaneSelectionWidget.cpp \
+            UIWidgets/ShapefileBuildingInputWidget.cpp \
             UIWidgets/MapViewWindow.cpp \
 
 HEADERS +=  Tools/QGISHurricanePreprocessor.h \
             UIWidgets/QGISGasPipelineInputWidget.h \
             UIWidgets/QGISBuildingInputWidget.h \
+            UIWidgets/RasterHazardInputWidget.h \
             UIWidgets/QGISHurricaneSelectionWidget.h \
+            UIWidgets/ShapefileBuildingInputWidget.h \
             UIWidgets/MapViewWindow.h \
 
 }

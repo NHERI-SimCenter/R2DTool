@@ -75,11 +75,12 @@ private:
     RandomVariablesContainer* theRandomVariablesContainer;
 
     VisualizationWidget* theVisualizationWidget;
-    GMWidget* theEQSSWidget;
-    ShakeMapWidget* theShakeMapWidget;
-    UserInputGMWidget* theUserInputGMWidget;
-    UserInputHurricaneWidget* theUserInputHurricaneWidget;
-    HurricaneSelectionWidget* theHurricaneSelectionWidget;
+    SimCenterAppWidget* theEQSSWidget;
+    SimCenterAppWidget* theShakeMapWidget;
+    SimCenterAppWidget* theUserInputGMWidget;
+    SimCenterAppWidget* theUserInputHurricaneWidget;
+    SimCenterAppWidget* theHurricaneSelectionWidget;
+    SimCenterAppWidget* theRasterHazardWidget;
 };
 
 #endif // HAZARDS_WIDGET_H

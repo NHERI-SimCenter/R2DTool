@@ -86,7 +86,7 @@ ShapefileBuildingInputWidget::ShapefileBuildingInputWidget(QWidget *parent, Visu
     this->createComponentsBox();
 
     pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonBuildings/galveston-bldg-v7.shp";
-
+    componentFileLineEdit->setText(pathToComponentInputFile);
     this->loadComponentData();
 }
 

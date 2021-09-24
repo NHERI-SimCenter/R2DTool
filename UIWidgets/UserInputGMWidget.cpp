@@ -67,6 +67,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerListModel.h"
 #include "SimpleMarkerSymbol.h"
 #include "SimpleRenderer.h"
+
+using namespace Esri::ArcGISRuntime;
 #endif
 
 #ifdef Q_GIS
@@ -75,7 +77,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #endif
 
-using namespace Esri::ArcGISRuntime;
 
 UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {

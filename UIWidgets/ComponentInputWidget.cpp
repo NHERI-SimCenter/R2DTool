@@ -424,12 +424,9 @@ void ComponentInputWidget::selectComponents(void)
     }
 }
 
-
+#ifdef ARC_GIS
 void ComponentInputWidget::handleComponentSelection(void)
 {
-    qDebug()<<"Implement me in ComponentInputWidget::handleComponentSelection";
-    
-    return;
     
     auto nRows = componentTableWidget->rowCount();
     
@@ -521,8 +518,8 @@ void ComponentInputWidget::handleComponentSelection(void)
 #endif
         
 #ifdef Q_GIS
-        
-        auto id =feature->attribute("UID").toString();
+
+        auto id = feature->id();
         
         if(selectedFeaturesForAnalysis.contains(id))
             continue;
@@ -548,49 +545,136 @@ void ComponentInputWidget::handleComponentSelection(void)
         }
 #endif
         
-        auto geom = feature->geometry();
+        //        auto geom = feature->geometry();
         
-        auto feat = this->addFeatureToSelectedLayer(featureAttributes,geom);
-        
-        if(feat)
-            selectedFeaturesForAnalysis.insert(id,feat);
+        auto res = this->addFeatureToSelectedLayer(*feature);
+
+        if(res == false)
+            this->errorMessage("Error adding feature to selected feature layer");
+        else
+            selectedFeaturesForAnalysis.insert(id,feature);
     }
-    
+
     auto selecFeatLayer = this->getSelectedFeatureLayer();
-    
+
     if(selecFeatLayer == nullptr)
     {
         QString err = "Error in getting the selected feature layer";
         qDebug()<<err;
         return;
     }
-    
+
 #ifdef ARC_GIS
     // Add the layer to the map if it does not already exist
     auto layerExists = theVisualizationWidget->getLayer(selecFeatLayer->layerId());
-    
+
     if(layerExists == nullptr)
         theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
 #endif
-    
+
 #ifdef Q_GIS
-    
+
     qDebug()<<"Implement me in ComponentInputWidget::handleComponentSelection";
-    
+
 #endif
 }
+#endif
+
+
+#ifdef Q_GIS
+void ComponentInputWidget::handleComponentSelection(void)
+{
+
+    auto nRows = componentTableWidget->rowCount();
+
+    if(nRows == 0)
+        return;
+
+    // Get the ID of the first and last component
+    bool OK;
+    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return;
+    }
+
+    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return;
+    }
+
+    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
+    // First check that all of the selected IDs are within range
+    for(auto&& it : selectedComponentIDs)
+    {
+        if(it<firstID || it>lastID)
+        {
+            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
+            this->errorMessage(msg);
+            selectComponentsLineEdit->clear();
+            return;
+        }
+    }
+
+    // Hide all rows in the table
+    for(int i = 0; i<nRows; ++i)
+        componentTableWidget->setRowHidden(i,true);
+
+    // Unhide the selected rows
+    for(auto&& it : selectedComponentIDs)
+        componentTableWidget->setRowHidden(it - firstID,false);
+
+    auto numAssets = selectedComponentIDs.size();
+    QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
+    this->statusMessage(msg);
+
+    for(auto&& it : selectedComponentIDs)
+    {
+        auto component = theComponentDb->getComponent(it);
+
+        auto feature = component.ComponentFeature;
+
+        if(feature == nullptr)
+        {
+            this->errorMessage("Error getting the feature from the database");
+            continue;
+        }
+
+        auto id = feature->id();
+
+        if(selectedFeaturesForAnalysis.contains(id))
+            continue;
+
+        auto res = this->addFeatureToSelectedLayer(*feature);
+
+        if(res == false)
+            this->errorMessage("Error adding feature to selected feature layer");
+        else
+            selectedFeaturesForAnalysis.insert(id,feature);
+    }
+
+}
+#endif
 
 
 void ComponentInputWidget::clearLayerSelectedForAnalysis(void)
 {
     if(selectedFeaturesForAnalysis.empty())
         return;
-    
+
     for(auto&& it : selectedFeaturesForAnalysis)
     {
-        this->removeFeatureFromSelectedLayer(it);
+        this->removeFeatureFromSelectedLayer(*it);
     }
-    
+
     selectedFeaturesForAnalysis.clear();
 }
 
@@ -603,17 +687,17 @@ QStringList ComponentInputWidget::getTableHorizontalHeadings()
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
-    
+
     this->clearLayerSelectedForAnalysis();
-    
+
     auto nRows = componentTableWidget->rowCount();
-    
+
     // Hide all rows in the table
     for(int i = 0; i<nRows; ++i)
     {
         componentTableWidget->setRowHidden(i,false);
     }
-    
+
     selectComponentsLineEdit->clear();
 }
 
@@ -678,21 +762,21 @@ void ComponentInputWidget::loadFileFromPath(QString& path)
 bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     jsonObject["Application"]=appType;
-    
+
     QJsonObject data;
     QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()) {
         data["buildingSourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
-        
+
         QString filterData = this->getFilterString();
-        
+
         if(filterData.isEmpty())
         {
             errorMessage("Please select components for analysis");
             return false;
         }
-        
+
         data["filter"] = filterData;
     }
     else
@@ -701,16 +785,16 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
         data["pathToSource"]=QString("");
         return false;
     }
-    
+
     jsonObject["ApplicationData"] = data;
-    
+
     return true;
 }
 
 
 bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
-    
+
     //jsonObject["Application"]=appType;
     if (jsonObject.contains("Application")) {
         if (appType != jsonObject["Application"].toString()) {
@@ -718,39 +802,39 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             return false;
         }
     }
-    
-    
+
+
     if (jsonObject.contains("ApplicationData")) {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
-        
+
         QFileInfo fileInfo;
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
         if (appData.contains("buildingSourceFile"))
             fileName = appData["buildingSourceFile"].toString();
-        
+
         if (fileInfo.exists(fileName)) {
-            
+
             selectComponentsLineEdit->setText(fileName);
-            
+
             this->loadComponentData();
             foundFile = true;
-            
+
         } else {
-            
+
             if (appData.contains("pathToSource"))
                 pathToFile = appData["pathToSource"].toString();
             else
                 pathToFile=QDir::currentPath();
-            
+
             pathToComponentInfoFile = pathToFile + QDir::separator() + fileName;
-            
+
             if (fileInfo.exists(pathToComponentInfoFile)) {
                 componentFileLineEdit->setText(pathToComponentInfoFile);
                 foundFile = true;
                 this->loadComponentData();
-                
+
             } else {
                 // adam .. adam .. adam
                 pathToComponentInfoFile = pathToFile + QDir::separator()
@@ -768,19 +852,19 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 }
             }
         }
-        
+
         if(foundFile == false)
         {
             QString errMessage = appType + " no file found: " + fileName;
             this->errorMessage(errMessage);
             return false;
         }
-        
+
         if (appData.contains("filter"))
             this->setFilterString(appData["filter"].toString());
-        
+
     }
-    
+
     return true;
 }
 
@@ -795,7 +879,7 @@ void ComponentInputWidget::setFilterString(const QString& filter)
 QString ComponentInputWidget::getFilterString(void)
 {
     QString filterData = selectComponentsLineEdit->getComponentAnalysisList();
-    
+
     return filterData;
 }
 
@@ -804,12 +888,12 @@ void ComponentInputWidget::selectAllComponents(void)
 {
     // Get the ID of the first and last component
     auto firstID = componentTableWidget->item(0,0).toString();
-    
+
     auto nRows = componentTableWidget->rowCount();
     auto lastID = componentTableWidget->item(nRows-1,0).toString();
-    
+
     QString filter = firstID + "-" + lastID;
-    
+
     selectComponentsLineEdit->setText(filter);
     selectComponentsLineEdit->selectComponents();
 }
@@ -839,7 +923,7 @@ bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 #else
     Q_UNUSED(rvObject);
 #endif
-    
+
     return true;
 }
 
@@ -847,66 +931,66 @@ bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 bool ComponentInputWidget::copyFiles(QString &destName)
 {
     auto compLineEditText = componentFileLineEdit->text();
-    
+
     QFileInfo componentFile(compLineEditText);
-    
+
     if (!componentFile.exists())
         return false;
-    
+
     // Do not copy the file, output a new csv which will have the changes that the user makes in the table
     //        if (componentFile.exists()) {
     //            return this->copyFile(componentFileLineEdit->text(), destName);
     //        }
-    
+
     auto pathToSaveFile = destName + QDir::separator() + componentFile.fileName();
-    
+
     auto nRows = componentTableWidget->rowCount();
-    
+
     if(nRows == 0)
         return false;
-    
+
     auto data = componentTableWidget->getTableModel()->getTableData();
-    
+
     auto headerValues = componentTableWidget->getTableModel()->getHeaderStringList();
-    
+
     data.push_front(headerValues);
-    
+
     CSVReaderWriter csvTool;
-    
+
     QString err;
     csvTool.saveCSVFile(data,pathToSaveFile,err);
-    
+
     if(!err.isEmpty())
         return false;
-    
-    
+
+
     // For testing, creates a csv file of only the selected components
     //    qDebug()<<"Saving selected components to .csv";
     //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
-    
+
     //    QVector<QStringList> selectedData(selectedIDs.size()+1);
-    
+
     //    selectedData[0] = headerInfo;
-    
+
     //    int i = 0;
     //    for(auto&& rowID : selectedIDs)
     //    {
     //        QStringList rowData;
     //        rowData.reserve(nCols);
-    
+
     //        for(int j = 0; j<nCols; ++j)
     //        {
     //            auto item = componentTableWidget->item(rowID-1,j)->data(0).toString();
-    
+
     //            rowData<<item;
     //        }
     //        selectedData[i+1] = rowData;
-    
+
     //        ++i;
     //    }
-    
+
     //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
-    
+
     return true;
 }
 
@@ -920,30 +1004,44 @@ void ComponentInputWidget::clear(void)
     componentTableWidget->clear();
     componentTableWidget->hide();
     tableHorizontalHeadings.clear();
-    
+
     emit headingValuesChanged(QStringList{"N/A"});
 }
 
 
 void ComponentInputWidget::handleCellChanged(const int row, const int col)
 {
-    
     auto ID = componentTableWidget->item(row,0).toInt();
-    
+
     auto attrib = componentTableWidget->horizontalHeaderItem(col);
-    
+
     auto attribVal = componentTableWidget->item(row,col);
-    
+
     theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
-    
+
     auto component = theComponentDb->getComponent(ID);
-    
+
     if(!component.isValid())
         return;
-    
+
+#ifdef ARC_GIS
     auto uid = component.UID;
     this->updateSelectedComponentAttribute(uid,attrib,attribVal);
-    
+#endif
+
+#ifdef Q_GIS
+    auto feat = component.ComponentFeature;
+
+    if(feat == nullptr)
+    {
+        this->errorMessage("Error getting feature from database");
+        return;
+    }
+
+    auto id = feat->id();
+    this->updateSelectedComponentAttribute(id,attrib,attribVal);
+#endif
+
 }
 
 #ifdef ARC_GIS
@@ -972,18 +1070,17 @@ void ComponentInputWidget::updateComponentAttribute(const int uid, const QString
 }
 
 
-QgsFeature*  ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom)
+#ifdef Q_GIS
+bool  ComponentInputWidget::addFeatureToSelectedLayer(QgsFeature& feature)
 {
-    Q_UNUSED(featureAttributes);
-    Q_UNUSED(geom);
-    
+    Q_UNUSED(feature);
     return nullptr;
 }
 
 
-int ComponentInputWidget::removeFeatureFromSelectedLayer(QgsFeature* feat)
+int ComponentInputWidget::removeFeatureFromSelectedLayer(QgsFeature& feature)
 {
-    Q_UNUSED(feat);
+    Q_UNUSED(feature);
     return -1;
 }
 
@@ -992,60 +1089,81 @@ QgsVectorLayer* ComponentInputWidget::getSelectedFeatureLayer(void)
 {
     return nullptr;
 }
+#endif
 
 
+
+#ifdef ARC_GIS
 void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
 {
-    
+
     if(selectedFeaturesForAnalysis.empty())
     {
-        qDebug()<<"Selected features map is empty";
+        this->statusMessage("Selected features map is empty, nothing to update");
         return;
     }
-    
-    if(!selectedFeaturesForAnalysis.contains(uid))
+
+    if(!selectedFeaturesForAnalysis.contains(id))
     {
-        qDebug()<<"Feature not found in selected components map";
+        this->statusMessage("Feature not found in selected components map");
         return;
     }
-    
-#ifdef ARC_GIS
+
     // Get the feature
     Esri::ArcGISRuntime::Feature* feat = selectedFeaturesForAnalysis[uid];
-    
+
     if(feat == nullptr)
     {
         qDebug()<<"Feature is a nullptr";
         return;
     }
-    
+
     feat->attributes()->replaceAttribute(attribute,value);
     feat->featureTable()->updateFeature(feat);
-    
+
     if(feat->attributes()->attributeValue(attribute).isNull())
     {
         qDebug()<<"Failed to update feature "<<feat->attributes()->attributeValue("ID").toString();
         return;
     }
+}
 #endif
-    
+
+
 #ifdef Q_GIS
+void ComponentInputWidget::updateSelectedComponentAttribute(const QgsFeatureId& id, const QString& attribute, const QVariant& value)
+{
+
+    if(selectedFeaturesForAnalysis.empty())
+    {
+        this->statusMessage("Selected features map is empty, nothing to update");
+        return;
+    }
+
+    if(!selectedFeaturesForAnalysis.contains(id))
+    {
+        this->statusMessage("Feature not found in selected components map");
+        return;
+    }
+
+
     // Get the feature
-    QgsFeature* feat = selectedFeaturesForAnalysis[uid];
-    
+    QgsFeature* feat = selectedFeaturesForAnalysis[id];
+
     if(feat == nullptr)
     {
-        qDebug()<<"Feature is a nullptr";
+        this->errorMessage("Error, could not get feature");
         return;
     }
-    
+
     auto res = feat->setAttribute(attribute,value);
-    
+
     if(res == false)
     {
-        qDebug()<<"Failed to update feature "<<feat->attribute("ID").toString();
+        this->errorMessage("Failed to update feature "+QString::number(feat->id()));
         return;
     }
-#endif
-    
+
 }
+#endif
+

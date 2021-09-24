@@ -46,6 +46,7 @@ SimCenterEventRegional::SimCenterEventRegional(QWidget *parent)
 {
     unitsCombo = new QComboBox(this);
     unitsCombo->addItem("Gravitational constant (g)","g");
+    unitsCombo->addItem("Natural logarithm of gravitational constant ln(g)","lng");
     unitsCombo->addItem("Meter per second squared","mps2");
     unitsCombo->addItem("Feet per second squared","ftps2");
     unitsCombo->addItem("Inches per second squared","inchps2");

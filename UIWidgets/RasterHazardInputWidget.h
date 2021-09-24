@@ -1,5 +1,5 @@
-#ifndef QGISBuildingInputWidget_H
-#define QGISBuildingInputWidget_H
+#ifndef RasterHazardInputWidget_H
+#define RasterHazardInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,29 +38,61 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "SimCenterAppWidget.h"
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
+#include <memory>
 
-class QGISBuildingInputWidget : public ComponentInputWidget
+#include <QMap>
+
+class VisualizationWidget;
+class QGISVisualizationWidget;
+class QgsRasterDataProvider;
+class QgsRasterLayer;
+
+class QLineEdit;
+class QProgressBar;
+class QLabel;
+
+class RasterHazardInputWidget : public SimCenterAppWidget
 {
+    Q_OBJECT
+
 public:
-    QGISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    RasterHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~RasterHazardInputWidget();
 
-    int loadComponentVisualization();
+    QWidget* getRasterHazardInputWidget(void);
 
-    bool addFeatureToSelectedLayer(QgsFeature& feature);
-    int removeFeatureFromSelectedLayer(QgsFeature& feat);
-    QgsVectorLayer* getSelectedFeatureLayer(void);
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
 
-    void clear();
+    void clear(void);
+
+    // Returns the value of the raster layer in the given band
+    // Note that band numbers start from 1 and not 0!
+    double sampleRaster(const double& x, const double& y, const int& bandNumber);
+
+private slots:
+    void chooseEventFileDialog(void);
+
+signals:
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void loadingComplete(const bool value);
 
 private:
 
-    QgsVectorLayer* selectedBuildingsLayer = nullptr;
+    int loadRaster(void);
 
+    QGISVisualizationWidget* theVisualizationWidget;
+
+    QString eventFile;
+    QLineEdit *eventFileLineEdit;
+
+    QWidget* fileInputWidget;
+
+    QgsRasterDataProvider* dataProvider;
+    QgsRasterLayer* rasterlayer;
 };
 
-#endif // QGISBuildingInputWidget_H
+#endif // RasterHazardInputWidget_H

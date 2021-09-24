@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "HurricaneSelectionWidget.h"
 #include "UserInputHurricaneWidget.h"
+#include "RasterHazardInputWidget.h"
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
@@ -51,6 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #ifdef Q_GIS
 #include "QGISHurricaneSelectionWidget.h"
+#include "RasterHazardInputWidget.h"
 #endif
 
 #include <QCheckBox>
@@ -71,16 +73,17 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     this->setContentsMargins(0,0,0,0);
 
     theEQSSWidget = new GMWidget(this, theVisualizationWidget);
-    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
-    theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
-    theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget);
+    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget,this);
+    theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget,this);
+    theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget,this);
 
 #ifdef ARC_GIS
     theHurricaneSelectionWidget = new ArcGISHurricaneSelectionWidget(theVisualizationWidget);
 #endif
 
 #ifdef Q_GIS
-    theHurricaneSelectionWidget = new QGISHurricaneSelectionWidget(theVisualizationWidget);
+    theHurricaneSelectionWidget = new QGISHurricaneSelectionWidget(theVisualizationWidget,this);
+    theRasterHazardWidget = new RasterHazardInputWidget(theVisualizationWidget,this);
 #endif
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
@@ -88,6 +91,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     this->addComponent("Hurricane Scenario Simulation", "HurricaneSelection", theHurricaneSelectionWidget);
     this->addComponent("User Specified Wind Field", "UserInputHurricane", theUserInputHurricaneWidget);
     this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
+    this->addComponent("Raster Defined Hazard", "UserInputRaster", theRasterHazardWidget);
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
 
@@ -96,6 +100,8 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theUserInputHurricaneWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theHurricaneSelectionWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theRasterHazardWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+
 }
 
 

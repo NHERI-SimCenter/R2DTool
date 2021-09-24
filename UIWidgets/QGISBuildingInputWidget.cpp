@@ -81,15 +81,12 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     auto nRows = componentTableWidget->rowCount();
 
-    //    selectedBuildingsLayer = new QgsVectorLayer(this);
-    //    selectedBuildingsLayer->setName("Selected Buildings");
-
     auto pr = buildingLayer->dataProvider();
 
     auto res = pr->addAttributes(attrib);
 
     if(!res)
-        qDebug()<<"Error adding attributes";
+        this->errorMessage("Error adding attributes to the layer");
 
     buildingLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
@@ -225,20 +222,41 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     theVisualizationWidget->zoomToLayer(buildingLayer);
 
+    // Create the selected building layer
+    selectedBuildingsLayer = new QgsVectorLayer("polygon","Selected Buildings","memory");
+
+    QgsFillSymbol* fillSymbol = new QgsFillSymbol();
+    fillSymbol->setColor(Qt::yellow);
+    theVisualizationWidget->createSimpleRenderer(fillSymbol,selectedBuildingsLayer);
+
+    if(selectedBuildingsLayer == nullptr)
+    {
+        this->errorMessage("Error adding the selected assets vector layer");
+        return -1;
+    }
+
+    auto pr2 = selectedBuildingsLayer->dataProvider();
+
+    auto res2 = pr2->addAttributes(attrib);
+
+    if(!res2)
+        this->errorMessage("Error adding attributes to the layer");
+
+    buildingLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
     return 0;
 }
 
 
-QgsFeature* QGISBuildingInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom)
+bool QGISBuildingInputWidget::addFeatureToSelectedLayer(QgsFeature& feature)
 {
-    //    QgsFeature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
-    //    selectedBuildingsTable->addFeature(feat);
+    auto res = selectedBuildingsLayer->addFeature(feature);
 
-    return nullptr;
+    return res;
 }
 
 
-int QGISBuildingInputWidget::removeFeatureFromSelectedLayer(QgsFeature* feat)
+int QGISBuildingInputWidget::removeFeatureFromSelectedLayer(QgsFeature& feat)
 {
     //    selectedBuildingsTable->deleteFeature(feat);
 
