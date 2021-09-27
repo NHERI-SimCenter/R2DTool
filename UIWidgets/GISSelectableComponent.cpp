@@ -48,8 +48,6 @@ GISSelectableComponent::GISSelectableComponent(VisualizationWidget* visualizatio
 {
     messageHandler = PythonProgressDialog::getInstance();
 
-    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visualizationWidget);
-    assert(theVisualizationWidget);
 }
 
 
@@ -59,88 +57,12 @@ GISSelectableComponent::~GISSelectableComponent()
 }
 
 
-bool GISSelectableComponent::addFeatureToSelectedLayer(QgsFeature& feature)
-{
-    auto id = feature.id();
-
-    if(selectedFeaturesForAnalysis.contains(id))
-        return true;
-
-    auto res = selectedFeaturesLayer->dataProvider()->addFeature(feature, QgsFeatureSink::FastInsert);
-
-    if(res == false)
-    {
-        messageHandler->appendErrorMessage("Error adding feature to selected feature layer");
-        return false;
-    }
-    else
-        selectedFeaturesForAnalysis.insert(id);
-
-    return true;
-}
-
-
-
-bool GISSelectableComponent::removeFeaturesFromSelectedLayer(QgsFeatureIds& featureIds)
-{
-    auto res = selectedFeaturesLayer->dataProvider()->deleteFeatures(featureIds);
-
-    return res;
-}
-
-
-bool GISSelectableComponent::clearSelectedLayer(void)
-{
-    auto res = selectedFeaturesLayer->dataProvider()->truncate();
-
-    return res;
-}
-
-
-void GISSelectableComponent::clearLayerSelectedForAnalysis(void)
-{
-    if(selectedFeaturesForAnalysis.empty())
-        return;
-
-    this->clearSelectedLayer();
-
-    selectedFeaturesForAnalysis.clear();
-}
 
 
 void GISSelectableComponent::clear(void)
 {
-    if(selectedFeaturesLayer != nullptr)
-    {
-        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
 
-        delete selectedFeaturesLayer;
-
-        selectedFeaturesLayer = nullptr;
-    }
-
-    selectedFeaturesForAnalysis.clear();
 }
 
-
-bool GISSelectableComponent::updateSelectedComponentAttribute(QgsFeatureId id, int field, const QVariant& value)
-{
-
-    if(selectedFeaturesForAnalysis.empty())
-    {
-        messageHandler->appendErrorMessage("Selected features map is empty, nothing to update");
-        return false;
-    }
-
-    auto res = selectedFeaturesLayer->changeAttributeValue(id, field,value);
-
-    if(res == false)
-    {
-        messageHandler->appendErrorMessage("Failed to update feature "+QString::number(id));
-        return false;
-    }
-
-    return true;
-}
 
 

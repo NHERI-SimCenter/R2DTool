@@ -56,17 +56,9 @@ public:
 
     virtual void insertSelectedComponent(QgsFeatureId& featureId) = 0;
 
-    bool addFeatureToSelectedLayer(QgsFeature& feature);
-    bool removeFeaturesFromSelectedLayer(QgsFeatureIds& featureIds);
-    bool clearSelectedLayer(void);
-
     QgsVectorLayer* getSelectedFeatureLayer(void);
 
-    void clearLayerSelectedForAnalysis(void);
-
     void clear(void);
-
-    bool updateSelectedComponentAttribute(QgsFeatureId id, int field, const QVariant& value);
 
 protected:
 

@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "sectiontitle.h"
 
 #include <QCheckBox>
+#include <QApplication>
 #include <QDebug>
 #include <QDir>
 #include <QMenu>
@@ -224,16 +225,18 @@ void ResultsWidget::setCurrentlyViewable(bool status){
 int ResultsWidget::processResults(QString resultsDirectory)
 {
 
+    return 0;
     //auto SCPrefs = SimCenterPreferences::getInstance();
 
     //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
 
     qDebug() << resultsDirectory;
-
     try
     {
         if(DVApp.compare("Pelicun") == 0)
         {
+            this->statusMessage("Importing results");
+            QApplication::processEvents();
             thePelicunPostProcessor->importResults(resultsDirectory);
 
             this->resultsShow(true);

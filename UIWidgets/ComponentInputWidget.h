@@ -84,7 +84,7 @@ class QLabel;
 class JsonGroupBoxWidget;
 #endif
 
-class ComponentInputWidget : public  SimCenterAppWidget, public GISSelectableComponent
+class ComponentInputWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
@@ -112,8 +112,6 @@ public:
 
     int numberComponentsSelected(void);
 
-    void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
-
     // Set custom labels in widget
     void setComponentType(const QString &value);
     void setLabel1(const QString &value);
@@ -138,8 +136,6 @@ public:
     // Selects all of the components for analysis
     void selectAllComponents(void);
 
-    int getNumberOfComponents(void);
-
 signals:
     void headingValuesChanged(QStringList);
 
@@ -158,6 +154,8 @@ protected:
 #ifdef ARC_GIS
     ArcGISVisualizationWidget* theVisualizationWidget;
 #endif
+
+    QGISVisualizationWidget* theVisualizationWidget;
 
     ComponentTableView* componentTableWidget;
 

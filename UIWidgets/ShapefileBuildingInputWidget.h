@@ -109,8 +109,6 @@ public:
     // Selects all of the components for analysis
     void selectAllComponents(void);
 
-    int getNumberOfComponents(void);
-
 signals:
     void headingValuesChanged(QStringList);
 

@@ -81,7 +81,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "JsonGroupBoxWidget.h"
 #endif
 
-ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), GISSelectableComponent(visWidget), appType(appType), componentType(componentType)
+ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), appType(appType), componentType(componentType)
 {
 #ifdef ARC_GIS
     theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(visWidget);
@@ -92,6 +92,9 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
         return;
     }
 #endif
+
+    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
+    assert(theVisualizationWidget);
 
     this->setContentsMargins(0,0,0,0);
     
@@ -592,25 +595,18 @@ void ComponentInputWidget::handleComponentSelection(void)
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     this->statusMessage(msg);
 
+    theComponentDb->startEditing();
+
     for(auto&& it : selectedComponentIDs)
     {
-        auto component = theComponentDb->getComponent(it);
-
-        auto feature = component.ComponentFeature;
-
-        if(feature.isValid() == false)
-        {
-            this->errorMessage("Error getting the feature from the database");
-            continue;
-        }
-
-        auto res = this->addFeatureToSelectedLayer(feature);
+        auto res = theComponentDb->addFeatureToSelectedLayer(it);
 
         if(res == false)
             return;
     }
 
-    selectedFeaturesLayer->updateExtents();
+    theComponentDb->commitChanges();
+
 }
 #endif
 
@@ -624,8 +620,6 @@ QStringList ComponentInputWidget::getTableHorizontalHeadings()
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
-
-    this->clearLayerSelectedForAnalysis();
 
     auto nRows = componentTableWidget->rowCount();
 
@@ -837,12 +831,6 @@ void ComponentInputWidget::selectAllComponents(void)
 }
 
 
-int ComponentInputWidget::getNumberOfComponents(void)
-{
-    return theComponentDb->getNumberOfComponents();
-}
-
-
 bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 {
 #ifdef OpenSRA
@@ -943,6 +931,7 @@ void ComponentInputWidget::clear(void)
     componentTableWidget->hide();
     tableHorizontalHeadings.clear();
 
+
     emit headingValuesChanged(QStringList{"N/A"});
 }
 
@@ -955,31 +944,13 @@ void ComponentInputWidget::handleCellChanged(const int row, const int col)
 
     auto attribVal = componentTableWidget->item(row,col);
 
-    theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
-
-    auto component = theComponentDb->getComponent(ID);
-
-    if(!component.isValid())
-        return;
-
 #ifdef ARC_GIS
     auto uid = component.UID;
     this->updateSelectedComponentAttribute(uid,attrib,attribVal);
 #endif
 
 #ifdef Q_GIS
-    auto feat = component.ComponentFeature;
-
-    if(!feat.isValid())
-    {
-        this->errorMessage("Error getting feature from database");
-        return;
-    }
-
-    auto id = feat.id();
-
-    auto field = feat.fieldNameIndex(attrib);
-    this->updateSelectedComponentAttribute(id,field,attribVal);
+    theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
 #endif
 
 }
@@ -1002,12 +973,6 @@ Esri::ArcGISRuntime::FeatureCollectionLayer* ComponentInputWidget::getSelectedFe
     return nullptr;
 }
 #endif
-
-
-void ComponentInputWidget::updateComponentAttribute(const int uid, const QString& attribute, const QVariant& value)
-{
-    theComponentDb->updateComponentAttribute(uid,attribute,value);
-}
 
 
 #ifdef ARC_GIS

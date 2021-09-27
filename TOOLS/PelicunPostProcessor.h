@@ -193,8 +193,6 @@ private:
 
     int createCasualtiesChart(QtCharts::QBarSet *casualtiesSet);
 
-    QVector<Component> buildingsVec;
-
     QByteArray uiState;
 
     // The number of header rows in the Pelicun results file

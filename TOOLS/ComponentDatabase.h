@@ -1,4 +1,4 @@
-﻿#ifndef ComponentDATABASE_H
+#ifndef ComponentDATABASE_H
 #define ComponentDATABASE_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
@@ -41,122 +41,67 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 #include <QVariant>
 
-#ifdef ARC_GIS
-#include <Feature.h>
-#include <FeatureTable.h>
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Feature;
-}
-}
-#endif
-
-
-#ifdef Q_GIS
 #include <qgsfeature.h>
 #include <qgsattributes.h>
+#include <qgsvectorlayer.h>
+
+class PythonProgressDialog;
 
 class QgsFeature;
-#endif
-
-struct Component
-{
-public:
-
-    void addResult(const QString& key, const double res)
-    {
-        ResultsValues.insert(key,res);
-    }
-
-    QVariant getAttributeValue(const QString& key)
-    {
-        return ComponentAttributes.value(key);
-    }
-
-    double getResultValue(const QString& key)
-    {
-        return ResultsValues.value(key);
-    }
-
-    int setAttributeValue(const QString& attribute, const QVariant& value)
-    {
-        ComponentAttributes[attribute] = value;
-
-        if(ComponentFeature.isValid())
-        {            
-            auto res = ComponentFeature.setAttribute(attribute,value);
-
-            if(res == false)
-            {
-                qDebug()<<"Failed to update feature "<<attribute<<" in component "<<ID;
-                return -1;
-            }
-        }
-
-        return 0;
-    }
-
-    bool isValid(void)
-    {
-        if(!ComponentFeature.isValid() || ComponentAttributes.empty())
-            return false;
-
-        return true;
-    }
-
-    int ID = -1;
-
-    // Unique id of this component
-    QString UID = "NULL";
-
-#ifdef ARC_GIS
-    // The Component feature in the GIS widget
-    Esri::ArcGISRuntime::Feature* ComponentFeature = nullptr;
-#endif
-
-#ifdef Q_GIS
-    QgsFeature ComponentFeature;
-#endif
-
-    // Map to store the Component attributes
-    QMap<QString, QVariant> ComponentAttributes;
-
-    // Map to store the results - the QString (key) is the header text while the double is the value for that Component
-    QMap<QString, double> ResultsValues;
-};
-
 
 class ComponentDatabase
 {
 public:
     ComponentDatabase();
 
-    // Gets the Component as a modifiable reference
-    Component& getComponent(const int ID);
-
-    Component getComponent(const QString UID);
-
     bool isEmpty(void);
 
-    int getNumberOfComponents();
-
-    void addComponent(int ID, Component& asset);
+    void addComponent(const int id, const QgsFeatureId fid);
 
     void clear(void);
 
-    QMap<int, Component> getComponentsMap() const;
+    void startEditing(void);
 
-    void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
+    bool addFeatureToSelectedLayer(const int fid);
+
+    bool removeFeaturesFromSelectedLayer(QgsFeatureIds& featureIds);
+    bool clearSelectedLayer(void);
+
+    bool updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
+
+    QVariant getAttributeValue(const int ID, const QString& attribute, const QVariant defaultVal = QVariant());
+
+    void commitChanges(void);
+
+    void setFields(const QgsFields &value);
+
+    void setMainLayer(QgsVectorLayer *value);
+
+    void setSelectedLayer(QgsVectorLayer *value);
+
+    QgsFeature getFeature(const int id);
+
+    QgsVectorLayer *getSelectedLayer() const;
+
+    QgsVectorLayer *getMainLayer() const;
 
 private:
+    PythonProgressDialog* messageHandler;
 
-    QMap<int,Component> ComponentMap;
+    bool addFeatureToSelectedLayer(QgsFeature& feature, const int id);
 
-//    // Map to link R2D ids with QGIS feature ids
-//    QMap<QgsFeatureId, int> mapFeatures;
+    // Map to link R2D ids with QGIS feature ids
+    QMap<int, QgsFeatureId> mapFeaturesMain;
+    QMap<int, QgsFeatureId> mapFeaturesSelected;
+
+    // Selected feature set
+    QSet<QgsFeatureId> selectedFeaturesSet;
+
+    // Set of layers that this component may have features in
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedLayer = nullptr;
+
+    QgsFields fields;
 };
 
 #endif // ComponentDATABASE_H

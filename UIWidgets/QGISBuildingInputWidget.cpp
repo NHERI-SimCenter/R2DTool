@@ -55,20 +55,33 @@ QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, VisualizationW
 int QGISBuildingInputWidget::loadComponentVisualization()
 {
 
+    // Get all of the grid fields from the XML file
+    QgsFields featFields;
+
     // Create the building attributes that are fixed
-    QList<QgsField> attrib;
-    attrib.append(QgsField("LossRatio", QVariant::Double));
-    attrib.append(QgsField("ID", QVariant::Int));
-    attrib.append(QgsField("AssetType", QVariant::String));
-    attrib.append(QgsField("UID", QVariant::String));
+    QList<QgsField> attribFields;
+    attribFields.append(QgsField("LossRatio", QVariant::Double));
+    attribFields.append(QgsField("ID", QVariant::Int));
+    attribFields.append(QgsField("AssetType", QVariant::String));
+    attribFields.append(QgsField("UID", QVariant::String));
+
+    featFields.append(QgsField("LossRatio", QVariant::Double));
+    featFields.append(QgsField("ID", QVariant::Int));
+    featFields.append(QgsField("AssetType", QVariant::String));
+    featFields.append(QgsField("TabName", QVariant::String));
+
 
     // Set the table headers as fields in the table
     for(int i = 1; i<componentTableWidget->columnCount(); ++i)
     {
         auto fieldText = componentTableWidget->horizontalHeaderItemVariant(i);
 
-        attrib.append(QgsField(fieldText.toString(),fieldText.type()));
+        attribFields.append(QgsField(fieldText.toString(),fieldText.type()));
+
+        featFields.append(QgsField(fieldText.toString(),fieldText.type()));
     }
+
+    theComponentDb->setFields(featFields);
 
     // Create the buildings layer
     auto buildingLayer = theVisualizationWidget->addVectorLayer("polygon","Buildings");
@@ -83,12 +96,16 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     auto pr = buildingLayer->dataProvider();
 
-    auto res = pr->addAttributes(attrib);
+    buildingLayer->startEditing();
+
+    auto res = pr->addAttributes(attribFields);
 
     if(!res)
         this->errorMessage("Error adding attributes to the layer");
 
     buildingLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    theComponentDb->setMainLayer(buildingLayer);
 
     auto headers = this->getTableHorizontalHeadings();
 
@@ -103,22 +120,17 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         return -1;
     }
 
-    auto numAtrb = attrib.size();
+    auto numAtrb = attribFields.size();
 
     for(int i = 0; i<nRows; ++i)
     {
         // create the feature attributes
         QgsAttributes featureAttributes(numAtrb);
-        QMap<QString, QVariant> buildingAttributeMap;
 
         // Create a new building
-        Component building;
-
         QString buildingIDStr = componentTableWidget->item(i,0).toString();
 
         int buildingID = buildingIDStr.toInt();
-
-        building.ID = buildingID;
 
         // Create a unique ID for the building
         auto uid = theVisualizationWidget->createUniqueID();
@@ -136,20 +148,15 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         // The feature attributes are the columns from the table
         for(int j = 1; j<componentTableWidget->columnCount(); ++j)
         {
-            auto attrbText = componentTableWidget->horizontalHeaderItem(j);
             auto attrbVal = componentTableWidget->item(i,j);
-
-            buildingAttributeMap.insert(attrbText,attrbVal.toString());
-
             featureAttributes[3+j] = attrbVal;
         }
-
-        building.ComponentAttributes = buildingAttributeMap;
 
         auto latitude = componentTableWidget->item(i,indexLatitude).toDouble();
         auto longitude = componentTableWidget->item(i,indexLongitude).toDouble();
 
         QgsFeature feature;
+        feature.setFields(featFields);
 
         // If a footprint is given use that
         if(indexFootprint != -1)
@@ -190,7 +197,10 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         if(!feature.isValid())
             return -1;
 
-        auto res = pr->addFeature(feature);
+
+        auto featIdinit = feature.id();
+
+        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
         if(!res)
         {
             this->errorMessage("Error adding the feature to the layer");
@@ -199,12 +209,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
         auto featId = feature.id();
 
-        building.UID = uid;
-        building.ComponentFeature = feature;
-
-        theComponentDb->addComponent(buildingID, building);
-
-
+        theComponentDb->addComponent(buildingID, featId);
     }
 
     buildingLayer->updateExtents();
@@ -230,7 +235,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
     buildingLayer->id();
 
     // Create the selected building layer
-    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("polygon","Selected Buildings");
+    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("polygon","Selected Buildings");
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -244,12 +249,14 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     auto pr2 = selectedFeaturesLayer->dataProvider();
 
-    auto res2 = pr2->addAttributes(attrib);
+    auto res2 = pr2->addAttributes(attribFields);
 
     if(!res2)
         this->errorMessage("Error adding attributes to the layer");
 
     selectedFeaturesLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    theComponentDb->setSelectedLayer(selectedFeaturesLayer);
 
     return 0;
 }
@@ -258,6 +265,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
 void QGISBuildingInputWidget::clear()
 {    
+
     ComponentInputWidget::clear();
 }
 

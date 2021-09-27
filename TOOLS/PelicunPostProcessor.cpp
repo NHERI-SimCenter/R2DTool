@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -87,6 +87,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 #ifdef Q_GIS
+#include "QGISVisualizationWidget.h"
+
 #include <qgsmapcanvas.h>
 #endif
 
@@ -397,14 +399,13 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Injuries
     auto indexInjuriesSev1 = headerStrings.indexOf("Injuries-sev1-aggregate-mean");
 
-    // Wind repair cost
-    auto indexWindRCagg = headerStrings.indexOf("Repair Cost-Wind-aggregate");
-    auto indexWindRC1_1 = headerStrings.indexOf("Repair Cost-Wind-1_1-mean");
+//    // Wind repair cost
+//    auto indexWindRCagg = headerStrings.indexOf("Repair Cost-Wind-aggregate");
+//    auto indexWindRC1_1 = headerStrings.indexOf("Repair Cost-Wind-1_1-mean");
 
-    // Flood repair cost
-    auto indexFloodRCagg = headerStrings.indexOf("Repair Cost-Flood-aggregate");
-    auto indexFloodRC1_1 = headerStrings.indexOf("Repair Cost-Flood-1_1-mean");
-
+//    // Flood repair cost
+//    auto indexFloodRCagg = headerStrings.indexOf("Repair Cost-Flood-aggregate");
+//    auto indexFloodRC1_1 = headerStrings.indexOf("Repair Cost-Flood-1_1-mean");
 
     QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
 
@@ -449,12 +450,14 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         throw msg;
     }
 
-
     if(theBuildingDB->isEmpty())
     {
         QString msg = "Building database is empty";
         throw msg;
     }
+
+    // Starting editing
+    theBuildingDB->startEditing();
 
     // 4 rows of headers in the results file
     for(int i = numHeaderRows, count = 0; i<DVResults.size(); ++i, ++count)
@@ -463,24 +466,10 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         auto buildingID = objectToInt(inputRow.at(0));
 
-        auto building = theBuildingDB->getComponent(buildingID);
-
-        if(building.ID == -1)
-            throw QString("Could not find the building ID " + QString::number(buildingID) + " in the database");
-
-        for(int j = 1; j<numHeaderColumns; ++j)
-        {
-            building.ResultsValues.insert(headerStrings.at(j),inputRow.at(j).toDouble());
-        }
-
         // Defaults to 1.0 if no replacement cost is given, i.e., it assumes the repair cost is the loss ratio
-        auto replacementCostVar = building.ComponentAttributes.value("ReplacementCost",QVariant(1.0));
+        auto replacementCostVar = theBuildingDB->getAttributeValue(buildingID,"ReplacementCost",QVariant(1.0));
 
-        auto replacementCost = objectToDouble(replacementCostVar);
-
-        building.ID = buildingID;
-
-        buildingsVec.push_back(building);
+        auto replacementCost = replacementCostVar.toDouble();
 
         // This assumes that the output from pelicun will not change
         auto IDStr = inputRow.at(0);                                // ID
@@ -514,7 +503,6 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
             cumulativeStructDS4 += StructDS4;
         }
 
-
         if(indexNSARC1_1 != -1)
         {
             auto NSAccDS1 = objectToDouble(inputRow.at(indexNSARC1_1));    // Non-structural acceleration sensitive losses damage state 1 (mean)
@@ -528,7 +516,6 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
             cumulativeNSAccDS4 += NSAccDS4;
         }
 
-
         if(indexNSDRC1_1 != -1)
         {
             auto NSDriftDS1 = objectToDouble(inputRow.at(24));  // Non-structural drift sensitive losses damage state 1 (mean)
@@ -541,7 +528,6 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
             cumulativeNSDriftDS3 += NSDriftDS3;
             cumulativeNSDriftDS4 += NSDriftDS4;
         }
-
 
         if(indexInjuriesSev1 != -1)
         {
@@ -583,27 +569,22 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
         pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
 
-        //        auto buildingFeature = building.ComponentFeature;
-
-        //        if(buildingFeature != nullptr)
-        //        {
-        //            auto atrb = "LossRatio";
-        //            auto atrbVal = QVariant(lossRatio);
-
-        //#ifdef ARC_GIS
-        //            buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
-        //            buildingFeature->featureTable()->updateFeature(buildingFeature);
-        //#endif
-
-        //#ifdef Q_GIS
-        //            buildingFeature->setAttribute("LossRatio",lossRatio);
-        //#endif
-
-        //            // Get the feature UID
-        //            auto uid = building.UID;
-        //            theVisualizationWidget->updateSelectedComponent("BUILDINGS",uid,atrb,atrbVal);
-        //        }
+        auto res = theBuildingDB->updateComponentAttribute(buildingID,"LossRatio",lossRatio);
+        if(!res)
+        {
+            QString msg = "Error updating component attribute: Loss Ratio";
+            throw msg;
+        }
     }
+
+    // Commit the changes
+    theBuildingDB->commitChanges();
+
+
+    QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+
+    // Apply the default renderer
+    QGISVisWidget->createPrettyGraduatedRenderer("LossRatio",Qt::yellow,Qt::red,5,theBuildingDB->getSelectedLayer());
 
     //  CASUALTIES
     QBarSet *casualtiesSet = new QBarSet("Casualties");
@@ -1237,7 +1218,6 @@ void PelicunPostProcessor::clear(void)
     DMdata.clear();
     DVdata.clear();
     EDPdata.clear();
-    buildingsVec.clear();
 
     outputFilePath.clear();
 

@@ -405,93 +405,93 @@ void ShapefileBuildingInputWidget::selectComponents(void)
 
 void ShapefileBuildingInputWidget::handleComponentSelection(void)
 {
-    qDebug()<<"Implement me in ShapefileBuildingInputWidget::handleComponentSelection";
+//    qDebug()<<"Implement me in ShapefileBuildingInputWidget::handleComponentSelection";
 
-    return;
+//    return;
 
-    auto nRows = componentTableWidget->rowCount();
+//    auto nRows = componentTableWidget->rowCount();
 
-    if(nRows == 0)
-        return;
+//    if(nRows == 0)
+//        return;
 
-    // Get the ID of the first and last component
-    bool OK;
-    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
+//    // Get the ID of the first and last component
+//    bool OK;
+//    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
 
-    if(!OK)
-    {
-        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
-        this->errorMessage(msg);
-        return;
-    }
+//    if(!OK)
+//    {
+//        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+//        this->errorMessage(msg);
+//        return;
+//    }
 
-    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
+//    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
 
-    if(!OK)
-    {
-        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
-        this->errorMessage(msg);
-        return;
-    }
+//    if(!OK)
+//    {
+//        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+//        this->errorMessage(msg);
+//        return;
+//    }
 
-    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+//    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-    // First check that all of the selected IDs are within range
-    for(auto&& it : selectedComponentIDs)
-    {
-        if(it<firstID || it>lastID)
-        {
-            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
-            this->errorMessage(msg);
-            selectComponentsLineEdit->clear();
-            return;
-        }
-    }
+//    // First check that all of the selected IDs are within range
+//    for(auto&& it : selectedComponentIDs)
+//    {
+//        if(it<firstID || it>lastID)
+//        {
+//            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
+//            this->errorMessage(msg);
+//            selectComponentsLineEdit->clear();
+//            return;
+//        }
+//    }
 
-    // Hide all rows in the table
-    for(int i = 0; i<nRows; ++i)
-        componentTableWidget->setRowHidden(i,true);
+//    // Hide all rows in the table
+//    for(int i = 0; i<nRows; ++i)
+//        componentTableWidget->setRowHidden(i,true);
 
-    // Unhide the selected rows
-    for(auto&& it : selectedComponentIDs)
-        componentTableWidget->setRowHidden(it - firstID,false);
+//    // Unhide the selected rows
+//    for(auto&& it : selectedComponentIDs)
+//        componentTableWidget->setRowHidden(it - firstID,false);
 
-    auto numAssets = selectedComponentIDs.size();
-    QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
-    this->statusMessage(msg);
+//    auto numAssets = selectedComponentIDs.size();
+//    QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
+//    this->statusMessage(msg);
 
-    for(auto&& it : selectedComponentIDs)
-    {
-        auto component = theComponentDb->getComponent(it);
+//    for(auto&& it : selectedComponentIDs)
+//    {
+//        auto component = theComponentDb->getComponent(it);
 
-        auto feature = component.ComponentFeature;
+//        auto feature = component.ComponentFeature;
 
-        if(feature.isValid())
-            continue;
-
-        QMap<QString, QVariant> featureAttributes;
-
-        auto id = feature.id();
-
-//        if(selectedFeaturesForAnalysis.contains(id))
+//        if(feature.isValid())
 //            continue;
 
-//        auto geom = feature->geometry();
+//        QMap<QString, QVariant> featureAttributes;
 
-//        auto feat = this->addFeatureToSelectedLayer(featureAttributes,geom);
+//        auto id = feature.id();
 
-//        if(feat)
-//            selectedFeaturesForAnalysis.insert(id,feat);
-    }
+////        if(selectedFeaturesForAnalysis.contains(id))
+////            continue;
 
-    auto selecFeatLayer = this->getSelectedFeatureLayer();
+////        auto geom = feature->geometry();
 
-    if(selecFeatLayer == nullptr)
-    {
-        QString err = "Error in getting the selected feature layer";
-        qDebug()<<err;
-        return;
-    }
+////        auto feat = this->addFeatureToSelectedLayer(featureAttributes,geom);
+
+////        if(feat)
+////            selectedFeaturesForAnalysis.insert(id,feat);
+//    }
+
+//    auto selecFeatLayer = this->getSelectedFeatureLayer();
+
+//    if(selecFeatLayer == nullptr)
+//    {
+//        QString err = "Error in getting the selected feature layer";
+//        qDebug()<<err;
+//        return;
+//    }
 }
 
 
@@ -729,12 +729,6 @@ void ShapefileBuildingInputWidget::selectAllComponents(void)
 }
 
 
-int ShapefileBuildingInputWidget::getNumberOfComponents(void)
-{
-    return theComponentDb->getNumberOfComponents();
-}
-
-
 bool ShapefileBuildingInputWidget::outputToJSON(QJsonObject &rvObject)
 {
 #ifdef OpenSRA
@@ -842,21 +836,21 @@ void ShapefileBuildingInputWidget::clear(void)
 void ShapefileBuildingInputWidget::handleCellChanged(const int row, const int col)
 {
 
-    auto ID = componentTableWidget->item(row,0).toInt();
+//    auto ID = componentTableWidget->item(row,0).toInt();
 
-    auto attrib = componentTableWidget->horizontalHeaderItem(col);
+//    auto attrib = componentTableWidget->horizontalHeaderItem(col);
 
-    auto attribVal = componentTableWidget->item(row,col);
+//    auto attribVal = componentTableWidget->item(row,col);
 
-    theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
+//    theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
 
-    auto component = theComponentDb->getComponent(ID);
+//    auto component = theComponentDb->getComponent(ID);
 
-    if(!component.isValid())
-        return;
+//    if(!component.isValid())
+//        return;
 
-    auto uid = component.UID;
-    this->updateSelectedComponentAttribute(uid,attrib,attribVal);
+//    auto uid = component.UID;
+//    this->updateSelectedComponentAttribute(uid,attrib,attribVal);
 
 }
 
