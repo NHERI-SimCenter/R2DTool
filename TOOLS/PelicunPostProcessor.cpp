@@ -92,6 +92,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsmapcanvas.h>
 #endif
 
+// Test to remove
+//#include <chrono>
+//using namespace std::chrono;
 
 using namespace QtCharts;
 
@@ -399,13 +402,13 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Injuries
     auto indexInjuriesSev1 = headerStrings.indexOf("Injuries-sev1-aggregate-mean");
 
-//    // Wind repair cost
-//    auto indexWindRCagg = headerStrings.indexOf("Repair Cost-Wind-aggregate");
-//    auto indexWindRC1_1 = headerStrings.indexOf("Repair Cost-Wind-1_1-mean");
+    //    // Wind repair cost
+    //    auto indexWindRCagg = headerStrings.indexOf("Repair Cost-Wind-aggregate");
+    //    auto indexWindRC1_1 = headerStrings.indexOf("Repair Cost-Wind-1_1-mean");
 
-//    // Flood repair cost
-//    auto indexFloodRCagg = headerStrings.indexOf("Repair Cost-Flood-aggregate");
-//    auto indexFloodRC1_1 = headerStrings.indexOf("Repair Cost-Flood-1_1-mean");
+    //    // Flood repair cost
+    //    auto indexFloodRCagg = headerStrings.indexOf("Repair Cost-Flood-aggregate");
+    //    auto indexFloodRC1_1 = headerStrings.indexOf("Repair Cost-Flood-1_1-mean");
 
     QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
 
@@ -456,8 +459,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         throw msg;
     }
 
-    // Starting editing
-    theBuildingDB->startEditing();
+    QVector<QVariant> attributes(DVResults.size()-numHeaderRows);
 
     // 4 rows of headers in the results file
     for(int i = numHeaderRows, count = 0; i<DVResults.size(); ++i, ++count)
@@ -569,16 +571,29 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
         pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
 
-        auto res = theBuildingDB->updateComponentAttribute(buildingID,"LossRatio",lossRatio);
-        if(!res)
-        {
-            QString msg = "Error updating component attribute: Loss Ratio";
-            throw msg;
-        }
+        attributes[count] = lossRatio;
+    }
+
+    // Test to remove
+    // auto start = high_resolution_clock::now();
+
+    // Starting editing
+    theBuildingDB->startEditing();
+
+    auto res = theBuildingDB->updateComponentAttributes("LossRatio",attributes);
+    if(!res)
+    {
+        QString msg = "Error updating component attribute: Loss Ratio";
+        throw msg;
     }
 
     // Commit the changes
     theBuildingDB->commitChanges();
+
+    // Test to remove
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    PythonProgressDialog::getInstance()->appendText("Done processing results "+QString::number(duration.count()));
 
 
     QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);

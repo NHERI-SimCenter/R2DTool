@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-#include "GISSelectableComponent.h"
+#include "GISSelectable.h"
 #include "ComponentDatabase.h"
 
 #include <set>
@@ -84,7 +84,7 @@ class QLabel;
 class JsonGroupBoxWidget;
 #endif
 
-class ComponentInputWidget : public  SimCenterAppWidget
+class ComponentInputWidget : public  SimCenterAppWidget, public GISSelectable
 {
     Q_OBJECT
 
@@ -101,14 +101,14 @@ public:
     void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
 #endif
 
+    void insertSelectedAssets(QgsFeatureIds& featureIds);
+    void clearSelectedAssets(void);
 
     ComponentTableView *getTableWidget() const;
 
     // Set the filter string and select the components
     void setFilterString(const QString& filter);
     QString getFilterString(void);
-
-    void insertSelectedComponent(QgsFeatureId& featureId);
 
     int numberComponentsSelected(void);
 
@@ -178,10 +178,13 @@ protected:
     JsonGroupBoxWidget* locationWidget;
 #endif
 
+    AssetInputDelegate* selectComponentsLineEdit;
+
+    int offset;
+
 private:
     QString pathToComponentInfoFile;
     QLineEdit* componentFileLineEdit;
-    AssetInputDelegate* selectComponentsLineEdit;
     QLabel* componentInfoText;
     QGroupBox* componentGroupBox;
 

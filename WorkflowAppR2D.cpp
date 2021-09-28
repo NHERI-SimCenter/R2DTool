@@ -362,6 +362,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 
 void WorkflowAppR2D::processResults(QString resultsDir, QString /*dakotaTab*/, QString /*inputFile*/)
 {
+    this->statusMessage("Importing results");
+    QApplication::processEvents();
+
     theResultsWidget->processResults(resultsDir);
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");

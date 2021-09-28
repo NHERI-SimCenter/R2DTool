@@ -1,3 +1,5 @@
+#ifndef GISSelectable_H
+#define GISSelectable_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -10,7 +12,7 @@ modification, are permitted provided that the following conditions are met:
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
-   
+
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -36,33 +38,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "GISSelectableComponent.h"
-#include "Utils/PythonProgressDialog.h"
-#include "QGISVisualizationWidget.h"
+#include <qgsfeature.h>
 
-#include <qgsfield.h>
-#include <qgsfields.h>
-#include <qgsvectorlayer.h>
-
-GISSelectableComponent::GISSelectableComponent(VisualizationWidget* visualizationWidget)
-{
-    messageHandler = PythonProgressDialog::getInstance();
-
-}
-
-
-GISSelectableComponent::~GISSelectableComponent()
-{
-    
-}
-
-
-
-
-void GISSelectableComponent::clear(void)
+class GISSelectable
 {
 
-}
+public:
+    explicit GISSelectable();
+    virtual ~GISSelectable();
 
+    virtual void insertSelectedAssets(QgsFeatureIds& featureIds) = 0;
+    virtual void clearSelectedAssets(void) = 0;
 
+};
 
+#endif // GISSelectable_H

@@ -78,6 +78,16 @@ void AssetInputDelegate::insertSelectedComponent(const int id)
 }
 
 
+void AssetInputDelegate::insertSelectedComponents(const QVector<int>& ids)
+{
+    for(auto&& id : ids)
+        selectedComponentIDs.insert(id);
+
+    // Reset the text on the line edit
+    this->setText(this->getComponentAnalysisList());
+}
+
+
 void AssetInputDelegate::selectComponents()
 {
     auto inputText = this->text();

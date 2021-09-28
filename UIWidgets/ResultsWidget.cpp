@@ -224,8 +224,6 @@ void ResultsWidget::setCurrentlyViewable(bool status){
 
 int ResultsWidget::processResults(QString resultsDirectory)
 {
-
-    return 0;
     //auto SCPrefs = SimCenterPreferences::getInstance();
 
     //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
@@ -235,8 +233,6 @@ int ResultsWidget::processResults(QString resultsDirectory)
     {
         if(DVApp.compare("Pelicun") == 0)
         {
-            this->statusMessage("Importing results");
-            QApplication::processEvents();
             thePelicunPostProcessor->importResults(resultsDirectory);
 
             this->resultsShow(true);

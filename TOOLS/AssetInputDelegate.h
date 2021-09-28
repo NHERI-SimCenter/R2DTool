@@ -53,6 +53,8 @@ public:
 
     void insertSelectedComponent(const int id);
 
+    void insertSelectedComponents(const QVector<int>& ids);
+
     void clear();
 
     int size();

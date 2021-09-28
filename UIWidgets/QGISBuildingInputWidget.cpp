@@ -55,7 +55,6 @@ QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, VisualizationW
 int QGISBuildingInputWidget::loadComponentVisualization()
 {
 
-    // Get all of the grid fields from the XML file
     QgsFields featFields;
 
     // Create the building attributes that are fixed
@@ -81,12 +80,11 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         featFields.append(QgsField(fieldText.toString(),fieldText.type()));
     }
 
-    theComponentDb->setFields(featFields);
 
     // Create the buildings layer
-    auto buildingLayer = theVisualizationWidget->addVectorLayer("polygon","Buildings");
+    auto mainLayer = theVisualizationWidget->addVectorLayer("polygon","All Buildings");
 
-    if(buildingLayer == nullptr)
+    if(mainLayer == nullptr)
     {
         this->errorMessage("Error adding a vector layer");
         return -1;
@@ -94,18 +92,18 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     auto nRows = componentTableWidget->rowCount();
 
-    auto pr = buildingLayer->dataProvider();
+    auto pr = mainLayer->dataProvider();
 
-    buildingLayer->startEditing();
+    mainLayer->startEditing();
 
     auto res = pr->addAttributes(attribFields);
 
     if(!res)
         this->errorMessage("Error adding attributes to the layer");
 
-    buildingLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+    mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
-    theComponentDb->setMainLayer(buildingLayer);
+    theComponentDb->setMainLayer(mainLayer);
 
     auto headers = this->getTableHorizontalHeadings();
 
@@ -141,7 +139,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         // "UID"
 
         featureAttributes[0] = QVariant(0.0);
-        featureAttributes[1] = QVariant(buildingIDStr);
+        featureAttributes[1] = QVariant(buildingID);
         featureAttributes[2] = QVariant("BUILDINGS");
         featureAttributes[3] = QVariant(uid);
 
@@ -198,26 +196,19 @@ int QGISBuildingInputWidget::loadComponentVisualization()
             return -1;
 
 
-        auto featIdinit = feature.id();
-
         auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
         if(!res)
         {
             this->errorMessage("Error adding the feature to the layer");
             return -1;
         }
-
-        auto featId = feature.id();
-
-        theComponentDb->addComponent(buildingID, featId);
     }
 
-    buildingLayer->updateExtents();
+    mainLayer->updateExtents();
 
+    // Try to categorize the layer by occupancy class
     auto attrName = "OccupancyClass";
-
     auto indexOcc = headers.indexOf(attrName);
-
     if(indexOcc != -1)
     {
         QgsSymbol* markerSymbol = nullptr;
@@ -227,12 +218,20 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         else
             markerSymbol = new QgsMarkerSymbol();
 
-        theVisualizationWidget->createCategoryRenderer(attrName, buildingLayer, markerSymbol);
+        theVisualizationWidget->createCategoryRenderer(attrName, mainLayer, markerSymbol);
+    }
+    else // Else default to a single color fill for all features
+    {
+        QgsFillSymbol* fillSymbol = new QgsFillSymbol();
+        fillSymbol->setColor(Qt::gray);
+        theVisualizationWidget->createSimpleRenderer(fillSymbol,mainLayer);
     }
 
-    theVisualizationWidget->zoomToLayer(buildingLayer);
+    theVisualizationWidget->zoomToLayer(mainLayer);
 
-    buildingLayer->id();
+    auto layerId = mainLayer->id();
+
+    theVisualizationWidget->registerLayerForSelection(layerId,this);
 
     // Create the selected building layer
     auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("polygon","Selected Buildings");
@@ -257,6 +256,12 @@ int QGISBuildingInputWidget::loadComponentVisualization()
     selectedFeaturesLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
     theComponentDb->setSelectedLayer(selectedFeaturesLayer);
+
+    QVector<QgsMapLayer*> mapLayers;
+    mapLayers.push_back(selectedFeaturesLayer);
+    mapLayers.push_back(mainLayer);
+
+    theVisualizationWidget->createLayerGroup(mapLayers,"Buildings");
 
     return 0;
 }

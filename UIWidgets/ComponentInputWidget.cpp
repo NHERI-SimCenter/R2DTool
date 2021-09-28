@@ -92,6 +92,7 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
         return;
     }
 #endif
+    offset = 0;
 
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
@@ -145,7 +146,8 @@ void ComponentInputWidget::loadComponentData(void)
         }
     }
     
-    //    auto start = high_resolution_clock::now();
+    // Test to remove
+    // auto start = high_resolution_clock::now();
     
     CSVReaderWriter csvTool;
     
@@ -595,15 +597,21 @@ void ComponentInputWidget::handleComponentSelection(void)
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     this->statusMessage(msg);
 
+    offset = 1-firstID;
+
+    theComponentDb->setOffset(offset);
+
     theComponentDb->startEditing();
 
-    for(auto&& it : selectedComponentIDs)
-    {
-        auto res = theComponentDb->addFeatureToSelectedLayer(it);
+    // Test to remove
+    //    auto start = high_resolution_clock::now();
 
-        if(res == false)
-            return;
-    }
+    theComponentDb->addFeaturesToSelectedLayer(selectedComponentIDs);
+
+    // Test to remove
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    this->statusMessage("Done ALL "+QString::number(duration.count()));
 
     theComponentDb->commitChanges();
 
@@ -620,7 +628,6 @@ QStringList ComponentInputWidget::getTableHorizontalHeadings()
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
-
     auto nRows = componentTableWidget->rowCount();
 
     // Hide all rows in the table
@@ -630,6 +637,10 @@ void ComponentInputWidget::clearComponentSelection(void)
     }
 
     selectComponentsLineEdit->clear();
+
+    theComponentDb->clearSelectedLayer();
+
+    theComponentDb->getSelectedLayer()->updateExtents();
 }
 
 
@@ -660,13 +671,6 @@ void ComponentInputWidget::setGroupBoxText(const QString &value)
 void ComponentInputWidget::setComponentType(const QString &value)
 {
     componentType = value;
-}
-
-
-void ComponentInputWidget::insertSelectedComponent(QgsFeatureId& featureId)
-{
-
-//    selectComponentsLineEdit->insertSelectedComponent(ComponentID);
 }
 
 
@@ -1010,4 +1014,25 @@ void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid,
     }
 }
 #endif
+
+
+void ComponentInputWidget::insertSelectedAssets(QgsFeatureIds& featureIds)
+{
+
+    QVector<int> assetIds;
+    assetIds.reserve(featureIds.size());
+
+    for(auto&& it : featureIds)
+        assetIds.push_back(it-offset);
+
+    selectComponentsLineEdit->insertSelectedComponents(assetIds);
+
+    this->selectComponents();
+}
+
+
+void ComponentInputWidget::clearSelectedAssets(void)
+{
+    this->clearComponentSelection();
+}
 

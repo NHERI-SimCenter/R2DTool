@@ -45,6 +45,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsattributes.h>
 #include <qgsvectorlayer.h>
 
+#include <set>
+
 class PythonProgressDialog;
 
 class QgsFeature;
@@ -56,52 +58,54 @@ public:
 
     bool isEmpty(void);
 
-    void addComponent(const int id, const QgsFeatureId fid);
-
     void clear(void);
 
     void startEditing(void);
 
-    bool addFeatureToSelectedLayer(const int fid);
+    // Fast, use for batch feature addition
+    bool addFeaturesToSelectedLayer(const std::set<int> ids);
+
+    // Slow, only use for adding indvidual features when needed
+    bool addFeatureToSelectedLayer(const int id);
 
     bool removeFeaturesFromSelectedLayer(QgsFeatureIds& featureIds);
     bool clearSelectedLayer(void);
 
-    bool updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
+    // Slow, only use for sparse updates
+    bool updateComponentAttribute(const qint64 id, const QString& attribute, const QVariant& value);
 
-    QVariant getAttributeValue(const int ID, const QString& attribute, const QVariant defaultVal = QVariant());
+    // Fast, use for batch updates
+    bool updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values);
+
+    QVariant getAttributeValue(const qint64 id, const QString& attribute, const QVariant defaultVal = QVariant());
 
     void commitChanges(void);
-
-    void setFields(const QgsFields &value);
 
     void setMainLayer(QgsVectorLayer *value);
 
     void setSelectedLayer(QgsVectorLayer *value);
 
-    QgsFeature getFeature(const int id);
+    QgsFeature getFeature(const qint64 id);
 
     QgsVectorLayer *getSelectedLayer() const;
 
     QgsVectorLayer *getMainLayer() const;
 
+    void setOffset(int value);
+
 private:
     PythonProgressDialog* messageHandler;
 
-    bool addFeatureToSelectedLayer(QgsFeature& feature, const int id);
-
-    // Map to link R2D ids with QGIS feature ids
-    QMap<int, QgsFeatureId> mapFeaturesMain;
-    QMap<int, QgsFeatureId> mapFeaturesSelected;
+    bool addFeatureToSelectedLayer(QgsFeature& feature);
 
     // Selected feature set
-    QSet<QgsFeatureId> selectedFeaturesSet;
+    QgsFeatureIds selectedFeaturesSet;
 
     // Set of layers that this component may have features in
     QgsVectorLayer* mainLayer = nullptr;
     QgsVectorLayer* selectedLayer = nullptr;
 
-    QgsFields fields;
+    int offset;
 };
 
 #endif // ComponentDATABASE_H
