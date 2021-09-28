@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class QComboBox;
 class QCheckBox;
 class QLineEdit;
+class QLabel;
 
 class SpatialCorrelationWidget : public QWidget
 {
@@ -59,10 +60,14 @@ public:
 signals:
 
 public slots:
+    void handleAvailableModel(const QString sourceType);
 
 private:
     QComboBox* m_correlationBoxInter;
     QComboBox* m_correlationBoxIntra;
+
+    QLabel* spatialCorrelationInterLabel;
+    QLabel* spatialCorrelationIntraLabel;
 
     QLineEdit* maxScalingLineEdit;
     QLineEdit* minScalingLineEdit;

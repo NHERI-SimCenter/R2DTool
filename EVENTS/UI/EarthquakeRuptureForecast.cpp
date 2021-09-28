@@ -123,4 +123,3 @@ QJsonObject EarthquakeRuptureForecast::getJson()
 
     return rupture;
 }
-

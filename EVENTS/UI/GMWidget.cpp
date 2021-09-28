@@ -124,7 +124,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     this->m_selectionWidget = new RecordSelectionWidget(*this->m_selectionconfig, this);
 
     m_runButton = new QPushButton(tr("&Run Hazard Simulation"));
-    m_settingButton = new QPushButton(tr("&Settings"));
+    m_settingButton = new QPushButton(tr("&Path Settings"));
 
     // Create a map view that will be used for selecting the grid points
     mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr);
@@ -149,12 +149,13 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     toolsGridLayout->addWidget(this->spatialCorrWidget,  0,1);
     toolsGridLayout->addWidget(this->m_selectionWidget,  1,1);
     toolsGridLayout->addWidget(this->m_vs30Widget, 3,1,1,1); // vs30 widget
-    toolsGridLayout->addWidget(this->m_gmpeWidget,        4,1,1,1);
+    toolsGridLayout->addWidget(this->m_gmpeWidget, 4,1,1,1);
     toolsGridLayout->addWidget(this->m_intensityMeasureWidget,5,1,1,1);
     toolsGridLayout->addLayout(buttonsLayout,6,1,1,1);
 
     toolsGridLayout->setHorizontalSpacing(5);
     toolsGridLayout->setVerticalSpacing(0);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     this->setLayout(toolsGridLayout);
 
@@ -188,6 +189,18 @@ void GMWidget::setAppConfig(void)
 
 void GMWidget::setupConnections()
 {
+    // GMPE options (link between source type and GMPE options)
+    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
+            m_gmpeWidget, SLOT(handleAvailableGMPE(QString)));
+
+    // correlation model options (link between source type and correlation model options)
+    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
+            spatialCorrWidget, SLOT(handleAvailableModel(QString)));
+
+    // Intensity Measure Levels options (link between source type and intensity measure levels options)
+    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
+            m_intensityMeasureWidget, SLOT(handleIntensityMeasureLevels(QString)));
+
     //Connecting the run button
     connect(m_runButton, &QPushButton::clicked, this, [this]()
     {
@@ -514,7 +527,17 @@ void GMWidget::runHazardSimulation(void)
     scenarioObj.insert("EqRupture",EqRupture);
 
     // Get the GMPE Json object
-    auto GMPEobj = m_gmpe->getJson();
+    QJsonObject GMPEobj;
+    qDebug() << QString(m_ruptureWidget->getWidgetType());
+    if (m_ruptureWidget->getWidgetType().compare("OpenQuake Classical")==0)
+    {
+        GMPEobj.insert("Type", "LogicTree");
+        GMPEobj.insert("Parameters", m_ruptureWidget->getGMPELogicTree());
+    }
+    else
+    {
+        GMPEobj = m_gmpe->getJson();
+    }
 
     // Get the Vs30 Json object
     auto Vs30obj = m_vs30->getJson();
@@ -783,6 +806,8 @@ int GMWidget::downloadRecords(void)
 
     theRecordsListFile.close();
 
+    qDebug()<<QString::number(recordsListToDownload.empty());
+
     // Check if any of the records exist, do not need to download them again
     const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
 
@@ -805,7 +830,12 @@ int GMWidget::downloadRecords(void)
     }
 
 
-    this->downloadRecordBatch();
+    qDebug()<<QString::number(recordsListToDownload.isEmpty());
+    qDebug()<<QString::number(recordsListToDownload.empty());
+    if (!recordsListToDownload.isEmpty())
+    {
+            this->downloadRecordBatch();
+    }
 
     return 0;
 }
