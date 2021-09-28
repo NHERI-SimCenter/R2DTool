@@ -59,19 +59,17 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     QGridLayout* gridLayout = new QGridLayout(spatCorrGroupBox);
     spatCorrGroupBox->setLayout(gridLayout);
 
-    QLabel* spatialCorrelationInterLabel = new QLabel(tr("Inter-event\nSpatial Correlation Model:"),this);
+    spatialCorrelationInterLabel = new QLabel(tr("Inter-event\nSpatial Correlation Model:"),this);
 
     m_correlationBoxInter = new QComboBox(this);
     m_correlationBoxInter->addItem("Baker & Jayaram (2008)");
-    m_correlationBoxInter->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    QLabel* spatialCorrelationIntraLabel = new QLabel(tr("Intra-event\nSpatial Correlation Model:"),this);
+    spatialCorrelationIntraLabel = new QLabel(tr("Intra-event\nSpatial Correlation Model:"),this);
 
     m_correlationBoxIntra = new QComboBox(this);
     m_correlationBoxIntra->addItem("Markhvida et al. (2017)");
     m_correlationBoxIntra->addItem("Jayaram & Baker (2009)");
     m_correlationBoxIntra->addItem("Loth & Baker (2013)");
-    m_correlationBoxIntra->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     QLabel* minScalingLabel = new QLabel(tr("Minimum Scaling Factor:"),this);
     QLabel* maxScalingLabel = new QLabel(tr("Maximum Scaling Factor:"),this);
@@ -101,9 +99,10 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     gridLayout->addWidget(maxScalingLabel,5,0);
     gridLayout->addWidget(maxScalingLineEdit,5,1);
     gridLayout->addItem(Vspacer,6,0,1,2);
-
     layout->addWidget(spatCorrGroupBox);
+    //layout->setSizeConstraint(QLayout::SetFixedSize);
     this->setLayout(layout);
+    //this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     m_correlationBoxInter->setCurrentIndex(0);
 }
@@ -126,5 +125,25 @@ QJsonObject SpatialCorrelationWidget::getJsonScaling()
     scaling.insert("Minimum", minScalingLineEdit->text().toDouble());
 
     return scaling;
+}
+
+
+void SpatialCorrelationWidget::handleAvailableModel(const QString sourceType)
+{
+    if (sourceType.compare("OpenQuake Classical")==0)
+    {
+        // No IM correlation is considered for UHS in Classical PSHA
+        m_correlationBoxInter->hide();
+        m_correlationBoxIntra->hide();
+        spatialCorrelationIntraLabel->hide();
+        spatialCorrelationInterLabel->hide();
+    }
+    else
+    {
+        m_correlationBoxInter->show();
+        m_correlationBoxIntra->show();
+        spatialCorrelationIntraLabel->show();
+        spatialCorrelationInterLabel->show();
+    }
 }
 

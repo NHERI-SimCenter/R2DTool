@@ -119,6 +119,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/IntensityMeasure.cpp \
             Events/UI/IntensityMeasureWidget.cpp \
             Events/UI/Location.cpp \
+            Events/UI/OpenQuakeClassical.cpp \
+            Events/UI/OpenQuakeClassicalWidget.cpp \
             Events/UI/OpenQuakeScenario.cpp \
             Events/UI/OpenQuakeScenarioWidget.cpp \
             Events/UI/PeerLoginDialog.cpp \
@@ -237,6 +239,8 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/IntensityMeasureWidget.h \
             Events/UI/JsonSerializable.h \
             Events/UI/Location.h \
+            Events/UI/OpenQuakeClassical.h \
+            Events/UI/OpenQuakeClassicalWidget.h \
             Events/UI/OpenQuakeScenario.h \
             Events/UI/OpenQuakeScenarioWidget.h \
             Events/UI/PeerLoginDialog.h \

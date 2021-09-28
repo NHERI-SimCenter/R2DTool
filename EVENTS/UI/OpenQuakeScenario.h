@@ -54,6 +54,7 @@ public:
     double getAreaMesh() const;
     double getMaxDistance() const;
     QString getRupFilename() const;
+    void setOQVersion(const QString &value);
 
     QJsonObject getJson();
 
@@ -71,6 +72,7 @@ private:
     double maxDistance;
 
     QString rupFilename;
+    QString oqVersion = "3.12.0";
 
     bool copyRupFile();
 
