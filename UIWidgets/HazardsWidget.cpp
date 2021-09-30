@@ -72,7 +72,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 {
     this->setContentsMargins(0,0,0,0);
 
-    theEQSSWidget = new GMWidget(this, theVisualizationWidget);
+    theEQSSWidget = new GMWidget(theVisualizationWidget, this);
     theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget,this);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget,this);
     theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget,this);

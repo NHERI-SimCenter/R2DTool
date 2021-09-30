@@ -116,14 +116,13 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
 
     eventDatabaseFile = "";
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5,0,0,0);
 
-    siteConfig = new SiteConfig();
+    siteConfig = new SiteConfig(this);
     siteGrid = &siteConfig->siteGrid();
 
     layout->addWidget(this->getHurricaneSelectionWidget());
-    this->setLayout(layout);
 
 #ifdef ARC_GIS
     auto userGrid = mapViewSubWidget->getGrid();
@@ -242,9 +241,9 @@ bool HurricaneSelectionWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 {
     if (theStackedWidget)
-        return theStackedWidget.get();
+        return theStackedWidget;
 
-    theStackedWidget = std::make_unique<QStackedWidget>();
+    theStackedWidget = new QStackedWidget();
     theStackedWidget->setContentsMargins(0,0,0,0);
 
     theStackedWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -253,7 +252,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     // file and dir input
     //
 
-    fileInputWidget = new QWidget(this);
+    fileInputWidget = new QWidget();
     fileInputWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     fileInputWidget->setContentsMargins(0,0,0,0);
 
@@ -274,40 +273,40 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     mapViewSubWidget->enableSelectionTool();
 #endif
 
-    QComboBox* simulationTypeComboBox = new QComboBox(this);
+    QComboBox* simulationTypeComboBox = new QComboBox();
     simulationTypeComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
     simulationTypeComboBox->addItem("Specify Hurricane Track");
     simulationTypeComboBox->addItem("Select Hurricane Track from Database");
-    typeOfScenarioWidget = new QStackedWidget(this);
+    typeOfScenarioWidget = new QStackedWidget();
     typeOfScenarioWidget->setContentsMargins(5,0,5,0);
 
     // Widget to select hurricane from database
-    selectHurricaneWidget = new QWidget(this);
+    selectHurricaneWidget = new QWidget();
 
     selectHurricaneWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
 
     QGridLayout *selectHurricaneLayout = new QGridLayout(selectHurricaneWidget);
     selectHurricaneLayout->setContentsMargins(0,5,0,0);
 
-    loadDbButton = new QPushButton("Load Hurricane Database",this);
+    loadDbButton = new QPushButton("Load Hurricane Database");
     loadDbButton->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
 
     connect(loadDbButton,SIGNAL(clicked()),this,SLOT(loadHurricaneButtonClicked()));
 
-    QPushButton *selectHurricaneButton = new QPushButton("Select Hurricane",this);
+    QPushButton *selectHurricaneButton = new QPushButton("Select Hurricane");
 
     connect(selectHurricaneButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleHurricaneSelect);
 
-    QLabel* selectedHurricaneLabel = new QLabel("Hurricane Selected: ",this);
-    QLabel* SIDLabel = new QLabel("SID: ",this);
-    QLabel* seasonLabel = new QLabel("Season: ",this);
+    QLabel* selectedHurricaneLabel = new QLabel("Hurricane Selected: ");
+    QLabel* SIDLabel = new QLabel("SID: ");
+    QLabel* seasonLabel = new QLabel("Season: ");
 
-    selectedHurricaneName = new QLabel("None",this);
-    selectedHurricaneSID = new QLabel("None",this);
-    selectedHurricaneSeason = new QLabel("None",this);
+    selectedHurricaneName = new QLabel("None");
+    selectedHurricaneSID = new QLabel("None");
+    selectedHurricaneSeason = new QLabel("None");
 
-    hurricaneParamsWidget = new HurricaneParameterWidget(this);
+    hurricaneParamsWidget = new HurricaneParameterWidget();
 
     selectHurricaneLayout->addWidget(loadDbButton,0,0);
     selectHurricaneLayout->addWidget(selectHurricaneButton,0,1);
@@ -320,7 +319,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     selectHurricaneLayout->rowStretch(3);
 
     // Widget to specify hurricane track
-    specifyHurricaneWidget = new QWidget(this);
+    specifyHurricaneWidget = new QWidget();
     QGridLayout* specifyHurricaneLayout = new QGridLayout(specifyHurricaneWidget);
     specifyHurricaneLayout->setContentsMargins(0,0,0,0);
     //    specifyHurricaneLayout->setSpacing(8);
@@ -351,9 +350,9 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 
 
     // Grid selection
-    auto defineGridButton = new QPushButton(tr("&Define Grid on Map"),this);
-    auto selectGridButton = new QPushButton(tr("&Select Grid"),this);
-    auto clearGridButton = new QPushButton(tr("&Clear Grid"),this);
+    auto defineGridButton = new QPushButton(tr("&Define Grid on Map"));
+    auto selectGridButton = new QPushButton(tr("&Select Grid"));
+    auto clearGridButton = new QPushButton(tr("&Clear Grid"));
 
     //    defineGridButton->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
     //    selectGridButton->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
@@ -363,9 +362,9 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     connect(selectGridButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::handleGridSelected);
     connect(clearGridButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::clearGridFromMap);
 
-    QLabel* gridLabel = new QLabel("Specify Wind Field Grid:",this);
+    QLabel* gridLabel = new QLabel("Specify Wind Field Grid:");
 
-    QFrame* gridGroupBox = new QFrame(this);
+    QFrame* gridGroupBox = new QFrame();
     //    gridGroupBox->setObjectName("TopLine");
     //    gridGroupBox->setStyleSheet("#TopLine { border-top: 2px solid black; }");
     gridGroupBox->setContentsMargins(0,0,0,0);
@@ -380,15 +379,15 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 
     gridLayout->addLayout(gridButtonsLayout,0,0,1,3);
 
-    auto divLatLabel = new QLabel("Divisions Latitude",this);
-    divLatSpinBox = new QSpinBox(this);
+    auto divLatLabel = new QLabel("Divisions Latitude");
+    divLatSpinBox = new QSpinBox();
     divLatSpinBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
     divLatSpinBox->setRange(1, 1000);
     divLatSpinBox->setValue(5);
     divLatSpinBox->setValue(siteGrid->latitude().divisions());
 
-    auto divLonLabel = new QLabel("Divisions Longitude",this);
-    divLonSpinBox = new QSpinBox(this);
+    auto divLonLabel = new QLabel("Divisions Longitude");
+    divLonSpinBox = new QSpinBox();
     divLonSpinBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
     divLonSpinBox->setRange(1, 1000);
     divLonSpinBox->setValue(5);
@@ -433,14 +432,14 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     gridLayout->addWidget(numIMsLineEdit,0,8);
 
 
-    auto scenarioTypeLabel = new QLabel("Hurricane Definition",this);
+    auto scenarioTypeLabel = new QLabel("Hurricane Definition");
 
     auto topLayout = new QHBoxLayout();
     topLayout->addWidget(scenarioTypeLabel);
     topLayout->addWidget(simulationTypeComboBox);
 
 
-    QFrame* bottomWidget = new QFrame(this);
+    QFrame* bottomWidget = new QFrame();
     bottomWidget->setContentsMargins(0,0,0,0);
 
     // Functionality to truncate the track
@@ -483,9 +482,9 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     line2->setFrameShadow(QFrame::Sunken);
     bottomLayout->addWidget(line2);
 
-    QLabel* runLabel = new QLabel("Run Hurricane Simulation:",this);
+    QLabel* runLabel = new QLabel("Run Hurricane Simulation:");
 
-    runButton = new QPushButton(tr("&Run"), this);
+    runButton = new QPushButton(tr("&Run"));
     connect(runButton,&QPushButton::clicked,this,&HurricaneSelectionWidget::runHazardSimulation);
 
     bottomLayout->addWidget(runLabel);
@@ -504,20 +503,21 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     // progress bar
     //
 
-    progressBarWidget = new QWidget(this);
+    progressBarWidget = new QWidget();
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
     progressBarWidget->setLayout(progressBarLayout);
 
     auto progressText = new QLabel("Loading hurricane database. This may take a while.",progressBarWidget);
-    progressLabel =  new QLabel("",this);
-    progressBar = new QProgressBar(progressBarWidget);
+    progressLabel =  new QLabel("");
+    progressBar = new QProgressBar();
 
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    auto vspacer2 = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
     progressBarLayout->addItem(vspacer);
     progressBarLayout->addWidget(progressText,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressBar);
-    progressBarLayout->addItem(vspacer);
+    progressBarLayout->addItem(vspacer2);
     //    progressBarLayout->addStretch(1);
 
     //
@@ -531,7 +531,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 
     theStackedWidget->setWindowTitle("Hurricane track selection");
 
-    return theStackedWidget.get();
+    return theStackedWidget;
 }
 
 

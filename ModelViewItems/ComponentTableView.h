@@ -48,7 +48,7 @@ class ComponentTableView : public QTableView
     Q_OBJECT
 
 public:
-    ComponentTableView(QWidget *parent);
+    ComponentTableView(QWidget *parent=nullptr);
 
     int columnCount(void);
     int rowCount(void);

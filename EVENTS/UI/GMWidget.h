@@ -71,7 +71,7 @@ class GMWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit GMWidget(QWidget *parent, VisualizationWidget* visWidget);
+    explicit GMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~GMWidget();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -144,8 +144,8 @@ private:
 #endif
 
 #ifdef Q_GIS
-    std::unique_ptr<MapViewWindow> mapViewSubWidget;
-    std::unique_ptr<RectangleGrid> userGrid;
+    MapViewWindow* mapViewSubWidget;
+    RectangleGrid* userGrid;
 #endif
 
     void setupConnections();

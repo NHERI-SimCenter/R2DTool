@@ -53,8 +53,12 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
     this->resize(width, height);
 
     // Test to remove
-     inputFileLineEdit->setText("/Users/steve/Documents/R2D/RemoteWorkDir/inputRWHALE.json");
-     resultsFolderLineEdit->setText("/Users/steve/Documents/R2D/RemoteWorkDir");
+//     inputFileLineEdit->setText("/Users/steve/Documents/R2D/RemoteWorkDir/inputRWHALE.json");
+//     resultsFolderLineEdit->setText("/Users/steve/Documents/R2D/RemoteWorkDir");
+
+     inputFileLineEdit->setText("/Users/steve/Desktop/tmp.SimCenter/inputRWHALE.json");
+     resultsFolderLineEdit->setText("/Users/steve/Desktop/tmp.SimCenter/Results");
+
      this->handleLoadResults();
 }
 

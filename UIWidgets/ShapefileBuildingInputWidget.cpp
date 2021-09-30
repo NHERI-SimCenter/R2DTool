@@ -72,9 +72,9 @@ ShapefileBuildingInputWidget::ShapefileBuildingInputWidget(QWidget *parent, Visu
     label3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
 
 
-    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonBuildings/galveston-bldg-v7.shp";
-    componentFileLineEdit->setText(pathToComponentInputFile);
-    this->loadComponentData();
+//    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonBuildings/galveston-bldg-v7.shp";
+//    componentFileLineEdit->setText(pathToComponentInputFile);
+//    this->loadComponentData();
 }
 
 
@@ -397,9 +397,3 @@ bool ShapefileBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     return true;
 }
 
-
-void ShapefileBuildingInputWidget::clear(void)
-{
-    theVisualizationWidget->removeLayer(shapeFileLayer);
-    ComponentInputWidget::clear();
-}

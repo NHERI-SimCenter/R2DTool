@@ -102,7 +102,7 @@ private:
     void showProgressBar(void);
     void hideProgressBar(void);
 
-    std::unique_ptr<QStackedWidget> theStackedWidget;
+    QStackedWidget* theStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
 

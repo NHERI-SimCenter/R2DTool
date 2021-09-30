@@ -101,7 +101,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 using namespace Esri::ArcGISRuntime;
 #endif
 
-GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     mapViewSubWidget = nullptr;
 
@@ -118,21 +118,21 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     toolsGridLayout->setContentsMargins(0,0,0,0);
 
     // Adding Site Config Widget
-    this->m_siteConfig = new SiteConfig();
+    this->m_siteConfig = new SiteConfig(this);
     this->m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig);
 
-    this->m_ruptureWidget = new RuptureWidget(this);
+    this->m_ruptureWidget = new RuptureWidget();
 
-    this->m_gmpe = new GMPE();
-    this->m_gmpeWidget = new GMPEWidget(*this->m_gmpe, this);
+    this->m_gmpe = new GMPE(this);
+    this->m_gmpeWidget = new GMPEWidget(*this->m_gmpe);
 
-    this->m_intensityMeasure = new IntensityMeasure();
-    this->m_intensityMeasureWidget = new IntensityMeasureWidget(*this->m_intensityMeasure, this);
+    this->m_intensityMeasure = new IntensityMeasure(this);
+    this->m_intensityMeasureWidget = new IntensityMeasureWidget(*this->m_intensityMeasure);
 
-    spatialCorrWidget = new SpatialCorrelationWidget(this);
+    spatialCorrWidget = new SpatialCorrelationWidget();
 
-    this->m_selectionconfig = new RecordSelectionConfig();
-    this->m_selectionWidget = new RecordSelectionWidget(*this->m_selectionconfig, this);
+    this->m_selectionconfig = new RecordSelectionConfig(this);
+    this->m_selectionWidget = new RecordSelectionWidget(*this->m_selectionconfig);
 
     m_runButton = new QPushButton(tr("&Run Hazard Simulation"));
     m_settingButton = new QPushButton(tr("&Settings"));
@@ -150,8 +150,8 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
 #endif
 
     // Adding vs30 widget
-    this->m_vs30 = new Vs30();
-    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig, this);
+    this->m_vs30 = new Vs30(this);
+    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig);
 
     auto buttonsLayout = new QHBoxLayout();
     buttonsLayout->addWidget(this->m_settingButton);
@@ -171,8 +171,6 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     toolsGridLayout->setVerticalSpacing(0);
 
     toolsGridLayout->setRowStretch(7,1);
-
-    this->setLayout(toolsGridLayout);
 
     setupConnections();
 
@@ -413,13 +411,13 @@ void GMWidget::showGISWindow(void)
     if(mapViewSubWidget == nullptr)
     {
         auto mapViewWidget = theVisualizationWidget->getMapViewWidget("Select grid on map");
-        mapViewSubWidget = std::make_unique<MapViewWindow>(mapViewWidget);
+        mapViewSubWidget = new MapViewWindow(mapViewWidget);
 
         auto mapCanvas = mapViewWidget->mapCanvas();
 
-        userGrid = std::make_unique<RectangleGrid>(mapCanvas);
+        userGrid = new RectangleGrid(mapCanvas);
         // Also important to get events from QGIS
-        mapCanvas->setMapTool(userGrid.get());
+        mapCanvas->setMapTool(userGrid);
         userGrid->createGrid();
         userGrid->setSiteGridConfig(m_siteConfig);
         userGrid->setVisualizationWidget(theVisualizationWidget);

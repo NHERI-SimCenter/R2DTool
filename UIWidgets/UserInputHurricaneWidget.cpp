@@ -92,7 +92,7 @@ UserInputHurricaneWidget::UserInputHurricaneWidget(VisualizationWidget* visWidge
     progressLabel = nullptr;
     eventFile = "";
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(this->getUserInputHurricaneWidget());
     layout->addStretch();
     this->setLayout(layout);
@@ -205,18 +205,16 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
 {
     if (theStackedWidget)
-        return theStackedWidget.get();
+        return theStackedWidget;
 
-    theStackedWidget = std::make_unique<QStackedWidget>();
+    theStackedWidget = new QStackedWidget();
 
     //
     // file and dir input
     //
 
-    fileInputWidget = new QWidget(this);
+    fileInputWidget = new QWidget();
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
-    fileInputWidget->setLayout(fileLayout);
-
 
     QLabel* selectComponentsText = new QLabel("Event File Listing Wind Field");
     eventFileLineEdit = new QLineEdit();
@@ -228,9 +226,9 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     fileLayout->addWidget(eventFileLineEdit,    0,1);
     fileLayout->addWidget(browseFileButton,     0,2);
 
-    QLabel* selectFolderText = new QLabel("Folder Containing Wind Field Stations",this);
+    QLabel* selectFolderText = new QLabel("Folder Containing Wind Field Stations");
     eventDirLineEdit = new QLineEdit();
-    QPushButton *browseFolderButton = new QPushButton("Browse",this);
+    QPushButton *browseFolderButton = new QPushButton("Browse");
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseEventDirDialog()));
 
@@ -243,7 +241,7 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     // progress bar
     //
 
-    progressBarWidget = new QWidget(this);
+    progressBarWidget = new QWidget();
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
     progressBarWidget->setLayout(progressBarLayout);
 
@@ -252,11 +250,12 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     progressBar = new QProgressBar(progressBarWidget);
 
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    auto vspacer2 = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
     progressBarLayout->addItem(vspacer);
     progressBarLayout->addWidget(progressText,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressBar);
-    progressBarLayout->addItem(vspacer);
+    progressBarLayout->addItem(vspacer2);
     progressBarLayout->addStretch(1);
 
     //
@@ -268,7 +267,7 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     theStackedWidget->setCurrentWidget(fileInputWidget);
     theStackedWidget->setWindowTitle("Select folder containing hurricane track");
 
-    return theStackedWidget.get();
+    return theStackedWidget;
 }
 
 

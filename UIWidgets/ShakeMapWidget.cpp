@@ -91,6 +91,7 @@ using namespace Esri::ArcGISRuntime;
 
 ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    shakeMapStackedWidget = nullptr;
     progressBar = nullptr;
     directoryInputWidget = nullptr;
     progressBarWidget = nullptr;
@@ -107,13 +108,12 @@ ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent) 
 
 ShakeMapWidget::~ShakeMapWidget()
 {
-    qDeleteAll(shakeMapContainer);
 }
 
 
 QWidget* ShakeMapWidget::getShakeMapWidget(void)
 {
-    QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
+    QSplitter *splitter = new QSplitter(Qt::Horizontal);
 
     listWidget = new CustomListWidget("List of Imported ShakeMaps");
 
@@ -129,47 +129,40 @@ QWidget* ShakeMapWidget::getShakeMapWidget(void)
 QStackedWidget* ShakeMapWidget::getStackedWidget(void)
 {
     if (shakeMapStackedWidget)
-        return shakeMapStackedWidget.get();
+        return shakeMapStackedWidget;
 
-    shakeMapStackedWidget = std::make_unique<QStackedWidget>();
+    shakeMapStackedWidget = new QStackedWidget();
     shakeMapStackedWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    directoryInputWidget = new QWidget(this);
-    auto inputLayout = new QGridLayout(directoryInputWidget);
-
-    progressBarWidget = new QWidget(this);
-    auto progressBarLayout = new QVBoxLayout(progressBarWidget);
+    progressBarWidget = new QWidget();
+    auto progressBarLayout = new QVBoxLayout();
     progressBarWidget->setLayout(progressBarLayout);
 
-    auto progressText = new QLabel("Loading ShakeMap data. This may take a while.",progressBarWidget);
-    progressLabel =  new QLabel(" ",this);
-    progressBar = new QProgressBar(progressBarWidget);
+    auto progressText = new QLabel("Loading ShakeMap data. This may take a while.");
+    progressLabel =  new QLabel(" ");
+    progressBar = new QProgressBar();
 
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
+    auto vspacer2 = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
     progressBarLayout->addItem(vspacer);
     progressBarLayout->addWidget(progressText,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressBar);
-    progressBarLayout->addItem(vspacer);
+    progressBarLayout->addItem(vspacer2);
     progressBarLayout->addStretch(1);
 
-    shakeMapStackedWidget->addWidget(directoryInputWidget);
-    shakeMapStackedWidget->addWidget(progressBarWidget);
-
-    shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
-
-    QLabel* selectComponentsText = new QLabel("To import ShakeMap files, please download the files from the ShakeMap website and place them in the folder specified below:", this);
+    QLabel* selectComponentsText = new QLabel("To import ShakeMap files, please download the files from the ShakeMap website and place them in the folder specified below:");
     selectComponentsText->setWordWrap(true);
 
-    shakeMapDirectoryLineEdit = new QLineEdit(this);
+    shakeMapDirectoryLineEdit = new QLineEdit();
     shakeMapDirectoryLineEdit->setMinimumWidth(400);
     shakeMapDirectoryLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    QPushButton *browseFileButton = new QPushButton(this);
+    QPushButton *browseFileButton = new QPushButton();
     browseFileButton->setText(tr("Browse"));
     browseFileButton->setMaximumWidth(150);
 
-    QPushButton *loadButton = new QPushButton(this);
+    QPushButton *loadButton = new QPushButton();
     loadButton->setText(tr("Load"));
     loadButton->setMaximumWidth(150);
 
@@ -177,13 +170,17 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
 
     connect(loadButton,SIGNAL(clicked()),this,SLOT(loadShakeMapData()));
 
-    QLabel* shakeMapText1 = new QLabel("At a minimum, the folder must contain the 'grid.xml' file.", this);
+    QLabel* shakeMapText1 = new QLabel("At a minimum, the folder must contain the 'grid.xml' file.");
     shakeMapText1->setWordWrap(true);
-    QLabel* shakeMapText2 = new QLabel("Click 'Load' to load the ShakeMap. Multiple ShakeMaps can be added by selecting another folder containing a ShakeMap, and clicking 'Load' again.", this);
+    QLabel* shakeMapText2 = new QLabel("Click 'Load' to load the ShakeMap. Multiple ShakeMaps can be added by selecting another folder containing a ShakeMap, and clicking 'Load' again.");
     shakeMapText2->setWordWrap(true);
-    QLabel* shakeMapText3 = new QLabel("The list of loaded ShakeMaps will appear on the right.", this);
+    QLabel* shakeMapText3 = new QLabel("The list of loaded ShakeMaps will appear on the right.");
     shakeMapText3->setWordWrap(true);
 
+    directoryInputWidget = new QWidget();
+    auto inputLayout = new QGridLayout(directoryInputWidget);
+
+    auto vspacer3 = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
     inputLayout->addWidget(selectComponentsText,0,0,1,3);
     inputLayout->addWidget(shakeMapDirectoryLineEdit,1,0);
     inputLayout->addWidget(browseFileButton,1,1);
@@ -191,12 +188,17 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
     inputLayout->addWidget(shakeMapText1,2,0,1,3);
     inputLayout->addWidget(shakeMapText2,3,0,1,3);
     inputLayout->addWidget(shakeMapText3,4,0,1,3);
-    inputLayout->addItem(vspacer,5,0);
+    inputLayout->addItem(vspacer3,5,0);
+
+
+    shakeMapStackedWidget->addWidget(directoryInputWidget);
+    shakeMapStackedWidget->addWidget(progressBarWidget);
+    shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
 
     //    pathToShakeMapDirectory="/Users/steve/Desktop/SimCenter/Examples/ShakeMaps/SanAndreas/";
     //    this->loadShakeMapData();
 
-    return shakeMapStackedWidget.get();
+    return shakeMapStackedWidget;
 }
 
 
@@ -1078,6 +1080,7 @@ void ShakeMapWidget::clear()
     listWidget->clear();
     shakeMapDirectoryLineEdit->clear();
     pathToShakeMapDirectory = "NULL";
+    qDeleteAll(shakeMapContainer);
     shakeMapContainer.clear();
     eventsVec.clear();
     motionDir.clear();

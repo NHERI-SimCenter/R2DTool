@@ -149,6 +149,9 @@ bool ComponentTableModel::setData(const QModelIndex &index, const QVariant &valu
 
 QVariant ComponentTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    if(headerStringList.isEmpty())
+        return QVariant();
+
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
         return headerStringList[section];
 

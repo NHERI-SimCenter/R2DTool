@@ -167,7 +167,7 @@ protected:
 
 protected:
 
-    std::unique_ptr<QStackedWidget> theStackedWidget;
+    QStackedWidget* theStackedWidget;
 
     QString eventDatabaseFile;
 

@@ -322,7 +322,7 @@ void ComponentInputWidget::createComponentsBox(void)
     componentInfoText->hide();
     
     // Create the table that will show the Component information
-    componentTableWidget = new ComponentTableView(this);
+    componentTableWidget = new ComponentTableView();
     
     connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &ComponentInputWidget::handleCellChanged);
     
@@ -942,7 +942,6 @@ void ComponentInputWidget::clear(void)
     componentTableWidget->clear();
     componentTableWidget->hide();
     tableHorizontalHeadings.clear();
-
 
     emit headingValuesChanged(QStringList{"N/A"});
 }

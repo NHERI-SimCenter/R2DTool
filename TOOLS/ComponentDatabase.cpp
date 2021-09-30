@@ -71,6 +71,9 @@ void ComponentDatabase::clear(void)
 
 QgsFeature ComponentDatabase::getFeature(const qint64 id)
 {
+    if(mainLayer == nullptr)
+        return QgsFeature();
+
     auto fid = id+offset;
 
     if(FID_IS_NULL(fid))
@@ -130,6 +133,8 @@ bool ComponentDatabase::addFeaturesToSelectedLayer(const std::set<int> ids)
     for(auto&& id : ids)
         selectedFeaturesSet.insert(id+offset);
 
+    std::stable_sort(selectedFeaturesSet.begin(),selectedFeaturesSet.end());
+
     auto featIt = mainLayer->getFeatures(selectedFeaturesSet);
 
     QgsFeatureList featList;
@@ -138,7 +143,7 @@ bool ComponentDatabase::addFeaturesToSelectedLayer(const std::set<int> ids)
     QgsFeature feat;
     while (featIt.nextFeature(feat))
     {
-        auto id = feat.id();
+//        auto id = feat.id();
         featList.push_back(feat);
     }
 
@@ -217,15 +222,19 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
 
     auto numSelectedFeatures = selectedFeaturesSet.size();
 
-    if(values.size() != numSelectedFeatures)
-        return false;
+    auto numFeatSelLayer = selectedLayer->featureCount();
+    auto allFeatIds = selectedLayer->allFeatureIds();
 
-    auto featIt = selectedLayer->getFeatures(selectedFeaturesSet);
+
+    if(values.size() != numSelectedFeatures || numSelectedFeatures != numFeatSelLayer)
+        return false;
 
     auto field = selectedLayer->dataProvider()->fieldNameIndex(fieldName);
 
     if(field == -1)
         return false;
+
+    auto featIt = mainLayer->getFeatures(selectedFeaturesSet);
 
     QgsFeatureList featList;
     featList.reserve(values.size());
@@ -234,6 +243,8 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
     QgsFeature feat;
     while (featIt.nextFeature(feat))
     {
+        auto id = feat.id();
+
         auto attrb = values[count];
 
         feat.setAttribute(field,attrb);

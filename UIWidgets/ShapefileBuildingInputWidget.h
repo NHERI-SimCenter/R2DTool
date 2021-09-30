@@ -55,8 +55,6 @@ public:
     bool outputAppDataToJSON(QJsonObject &jsonObject) override;
     bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
 
-    void clear(void) override;
-
 private slots:
     void loadComponentData(void) override;
 

@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 ComponentTableView::ComponentTableView(QWidget *parent) : QTableView(parent)
 {
-    tableModel = new ComponentTableModel(this);
+    tableModel = new ComponentTableModel();
     this->setModel(tableModel);
 
     this->hide();

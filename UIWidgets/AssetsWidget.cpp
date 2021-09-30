@@ -87,7 +87,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     QGISBuildingInputWidget *csvBuildingInventory = new QGISBuildingInputWidget(this, visualizationWidget, "Buildings","CSV_to_BIM");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
-    ShapefileBuildingInputWidget *shapefileBuildingInventory = new ShapefileBuildingInputWidget(this,visualizationWidget,"Buildings","CSV_to_BIM");
+    ShapefileBuildingInputWidget *shapefileBuildingInventory = new ShapefileBuildingInputWidget(this,visualizationWidget,"Buildings","ShapeFile_to_BIM");
     buildingWidget->addComponent(QString("Shape File to BIM"), QString("CSV_to_BIM"), shapefileBuildingInventory);
 #endif
 

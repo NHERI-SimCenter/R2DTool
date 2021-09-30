@@ -198,15 +198,15 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
 {
     if (theStackedWidget)
-        return theStackedWidget.get();
+        return theStackedWidget;
 
-    theStackedWidget = std::make_unique<QStackedWidget>();
+    theStackedWidget = new QStackedWidget();
 
     //
     // file and dir input
     //
 
-    fileInputWidget = new QWidget(this);
+    fileInputWidget = new QWidget();
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
     fileInputWidget->setLayout(fileLayout);
 
@@ -221,9 +221,9 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     fileLayout->addWidget(eventFileLineEdit,    0,1);
     fileLayout->addWidget(browseFileButton,     0,2);
 
-    QLabel* selectFolderText = new QLabel("Folder Containing Motions",this);
+    QLabel* selectFolderText = new QLabel("Folder Containing Motions");
     motionDirLineEdit = new QLineEdit();
-    QPushButton *browseFolderButton = new QPushButton("Browse",this);
+    QPushButton *browseFolderButton = new QPushButton("Browse");
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
 
@@ -236,20 +236,21 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     // progress bar
     //
 
-    progressBarWidget = new QWidget(this);
+    progressBarWidget = new QWidget();
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
     progressBarWidget->setLayout(progressBarLayout);
 
-    auto progressText = new QLabel("Loading user ground motion data. This may take a while.",progressBarWidget);
-    progressLabel =  new QLabel(" ",this);
-    progressBar = new QProgressBar(progressBarWidget);
+    auto progressText = new QLabel("Loading user ground motion data. This may take a while.");
+    progressLabel =  new QLabel(" ");
+    progressBar = new QProgressBar();
 
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    auto vspacer2 = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
     progressBarLayout->addItem(vspacer);
     progressBarLayout->addWidget(progressText,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressBar);
-    progressBarLayout->addItem(vspacer);
+    progressBarLayout->addItem(vspacer2);
     progressBarLayout->addStretch(1);
 
     //
@@ -263,7 +264,7 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
 
     theStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
 
-    return theStackedWidget.get();
+    return theStackedWidget;
 }
 
 

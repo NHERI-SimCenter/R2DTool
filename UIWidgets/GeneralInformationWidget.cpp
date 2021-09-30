@@ -76,7 +76,6 @@ GeneralInformationWidget::GeneralInformationWidget(QWidget *parent)
     mainLayout->addLayout(infoLayout);
     mainLayout->addStretch();
 
-    this->setLayout(mainLayout);
     this->setMaximumWidth(750);
 }
 
@@ -220,8 +219,8 @@ QString GeneralInformationWidget::getAnalysisName(void)
 QGridLayout* GeneralInformationWidget::getInfoLayout(void)
 {
     // Analysis information
-    nameEdit = new QLineEdit(this);
-    QGroupBox* analysisGroupBox = new QGroupBox("Analysis Name", this);
+    nameEdit = new QLineEdit();
+    QGroupBox* analysisGroupBox = new QGroupBox("Analysis Name");
     analysisGroupBox->setContentsMargins(0,5,0,0);
     QFormLayout* analysisLayout = new QFormLayout(analysisGroupBox);
     analysisLayout->addRow(tr("Name"), nameEdit);
@@ -230,14 +229,14 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     analysisLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
     nameEdit->setText("R2D Analysis");
 
-    unitsForceCombo = new QComboBox(this);
+    unitsForceCombo = new QComboBox();
     unitsForceCombo->addItem("Newtons", ForceUnit::N);
     unitsForceCombo->addItem("Kilonewtons", ForceUnit::kN);
     unitsForceCombo->addItem("Pounds", ForceUnit::lb);
     unitsForceCombo->addItem("Kips", ForceUnit::kips);
     unitsForceCombo->setCurrentIndex(3);
 
-    unitsLengthCombo = new QComboBox(this);
+    unitsLengthCombo = new QComboBox();
     unitsLengthCombo->addItem("Meters", LengthUnit::m);
     unitsLengthCombo->addItem("Centimeters", LengthUnit::cm);
     unitsLengthCombo->addItem("Millimeters", LengthUnit::mm);
@@ -245,12 +244,12 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     unitsLengthCombo->addItem("Feet", LengthUnit::ft);
     unitsLengthCombo->setCurrentIndex(3);
 
-    unitsSpeedCombo = new QComboBox(this);
+    unitsSpeedCombo = new QComboBox();
     unitsSpeedCombo->addItem("Miles per hour", SpeedUnit::mph);
     unitsSpeedCombo->addItem("Kilometers per hour", SpeedUnit::kph);
     unitsSpeedCombo->setCurrentIndex(0);
 
-    unitsTemperatureCombo = new QComboBox(this);
+    unitsTemperatureCombo = new QComboBox();
     unitsTemperatureCombo->addItem("Celsius", TemperatureUnit::C);
     unitsTemperatureCombo->addItem("Fahrenheit", TemperatureUnit::F);
     unitsTemperatureCombo->addItem("Kelvin", TemperatureUnit::K);
@@ -261,7 +260,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     unitsTimeCombo->addItem("Hours", TimeUnit::hr);
 
     // Units
-    QGroupBox* unitsGroupBox = new QGroupBox("Units", this);
+    QGroupBox* unitsGroupBox = new QGroupBox("Units");
     unitsGroupBox->setContentsMargins(0,5,0,0);
     QFormLayout* unitsFormLayout = new QFormLayout(unitsGroupBox);
     unitsFormLayout->addRow(tr("Force"), unitsForceCombo);
@@ -274,12 +273,12 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     unitsFormLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
 
     // Assets
-    buildingsCheckBox = new QCheckBox("Buildings",this);
-    soilCheckBox = new QCheckBox("Soil",this);
-    gasCheckBox = new QCheckBox("Gas Network",this);
-    waterCheckBox = new QCheckBox("Water Network",this);
-    sewerCheckBox = new QCheckBox("Waste Network",this);
-    transportationCheckBox = new QCheckBox("Transportation Network",this);
+    buildingsCheckBox = new QCheckBox("Buildings");
+    soilCheckBox = new QCheckBox("Soil");
+    gasCheckBox = new QCheckBox("Gas Network");
+    waterCheckBox = new QCheckBox("Water Network");
+    sewerCheckBox = new QCheckBox("Waste Network");
+    transportationCheckBox = new QCheckBox("Transportation Network");
 
     soilCheckBox->setCheckable(false);
     //    gasCheckBox->setCheckable(false);
@@ -313,7 +312,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     });
 
 
-    QGroupBox* assetGroupBox = new QGroupBox("Asset Layers", this);
+    QGroupBox* assetGroupBox = new QGroupBox("Asset Layers");
     assetGroupBox->setContentsMargins(0,5,0,0);
     QVBoxLayout* assetLayout = new QVBoxLayout(assetGroupBox);
     assetLayout->addWidget(buildingsCheckBox);
@@ -324,17 +323,17 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     assetLayout->addWidget(transportationCheckBox);
     
     // Outputs
-    EDPCheckBox = new QCheckBox("Engineering demand parameters (EDP)",this);
-    DMCheckBox = new QCheckBox("Damage measures (DM)",this);
-    DVCheckBox = new QCheckBox("Decision variables (DV)",this);
-    realizationCheckBox = new QCheckBox("Output EDP, DM, and DV every sampling realization",this);
+    EDPCheckBox = new QCheckBox("Engineering demand parameters (EDP)");
+    DMCheckBox = new QCheckBox("Damage measures (DM)");
+    DVCheckBox = new QCheckBox("Decision variables (DV)");
+    realizationCheckBox = new QCheckBox("Output EDP, DM, and DV every sampling realization");
 
     EDPCheckBox->setChecked(true);
     DMCheckBox->setChecked(true);
     DVCheckBox->setChecked(true);
     realizationCheckBox->setChecked(false);
 
-    QGroupBox* outputGroupBox = new QGroupBox("Output Settings", this);
+    QGroupBox* outputGroupBox = new QGroupBox("Output Settings");
     outputGroupBox->setContentsMargins(0,5,0,0);
     QVBoxLayout* outputLayout = new QVBoxLayout(outputGroupBox);
     outputLayout->addWidget(EDPCheckBox);

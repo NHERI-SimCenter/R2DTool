@@ -11,7 +11,7 @@ SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisu
 {
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     setWindowTitle(name);
-    thisMapCanvas = new QgsMapCanvas(this);
+    thisMapCanvas = new QgsMapCanvas();
 
     mainCanvas = theVisualizationWidget->getMainCanvas();
 
@@ -84,7 +84,7 @@ void SimCenterMapcanvasWidget::setCurrentLayer(QgsVectorLayer* layer)
         disconnect(currentLayer,&QgsVectorLayer::selectionChanged,this, &SimCenterMapcanvasWidget::selectionChanged);
 
     currentLayer = layer;
-    thisMapCanvas->setCurrentLayer(layer);
+    thisMapCanvas->setCurrentLayer(currentLayer);
 
     connect(currentLayer,&QgsVectorLayer::selectionChanged,this, &SimCenterMapcanvasWidget::selectionChanged);
 }

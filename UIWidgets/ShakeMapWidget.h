@@ -189,7 +189,7 @@ signals:
 
 private:
 
-    std::unique_ptr<QStackedWidget> shakeMapStackedWidget;
+    QStackedWidget* shakeMapStackedWidget;
 
     QStringList shakeMapList;
 
