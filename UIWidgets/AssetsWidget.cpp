@@ -83,7 +83,6 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 #endif
 
-
 #ifdef Q_GIS
     QGISBuildingInputWidget *csvBuildingInventory = new QGISBuildingInputWidget(this, visualizationWidget, "Buildings","CSV_to_BIM");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
@@ -101,7 +100,6 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     QGISGasPipelineInputWidget *csvPipelineInventory = new QGISGasPipelineInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
     pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
 #endif
-
 
     // QString pathToPipelineInfoFile = "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
     // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);

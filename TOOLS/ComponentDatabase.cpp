@@ -95,7 +95,6 @@ QgsVectorLayer *ComponentDatabase::getMainLayer() const
 void ComponentDatabase::startEditing(void)
 {
     selectedLayer->startEditing();
-    mainLayer->startEditing();
 }
 
 
@@ -138,7 +137,10 @@ bool ComponentDatabase::addFeaturesToSelectedLayer(const std::set<int> ids)
 
     QgsFeature feat;
     while (featIt.nextFeature(feat))
+    {
+        auto id = feat.id();
         featList.push_back(feat);
+    }
 
     auto res = selectedLayer->dataProvider()->addFeatures(featList, QgsFeatureSink::FastInsert);
 
@@ -235,6 +237,7 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
         auto attrb = values[count];
 
         feat.setAttribute(field,attrb);
+
         featList.push_back(feat);
         ++count;
     }
@@ -242,7 +245,12 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
     if(values.size() != featList.size())
         return false;
 
-    auto res = selectedLayer->dataProvider()->addFeatures(featList);
+    auto res =selectedLayer->dataProvider()->truncate();
+
+    if(!res)
+        return false;
+
+    res = selectedLayer->dataProvider()->addFeatures(featList);
 
     selectedLayer->updateExtents();
 

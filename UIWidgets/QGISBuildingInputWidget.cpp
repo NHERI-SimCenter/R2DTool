@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "QGISBuildingInputWidget.h"
 #include "QGISVisualizationWidget.h"
-#include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
 
 #include <qgsfield.h>
@@ -48,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
-    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+
 }
 
 
@@ -99,7 +98,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
     auto res = pr->addAttributes(attribFields);
 
     if(!res)
-        this->errorMessage("Error adding attributes to the layer");
+        this->errorMessage("Error adding attributes to the layer" + mainLayer->name());
 
     mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
@@ -202,6 +201,10 @@ int QGISBuildingInputWidget::loadComponentVisualization()
             this->errorMessage("Error adding the feature to the layer");
             return -1;
         }
+
+//        auto id = feature.id();
+
+//        qDebug()<<id;
     }
 
     mainLayer->updateExtents();
@@ -226,6 +229,8 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         fillSymbol->setColor(Qt::gray);
         theVisualizationWidget->createSimpleRenderer(fillSymbol,mainLayer);
     }
+
+    auto numFeat = mainLayer->featureCount();
 
     theVisualizationWidget->zoomToLayer(mainLayer);
 
@@ -270,7 +275,6 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
 void QGISBuildingInputWidget::clear()
 {    
-
     ComponentInputWidget::clear();
 }
 

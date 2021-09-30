@@ -93,8 +93,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endif
 
 // Test to remove
-//#include <chrono>
-//using namespace std::chrono;
+#include <chrono>
+using namespace std::chrono;
 
 using namespace QtCharts;
 
@@ -575,7 +575,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     }
 
     // Test to remove
-    // auto start = high_resolution_clock::now();
+     auto start = high_resolution_clock::now();
 
     // Starting editing
     theBuildingDB->startEditing();
@@ -591,9 +591,9 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     theBuildingDB->commitChanges();
 
     // Test to remove
-    //    auto stop = high_resolution_clock::now();
-    //    auto duration = duration_cast<milliseconds>(stop - start);
-    //    PythonProgressDialog::getInstance()->appendText("Done processing results "+QString::number(duration.count()));
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<milliseconds>(stop - start);
+        PythonProgressDialog::getInstance()->appendText("Done processing results "+QString::number(duration.count()));
 
 
     QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);

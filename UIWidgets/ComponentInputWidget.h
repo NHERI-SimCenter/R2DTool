@@ -119,8 +119,6 @@ public:
     void setLabel3(const QString &value);
     void setGroupBoxText(const QString &value);
 
-    void loadFileFromPath(QString& path);
-
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &rvObject);
@@ -143,9 +141,9 @@ public slots:
     void handleComponentSelection(void);
     void handleCellChanged(const int row, const int col);
 
-private slots:
+protected slots:
     void selectComponents(void);
-    void loadComponentData(void);
+    virtual void loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
 
@@ -182,8 +180,7 @@ protected:
 
     int offset;
 
-private:
-    QString pathToComponentInfoFile;
+    QString pathToComponentInputFile;
     QLineEdit* componentFileLineEdit;
     QLabel* componentInfoText;
     QGroupBox* componentGroupBox;

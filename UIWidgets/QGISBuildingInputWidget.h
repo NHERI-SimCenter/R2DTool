@@ -51,11 +51,6 @@ public:
 
     int loadComponentVisualization();
 
-    bool removeFeaturesFromSelectedLayer(QgsFeatureIds& features);
-    bool clearSelectedLayer(void);
-
-    QgsVectorLayer* getSelectedFeatureLayer(void);
-
     void clear();
 
 private:

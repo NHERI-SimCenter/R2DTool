@@ -38,29 +38,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
-#include "ComponentDatabase.h"
+#include "ComponentInputWidget.h"
 
-#include <set>
-
-#include <QString>
-#include <QObject>
-
-class AssetInputDelegate;
-class ComponentTableView;
-class VisualizationWidget;
-
-class QgsFeature;
-class QGISVisualizationWidget;
 class QgsVectorLayer;
-class QgsGeometry;
 
-class QGroupBox;
-class QLineEdit;
-class QTableWidget;
-class QLabel;
-
-class ShapefileBuildingInputWidget : public  SimCenterAppWidget
+class ShapefileBuildingInputWidget : public  ComponentInputWidget
 {
     Q_OBJECT
 
@@ -68,101 +50,19 @@ public:
     explicit ShapefileBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
     virtual ~ShapefileBuildingInputWidget();
 
-    virtual QgsFeature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom);
-    virtual int removeFeatureFromSelectedLayer(QgsFeature* feat);
-    virtual QgsVectorLayer* getSelectedFeatureLayer(void);
+    int loadComponentVisualization() override;
 
-    ComponentTableView *getTableWidget() const;
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
 
-    // Set the filter string and select the components
-    void setFilterString(const QString& filter);
-    QString getFilterString(void);
-
-    void insertSelectedComponent(const int ComponentID);
-
-    int numberComponentsSelected(void);
-
-    void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
-    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
-
-    // Set custom labels in widget
-    void setComponentType(const QString &value);
-    void setLabel1(const QString &value);
-    void setLabel2(const QString &value);
-    void setLabel3(const QString &value);
-    void setGroupBoxText(const QString &value);
-
-    void loadFileFromPath(QString& path);
-
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
-    bool copyFiles(QString &destName);
-
-    QString getPathToComponentFile(void) const;
-
-    virtual void clear(void);
-
-    QStringList getTableHorizontalHeadings();
-
-    // Selects all of the components for analysis
-    void selectAllComponents(void);
-
-signals:
-    void headingValuesChanged(QStringList);
-
-public slots:
-    void handleComponentSelection(void);
-    void handleCellChanged(const int row, const int col);
+    void clear(void) override;
 
 private slots:
-    void selectComponents(void);
-    void loadComponentData(void);
-    void chooseComponentInfoFileDialog(void);
-    void clearComponentSelection(void);
-    void clearLayerSelectedForAnalysis(void);
-
-protected:
-
-    QGISVisualizationWidget* theVisualizationWidget;
-
-    ComponentTableView* componentTableWidget;
-
-    ComponentDatabase* theComponentDb;
-
-    // Returns a vector of sorted items that are unique
-    template <typename T>
-    void uniqueVec(std::vector<T>& vec)
-    {
-        std::sort(vec.begin(), vec.end());
-
-        // Using std::unique to get the unique items in the vector
-        auto ip = std::unique(vec.begin(), vec.end());
-
-        // Resizing the vector so as to remove the terms that became undefined after the unique operation
-        vec.resize(std::distance(vec.begin(), ip));
-    }
+    void loadComponentData(void) override;
 
 private:
-    QString pathToComponentInputFile;
-    QLineEdit* componentFileLineEdit;
-    AssetInputDelegate* selectComponentsLineEdit;
-    QLabel* componentInfoText;
-    QGroupBox* componentGroupBox;
 
-    QString appType;
-    QString componentType;
-    QString label1;
-    QString label2;
-    QString label3;
-
-    QStringList tableHorizontalHeadings;
-
-    void createComponentsBox(void);
-
-    // Map to store the selected features according to their UID
-    QMap<QgsFeatureId, QgsFeature> selectedFeaturesForAnalysis;
+    QgsVectorLayer* shapeFileLayer = nullptr;
 
 };
 

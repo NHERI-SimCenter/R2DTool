@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
+#include "ComponentDatabaseManager.h"
 
 // Test to remove
 //#include <chrono>
@@ -66,9 +67,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
-#include <qgsfield.h>
-#include <qgsfields.h>
-#include <qgsvectorlayer.h>
 #endif
 
 // Std library headers
@@ -92,6 +90,9 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
         return;
     }
 #endif
+
+    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+
     offset = 0;
 
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
@@ -105,8 +106,11 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
     
     label3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
     
-    pathToComponentInfoFile = "NULL";
+    pathToComponentInputFile = "NULL";
     componentGroupBox = nullptr;
+    componentFileLineEdit = nullptr;
+    componentInfoText= nullptr;
+
     this->createComponentsBox();
 }
 
@@ -120,29 +124,29 @@ ComponentInputWidget::~ComponentInputWidget()
 void ComponentInputWidget::loadComponentData(void)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
-    if(pathToComponentInfoFile.compare("NULL") == 0)
+    if(pathToComponentInputFile.compare("NULL") == 0)
         this->chooseComponentInfoFileDialog();
     
-    if(pathToComponentInfoFile.compare("NULL") == 0)
+    if(pathToComponentInputFile.compare("NULL") == 0)
         return;
     
     // Check if the directory exists
-    QFile file(pathToComponentInfoFile);
+    QFile file(pathToComponentInputFile);
     
     if (!file.exists())
     {
-        auto relPathToComponentFile = QCoreApplication::applicationDirPath() + QDir::separator() + pathToComponentInfoFile;
+        auto relPathToComponentFile = QCoreApplication::applicationDirPath() + QDir::separator() + pathToComponentInputFile;
         
         if (!QFile(relPathToComponentFile).exists())
         {
-            QString errMsg = "Cannot find the file: "+ pathToComponentInfoFile + "\n" +"Check your directory and try again.";
+            QString errMsg = "Cannot find the file: "+ pathToComponentInputFile + "\n" +"Check your directory and try again.";
             this->errorMessage(errMsg);
             return;
         }
         else
         {
-            pathToComponentInfoFile = relPathToComponentFile;
-            componentFileLineEdit->setText(pathToComponentInfoFile);
+            pathToComponentInputFile = relPathToComponentFile;
+            componentFileLineEdit->setText(pathToComponentInputFile);
         }
     }
     
@@ -152,7 +156,7 @@ void ComponentInputWidget::loadComponentData(void)
     CSVReaderWriter csvTool;
     
     QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(pathToComponentInfoFile,err);
+    QVector<QStringList> data = csvTool.parseCSVFile(pathToComponentInputFile,err);
     
     if(!err.isEmpty())
     {
@@ -206,6 +210,22 @@ void ComponentInputWidget::loadComponentData(void)
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     
     this->loadComponentVisualization();
+
+    // Get the ID of the first and last component
+    bool OK;
+    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return;
+    }
+
+
+    offset = 1-firstID;
+
+    theComponentDb->setOffset(offset);
     
     // Test to remove
     //    auto stop = high_resolution_clock::now();
@@ -221,17 +241,17 @@ void ComponentInputWidget::loadComponentData(void)
 
 void ComponentInputWidget::chooseComponentInfoFileDialog(void)
 {
-    pathToComponentInfoFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
+    pathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
     
     // Return if the user cancels
-    if(pathToComponentInfoFile.isEmpty())
+    if(pathToComponentInputFile.isEmpty())
     {
-        pathToComponentInfoFile = "NULL";
+        pathToComponentInputFile = "NULL";
         return;
     }
     
     // Set file name & entry in qLine edit
-    componentFileLineEdit->setText(pathToComponentInfoFile);
+    componentFileLineEdit->setText(pathToComponentInputFile);
     
     this->loadComponentData();
     
@@ -597,9 +617,6 @@ void ComponentInputWidget::handleComponentSelection(void)
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     this->statusMessage(msg);
 
-    offset = 1-firstID;
-
-    theComponentDb->setOffset(offset);
 
     theComponentDb->startEditing();
 
@@ -682,16 +699,7 @@ int ComponentInputWidget::numberComponentsSelected(void)
 
 QString ComponentInputWidget::getPathToComponentFile(void) const
 {
-    return pathToComponentInfoFile;
-}
-
-
-void ComponentInputWidget::loadFileFromPath(QString& path)
-{
-    this->clear();
-    pathToComponentInfoFile = path;
-    componentFileLineEdit->setText(path);
-    this->loadComponentData();
+    return pathToComponentInputFile;
 }
 
 
@@ -764,19 +772,19 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             else
                 pathToFile=QDir::currentPath();
 
-            pathToComponentInfoFile = pathToFile + QDir::separator() + fileName;
+            pathToComponentInputFile = pathToFile + QDir::separator() + fileName;
 
-            if (fileInfo.exists(pathToComponentInfoFile)) {
-                componentFileLineEdit->setText(pathToComponentInfoFile);
+            if (fileInfo.exists(pathToComponentInputFile)) {
+                componentFileLineEdit->setText(pathToComponentInputFile);
                 foundFile = true;
                 this->loadComponentData();
 
             } else {
                 // adam .. adam .. adam
-                pathToComponentInfoFile = pathToFile + QDir::separator()
+                pathToComponentInputFile = pathToFile + QDir::separator()
                         + "input_data" + QDir::separator() + fileName;
-                if (fileInfo.exists(pathToComponentInfoFile)) {
-                    componentFileLineEdit->setText(pathToComponentInfoFile);
+                if (fileInfo.exists(pathToComponentInputFile)) {
+                    componentFileLineEdit->setText(pathToComponentInputFile);
                     foundFile = true;
                     this->loadComponentData();
                 }
@@ -928,7 +936,7 @@ bool ComponentInputWidget::copyFiles(QString &destName)
 void ComponentInputWidget::clear(void)
 {
     theComponentDb->clear();
-    pathToComponentInfoFile.clear();
+    pathToComponentInputFile.clear();
     componentFileLineEdit->clear();
     selectComponentsLineEdit->clear();
     componentTableWidget->clear();
