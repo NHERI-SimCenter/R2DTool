@@ -99,7 +99,7 @@ private:
     bool addFeatureToSelectedLayer(QgsFeature& feature);
 
     // Selected feature set
-    QgsFeatureIds selectedFeaturesSet;
+    QSet<long long> selectedFeaturesSet;
 
     // Set of layers that this component may have features in
     QgsVectorLayer* mainLayer = nullptr;

@@ -79,17 +79,37 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         featFields.append(QgsField(fieldText.toString(),fieldText.type()));
     }
 
+    auto headers = this->getTableHorizontalHeadings();
+
+    // First check if a footprint was provided
+    auto indexFootprint = headers.indexOf("Footprint");
+    auto indexLatitude = headers.indexOf("Latitude");
+    auto indexLongitude = headers.indexOf("Longitude");
+
+    if(indexLongitude == -1 || indexLatitude == -1)
+    {
+        this->errorMessage("Could not find latitude and longitude in the header columns");
+        return -1;
+    }
+
+    // Get the number of rows
+    auto nRows = componentTableWidget->rowCount();
+
+    QString layerType;
+
+    if(indexFootprint != -1)
+        layerType = "polygon";
+    else
+        layerType = "point";
 
     // Create the buildings layer
-    auto mainLayer = theVisualizationWidget->addVectorLayer("polygon","All Buildings");
+    auto mainLayer = theVisualizationWidget->addVectorLayer(layerType,"All Buildings");
 
     if(mainLayer == nullptr)
     {
         this->errorMessage("Error adding a vector layer");
         return -1;
     }
-
-    auto nRows = componentTableWidget->rowCount();
 
     auto pr = mainLayer->dataProvider();
 
@@ -103,19 +123,6 @@ int QGISBuildingInputWidget::loadComponentVisualization()
     mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
     theComponentDb->setMainLayer(mainLayer);
-
-    auto headers = this->getTableHorizontalHeadings();
-
-    // First check if a footprint was provided
-    auto indexFootprint = headers.indexOf("Footprint");
-    auto indexLatitude = headers.indexOf("Latitude");
-    auto indexLongitude = headers.indexOf("Longitude");
-
-    if(indexLongitude == -1 || indexLatitude == -1)
-    {
-        this->errorMessage("Could not find latitude and longitude in the header columns");
-        return -1;
-    }
 
     auto numAtrb = attribFields.size();
 
@@ -202,35 +209,35 @@ int QGISBuildingInputWidget::loadComponentVisualization()
             return -1;
         }
 
-//        auto id = feature.id();
+        //        auto id = feature.id();
 
-//        qDebug()<<id;
+        //        qDebug()<<id;
     }
 
+    mainLayer->commitChanges(true);
     mainLayer->updateExtents();
+
+    QgsSymbol* markerSymbol = nullptr;
+
+    if(indexFootprint != -1)
+        markerSymbol = new QgsFillSymbol();
+    else
+        markerSymbol = new QgsMarkerSymbol();
 
     // Try to categorize the layer by occupancy class
     auto attrName = "OccupancyClass";
     auto indexOcc = headers.indexOf(attrName);
     if(indexOcc != -1)
     {
-        QgsSymbol* markerSymbol = nullptr;
-
-        if(indexFootprint != -1)
-            markerSymbol = new QgsFillSymbol();
-        else
-            markerSymbol = new QgsMarkerSymbol();
-
         theVisualizationWidget->createCategoryRenderer(attrName, mainLayer, markerSymbol);
     }
     else // Else default to a single color fill for all features
     {
-        QgsFillSymbol* fillSymbol = new QgsFillSymbol();
-        fillSymbol->setColor(Qt::gray);
-        theVisualizationWidget->createSimpleRenderer(fillSymbol,mainLayer);
+        markerSymbol->setColor(Qt::gray);
+        theVisualizationWidget->createSimpleRenderer(markerSymbol,mainLayer);
     }
 
-    auto numFeat = mainLayer->featureCount();
+//    auto numFeat = mainLayer->featureCount();
 
     theVisualizationWidget->zoomToLayer(mainLayer);
 
@@ -239,7 +246,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
     // Create the selected building layer
-    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("polygon","Selected Buildings");
+    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(layerType,"Selected Buildings");
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -247,9 +254,15 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         return -1;
     }
 
-    QgsFillSymbol* fillSymbol = new QgsFillSymbol();
-    fillSymbol->setColor(Qt::yellow);
-    theVisualizationWidget->createSimpleRenderer(fillSymbol,selectedFeaturesLayer);
+    QgsSymbol* selectedLayerMarkerSymbol = nullptr;
+
+    if(indexFootprint != -1)
+        selectedLayerMarkerSymbol = new QgsFillSymbol();
+    else
+        selectedLayerMarkerSymbol = new QgsMarkerSymbol();
+
+    selectedLayerMarkerSymbol->setColor(Qt::yellow);
+    theVisualizationWidget->createSimpleRenderer(selectedLayerMarkerSymbol,selectedFeaturesLayer);
 
     auto pr2 = selectedFeaturesLayer->dataProvider();
 

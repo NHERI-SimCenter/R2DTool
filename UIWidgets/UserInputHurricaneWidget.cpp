@@ -625,7 +625,7 @@ void UserInputHurricaneWidget::loadUserWFData(void)
     }
 
 
-    auto vectorLayer = QGsVisWidget->addVectorLayer("Point", "Ground Motion Grid");
+    auto vectorLayer = QGsVisWidget->addVectorLayer("Point", "Wind Field Grid");
 
     if(vectorLayer == nullptr)
     {

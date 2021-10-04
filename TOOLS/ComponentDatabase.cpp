@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "Utils/PythonProgressDialog.h"
 
 #include <qgsfeature.h>
+#include <qgsfeaturerequest.h>
 
 ComponentDatabase::ComponentDatabase()
 {
@@ -133,8 +134,6 @@ bool ComponentDatabase::addFeaturesToSelectedLayer(const std::set<int> ids)
     for(auto&& id : ids)
         selectedFeaturesSet.insert(id+offset);
 
-    std::stable_sort(selectedFeaturesSet.begin(),selectedFeaturesSet.end());
-
     auto featIt = mainLayer->getFeatures(selectedFeaturesSet);
 
     QgsFeatureList featList;
@@ -143,7 +142,7 @@ bool ComponentDatabase::addFeaturesToSelectedLayer(const std::set<int> ids)
     QgsFeature feat;
     while (featIt.nextFeature(feat))
     {
-//        auto id = feat.id();
+        //        auto id = feat.id();
         featList.push_back(feat);
     }
 
@@ -223,8 +222,6 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
     auto numSelectedFeatures = selectedFeaturesSet.size();
 
     auto numFeatSelLayer = selectedLayer->featureCount();
-    auto allFeatIds = selectedLayer->allFeatureIds();
-
 
     if(values.size() != numSelectedFeatures || numSelectedFeatures != numFeatSelLayer)
         return false;
@@ -234,7 +231,15 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
     if(field == -1)
         return false;
 
-    auto featIt = mainLayer->getFeatures(selectedFeaturesSet);
+    QgsFeatureRequest featRequest (selectedFeaturesSet);
+
+    // All this just to get the feature request to return everything with ascending ids
+    QgsFeatureRequest::OrderByClause orderByClause(QString("id"),true);
+    QList<QgsFeatureRequest::OrderByClause> obcList = {orderByClause};
+    QgsFeatureRequest::OrderBy orderBy(obcList);
+    featRequest.setOrderBy(orderBy);
+
+    auto featIt = mainLayer->getFeatures(featRequest);
 
     QgsFeatureList featList;
     featList.reserve(values.size());
@@ -244,7 +249,6 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
     while (featIt.nextFeature(feat))
     {
         auto id = feat.id();
-
         auto attrb = values[count];
 
         feat.setAttribute(field,attrb);
@@ -279,10 +283,10 @@ bool ComponentDatabase::updateComponentAttribute(const qint64 id, const QString&
     if(FID_IS_NULL(fid) || field == -1)
         return false;
 
-        auto res = mainLayer->changeAttributeValue(fid,field,value);
+    auto res = mainLayer->changeAttributeValue(fid,field,value);
 
-        if(!res)
-            return res;
+    if(!res)
+        return res;
 
     // Update the selected layer if there is one...
     if(selectedLayer != nullptr)
