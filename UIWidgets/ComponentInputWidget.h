@@ -182,14 +182,14 @@ protected:
 
     QString pathToComponentInputFile;
     QLineEdit* componentFileLineEdit;
-    QLabel* componentInfoText;
     QGroupBox* componentGroupBox;
+
+    QLabel* label1 = nullptr;
+    QLabel* label2 = nullptr;
+    QLabel* label3 = nullptr;
 
     QString appType;
     QString componentType;
-    QString label1;
-    QString label2;
-    QString label3;
 
     QStringList tableHorizontalHeadings;
 

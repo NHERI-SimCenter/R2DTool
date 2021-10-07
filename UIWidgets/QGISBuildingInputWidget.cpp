@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISBuildingInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "ComponentTableView.h"
+#include "ComponentDatabaseManager.h"
 
 #include <qgsfield.h>
 #include <qgsfillsymbol.h>
@@ -47,7 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
-
+    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 }
 
 

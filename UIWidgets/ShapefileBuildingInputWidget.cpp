@@ -65,14 +65,19 @@ ShapefileBuildingInputWidget::ShapefileBuildingInputWidget(QWidget *parent, Visu
 
     this->setContentsMargins(0,0,0,0);
 
-    label1 = "Load buildings from a Shapefile (.shp)";
-    label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
-    "Define a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+    QString txt1 = "Load buildings from a Shapefile (.shp)";
+    this->setLabel1(txt1);
 
-    label3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
+    QString txt2 = "Enter the IDs of one or more buildings to analyze."
+    "Define a range of buildings with a dash and separate multiple buildings with a comma.";
+    this->setLabel2(txt2);
 
+    QString txt3 = "Building Information";
+    this->setLabel3(txt3);
 
-//    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonBuildings/galveston-bldg-v7.shp";
+    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+
+//    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonGIS/GalvestonBuildings/galveston-bldg-v7.shp";
 //    componentFileLineEdit->setText(pathToComponentInputFile);
 //    this->loadComponentData();
 }
@@ -270,7 +275,7 @@ void ShapefileBuildingInputWidget::loadComponentData(void)
     componentTableWidget->clear();
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
 
-    componentInfoText->show();
+    label3->show();
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 

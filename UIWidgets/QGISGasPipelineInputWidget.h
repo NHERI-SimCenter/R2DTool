@@ -51,20 +51,11 @@ public:
 
     int loadComponentVisualization();
 
-    QgsFeature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, QgsGeometry& geom);
-    int removeFeaturesFromSelectedLayer(QgsFeature* feat);
-    QgsVectorLayer* getSelectedFeatureLayer(void);
-
     void clear();
 
-    QgsVectorLayer *getSelectedFeaturesLayer() const;
 
 private:
 
-//    Esri::ArcGISRuntime::Renderer* createPipelineRenderer(void);
-//    Esri::ArcGISRuntime::Renderer* createSelectedPipelineRenderer(double outlineWidth = 0.0);
-
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
 };
 
 #endif // QGISGasPipelineInputWidget_H

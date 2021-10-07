@@ -42,7 +42,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
-#include "ComponentDatabaseManager.h"
 
 // Test to remove
 //#include <chrono>
@@ -91,27 +90,29 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
     }
 #endif
 
-    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
-
     offset = 0;
 
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
     this->setContentsMargins(0,0,0,0);
-    
-    label1 = "Load information from a CSV file";
-    label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
-    "Define a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
-    
-    label3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
-    
+
     pathToComponentInputFile = "NULL";
     componentGroupBox = nullptr;
     componentFileLineEdit = nullptr;
-    componentInfoText= nullptr;
 
     this->createComponentsBox();
+
+    auto txt1 = "Load information from a CSV file";
+    auto txt2  = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
+    "Define a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+
+    auto txt3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
+
+    label1->setText(txt1);
+    label2->setText(txt2);
+    label3->setText(txt3);
+
 }
 
 
@@ -205,7 +206,7 @@ void ComponentInputWidget::loadComponentData(void)
     componentTableWidget->clear();
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
     
-    componentInfoText->show();
+    label3->show();
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     
@@ -278,11 +279,10 @@ void ComponentInputWidget::createComponentsBox(void)
     
     componentGroupBox->setLayout(gridLayout);
     
-    QLabel* topText = new QLabel();
-    topText->setText(label1);
+    label1 = new QLabel();
     
     QLabel* pathText = new QLabel();
-    pathText->setText("Import Path:");
+    pathText->setText("Path to file:");
     
     componentFileLineEdit = new QLineEdit();
     //    componentFileLineEdit->setMaximumWidth(750);
@@ -298,8 +298,7 @@ void ComponentInputWidget::createComponentsBox(void)
     // Add a horizontal spacer after the browse and load buttons
     //    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
     
-    QLabel* selectComponentsText = new QLabel();
-    selectComponentsText->setText(label2);
+    label2 = new QLabel();
     
     selectComponentsLineEdit = new AssetInputDelegate();
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ComponentInputWidget::handleComponentSelection);
@@ -317,9 +316,9 @@ void ComponentInputWidget::createComponentsBox(void)
     connect(clearSelectionButton,SIGNAL(clicked()),this,SLOT(clearComponentSelection()));
     
     // Text label for Component information
-    componentInfoText = new QLabel(label3);
-    componentInfoText->setStyleSheet("font-weight: bold; color: black");
-    componentInfoText->hide();
+    label3 = new QLabel();
+    label3->setStyleSheet("font-weight: bold; color: black");
+    label3->hide();
     
     // Create the table that will show the Component information
     componentTableWidget = new ComponentTableView();
@@ -406,19 +405,17 @@ void ComponentInputWidget::createComponentsBox(void)
     pathLayout->addWidget(browseFileButton);
     
     // Add a vertical spacer at the bottom to push everything up
-    gridLayout->addWidget(topText);
+    gridLayout->addWidget(label1);
     gridLayout->addLayout(pathLayout);
-    gridLayout->addWidget(selectComponentsText);
-    
-    gridLayout->addWidget(selectComponentsText);
-    
+    gridLayout->addWidget(label2);
+        
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(selectComponentsButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
     
     gridLayout->addLayout(selectComponentsLayout);
-    gridLayout->addWidget(componentInfoText,0,Qt::AlignCenter);
+    gridLayout->addWidget(label3,0,Qt::AlignCenter);
     gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
     
     gridLayout->addStretch();
@@ -605,14 +602,6 @@ void ComponentInputWidget::handleComponentSelection(void)
         }
     }
 
-    // Hide all rows in the table
-    for(int i = 0; i<nRows; ++i)
-        componentTableWidget->setRowHidden(i,true);
-
-    // Unhide the selected rows
-    for(auto&& it : selectedComponentIDs)
-        componentTableWidget->setRowHidden(it - firstID,false);
-
     auto numAssets = selectedComponentIDs.size();
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     this->statusMessage(msg);
@@ -631,6 +620,16 @@ void ComponentInputWidget::handleComponentSelection(void)
     //    this->statusMessage("Done ALL "+QString::number(duration.count()));
 
     theComponentDb->commitChanges();
+
+    // Hide all of the rows that are not selecetd. Takes a long time!
+    //    // Hide all rows in the table
+    //    for(int i = 0; i<nRows; ++i)
+    //        componentTableWidget->setRowHidden(i,true);
+
+    //    // Unhide the selected rows
+    //    for(auto&& it : selectedComponentIDs)
+    //        componentTableWidget->setRowHidden(it - firstID,false);
+
 
 }
 #endif
@@ -663,19 +662,19 @@ void ComponentInputWidget::clearComponentSelection(void)
 
 void ComponentInputWidget::setLabel1(const QString &value)
 {
-    label1 = value;
+    label1->setText(value);
 }
 
 
 void ComponentInputWidget::setLabel2(const QString &value)
 {
-    label2 = value;
+    label2->setText(value);
 }
 
 
 void ComponentInputWidget::setLabel3(const QString &value)
 {
-    label3 = value;
+    label3->setText(value);
 }
 
 
