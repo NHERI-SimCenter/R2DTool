@@ -116,6 +116,7 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     outputsObj.insert("EDP", EDPCheckBox->isChecked());
     outputsObj.insert("DM", DMCheckBox->isChecked());
     outputsObj.insert("DV", DVCheckBox->isChecked());
+    outputsObj.insert("BIM", BIMCheckBox->isChecked());
     outputsObj.insert("every_realization", realizationCheckBox->isChecked());
 
     QJsonObject assetsObj;
@@ -193,6 +194,7 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
         EDPCheckBox->setChecked(outObj["EDP"].toBool());
         DMCheckBox->setChecked(outObj["DM"].toBool());
         DVCheckBox->setChecked(outObj["DV"].toBool());
+        BIMCheckBox->setChecked(outObj["BIM"].toBool());
         realizationCheckBox->setChecked(outObj["every_realization"].toBool());
     }
 
@@ -327,19 +329,22 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     EDPCheckBox = new QCheckBox("Engineering demand parameters (EDP)",this);
     DMCheckBox = new QCheckBox("Damage measures (DM)",this);
     DVCheckBox = new QCheckBox("Decision variables (DV)",this);
+    BIMCheckBox = new QCheckBox("Building Information Model (BIM)",this);
     realizationCheckBox = new QCheckBox("Output EDP, DM, and DV every sampling realization",this);
 
     EDPCheckBox->setChecked(true);
     DMCheckBox->setChecked(true);
     DVCheckBox->setChecked(true);
+    BIMCheckBox->setChecked(true);
     realizationCheckBox->setChecked(false);
 
     QGroupBox* outputGroupBox = new QGroupBox("Output Settings", this);
     outputGroupBox->setContentsMargins(0,5,0,0);
     QVBoxLayout* outputLayout = new QVBoxLayout(outputGroupBox);
+    outputLayout->addWidget(BIMCheckBox);
     outputLayout->addWidget(EDPCheckBox);
     outputLayout->addWidget(DMCheckBox);
-    outputLayout->addWidget(DVCheckBox);
+    outputLayout->addWidget(DVCheckBox);    
     outputLayout->addWidget(realizationCheckBox);
 
     /*
@@ -419,5 +424,6 @@ void GeneralInformationWidget::clear(void)
     EDPCheckBox->setChecked(false);
     DMCheckBox->setChecked(false);
     DVCheckBox->setChecked(false);
+    BIMCheckBox->setChecked(false);
     realizationCheckBox->setChecked(false);
 }

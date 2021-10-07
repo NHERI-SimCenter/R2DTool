@@ -103,6 +103,7 @@ private:
     QCheckBox* EDPCheckBox;
     QCheckBox* DMCheckBox;
     QCheckBox* DVCheckBox;
+    QCheckBox* BIMCheckBox;
     QCheckBox* realizationCheckBox;
 
     template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
