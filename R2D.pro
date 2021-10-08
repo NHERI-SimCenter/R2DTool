@@ -93,9 +93,8 @@ win32 {
     }
 }
 
+
 # GIS library
-
-
 contains(DEFINES, ARC_GIS)  {
 
     message("Building with ArcGIS library")
@@ -105,25 +104,15 @@ contains(DEFINES, ARC_GIS)  {
 
 } contains(DEFINES, Q_GIS)  {
 
-    message("Building with QGIS library")
-
-    #Change these to the appropriate folders
-    PATH_TO_QGIS_ROOT=/Users/steve/Desktop/C++Libraries/QGIS
-    PATH_TO_QGIS_DEPS=/opt/QGIS/qgis-deps-0.8.0/stage
     PATH_TO_QGIS_PLUGIN=../../QGISPlugin/QGISPlugin
 
-    # Do not change. Keep the folder format where there is a QGIS root folder and in it there is a build, source, and install folder
-    PATH_TO_QGIS=$$PATH_TO_QGIS_ROOT/QGIS
-    PATH_TO_QGIS_SRC=$$PATH_TO_QGIS/src
-    PATH_TO_QGIS_DEPS_INC=$$PATH_TO_QGIS_DEPS/include
-    PATH_TO_QGIS_BUILD=$$PATH_TO_QGIS_ROOT/build
+    message("Building with QGIS library")
 
     include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 } else {
     message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS")
 }
-
 
 
 # Simcenter dependencies
@@ -404,19 +393,23 @@ HEADERS +=  ModelViewItems/ArcGISLegendView.h \
 contains(DEFINES, Q_GIS)  {
 
 SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
+            UIWidgets/QGISVisualizationWidget.cpp \
             UIWidgets/QGISGasPipelineInputWidget.cpp \
             UIWidgets/QGISBuildingInputWidget.cpp \
             UIWidgets/RasterHazardInputWidget.cpp \
             UIWidgets/QGISHurricaneSelectionWidget.cpp \
             UIWidgets/ShapefileBuildingInputWidget.cpp \
+            UIWidgets/HousingUnitAllocationWidget.cpp \
             UIWidgets/MapViewWindow.cpp \
 
 HEADERS +=  Tools/QGISHurricanePreprocessor.h \
+            UIWidgets/QGISVisualizationWidget.h \
             UIWidgets/QGISGasPipelineInputWidget.h \
             UIWidgets/QGISBuildingInputWidget.h \
             UIWidgets/RasterHazardInputWidget.h \
             UIWidgets/QGISHurricaneSelectionWidget.h \
             UIWidgets/ShapefileBuildingInputWidget.h \
+            UIWidgets/HousingUnitAllocationWidget.h \
             UIWidgets/MapViewWindow.h \
 
 }
