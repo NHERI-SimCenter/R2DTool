@@ -38,21 +38,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "NodeHandle.h"
 
+#include <qgsmapcanvas.h>
+
 #include <QDebug>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QStyleOption>
 
-NodeHandle::NodeHandle(QGraphicsItem *parent) : QGraphicsItem(parent)
+NodeHandle::NodeHandle(QGraphicsItem *parent, QgsMapCanvas* canvas) : QgsMapTool(canvas), QGraphicsItem(parent), mapCanvas(canvas)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemSendsGeometryChanges);
     setCacheMode(DeviceCoordinateCache);
-    setZValue(0);
+    setZValue(-1);
 
     setAcceptedMouseButtons(Qt::LeftButton);
-    setCursor(Qt::OpenHandCursor);
+    QGraphicsItem::setCursor(Qt::OpenHandCursor);
 
     diameter = 15;
     this->setDiameter(diameter);
@@ -60,6 +62,9 @@ NodeHandle::NodeHandle(QGraphicsItem *parent) : QGraphicsItem(parent)
     nodeColor.setRgb(0,0,255,150);
 
     setToolTip("Click and drag this object to define a grid area");
+
+    // Important! Otherwise events will not get passed down to scene
+    mapCanvas->setEnabled(true);
 }
 
 
@@ -107,10 +112,26 @@ QVariant NodeHandle::itemChange(GraphicsItemChange change, const QVariant &value
 }
 
 
+void NodeHandle::show()
+{
+    QGraphicsScene* mapCanvasScene = mapCanvas->scene();
+
+    auto sceneRect = mapCanvasScene->sceneRect();
+
+    auto centerScene = sceneRect.center();
+
+    this->setPos(centerScene.toPoint());
+
+    mapCanvasScene->addItem(this);
+
+    this->setVisible(true);
+}
+
+
 void NodeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     update();
-    setCursor(Qt::ClosedHandCursor);
+    QGraphicsItem::setCursor(Qt::ClosedHandCursor);
     QGraphicsItem::mousePressEvent(event);
 }
 
@@ -118,7 +139,7 @@ void NodeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void NodeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     update();
-    setCursor(Qt::OpenHandCursor);
+    QGraphicsItem::setCursor(Qt::OpenHandCursor);
     QGraphicsItem::mouseReleaseEvent(event);
 }
 

@@ -131,6 +131,7 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
 #ifdef Q_GIS
     auto mapCanvas = mapViewSubWidget->mapCanvas();
     userGrid = std::make_unique<RectangleGrid>(mapCanvas);
+    userPoint = std::make_unique<NodeHandle>(nullptr,mapCanvas);
 #endif
 
     userGrid->createGrid();
@@ -659,6 +660,8 @@ void HurricaneSelectionWidget::showGridOnMap(void)
 #endif
 
 #ifdef Q_GIS
+    // Also important to get events from QGIS
+    mapViewSubWidget->setMapTool(userGrid.get());
     userGrid->show();
 #endif
 
@@ -672,7 +675,8 @@ void HurricaneSelectionWidget::showPointOnMap(void)
 #endif
 
 #ifdef Q_GIS
-    qDebug()<<"Implement me HurricaneSelectionWidget::showPointOnMap";
+    mapViewSubWidget->setMapTool(userGrid.get());
+    userPoint->show();
 #endif
 }
 

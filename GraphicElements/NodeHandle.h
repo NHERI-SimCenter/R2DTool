@@ -41,11 +41,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGraphicsItem>
 #include <QObject>
 
-class NodeHandle : public QObject, public QGraphicsItem
+#include <qgsmaptool.h>
+
+class NodeHandle : public QgsMapTool, public QGraphicsItem
 {
     Q_OBJECT
 public:
-    NodeHandle(QGraphicsItem *parent = nullptr);
+    NodeHandle(QGraphicsItem *parent, QgsMapCanvas* canvas);
 
     enum { Type = UserType + 1 };
     int type() const override { return Type; }
@@ -56,6 +58,8 @@ public:
 
     void setColor(const QColor &value);
     void setDiameter(const double diameter);
+
+    void show();
 
 signals:
     void positionChanged(const QPointF& pos);
@@ -71,6 +75,8 @@ private:
     double diameter;
 
     friend class RectangleGrid;
+
+    QgsMapCanvas* mapCanvas;
 };
 
 

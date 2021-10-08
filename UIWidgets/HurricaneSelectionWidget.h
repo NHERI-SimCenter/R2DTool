@@ -54,7 +54,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifdef Q_GIS
 class SimCenterMapcanvasWidget;
 class RectangleGrid;
-
+class NodeHandle;
 class QgsVectorLayer;
 #endif
 
@@ -159,6 +159,7 @@ protected:
 #ifdef Q_GIS
     std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
     std::unique_ptr<RectangleGrid> userGrid;
+    std::unique_ptr<NodeHandle> userPoint;
 #endif
 
     HurricaneParameterWidget* hurricaneParamsWidget;

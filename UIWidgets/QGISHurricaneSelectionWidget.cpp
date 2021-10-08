@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterMapcanvasWidget.h"
 #include "HurricaneParameterWidget.h"
 
+#include "NodeHandle.h"
 #include "RectangleGrid.h"
 
 #include <QJsonArray>
@@ -446,6 +447,8 @@ void QGISHurricaneSelectionWidget::clearGridFromMap(void)
     stationMap.clear();
     gridData.clear();
     userGrid->hide();
+    mapViewSubWidget->enableSelectionTool();
+
 }
 
 
@@ -475,7 +478,8 @@ void QGISHurricaneSelectionWidget::clearLandfallFromMap(void)
     //        }
     //    }
 
-    //    mapViewSubWidget->removePointFromScene();
+    userPoint->hide();
+    mapViewSubWidget->enableSelectionTool();
 }
 
 

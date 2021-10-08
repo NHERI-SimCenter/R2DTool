@@ -19,9 +19,13 @@ public:
 
     QgsMapCanvas *getMainCanvas() const;
 
+    void enablePanTool(void);
+
     void enableSelectionTool(void);
 
     void setCurrentLayer(QgsVectorLayer* layer);
+
+    void setMapTool(QgsMapTool *mapTool);
 
     QgsFeatureIds getSelectedIds() const;
 

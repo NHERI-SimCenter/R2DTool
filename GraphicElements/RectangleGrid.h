@@ -150,7 +150,6 @@ private:
     double lonMax;
 
     QgsMapCanvas* mapCanvas;
-
 };
 
 #endif // RectangleGrid_H

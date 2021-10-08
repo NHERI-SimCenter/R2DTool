@@ -4,6 +4,7 @@
 #include <qgsmapcanvas.h>
 #include <qgsvectorlayer.h>
 #include <qgsappmaptools.h>
+#include <qgsmaptool.h>
 
 #include <QVBoxLayout>
 
@@ -27,6 +28,12 @@ SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisu
     mainLayout->addWidget(thisMapCanvas);
 
     mMapTools = std::make_unique<QgsAppMapTools>(thisMapCanvas, nullptr);
+}
+
+
+void SimCenterMapcanvasWidget::setMapTool(QgsMapTool *mapTool)
+{
+    thisMapCanvas->setMapTool(mapTool);
 }
 
 
@@ -74,7 +81,15 @@ QgsMapCanvas *SimCenterMapcanvasWidget::getMainCanvas() const
 
 void SimCenterMapcanvasWidget::enableSelectionTool(void)
 {
-    thisMapCanvas->setMapTool(mMapTools->mapTool(QgsAppMapTools::SelectFeatures));
+    auto selectTool = mMapTools->mapTool(QgsAppMapTools::SelectFeatures);
+    thisMapCanvas->setMapTool(selectTool);
+    thisMapCanvas->unsetCursor();
+}
+
+
+void SimCenterMapcanvasWidget::enablePanTool(void)
+{
+    thisMapCanvas->setMapTool(mMapTools->mapTool(QgsAppMapTools::Pan));
 }
 
 

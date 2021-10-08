@@ -86,11 +86,11 @@ RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanv
     rectangleGeometry.setWidth(width);
     rectangleGeometry.setHeight(height);
 
-    bottomLeftNode = new NodeHandle(this);
-    bottomRightNode = new NodeHandle(this);
-    topRightNode = new NodeHandle(this);
-    topLeftNode = new NodeHandle(this);
-    centerNode = new NodeHandle(this);
+    bottomLeftNode = new NodeHandle(this, mapCanvas);
+    bottomRightNode = new NodeHandle(this, mapCanvas);
+    topRightNode = new NodeHandle(this, mapCanvas);
+    topLeftNode = new NodeHandle(this, mapCanvas);
+    centerNode = new NodeHandle(this, mapCanvas);
 
     centerNode->setColor(QColor(255,0,0,100));
     centerNode->setToolTip("Rupture Location");
@@ -106,6 +106,8 @@ RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanv
 
     // Important! Otherwise events will not get passed down to scene
     mapCanvas->setEnabled(true);
+
+    QgsMapTool::setCursor(Qt::CrossCursor);
 }
 
 

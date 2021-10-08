@@ -94,7 +94,7 @@ private:
     std::unique_ptr<QGISHurricanePreprocessor> hurricaneImportTool;
     QGISVisualizationWidget* theVisualizationWidget;
 
-    //    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
+    QgsVectorLayer* gridLayer;
 
     QMap<QString,WindFieldStation> stationMap;
 
