@@ -1,4 +1,4 @@
-#ifndef GENERALINFORMATIONWIDGET_H
+﻿#ifndef GENERALINFORMATIONWIDGET_H
 #define GENERALINFORMATIONWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
@@ -104,6 +104,8 @@ private:
     QCheckBox* DMCheckBox;
     QCheckBox* DVCheckBox;
     QCheckBox* realizationCheckBox;
+    QCheckBox* BIMCheckBox;
+
 
     template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
     template<typename UnitEnum> UnitEnum unitStringToEnum(QString unitString);
