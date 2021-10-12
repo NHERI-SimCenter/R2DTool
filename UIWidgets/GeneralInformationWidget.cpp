@@ -116,6 +116,8 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     outputsObj.insert("DM", DMCheckBox->isChecked());
     outputsObj.insert("DV", DVCheckBox->isChecked());
     outputsObj.insert("every_realization", realizationCheckBox->isChecked());
+    outputsObj.insert("BIM", BIMCheckBox->isChecked());
+
 
     QJsonObject assetsObj;
     assetsObj.insert("buildings", buildingsCheckBox->isChecked());
@@ -193,6 +195,7 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
         DMCheckBox->setChecked(outObj["DM"].toBool());
         DVCheckBox->setChecked(outObj["DV"].toBool());
         realizationCheckBox->setChecked(outObj["every_realization"].toBool());
+        BIMCheckBox->setChecked(outObj["BIM"].toBool());
     }
 
     if (jsonObject.contains("assets")) {
@@ -327,11 +330,13 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     DMCheckBox = new QCheckBox("Damage measures (DM)");
     DVCheckBox = new QCheckBox("Decision variables (DV)");
     realizationCheckBox = new QCheckBox("Output EDP, DM, and DV every sampling realization");
+    BIMCheckBox = new QCheckBox("Output building BIM");
 
     EDPCheckBox->setChecked(true);
     DMCheckBox->setChecked(true);
     DVCheckBox->setChecked(true);
     realizationCheckBox->setChecked(false);
+    BIMCheckBox->setChecked(false);
 
     QGroupBox* outputGroupBox = new QGroupBox("Output Settings");
     outputGroupBox->setContentsMargins(0,5,0,0);
@@ -340,6 +345,8 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     outputLayout->addWidget(DMCheckBox);
     outputLayout->addWidget(DVCheckBox);
     outputLayout->addWidget(realizationCheckBox);
+    outputLayout->addWidget(BIMCheckBox);
+
 
     /*
     QGroupBox* regionalMappingGroupBox = new QGroupBox("Regional Mapping", this);
@@ -419,4 +426,5 @@ void GeneralInformationWidget::clear(void)
     DMCheckBox->setChecked(false);
     DVCheckBox->setChecked(false);
     realizationCheckBox->setChecked(false);
+    BIMCheckBox->setChecked(false);
 }
