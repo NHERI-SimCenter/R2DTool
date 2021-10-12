@@ -46,11 +46,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): QWidget(parent), m_gmpe(gmpe)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
-    gmpeGroupBox = new QGroupBox(this);
+    QGroupBox* gmpeGroupBox = new QGroupBox(this);
     gmpeGroupBox->setTitle("Ground Motion Prediction Equation");
 
     QHBoxLayout* formLayout = new QHBoxLayout(gmpeGroupBox);
     m_typeBox = new QComboBox(this);
+
+    m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     QLabel* typeLabel = new QLabel(tr("Type:"),this);
 
@@ -81,23 +83,4 @@ void GMPEWidget::setupConnections()
 
     connect(&this->m_gmpe, &GMPE::typeChanged,
             this->m_typeBox, &QComboBox::setCurrentText);
-}
-
-
-void GMPEWidget::handleAvailableGMPE(const QString sourceType)
-{
-    if (sourceType.compare("OpenQuake Classical")==0)
-    {
-        // users are expected to upload a GMPE logic tree, so the GMPE
-        // widget needs to be hiden
-        m_typeBox->hide();
-        gmpeGroupBox->hide();
-        this->setVisible(false);
-    }
-    else
-    {
-        m_typeBox->show();
-        gmpeGroupBox->show();
-        this->setVisible(true);
-    }
 }

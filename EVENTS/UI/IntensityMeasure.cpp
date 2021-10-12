@@ -89,10 +89,6 @@ QJsonObject IntensityMeasure::getJson()
     }
     im.insert("Periods", arrayPeriods);
 
-    im.insert("Levels", imtLevels); // intensity measure levels
-    im.insert("Scale", imtScale); // intensity measure level scale
-    im.insert("Truncation", imtTruc); // truncation level
-
     return im;
 }
 
@@ -131,57 +127,3 @@ void IntensityMeasure::addPeriod(double period)
     qSort(this->m_periods);
 }
 
-
-// set intensity measure levels
-void IntensityMeasure::setImtLevels(const QString &value)
-{
-    while(imtLevels.count())
-    {
-        imtLevels.pop_back();
-     }
-    // remove spaces
-    QString tmp = value;
-    tmp.remove(" ");
-    // split by ","
-    QList<QString> tmpList = tmp.split(",");
-    // check size of the list (must be three)
-    if (tmpList.count() != 3)
-    {
-        QString errMsg = QString("Please provide three number for mininum, maximun intensity levels and the number of intervals.");
-        qDebug() << errMsg;
-        return;
-    }
-    // load the data
-    for (int i = 0; i != 3; ++i)
-    {
-        if (tmpList[i].toDouble() <=0)
-        {
-            QString errMsg = QString("Only taken positive numbers.");
-            qDebug() << errMsg;
-            return;
-        }
-        imtLevels.append(tmpList[i].toDouble());
-    }
-}
-
-
-void IntensityMeasure::setImtScale(const QString &value)
-{
-    if(imtScale != value)
-    {
-        imtScale = value;
-        emit this->imtScaleChanged(imtScale);
-    }
-}
-
-
-void IntensityMeasure::setImtTruc(double value)
-{
-    imtTruc = value;
-}
-
-
-double IntensityMeasure::getImtTruc() const
-{
-    return imtTruc;
-}

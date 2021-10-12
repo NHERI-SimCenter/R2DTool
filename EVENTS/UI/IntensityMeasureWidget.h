@@ -10,7 +10,6 @@ class QLabel;
 class QCheckBox;
 class QLineEdit;
 class QRegExpValidator;
-class QDoubleSpinBox;
 
 class IntensityMeasureWidget : public QWidget
 {
@@ -27,23 +26,12 @@ public slots:
 
     void handleTypeChanged(const QString &val);
 
-    void handleIntensityMeasureLevels(const QString sourceType);
-
 private:
     IntensityMeasure& m_intensityMeasure;
     QComboBox* m_typeBox;
     QLineEdit* periodsLineEdit;
     QRegExpValidator* LEValidator;
     QLabel* periodLabel;
-
-    QLineEdit* imtLevelLineEdit;
-    QLabel* imtLevelLabel;
-
-    QComboBox* scaleBox;
-    QLabel* scaleLabel;
-
-    QDoubleSpinBox* imtTrucBox;
-    QLabel* imtTrucLabel;
 
     void setupConnections();
 };

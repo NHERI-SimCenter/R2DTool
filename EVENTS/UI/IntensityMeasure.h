@@ -41,7 +41,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "JsonSerializable.h"
 
 #include <QObject>
-#include <QJsonArray>
 
 class IntensityMeasure : public QObject, JsonSerializable
 {
@@ -57,28 +56,18 @@ public:
     void setPeriods(const QList<double> &periods);
     void setPeriods(const QString &periods);
     void addPeriod(double period);
-    double getImtTruc() const;
 
 signals:
     void typeChanged(QString newType);
-    void imtScaleChanged(QString newScale);
 
 public slots:
     bool setType(const QString &type);
-    void setImtLevels(const QString &value);
-    void setImtScale(const QString &value);
-    void setImtTruc(double value);
 
 private:
     QString m_type;
     QList<double> m_periods;
 
     QString periodsText;
-
-    QJsonArray imtLevels = {0.01,10.0,100}; // default intensity measure levels
-    QString imtScale = "Log"; // default intensity measure scale is log
-
-    double imtTruc = 3.0; // default trucation levels 3 \sigma
 
 public:
     QJsonObject getJson();

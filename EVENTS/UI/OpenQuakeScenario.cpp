@@ -89,10 +89,6 @@ void OpenQuakeScenario::setMaxDistance(double value)
     maxDistance = value;
 }
 
-void OpenQuakeScenario::setOQVersion(const QString &value)
-{
-    oqVersion = value;
-}
 
 QString OpenQuakeScenario::getRupFilename() const
 {
@@ -124,7 +120,6 @@ QJsonObject OpenQuakeScenario::getJson()
     rupture.insert("RupMesh", rupMesh);
     rupture.insert("AreaMesh", areaMesh);
     rupture.insert("max_Dist", maxDistance);
-    rupture.insert("OQVersion", oqVersion);
 
     //Also need to copy rupture file for OpenQuake runs
     if (! this->copyRupFile())
@@ -187,3 +182,4 @@ bool OpenQuakeScenario::copyRupFile()
 
     return fileToCopy.copy(destinationDir + QDir::separator() + theFile);
 }
+

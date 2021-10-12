@@ -61,7 +61,6 @@ signals:
 
 public slots:
     void loadRupFile();
-    void handleOQVersionChanged(const QString& selection);
 
 private:
     OpenQuakeScenario* m_eqRupture;
@@ -72,9 +71,6 @@ private:
     QDoubleSpinBox* m_areaMeshBox;
     QDoubleSpinBox* m_maxDistanceBox;
     QPushButton* browseFileButton;
-
-    QComboBox* oqVersionCombo;
-    QString oq_version = "3.12.0";
 
     void setupConnections();
     void setRupFile(QString dirPath);

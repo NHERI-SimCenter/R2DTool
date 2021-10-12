@@ -8,7 +8,6 @@
 #include <QCheckBox>
 #include <QLineEdit>
 #include <QDebug>
-#include <QDoubleSpinBox>
 
 #include <sstream>
 
@@ -47,43 +46,10 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     QList<double> periodArray = {0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.5, 10.0};
     im.setPeriods(periodArray);
 
-    // Intensity measure levels
-    imtLevelLabel = new QLabel(tr("IM Levels (min, max, num):"),this);
-    imtLevelLineEdit = new QLineEdit(this);
-    imtLevelLineEdit->setText("0.01,10,100");
-    scaleLabel = new QLabel(tr("Scale:"),this);
-    scaleBox = new QComboBox(this);
-    scaleBox->addItem("Log");
-    scaleBox->addItem("Linear");
-    connect(this->scaleBox, &QComboBox::currentTextChanged,
-            &this->m_intensityMeasure, &IntensityMeasure::setImtScale);
-    scaleBox->setCurrentText("Log");
-    m_intensityMeasure.setImtScale("Log");
-    imtLevelLabel->hide();
-    imtLevelLineEdit->hide();
-    scaleBox->hide();
-    scaleLabel->hide();
-
-    // Intensity measure trucation levels
-    imtTrucLabel = new QLabel(tr("Truncation:"),this);
-    imtTrucBox = new QDoubleSpinBox(this);
-    imtTrucBox->setRange(0, 5.0);
-    imtTrucBox->setDecimals(2);
-    imtTrucBox->setSingleStep(0.01);
-    imtTrucBox->setValue(m_intensityMeasure.getImtTruc()); // set initial values
-    imtTrucLabel->hide();
-    imtTrucBox->hide();
-
     gridLayout->addWidget(typeLabel,0,0);
     gridLayout->addWidget(m_typeBox,0,1);
     gridLayout->addWidget(periodLabel,0,2);
     gridLayout->addWidget(periodsLineEdit,0,3);
-    gridLayout->addWidget(imtLevelLabel,1,0);
-    gridLayout->addWidget(imtLevelLineEdit,1,1);
-    gridLayout->addWidget(scaleLabel,1,2);
-    gridLayout->addWidget(scaleBox,1,3);
-    gridLayout->addWidget(imtTrucLabel,1,4);
-    gridLayout->addWidget(imtTrucBox,1,5);
 
     layout->addWidget(imGroupBox);
     this->setLayout(layout);
@@ -105,13 +71,6 @@ void IntensityMeasureWidget::setupConnections()
     //    connect(this->periodsLineEdit, &QLineEdit::inputRejected, this->periodsLineEdit, &QLineEdit::undo);
 
     connect(this->m_typeBox, &QComboBox::currentTextChanged, this, &IntensityMeasureWidget::handleTypeChanged);
-
-    // send imtLevels
-    connect(this->imtLevelLineEdit, SIGNAL(textChanged(QString)),&this->m_intensityMeasure, SLOT(setImtLevels(QString)));
-
-    // send trucation levels
-    connect(this->imtTrucBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            &this->m_intensityMeasure, &IntensityMeasure::setImtTruc);
 }
 
 
@@ -192,29 +151,5 @@ void IntensityMeasureWidget::handleTypeChanged(const QString &val)
     {
         periodsLineEdit->hide();
         periodLabel->hide();
-    }
-}
-
-
-void IntensityMeasureWidget::handleIntensityMeasureLevels(const QString sourceType)
-{
-    if (sourceType.compare("OpenQuake Classical")==0)
-    {
-        // users are expected to give intensity measure levels
-        imtLevelLabel->show();
-        imtLevelLineEdit->show();
-        scaleBox->show();
-        scaleLabel->show();
-        imtTrucLabel->show();
-        imtTrucBox->show();
-    }
-    else
-    {
-        imtLevelLabel->hide();
-        imtLevelLineEdit->hide();
-        scaleBox->hide();
-        scaleLabel->hide();
-        imtTrucLabel->hide();
-        imtTrucBox->hide();
     }
 }

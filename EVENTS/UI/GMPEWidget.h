@@ -52,12 +52,10 @@ public:
 signals:
 
 public slots:
-    void handleAvailableGMPE(const QString sourceType);
 
 private:
     GMPE& m_gmpe;
     QComboBox* m_typeBox;
-    QGroupBox* gmpeGroupBox;
 
     void setupConnections();
 };
