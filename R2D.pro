@@ -108,7 +108,7 @@ contains(DEFINES, ARC_GIS)  {
 
 } contains(DEFINES, Q_GIS)  {
 
-    PATH_TO_QGIS_PLUGIN=../../QGISPlugin/QGISPlugin
+    PATH_TO_QGIS_PLUGIN=../../QGISPlugin
 
     message("Building with QGIS library")
 
