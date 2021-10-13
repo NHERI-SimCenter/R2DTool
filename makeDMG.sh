@@ -87,8 +87,10 @@ cp -fR $pathToBackendApps/applications $pathApp/Contents/MacOS
 cp -fR $pathToBackendApps/applications/performRegionalEventSimulation/regionalWindField/database/historical_storm/* $pathApp/Contents/MacOS/Databases
 mkdir  $pathApp/Contents/MacOS/applications/opensees
 mkdir  $pathApp/Contents/MacOS/applications/dakota
+mkdir  $pathApp/Contents/MacOS/Examples
 cp -fr $pathToOpenSees/* $pathApp/Contents/MacOS/applications/opensees
 cp -fr $pathToDakota/* $pathApp/Contents/MacOS/applications/dakota
+cp -fr $pathApp/../../Examples/Examples.json $pathApp/Contents/MacOS/Examples
 
 # remove unwanted to make this thing smaller
 
