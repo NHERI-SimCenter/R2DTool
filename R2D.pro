@@ -395,7 +395,6 @@ HEADERS +=  ModelViewItems/ArcGISLegendView.h \
 contains(DEFINES, Q_GIS)  {
 
 SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
-            UIWidgets/QGISVisualizationWidget.cpp \
             UIWidgets/QGISGasPipelineInputWidget.cpp \
             UIWidgets/QGISBuildingInputWidget.cpp \
             UIWidgets/RasterHazardInputWidget.cpp \
@@ -404,7 +403,6 @@ SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
             UIWidgets/MapViewWindow.cpp \
 
 HEADERS +=  Tools/QGISHurricanePreprocessor.h \
-            UIWidgets/QGISVisualizationWidget.h \
             UIWidgets/QGISGasPipelineInputWidget.h \
             UIWidgets/QGISBuildingInputWidget.h \
             UIWidgets/RasterHazardInputWidget.h \
@@ -498,4 +496,3 @@ QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
 }
 }
-
