@@ -15,7 +15,7 @@ pathToDakota="/Users/fmckenna/dakota-6.12.0"
 mkdir -p build
 cd build
 conan install .. --build missing
-qmake ../R2D.pro
+qmake ../$appName.pro
 make
 
 #
@@ -79,13 +79,16 @@ fi
 # copy needed file from SimCenterBackendApplications
 #
 
+
+mkdir  $pathApp/Contents/MacOS/Examples
+mkdir  $pathApp/Contents/MacOS/Databases
+cp     ../../R2DExamples/Examples.json $pathApp/Contents/MacOS/Examples
 cp -fR $pathToBackendApps/applications $pathApp/Contents/MacOS
+cp -fR $pathToBackendApps/applications/performRegionalEventSimulation/regionalWindField/database/historical_storm/* $pathApp/Contents/MacOS/Databases
 mkdir  $pathApp/Contents/MacOS/applications/opensees
 mkdir  $pathApp/Contents/MacOS/applications/dakota
 cp -fr $pathToOpenSees/* $pathApp/Contents/MacOS/applications/opensees
 cp -fr $pathToDakota/* $pathApp/Contents/MacOS/applications/dakota
-
-
 
 # remove unwanted to make this thing smaller
 
@@ -142,22 +145,20 @@ echo "codesign --deep --force --verbose --options=runtime  --sign "$appleCredent
 codesign --deep --force --verbose --options=runtime  --sign "$appleCredential" $appFile
 
 # create dmg
+
+echo "hdiutil create $dmgFile -fs HFS+ -srcfolder ./$appFile -format UDZO -volname $appName"
 hdiutil create $dmgFile -fs HFS+ -srcfolder ./$appFile -format UDZO -volname $appName
 
 #codesign dmg
+echo "codesign --force --sign "$appleCredential" $dmgFile"
 codesign --force --sign "$appleCredential" $dmgFile
 
-
-#
-# notorize , create zip file & send to apple
-#
-
-ditto -ck --rsrc --sequesterRsrc $appFile $appName.zip
-echo "https://appleid.apple.com/account/"
-echo "under security generate app specific password: $appName"
-echo "xcrun altool --notarize-app -u appleID -p appleAppPassword -f ./$appName.zip --primary-bundle-id altool --verbose"
-echo "returns id: ID"
-
-xcrun altool --notarize-app -u $appleID -p $appleAppPassword -f ./$appName.zip --primary-bundle-id altool --verbose
-
+echo "Issue the following: " 
+echo "xcrun altool --notarize-app -u $appleID -p $appleAppPassword -f ./$dmgFile --primary-bundle-id altool --verbose"
+echo ""
 echo "returns id: ID .. wait for email indicating success"
+echo "To check status"
+echo "xcrun altool --notarization-info ID  -u $appleID  -p $appleAppPassword"
+echo ""
+echo "Finally staple the dmg"
+echo "xcrun stapler staple \"$appName\" $dmgFile"
