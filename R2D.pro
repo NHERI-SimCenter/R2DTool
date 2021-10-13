@@ -209,6 +209,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
             UIWidgets/UserInputGMWidget.cpp \
+            UIWidgets/RegionalSiteResponseWidget.cpp \
             UIWidgets/HurricaneSelectionWidget.cpp \
             UIWidgets/UserInputHurricaneWidget.cpp \
             UIWidgets/VisualizationWidget.cpp \
@@ -330,6 +331,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
             UIWidgets/UserInputGMWidget.h \
+            UIWidgets/RegionalSiteResponseWidget.h \            
             UIWidgets/HurricaneSelectionWidget.h \
             UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/VisualizationWidget.h \
