@@ -52,6 +52,7 @@ class VisualizationWidget;
 class RectangleGrid : public QgsMapTool, public QGraphicsItem
 {
     Q_OBJECT
+    Q_INTERFACES(QGraphicsItem)
 public:
     RectangleGrid(QgsMapCanvas* parent);
     ~RectangleGrid();

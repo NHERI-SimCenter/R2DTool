@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class NodeHandle : public QgsMapTool, public QGraphicsItem
 {
     Q_OBJECT
+    Q_INTERFACES(QGraphicsItem)
 public:
     NodeHandle(QGraphicsItem *parent, QgsMapCanvas* canvas);
 

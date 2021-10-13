@@ -82,7 +82,11 @@ win32::include($$PWD/ConanHelper.pri)
 win32::LIBS+=Advapi32.lib
 
 # Full optimization on release
-QMAKE_CXXFLAGS_RELEASE += -O3
+win32 {
+    QMAKE_CXXFLAGS_RELEASE += -O2
+} else {
+    QMAKE_CXXFLAGS_RELEASE += -O3
+}
 
 # Application Icons
 win32 {
@@ -104,7 +108,7 @@ contains(DEFINES, ARC_GIS)  {
 
 } contains(DEFINES, Q_GIS)  {
 
-    PATH_TO_QGIS_PLUGIN=../../QGISPlugin/QGISPlugin
+    PATH_TO_QGIS_PLUGIN=../../QGISPlugin
 
     message("Building with QGIS library")
 
@@ -177,7 +181,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/PelicunPostProcessor.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
-            Tools/SimCenterUnitsCombo.cpp \
             Tools/TablePrinter.cpp \
             Tools/XMLAdaptor.cpp \
             Tools/ShakeMapClient.cpp \
@@ -279,7 +282,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
-            Tools/SimCenterUnitsCombo.h \
             Tools/TableNumberItem.h \
             Tools/TablePrinter.h \
             Tools/XMLAdaptor.h \
@@ -399,7 +401,6 @@ SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
             UIWidgets/RasterHazardInputWidget.cpp \
             UIWidgets/QGISHurricaneSelectionWidget.cpp \
             UIWidgets/ShapefileBuildingInputWidget.cpp \
-            UIWidgets/HousingUnitAllocationWidget.cpp \
             UIWidgets/MapViewWindow.cpp \
 
 HEADERS +=  Tools/QGISHurricanePreprocessor.h \
@@ -409,7 +410,6 @@ HEADERS +=  Tools/QGISHurricanePreprocessor.h \
             UIWidgets/RasterHazardInputWidget.h \
             UIWidgets/QGISHurricaneSelectionWidget.h \
             UIWidgets/ShapefileBuildingInputWidget.h \
-            UIWidgets/HousingUnitAllocationWidget.h \
             UIWidgets/MapViewWindow.h \
 
 }
