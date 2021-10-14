@@ -167,12 +167,13 @@ bool PelicunDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (appData.contains("DL_Method"))
             DLTypeComboBox->setCurrentText(appData["DL_Method"].toString());
 
-        if (appData.contains("Realizations"))
+        if (appData.contains("Realizations")) {
             if (appData["Realizations"].isString()){
                 realizationsLineEdit->setText(appData["Realizations"].toString());
             } else {
                 realizationsLineEdit->setText(QString::number(appData["Realizations"].toInt()));
             }
+	}
 
         if (appData.contains("coupled_EDP"))
             coupledEDPCheckBox->setChecked(appData["coupled_EDP"].toBool());
@@ -256,11 +257,20 @@ bool PelicunDLWidget::copyFiles(QString &destName)
 
     QFileInfo componentFile(compLineEditText);
 
-    if (!componentFile.exists())
-        return false;
+    if (!componentFile.exists()) {
+      QString msg = QString("Could not find auto script file: ") + compLineEditText;
+      this->errorMessage(msg);
+      return false;
+    }
 
     // Do not copy the file, output a new csv which will have the changes that the user makes in the table
-    return this->copyFile(compLineEditText, destName);
+    bool res = this->copyFile(compLineEditText, destName);
+    if (!res) {
+      QString msg = QString("Could not copy auto script file: ") + compLineEditText;
+      this->errorMessage(msg);
+    }
+    
+    return res;
 }
 
 
