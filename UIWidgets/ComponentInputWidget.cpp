@@ -47,6 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 //#include <chrono>
 //using namespace std::chrono;
 
+#include <QMessageBox>
 #include <QCoreApplication>
 #include <QApplication>
 #include <QFileDialog>
@@ -408,7 +409,7 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addWidget(label1);
     gridLayout->addLayout(pathLayout);
     gridLayout->addWidget(label2);
-        
+
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(selectComponentsButton);
@@ -716,8 +717,26 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
         if(filterData.isEmpty())
         {
-            errorMessage("Please select components for analysis");
-            return false;
+            auto msgBox =  std::make_unique<QMessageBox>();
+
+            msgBox->setText("No IDs are selected for analysis in ASD "+componentType.toLower()+". Select all components?");
+            msgBox->setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+
+            auto res = msgBox->exec();
+
+            if(res != QMessageBox::Ok)
+                return false;
+
+            this->selectAllComponents();
+
+            statusMessage("Selecting all components for analysis");
+            filterData = this->getFilterString();
+
+            if(filterData.isEmpty())
+            {
+                errorMessage("Error selecting components for analysis");
+                return false;
+            }
         }
 
         data["filter"] = filterData;

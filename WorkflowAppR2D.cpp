@@ -266,7 +266,9 @@ void WorkflowAppR2D::initialize(void)
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidget->setAssetTypeState("Buildings", true);
 
-//    loadResults();
+    // Test to remove
+    theComponentSelection->displayComponent("HAZ");
+    //    loadResults();
 }
 
 
@@ -310,14 +312,56 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     // ouput application data
     QJsonObject apps;
 
-    theHazardsWidget->outputAppDataToJSON(apps);
-    theAssetsWidget->outputAppDataToJSON(apps);
-    theModelingWidget->outputAppDataToJSON(apps);
-    theHazardToAssetWidget->outputAppDataToJSON(apps);
-    theModelingWidget->outputAppDataToJSON(apps);
-    theAnalysisWidget->outputAppDataToJSON(apps);
-    theDamageAndLossWidget->outputAppDataToJSON(apps);
-    theUQWidget->outputAppDataToJSON(apps);
+    bool res = false;
+
+    res = theHazardsWidget->outputAppDataToJSON(apps);
+    if(!res)
+    {
+        this->errorMessage("Error creating input file in HAZ");
+        return false;
+    }
+
+    res = theAssetsWidget->outputAppDataToJSON(apps);
+    if(!res)
+    {
+        this->errorMessage("Error creating input file in ASD");
+        return false;
+    }
+
+    res = theModelingWidget->outputAppDataToJSON(apps);
+    if(!res)
+    {
+        this->errorMessage("Error creating input file in MOD");
+        return false;
+    }
+
+    res = theHazardToAssetWidget->outputAppDataToJSON(apps);
+    if(!res)
+    {
+        this->errorMessage("Error creating input file in HTA");
+        return false;
+    }
+
+    res = theAnalysisWidget->outputAppDataToJSON(apps);
+    if(!res)
+    {
+        this->errorMessage("Error creating input file in ANA");
+        return false;
+    }
+
+    res = theDamageAndLossWidget->outputAppDataToJSON(apps);
+    if(!res)
+    {
+        this->errorMessage("Error creating input file in DL");
+        return false;
+    }
+
+    res = theUQWidget->outputAppDataToJSON(apps);
+    if(!res)
+    {
+        this->errorMessage("Error creating input file in UQ");
+        return false;
+    }
 
     //
     // hard code for now .. EDP's coming out D&L in future to provide this .. really ugly 2 dynamic casts!!
@@ -405,22 +449,46 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
         QJsonObject apps = jsonObject["Applications"].toObject();
 
         if (theUQWidget->inputAppDataFromJSON(apps) == false)
-            return false;
+        {
+            this->errorMessage("Error loading input file in UQ");
+            theUQWidget->clear();
+        }
         if (theModelingWidget->inputAppDataFromJSON(apps) == false)
-            return false;
+        {
+            this->errorMessage("Error loading input file in MOD");
+            theModelingWidget->clear();
+        }
         if (theAnalysisWidget->inputAppDataFromJSON(apps) == false)
-            return false;
+        {
+            this->errorMessage("Error loading input file in ANA");
+            theAnalysisWidget->clear();
+        }
         if (theHazardToAssetWidget->inputAppDataFromJSON(apps) == false)
-            return false;
+        {
+            this->errorMessage("Error loading input file in HTA");
+            theHazardToAssetWidget->clear();
+        }
         if (theAssetsWidget->inputAppDataFromJSON(apps) == false)
-            return false;
+        {
+            this->errorMessage("Error loading input file in ASD");
+            theAssetsWidget->clear();
+        }
         if (theHazardsWidget->inputAppDataFromJSON(apps) == false)
-            return false;
+        {
+            this->errorMessage("Error loading input file in HAZ");
+            theHazardsWidget->clear();
+        }
         if (theDamageAndLossWidget->inputAppDataFromJSON(apps) == false)
-            return false;
+        {
+            this->errorMessage("Error loading input file in DL");
+            theDamageAndLossWidget->clear();
+        }
 
     } else
+    {
+        this->errorMessage("Error, no Applications field in input file");
         return false;
+    }
 
     /*
     ** Note to me - others

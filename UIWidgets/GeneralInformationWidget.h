@@ -89,8 +89,6 @@ private:
 
     QComboBox* unitsForceCombo;
     QComboBox* unitsLengthCombo;
-    QComboBox* unitsSpeedCombo;
-    QComboBox* unitsTemperatureCombo;
     QComboBox* unitsTimeCombo;
 
     QCheckBox* buildingsCheckBox;
