@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 
 #include <QCoreApplication>
+#include <QMessageBox>
 #include <QApplication>
 #include <QFileDialog>
 #include <QLineEdit>
@@ -585,6 +586,20 @@ void ComponentInputWidget::loadFileFromPath(QString& path)
     this->loadComponentData();
 }
 
+void ComponentInputWidget::selectAllComponents(void)
+{
+    // Get the ID of the first and last component FMK
+  auto firstID = componentTableWidget->item(0,0)->data(0).toString();
+
+    auto nRows = componentTableWidget->rowCount();
+    auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toString();
+
+    QString filter = firstID + "-" + lastID;
+
+    selectComponentsLineEdit->setText(filter);
+    selectComponentsLineEdit->selectComponents();
+}
+
 
 bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
@@ -600,8 +615,28 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
         if(filterData.isEmpty())
         {
-            errorMessage("Please select components for analysis");
-            return false;
+	  //errorMessage("Please select components for analysis");
+          //return false;
+	             auto msgBox =  std::make_unique<QMessageBox>();
+
+            msgBox->setText("No IDs are selected for analysis in ASD "+componentType.toLower()+". Really run with all components?");
+            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+
+            auto res = msgBox->exec();
+
+            if(res != QMessageBox::Yes)
+                return false;
+
+            this->selectAllComponents();
+
+            statusMessage("Selecting all components for analysis");
+            filterData = this->getFilterString();
+
+            if(filterData.isEmpty())
+            {
+                errorMessage("Error selecting components for analysis");
+                return false;
+            }
         }
 
         data["filter"] = filterData;
