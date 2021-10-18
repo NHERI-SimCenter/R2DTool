@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "HurricaneSelectionWidget.h"
 #include "UserInputHurricaneWidget.h"
 #include "UserInputGMWidget.h"
+#include "RegionalSiteResponseWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 
@@ -57,7 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 HazardsWidget::HazardsWidget(QWidget *parent,
                              VisualizationWidget* visWidget,
                              RandomVariablesContainer * RVContainer)
-    : SimCenterAppSelection(QString("Hazard Selection"),QString("Hazard"), parent),
+  : SimCenterAppSelection(QString("Hazard Selection"),QString("RegionalEvent"), QString("Hazard"), parent),
       theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
     this->setContentsMargins(0,0,0,0);
@@ -67,9 +68,11 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
     theHurricaneSelectionWidget = new HurricaneSelectionWidget(theVisualizationWidget);
     theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget);
+    theRegionalSiteResponseWidget = new RegionalSiteResponseWidget(theVisualizationWidget);    
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
     this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);
+    this->addComponent("Regional Site Response", "RegionalSiteResponse", theRegionalSiteResponseWidget);    
     this->addComponent("Hurricane Scenario Simulation", "HurricaneSelection", theHurricaneSelectionWidget);
     this->addComponent("User Specified Wind Field", "UserInputHurricane", theUserInputHurricaneWidget);
     this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
@@ -81,6 +84,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));    
     connect(theUserInputHurricaneWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theHurricaneSelectionWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theRegionalSiteResponseWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));    
 }
 
 
