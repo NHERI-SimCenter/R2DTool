@@ -142,16 +142,15 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     buttonsLayout->addWidget(this->m_settingButton);
     buttonsLayout->addWidget(this->m_runButton);
 
+    toolsGridLayout->addWidget(this->m_siteConfigWidget,   0,0,4,1);
+    toolsGridLayout->addWidget(this->m_ruptureWidget,      4,0,2,1);
 
-    toolsGridLayout->addWidget(this->m_siteConfigWidget, 0,0,2,1);
-    toolsGridLayout->addWidget(this->m_ruptureWidget, 3,0,4,1);
-
-    toolsGridLayout->addWidget(this->spatialCorrWidget,  0,1);
-    toolsGridLayout->addWidget(this->m_selectionWidget,  1,1);
-    toolsGridLayout->addWidget(this->m_vs30Widget, 3,1,1,1); // vs30 widget
-    toolsGridLayout->addWidget(this->m_gmpeWidget,        4,1,1,1);
-    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,5,1,1,1);
-    toolsGridLayout->addLayout(buttonsLayout,6,1,1,1);
+    toolsGridLayout->addWidget(this->spatialCorrWidget,       0,1,2,1);
+    toolsGridLayout->addWidget(this->m_selectionWidget,       2,1);
+    toolsGridLayout->addWidget(this->m_vs30Widget,            3,1); // vs30 widget
+    toolsGridLayout->addWidget(this->m_gmpeWidget,            4,1);
+    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,5,1);
+    toolsGridLayout->addLayout(buttonsLayout,                 6,1);
 
     toolsGridLayout->setHorizontalSpacing(5);
     toolsGridLayout->setVerticalSpacing(0);

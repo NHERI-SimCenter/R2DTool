@@ -69,10 +69,6 @@ public:
     Q_ENUM(ForceUnit)
     enum TimeUnit{sec, seconds, min, minutes, hr, hour};
     Q_ENUM(TimeUnit)
-    enum TemperatureUnit{C, F, K};
-    Q_ENUM(TemperatureUnit)
-    enum SpeedUnit{mph, kph};
-    Q_ENUM(SpeedUnit)
 
     bool setAssetTypeState(QString assetType, bool);
     QString getLengthUnit();
@@ -89,8 +85,6 @@ private:
 
     QComboBox* unitsForceCombo;
     QComboBox* unitsLengthCombo;
-    QComboBox* unitsSpeedCombo;
-    QComboBox* unitsTemperatureCombo;
     QComboBox* unitsTimeCombo;
 
     QCheckBox* buildingsCheckBox;

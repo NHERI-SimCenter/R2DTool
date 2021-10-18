@@ -59,7 +59,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
                              VisualizationWidget* visWidget,
                              RandomVariablesContainer * RVContainer)
   : SimCenterAppSelection(QString("Hazard Selection"),QString("RegionalEvent"), QString("Hazard"), parent),
-      theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
+    theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
 {
     this->setContentsMargins(0,0,0,0);
 

@@ -105,7 +105,8 @@ public:
     void setGroupBoxText(const QString &value);
 
     void loadFileFromPath(QString& path);
-
+    void selectAllComponents(void);
+  
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &rvObject);

@@ -251,6 +251,8 @@ void WorkflowAppR2D::initialize(void)
 
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidget->setAssetTypeState("Buildings", true);
+
+    //theComponentSelection->displayComponent("HAZ");    
 }
 
 
@@ -294,14 +296,41 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     // ouput application data
     QJsonObject apps;
 
-    theHazardsWidget->outputAppDataToJSON(apps);
-    theAssetsWidget->outputAppDataToJSON(apps);
-    theModelingWidget->outputAppDataToJSON(apps);
-    theHazardToAssetWidget->outputAppDataToJSON(apps);
-    theModelingWidget->outputAppDataToJSON(apps);
-    theAnalysisWidget->outputAppDataToJSON(apps);
-    theDamageAndLossWidget->outputAppDataToJSON(apps);
-    theUQWidget->outputAppDataToJSON(apps);
+    bool result = true;
+    if (theHazardsWidget->outputAppDataToJSON(apps) == false) {
+      this->errorMessage("Error writing HAZ data to output");
+      result = false;
+    }
+      
+    if (theAssetsWidget->outputAppDataToJSON(apps) == false) {
+      this->errorMessage("Error writing ASD data to output");
+      result = false;
+    }
+
+    if (theModelingWidget->outputAppDataToJSON(apps) == false) {
+      this->errorMessage("Error writing MOD data to output");
+      result = false;
+    }
+
+    if (theHazardToAssetWidget->outputAppDataToJSON(apps) == false) {
+      this->errorMessage("Error writing HTA data to output");
+      result = false;      
+    }
+
+    if (theAnalysisWidget->outputAppDataToJSON(apps) == false) {
+      this->errorMessage("Error writing ANA data to output");
+      result = false;      
+    }
+
+    if (theDamageAndLossWidget->outputAppDataToJSON(apps) == false) {
+      this->errorMessage("Error writing DL data to output");
+      result = false;      
+    }
+    
+    if (theUQWidget->outputAppDataToJSON(apps) == false) {
+      this->errorMessage("Error writing UQ data to output");
+      result = false;      
+    }
 
     //
     // hard code for now .. EDP's coming out D&L in future to provide this .. really ugly 2 dynamic casts!!
@@ -325,12 +354,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     }
 
     jsonObjectTop.insert("Applications",apps);
-
     //  output regular data
 
-
     theRunWidget->outputToJSON(jsonObjectTop);
-
     theModelingWidget->outputToJSON(jsonObjectTop);
     theHazardsWidget->outputToJSON(jsonObjectTop);
     theAnalysisWidget->outputToJSON(jsonObjectTop);
@@ -340,7 +366,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
 
-    return true;
+    return result;
 }
 
 
@@ -380,25 +406,53 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-
+    bool result = true;
+    
     if (jsonObject.contains("Applications")) {
 
-        QJsonObject apps = jsonObject["Applications"].toObject();
+      QJsonObject apps = jsonObject["Applications"].toObject();
 
-        if (theUQWidget->inputAppDataFromJSON(apps) == false)
-            return false;
-        if (theModelingWidget->inputAppDataFromJSON(apps) == false)
-            return false;
-        if (theAnalysisWidget->inputAppDataFromJSON(apps) == false)
-            return false;
-        if (theHazardToAssetWidget->inputAppDataFromJSON(apps) == false)
-            return false;
-        if (theAssetsWidget->inputAppDataFromJSON(apps) == false)
-            return false;
-        if (theHazardsWidget->inputAppDataFromJSON(apps) == false)
-            return false;
-        if (theDamageAndLossWidget->inputAppDataFromJSON(apps) == false)
-            return false;
+        if (theUQWidget->inputAppDataFromJSON(apps) == false) {
+	  this->errorMessage("UQ failed to read input data");
+	  theUQWidget->clear();
+	  result = false;
+	}
+
+        if (theModelingWidget->inputAppDataFromJSON(apps) == false) {
+	  this->errorMessage("UQ failed to read input data");
+	  theModelingWidget->clear();
+	  result = false;
+	}
+
+        if (theAnalysisWidget->inputAppDataFromJSON(apps) == false) {
+	  this->errorMessage("UQ failed to read input data");
+	  theAnalysisWidget->clear();
+	  result = false;
+	}
+
+        if (theHazardToAssetWidget->inputAppDataFromJSON(apps) == false) {
+	  this->errorMessage("UQ failed to read input data");
+	  theHazardToAssetWidget->clear();
+	  result = false;
+	}
+
+        if (theAssetsWidget->inputAppDataFromJSON(apps) == false) {
+	  this->errorMessage("UQ failed to read input data");
+	  theAssetsWidget->clear();
+	  result = false;
+	}
+	
+        if (theHazardsWidget->inputAppDataFromJSON(apps) == false) {
+	  this->errorMessage("UQ failed to read input data");
+	  theHazardsWidget->clear();
+	  result = false;
+	}
+
+        if (theDamageAndLossWidget->inputAppDataFromJSON(apps) == false) {
+	  this->errorMessage("UQ failed to read input data");
+	  theDamageAndLossWidget->clear();
+	  result = false;
+	}
 
     } else
         return false;
@@ -409,18 +463,12 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
 
     if (theRunWidget->inputFromJSON(jsonObject) == false)
         return false;
-    //theModelingWidget->outputToJSON(jsonObjectTop);
     if (theHazardsWidget->inputFromJSON(jsonObject) == false)
         return false;
-    //theAnalysisWidget->outputToJSON(jsonObjectTop);
-    //theDamageAndLossWidget->outputToJSON(jsonObjectTop);
-    //theHazardToAssetWidget->outputToJSON(jsonObjectTop);
-    //theUQWidget->outputToJSON(jsonObjectTop);
-    //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
     if (theRVs->inputFromJSON(jsonObject) == false)
         return false;
 
-    return true;
+    return result;
 }
 
 

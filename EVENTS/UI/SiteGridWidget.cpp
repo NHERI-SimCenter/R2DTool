@@ -6,7 +6,8 @@ SiteGridWidget::SiteGridWidget(SiteGrid& siteGrid, QWidget *parent) : QWidget(pa
     gridCreated = false;
 
     //We use a grid layout for the site widget
-    QGridLayout* layout = new QGridLayout(this);
+    //QGridLayout* layout = new QGridLayout(this);
+    QVBoxLayout  *layout= new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
     QGroupBox* latitudeGroupBox = new QGroupBox(tr("Latitude"));
@@ -61,10 +62,10 @@ SiteGridWidget::SiteGridWidget(SiteGrid& siteGrid, QWidget *parent) : QWidget(pa
 
     selectGridButton = new QPushButton(tr("&Define Grid on Map"),this);
 
-    layout->addWidget(latitudeGroupBox,0,0);
-    layout->addWidget(longitudeGroupBox,1,0);
-    layout->addWidget(selectGridButton,2,0,Qt::AlignLeft);
-
+    layout->addWidget(latitudeGroupBox);
+    layout->addWidget(longitudeGroupBox);
+    layout->addWidget(selectGridButton,Qt::AlignLeft);
+    layout->addStretch();
     //Now we need to setup the connections
     setupConnections();
 }
