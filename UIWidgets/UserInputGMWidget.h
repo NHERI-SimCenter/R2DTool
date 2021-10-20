@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 
 class VisualizationWidget;
+class SimCenterUnitsWidget;
 
 class QStackedWidget;
 class QLineEdit;
@@ -118,6 +119,8 @@ private:
     QProgressBar* progressBar;
 
     QVector<GroundMotionStation> stationList;
+
+    SimCenterUnitsWidget* unitsWidget;
 
 };
 

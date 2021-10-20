@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "UserInputGMWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+#include "SimCenterUnitsWidget.h"
 
 #include <QApplication>
 #include <QDialog>
@@ -58,6 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QDir>
+#include <QString>
 
 #ifdef ARC_GIS
 #include "ArcGISVisualizationWidget.h"
@@ -85,6 +87,7 @@ UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *pa
     progressBarWidget = nullptr;
     theStackedWidget = nullptr;
     progressLabel = nullptr;
+    unitsWidget = nullptr;
     eventFile = "";
     motionDir = "";
 
@@ -121,6 +124,8 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     } else {
         appData["motionDir"]=QString("None");
     }
+
+    unitsWidget->outputToJSON(appData);
 
     jsonObject["ApplicationData"]=appData;
 
@@ -188,6 +193,11 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         this->loadUserGMData();
 
+        auto res = unitsWidget->inputFromJSON(appData);
+
+        if(!res)
+            this->errorMessage("Failed to find/import the units object in user input ground motion widget");
+
         return true;
     }
 
@@ -227,10 +237,15 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
 
+    unitsWidget = new SimCenterUnitsWidget();
+
     fileLayout->addWidget(selectFolderText,   1,0);
     fileLayout->addWidget(motionDirLineEdit, 1,1);
     fileLayout->addWidget(browseFolderButton, 1,2);
-    fileLayout->setRowStretch(2,1);
+
+    fileLayout->addWidget(unitsWidget,2,0,1,3);
+
+    fileLayout->setRowStretch(3,1);
 
     //
     // progress bar
@@ -405,7 +420,7 @@ void UserInputGMWidget::clear(void)
     eventFileLineEdit->clear();
     motionDirLineEdit->clear();
 
-    stationList.clear();
+    unitsWidget->clear();
 }
 
 #ifdef Q_GIS
@@ -441,6 +456,32 @@ void UserInputGMWidget::loadUserGMData(void)
     progressBar->setRange(0, data.count());
     progressBar->setValue(0);
 
+    // Get the headers in the first station file - assume that the rest will be the same
+    auto rowStr = data.at(1);
+    auto stationName = rowStr[0];
+
+    // Path to station files, e.g., site0.csv
+    auto stationFilePath = motionDir + QDir::separator() + stationName;
+
+    QString err2;
+    QVector<QStringList> sampleStationData = csvTool.parseCSVFile(stationFilePath,err);
+
+    // Return if there is an error or the station data is empty
+    if(!err2.isEmpty())
+    {
+        this->errorMessage("Could not parse the first station with the following error: "+err2);
+        return;
+    }
+
+    if(sampleStationData.size() < 2)
+    {
+        this->errorMessage("The file " + stationFilePath + " is empty");
+        return;
+    }
+
+    // Get the header file
+    auto stationDataHeadings = sampleStationData.first();
+
     // Create the fields
     QList<QgsField> attribFields;
     attribFields.push_back(QgsField("AssetType", QVariant::String));
@@ -448,8 +489,12 @@ void UserInputGMWidget::loadUserGMData(void)
     attribFields.push_back(QgsField("Station Name", QVariant::String));
     attribFields.push_back(QgsField("Latitude", QVariant::Double));
     attribFields.push_back(QgsField("Longitude", QVariant::Double));
-    attribFields.push_back(QgsField("Number of Ground Motions", QVariant::Int));
-    attribFields.push_back(QgsField("Ground Motions", QVariant::String));
+
+    for(auto&& it : stationDataHeadings)
+    {
+        attribFields.push_back(QgsField(it, QVariant::String));
+        unitsWidget->addNewUnitItem(it);
+    }
 
     // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
     // gridLayer->setMinScale(80000);
@@ -460,6 +505,8 @@ void UserInputGMWidget::loadUserGMData(void)
     auto numRows = data.size();
 
     int count = 0;
+
+    auto maxToDisp = 20;
 
     QgsFeatureList featureList;
     // Get the data
@@ -513,21 +560,7 @@ void UserInputGMWidget::loadUserGMData(void)
             return;
         }
 
-        stationList.push_back(GMStation);
-
-        auto vecGMs = GMStation.getStationGroundMotions();
-
-        QString GMNames;
-        for(int i = 0; i<vecGMs.size(); ++i)
-        {
-            auto GMName = vecGMs.at(i).getName();
-
-            GMNames.append(GMName);
-
-            if(i != vecGMs.size()-1)
-                GMNames.append(", ");
-
-        }
+        auto stationData = GMStation.getStationData();
 
         // create the feature attributes
         QgsAttributes featAttributes(attribFields.size());
@@ -540,8 +573,34 @@ void UserInputGMWidget::loadUserGMData(void)
         featAttributes[2] = stationName;                 // "Station Name"
         featAttributes[3] = latitude;                    // "Latitude"
         featAttributes[4] = longitude;                   // "Longitude"
-        featAttributes[5] = vecGMs.size();               // "Number of Ground Motions"
-        featAttributes[6] = GMNames;                     // "Ground Motions"
+
+        // The number of headings in the file
+        auto numParams = stationData.front().size();
+
+        maxToDisp = (maxToDisp<stationData.size() ? maxToDisp : stationData.size());
+
+        QVector<QString> dataStrs(numParams);
+
+        for(int i = 0; i<maxToDisp-1; ++i)
+        {
+            auto stationParams = stationData[i];
+
+            for(int j = 0; j<numParams; ++j)
+            {
+                dataStrs[j] += stationParams[j] + ", ";
+            }
+        }
+
+        for(int j = 0; j<numParams; ++j)
+        {
+            auto str = dataStrs[j] ;
+            str += stationData[maxToDisp-1][j];
+
+            if(maxToDisp<stationData.size())
+                str += "...";
+
+            featAttributes[5+j] = str;
+        }
 
         // Create the feature
         QgsFeature feature;
@@ -732,8 +791,6 @@ void UserInputGMWidget::loadUserGMData(void)
 
             return;
         }
-
-        stationList.push_back(GMStation);
 
         // create the feature attributes
         QMap<QString, QVariant> featureAttributes;

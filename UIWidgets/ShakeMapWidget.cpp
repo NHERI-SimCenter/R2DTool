@@ -854,6 +854,11 @@ bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     appData["Directory"] = pathToShakeMapDirectory;
 
+    QJsonObject unitsData;
+
+    unitsData.insert("PGA","g");
+    appData.insert("Units",unitsData);
+
     jsonObject["ApplicationData"]=appData;
 
     return true;

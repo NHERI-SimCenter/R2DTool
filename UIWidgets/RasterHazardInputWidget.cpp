@@ -41,6 +41,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RasterHazardInputWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+#include "SimCenterUnitsCombo.h"
+#include "SimCenterUnitsWidget.h"
 
 #include <QApplication>
 #include <QDialog>
@@ -68,6 +70,7 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget != nullptr);
 
+    unitsWidget = nullptr;
     dataProvider = nullptr;
     rasterlayer = nullptr;
 
@@ -81,9 +84,9 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     this->setLayout(layout);
 
     // Test to remove
-    //    eventFile = "/Users/steve/Desktop/GalvestonTestbed/Surge_Raster.tif";
-    //    eventFileLineEdit->setText(eventFile);
-    //    this->loadRaster();
+    eventFile = "/Users/steve/Desktop/GalvestonTestbed/Surge_Raster.tif";
+    eventFileLineEdit->setText(eventFile);
+    this->loadRaster();
 }
 
 
@@ -95,7 +98,7 @@ RasterHazardInputWidget::~RasterHazardInputWidget()
 
 bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
-    jsonObject["Application"] = "UserInputGM";
+    jsonObject["Application"] = "UserInputRasterHazard";
 
     QJsonObject appData;
     QFileInfo theFile(eventFile);
@@ -106,6 +109,8 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
         appData["eventFile"]=eventFile; // may be valid on others computer
         appData["eventFileDir"]=QString("");
     }
+
+    unitsWidget->outputToJSON(jsonObject);
 
     jsonObject["ApplicationData"]=appData;
 
@@ -187,20 +192,11 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     eventTypeCombo->addItem("Hurricane","Hurricane");
     eventTypeCombo->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 
-    QLabel* unitsLabel = new QLabel("Event Units:",this);
-    QComboBox* unitsCombo = new QComboBox(this);
-    unitsCombo->addItem("Gravitational constant (g)","g");
-    unitsCombo->addItem("Natural logarithm of gravitational constant ln(g)","lng");
-    unitsCombo->addItem("Meter per second squared","mps2");
-    unitsCombo->addItem("Feet per second squared","ftps2");
-    unitsCombo->addItem("Inches per second squared","inchps2");
-    unitsCombo->addItem("Feet","ft");
-    unitsCombo->addItem("Meter","m");
+    unitsWidget = new SimCenterUnitsWidget();
 
     fileLayout->addWidget(eventTypeLabel, 1,0);
     fileLayout->addWidget(eventTypeCombo, 1,1);
-    fileLayout->addWidget(unitsLabel, 2,0);
-    fileLayout->addWidget(unitsCombo, 2,1);
+    fileLayout->addWidget(unitsWidget, 2,0,1,3);
 
     fileLayout->setRowStretch(3,1);
 
@@ -232,6 +228,8 @@ void RasterHazardInputWidget::clear(void)
 {
     eventFile.clear();
     eventFileLineEdit->clear();
+
+    unitsWidget->clear();
 }
 
 
@@ -287,10 +285,15 @@ int RasterHazardInputWidget::loadRaster(void)
 
     dataProvider = rasterlayer->dataProvider();
 
-    // Note that band numbers start from 1 and not 0!
-    auto bandName = rasterlayer->bandName(1);
+    auto numBands = rasterlayer->bandCount();
 
-    this->statusMessage(bandName);
+    for(int i = 0; i<numBands; ++i)
+    {
+        // Note that band numbers start from 1 and not 0!
+        auto bandName = rasterlayer->bandName(i+1);
+
+        unitsWidget->addNewUnitItem(bandName);
+    }
 
     this->sampleRaster(-94.87183,29.24216,1);
 

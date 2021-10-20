@@ -105,6 +105,8 @@ public:
     void setStationFeature(const QgsFeature &value);
 #endif
 
+    QVector<QStringList> getStationData() const;
+
 private:
 
     void importGroundMotionTimeHistory(const QString& filePath, const double scalingFactor);
@@ -117,6 +119,8 @@ private:
 
     // Vector to store time histories at a given station
     QVector<GroundMotionTimeHistory> groundMotionTimeHistories;
+
+    QVector<QStringList> stationData;
 
 #ifdef ARC_GIS
     // Map to store potential PGA, PGV, etc., values

@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class QLineEdit;
 class QGridLayout;
 class QComboBox;
+class SimCenterUnitsCombo;
 class QCheckBox;
 
 class GeneralInformationWidget : public SimCenterWidget
@@ -75,8 +76,6 @@ public:
     Q_ENUM(SpeedUnit)
 
     bool setAssetTypeState(QString assetType, bool);
-    QString getLengthUnit();
-    QString getForceUnit();
 
 signals:
     void assetChanged(QString name, bool checked);
@@ -87,9 +86,9 @@ private:
 
     QLineEdit* nameEdit;
 
-    QComboBox* unitsForceCombo;
-    QComboBox* unitsLengthCombo;
-    QComboBox* unitsTimeCombo;
+    SimCenterUnitsCombo* unitsForceCombo;
+    SimCenterUnitsCombo* unitsLengthCombo;
+    SimCenterUnitsCombo* unitsTimeCombo;
 
     QCheckBox* buildingsCheckBox;
     QCheckBox* soilCheckBox;
@@ -104,9 +103,6 @@ private:
     QCheckBox* realizationCheckBox;
     QCheckBox* BIMCheckBox;
 
-
-    template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
-    template<typename UnitEnum> UnitEnum unitStringToEnum(QString unitString);
 };
 
 

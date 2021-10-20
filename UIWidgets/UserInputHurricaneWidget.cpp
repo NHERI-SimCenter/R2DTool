@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 #include "WindFieldStation.h"
+#include "SimCenterUnitsWidget.h"
 
 #ifdef ARC_GIS
 #include "ArcGISHurricanePreprocessor.h"
@@ -90,6 +91,7 @@ UserInputHurricaneWidget::UserInputHurricaneWidget(VisualizationWidget* visWidge
     progressBarWidget = nullptr;
     theStackedWidget = nullptr;
     progressLabel = nullptr;
+    unitsWidget = nullptr;
     eventFile = "";
 
     QVBoxLayout *layout = new QVBoxLayout();
@@ -126,6 +128,7 @@ bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
         appData["eventDir"]=QString("None");
     }
 
+    unitsWidget->outputToJSON(appData);
 
     jsonObject["ApplicationData"]=appData;
 
@@ -185,7 +188,7 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
                     eventDir = trialDir;
                     eventDirLineEdit->setText(trialDir);
                 } else {
-                    this->errorMessage("UserInputWF - could not find wind field dir" + eventDir + " " + trialDir);
+                    this->errorMessage("UserInputHurricane - could not find hurricane field dir" + eventDir + " " + trialDir);
                     return false;
                 }
             } else {
@@ -194,6 +197,11 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         }
 
         this->loadUserWFData();
+
+        auto res = unitsWidget->inputFromJSON(appData);
+
+        if(!res)
+            this->errorMessage("Failed to find/import the units object in user input hurricane widget");
 
         return true;
     }
@@ -216,7 +224,7 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     fileInputWidget = new QWidget();
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
 
-    QLabel* selectComponentsText = new QLabel("Event File Listing Wind Field");
+    QLabel* selectComponentsText = new QLabel("Event File Listing Hurricane Grid");
     eventFileLineEdit = new QLineEdit();
     QPushButton *browseFileButton = new QPushButton("Browse");
 
@@ -226,16 +234,23 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     fileLayout->addWidget(eventFileLineEdit,    0,1);
     fileLayout->addWidget(browseFileButton,     0,2);
 
-    QLabel* selectFolderText = new QLabel("Folder Containing Wind Field Stations");
+    QLabel* selectFolderText = new QLabel("Folder Containing Hurricane Stations");
     eventDirLineEdit = new QLineEdit();
     QPushButton *browseFolderButton = new QPushButton("Browse");
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseEventDirDialog()));
 
+
+    unitsWidget = new SimCenterUnitsWidget();
+
+
     fileLayout->addWidget(selectFolderText,   1,0);
     fileLayout->addWidget(eventDirLineEdit, 1,1);
     fileLayout->addWidget(browseFolderButton, 1,2);
-    fileLayout->setRowStretch(2,1);
+
+    fileLayout->addWidget(unitsWidget,2,0,1,3);
+
+    fileLayout->setRowStretch(3,1);
 
     //
     // progress bar
@@ -245,7 +260,7 @@ QStackedWidget* UserInputHurricaneWidget::getUserInputHurricaneWidget(void)
     auto progressBarLayout = new QVBoxLayout(progressBarWidget);
     progressBarWidget->setLayout(progressBarLayout);
 
-    auto progressText = new QLabel("Loading user wind field data.  This may take a while.",progressBarWidget);
+    auto progressText = new QLabel("Loading user hurricane data.  This may take a while.",progressBarWidget);
     progressLabel =  new QLabel(" ",this);
     progressBar = new QProgressBar(progressBarWidget);
 
@@ -452,8 +467,13 @@ void UserInputHurricaneWidget::chooseEventFileDialog(void)
 void UserInputHurricaneWidget::clear(void)
 {
     eventFile.clear();
+    eventDir.clear();
 
     eventFileLineEdit->clear();
+    eventDirLineEdit->clear();
+
+    this->hideProgressBar();
+    unitsWidget->clear();
 }
 
 
@@ -492,6 +512,33 @@ void UserInputHurricaneWidget::loadUserWFData(void)
 
     progressBar->setValue(0);
 
+    // Get the headers in the first station file - assume that the rest will be the same
+    auto rowStr = data.at(1);
+    auto stationName = rowStr[0];
+
+    // Path to station files, e.g., site0.csv
+    auto stationFilePath = eventDir + QDir::separator() + stationName;
+
+    QString err2;
+    QVector<QStringList> sampleStationData = csvTool.parseCSVFile(stationFilePath,err);
+
+    // Return if there is an error or the station data is empty
+    if(!err2.isEmpty())
+    {
+        this->errorMessage("Could not parse the first station with the following error: "+err2);
+        return;
+    }
+
+    if(sampleStationData.size() < 2)
+    {
+        this->errorMessage("The file " + stationFilePath + " is empty");
+        return;
+    }
+
+    // Get the header file
+    auto stationDataHeadings = sampleStationData.first();
+
+
     // Create the fields
     QList<QgsField> attribFields;
     attribFields.push_back(QgsField("AssetType", QVariant::String));
@@ -499,8 +546,13 @@ void UserInputHurricaneWidget::loadUserWFData(void)
     attribFields.push_back(QgsField("Station Name", QVariant::String));
     attribFields.push_back(QgsField("Latitude", QVariant::Double));
     attribFields.push_back(QgsField("Longitude", QVariant::Double));
-    attribFields.push_back(QgsField("Peak Wind Speeds", QVariant::String));
-    attribFields.push_back(QgsField("Peak Inundation Heights", QVariant::String));
+
+    for(auto&& it : stationDataHeadings)
+    {
+        attribFields.push_back(QgsField(it, QVariant::String));
+        unitsWidget->addNewUnitItem(it);
+    }
+
 
     auto headerInfo = data.front();
 
@@ -576,38 +628,36 @@ void UserInputHurricaneWidget::loadUserWFData(void)
             return;
         }
 
-        auto pws = WFStation.getPeakWindSpeeds();
-
-        QString pwsStr;
-        for(int i = 0; i<pws.size()-1; ++i)
-        {
-            pwsStr += QString::number(pws[i]) + ", ";
-        }
-
-        pwsStr += QString::number(pws.back());
-
-
-        auto pih = WFStation.getPeakInundationHeights();
-
-        QString pihStr;
-        for(int i = 0; i<pih.size()-1; ++i)
-        {
-            pihStr += QString::number(pih[i]) + ", ";
-        }
-
-        pihStr += QString::number(pih.back());
-
+        auto stationData = WFStation.getStationData();
 
         // create the feature attributes
         QgsAttributes featAttributes(attribFields.size());
 
-        featAttributes[0] = "WindfieldGridPoint"; // AssetType
-        featAttributes[1] = "Wind Field Grid Point"; // TabName
+        featAttributes[0] = "HurricaneGridPoint"; // AssetType
+        featAttributes[1] = "Hurricane Grid Point"; // TabName
         featAttributes[2] = stationName; // Station Name
         featAttributes[3] = latitude; // Latitude
         featAttributes[4] = longitude; // Longitude
-        featAttributes[5] = pwsStr; // Peak Wind Speeds
-        featAttributes[6] = pihStr; // Peak Inundation Heights
+
+        // The number of headings in the file
+        auto numParams =stationData.front().size();
+
+        QVector<QString> dataStrs(numParams);
+
+        for(int i = 0; i<stationData.size(); ++i)
+        {
+            auto stationParams = stationData[i];
+
+            for(int j = 0; j<numParams; ++j)
+            {
+                dataStrs[j] += stationParams[j] + " ";
+            }
+        }
+
+        for(int i = 0; i<numParams; ++i)
+        {
+            featAttributes[5+i] = dataStrs[i];
+        }
 
         // Create the point and add it to the feature table
         QgsFeature feature;
@@ -625,7 +675,7 @@ void UserInputHurricaneWidget::loadUserWFData(void)
     }
 
 
-    auto vectorLayer = QGsVisWidget->addVectorLayer("Point", "Wind Field Grid");
+    auto vectorLayer = QGsVisWidget->addVectorLayer("Point", "Hurricane Grid");
 
     if(vectorLayer == nullptr)
     {

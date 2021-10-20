@@ -90,7 +90,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
     this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);
-    this->addComponent("User Specified Wind Field", "UserInputHurricane", theUserInputHurricaneWidget);
+    this->addComponent("User Specified Hurricane", "UserInputHurricane", theUserInputHurricaneWidget);
     this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
     this->addComponent("Raster Defined Hazard", "UserInputRaster", theRasterHazardWidget);
 

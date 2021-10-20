@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GeneralInformationWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterPreferences.h"
+#include "SimCenterUnitsCombo.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -100,9 +101,9 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     //jsonObj.insert("localAppDir", appDir);
 
     QJsonObject unitsObj;
-    unitsObj["force"] = unitEnumToString(unitsForceCombo->currentData().value<ForceUnit>());
-    unitsObj["length"] = unitEnumToString(unitsLengthCombo->currentData().value<LengthUnit>());
-    unitsObj["time"] = unitEnumToString(unitsTimeCombo->currentData().value<TimeUnit>());
+    unitsObj["force"] = unitsForceCombo->getCurrentUnitString();
+    unitsObj["length"] = unitsLengthCombo->getCurrentUnitString();
+    unitsObj["time"] = unitsTimeCombo->getCurrentUnitString();
 
     QJsonObject outputsObj;
     outputsObj.insert("EDP", EDPCheckBox->isChecked());
@@ -137,40 +138,21 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
         QJsonObject unitsObj=jsonObject["units"].toObject();
 
         QJsonValue unitsForceValue = unitsObj["force"];
-        ForceUnit forceUnit = unitStringToEnum<ForceUnit>(unitsForceValue.toString());
-        int forceUnitIndex = unitsForceCombo->findData(forceUnit);
-        unitsForceCombo->setCurrentIndex(forceUnitIndex);
+        if(!unitsForceValue.isNull())
+        {
+            unitsForceCombo->setCurrentUnitString(unitsForceValue.toString());
+        }
 
         QJsonValue unitsLengthValue = unitsObj["length"];
-        LengthUnit lengthUnit = unitStringToEnum<LengthUnit>(unitsLengthValue.toString());
-
-        if(lengthUnit == LengthUnit::m || lengthUnit == LengthUnit::meter)
-            unitsLengthCombo->setCurrentIndex(0);
-        else if(lengthUnit == LengthUnit::cm || lengthUnit == LengthUnit::centimeter)
-            unitsLengthCombo->setCurrentIndex(1);
-        else if(lengthUnit == LengthUnit::mm || lengthUnit == LengthUnit::milimeter)
-            unitsLengthCombo->setCurrentIndex(2);
-        if(lengthUnit == LengthUnit::in || lengthUnit == LengthUnit::inch)
-            unitsLengthCombo->setCurrentIndex(3);
-        else if(lengthUnit == LengthUnit::ft || lengthUnit == LengthUnit::foot)
-            unitsLengthCombo->setCurrentIndex(4);
-        else
-            unitsLengthCombo->setCurrentIndex(0);
-
+        if(!unitsLengthValue.isNull())
+        {
+            unitsLengthCombo->setCurrentUnitString(unitsLengthValue.toString());
+        }
 
         QJsonValue unitsTimeValue = unitsObj["time"];
-
         if(!unitsTimeValue.isNull())
         {
-            TimeUnit timeUnit = unitStringToEnum<TimeUnit>(unitsTimeValue.toString());
-            if(timeUnit == TimeUnit::sec || timeUnit == TimeUnit::seconds)
-                unitsTimeCombo->setCurrentIndex(0);
-            else if(timeUnit == TimeUnit::min || timeUnit == TimeUnit::minutes)
-                unitsTimeCombo->setCurrentIndex(1);
-            else if(timeUnit == TimeUnit::hr || timeUnit == TimeUnit::hour)
-                unitsTimeCombo->setCurrentIndex(2);
-            else
-                unitsTimeCombo->setCurrentIndex(0);
+            unitsTimeCombo->setCurrentUnitString(unitsTimeValue.toString());
         }
     }
 
@@ -218,25 +200,9 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     analysisLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
     nameEdit->setText("R2D Analysis");
 
-    unitsForceCombo = new QComboBox();
-    unitsForceCombo->addItem("Newtons", ForceUnit::N);
-    unitsForceCombo->addItem("Kilonewtons", ForceUnit::kN);
-    unitsForceCombo->addItem("Pounds", ForceUnit::lb);
-    unitsForceCombo->addItem("Kips", ForceUnit::kips);
-    unitsForceCombo->setCurrentIndex(3);
-
-    unitsLengthCombo = new QComboBox();
-    unitsLengthCombo->addItem("Meters", LengthUnit::m);
-    unitsLengthCombo->addItem("Centimeters", LengthUnit::cm);
-    unitsLengthCombo->addItem("Millimeters", LengthUnit::mm);
-    unitsLengthCombo->addItem("Inches", LengthUnit::inch);
-    unitsLengthCombo->addItem("Feet", LengthUnit::ft);
-    unitsLengthCombo->setCurrentIndex(3);
-
-    unitsTimeCombo = new QComboBox();
-    unitsTimeCombo->addItem("Seconds", TimeUnit::sec);
-    unitsTimeCombo->addItem("Minutes", TimeUnit::min);
-    unitsTimeCombo->addItem("Hours", TimeUnit::hr);
+    unitsForceCombo = new SimCenterUnitsCombo(SimCenter::Unit::FORCE,"force");
+    unitsLengthCombo = new SimCenterUnitsCombo(SimCenter::Unit::LENGTH,"length");
+    unitsTimeCombo = new SimCenterUnitsCombo(SimCenter::Unit::TIME,"time");
 
     // Units
     QGroupBox* unitsGroupBox = new QGroupBox("Units");
@@ -356,37 +322,14 @@ bool GeneralInformationWidget::setAssetTypeState(QString assetType, bool checked
 }
 
 
-template<typename UnitEnum> QString GeneralInformationWidget::unitEnumToString(UnitEnum enumValue)
-{
-    return QString(QMetaEnum::fromType<UnitEnum>().valueToKey(enumValue));
-}
-
-
-template<typename UnitEnum> UnitEnum GeneralInformationWidget::unitStringToEnum(QString unitString)
-{
-    return (UnitEnum)QMetaEnum::fromType<UnitEnum>().keyToValue(unitString.toStdString().c_str());
-}
-
-
-QString GeneralInformationWidget::getLengthUnit()
-{
-    return unitEnumToString(unitsLengthCombo->currentData().value<LengthUnit>());
-}
-
-
-QString GeneralInformationWidget::getForceUnit()
-{
-    return unitEnumToString(unitsForceCombo->currentData().value<ForceUnit>());
-}
-
 
 void GeneralInformationWidget::clear(void)
 {
     nameEdit->clear();
 
-    unitsForceCombo->setCurrentIndex(0);
-    unitsLengthCombo->setCurrentIndex(0);
-    unitsTimeCombo->setCurrentIndex(0);
+    unitsForceCombo->setCurrentUnit(SimCenter::Unit::lb);
+    unitsLengthCombo->setCurrentUnit(SimCenter::Unit::ft);
+    unitsTimeCombo->setCurrentUnit(SimCenter::Unit::sec);
 
     buildingsCheckBox->setChecked(true);
     soilCheckBox->setChecked(false);

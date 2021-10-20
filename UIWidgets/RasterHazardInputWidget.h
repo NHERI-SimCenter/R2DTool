@@ -48,10 +48,12 @@ class VisualizationWidget;
 class QGISVisualizationWidget;
 class QgsRasterDataProvider;
 class QgsRasterLayer;
+class SimCenterUnitsWidget;
 
 class QLineEdit;
 class QProgressBar;
 class QLabel;
+class QGridLayout;
 
 class RasterHazardInputWidget : public SimCenterAppWidget
 {
@@ -93,6 +95,8 @@ private:
 
     QgsRasterDataProvider* dataProvider;
     QgsRasterLayer* rasterlayer;
+
+    SimCenterUnitsWidget* unitsWidget;
 };
 
 #endif // RasterHazardInputWidget_H

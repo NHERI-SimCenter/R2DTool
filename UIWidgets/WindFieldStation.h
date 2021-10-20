@@ -89,7 +89,6 @@ public:
         return val;
     }
 
-    QVector<double> getPeakWindSpeeds() const;
 
 #ifdef ARC_GIS
     Esri::ArcGISRuntime::Feature *getStationFeature() const;
@@ -101,10 +100,9 @@ public:
     void setStationFeature(QgsFeature value);
 #endif
 
-
     int updateFeatureAttribute(const QString& attribute, const QVariant& value);
 
-    QVector<double> getPeakInundationHeights() const;
+    QVector<QStringList> getStationData() const;
 
 private:
 
@@ -116,8 +114,9 @@ private:
 
     double longitude;
 
-    QVector<double> peakWindSpeeds;
-    QVector<double> peakInundationHeights;
+    QVector<QStringList> stationData;
+
+    QStringList tableHeadings;
 
 #ifdef ARC_GIS
     Esri::ArcGISRuntime::Feature* stationFeature;

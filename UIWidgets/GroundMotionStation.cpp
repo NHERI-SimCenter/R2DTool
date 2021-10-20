@@ -85,6 +85,8 @@ void GroundMotionStation::importGroundMotions(void)
     // Pop off the row that contains the header information
     data.pop_front();
 
+    stationData = data;
+
     auto numRows = data.size();
     auto numCols = tableHeadings.size();
 
@@ -268,4 +270,10 @@ QString GroundMotionStation::getStationFilePath() const
 {
     return stationFilePath;
 }
+
+QVector<QStringList> GroundMotionStation::getStationData() const
+{
+    return stationData;
+}
+
 

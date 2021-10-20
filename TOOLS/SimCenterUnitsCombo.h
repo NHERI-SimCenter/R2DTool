@@ -1,5 +1,5 @@
-#ifndef UserInputHurricaneWidget_H
-#define UserInputHurricaneWidget_H
+#ifndef SIMCENTERUNITSCOMBO_H
+#define SIMCENTERUNITSCOMBO_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,87 +38,70 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "SimCenterAppWidget.h"
+#include "JsonSerializable.h"
 
-#include <memory>
+#include <QComboBox>
 
-#include <QMap>
+namespace SimCenter {
 
-class VisualizationWidget;
-class SimCenterUnitsWidget;
+class Unit :  QObject{
 
-class QStackedWidget;
-class QLineEdit;
-class QProgressBar;
-class QLabel;
+    Q_OBJECT
 
-#ifdef Arc_GIS
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ArcGISMapImageLayer;
-class GroupLayer;
-class FeatureCollectionLayer;
-class KmlLayer;
-class Layer;
+public:
+    enum Type {
+        UNKNOWN = 0x000,
+        LENGTH = 0x100,
+        mm, cm, m, km, in, ft, mi,
+        FORCE = 0x200,
+        N, kN, lb, kips,
+        PRESSURE = 0x300,
+        Pa, MPa, GPa, bar, atm,
+        TIME = 0x400,
+        sec, min, hr, day,
+        VELOCITY = 0x500,
+        cmps, mps, kph , fps, mph, kts,
+        ACCEL = 0x600,
+        cmps2, mps2, inchps2, ftps2, g, lng, pctg,
+        DIMEMSIONLESS = 0x700,
+        scalar,
+        ALL = 0x800,
+    };
+
+    Q_ENUM(Type)
+
+    Type type;
+
+};
+
 }
-}
-#endif
 
-class UserInputHurricaneWidget : public SimCenterAppWidget
+// The combo name should be the key for the json file
+class SimCenterUnitsCombo : public QComboBox
 {
     Q_OBJECT
 
 public:
-    UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~UserInputHurricaneWidget();
+    SimCenterUnitsCombo(SimCenter::Unit::Type unitType, QString comboName, QWidget* parent = nullptr);
 
-    QStackedWidget* getUserInputHurricaneWidget(void);
+    void addParentItem(const QString& text);
+    void addChildItem(const QString& text, const QVariant& data);
 
-    bool outputToJSON(QJsonObject &jsonObj);
-    bool inputAppDataFromJSON(QJsonObject &jsonObj);
-    bool outputAppDataToJSON(QJsonObject &jsonObj);
+    QString getCurrentUnitString(void);
+    bool setCurrentUnitString(const QString& unit);
 
-    void clear(void);
+    bool setCurrentUnit(SimCenter::Unit::Type unitType);
 
-public slots:
-
-    void showEventSelectDialog(void);
-
-private slots:
-
-    void loadUserWFData(void);
-    void loadHurricaneTrackData(void);
-    void chooseEventFileDialog(void);
-    void chooseEventDirDialog(void);
-
-signals:
-    void outputDirectoryPathChanged(QString eventDir, QString eventFile);
-    void loadingComplete(const bool value);
+    QString getName() const;
 
 private:
+    void populateComboText(const SimCenter::Unit::Type unitType);
 
-    void showProgressBar(void);
-    void hideProgressBar(void);
+    template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
+    template<typename UnitEnum> UnitEnum unitStringToEnum(QString unitString);
 
-    QStackedWidget* theStackedWidget;
-
-    VisualizationWidget* theVisualizationWidget;
-
-    QString eventFile;
-    QString eventDir;
-
-    QLineEdit *eventFileLineEdit;
-    QLineEdit *eventDirLineEdit;
-
-    QLabel* progressLabel;
-    QWidget* progressBarWidget;
-    QWidget* fileInputWidget;
-    QProgressBar* progressBar;
-
-    SimCenterUnitsWidget* unitsWidget;
-
+    SimCenter::Unit::Type type;
+    QString name;
 };
 
-#endif // UserInputHurricaneWidget_H
+#endif // SIMCENTERUNITSCOMBO_H
