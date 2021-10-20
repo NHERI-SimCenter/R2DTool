@@ -87,8 +87,9 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
 
     auto smallVSpacer = new QSpacerItem(0,20);
 
+
     auto Vspacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    gridLayout->addItem(Vspacer,0,0,1,2);
+    //gridLayout->addItem(Vspacer,0,0,1,2);
     gridLayout->addWidget(spatialCorrelationInterLabel,1,0);
     gridLayout->addWidget(m_correlationBoxInter,1,1);
     gridLayout->addWidget(spatialCorrelationIntraLabel,2,0);
@@ -98,7 +99,9 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     gridLayout->addWidget(minScalingLineEdit,4,1);
     gridLayout->addWidget(maxScalingLabel,5,0);
     gridLayout->addWidget(maxScalingLineEdit,5,1);
-    gridLayout->addItem(Vspacer,6,0,1,2);
+    //gridLayout->addItem(Vspacer,6,0,1,2);
+    // gridLayout->setRowStretch(6,1);
+
     layout->addWidget(spatCorrGroupBox);
     //layout->setSizeConstraint(QLayout::SetFixedSize);
     this->setLayout(layout);

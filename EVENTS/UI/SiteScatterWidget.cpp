@@ -123,6 +123,8 @@ SiteScatterWidget::SiteScatterWidget(SiteScatter& siteScatter, QWidget *parent) 
     layout->addWidget(previewGroup,1,0);
     layout->addLayout(labelsLayout,1,1,1,1,Qt::AlignRight);
 
+    layout->setRowStretch(2,1);
+
 
     //Now we need to setup the connections
     setupConnections();

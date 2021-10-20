@@ -252,7 +252,7 @@ void WorkflowAppR2D::initialize(void)
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidget->setAssetTypeState("Buildings", true);
 
-    theComponentSelection->displayComponent("HAZ");    
+    //theComponentSelection->displayComponent("HAZ");    
 }
 
 
