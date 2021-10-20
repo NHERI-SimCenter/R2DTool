@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QMessageBox>
 #include <QCoreApplication>
+#include <QMessageBox>
 #include <QApplication>
 #include <QFileDialog>
 #include <QLineEdit>
@@ -717,14 +718,15 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
         if(filterData.isEmpty())
         {
+
             auto msgBox =  std::make_unique<QMessageBox>();
 
-            msgBox->setText("No IDs are selected for analysis in ASD "+componentType.toLower()+". Select all components?");
-            msgBox->setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            msgBox->setText("No IDs are selected for analysis in ASD "+componentType.toLower()+". Really run with all components?");
+            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
 
             auto res = msgBox->exec();
 
-            if(res != QMessageBox::Ok)
+            if(res != QMessageBox::Yes)
                 return false;
 
             this->selectAllComponents();
