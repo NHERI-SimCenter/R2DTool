@@ -17,30 +17,21 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
 {
 
     QgsFields featFields;
-
-    // Create the building attributes that are fixed
-    QList<QgsField> attribFields;
-    attribFields.append(QgsField("RepairRate", QVariant::Double));
-    attribFields.append(QgsField("ID", QVariant::Int));
-    attribFields.append(QgsField("AssetType", QVariant::String));
-    attribFields.append(QgsField("UID", QVariant::String));
-
     featFields.append(QgsField("RepairRate", QVariant::Double));
     featFields.append(QgsField("ID", QVariant::Int));
     featFields.append(QgsField("AssetType", QVariant::String));
     featFields.append(QgsField("TabName", QVariant::String));
 
-
     // Set the table headers as fields in the table
     for(int i = 1; i<componentTableWidget->columnCount(); ++i)
     {
         auto fieldText = componentTableWidget->horizontalHeaderItemVariant(i);
-
-        attribFields.append(QgsField(fieldText.toString(),fieldText.type()));
-
         featFields.append(QgsField(fieldText.toString(),fieldText.type()));
     }
 
+    QList<QgsField> attribFields;
+    for(int i = 0; i<featFields.size(); ++i)
+        attribFields.push_back(featFields[i]);
 
     // Create the buildings layer
     auto mainLayer = theVisualizationWidget->addVectorLayer("linestring","All Pipelines");

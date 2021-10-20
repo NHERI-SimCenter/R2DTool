@@ -82,8 +82,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #ifdef Q_GIS
 #include "SimCenterMapcanvasWidget.h"
+#include "QGISVisualizationWidget.h"
 #include "MapViewWindow.h"
 #include <qgsmapcanvas.h>
+#include <qgsvectorlayer.h>
 #endif
 
 #ifdef ARC_GIS
@@ -632,6 +634,7 @@ void GMWidget::runHazardSimulation(void)
 #ifdef Q_GIS
         // Get the vector of grid nodes
         auto gridNodeVec = userGrid->getGridNodeVec();
+        auto mapCanvas = mapViewSubWidget->getMapCanvasWidget()->mapCanvas();
 #endif
 
         for(int i = 0; i<gridNodeVec.size(); ++i)
@@ -646,8 +649,8 @@ void GMWidget::runHazardSimulation(void)
             auto screenPoint = gridNode->getPoint();
 
             // The latitude and longitude
-            auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint);
-            auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint);
+            auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint,mapCanvas);
+            auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint,mapCanvas);
 
             stationRow.push_back(QString::number(latitude));
             stationRow.push_back(QString::number(longitude));
@@ -757,6 +760,13 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         // Saving the event grid path
         auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
         emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
+
+        // Load the results
+        QString errMsg;
+        auto res = this->processDownloadedRecords(errMsg);
+        if(res != 0)
+            this->errorMessage("Failed to process event grid file with the following error: " + errMsg);
+
         this->getProgressDialog()->hideProgressBar();
 
         return;
@@ -891,7 +901,231 @@ void GMWidget::downloadRecordBatch(void)
 int GMWidget::processDownloadedRecords(QString& errorMessage)
 {
 
-    qDebug()<<"GMWidget::processDownloadedRecords";
+    auto qgisVizWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(qgisVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to QGISVisualizationWidget";
+        return -1;
+    }
+
+    QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+
+    // Account for the different directory structure if only want IMs
+    if(m_selectionconfig->getDatabase().size() == 0)
+        pathToOutputDirectory += "IMs" + QString(QDir::separator());
+
+    pathToOutputDirectory += "EventGrid.csv";
+
+    const QFileInfo inputFile(pathToOutputDirectory);
+
+    if (!inputFile.exists() || !inputFile.isFile())
+    {
+        errorMessage ="A file does not exist at the path: " + pathToOutputDirectory;
+        return -1;
+    }
+
+    QStringList acceptableFileExtensions = {"*.CSV", "*.csv"};
+
+    QStringList inputFiles = inputFile.dir().entryList(acceptableFileExtensions,QDir::Files);
+
+    if(inputFiles.empty())
+    {
+        errorMessage ="No files with .csv extensions were found at the path: "+pathToOutputDirectory;
+        return -1;
+    }
+
+    // QString fileName = inputFile.fileName();
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(pathToOutputDirectory,err);
+
+    if(!err.isEmpty())
+    {
+        errorMessage = err;
+        return -1;
+    }
+
+    if(data.empty())
+        return -1;
+
+    auto motionDir = inputFile.dir().absolutePath() ;
+
+    QApplication::processEvents();
+
+    this->getProgressDialog()->setProgressBarRange(0,inputFiles.size());
+    this->getProgressDialog()->setProgressBarValue(0);
+
+    QApplication::processEvents();
+
+    // Get the headers in the first station file - assume that the rest will be the same
+    auto rowStr = data.at(1);
+    auto stationName = rowStr[0];
+
+    // Path to station files, e.g., site0.csv
+    auto stationFilePath = motionDir + QDir::separator() + stationName;
+
+    QString err2;
+    QVector<QStringList> sampleStationData = csvTool.parseCSVFile(stationFilePath,err);
+
+    // Return if there is an error or the station data is empty
+    if(!err2.isEmpty())
+    {
+        errorMessage = "Could not parse the first station with the following error: "+err2;
+        return -1;
+    }
+
+    if(sampleStationData.size() < 2)
+    {
+        errorMessage = "The file " + stationFilePath + " is empty";
+        return -1;
+    }
+
+    // Get the header file
+    auto stationDataHeadings = sampleStationData.first();
+
+    // Create the fields
+    QList<QgsField> attribFields;
+    attribFields.push_back(QgsField("AssetType", QVariant::String));
+    attribFields.push_back(QgsField("TabName", QVariant::String));
+    attribFields.push_back(QgsField("Station Name", QVariant::String));
+    attribFields.push_back(QgsField("Latitude", QVariant::Double));
+    attribFields.push_back(QgsField("Longitude", QVariant::Double));
+
+    for(auto&& it : stationDataHeadings)
+        attribFields.push_back(QgsField(it, QVariant::String));
+
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    int count = 0;
+
+    auto maxToDisp = 20;
+
+    QgsFeatureList featureList;
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        auto stationName = rowStr[0];
+
+        // Path to station files, e.g., site0.csv
+        auto stationPath = motionDir + QDir::separator() + stationName;
+
+        bool ok;
+        auto lon = rowStr[1].toDouble(&ok);
+
+        if(!ok)
+        {
+            errorMessage = "Error longitude to a double, check the value";
+            return -1;
+        }
+
+        auto lat = rowStr[2].toDouble(&ok);
+
+        if(!ok)
+        {
+            errorMessage = "Error latitude to a double, check the value";
+            return -1;
+        }
+
+        GroundMotionStation GMStation(stationPath,lat,lon);
+
+        try
+        {
+            GMStation.importGroundMotions();
+        }
+        catch(QString msg)
+        {
+            errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
+            return -1;
+        }
+
+        auto stationData = GMStation.getStationData();
+
+        // create the feature attributes
+        QgsAttributes featAttributes(attribFields.size());
+
+        auto latitude = GMStation.getLatitude();
+        auto longitude = GMStation.getLongitude();
+
+        featAttributes[0] = "GroundMotionGridPoint";     // "AssetType"
+        featAttributes[1] = "Ground Motion Grid Point";  // "TabName"
+        featAttributes[2] = stationName;                 // "Station Name"
+        featAttributes[3] = latitude;                    // "Latitude"
+        featAttributes[4] = longitude;                   // "Longitude"
+
+        // The number of headings in the file
+        auto numParams = stationData.front().size();
+
+        maxToDisp = (maxToDisp<stationData.size() ? maxToDisp : stationData.size());
+
+        QVector<QString> dataStrs(numParams);
+
+        for(int i = 0; i<maxToDisp-1; ++i)
+        {
+            auto stationParams = stationData[i];
+
+            for(int j = 0; j<numParams; ++j)
+            {
+                dataStrs[j] += stationParams[j] + ", ";
+            }
+        }
+
+        for(int j = 0; j<numParams; ++j)
+        {
+            auto str = dataStrs[j] ;
+            str += stationData[maxToDisp-1][j];
+
+            if(maxToDisp<stationData.size())
+                str += "...";
+
+            featAttributes[5+j] = str;
+        }
+
+        // Create the feature
+        QgsFeature feature;
+        feature.setGeometry(QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude)));
+        feature.setAttributes(featAttributes);
+        featureList.append(feature);
+
+        ++count;
+        this->getProgressDialog()->setProgressBarValue(count);
+
+        QApplication::processEvents();
+    }
+
+
+    auto vectorLayer = qgisVizWidget->addVectorLayer("Point", "Ground Motion Grid");
+
+    if(vectorLayer == nullptr)
+    {
+        errorMessage = "Error creating a layer";
+        return -1;
+    }
+
+    auto dProvider = vectorLayer->dataProvider();
+    auto res = dProvider->addAttributes(attribFields);
+
+    if(!res)
+    {
+        errorMessage = "Error adding attribute fields to layer";
+        qgisVizWidget->removeLayer(vectorLayer);
+        return -1;
+    }
+
+    vectorLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    dProvider->addFeatures(featureList);
+    vectorLayer->updateExtents();
+
+    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
 
     return 0;
 }
@@ -1153,7 +1387,7 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     auto res2 = this->processDownloadedRecords(errMsg);
     if(res2 != 0)
     {
-        this->errorMessage(errMsg);
+        this->errorMessage("Failed to process event grid file with the following error: " + errMsg);
         return res2;
     }
 
@@ -1164,11 +1398,11 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     this->statusMessage("Earthquake hazard simulation complete.");
 
     simulationComplete = true;
-
     auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
 
     emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
-    // progressDialog->hide();
+
+    this->getProgressDialog()->hideProgressBar();
 
     return 0;
 }

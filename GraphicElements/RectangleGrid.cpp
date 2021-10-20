@@ -276,11 +276,11 @@ void RectangleGrid::updateGeometry(void)
 
     if(gridSiteConfig && updateConnectedWidgets)
     {
-        latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt);
-        latMax = theVisWidget->getLatFromScreenPoint(topRightPnt);
+        latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt,mapCanvas);
+        latMax = theVisWidget->getLatFromScreenPoint(topRightPnt,mapCanvas);
 
-        lonMin = theVisWidget->getLongFromScreenPoint(bottomLeftPnt);
-        lonMax = theVisWidget->getLongFromScreenPoint(topRightPnt);
+        lonMin = theVisWidget->getLongFromScreenPoint(bottomLeftPnt,mapCanvas);
+        lonMax = theVisWidget->getLongFromScreenPoint(topRightPnt,mapCanvas);
 
         gridSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
         gridSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
@@ -440,7 +440,7 @@ void RectangleGrid::setTopRightNode(NodeHandle *value)
 
 void RectangleGrid::setTopRightNode(const double latitude, const double longitude)
 {
-    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude);
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
     this->handleTopRightCornerChanged(scrnPnt);
 }
@@ -448,7 +448,7 @@ void RectangleGrid::setTopRightNode(const double latitude, const double longitud
 
 void RectangleGrid::setCenterNode(const double latitude, const double longitude)
 {
-    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude);
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
     this->handleCenterNodeChanged(scrnPnt);
 }
@@ -468,7 +468,7 @@ void RectangleGrid::setBottomLeftNode(NodeHandle *value)
 
 void RectangleGrid::setBottomLeftNode(const double latitude, const double longitude)
 {
-    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude);
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
     this->handleBottomLeftCornerChanged(scrnPnt);
 }

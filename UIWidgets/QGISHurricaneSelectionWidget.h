@@ -67,6 +67,8 @@ public:
 
     int loadResults(const QString& outputDir);
 
+    int updateGridLayerFeatures(QgsFeatureList& featList);
+
 public slots:
     // Handle the area selection for track truncation
     void handleSelectAreaMap(void);
@@ -80,6 +82,8 @@ private slots:
     void handleHurricaneSelect(void);
     void handleGridSelected(void);
     void handleLandfallPointSelected(void);
+
+    // Clear any existing layers from the map
     void clearGridFromMap(void);
     void clearLandfallFromMap(void);
 
@@ -94,12 +98,11 @@ private:
     std::unique_ptr<QGISHurricanePreprocessor> hurricaneImportTool;
     QGISVisualizationWidget* theVisualizationWidget;
 
-    QgsVectorLayer* gridLayer;
-
-    QMap<QString,WindFieldStation> stationMap;
-
     QgsFeature selectedHurricaneFeature;
+
+    QgsVectorLayer* gridLayer;
     QgsVectorLayer* landfallLayer;
+    QgsVectorLayer* terrainRoughnessLayer;
     QgsVectorLayer* hurricaneTrackLayer;
     QgsVectorLayer* hurricaneTrackPointsLayer;
 

@@ -101,7 +101,10 @@ public:
 
 #ifdef Q_GIS
     virtual QgsVectorLayer* importHurricaneTrackData(const QString &eventFile, QString &err) = 0;
+    virtual int updateGridLayerFeatures(QgsFeatureList& featList) = 0;
 #endif
+
+    QString getTerrainGeojsonPath();
 
 public slots:
 

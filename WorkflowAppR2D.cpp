@@ -267,7 +267,7 @@ void WorkflowAppR2D::initialize(void)
     theGeneralInformationWidget->setAssetTypeState("Buildings", true);
 
     // Test to remove
-    theComponentSelection->displayComponent("HAZ");
+    // theComponentSelection->displayComponent("HAZ");
     //    loadResults();
 }
 

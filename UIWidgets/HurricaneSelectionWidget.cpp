@@ -856,11 +856,9 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
 
         if(pathTerrainFile.isEmpty())
         {
-            this->statusMessage("Please specify a terrain.geojson file to run a simulation");
-            return;
+            this->statusMessage("No terrain.geojson file provided. Using default values");
+            scenarioObj.insert("Terrain", pathTerrainFile);
         }
-
-        scenarioObj.insert("Terrain", pathTerrainFile);
     }
 
     // stormObject.insert("TrackSimu",);
@@ -1051,6 +1049,10 @@ int HurricaneSelectionWidget::loadResults(const QString& outputDir)
 
     auto numRows = data.size();
 
+#ifdef Q_GIS
+    QgsFeatureList featList;
+    featList.reserve(numRows);
+#endif
     // Get the data
     for(int i = 0; i<numRows; ++i)
     {
@@ -1085,20 +1087,66 @@ int HurricaneSelectionWidget::loadResults(const QString& outputDir)
             return -1;
         }
 
-        auto pws = station->getPeakWindSpeeds();
+        auto pws = station->getStationData();
 
-        QString pwsStr;
-        for(int i = 0; i<pws.size()-1; ++i)
+        if(pws.empty())
         {
-            pwsStr += QString::number(pws[i]) + ", ";
+            this->errorMessage("Error getting the peak wind speeds from the results");
+            return -1;
         }
 
-        pwsStr += QString::number(pws.back());
+        auto headings =  station->getStationDataHeaders();
 
-        auto attribute = "Peak Wind Speeds";
+        auto idxPWS = headings.indexOf("PWS");
 
+        if(idxPWS == -1)
+        {
+            this->errorMessage("Error, PWS index not found in headers");
+            return -1;
+        }
+
+        QString pwsStr;
+
+        for(int i = 0; i<pws.size()-1; ++i)
+        {
+            pwsStr += pws[i].at(idxPWS) + ", ";
+        }
+
+        pwsStr += pws.back().at(idxPWS);
+
+        QString attribute = "Peak Wind Speeds";
+
+#ifdef ARC_GIS
         station->updateFeatureAttribute(attribute,QVariant(pwsStr));
+#endif
+
+#ifdef Q_GIS
+        auto feat = station->getStationFeature();
+
+        if(!feat.isValid())
+        {
+            this->errorMessage("Feature is not valid");
+        }
+
+        auto atrb = feat.attribute(attribute);
+
+        if(!atrb.isValid())
+        {
+            this->errorMessage("Could not find attribute in feature");
+        }
+
+        auto res = feat.setAttribute(attribute,pwsStr);
+        if(res == false)
+        {
+            this->errorMessage("Failed to update feature");
+        }
+        featList.push_back(feat);
+#endif
     }
+
+#ifdef Q_GIS
+    this->updateGridLayerFeatures(featList);
+#endif
 
     emit outputDirectoryPathChanged(outputDir, resultsPath);
 
@@ -1110,19 +1158,17 @@ int HurricaneSelectionWidget::loadResults(const QString& outputDir)
 
 void HurricaneSelectionWidget::handleHurricaneTrackImport(void)
 {
-    //    QFileDialog dialog(this);
-    //    QString trackFilePath = QFileDialog::getOpenFileName(this,tr("Hurricane track file (.csv)"),QString(),QString("*.csv"));
-    //    dialog.close();
+    QFileDialog dialog(this);
+    QString trackFilePath = QFileDialog::getOpenFileName(this,tr("Hurricane track file (.csv)"),QString(),QString("*.csv"));
+    dialog.close();
 
-    //    auto oldTrackFilePath = trackLineEdit->text();
+    auto oldTrackFilePath = trackLineEdit->text();
 
-    //    // Return if the user cancels or enters same file
-    //    if(trackFilePath.isEmpty() || trackFilePath == oldTrackFilePath)
-    //    {
-    //        return;
-    //    }
-
-    auto trackFilePath = trackLineEdit->text();
+    // Return if the user cancels or enters same file
+    if(trackFilePath.isEmpty() || trackFilePath == oldTrackFilePath)
+    {
+        return;
+    }
 
     trackLineEdit->setText(trackFilePath);
 
@@ -1164,25 +1210,7 @@ void HurricaneSelectionWidget::handleHurricaneTrackImport(void)
 
 QJsonArray HurricaneSelectionWidget::getTerrainData(void)
 {
-    QFileDialog dialog(this);
-    QString terrainPath = QFileDialog::getOpenFileName(this,tr("Terrain file (.geojson)"),QString(),QString("*.geojson"));
-    dialog.close();
-
-    auto oldTerrainPath = terrainLineEdit->text();
-
-    // Return if the user cancels or enters same file
-    if(terrainPath.isEmpty() || terrainPath == oldTerrainPath)
-    {
-        return QJsonArray();
-    }
-
-    // check file exists & set apps current dir of it does
-    QFileInfo fileInfo(terrainPath);
-    if (!fileInfo.exists()){
-        QString msg = QString("File does not exist: ") + terrainPath;
-        this->errorMessage(msg);
-        return QJsonArray();
-    }
+    auto terrainPath = this->getTerrainGeojsonPath();
 
     // open file
     QFile file(terrainPath);
@@ -1192,8 +1220,6 @@ QJsonArray HurricaneSelectionWidget::getTerrainData(void)
         this->errorMessage(msg);
         return QJsonArray();
     }
-
-    terrainLineEdit->setText(terrainPath);
 
     // Place contents of file into json object
     QString val;
@@ -1213,6 +1239,33 @@ QJsonArray HurricaneSelectionWidget::getTerrainData(void)
     }
 
     return featureArray;
+}
+
+QString HurricaneSelectionWidget::getTerrainGeojsonPath()
+{
+    QFileDialog dialog(this);
+    QString terrainPath = QFileDialog::getOpenFileName(this,tr("Terrain file (.geojson)"),QString(),QString("*.geojson"));
+    dialog.close();
+
+    auto oldTerrainPath = terrainLineEdit->text();
+
+    // Return if the user cancels or enters same file
+    if(terrainPath.isEmpty() || terrainPath == oldTerrainPath)
+    {
+        return QString();
+    }
+
+    // check file exists & set apps current dir of it does
+    QFileInfo fileInfo(terrainPath);
+    if (!fileInfo.exists()){
+        QString msg = QString("File does not exist: ") + terrainPath;
+        this->errorMessage(msg);
+        return QString();
+    }
+
+    terrainLineEdit->setText(terrainPath);
+
+    return terrainPath;
 }
 
 

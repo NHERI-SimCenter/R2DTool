@@ -14,6 +14,8 @@ public:
     MapViewWindow(SimCenterMapcanvasWidget* map, QWidget* parent = nullptr);
     ~MapViewWindow();
 
+    SimCenterMapcanvasWidget *getMapCanvasWidget() const;
+
 protected:
 
     void showEvent(QShowEvent* e) override;
@@ -22,7 +24,7 @@ protected:
 
 private:
 
-    SimCenterMapcanvasWidget* mapCanvas;
+    SimCenterMapcanvasWidget* mapCanvasWidget;
     QVBoxLayout* mainLayout;
     QPushButton* closeButton;
     QSize prevSize;

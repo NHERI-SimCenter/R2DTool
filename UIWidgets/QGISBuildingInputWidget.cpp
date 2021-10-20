@@ -54,31 +54,23 @@ QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, VisualizationW
 
 int QGISBuildingInputWidget::loadComponentVisualization()
 {
-
-    QgsFields featFields;
-
     // Create the building attributes that are fixed
-    QList<QgsField> attribFields;
-    attribFields.append(QgsField("LossRatio", QVariant::Double));
-    attribFields.append(QgsField("ID", QVariant::Int));
-    attribFields.append(QgsField("AssetType", QVariant::String));
-    attribFields.append(QgsField("UID", QVariant::String));
-
+    QgsFields featFields;
     featFields.append(QgsField("LossRatio", QVariant::Double));
     featFields.append(QgsField("ID", QVariant::Int));
     featFields.append(QgsField("AssetType", QVariant::String));
     featFields.append(QgsField("TabName", QVariant::String));
 
-
     // Set the table headers as fields in the table
     for(int i = 1; i<componentTableWidget->columnCount(); ++i)
     {
         auto fieldText = componentTableWidget->horizontalHeaderItemVariant(i);
-
-        attribFields.append(QgsField(fieldText.toString(),fieldText.type()));
-
         featFields.append(QgsField(fieldText.toString(),fieldText.type()));
     }
+
+    QList<QgsField> attribFields;
+    for(int i = 0; i<featFields.size(); ++i)
+        attribFields.push_back(featFields[i]);
 
     auto headers = this->getTableHorizontalHeadings();
 

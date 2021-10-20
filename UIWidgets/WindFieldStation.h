@@ -104,6 +104,8 @@ public:
 
     QVector<QStringList> getStationData() const;
 
+    QStringList getStationDataHeaders() const;
+
 private:
 
     QString stationFilePath;

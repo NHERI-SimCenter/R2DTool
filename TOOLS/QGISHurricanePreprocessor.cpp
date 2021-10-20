@@ -462,7 +462,7 @@ QgsVectorLayer*  QGISHurricanePreprocessor::createTrackPointsVisualization(Hurri
 
     QgsMarkerSymbol* pointMarkerSymbol = new QgsMarkerSymbol();
 
-    pointMarkerSymbol->setColor(Qt::green);
+    pointMarkerSymbol->setColor(Qt::red);
 
     theVisualizationWidget->createSimpleRenderer(pointMarkerSymbol,layer);
 

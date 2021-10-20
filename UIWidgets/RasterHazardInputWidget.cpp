@@ -83,10 +83,11 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     layout->addStretch();
     this->setLayout(layout);
 
-    // Test to remove
-    eventFile = "/Users/steve/Desktop/GalvestonTestbed/Surge_Raster.tif";
-    eventFileLineEdit->setText(eventFile);
-    this->loadRaster();
+    // Test to remove start
+    // eventFile = "/Users/steve/Desktop/GalvestonTestbed/Surge_Raster.tif";
+    // eventFileLineEdit->setText(eventFile);
+    // this->loadRaster();
+    // Test to remove end
 }
 
 

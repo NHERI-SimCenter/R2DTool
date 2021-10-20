@@ -248,7 +248,7 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
     QgsFeature feat;
     while (featIt.nextFeature(feat))
     {
-        auto id = feat.id();
+        // auto id = feat.id();
         auto attrb = values[count];
 
         feat.setAttribute(field,attrb);
@@ -260,12 +260,15 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
     if(values.size() != featList.size())
         return false;
 
-    auto res =selectedLayer->dataProvider()->truncate();
+    auto res = selectedLayer->dataProvider()->truncate();
 
     if(!res)
         return false;
 
     res = selectedLayer->dataProvider()->addFeatures(featList);
+
+    if(!res)
+        return false;
 
     selectedLayer->updateExtents();
 

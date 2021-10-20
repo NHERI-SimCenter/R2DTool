@@ -6,7 +6,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 
-MapViewWindow::MapViewWindow(SimCenterMapcanvasWidget* map, QWidget* parent) : QWidget(parent), mapCanvas(map)
+MapViewWindow::MapViewWindow(SimCenterMapcanvasWidget* map, QWidget* parent) : QWidget(parent), mapCanvasWidget(map)
 {
     this->setWindowFlag(Qt::Window);
 
@@ -18,14 +18,14 @@ MapViewWindow::MapViewWindow(SimCenterMapcanvasWidget* map, QWidget* parent) : Q
     mainLayout->setContentsMargins(0,0,0,0);
     mainLayout->setSpacing(0);
 
-    mainLayout->addWidget(mapCanvas);
+    mainLayout->addWidget(mapCanvasWidget);
     mainLayout->addWidget(closeButton,Qt::AlignBottom);
 }
 
 
 MapViewWindow::~MapViewWindow()
 {
-    mainLayout->removeWidget(mapCanvas);
+    mainLayout->removeWidget(mapCanvasWidget);
 }
 
 
@@ -47,5 +47,10 @@ void MapViewWindow::showEvent(QShowEvent* e)
 void MapViewWindow::closeEvent(QCloseEvent *e)
 {
     prevSize = this->size();
+}
+
+SimCenterMapcanvasWidget *MapViewWindow::getMapCanvasWidget() const
+{
+    return mapCanvasWidget;
 }
 

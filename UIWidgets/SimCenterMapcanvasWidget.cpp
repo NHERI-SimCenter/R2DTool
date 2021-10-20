@@ -87,6 +87,13 @@ void SimCenterMapcanvasWidget::enableSelectionTool(void)
 }
 
 
+void SimCenterMapcanvasWidget::enablePolygonSelectionTool(void)
+{
+    auto selectTool = mMapTools->mapTool(QgsAppMapTools::SelectPolygon);
+    thisMapCanvas->setMapTool(selectTool);
+}
+
+
 void SimCenterMapcanvasWidget::enablePanTool(void)
 {
     thisMapCanvas->setMapTool(mMapTools->mapTool(QgsAppMapTools::Pan));
@@ -101,7 +108,8 @@ void SimCenterMapcanvasWidget::setCurrentLayer(QgsVectorLayer* layer)
     currentLayer = layer;
     thisMapCanvas->setCurrentLayer(currentLayer);
 
-    connect(currentLayer,&QgsVectorLayer::selectionChanged,this, &SimCenterMapcanvasWidget::selectionChanged);
+    if(layer != nullptr)
+        connect(currentLayer,&QgsVectorLayer::selectionChanged,this, &SimCenterMapcanvasWidget::selectionChanged);
 }
 
 

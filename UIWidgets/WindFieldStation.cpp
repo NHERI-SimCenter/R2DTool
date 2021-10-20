@@ -152,3 +152,8 @@ QVector<QStringList> WindFieldStation::getStationData() const
     return stationData;
 }
 
+QStringList WindFieldStation::getStationDataHeaders() const
+{
+    return tableHeadings;
+}
+

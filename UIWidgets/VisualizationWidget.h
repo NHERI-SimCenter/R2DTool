@@ -51,6 +51,7 @@ class SimCenterMapGraphicsView;
 
 #ifdef Q_GIS
 class SimCenterMapcanvasWidget;
+class QgsMapCanvas;
 #endif
 
 class ComponentInputWidget;
@@ -67,6 +68,10 @@ public:
 
 #ifdef ARC_GIS
     SimCenterMapGraphicsView* getMapViewWidget() const;
+    // Get the latitude or longitude from a point on the screen
+    virtual double getLatFromScreenPoint(const QPointF& point) = 0;
+    virtual double getLongFromScreenPoint(const QPointF& point) = 0;
+    virtual QPointF getScreenPointFromLatLong(const double& latitude, const double& longitude) = 0;
 #endif
 
 #ifdef Q_GIS
@@ -74,16 +79,15 @@ public:
 
     virtual SimCenterMapcanvasWidget* testNewMapCanvas() = 0;
     virtual void testNewMapCanvas2() = 0;
+
+    virtual double getLatFromScreenPoint(const QPointF& point, const QgsMapCanvas* canvas ) = 0;
+    virtual double getLongFromScreenPoint(const QPointF& point, const QgsMapCanvas* canvas) = 0;
+
+    virtual QPointF getScreenPointFromLatLong(const double& latitude, const double& longitude, const QgsMapCanvas* canvas) = 0;
 #endif
 
     // Get the visualization widget
     virtual QWidget *getVisWidget() = 0;
-
-    // Get the latitude or longitude from a point on the screen
-    virtual double getLatFromScreenPoint(const QPointF& point) = 0;
-    virtual double getLongFromScreenPoint(const QPointF& point) = 0;
-
-    virtual QPointF getScreenPointFromLatLong(const double& latitude, const double& longitude) = 0;
 
     QString createUniqueID(void);
 

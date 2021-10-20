@@ -115,7 +115,7 @@ contains(DEFINES, ARC_GIS)  {
     include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 } else {
-    message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS")
+    message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS at line 50 in the .pro file")
 }
 
 
@@ -175,6 +175,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             ModelViewItems/ListTreeModel.cpp \
             ModelViewItems/CustomListWidget.cpp \
             Tools/AssetInputDelegate.cpp \
+            Tools/SimCenterUnitsCombo.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
             Tools/ComponentDatabaseManager.cpp \
@@ -206,6 +207,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/GISSelectable.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/LoadResultsDialog.cpp \
+            UIWidgets/SimCenterUnitsWidget.cpp \
             UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
@@ -276,6 +278,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/Vs30.h \
             Events/UI/Vs30Widget.h \
             Tools/AssetInputDelegate.h \
+            Tools/SimCenterUnitsCombo.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
             Tools/ComponentDatabaseManager.h \
@@ -309,6 +312,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/GISSelectable.h \
             UIWidgets/GroundMotionStation.h \
             UIWidgets/LoadResultsDialog.h \
+    UIWidgets/SimCenterUnitsWidget.h \
             UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \

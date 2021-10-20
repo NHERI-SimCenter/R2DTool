@@ -23,6 +23,8 @@ public:
 
     void enableSelectionTool(void);
 
+    void enablePolygonSelectionTool(void);
+
     void setCurrentLayer(QgsVectorLayer* layer);
 
     void setMapTool(QgsMapTool *mapTool);
