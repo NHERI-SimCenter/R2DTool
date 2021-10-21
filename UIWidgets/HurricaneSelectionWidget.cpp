@@ -161,7 +161,12 @@ bool HurricaneSelectionWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     return true;
 }
 
+ bool
+ HurricaneSelectionWidget::copyFiles(QString &destDir)
+ {
 
+    return true;
+ }
 bool HurricaneSelectionWidget::outputToJSON(QJsonObject &/*jsonObj*/)
 {
     // qDebug() << "USER Hurricane outputPLAIN";

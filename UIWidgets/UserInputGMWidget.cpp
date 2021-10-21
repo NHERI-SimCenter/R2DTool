@@ -143,9 +143,8 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
-        // adam .. adam .. adam
-        if (!QFileInfo::exists(fullFilePath)){
-            fullFilePath = pathToFile + QDir::separator()
+        // adam .. adam .. adam .. ADAM .. ADAM
+        if (!QFileInfo::exists(fullFilePath)){fullFilePath = pathToFile + QDir::separator()
                     + "input_data" + QDir::separator() + fileName;
 
             if (!QFile::exists(fullFilePath)) {
@@ -620,6 +619,35 @@ void UserInputGMWidget::chooseMotionDirDialog(void)
     return;
 }
 
+bool
+UserInputGMWidget::copyFiles(QString &destDir)
+{
+    // create dir and copy motion files
+    QDir destDIR(destDir);
+    if (!destDIR.exists()) {
+      qDebug() << "userInputGMWidget::copyFiles dest dir does not exist: " << destDir;
+      return false;
+    }
+
+    QFileInfo eventFileInfo(eventFile);
+    if (eventFileInfo.exists()) {
+        this->copyFile(eventFile, destDir);
+    } else {
+      qDebug() << "userInputGMWidget::copyFiles eventFile does not exist: " << eventFile;
+      return false;
+    }
+
+    QDir motionDirInfo(motionDir);
+    if (motionDirInfo.exists()) {
+        return this->copyPath(motionDir, destDir, false);
+    } else {
+      qDebug() << "userInputGMWidget::copyFiles motionDir does not exist: " << motionDir;
+      return false;
+    }
+
+    // should never get here
+    return false;
+}
 
 void UserInputGMWidget::clear(void)
 {

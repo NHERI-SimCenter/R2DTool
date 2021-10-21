@@ -121,10 +121,9 @@ public:
     bool inputFromJSON(QJsonObject &jsonObject);
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
-    void clear();
     bool copyFiles(QString &destDir);
-
+  
+    void clear();
     int getNumShakeMapsLoaded();
 
 public slots:

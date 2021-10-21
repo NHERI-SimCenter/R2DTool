@@ -46,6 +46,7 @@ class ShakeMapWidget;
 class HurricaneSelectionWidget;
 class UserInputHurricaneWidget;
 class UserInputGMWidget;
+class RegionalSiteResponseWidget;
 class VisualizationWidget;
 
 class QGroupBox;
@@ -76,6 +77,7 @@ private:
     GMWidget* theEQSSWidget;
     ShakeMapWidget* theShakeMapWidget;
     UserInputGMWidget* theUserInputGMWidget;
+    RegionalSiteResponseWidget* theRegionalSiteResponseWidget;  
     UserInputHurricaneWidget* theUserInputHurricaneWidget;
     HurricaneSelectionWidget* theHurricaneSelectionWidget;
 };

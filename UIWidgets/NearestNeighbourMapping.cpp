@@ -159,11 +159,14 @@ void NearestNeighbourMapping::handleFileNameChanged(QString motionDir, QString e
 
 bool NearestNeighbourMapping::copyFiles(QString &destName)
 {
-    QFileInfo theFile(eventGridPath);
-    if (theFile.exists()) {
-        return this->copyPath(theFile.path(), destName, false);
-    }
-
-    return false;
+  return true;
+  /*
+  QFileInfo theFile(eventGridPath);
+  if (theFile.exists()) {
+    qDebug() << "NearestNeighbour::copyFiles source: " << theFile.path() << " dest: " << destName << "\n";
+    return this->copyPath(theFile.path(), destName, false);
+  }
+  */
+  return false;
 }
 

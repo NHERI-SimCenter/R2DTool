@@ -660,6 +660,36 @@ void UserInputHurricaneWidget::chooseEventFileDialog(void)
 }
 
 
+bool
+UserInputHurricaneWidget::copyFiles(QString &destDir)
+{
+    // create dir and copy motion files
+    QDir destDIR(destDir);
+    if (!destDIR.exists()) {
+      qDebug() << "userInputGMWidget::copyFiles dest dir does not exist: " << destDir;
+      return false;
+    }
+
+    QFileInfo eventFileInfo(eventFile);
+    if (eventFileInfo.exists()) {
+        this->copyFile(eventFile, destDir);
+    } else {
+      qDebug() << "userInputGMWidget::copyFiles eventFile does not exist: " << eventFile;
+      return false;
+    }
+
+    QDir eventDirInfo(eventDir);
+    if (eventDirInfo.exists()) {
+        return this->copyPath(eventDir, destDir, false);
+    } else {
+      qDebug() << "userInputGMWidget::copyFiles motionDir does not exist: " << eventDir;
+      return false;
+    }
+
+    // should never get here
+    return false;
+}
+
 
 void UserInputHurricaneWidget::clear(void)
 {

@@ -79,7 +79,7 @@ public:
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
-
+    bool copyFiles(QString &destDir);
     void clear(void);
 
 public slots:
