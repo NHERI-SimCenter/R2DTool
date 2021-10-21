@@ -316,38 +316,38 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 
     bool result = true;
     if (theHazardsWidget->outputAppDataToJSON(apps) == false) {
-      this->errorMessage("Error writing HAZ data to output");
-      result = false;
+        this->errorMessage("Error writing HAZ data to output");
+        result = false;
     }
-      
+
     if (theAssetsWidget->outputAppDataToJSON(apps) == false) {
-      this->errorMessage("Error writing ASD data to output");
-      result = false;
+        this->errorMessage("Error writing ASD data to output");
+        result = false;
     }
 
     if (theModelingWidget->outputAppDataToJSON(apps) == false) {
-      this->errorMessage("Error writing MOD data to output");
-      result = false;
+        this->errorMessage("Error writing MOD data to output");
+        result = false;
     }
 
     if (theHazardToAssetWidget->outputAppDataToJSON(apps) == false) {
-      this->errorMessage("Error writing HTA data to output");
-      result = false;      
+        this->errorMessage("Error writing HTA data to output");
+        result = false;
     }
 
     if (theAnalysisWidget->outputAppDataToJSON(apps) == false) {
-      this->errorMessage("Error writing ANA data to output");
-      result = false;      
+        this->errorMessage("Error writing ANA data to output");
+        result = false;
     }
 
     if (theDamageAndLossWidget->outputAppDataToJSON(apps) == false) {
-      this->errorMessage("Error writing DL data to output");
-      result = false;      
+        this->errorMessage("Error writing DL data to output");
+        result = false;
     }
     
     if (theUQWidget->outputAppDataToJSON(apps) == false) {
-      this->errorMessage("Error writing UQ data to output");
-      result = false;      
+        this->errorMessage("Error writing UQ data to output");
+        result = false;
     }
 
     //
@@ -431,49 +431,49 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     
     if (jsonObject.contains("Applications")) {
 
-      QJsonObject apps = jsonObject["Applications"].toObject();
+        QJsonObject apps = jsonObject["Applications"].toObject();
 
         if (theUQWidget->inputAppDataFromJSON(apps) == false) {
-	  this->errorMessage("UQ failed to read input data");
-	  theUQWidget->clear();
-	  result = false;
-	}
+            this->errorMessage("UQ failed to read input data");
+            theUQWidget->clear();
+            result = false;
+        }
 
         if (theModelingWidget->inputAppDataFromJSON(apps) == false) {
-	  this->errorMessage("UQ failed to read input data");
-	  theModelingWidget->clear();
-	  result = false;
-	}
+            this->errorMessage("UQ failed to read input data");
+            theModelingWidget->clear();
+            result = false;
+        }
 
         if (theAnalysisWidget->inputAppDataFromJSON(apps) == false) {
-	  this->errorMessage("UQ failed to read input data");
-	  theAnalysisWidget->clear();
-	  result = false;
-	}
+            this->errorMessage("UQ failed to read input data");
+            theAnalysisWidget->clear();
+            result = false;
+        }
 
         if (theHazardToAssetWidget->inputAppDataFromJSON(apps) == false) {
-	  this->errorMessage("UQ failed to read input data");
-	  theHazardToAssetWidget->clear();
-	  result = false;
-	}
+            this->errorMessage("UQ failed to read input data");
+            theHazardToAssetWidget->clear();
+            result = false;
+        }
 
         if (theAssetsWidget->inputAppDataFromJSON(apps) == false) {
-	  this->errorMessage("UQ failed to read input data");
-	  theAssetsWidget->clear();
-	  result = false;
-	}
-	
+            this->errorMessage("UQ failed to read input data");
+            theAssetsWidget->clear();
+            result = false;
+        }
+
         if (theHazardsWidget->inputAppDataFromJSON(apps) == false) {
-	  this->errorMessage("UQ failed to read input data");
-	  theHazardsWidget->clear();
-	  result = false;
-	}
+            this->errorMessage("UQ failed to read input data");
+            theHazardsWidget->clear();
+            result = false;
+        }
 
         if (theDamageAndLossWidget->inputAppDataFromJSON(apps) == false) {
-	  this->errorMessage("UQ failed to read input data");
-	  theDamageAndLossWidget->clear();
-	  result = false;
-	}
+            this->errorMessage("UQ failed to read input data");
+            theDamageAndLossWidget->clear();
+            result = false;
+        }
 
     } else
     {

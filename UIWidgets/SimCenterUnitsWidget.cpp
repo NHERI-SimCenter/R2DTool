@@ -136,7 +136,7 @@ void SimCenterUnitsWidget::reset(void)
 
 void SimCenterUnitsWidget::addNewUnitItem(const QString& name)
 {
-    auto i =   unitsLayout->count()/unitsLayout->columnCount();
+    auto i = this->getNumberOfUnits();
 
     SimCenterUnitsCombo* unitsCombo = new SimCenterUnitsCombo(SimCenter::Unit::ALL,name);
 
@@ -166,4 +166,49 @@ SimCenterUnitsCombo* SimCenterUnitsWidget::findChild(const QString& name)
     }
 
     return nullptr;
+}
+
+
+int SimCenterUnitsWidget::getNumberOfUnits(void)
+{
+    return unitsLayout->count()/unitsLayout->columnCount();
+}
+
+
+int SimCenterUnitsWidget::setUnit(const QString& parameterName, const QString& unit)
+{
+    auto widget = this->findChild(parameterName);
+
+    if(widget)
+    {
+        auto res = widget->setCurrentUnitString(unit);
+
+        if(!res)
+            return -1;
+    }
+    else
+        return -1;
+
+
+    return 0;
+}
+
+
+QList<QString> SimCenterUnitsWidget::getParameterNames()
+{
+    QList<QString> paramList;
+    auto numItems = unitsLayout->count();
+    for(int i = 0; i<numItems; ++i)
+    {
+        QLayoutItem *child = unitsLayout->itemAt(i);
+
+        auto widget = dynamic_cast<SimCenterUnitsCombo*>(child->widget());
+        if (widget)
+        {
+            auto widgetName = widget->getName();
+            paramList.append(widgetName);
+        }
+    }
+
+    return paramList;
 }

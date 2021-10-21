@@ -201,7 +201,21 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         auto res = unitsWidget->inputFromJSON(appData);
 
         if(!res)
-            this->errorMessage("Failed to find/import the units object in user input hurricane widget");
+        {
+            auto paramNames = unitsWidget->getParameterNames();
+
+            this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Hurricane' widget. Setting default units for the following parameters:");
+
+            for(auto&& it : paramNames)
+            {
+                auto res = unitsWidget->setUnit(it,"mph");
+
+                if(res == 0)
+                    this->infoMessage("For parameter "+it+" setting default unit as: mph");
+                else
+                    this->errorMessage("Failed to set default units for parameter "+it);
+            }
+        }
 
         return true;
     }

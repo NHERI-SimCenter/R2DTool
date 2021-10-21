@@ -59,6 +59,12 @@ public:
 
     void addNewUnitItem(const QString& name);
 
+    int getNumberOfUnits(void);
+
+    int setUnit(const QString& parameterName, const QString& unit);
+
+    QList<QString> getParameterNames();
+
 private:
     QGridLayout *unitsLayout = nullptr;
 

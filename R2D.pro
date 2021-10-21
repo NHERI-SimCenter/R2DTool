@@ -312,7 +312,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/GISSelectable.h \
             UIWidgets/GroundMotionStation.h \
             UIWidgets/LoadResultsDialog.h \
-    UIWidgets/SimCenterUnitsWidget.h \
+            UIWidgets/SimCenterUnitsWidget.h \
             UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \

@@ -193,10 +193,26 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         this->loadUserGMData();
 
+        // Set the units
         auto res = unitsWidget->inputFromJSON(appData);
 
+        // If setting of units failed, provide default units and issue a warning
         if(!res)
-            this->errorMessage("Failed to find/import the units object in user input ground motion widget");
+        {
+            auto paramNames = unitsWidget->getParameterNames();
+
+            this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
+
+            for(auto&& it : paramNames)
+            {
+                auto res = unitsWidget->setUnit(it,"g");
+
+                if(res == 0)
+                    this->infoMessage("For parameter "+it+" setting default unit as: g");
+                else
+                    this->errorMessage("Failed to set default units for parameter "+it);
+            }
+        }
 
         return true;
     }
