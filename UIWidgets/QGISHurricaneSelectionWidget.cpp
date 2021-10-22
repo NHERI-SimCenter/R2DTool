@@ -559,3 +559,15 @@ int QGISHurricaneSelectionWidget::updateGridLayerFeatures(QgsFeatureList& featLi
 
     return 0;
 }
+
+
+bool QGISHurricaneSelectionWidget::outputToJSON(QJsonObject &jsonObject)
+{
+    QJsonObject unitsObj;
+
+    unitsObj["PWS"] = "mph";
+
+    jsonObject["Units"] = unitsObj;
+
+    return true;
+}

@@ -818,6 +818,7 @@ void ShakeMapWidget::chooseShakeMapDirectoryDialog(void)
 bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 {
 
+#ifdef OpenSRA
     jsonObject["Directory"] = pathToShakeMapDirectory;
 
     QJsonArray eventsArray;
@@ -826,6 +827,15 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
         eventsArray.append(it);
 
     jsonObject["Events"] = eventsArray;
+#else
+
+    QJsonObject unitsObj;
+
+    unitsObj["PGA"] = "g";
+
+    jsonObject["Units"] = unitsObj;
+
+#endif
 
     return true;
 }
