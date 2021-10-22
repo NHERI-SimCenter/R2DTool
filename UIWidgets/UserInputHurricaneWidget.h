@@ -76,6 +76,7 @@ public:
 
     QStackedWidget* getUserInputHurricaneWidget(void);
 
+    bool inputFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);

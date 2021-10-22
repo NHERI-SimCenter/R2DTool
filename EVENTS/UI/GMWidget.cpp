@@ -446,16 +446,22 @@ GMWidget::outputAppDataToJSON(QJsonObject &jsonObj) {
 
 bool GMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    /*
-    if(simulationComplete == false)
+
+    QJsonObject unitsObj;
+
+    // Only IMs
+    if (m_selectionconfig->getDatabase().size() == 0)
     {
-        return true;
+        auto IMType = m_intensityMeasure->type();
+        unitsObj[IMType] = "g";
+    }
+    else // Time history download selected
+    {
+        unitsObj["TH_file"] = "g";
+        unitsObj["factor"] = "scalar";
     }
 
-    auto pathToEventGridFolder = m_appConfig->getOutputDirectoryPath() + QDir::separator();
-
-    jsonObj.insert("pathEventData", pathToEventGridFolder);
-    */
+    jsonObj["Units"] = unitsObj;
 
     return true;
 }

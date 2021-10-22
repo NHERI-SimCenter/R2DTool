@@ -130,8 +130,6 @@ bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
         appData["eventDir"]=QString("None");
     }
 
-    unitsWidget->outputToJSON(appData);
-
     jsonObject["ApplicationData"]=appData;
 
     return true;
@@ -140,9 +138,38 @@ bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool UserInputHurricaneWidget::outputToJSON(QJsonObject &jsonObj)
 {
+    auto res = unitsWidget->outputToJSON(jsonObj);
+
+    return res;
+}
 
 
-    return true;
+bool UserInputHurricaneWidget::inputFromJSON(QJsonObject &jsonObject)
+{
+    // Set the units
+    auto res = unitsWidget->inputFromJSON(jsonObject);
+
+    // If setting of units failed, provide default units and issue a warning
+    if(!res)
+    {
+        auto paramNames = unitsWidget->getParameterNames();
+
+        this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Hurricane' widget. Setting default units for the following parameters:");
+
+        for(auto&& it : paramNames)
+        {
+            auto res = unitsWidget->setUnit(it,"mph");
+
+            if(res == 0)
+                this->infoMessage("For parameter "+it+" setting default unit as: mph");
+            else
+                this->errorMessage("Failed to set default units for parameter "+it);
+        }
+
+        this->infoMessage("Warning \\!/: Check if the units are correct!");
+    }
+
+    return res;
 }
 
 
@@ -199,25 +226,6 @@ bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         }
 
         this->loadUserWFData();
-
-        auto res = unitsWidget->inputFromJSON(appData);
-
-        if(!res)
-        {
-            auto paramNames = unitsWidget->getParameterNames();
-
-            this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Hurricane' widget. Setting default units for the following parameters:");
-
-            for(auto&& it : paramNames)
-            {
-                auto res = unitsWidget->setUnit(it,"mph");
-
-                if(res == 0)
-                    this->infoMessage("For parameter "+it+" setting default unit as: mph");
-                else
-                    this->errorMessage("Failed to set default units for parameter "+it);
-            }
-        }
 
         return true;
     }

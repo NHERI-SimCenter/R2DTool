@@ -89,6 +89,13 @@ bool SimCenterUnitsWidget::outputToJSON(QJsonObject &jsonObject)
 
             auto unit = widget->getCurrentUnitString();
 
+            // Return false if unit undefined
+            if(unit.compare("UNDEFINED") == 0)
+            {
+                PythonProgressDialog::getInstance()->appendErrorMessage("Warning unit undefined! Please set the unit");
+                return false;
+            }
+
             unitsObj[name] = unit;
         }
     }

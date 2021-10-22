@@ -114,8 +114,6 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
         appData["eventFileDir"]=QString("");
     }
 
-    unitsWidget->outputToJSON(jsonObject);
-
     jsonObject["ApplicationData"]=appData;
 
     return true;
@@ -124,8 +122,33 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool RasterHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 {
+    auto res = unitsWidget->outputToJSON(jsonObj);
 
-    return true;
+    if(!res)
+        this->errorMessage("Could not get the units in 'Raster Defined Hazard'");
+
+    return res;
+}
+
+
+bool RasterHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
+{
+    // Set the units
+    auto res = unitsWidget->inputFromJSON(jsonObject);
+
+    // If setting of units failed, provide default units and issue a warning
+    if(!res)
+    {
+        auto paramNames = unitsWidget->getParameterNames();
+
+        this->infoMessage("Warning \\!/: Failed to find/import the units in 'Raster Defined Hazard' widget. Please set the units for the following parameters:");
+
+        for(auto&& it : paramNames)
+            this->infoMessage("For parameter: "+it);
+
+    }
+
+    return res;
 }
 
 
@@ -172,7 +195,6 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
 {
-
 
     // file  input
     fileInputWidget = new QWidget(this);

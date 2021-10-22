@@ -59,6 +59,8 @@ public:
     QGISHurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~QGISHurricaneSelectionWidget();
 
+    bool outputToJSON(QJsonObject &jsonObject);
+
     QStackedWidget* getQGISHurricaneSelectionWidget(void);
 
     void clear(void);

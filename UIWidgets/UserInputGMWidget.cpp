@@ -127,8 +127,6 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
         appData["motionDir"]=QString("None");
     }
 
-    unitsWidget->outputToJSON(appData);
-
     jsonObject["ApplicationData"]=appData;
 
     return true;
@@ -137,9 +135,9 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    // qDebug() << "USER GM outputPLAIN";
+    auto res = unitsWidget->outputToJSON(jsonObj);
 
-    return true;
+    return res;
 }
 
 
@@ -194,31 +192,39 @@ bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         this->loadUserGMData();
 
-        // Set the units
-        auto res = unitsWidget->inputFromJSON(appData);
-
-        // If setting of units failed, provide default units and issue a warning
-        if(!res)
-        {
-            auto paramNames = unitsWidget->getParameterNames();
-
-            this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
-
-            for(auto&& it : paramNames)
-            {
-                auto res = unitsWidget->setUnit(it,"g");
-
-                if(res == 0)
-                    this->infoMessage("For parameter "+it+" setting default unit as: g");
-                else
-                    this->errorMessage("Failed to set default units for parameter "+it);
-            }
-        }
-
         return true;
     }
 
     return false;
+}
+
+
+bool UserInputGMWidget::inputFromJSON(QJsonObject &jsonObject)
+{
+    // Set the units
+    auto res = unitsWidget->inputFromJSON(jsonObject);
+
+    // If setting of units failed, provide default units and issue a warning
+    if(!res)
+    {
+        auto paramNames = unitsWidget->getParameterNames();
+
+        this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
+
+        for(auto&& it : paramNames)
+        {
+            auto res = unitsWidget->setUnit(it,"g");
+
+            if(res == 0)
+                this->infoMessage("For parameter "+it+" setting default unit as: g");
+            else
+                this->errorMessage("Failed to set default units for parameter "+it);
+        }
+
+        this->infoMessage("Warning \\!/: Check if the units are correct!");
+    }
+
+    return res;
 }
 
 

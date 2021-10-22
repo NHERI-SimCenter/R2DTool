@@ -50,7 +50,7 @@ class Unit :  QObject{
 
 public:
     enum Type {
-        UNKNOWN = 0x000,
+        UNDEFINED = 0x000,
         LENGTH = 0x100,
         mm, cm, m, km, in, ft, mi,
         FORCE = 0x200,

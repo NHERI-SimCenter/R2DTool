@@ -127,6 +127,7 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
     switch(unitType) {
     case SimCenter::Unit::Type::LENGTH :
 
+        this->addItem("Undefined", SimCenter::Unit::Type::UNDEFINED);
         this->addItem("Millimeters", SimCenter::Unit::Type::mm);
         this->addItem("Centimeters", SimCenter::Unit::Type::cm);
         this->addItem("Meters", SimCenter::Unit::Type::m);
@@ -137,7 +138,7 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
 
         break;
     case SimCenter::Unit::Type::FORCE :
-
+        this->addItem("Undefined", SimCenter::Unit::Type::UNDEFINED);
         this->addItem("Newtons", SimCenter::Unit::Type::N);
         this->addItem("Kilonewtons", SimCenter::Unit::Type::kN);
         this->addItem("Pounds", SimCenter::Unit::Type::lb);
@@ -145,7 +146,7 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
 
         break;
     case SimCenter::Unit::Type::PRESSURE :
-
+        this->addItem("Undefined", SimCenter::Unit::Type::UNDEFINED);
         this->addItem("Pascal", SimCenter::Unit::Type::Pa);
         this->addItem("Megapascal", SimCenter::Unit::Type::MPa);
         this->addItem("Gigapascal", SimCenter::Unit::Type::GPa);
@@ -154,7 +155,7 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
 
         break;
     case SimCenter::Unit::Type::TIME :
-
+        this->addItem("Undefined", SimCenter::Unit::Type::UNDEFINED);
         this->addItem("Seconds", SimCenter::Unit::Type::sec);
         this->addItem("Minutes", SimCenter::Unit::Type::min);
         this->addItem("Hours", SimCenter::Unit::Type::hr);
@@ -162,7 +163,7 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
 
         break;
     case SimCenter::Unit::Type::VELOCITY :
-
+        this->addItem("Undefined", SimCenter::Unit::Type::UNDEFINED);
         this->addItem("Centimeters per second", SimCenter::Unit::Type::cmps);
         this->addItem("Meters per second", SimCenter::Unit::Type::mps);
         this->addItem("Kilometers per hour", SimCenter::Unit::Type::kph);
@@ -172,7 +173,7 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
 
         break;
     case SimCenter::Unit::Type::ACCEL :
-
+        this->addItem("Undefined", SimCenter::Unit::Type::UNDEFINED);
         this->addItem("Centimeters per second squared", SimCenter::Unit::Type::cmps2);
         this->addItem("Meters per second squared", SimCenter::Unit::Type::mps2);
         this->addItem("Inches per second squared", SimCenter::Unit::Type::inchps2);
@@ -183,6 +184,9 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
 
         break;
     default :
+
+        this->addItem("Undefined", SimCenter::Unit::Type::UNDEFINED);
+        this->insertSeparator(this->count());
 
         this->addParentItem("Length");
 
@@ -241,10 +245,10 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
         this->addChildItem("Percent of gravitational constant (%g)", SimCenter::Unit::Type::pctg);
 
         this->insertSeparator(this->count());
-        this->addParentItem("Dimentionless");
-        this->addChildItem("Unitless scalar", SimCenter::Unit::Type::scalar);
+        this->addParentItem("Dimensionless");
+        this->addChildItem("Unitless (scalar)", SimCenter::Unit::Type::scalar);
 
-        this->setCurrentIndex(1);
+        this->setCurrentIndex(0);
     }
 
 }
