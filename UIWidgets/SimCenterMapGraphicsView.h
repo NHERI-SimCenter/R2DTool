@@ -52,7 +52,7 @@ public:
     static SimCenterMapGraphicsView *getInstance();
     ~SimCenterMapGraphicsView();
 
-    void setCurrentLayout(QVBoxLayout *layout);
+    void setCurrentLayout(QLayout *layout);
 
     GISLegendView *getLegendView() const;
 

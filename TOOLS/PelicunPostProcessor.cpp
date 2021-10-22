@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "CSVReaderWriter.h"
-#include "ComponentInputWidget.h"
+#include "ComponentDatabaseManager.h"
 #include "GeneralInformationWidget.h"
 #include "MainWindowWorkflowApp.h"
 #include "PelicunPostProcessor.h"
@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "TableNumberItem.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
-#include "SimCenterMapGraphicsView.h"
 #include "Utils/PythonProgressDialog.h"
 
 #include <QBarCategoryAxis>
@@ -76,12 +75,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextTable>
 #include <QValueAxis>
 
-// GIS headers
+#ifdef ARC_GIS
 #include "Basemap.h"
 #include "FeatureTable.h"
 #include "FeatureCollectionLayer.h"
 #include "Map.h"
 #include "MapGraphicsView.h"
+#include "ArcGISVisualizationWidget.h"
+#include "SimCenterMapGraphicsView.h"
+#endif
+
+
+#ifdef Q_GIS
+#include "QGISVisualizationWidget.h"
+
+#include <qgsmapcanvas.h>
+#endif
+
+// Test to remove start
+// #include <chrono>
+// using namespace std::chrono;
+// Test to remove end
 
 using namespace QtCharts;
 
@@ -221,14 +235,21 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     tableDock->setMinimumWidth(475);
     addDockWidget(Qt::RightDockWidgetArea, tableDock);
 
+#ifdef Q_GIS
     // Get the map view widget
-    mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
+    auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
+    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
 
-    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(nullptr);
+    // Enable the selection tool
+    mapViewSubWidget->enableSelectionTool();
+#endif
 
-    // Popup stuff
-    // Once map is set, connect to MapQuickView mouse clicked signal
-    //    connect(mapViewSubWidget.get(), &EmbeddedMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
+#ifdef ARC_GIS
+    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(mapViewMainWidget);
+
+    // Popup stuff Once map is set, connect to MapQuickView mouse clicked signal
+    connect(mapViewSubWidget.get(), &EmbeddedMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
+#endif
 
     QDockWidget* mapViewDock = new QDockWidget("Regional Map",this);
     mapViewDock->setObjectName("MapViewDock");
@@ -317,6 +338,19 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
 }
 
 
+void PelicunPostProcessor::showEvent(QShowEvent *e)
+{
+    auto mainCanvas = mapViewSubWidget->getMainCanvas();
+
+    auto mainExtent = mainCanvas->extent();
+
+    mapViewSubWidget->mapCanvas()->zoomToFeatureExtent(mainExtent);
+    QMainWindow::showEvent(e);
+}
+
+
+
+
 int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults)
 {
     if(DVResults.size() < numHeaderRows)
@@ -369,14 +403,13 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Injuries
     auto indexInjuriesSev1 = headerStrings.indexOf("Injuries-sev1-aggregate-mean");
 
-    // Wind repair cost
-    auto indexWindRCagg = headerStrings.indexOf("Repair Cost-Wind-aggregate");
-    auto indexWindRC1_1 = headerStrings.indexOf("Repair Cost-Wind-1_1-mean");
+    //    // Wind repair cost
+    //    auto indexWindRCagg = headerStrings.indexOf("Repair Cost-Wind-aggregate");
+    //    auto indexWindRC1_1 = headerStrings.indexOf("Repair Cost-Wind-1_1-mean");
 
-    // Flood repair cost
-    auto indexFloodRCagg = headerStrings.indexOf("Repair Cost-Flood-aggregate");
-    auto indexFloodRC1_1 = headerStrings.indexOf("Repair Cost-Flood-1_1-mean");
-
+    //    // Flood repair cost
+    //    auto indexFloodRCagg = headerStrings.indexOf("Repair Cost-Flood-aggregate");
+    //    auto indexFloodRC1_1 = headerStrings.indexOf("Repair Cost-Flood-1_1-mean");
 
     QStringList tableHeadings = {"Asset ID","Repair\nCost","Repair\nTime","Replacement\nProbability","Fatalities","Loss\nRatio"};
 
@@ -412,22 +445,25 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
     REmpiricalProbabilityDistribution theProbDist;
 
-    auto buildingsWidget = theVisualizationWidget->getComponentWidget("BUILDINGS");
-
-    if(buildingsWidget == nullptr)
-    {
-        QString msg = "Error getting the building buildings widget from the visualization widget";
-        throw msg;
-    }
-
     // Get the buildings database
-    auto theBuildingDB = buildingsWidget->getComponentDatabase();
+    auto theBuildingDB = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 
     if(theBuildingDB == nullptr)
     {
         QString msg = "Error getting the building database from the input widget!";
         throw msg;
     }
+
+    if(theBuildingDB->isEmpty())
+    {
+        QString msg = "Building database is empty";
+        throw msg;
+    }
+
+    auto selFeatLayer = theBuildingDB->getSelectedLayer();
+    mapViewSubWidget->setCurrentLayer(selFeatLayer);
+
+    QVector<QVariant> attributes(DVResults.size()-numHeaderRows);
 
     // 4 rows of headers in the results file
     for(int i = numHeaderRows, count = 0; i<DVResults.size(); ++i, ++count)
@@ -436,24 +472,10 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
         auto buildingID = objectToInt(inputRow.at(0));
 
-        auto building = theBuildingDB->getComponent(buildingID);
-
-        if(building.ID == -1)
-            throw QString("Could not find the building ID " + QString::number(buildingID) + " in the database");
-
-        for(int j = 1; j<numHeaderColumns; ++j)
-        {
-            building.ResultsValues.insert(headerStrings.at(j),inputRow.at(j).toDouble());
-        }
-
         // Defaults to 1.0 if no replacement cost is given, i.e., it assumes the repair cost is the loss ratio
-        auto replacementCostVar = building.ComponentAttributes.value("ReplacementCost",QVariant(1.0));
+        auto replacementCostVar = theBuildingDB->getAttributeValue(buildingID,"ReplacementCost",QVariant(1.0));
 
-        auto replacementCost = objectToDouble(replacementCostVar);
-
-        building.ID = buildingID;
-
-        buildingsVec.push_back(building);
+        auto replacementCost = replacementCostVar.toDouble();
 
         // This assumes that the output from pelicun will not change
         auto IDStr = inputRow.at(0);                                // ID
@@ -487,7 +509,6 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
             cumulativeStructDS4 += StructDS4;
         }
 
-
         if(indexNSARC1_1 != -1)
         {
             auto NSAccDS1 = objectToDouble(inputRow.at(indexNSARC1_1));    // Non-structural acceleration sensitive losses damage state 1 (mean)
@@ -501,7 +522,6 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
             cumulativeNSAccDS4 += NSAccDS4;
         }
 
-
         if(indexNSDRC1_1 != -1)
         {
             auto NSDriftDS1 = objectToDouble(inputRow.at(24));  // Non-structural drift sensitive losses damage state 1 (mean)
@@ -514,7 +534,6 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
             cumulativeNSDriftDS3 += NSDriftDS3;
             cumulativeNSDriftDS4 += NSDriftDS4;
         }
-
 
         if(indexInjuriesSev1 != -1)
         {
@@ -556,18 +575,36 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
         pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
 
-        auto buildingFeature = building.ComponentFeature;
-
-        auto atrb = "LossRatio";
-        auto atrbVal = QVariant(lossRatio);
-
-        buildingFeature->attributes()->replaceAttribute("LossRatio",lossRatio);
-        buildingFeature->featureTable()->updateFeature(buildingFeature);
-
-        // Get the feature UID
-        auto uid = building.UID;
-        theVisualizationWidget->updateSelectedComponent("BUILDINGS",uid,atrb,atrbVal);
+        attributes[count] = lossRatio;
     }
+
+    // Test to remove start
+    // auto start = high_resolution_clock::now();
+    // Test to remove end
+
+    // Starting editing
+    theBuildingDB->startEditing();
+
+    auto res = theBuildingDB->updateComponentAttributes("LossRatio",attributes);
+    if(!res)
+    {
+        QString msg = "Error updating component attribute: Loss Ratio";
+        throw msg;
+    }
+
+    // Commit the changes
+    theBuildingDB->commitChanges();
+
+    // Test to remove start
+    // auto stop = high_resolution_clock::now();
+    // auto duration = duration_cast<milliseconds>(stop - start);
+    // Test to remove end
+    PythonProgressDialog::getInstance()->appendText("Done processing results "/*+QString::number(duration.count())*/);
+
+    QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+
+    // Apply the default renderer
+    QGISVisWidget->createPrettyGraduatedRenderer("LossRatio",Qt::yellow,Qt::red,5,theBuildingDB->getSelectedLayer());
 
     //  CASUALTIES
     QBarSet *casualtiesSet = new QBarSet("Casualties");
@@ -1167,18 +1204,32 @@ void PelicunPostProcessor::restoreUI(void)
 
 void PelicunPostProcessor::setCurrentlyViewable(bool status){
 
-    if (status == true)
-        mapViewSubWidget->setCurrentlyViewable(status);
 
+#ifdef ARC_GIS    
     // Set the legend to display the selected building layer
     auto buildingsWidget = theVisualizationWidget->getComponentWidget("BUILDINGS");
 
     if(buildingsWidget)
     {
+        if (status == true)
+            mapViewSubWidget->setCurrentlyViewable(status);
+
         auto selectedLayer = buildingsWidget->getSelectedFeatureLayer();
 
-        theVisualizationWidget->handleLegendChange(selectedLayer);
+        auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
+
+        if(arcVizWidget == nullptr)
+        {
+            qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+            return;
+        }
+
+        arcVizWidget->handleLegendChange(selectedLayer);
     }
+#else
+    Q_UNUSED(status);
+#endif
+
 }
 
 
@@ -1187,7 +1238,6 @@ void PelicunPostProcessor::clear(void)
     DMdata.clear();
     DVdata.clear();
     EDPdata.clear();
-    buildingsVec.clear();
 
     outputFilePath.clear();
 

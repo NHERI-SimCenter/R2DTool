@@ -10,7 +10,7 @@ modification, are permitted provided that the following conditions are met:
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
-
+   
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -40,227 +40,231 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentInputWidget.h"
 #include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
+#include "ComponentTableView.h"
+#include "ComponentTableModel.h"
 
+// Test to remove
+//#include <chrono>
+//using namespace std::chrono;
+
+#include <QMessageBox>
 #include <QCoreApplication>
 #include <QMessageBox>
 #include <QApplication>
 #include <QFileDialog>
 #include <QLineEdit>
-#include <QTableWidget>
 #include <QLabel>
 #include <QGroupBox>
 #include <QGridLayout>
 #include <QPushButton>
-#include <QHeaderView>
 #include <QFileInfo>
 #include <QJsonObject>
+#include <QHeaderView>
 
-#include "FeatureCollectionLayer.h"
+#ifdef ARC_GIS
+#include "ArcGISVisualizationWidget.h"
+#include <FeatureCollectionLayer.h>
+#endif
+
+#ifdef Q_GIS
+#include "QGISVisualizationWidget.h"
+#endif
 
 // Std library headers
 #include <string>
 #include <algorithm>
 
-using namespace Esri::ArcGISRuntime;
+#ifdef OpenSRA
+#include "WorkflowAppOpenSRA.h"
+#include "WidgetFactory.h"
+#include "JsonGroupBoxWidget.h"
+#endif
 
-ComponentInputWidget::ComponentInputWidget(QWidget *parent, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
+ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), appType(appType), componentType(componentType)
 {
-    label1 = "Load information from a CSV file";
-    label2 = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
+#ifdef ARC_GIS
+    theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(visWidget);
+
+    if(theVisualizationWidget == nullptr)
+    {
+        this->errorMessage("Failed to cast to QISVisualizationWidget");
+        return;
+    }
+#endif
+
+    offset = 0;
+
+    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
+    assert(theVisualizationWidget);
+
+    this->setContentsMargins(0,0,0,0);
+
+    pathToComponentInputFile = "NULL";
+    componentGroupBox = nullptr;
+    componentFileLineEdit = nullptr;
+
+    this->createComponentsBox();
+
+    auto txt1 = "Load information from a CSV file";
+    auto txt2  = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
     "Define a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
 
-    label3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
+    auto txt3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
 
-    pathToComponentInfoFile = "NULL";
-    componentGroupBox = nullptr;
-    theVisualizationWidget = nullptr;
-    this->createComponentsBox();
+    label1->setText(txt1);
+    label2->setText(txt2);
+    label3->setText(txt3);
+
 }
 
 
 ComponentInputWidget::~ComponentInputWidget()
 {
-
+    
 }
 
 
 void ComponentInputWidget::loadComponentData(void)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
-    if(pathToComponentInfoFile.compare("NULL") == 0)
+    if(pathToComponentInputFile.compare("NULL") == 0)
         this->chooseComponentInfoFileDialog();
-
-    if(pathToComponentInfoFile.compare("NULL") == 0)
+    
+    if(pathToComponentInputFile.compare("NULL") == 0)
         return;
-
+    
     // Check if the directory exists
-    QFile file(pathToComponentInfoFile);
-
+    QFile file(pathToComponentInputFile);
+    
     if (!file.exists())
     {
-        auto relPathToComponentFile = QCoreApplication::applicationDirPath() + QDir::separator() + pathToComponentInfoFile;
-
+        auto relPathToComponentFile = QCoreApplication::applicationDirPath() + QDir::separator() + pathToComponentInputFile;
+        
         if (!QFile(relPathToComponentFile).exists())
         {
-            QString errMsg = "Cannot find the file: "+ pathToComponentInfoFile + "\n" +"Check your directory and try again.";
+            QString errMsg = "Cannot find the file: "+ pathToComponentInputFile + "\n" +"Check your directory and try again.";
             this->errorMessage(errMsg);
             return;
         }
         else
         {
-            pathToComponentInfoFile = relPathToComponentFile;
-            componentFileLineEdit->setText(pathToComponentInfoFile);
+            pathToComponentInputFile = relPathToComponentFile;
+            componentFileLineEdit->setText(pathToComponentInputFile);
         }
     }
-
+    
+    // Test to remove
+    // auto start = high_resolution_clock::now();
+    
     CSVReaderWriter csvTool;
-
+    
     QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(pathToComponentInfoFile,err);
-
+    QVector<QStringList> data = csvTool.parseCSVFile(pathToComponentInputFile,err);
+    
     if(!err.isEmpty())
     {
         this->errorMessage(err);
         return;
     }
-
+    
     if(data.empty())
     {
         this->errorMessage("Input file is empty");
         return;
     }
-
+    
     // Get the header file
     QStringList tableHeadings = data.first();
-
+    
     tableHorizontalHeadings = tableHeadings;
-
+    
+    tableHeadings.push_front("N/A");
+    
+    emit headingValuesChanged(tableHeadings);
+    
     // Pop off the row that contains the header information
     data.pop_front();
-
+    
     auto numRows = data.size();
-    auto numCols = tableHeadings.size();
-
+    
     if(numRows == 0)
     {
         this->errorMessage("Input file is empty");
         return;
     }
     else{
-        this->statusMessage("Loading " + QString::number(numRows)+ " assets");
+        this->statusMessage("Loading visualization for " + QString::number(numRows)+ " assets");
         QApplication::processEvents();
     }
-
+    
     auto firstRow = data.first();
-
+    
     if(firstRow.empty())
     {
         this->errorMessage("First row is empty");
         return;
     }
-
-    auto initialID = firstRow.first().toInt();
-
+    
     componentTableWidget->clear();
-    componentTableWidget->setRowCount(numRows);
-    componentTableWidget->setColumnCount(numCols);
-    componentTableWidget->setHorizontalHeaderLabels(tableHeadings);
-
-    // Fill in the cells
-    for(int i = 0; i<numRows; ++i)
-    {
-
-        // Display a status message every n assets
-        if((i+1)%1000 == 0)
-        {
-            this->statusMessage("Loading asset number: " + QString::number(i+1));
-            QApplication::processEvents();
-        }
-
-        auto rowStringList = data[i];
-
-        if(rowStringList.size() != numCols)
-        {
-            this->statusMessage("Error, the number of items in row " + QString::number(i+1) + " does not equal number of headings in the file");
-            return;
-        }
-
-        auto currID = rowStringList.first().toInt();
-
-        if(initialID+i != currID)
-        {
-            this->statusMessage("Error, the asset IDs must be sequential");
-            return;
-        }
-
-        for(int j = 0; j<numCols; ++j)
-        {
-            auto cellData = rowStringList[j];
-
-            auto item = new QTableWidgetItem(cellData);
-
-            // Make the first three columns (ID, lat, lon) uneditable
-            if(j < 3)
-                item->setFlags(item->flags() ^ (Qt::ItemIsEditable | Qt::ItemIsEnabled));
-
-            componentTableWidget->setItem(i,j, item);
-        }
-    }
-
-    componentInfoText->show();
+    componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
+    
+    label3->show();
     componentTableWidget->show();
-
-    emit componentDataLoaded();
-
+    componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    
     this->loadComponentVisualization();
 
+    // Get the ID of the first and last component
+    bool OK;
+    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return;
+    }
+
+
+    offset = 1-firstID;
+
+    theComponentDb->setOffset(offset);
+    
+    // Test to remove
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    this->statusMessage("Done ALL "+QString::number(duration.count()));
+    
     this->statusMessage("Done loading assets");
     QApplication::processEvents();
-
+    
     return;
 }
 
 
 void ComponentInputWidget::chooseComponentInfoFileDialog(void)
 {
-    pathToComponentInfoFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
-
+    pathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
+    
     // Return if the user cancels
-    if(pathToComponentInfoFile.isEmpty())
+    if(pathToComponentInputFile.isEmpty())
     {
-        pathToComponentInfoFile = "NULL";
+        pathToComponentInputFile = "NULL";
         return;
     }
-
+    
     // Set file name & entry in qLine edit
-    componentFileLineEdit->setText(pathToComponentInfoFile);
-
+    componentFileLineEdit->setText(pathToComponentInputFile);
+    
     this->loadComponentData();
-
+    
     return;
 }
 
 
-// Implement in subclass
-int ComponentInputWidget::loadComponentVisualization()
-{
-
-    return 0;
-}
-
-
-QTableWidget *ComponentInputWidget::getTableWidget() const
+ComponentTableView *ComponentInputWidget::getTableWidget() const
 {
     return componentTableWidget;
-}
-
-
-QGroupBox* ComponentInputWidget::getComponentsWidget(void)
-{
-    if(componentGroupBox == nullptr)
-        this->createComponentsBox();
-
-    return componentGroupBox;
 }
 
 
@@ -268,89 +272,158 @@ void ComponentInputWidget::createComponentsBox(void)
 {
     componentGroupBox = new QGroupBox(componentType);
     componentGroupBox->setFlat(true);
-
-    QGridLayout* gridLayout = new QGridLayout();
+    componentGroupBox->setContentsMargins(0,0,0,0);
+    
+    QVBoxLayout* gridLayout = new QVBoxLayout();
+    gridLayout->setMargin(0);
+    gridLayout->setSpacing(5);
+    gridLayout->setContentsMargins(10,0,0,0);
+    
     componentGroupBox->setLayout(gridLayout);
-
-    auto smallVSpacer = new QSpacerItem(0,10);
-
-    QLabel* topText = new QLabel();
-    topText->setText(label1);
-
+    
+    label1 = new QLabel();
+    
     QLabel* pathText = new QLabel();
-    pathText->setText("Import Path:");
-
+    pathText->setText("Path to file:");
+    
     componentFileLineEdit = new QLineEdit();
-    componentFileLineEdit->setMaximumWidth(750);
+    //    componentFileLineEdit->setMaximumWidth(750);
     componentFileLineEdit->setMinimumWidth(400);
     componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-
+    
     QPushButton *browseFileButton = new QPushButton();
     browseFileButton->setText(tr("Browse"));
     browseFileButton->setMaximumWidth(150);
-
+    
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));
-
+    
     // Add a horizontal spacer after the browse and load buttons
-    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    QLabel* selectComponentsText = new QLabel();
-    selectComponentsText->setText(label2);
-
+    //    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
+    
+    label2 = new QLabel();
+    
     selectComponentsLineEdit = new AssetInputDelegate();
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ComponentInputWidget::handleComponentSelection);
-
+    
     QPushButton *selectComponentsButton = new QPushButton();
     selectComponentsButton->setText(tr("Select"));
     selectComponentsButton->setMaximumWidth(150);
-
+    
     connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
-
+    
     QPushButton *clearSelectionButton = new QPushButton();
     clearSelectionButton->setText(tr("Clear Selection"));
     clearSelectionButton->setMaximumWidth(150);
-
+    
     connect(clearSelectionButton,SIGNAL(clicked()),this,SLOT(clearComponentSelection()));
-
+    
     // Text label for Component information
-    componentInfoText = new QLabel(label3);
-    componentInfoText->setStyleSheet("font-weight: bold; color: black");
-    componentInfoText->hide();
-
+    label3 = new QLabel();
+    label3->setStyleSheet("font-weight: bold; color: black");
+    label3->hide();
+    
     // Create the table that will show the Component information
-    componentTableWidget = new QTableWidget();
-    componentTableWidget->hide();
-    componentTableWidget->setToolTip("Component details");
-    componentTableWidget->verticalHeader()->setVisible(false);
-    componentTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    componentTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    componentTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
-
-    connect(componentTableWidget, &QTableWidget::cellChanged, this, &ComponentInputWidget::handleCellChanged);
-
+    componentTableWidget = new ComponentTableView();
+    
+    connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &ComponentInputWidget::handleCellChanged);
+    
+#ifdef OpenSRA
+    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
+    
+    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["SiteLocationParams"].toObject();
+    
+    if(thisObj.isEmpty())
+    {
+        this->errorMessage("Json object is empty in " + QString(__FUNCTION__));
+        return;
+    }
+    
+    auto theWidgetFactory = std::make_unique<WidgetFactory>(this);
+    
+    QJsonObject paramsObj = thisObj["Params"].toObject();
+    
+    // The string given in the Methods and params json file
+    QString nameStr = "SiteLocationParams";
+    
+    auto widgetLabelText = thisObj["NameToDisplay"].toString();
+    
+    if(widgetLabelText.isEmpty())
+    {
+        this->errorMessage("Could not find the *NameToDisplay* key in object json for " + nameStr);
+        return;
+    }
+    
+    locationWidget = new JsonGroupBoxWidget(this);
+    locationWidget->setObjectName(nameStr);
+    
+    locationWidget->setTitle(widgetLabelText);
+    
+    QJsonObject paramsLat;
+    paramsLat["LatBegin"] = paramsObj.value("LatBegin");
+    paramsLat["LatMid"] = paramsObj.value("LatMid");
+    paramsLat["LatEnd"] = paramsObj.value("LatEnd");
+    
+    QJsonObject paramsLon;
+    paramsLon["LonBegin"] = paramsObj.value("LonBegin");
+    paramsLon["LonMid"] = paramsObj.value("LonMid");
+    paramsLon["LonEnd"] = paramsObj.value("LonEnd");
+    paramsLon["Length"] = paramsObj.value("Length");
+    
+    auto latLayout = theWidgetFactory->getLayoutFromParams(paramsLat,nameStr,locationWidget, Qt::Horizontal);
+    auto lonLayout = theWidgetFactory->getLayoutFromParams(paramsLon,nameStr,locationWidget, Qt::Horizontal);
+    
+    QVBoxLayout* latLonLayout = new QVBoxLayout();
+    latLonLayout->addLayout(latLayout);
+    latLonLayout->addLayout(lonLayout);
+    
+    locationWidget->setLayout(latLonLayout);
+    
+    QHBoxLayout* pathLayout = new QHBoxLayout();
+    pathLayout->addWidget(pathText);
+    pathLayout->addWidget(componentFileLineEdit);
+    pathLayout->addWidget(browseFileButton);
+    
     // Add a vertical spacer at the bottom to push everything up
-    gridLayout->addItem(smallVSpacer,0,0,1,5);
-    gridLayout->addWidget(topText,1,0,1,5);
-    gridLayout->addWidget(pathText,2,0);
-    gridLayout->addWidget(componentFileLineEdit,2,1);
-    gridLayout->addWidget(browseFileButton,2,2);
-    gridLayout->addItem(hspacer, 2, 4);
-    gridLayout->addWidget(selectComponentsText, 3, 0, 1, 4);
-    gridLayout->addWidget(selectComponentsLineEdit, 4, 0, 1, 2);
-    gridLayout->addWidget(selectComponentsButton, 4, 2);
-    gridLayout->addWidget(clearSelectionButton, 4, 3);
-    gridLayout->addItem(smallVSpacer,5,0,1,5);
-    gridLayout->addWidget(componentInfoText,6,0,1,5,Qt::AlignCenter);
-    gridLayout->addWidget(componentTableWidget, 7, 0, 1, 5,Qt::AlignCenter);
-    gridLayout->setRowStretch(8, 1);
+    gridLayout->addWidget(topText);
+    gridLayout->addLayout(pathLayout);
+    gridLayout->addWidget(selectComponentsText);
+    
+    gridLayout->addWidget(selectComponentsText);
+    
+    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
+    selectComponentsLayout->addWidget(selectComponentsLineEdit);
+    selectComponentsLayout->addWidget(selectComponentsButton);
+    selectComponentsLayout->addWidget(clearSelectionButton);
+    
+    gridLayout->addLayout(selectComponentsLayout);
+    gridLayout->addWidget(locationWidget);
+    gridLayout->addWidget(componentInfoText,0,Qt::AlignCenter);
+    gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
+    
+#else
+    QHBoxLayout* pathLayout = new QHBoxLayout();
+    pathLayout->addWidget(pathText);
+    pathLayout->addWidget(componentFileLineEdit);
+    pathLayout->addWidget(browseFileButton);
+    
+    // Add a vertical spacer at the bottom to push everything up
+    gridLayout->addWidget(label1);
+    gridLayout->addLayout(pathLayout);
+    gridLayout->addWidget(label2);
+
+    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
+    selectComponentsLayout->addWidget(selectComponentsLineEdit);
+    selectComponentsLayout->addWidget(selectComponentsButton);
+    selectComponentsLayout->addWidget(clearSelectionButton);
+    
+    gridLayout->addLayout(selectComponentsLayout);
+    gridLayout->addWidget(label3,0,Qt::AlignCenter);
+    gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
+    
+    gridLayout->addStretch();
+#endif
+    
     this->setLayout(gridLayout);
-}
-
-
-void ComponentInputWidget::setTheVisualizationWidget(VisualizationWidget *value)
-{
-    theVisualizationWidget = value;
 }
 
 
@@ -367,6 +440,128 @@ void ComponentInputWidget::selectComponents(void)
 }
 
 
+#ifdef ARC_GIS
+void ComponentInputWidget::handleComponentSelection(void)
+{
+    
+    auto nRows = componentTableWidget->rowCount();
+    
+    if(nRows == 0)
+        return;
+    
+    // Get the ID of the first and last component
+    bool OK;
+    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
+    
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return;
+    }
+    
+    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
+    
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return;
+    }
+    
+    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+    
+    // First check that all of the selected IDs are within range
+    for(auto&& it : selectedComponentIDs)
+    {
+        if(it<firstID || it>lastID)
+        {
+            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
+            this->errorMessage(msg);
+            selectComponentsLineEdit->clear();
+            return;
+        }
+    }
+    
+    // Hide all rows in the table
+    for(int i = 0; i<nRows; ++i)
+        componentTableWidget->setRowHidden(i,true);
+    
+    // Unhide the selected rows
+    for(auto&& it : selectedComponentIDs)
+        componentTableWidget->setRowHidden(it - firstID,false);
+    
+    auto numAssets = selectedComponentIDs.size();
+    QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
+    this->statusMessage(msg);
+    
+    for(auto&& it : selectedComponentIDs)
+    {
+        auto component = theComponentDb->getComponent(it);
+        
+        auto feature = component.ComponentFeature;
+        
+        if(feature == nullptr)
+            continue;
+        
+        QMap<QString, QVariant> featureAttributes;
+        auto atrb = feature->attributes()->attributesMap();
+        
+        auto id = atrb.value("UID").toString();
+        
+        if(selectedFeaturesForAnalysis.contains(id))
+            continue;
+        
+        auto atrVals = atrb.values();
+        auto atrKeys = atrb.keys();
+        
+        // qDebug()<<"Num atributes: "<<atrb.size();
+        
+        for(int i = 0; i<atrb.size();++i)
+        {
+            auto key = atrKeys.at(i);
+            auto val = atrVals.at(i);
+            
+            // Including the ObjectID causes a crash!!! Do not include it when creating an object
+            if(key == "ObjectID")
+                continue;
+            
+            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
+            
+            featureAttributes[key] = val;
+        }
+
+        
+        //        auto geom = feature->geometry();
+        
+        auto res = this->addFeatureToSelectedLayer(*feature);
+
+        if(res == false)
+            this->errorMessage("Error adding feature to selected feature layer");
+        else
+            selectedFeaturesForAnalysis.insert(id,feature);
+    }
+
+    auto selecFeatLayer = this->getSelectedFeatureLayer();
+
+    if(selecFeatLayer == nullptr)
+    {
+        QString err = "Error in getting the selected feature layer";
+        qDebug()<<err;
+        return;
+    }
+
+    // Add the layer to the map if it does not already exist
+    auto layerExists = theVisualizationWidget->getLayer(selecFeatLayer->layerId());
+
+    if(layerExists == nullptr)
+        theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
+
+}
+#endif
+
+
+#ifdef Q_GIS
 void ComponentInputWidget::handleComponentSelection(void)
 {
 
@@ -377,7 +572,7 @@ void ComponentInputWidget::handleComponentSelection(void)
 
     // Get the ID of the first and last component
     bool OK;
-    auto firstID = componentTableWidget->item(0,0)->data(0).toInt(&OK);
+    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
 
     if(!OK)
     {
@@ -386,7 +581,7 @@ void ComponentInputWidget::handleComponentSelection(void)
         return;
     }
 
-    auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toInt(&OK);
+    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
 
     if(!OK)
     {
@@ -409,92 +604,41 @@ void ComponentInputWidget::handleComponentSelection(void)
         }
     }
 
-    // Hide all rows in the table
-    for(int i = 0; i<nRows; ++i)
-        componentTableWidget->setRowHidden(i,true);
-
-    // Unhide the selected rows
-    for(auto&& it : selectedComponentIDs)
-        componentTableWidget->setRowHidden(it - firstID,false);
-
     auto numAssets = selectedComponentIDs.size();
     QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
     this->statusMessage(msg);
 
-    for(auto&& it : selectedComponentIDs)
-    {
-        auto component = theComponentDb.getComponent(it);
 
-        auto feature = component.ComponentFeature;
+    theComponentDb->startEditing();
 
-        if(feature == nullptr)
-            continue;
+    // Test to remove
+    //    auto start = high_resolution_clock::now();
 
-        auto atrb = feature->attributes()->attributesMap();
-        auto id = atrb.value("UID").toString();
+    theComponentDb->addFeaturesToSelectedLayer(selectedComponentIDs);
 
-        if(selectedFeaturesForAnalysis.contains(id))
-            continue;
+    // Test to remove
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    this->statusMessage("Done ALL "+QString::number(duration.count()));
 
-        auto atrVals = atrb.values();
-        auto atrKeys = atrb.keys();
+    theComponentDb->commitChanges();
 
-        // qDebug()<<"Num atributes: "<<atrb.size();
+    // Hide all of the rows that are not selecetd. Takes a long time!
+    //    // Hide all rows in the table
+    //    for(int i = 0; i<nRows; ++i)
+    //        componentTableWidget->setRowHidden(i,true);
 
-        QMap<QString, QVariant> featureAttributes;
-        for(int i = 0; i<atrb.size();++i)
-        {
-            auto key = atrKeys.at(i);
-            auto val = atrVals.at(i);
+    //    // Unhide the selected rows
+    //    for(auto&& it : selectedComponentIDs)
+    //        componentTableWidget->setRowHidden(it - firstID,false);
 
-            // Including the ObjectID causes a crash!!! Do not include it when creating an object
-            if(key == "ObjectID")
-                continue;
 
-            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
-
-            featureAttributes[key] = val;
-        }
-
-        auto geom = feature->geometry();
-
-        auto feat = this->addFeatureToSelectedLayer(featureAttributes,geom);
-
-        if(feat)
-            selectedFeaturesForAnalysis.insert(id,feat);
-    }
-
-    auto selecFeatLayer = this->getSelectedFeatureLayer();
-
-    if(selecFeatLayer == nullptr)
-    {
-        QString err = "Error in getting the selected feature layer";
-        qDebug()<<err;
-        return;
-    }
-
-    // Add the layer to the map if it does not already exist
-    auto layerExists = theVisualizationWidget->getLayer(selecFeatLayer->layerId());
-
-    if(layerExists == nullptr)
-        theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
 }
+#endif
 
 
-void ComponentInputWidget::clearLayerSelectedForAnalysis(void)
-{
-    if(selectedFeaturesForAnalysis.empty())
-        return;
 
-    for(auto&& it : selectedFeaturesForAnalysis)
-    {
-        this->removeFeatureFromSelectedLayer(it);
-    }
-
-    selectedFeaturesForAnalysis.clear();
-}
-
-QStringList ComponentInputWidget::getTableHorizontalHeadings() const
+QStringList ComponentInputWidget::getTableHorizontalHeadings()
 {
     return tableHorizontalHeadings;
 }
@@ -502,21 +646,6 @@ QStringList ComponentInputWidget::getTableHorizontalHeadings() const
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
-    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
-
-    QList<Esri::ArcGISRuntime::Feature*> selectedFeatures;
-    for(auto&& it : selectedComponentIDs)
-    {
-        auto component = theComponentDb.getComponent(it);
-
-        auto feature = component.ComponentFeature;
-
-        selectedFeatures<<feature;
-    }
-
-    this->clearLayerSelectedForAnalysis();
-
-
     auto nRows = componentTableWidget->rowCount();
 
     // Hide all rows in the table
@@ -527,24 +656,27 @@ void ComponentInputWidget::clearComponentSelection(void)
 
     selectComponentsLineEdit->clear();
 
+    theComponentDb->clearSelectedLayer();
+
+    theComponentDb->getSelectedLayer()->updateExtents();
 }
 
 
 void ComponentInputWidget::setLabel1(const QString &value)
 {
-    label1 = value;
+    label1->setText(value);
 }
 
 
 void ComponentInputWidget::setLabel2(const QString &value)
 {
-    label2 = value;
+    label2->setText(value);
 }
 
 
 void ComponentInputWidget::setLabel3(const QString &value)
 {
-    label3 = value;
+    label3->setText(value);
 }
 
 
@@ -560,12 +692,6 @@ void ComponentInputWidget::setComponentType(const QString &value)
 }
 
 
-void ComponentInputWidget::insertSelectedComponent(const int ComponentID)
-{
-    selectComponentsLineEdit->insertSelectedCompoonent(ComponentID);
-}
-
-
 int ComponentInputWidget::numberComponentsSelected(void)
 {
     return selectComponentsLineEdit->size();
@@ -574,30 +700,7 @@ int ComponentInputWidget::numberComponentsSelected(void)
 
 QString ComponentInputWidget::getPathToComponentFile(void) const
 {
-    return pathToComponentInfoFile;
-}
-
-
-void ComponentInputWidget::loadFileFromPath(QString& path)
-{
-    this->clear();
-    pathToComponentInfoFile = path;
-    componentFileLineEdit->setText(path);
-    this->loadComponentData();
-}
-
-void ComponentInputWidget::selectAllComponents(void)
-{
-    // Get the ID of the first and last component FMK
-  auto firstID = componentTableWidget->item(0,0)->data(0).toString();
-
-    auto nRows = componentTableWidget->rowCount();
-    auto lastID = componentTableWidget->item(nRows-1,0)->data(0).toString();
-
-    QString filter = firstID + "-" + lastID;
-
-    selectComponentsLineEdit->setText(filter);
-    selectComponentsLineEdit->selectComponents();
+    return pathToComponentInputFile;
 }
 
 
@@ -615,9 +718,8 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
         if(filterData.isEmpty())
         {
-	  //errorMessage("Please select components for analysis");
-          //return false;
-	             auto msgBox =  std::make_unique<QMessageBox>();
+
+            auto msgBox =  std::make_unique<QMessageBox>();
 
             msgBox->setText("No IDs are selected for analysis in ASD "+componentType.toLower()+". Really run with all components?");
             msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
@@ -690,19 +792,19 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             else
                 pathToFile=QDir::currentPath();
 
-            pathToComponentInfoFile = pathToFile + QDir::separator() + fileName;
+            pathToComponentInputFile = pathToFile + QDir::separator() + fileName;
 
-            if (fileInfo.exists(pathToComponentInfoFile)) {
-                componentFileLineEdit->setText(pathToComponentInfoFile);
+            if (fileInfo.exists(pathToComponentInputFile)) {
+                componentFileLineEdit->setText(pathToComponentInputFile);
                 foundFile = true;
                 this->loadComponentData();
 
             } else {
                 // adam .. adam .. adam
-                pathToComponentInfoFile = pathToFile + QDir::separator()
+                pathToComponentInputFile = pathToFile + QDir::separator()
                         + "input_data" + QDir::separator() + fileName;
-                if (fileInfo.exists(pathToComponentInfoFile)) {
-                    componentFileLineEdit->setText(pathToComponentInfoFile);
+                if (fileInfo.exists(pathToComponentInputFile)) {
+                    componentFileLineEdit->setText(pathToComponentInputFile);
                     foundFile = true;
                     this->loadComponentData();
                 }
@@ -746,16 +848,40 @@ QString ComponentInputWidget::getFilterString(void)
 }
 
 
+void ComponentInputWidget::selectAllComponents(void)
+{
+    // Get the ID of the first and last component
+    auto firstID = componentTableWidget->item(0,0).toString();
+
+    auto nRows = componentTableWidget->rowCount();
+    auto lastID = componentTableWidget->item(nRows-1,0).toString();
+
+    QString filter = firstID + "-" + lastID;
+
+    selectComponentsLineEdit->setText(filter);
+    selectComponentsLineEdit->selectComponents();
+}
+
+
 bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 {
+#ifdef OpenSRA
+    locationWidget->outputToJSON(rvObject);
+#else
     Q_UNUSED(rvObject);
+#endif
     return true;
 }
 
 
 bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
+#ifdef OpenSRA
+    locationWidget->inputFromJSON(rvObject);
+#else
     Q_UNUSED(rvObject);
+#endif
+
     return true;
 }
 
@@ -777,37 +903,15 @@ bool ComponentInputWidget::copyFiles(QString &destName)
     auto pathToSaveFile = destName + QDir::separator() + componentFile.fileName();
 
     auto nRows = componentTableWidget->rowCount();
-    auto nCols = componentTableWidget->columnCount();
 
     if(nRows == 0)
         return false;
 
+    auto data = componentTableWidget->getTableModel()->getTableData();
 
-    QVector<QStringList> data(nRows+1);
+    auto headerValues = componentTableWidget->getTableModel()->getHeaderStringList();
 
-    QStringList headerInfo;
-
-    for(int i = 0; i<nCols; ++i)
-    {
-        auto headerText = componentTableWidget->horizontalHeaderItem(i)->data(0).toString();
-        headerInfo << headerText;
-    }
-
-    data[0] = headerInfo;
-
-    for(int i = 0; i<nRows; ++i)
-    {
-        QStringList rowData;
-        rowData.reserve(nCols);
-
-        for(int j = 0; j<nCols; ++j)
-        {
-            auto item = componentTableWidget->item(i,j)->data(0).toString();
-
-            rowData<<item;
-        }
-        data[i+1] = rowData;
-    }
+    data.push_front(headerValues);
 
     CSVReaderWriter csvTool;
 
@@ -851,54 +955,39 @@ bool ComponentInputWidget::copyFiles(QString &destName)
 
 void ComponentInputWidget::clear(void)
 {
-    theComponentDb.clear();
-    pathToComponentInfoFile.clear();
+    theComponentDb->clear();
+    pathToComponentInputFile.clear();
     componentFileLineEdit->clear();
     selectComponentsLineEdit->clear();
     componentTableWidget->clear();
     componentTableWidget->hide();
     tableHorizontalHeadings.clear();
+
+    emit headingValuesChanged(QStringList{"N/A"});
 }
 
 
-ComponentDatabase* ComponentInputWidget::getComponentDatabase()
+void ComponentInputWidget::handleCellChanged(const int row, const int col)
 {
-    return &theComponentDb;
-}
+    auto ID = componentTableWidget->item(row,0).toInt();
 
+    auto attrib = componentTableWidget->horizontalHeaderItem(col);
 
-void ComponentInputWidget::handleCellChanged(int row, int column)
-{
-    // Cannot change the ID, lat, or long
-    if(column < 3)
-        return;
+    auto attribVal = componentTableWidget->item(row,col);
 
-    auto item = componentTableWidget->item(row,column);
-
-    // Only update when the user selects the cell and changes it, inefficient to update programatically
-    if(!item->isSelected())
-        return;
-
-    auto ID = componentTableWidget->item(row,0)->data(0).toInt();
-
-    auto attrib = componentTableWidget->horizontalHeaderItem(column)->data(0).toString();
-
-    auto attribVal = item->data(0);
-
-    theComponentDb.updateComponentAttribute(ID,attrib,attribVal);
-
-    auto component = theComponentDb.getComponent(ID);
-
-    if(!component.isValid())
-        return;
-
+#ifdef ARC_GIS
     auto uid = component.UID;
     this->updateSelectedComponentAttribute(uid,attrib,attribVal);
+#endif
+
+#ifdef Q_GIS
+    theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
+#endif
 
 }
 
-
-Feature* ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Geometry& /*geom*/)
+#ifdef ARC_GIS
+Esri::ArcGISRuntime::Feature* ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Esri::ArcGISRuntime::Geometry& /*geom*/)
 {
     return nullptr;
 }
@@ -914,30 +1003,27 @@ Esri::ArcGISRuntime::FeatureCollectionLayer* ComponentInputWidget::getSelectedFe
 {
     return nullptr;
 }
+#endif
 
 
-void ComponentInputWidget::updateComponentAttribute(const int uid, const QString& attribute, const QVariant& value)
-{
-    theComponentDb.updateComponentAttribute(uid,attribute,value);
-}
-
-
+#ifdef ARC_GIS
 void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
 {
+
     if(selectedFeaturesForAnalysis.empty())
     {
-        qDebug()<<"Selected features map is empty";
+        this->statusMessage("Selected features map is empty, nothing to update");
         return;
     }
 
-    if(!selectedFeaturesForAnalysis.contains(uid))
+    if(!selectedFeaturesForAnalysis.contains(id))
     {
-        qDebug()<<"Feature not found in selected components map";
+        this->statusMessage("Feature not found in selected components map");
         return;
     }
 
     // Get the feature
-    Feature* feat = selectedFeaturesForAnalysis[uid];
+    Esri::ArcGISRuntime::Feature* feat = selectedFeaturesForAnalysis[uid];
 
     if(feat == nullptr)
     {
@@ -954,3 +1040,26 @@ void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid,
         return;
     }
 }
+#endif
+
+
+void ComponentInputWidget::insertSelectedAssets(QgsFeatureIds& featureIds)
+{
+
+    QVector<int> assetIds;
+    assetIds.reserve(featureIds.size());
+
+    for(auto&& it : featureIds)
+        assetIds.push_back(it-offset);
+
+    selectComponentsLineEdit->insertSelectedComponents(assetIds);
+
+    this->selectComponents();
+}
+
+
+void ComponentInputWidget::clearSelectedAssets(void)
+{
+    this->clearComponentSelection();
+}
+

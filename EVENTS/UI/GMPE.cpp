@@ -63,16 +63,6 @@ bool GMPE::setType(const QString &type)
 }
 
 
-QJsonObject GMPE::getJson()
-{
-    QJsonObject gmpe;
-    gmpe.insert("Type", m_type);
-    gmpe.insert("Parameters", QJsonObject());
-
-    return gmpe;
-}
-
-
 const QStringList &GMPE::validTypes()
 {
     static QStringList validTypes = QStringList()
@@ -98,3 +88,24 @@ const QStringList &GMPE::validTypes()
 
     return validTypes;
 }
+
+bool GMPE::outputToJSON(QJsonObject &jsonObject)
+{
+    jsonObject.insert("Type", m_type);
+    jsonObject.insert("Parameters", QJsonObject());
+
+    return true;
+}
+
+
+bool GMPE::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
+}
+
+
+void GMPE::reset(void)
+{
+    this->m_type = "Chiou & Youngs (2014)";
+}
+

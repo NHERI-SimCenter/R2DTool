@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "PolygonBoundary.h"
 #include "SimCenterMapGraphicsView.h"
-#include "VisualizationWidget.h"
+#include "ArcGISVisualizationWidget.h"
 
 // GIS headers
 #include "GeometryEngine.h"
@@ -57,7 +57,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace Esri::ArcGISRuntime;
 
-PolygonBoundary::PolygonBoundary(VisualizationWidget* visualizationWidget) : QObject(visualizationWidget), theVisualizationWidget(visualizationWidget)
+PolygonBoundary::PolygonBoundary(ArcGISVisualizationWidget* visualizationWidget) : QObject(visualizationWidget), theVisualizationWidget(visualizationWidget)
 {
     selectingPolygonBoundary = false;
 
@@ -141,7 +141,7 @@ void PolygonBoundary::getItemsInPolygonBoundary()
                     auto table = tables->at(j);
 
                     // Make this a unique, i.e., one-off connection so that it does not call the slot multiple times
-                    connect(table, &FeatureTable::queryFeaturesCompleted, theVisualizationWidget, &VisualizationWidget::selectFeaturesForAnalysisQueryCompleted, Qt::UniqueConnection);
+                    connect(table, &FeatureTable::queryFeaturesCompleted, theVisualizationWidget, &ArcGISVisualizationWidget::selectFeaturesForAnalysisQueryCompleted, Qt::UniqueConnection);
 
                     // Query the table for features - note that this is done asynchronously
                     auto taskWatcher = table->queryFeatures(queryParams);

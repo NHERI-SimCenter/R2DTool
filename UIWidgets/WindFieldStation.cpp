@@ -39,8 +39,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "WindFieldStation.h"
 
-#include "Feature.h"
-#include "FeatureTable.h"
+#ifdef ARC_GIS
+#include <Feature.h>
+#include <FeatureTable.h>
+#endif
 
 #include <QFileInfo>
 #include <QString>
@@ -53,7 +55,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 WindFieldStation::WindFieldStation(QString name, double lat, double lon) : stationName(name), latitude(lat), longitude(lon)
 {
-    stationFeature = nullptr;
 }
 
 
@@ -84,44 +85,16 @@ void WindFieldStation::importWindFieldStation(void)
         throw "The file " + stationFilePath + " is empty";
 
     // Get the header file
-    QStringList tableHeadings = data.first();
+    tableHeadings = data.first();
 
     // Pop off the row that contains the header information
     data.pop_front();
 
-    auto numRows = data.size();
-    auto numCols = tableHeadings.size();
-
-    auto indexPWS = tableHeadings.indexOf("PWS");
-
-    if(indexPWS == -1)
-        throw "Could not find the peak wind speed (PWS) header";
-
-    auto indexPIH = tableHeadings.indexOf("PIH");
-
-    peakWindSpeeds.resize(numRows);
-    peakInundationHeights.resize(numRows);
-
-    // Get the data
-    for(int i = 0; i<numRows; ++i)
-    {
-        auto rowStringList = data[i];
-
-        if(rowStringList.size() != numCols)
-            throw "The number of columns in the row " + QString::number(i) + " should be " + QString::number(numCols);
-
-        peakWindSpeeds[i] = this->objectToDouble(rowStringList[indexPWS]);
-
-        if(indexPIH != -1)
-            peakInundationHeights[i] = this->objectToDouble(rowStringList[indexPIH]);
-    }
+    stationData = data;
 }
 
-QVector<double> WindFieldStation::getPeakWindSpeeds() const
-{
-    return peakWindSpeeds;
-}
 
+#ifdef ARC_GIS
 Esri::ArcGISRuntime::Feature *WindFieldStation::getStationFeature() const
 {
     return stationFeature;
@@ -131,6 +104,22 @@ void WindFieldStation::setStationFeature(Esri::ArcGISRuntime::Feature *value)
 {
     stationFeature = value;
 }
+
+#endif
+
+
+#ifdef Q_GIS
+QgsFeature WindFieldStation::getStationFeature() const
+{
+    return stationFeature;
+}
+
+void WindFieldStation::setStationFeature(QgsFeature value)
+{
+    stationFeature = value;
+}
+#endif
+
 
 void WindFieldStation::setStationFilePath(const QString &value)
 {
@@ -145,13 +134,26 @@ QString WindFieldStation::getStationFilePath() const
 
 int WindFieldStation::updateFeatureAttribute(const QString& attribute, const QVariant& value)
 {
+
+#ifdef ARC_GIS
     stationFeature->attributes()->replaceAttribute(attribute,value);
     stationFeature->featureTable()->updateFeature(stationFeature);
+#endif
+
+#ifdef Q_GIS
+    stationFeature.setAttribute(attribute,value);
+#endif
 
     return 0;
 }
 
-QVector<double> WindFieldStation::getPeakInundationHeights() const
+QVector<QStringList> WindFieldStation::getStationData() const
 {
-    return peakInundationHeights;
+    return stationData;
 }
+
+QStringList WindFieldStation::getStationDataHeaders() const
+{
+    return tableHeadings;
+}
+

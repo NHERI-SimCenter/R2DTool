@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMouseEvent>
 #include <QObject>
 
-class VisualizationWidget;
+class ArcGISVisualizationWidget;
 class SimCenterMapGraphicsView;
 
 namespace Esri
@@ -65,7 +65,7 @@ class PolygonBoundary : public QObject
     Q_OBJECT
 
 public:
-    PolygonBoundary(VisualizationWidget* visualizationWidget);
+    PolygonBoundary(ArcGISVisualizationWidget* visualizationWidget);
 
     void setupPolygonBoundaryObjects();
 
@@ -96,7 +96,7 @@ private:
     bool selectingPolygonBoundary;
 
     Esri::ArcGISRuntime::Map *mapGIS = nullptr;
-    VisualizationWidget* theVisualizationWidget = nullptr;
+    ArcGISVisualizationWidget* theVisualizationWidget = nullptr;
     SimCenterMapGraphicsView *mapViewWidget = nullptr;
 };
 

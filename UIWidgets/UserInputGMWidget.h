@@ -46,12 +46,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 
 class VisualizationWidget;
+class SimCenterUnitsWidget;
 
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
 
+#ifdef ARC_GIS
 namespace Esri
 {
 namespace ArcGISRuntime
@@ -63,6 +65,7 @@ class KmlLayer;
 class Layer;
 }
 }
+#endif
 
 
 class UserInputGMWidget : public SimCenterAppWidget
@@ -72,8 +75,6 @@ class UserInputGMWidget : public SimCenterAppWidget
 public:
     UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputGMWidget();
-
-    void showUserGMLayers(bool state);
 
     QStackedWidget* getUserInputGMWidget(void);
 
@@ -95,11 +96,15 @@ private slots:
 
 signals:
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
     void loadingComplete(const bool value);
 
 private:
 
-    std::unique_ptr<QStackedWidget> userGMStackedWidget;
+    void showProgressBar(void);
+    void hideProgressBar(void);
+
+    QStackedWidget* theStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
@@ -115,6 +120,8 @@ private:
     QProgressBar* progressBar;
 
     QVector<GroundMotionStation> stationList;
+
+    SimCenterUnitsWidget* unitsWidget;
 
 };
 

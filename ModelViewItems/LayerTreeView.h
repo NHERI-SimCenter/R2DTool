@@ -43,14 +43,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class LayerTreeModel;
 class LayerTreeItem;
-class VisualizationWidget;
+class ArcGISVisualizationWidget;
 
 class LayerTreeView : public QTreeView
 {
     Q_OBJECT
 
 public:
-    LayerTreeView(QWidget *parent, VisualizationWidget* visWidget);
+    LayerTreeView(QWidget *parent, ArcGISVisualizationWidget* visWidget);
 
     LayerTreeModel *getLayersModel() const;
 
@@ -86,7 +86,7 @@ private:
 
     LayerTreeModel* layersModel;
 
-    VisualizationWidget* theVisualizationWidget;
+    ArcGISVisualizationWidget* theVisualizationWidget;
 };
 
 #endif // LayerTreeView_H

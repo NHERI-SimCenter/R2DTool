@@ -55,7 +55,10 @@ public:
     double getMaxDistance() const;
     QString getRupFilename() const;
 
-    QJsonObject getJson();
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
 
 signals:
 

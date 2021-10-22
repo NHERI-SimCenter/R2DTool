@@ -48,8 +48,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class GMPE;
 class GMPEWidget;
 class GmAppConfig;
+class RectangleGrid;
 class IntensityMeasure;
 class IntensityMeasureWidget;
+class MapViewWindow;
 class MapViewSubWidget;
 class RecordSelectionConfig;
 class RecordSelectionWidget;
@@ -69,7 +71,7 @@ class GMWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit GMWidget(QWidget *parent, VisualizationWidget* visWidget);
+    explicit GMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~GMWidget();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -77,7 +79,10 @@ public:
     bool inputFromJSON(QJsonObject &jsonObject);
     void saveAppSettings(void);
     void resetAppSettings(void);
+
+#ifdef ARC_GIS
     void setCurrentlyViewable(bool status);
+#endif
 
     GmAppConfig *appConfig() const;
 
@@ -86,6 +91,7 @@ signals:
     void sceneViewChanged(void);
     void mapViewChanged(void);
     void outputDirectoryPathChanged(QString folderPath, QString gridFile);
+    void eventTypeChangedSignal(QString eventType);
 
 public slots:
     void setAppConfig(void);
@@ -133,7 +139,15 @@ private:
     Vs30Widget* m_vs30Widget;
 
     VisualizationWidget* theVisualizationWidget;
+
+#ifdef ARC_GIS
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
+#endif
+
+#ifdef Q_GIS
+    MapViewWindow* mapViewSubWidget;
+    RectangleGrid* userGrid;
+#endif
 
     void setupConnections();
     void initAppConfig();

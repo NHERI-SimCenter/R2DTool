@@ -56,7 +56,10 @@ public:
     void setError(const ErrorMetric &error);
     ErrorMetric getError() const;
 
-    QJsonObject getJson();
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
 
 signals:
     void databaseChanged(QString newDatabase);

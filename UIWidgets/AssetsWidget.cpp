@@ -37,13 +37,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "AssetsWidget.h"
-#include "BuildingInputWidget.h"
-#include "GasPipelineInputWidget.h"
 #include "ComponentInputWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterAppSelection.h"
+
+#ifdef ARC_GIS
+#include "ArcGISBuildingInputWidget.h"
+#include "ArcGISGasPipelineInputWidget.h"
+#endif
+
+#ifdef Q_GIS
+#include "QGISBuildingInputWidget.h"
+#include "QGISGasPipelineInputWidget.h"
+#include "ShapefileBuildingInputWidget.h"
+#endif
 
 // Qt headers
 #include <QCheckBox>
@@ -66,19 +75,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
-
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Building"), this);
-    BuildingInputWidget *csvBuildingInventory = new BuildingInputWidget(this,"Buildings" ,"CSV_to_BIM");
+    pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
+
+#ifdef ARC_GIS
+    ArcGISBuildingInputWidget *csvBuildingInventory = new ArcGISBuildingInputWidget(this,"Buildings","CSV_to_BIM");
+    buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
+#endif
+
+#ifdef Q_GIS
+    QGISBuildingInputWidget *csvBuildingInventory = new QGISBuildingInputWidget(this, visualizationWidget, "Buildings","CSV_to_BIM");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
-    pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
-    GasPipelineInputWidget *csvPipelineInventory = new GasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
+    ShapefileBuildingInputWidget *shapefileBuildingInventory = new ShapefileBuildingInputWidget(this,visualizationWidget,"Buildings","ShapeFile_to_BIM");
+    buildingWidget->addComponent(QString("Shape File to BIM"), QString("CSV_to_BIM"), shapefileBuildingInventory);
+#endif
+
+#ifdef ARC_GIS
+    ArcGISGasPipelineInputWidget *csvPipelineInventory = new ArcGISGasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
     pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+#endif
 
-    visualizationWidget->registerComponentWidget("BUILDINGS",csvBuildingInventory);
-    visualizationWidget->registerComponentWidget("GASPIPELINES",csvPipelineInventory);
+#ifdef Q_GIS
+    QGISGasPipelineInputWidget *csvPipelineInventory = new QGISGasPipelineInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
+    pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+#endif
 
-    // QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
+    // QString pathToPipelineInfoFile = "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
     // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);

@@ -57,6 +57,11 @@ public:
     void setPeriods(const QString &periods);
     void addPeriod(double period);
 
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
+
 signals:
     void typeChanged(QString newType);
 

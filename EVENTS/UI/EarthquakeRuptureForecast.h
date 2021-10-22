@@ -55,7 +55,10 @@ public:
     QString getEQName() const;
     QString getEQModelType() const;
 
-    QJsonObject getJson();
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
 
 signals:
 

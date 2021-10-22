@@ -36,15 +36,30 @@
 
 # Written by: Stevan Gavrilovic, Frank McKenna
 
-QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel 3dcore 3drender 3dextras charts xml
+QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel xml 3dcore 3drender 3dextras
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 # Information about the app
 TARGET = R2D
 TEMPLATE = app
-VERSION=1.1.1
+VERSION = 1.1.1
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
+# Select one of the following GIS librarys
+DEFINES +=  Q_GIS #ARC_GIS
+
+# Does this build include the secret user pass for PEER database access?
+DEFINES += INCLUDE_USER_PASS
+
+# Specify the path to the Simcenter common directory
+PATH_TO_COMMON=../../SimCenterCommon
+
+# Specify the path to the R2D tool examples folder
+PATH_TO_EXAMPLES=../../R2DExamples
+
+
+## ADVANCED USAGE BELOW ##
 
 # C++17 support
 CONFIG += c++17
@@ -59,22 +74,19 @@ equals(QT_MAJOR_VERSION, 5) {
         }
 }
 
-
-DEFINES += INCLUDE_USER_PASS
-
 win32:DEFINES +=  CURL_STATICLIB
 
-#win32::include($$PWD/R2D.user.pri)
 #win32::include($$PWD/R2D.user.pri)
 win32::include($$PWD/ConanHelper.pri)
 
 win32::LIBS+=Advapi32.lib
 
 # Full optimization on release
-QMAKE_CXXFLAGS_RELEASE += -O3
-
-# Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+win32 {
+    QMAKE_CXXFLAGS_RELEASE += -O2
+} else {
+    QMAKE_CXXFLAGS_RELEASE += -O3
+}
 
 # Application Icons
 win32 {
@@ -85,10 +97,27 @@ win32 {
     }
 }
 
+
 # GIS library
-ARCGIS_RUNTIME_VERSION = 100.9
-#include($$PWD/arcgisruntime.pri)
-include(./arcgisruntime.pri)
+contains(DEFINES, ARC_GIS)  {
+
+    message("Building with ArcGIS library")
+
+    ARCGIS_RUNTIME_VERSION = 100.9
+    include(./arcgisruntime.pri)
+
+} contains(DEFINES, Q_GIS)  {
+
+    PATH_TO_QGIS_PLUGIN=../../QGISPlugin
+
+    message("Building with QGIS library")
+
+    include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
+
+} else {
+    message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS at line 50 in the .pro file")
+}
+
 
 # Simcenter dependencies
 include($$PATH_TO_COMMON/Common/Common.pri)
@@ -140,13 +169,16 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
             Events/UI/Vs30.cpp \
             Events/UI/Vs30Widget.cpp \
-            GraphicElements/ConvexHull.cpp \
-            GraphicElements/PolygonBoundary.cpp \
+            ModelViewItems/ComponentTableModel.cpp \
+            ModelViewItems/ComponentTableView.cpp \
             ModelViewItems/GISLegendView.cpp \
+            ModelViewItems/ListTreeModel.cpp \
+            ModelViewItems/CustomListWidget.cpp \
             Tools/AssetInputDelegate.cpp \
+            Tools/SimCenterUnitsCombo.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
-            Tools/HurricanePreprocessor.cpp \
+            Tools/ComponentDatabaseManager.cpp \
             Tools/NGAW2Converter.cpp \
             Tools/PelicunPostProcessor.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
@@ -160,11 +192,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/BuildingDMWidget.cpp \
             UIWidgets/BuildingEDPEQWidget.cpp \
             UIWidgets/BuildingEDPWidget.cpp \
-            UIWidgets/BuildingInputWidget.cpp \
             UIWidgets/ColorDialogDelegate.cpp \
-            UIWidgets/LayerComboBoxItemDelegate.cpp \
-            UIWidgets/RendererComboBoxItemDelegate.cpp \
-            UIWidgets/GasPipelineInputWidget.cpp \
             UIWidgets/BuildingModelGeneratorWidget.cpp \
             UIWidgets/BuildingModelingWidget.cpp \
             UIWidgets/BuildingSimulationWidget.cpp \
@@ -176,13 +204,10 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EarthquakeInputWidget.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
+            UIWidgets/GISSelectable.cpp \
             UIWidgets/GroundMotionStation.cpp \
-            UIWidgets/LayerManagerDialog.cpp \
-            UIWidgets/RendererModel.cpp \
             UIWidgets/LoadResultsDialog.cpp \
-            UIWidgets/RendererTableView.cpp \
-            UIWidgets/LayerManagerTableView.cpp \
-            UIWidgets/LayerManagerModel.cpp \
+            UIWidgets/SimCenterUnitsWidget.cpp \
             UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
@@ -191,7 +216,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/HurricaneParameterWidget.cpp \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
             UIWidgets/MDOF_LU.cpp \
-            UIWidgets/MapViewSubWidget.cpp \
             UIWidgets/ModelWidget.cpp \
             UIWidgets/MultiComponentR2D.cpp \
             UIWidgets/NearestNeighbourMapping.cpp \
@@ -199,12 +223,11 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/OpenSeesPyBuildingModel.cpp \
             UIWidgets/PelicunDLWidget.cpp \
             UIWidgets/PopUpWidget.cpp \
-            UIWidgets/EmbeddedMapViewWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/SecondaryComponentSelection.cpp \
             UIWidgets/ShakeMapWidget.cpp \
+            UIWidgets/SimCenterMapcanvasWidget.cpp \
             UIWidgets/SimCenterEventRegional.cpp \
-            UIWidgets/SimCenterMapGraphicsView.cpp \
             UIWidgets/StructuralModelingWidget.cpp \
             UIWidgets/UQWidget.cpp \
             UIWidgets/UserDefinedEDPR.cpp \
@@ -212,10 +235,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/RegionalSiteResponseWidget.cpp \
             UIWidgets/HurricaneSelectionWidget.cpp \
             UIWidgets/UserInputHurricaneWidget.cpp \
-            UIWidgets/VisualizationWidget.cpp \
-            ModelViewItems/ListTreeModel.cpp \
-            ModelViewItems/LayerTreeView.cpp \
-            ModelViewItems/CustomListWidget.cpp \
+            UIWidgets/VisualizationWidget.cpp \        
             GraphicElements/NodeHandle.cpp \
             GraphicElements/RectangleGrid.cpp \
             GraphicElements/GridNode.cpp \
@@ -236,7 +256,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/HBoxFormLayout.h \
             Events/UI/IntensityMeasure.h \
             Events/UI/IntensityMeasureWidget.h \
-            Events/UI/JsonSerializable.h \
             Events/UI/Location.h \
             Events/UI/OpenQuakeScenario.h \
             Events/UI/OpenQuakeScenarioWidget.h \
@@ -259,14 +278,11 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SpatialCorrelationWidget.h \
             Events/UI/Vs30.h \
             Events/UI/Vs30Widget.h \
-            Events/UI/SpatialCorrelationWidget.h \
-            GraphicElements/ConvexHull.h \
-            GraphicElements/PolygonBoundary.h \
-            ModelViewItems/GISLegendView.h \
             Tools/AssetInputDelegate.h \
+            Tools/SimCenterUnitsCombo.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \
-            Tools/HurricanePreprocessor.h \
+            Tools/ComponentDatabaseManager.h \
             Tools/NGAW2Converter.h \
             Tools/PelicunPostProcessor.h \
             Tools/REmpiricalProbabilityDistribution.h \
@@ -281,12 +297,8 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/BuildingDMWidget.h \
             UIWidgets/BuildingEDPEQWidget.h \
             UIWidgets/BuildingEDPWidget.h \
-            UIWidgets/BuildingInputWidget.h \
             UIWidgets/ColorDialogDelegate.h \
-            UIWidgets/LayerComboBoxItemDelegate.h \
-            UIWidgets/RendererComboBoxItemDelegate.h \
             UIWidgets/GISObjectTypeMapping.h \
-            UIWidgets/GasPipelineInputWidget.h \
             UIWidgets/BuildingModelGeneratorWidget.h \
             UIWidgets/BuildingModelingWidget.h \
             UIWidgets/BuildingSimulationWidget.h \
@@ -298,13 +310,10 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EarthquakeInputWidget.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
+            UIWidgets/GISSelectable.h \
             UIWidgets/GroundMotionStation.h \
-            UIWidgets/LayerManagerDialog.h \
-            UIWidgets/RendererModel.h \
             UIWidgets/LoadResultsDialog.h \
-            UIWidgets/RendererTableView.h \
-            UIWidgets/LayerManagerTableView.h \
-            UIWidgets/LayerManagerModel.h \
+            UIWidgets/SimCenterUnitsWidget.h \
             UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \
@@ -313,7 +322,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/HurricaneParameterWidget.h \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
             UIWidgets/MDOF_LU.h \
-            UIWidgets/MapViewSubWidget.h \
             UIWidgets/ModelWidget.h \
             UIWidgets/MultiComponentR2D.h \
             UIWidgets/NearestNeighbourMapping.h \
@@ -321,12 +329,11 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
             UIWidgets/PelicunDLWidget.h \
             UIWidgets/PopUpWidget.h \
-            UIWidgets/EmbeddedMapViewWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/SecondaryComponentSelection.h \
             UIWidgets/ShakeMapWidget.h \
             UIWidgets/SimCenterEventRegional.h \
-            UIWidgets/SimCenterMapGraphicsView.h \
+            UIWidgets/SimCenterMapcanvasWidget.h \
             UIWidgets/StructuralModelingWidget.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
@@ -334,15 +341,82 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/RegionalSiteResponseWidget.h \            
             UIWidgets/HurricaneSelectionWidget.h \
             UIWidgets/UserInputHurricaneWidget.h \
+            UIWidgets/HurricaneObject.h \
             UIWidgets/VisualizationWidget.h \
-            ModelViewItems/ListTreeModel.h \
-            ModelViewItems/LayerTreeView.h \
             ModelViewItems/CustomListWidget.h \
+            ModelViewItems/ComponentTableModel.h \
+            ModelViewItems/ComponentTableView.h \
+            ModelViewItems/GISLegendView.h \
+            ModelViewItems/ListTreeModel.h \
             GraphicElements/GridNode.h \
             GraphicElements/NodeHandle.h \
             GraphicElements/RectangleGrid.h \
             WorkflowAppR2D.h \
             RunWidget.h \
+
+contains(DEFINES, ARC_GIS)  {
+
+SOURCES +=  ModelViewItems/ArcGISLegendView.cpp \
+            UIWidgets/ArcGISVisualizationWidget.cpp \
+            GraphicElements/ConvexHull.cpp \
+            GraphicElements/PolygonBoundary.cpp \
+            ModelViewItems/LayerTreeView.cpp \
+            UIWidgets/ArcGISBuildingInputWidget.cpp \
+            UIWidgets/ArcGISGasPipelineInputWidget.cpp \
+            Tools/ArcGISHurricanePreprocessor.cpp \
+            UIWidgets/ArcGISHurricaneSelectionWidget.cpp \
+            UIWidgets/LayerManagerDialog.cpp \
+            UIWidgets/LayerManagerTableView.cpp \
+            UIWidgets/LayerManagerModel.cpp \
+            UIWidgets/LayerComboBoxItemDelegate.cpp \
+            UIWidgets/RendererModel.cpp \
+            UIWidgets/RendererTableView.cpp \
+            UIWidgets/RendererComboBoxItemDelegate.cpp \
+            UIWidgets/SimCenterMapGraphicsView.cpp \
+            UIWidgets/EmbeddedMapViewWidget.cpp \
+            UIWidgets/MapViewSubWidget.cpp \
+
+HEADERS +=  ModelViewItems/ArcGISLegendView.h \
+            UIWidgets/ArcGISVisualizationWidget.h \
+            GraphicElements/ConvexHull.h \
+            GraphicElements/PolygonBoundary.h \
+            ModelViewItems/LayerTreeView.h \
+            Tools/ArcGISHurricanePreprocessor.h \
+            UIWidgets/ArcGISBuildingInputWidget.h \
+            UIWidgets/ArcGISGasPipelineInputWidget.h \
+            UIWidgets/ArcGISHurricaneSelectionWidget.h \
+            UIWidgets/LayerManagerDialog.h \
+            UIWidgets/LayerManagerTableView.h \
+            UIWidgets/LayerManagerModel.h \
+            UIWidgets/LayerComboBoxItemDelegate.h \
+            UIWidgets/RendererModel.h \
+            UIWidgets/RendererTableView.h \
+            UIWidgets/RendererComboBoxItemDelegate.h \
+            UIWidgets/SimCenterMapGraphicsView.h \
+            UIWidgets/EmbeddedMapViewWidget.h \
+            UIWidgets/MapViewSubWidget.h \
+}
+
+
+contains(DEFINES, Q_GIS)  {
+
+SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
+            UIWidgets/QGISGasPipelineInputWidget.cpp \
+            UIWidgets/QGISBuildingInputWidget.cpp \
+            UIWidgets/RasterHazardInputWidget.cpp \
+            UIWidgets/QGISHurricaneSelectionWidget.cpp \
+            UIWidgets/ShapefileBuildingInputWidget.cpp \
+            UIWidgets/MapViewWindow.cpp \
+
+HEADERS +=  Tools/QGISHurricanePreprocessor.h \
+            UIWidgets/QGISGasPipelineInputWidget.h \
+            UIWidgets/QGISBuildingInputWidget.h \
+            UIWidgets/RasterHazardInputWidget.h \
+            UIWidgets/QGISHurricaneSelectionWidget.h \
+            UIWidgets/ShapefileBuildingInputWidget.h \
+            UIWidgets/MapViewWindow.h \
+
+}
 
 
 contains(DEFINES, INCLUDE_USER_PASS) {
@@ -374,13 +448,13 @@ DESTDIR = $$shell_path($$OUT_PWD)
 Release:DESTDIR = $$DESTDIR/release
 Debug:DESTDIR = $$DESTDIR/debug
 
-PATH_TO_EXAMPLES=$$DESTDIR/Examples
-PATH_TO_DATABASES=$$DESTDIR/Databases
+EXAMPLES_DIR=$$DESTDIR/Examples
+DATABASE_DIR=$$DESTDIR/Databases
 
 } else {
     mac {
-    PATH_TO_EXAMPLES=$$OUT_PWD/R2D.app/Contents/MacOS
-    PATH_TO_DATABASES=$$OUT_PWD/R2D.app/Contents/MacOS
+    EXAMPLES_DIR=$$OUT_PWD/R2D.app/Contents/MacOS/Examples
+    DATABASE_DIR=$$OUT_PWD/R2D.app/Contents/MacOS
 
     mkpath($$OUT_PWD/R2D.app/Contents/MacOS)
     }
@@ -389,14 +463,14 @@ PATH_TO_DATABASES=$$DESTDIR/Databases
 win32 {
 
 # Copies over the examples folder into the build directory
-# Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+# Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples)) $$shell_quote($$shell_path($$EXAMPLES_DIR))
 # first.depends = $(first) Copydata
 
 # Copies the dll files into the build directory
 # CopyDLLs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/winDLLS)) $$shell_quote($$shell_path($$DESTDIR))
 # first.depends += CopyDLLs
 
-# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$DATABASE_DIR))
 # first.depends += CopyDbs
 
 # export(first.depends)
@@ -408,20 +482,23 @@ win32 {
 }else {
 mac {
 
+mkpath($$EXAMPLES_DIR)
+
+message($PATH_TO_EXAMPLES)
+
 # Copies the examples folder into the build directory
-#Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Examples)) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES))
+Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples.json)) $$shell_quote($$shell_path($$EXAMPLES_DIR))
 
 # Copies the databases folder into the build directory
-# CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$PATH_TO_DATABASES))
+CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$DATABASE_DIR))
 
-# first.depends += Copydata CopyDbs
+first.depends += Copydata CopyDbs
 
-# export(first.depends)
-# export(Copydata.commands)
-# export(CopyDbs.commands)
+export(first.depends)
+export(Copydata.commands)
+export(CopyDbs.commands)
 
-# QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
+QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
 }
 }
-

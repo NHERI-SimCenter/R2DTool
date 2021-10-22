@@ -63,13 +63,14 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     : SimCenterAppWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Hazard to Local Asset Event"));
     label->setMinimumWidth(150);
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
@@ -98,6 +99,8 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
     //SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
 
+    connect(this,SIGNAL(eventTypeChangedSignal(QString&)), theLocalMapping, SLOT(currentEventTypeChanged(QString&)));
+
     theLocalMapping->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
     //theLocalMapping->addComponent(QString("Site Response"), QString("SiteResponse"), siteResponse);
 
@@ -108,7 +111,6 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
 
     mainLayout->addStretch();
     this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
     this->setMaximumWidth(750);
 }
 
@@ -175,6 +177,12 @@ bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObj){
 void HazardToAssetBuilding::hazardGridFileChangedSlot(QString motionDir, QString eventFile)
 {
     emit hazardGridFileChangedSIGNAL(motionDir, eventFile);
+}
+
+
+void HazardToAssetBuilding::eventTypeChangedSlot(QString eventType)
+{
+    emit eventTypeChangedSignal(eventType);
 }
 
 

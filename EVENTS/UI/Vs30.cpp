@@ -63,13 +63,18 @@ bool Vs30::setType(const QString &type)
 }
 
 
-QJsonObject Vs30::getJson()
+bool Vs30::outputToJSON(QJsonObject &jsonObject)
 {
-    QJsonObject vs30;
-    vs30.insert("Type", m_type);
-    vs30.insert("Parameters", QJsonObject());
+    jsonObject.insert("Type", m_type);
+    jsonObject.insert("Parameters", QJsonObject());
 
-    return vs30;
+    return true;
+}
+
+
+bool Vs30::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
 }
 
 
@@ -93,4 +98,10 @@ const QStringList &Vs30::validTypes()
             << "Global Vs30 (Heath et al., 2020)";
 
     return validTypes;
+}
+
+
+void Vs30::reset(void)
+{
+    this->m_type = "CGS/Wills Vs30 (Wills et al., 2015)";
 }

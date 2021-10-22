@@ -52,7 +52,9 @@ class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
+class QSplitter;
 
+#ifdef ARC_GIS
 namespace Esri
 {
 namespace ArcGISRuntime
@@ -102,6 +104,51 @@ struct ShakeMap{
 
     QVector<GroundMotionStation> stationList;
 };
+#endif
+
+#ifdef Q_GIS
+
+class QgsVectorLayer;
+
+struct ShakeMap{
+
+    QString eventName;
+
+    QgsVectorLayer* eventLayer = nullptr;
+    QgsVectorLayer* gridLayer = nullptr;
+    QgsVectorLayer* faultLayer = nullptr;
+    QgsVectorLayer* eventKMZLayer = nullptr;
+    QgsVectorLayer* pgaPolygonLayer = nullptr;
+    QgsVectorLayer* pgaOverlayLayer = nullptr;
+    QgsVectorLayer* pgaContourLayer = nullptr;
+    QgsVectorLayer* epicenterLayer = nullptr;
+
+    inline std::vector<QgsVectorLayer*> getAllActiveSubLayers(void)
+    {
+        std::vector<QgsVectorLayer*> layers;
+
+        if(gridLayer)
+            layers.push_back(gridLayer);
+        if(faultLayer)
+            layers.push_back(faultLayer);
+        if(eventKMZLayer)
+            layers.push_back(eventKMZLayer);
+        if(pgaPolygonLayer)
+            layers.push_back(pgaPolygonLayer);
+        if(pgaOverlayLayer)
+            layers.push_back(pgaOverlayLayer);
+        if(pgaContourLayer)
+            layers.push_back(pgaContourLayer);
+        if(epicenterLayer)
+            layers.push_back(epicenterLayer);
+
+        return layers;
+    }
+
+    QVector<GroundMotionStation> stationList;
+};
+#endif
+
 
 class ShakeMapWidget : public SimCenterAppWidget
 {
@@ -110,8 +157,6 @@ class ShakeMapWidget : public SimCenterAppWidget
 public:
     ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~ShakeMapWidget();
-
-    void showShakeMapLayers(bool state);
 
     QWidget* getShakeMapWidget(void);
 
@@ -139,11 +184,14 @@ private slots:
 signals:
 
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
     void loadingComplete(const bool value);
 
 private:
 
-    std::unique_ptr<QStackedWidget> shakeMapStackedWidget;
+    QStackedWidget* shakeMapStackedWidget;
+
+    QStringList shakeMapList;
 
     CustomListWidget *listWidget;
     VisualizationWidget* theVisualizationWidget;

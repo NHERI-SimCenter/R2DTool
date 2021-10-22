@@ -41,103 +41,71 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 #include <QVariant>
 
-#include <Feature.h>
-#include <FeatureTable.h>
+#include <qgsfeature.h>
+#include <qgsattributes.h>
+#include <qgsvectorlayer.h>
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Feature;
-}
-}
+#include <set>
 
-struct Component
-{
-public:
+class PythonProgressDialog;
 
-    void addResult(const QString& key, const double res)
-    {
-        ResultsValues.insert(key,res);
-    }
-
-    QVariant getAttributeValue(const QString& key)
-    {
-        return ComponentAttributes.value(key);
-    }
-
-    double getResultValue(const QString& key)
-    {
-        return ResultsValues.value(key);
-    }
-
-    int setAttributeValue(const QString& attribute, const QVariant& value)
-    {
-        ComponentAttributes[attribute] = value;
-
-        if(ComponentFeature != nullptr)
-        {
-            ComponentFeature->attributes()->replaceAttribute(attribute,value);
-            ComponentFeature->featureTable()->updateFeature(ComponentFeature);
-
-            if(ComponentFeature->attributes()->attributeValue(attribute).isNull())
-            {
-                qDebug()<<"Failed to update feature "<<attribute<<" in component "<<ID;
-                return -1;
-            }
-        }
-
-        return 0;
-    }
-
-    bool isValid(void)
-    {
-        if(ComponentFeature == nullptr || ComponentAttributes.empty())
-            return false;
-
-        return true;
-    }
-
-    int ID = -1;
-
-    // Unique id of this component
-    QString UID = "NULL";
-
-    // The Component feature in the GIS widget
-    Esri::ArcGISRuntime::Feature* ComponentFeature = nullptr;
-
-    // Map to store the Component attributes
-    QMap<QString, QVariant> ComponentAttributes;
-
-    // Map to store the results - the QString (key) is the header text while the double is the value for that Component
-    QMap<QString, double> ResultsValues;
-};
-
+class QgsFeature;
 
 class ComponentDatabase
 {
 public:
     ComponentDatabase();
 
-    // Gets the Component as a modifiable reference
-    Component& getComponent(const int ID);
-
-    Component getComponent(const QString UID);
-
-    int getNumberOfComponents();
-
-    void addComponent(int ID, Component& asset);
+    bool isEmpty(void);
 
     void clear(void);
 
-    QMap<int, Component> getComponentsMap() const;
+    void startEditing(void);
 
-    void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
+    // Fast, use for batch feature addition
+    bool addFeaturesToSelectedLayer(const std::set<int> ids);
+
+    // Slow, only use for adding indvidual features when needed
+    bool addFeatureToSelectedLayer(const int id);
+
+    bool removeFeaturesFromSelectedLayer(QgsFeatureIds& featureIds);
+    bool clearSelectedLayer(void);
+
+    // Slow, only use for sparse updates
+    bool updateComponentAttribute(const qint64 id, const QString& attribute, const QVariant& value);
+
+    // Fast, use for batch updates
+    bool updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values);
+
+    QVariant getAttributeValue(const qint64 id, const QString& attribute, const QVariant defaultVal = QVariant());
+
+    void commitChanges(void);
+
+    void setMainLayer(QgsVectorLayer *value);
+
+    void setSelectedLayer(QgsVectorLayer *value);
+
+    QgsFeature getFeature(const qint64 id);
+
+    QgsVectorLayer *getSelectedLayer() const;
+
+    QgsVectorLayer *getMainLayer() const;
+
+    void setOffset(int value);
 
 private:
+    PythonProgressDialog* messageHandler;
 
-    QMap<int,Component> ComponentMap;
+    bool addFeatureToSelectedLayer(QgsFeature& feature);
 
+    // Selected feature set
+    QSet<long long> selectedFeaturesSet;
+
+    // Set of layers that this component may have features in
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedLayer = nullptr;
+
+    int offset;
 };
 
 #endif // ComponentDATABASE_H

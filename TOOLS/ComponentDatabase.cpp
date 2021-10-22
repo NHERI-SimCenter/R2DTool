@@ -37,58 +37,293 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ComponentDatabase.h"
+#include "Utils/PythonProgressDialog.h"
+
+#include <qgsfeature.h>
+#include <qgsfeaturerequest.h>
 
 ComponentDatabase::ComponentDatabase()
 {
-
+    offset = 0;
+    messageHandler = PythonProgressDialog::getInstance();
 }
 
 
-int ComponentDatabase::getNumberOfComponents()
+bool ComponentDatabase::isEmpty(void)
 {
-    return ComponentMap.size();
-}
+    if(mainLayer == nullptr)
+        return true;
 
+    if(mainLayer->featureCount() == 0)
+        return true;
 
-void ComponentDatabase::addComponent(int ID, Component& asset)
-{
-    ComponentMap.insert(ID, asset);
-}
-
-
-Component& ComponentDatabase::getComponent(const int ID)
-{
-    return ComponentMap[ID];
-}
-
-
-Component ComponentDatabase::getComponent(const QString UID)
-{
-    for(auto&& it: ComponentMap)
-    {
-        if(it.UID.compare(UID) == 0)
-            return it;
-    }
-
-    return Component();
+    return false;
 }
 
 
 void ComponentDatabase::clear(void)
 {
-    ComponentMap.clear();
+    mainLayer = nullptr;
+    selectedFeaturesSet.clear();
+    offset = 0;
+    selectedLayer = nullptr;
 }
 
 
-QMap<int, Component> ComponentDatabase::getComponentsMap() const
+QgsFeature ComponentDatabase::getFeature(const qint64 id)
 {
-    return ComponentMap;
+    if(mainLayer == nullptr)
+        return QgsFeature();
+
+    auto fid = id+offset;
+
+    if(FID_IS_NULL(fid))
+        return QgsFeature();
+
+    return mainLayer->getFeature(fid);
 }
 
 
-void ComponentDatabase::updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value)
+QgsVectorLayer *ComponentDatabase::getSelectedLayer() const
 {
-    auto component = this->getComponent(ID);
+    return selectedLayer;
+}
 
-   component.setAttributeValue(attribute,value);
+
+QgsVectorLayer *ComponentDatabase::getMainLayer() const
+{
+    return mainLayer;
+}
+
+
+void ComponentDatabase::startEditing(void)
+{
+    selectedLayer->startEditing();
+}
+
+
+void ComponentDatabase::commitChanges(void)
+{
+    selectedLayer->commitChanges(true);
+    selectedLayer->updateExtents();
+}
+
+
+void ComponentDatabase::setMainLayer(QgsVectorLayer *value)
+{
+    mainLayer = value;
+}
+
+
+void ComponentDatabase::setSelectedLayer(QgsVectorLayer *value)
+{
+    selectedLayer = value;
+}
+
+
+bool ComponentDatabase::addFeaturesToSelectedLayer(const std::set<int> ids)
+{
+    if(!selectedFeaturesSet.isEmpty())
+    {
+        selectedFeaturesSet.clear();
+        this->clearSelectedLayer();
+    }
+
+    selectedFeaturesSet.reserve(ids.size());
+
+    for(auto&& id : ids)
+        selectedFeaturesSet.insert(id+offset);
+
+    auto featIt = mainLayer->getFeatures(selectedFeaturesSet);
+
+    QgsFeatureList featList;
+    featList.reserve(ids.size());
+
+    QgsFeature feat;
+    while (featIt.nextFeature(feat))
+    {
+        //        auto id = feat.id();
+        featList.push_back(feat);
+    }
+
+    auto res = selectedLayer->dataProvider()->addFeatures(featList, QgsFeatureSink::FastInsert);
+
+    selectedLayer->updateExtents();
+
+    return res;
+}
+
+
+bool ComponentDatabase::addFeatureToSelectedLayer(const int id)
+{
+    auto fid = id+offset;
+
+    if(selectedFeaturesSet.contains(fid))
+        return true;
+
+    auto feature = this->getFeature(fid);
+    if(feature.isValid() == false)
+    {
+        messageHandler->appendErrorMessage("Error getting the feature from the database");
+        return false;
+    }
+
+    return this->addFeatureToSelectedLayer(feature);
+}
+
+
+bool ComponentDatabase::addFeatureToSelectedLayer(QgsFeature& feature)
+{
+    auto fid = feature.id();
+
+    auto res = selectedLayer->dataProvider()->addFeature(feature, QgsFeatureSink::FastInsert);
+
+    // auto res = selectedLayer->addFeature(feature/*, QgsFeatureSink::FastInsert*/);
+
+    if(res == false)
+    {
+        messageHandler->appendErrorMessage("Error adding feature to selected feature layer");
+        return false;
+    }
+
+    selectedFeaturesSet.insert(fid);
+
+    return true;
+}
+
+
+void ComponentDatabase::setOffset(int value)
+{
+    offset = value;
+}
+
+
+bool ComponentDatabase::removeFeaturesFromSelectedLayer(QgsFeatureIds& featureIds)
+{
+    auto res = selectedLayer->dataProvider()->deleteFeatures(featureIds);
+
+    return res;
+}
+
+
+bool ComponentDatabase::clearSelectedLayer(void)
+{
+    auto res = selectedLayer->dataProvider()->truncate();
+
+    return res;
+}
+
+
+bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values)
+{
+    if(selectedLayer == nullptr)
+        return false;
+
+    auto numSelectedFeatures = selectedFeaturesSet.size();
+
+    auto numFeatSelLayer = selectedLayer->featureCount();
+
+    if(values.size() != numSelectedFeatures || numSelectedFeatures != numFeatSelLayer)
+        return false;
+
+    auto field = selectedLayer->dataProvider()->fieldNameIndex(fieldName);
+
+    if(field == -1)
+        return false;
+
+    QgsFeatureRequest featRequest (selectedFeaturesSet);
+
+    // All this just to get the feature request to return everything with ascending ids
+    QgsFeatureRequest::OrderByClause orderByClause(QString("id"),true);
+    QList<QgsFeatureRequest::OrderByClause> obcList = {orderByClause};
+    QgsFeatureRequest::OrderBy orderBy(obcList);
+    featRequest.setOrderBy(orderBy);
+
+    auto featIt = mainLayer->getFeatures(featRequest);
+
+    QgsFeatureList featList;
+    featList.reserve(values.size());
+
+    int count = 0;
+    QgsFeature feat;
+    while (featIt.nextFeature(feat))
+    {
+        // auto id = feat.id();
+        auto attrb = values[count];
+
+        feat.setAttribute(field,attrb);
+
+        featList.push_back(feat);
+        ++count;
+    }
+
+    if(values.size() != featList.size())
+        return false;
+
+    auto res = selectedLayer->dataProvider()->truncate();
+
+    if(!res)
+        return false;
+
+    res = selectedLayer->dataProvider()->addFeatures(featList);
+
+    if(!res)
+        return false;
+
+    selectedLayer->updateExtents();
+
+    return res;
+}
+
+
+bool ComponentDatabase::updateComponentAttribute(const qint64 id, const QString& attribute, const QVariant& value)
+{
+
+    auto fid = id+offset;
+
+    auto field = selectedLayer->dataProvider()->fieldNameIndex(attribute);
+
+    if(FID_IS_NULL(fid) || field == -1)
+        return false;
+
+    auto res = mainLayer->changeAttributeValue(fid,field,value);
+
+    if(!res)
+        return res;
+
+    // Update the selected layer if there is one...
+    if(selectedLayer != nullptr)
+    {
+        auto fidSel = selectedFeaturesSet.values().indexOf(id);
+
+        if(fidSel == -1)
+            return false;
+
+        auto res2 = selectedLayer->changeAttributeValue(fidSel,field,value);
+
+        if(!res2)
+            return res2;
+    }
+
+    return true;
+}
+
+
+QVariant ComponentDatabase::getAttributeValue(const qint64 id, const QString& attribute, const QVariant defaultVal)
+{
+    QVariant val(defaultVal);
+    auto fid = id+offset;
+
+    if(FID_IS_NULL(fid))
+        return val;
+
+    auto feature = mainLayer->getFeature(fid);
+
+    if(feature.isValid())
+        val = feature.attribute(attribute);
+
+    if(!val.isValid())
+        return defaultVal;
+
+    return val;
 }

@@ -73,6 +73,11 @@ public:
     // get site list
     QList<UserSpecifiedSite> getSiteList();
 
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
+
 signals:
 
     void siteChanged();
@@ -84,8 +89,6 @@ private:
     // Site list
     QList<UserSpecifiedSite> allSites;
 
-public:
-    QJsonObject getJson();
 };
 
 #endif // SITESCATTER_H
