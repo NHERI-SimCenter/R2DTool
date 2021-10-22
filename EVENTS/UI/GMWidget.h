@@ -41,10 +41,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 #include "GroundMotionStation.h"
 #include "PeerNgaWest2Client.h"
+#include "EventGMDirWidget.h"
 
 #include <QProcess>
 #include <QJsonObject>
+#include <QMutex>
 
+class EventGMDirWidget;
 class GMPE;
 class GMPEWidget;
 class GmAppConfig;
@@ -73,11 +76,14 @@ public:
     ~GMWidget();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
     void saveAppSettings(void);
     void resetAppSettings(void);
     void setCurrentlyViewable(bool status);
+    bool copyFiles(QString &destDir);
+    bool getSimulationStatus(void);
 
     GmAppConfig *appConfig() const;
 
@@ -86,6 +92,8 @@ signals:
     void sceneViewChanged(void);
     void mapViewChanged(void);
     void outputDirectoryPathChanged(QString folderPath, QString gridFile);
+    void useEventFileMotionDir(QString evtFile, QString gmDir);
+    void configUpdated(void);
 
 public slots:
     void setAppConfig(void);
@@ -110,6 +118,12 @@ public slots:
     // Process the outfile files once the hazard simulation is complete
     int parseDownloadedRecords(QString);
 
+    // Send event file and motion dir
+    void sendEventFileMotionDir(const QString &eventFile, const QString &motionDir);
+
+    // Updating the simulaiton tag
+    void updateSimulationTag(void);
+
 private slots:
 
 private:
@@ -127,10 +141,14 @@ private:
     SiteConfig* m_siteConfig;
     SiteConfigWidget* m_siteConfigWidget;
     QPushButton* m_runButton;
-    QPushButton* m_settingButton;
+    //QPushButton* m_settingButton;
     GmAppConfig* m_appConfig;
     Vs30* m_vs30;
     Vs30Widget* m_vs30Widget;
+    EventGMDirWidget *m_eventGMDir;
+    QString eventPath;
+    QString motionFolder;
+    QMutex mutex;
 
     VisualizationWidget* theVisualizationWidget;
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
