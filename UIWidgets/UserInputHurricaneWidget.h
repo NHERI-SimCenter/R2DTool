@@ -96,6 +96,7 @@ private slots:
 signals:
     void outputDirectoryPathChanged(QString eventDir, QString eventFile);
     void loadingComplete(const bool value);
+    void eventTypeChangedSignal(QString eventType);
 
 private:
 

@@ -75,6 +75,8 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   this->addComponent("Gas Network",pipelineWidget);
 
   connect(this, SIGNAL(hazardGridFileChangedSignal(QString, QString)), buildingWidget, SLOT(hazardGridFileChangedSlot(QString, QString)));
+  connect(this, SIGNAL(eventTypeChangedSignal(QString)), buildingWidget, SLOT(eventTypeChangedSlot(QString)));
+
   this->hideAll();
 }
 
@@ -87,6 +89,12 @@ HazardToAssetWidget::~HazardToAssetWidget()
 
 void HazardToAssetWidget::hazardGridFileChangedSlot(QString motionDir, QString eventFile){
     emit hazardGridFileChangedSignal(motionDir, eventFile);
+}
+
+
+void HazardToAssetWidget::eventTypeChangedSlot(QString eventType)
+{
+    emit eventTypeChangedSignal(eventType);
 }
 
 

@@ -110,6 +110,8 @@ UserInputHurricaneWidget::~UserInputHurricaneWidget()
 
 bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
+    emit eventTypeChangedSignal("Hurricane");
+
     jsonObject["Application"] = "UserInputHurricane";
 
     QJsonObject appData;

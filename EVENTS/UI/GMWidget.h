@@ -91,6 +91,7 @@ signals:
     void sceneViewChanged(void);
     void mapViewChanged(void);
     void outputDirectoryPathChanged(QString folderPath, QString gridFile);
+    void eventTypeChangedSignal(QString eventType);
 
 public slots:
     void setAppConfig(void);

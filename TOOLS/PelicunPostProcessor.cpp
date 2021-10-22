@@ -92,9 +92,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsmapcanvas.h>
 #endif
 
-// Test to remove
-#include <chrono>
-using namespace std::chrono;
+// Test to remove start
+// #include <chrono>
+// using namespace std::chrono;
+// Test to remove end
 
 using namespace QtCharts;
 
@@ -459,6 +460,9 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         throw msg;
     }
 
+    auto selFeatLayer = theBuildingDB->getSelectedLayer();
+    mapViewSubWidget->setCurrentLayer(selFeatLayer);
+
     QVector<QVariant> attributes(DVResults.size()-numHeaderRows);
 
     // 4 rows of headers in the results file
@@ -574,8 +578,9 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         attributes[count] = lossRatio;
     }
 
-    // Test to remove
-     auto start = high_resolution_clock::now();
+    // Test to remove start
+    // auto start = high_resolution_clock::now();
+    // Test to remove end
 
     // Starting editing
     theBuildingDB->startEditing();
@@ -590,11 +595,11 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Commit the changes
     theBuildingDB->commitChanges();
 
-    // Test to remove
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(stop - start);
-        PythonProgressDialog::getInstance()->appendText("Done processing results "+QString::number(duration.count()));
-
+    // Test to remove start
+    // auto stop = high_resolution_clock::now();
+    // auto duration = duration_cast<milliseconds>(stop - start);
+    // Test to remove end
+    PythonProgressDialog::getInstance()->appendText("Done processing results "/*+QString::number(duration.count())*/);
 
     QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
 

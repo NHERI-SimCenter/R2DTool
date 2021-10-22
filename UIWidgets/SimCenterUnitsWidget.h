@@ -47,7 +47,7 @@ class QGridLayout;
 class SimCenterUnitsWidget : public QGroupBox, public JsonSerializable
 {
 public:
-    SimCenterUnitsWidget(QString title = "Event Units",QWidget* parent = nullptr);
+    SimCenterUnitsWidget(QString title = "Units of Event Input File",QWidget* parent = nullptr);
 
     bool outputToJSON(QJsonObject &jsonObject);
 

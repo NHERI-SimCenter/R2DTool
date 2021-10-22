@@ -130,17 +130,17 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         int buildingID = buildingIDStr.toInt();
 
         // Create a unique ID for the building
-        auto uid = theVisualizationWidget->createUniqueID();
+//        auto uid = theVisualizationWidget->createUniqueID();
 
-        // "LossRatio"
-        // "ID"
-        // "AssetType"
-        // "UID"
+        //  "LossRatio"
+        //  "ID"
+        //  "AssetType"
+        //  "TabName"
 
         featureAttributes[0] = QVariant(0.0);
         featureAttributes[1] = QVariant(buildingID);
         featureAttributes[2] = QVariant("BUILDINGS");
-        featureAttributes[3] = QVariant(uid);
+        featureAttributes[3] = QVariant(buildingID);
 
         // The feature attributes are the columns from the table
         for(int j = 1; j<componentTableWidget->columnCount(); ++j)

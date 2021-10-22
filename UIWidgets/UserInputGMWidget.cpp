@@ -107,6 +107,8 @@ UserInputGMWidget::~UserInputGMWidget()
 
 bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
+    emit eventTypeChangedSignal("Earthquake");
+
     jsonObject["Application"] = "UserInputGM";
 
     QJsonObject appData;

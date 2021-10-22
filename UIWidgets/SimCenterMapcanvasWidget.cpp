@@ -62,6 +62,7 @@ void SimCenterMapcanvasWidget::showAnnotations(bool show)
 
 void SimCenterMapcanvasWidget::clear(void)
 {
+    currentLayer = nullptr;
     selectedIds.clear();
     deselectedIds.clear();
 }
@@ -113,8 +114,9 @@ void SimCenterMapcanvasWidget::setCurrentLayer(QgsVectorLayer* layer)
 }
 
 
-void SimCenterMapcanvasWidget::selectionChanged(const QgsFeatureIds &selected, const QgsFeatureIds &deselected, bool /*clearAndSelect*/)
+void SimCenterMapcanvasWidget::selectionChanged(const QgsFeatureIds &selected, const QgsFeatureIds &deselected, bool clearAndSelect)
 {
+    Q_UNUSED(clearAndSelect);
 
     if(!selected.isEmpty())
     {

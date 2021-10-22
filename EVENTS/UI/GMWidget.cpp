@@ -433,6 +433,9 @@ void GMWidget::showGISWindow(void)
 
 bool
 GMWidget::outputAppDataToJSON(QJsonObject &jsonObj) {
+
+    emit eventTypeChangedSignal("Earthquake");
+
     jsonObj["Application"] = "EQSS";
 
     QJsonObject appData;

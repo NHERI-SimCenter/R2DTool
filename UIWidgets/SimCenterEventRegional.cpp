@@ -86,15 +86,10 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject)
     // and all data to be used in ApplicationDate
     //
 
-//    jsonObject["Application"] = "SimCenterEvent";
-//    jsonObject["EventClassification"] = eventTypeCombo->currentText();
-//    QJsonObject dataObj;
+    jsonObject["Application"] = "SimCenterEvent";
 
-//    auto units = unitsCombo->currentData().toString();
-
-//    dataObj["inputUnit"]=units;
-
-//    jsonObject["ApplicationData"] = dataObj;
+    QJsonObject dataObj;
+    jsonObject["ApplicationData"] = dataObj;
 
     return true;
 }
@@ -103,77 +98,7 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject)
 bool SimCenterEventRegional::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
 
-//    if (jsonObject.contains("EventClassification"))
-//    {
-//        auto eventType = jsonObject["EventClassification"].toString();
 
-//        if(eventType.compare("Earthquake") == 0)
-//        {
-//            eventTypeCombo->setCurrentText("Earthquake");
-//        }
-//        else if(eventType.compare("Hurricane") == 0)
-//        {
-//            eventTypeCombo->setCurrentText("Hurricane");
-//        }
-//        else
-//        {
-//            this->errorMessage("The event classification type "+eventType+" is not recognized");
-//            return false;
-//        }
-//    }
-//    else
-//    {
-//        this->errorMessage("Missing the event classification type in the input file");
-//        return false;
-//    }
-
-
-//    if (jsonObject.contains("ApplicationData"))
-//    {
-//        QJsonObject appData = jsonObject["ApplicationData"].toObject();
-
-//        if (appData.contains("inputUnit"))
-//        {
-//            auto unit = appData["inputUnit"].toString();
-
-//            if(unit.compare("mps2") == 0)
-//            {
-//                unitsCombo->setCurrentText("Meter per second squared");
-//            }
-//            else if(unit.compare("ftps2") == 0)
-//            {
-//                unitsCombo->setCurrentText("Feet per second squared");
-//            }
-//            else if(unit.compare("inchps2") == 0)
-//            {
-//                unitsCombo->setCurrentText("Inches per second squared");
-//            }
-//            else if(unit.compare("g") == 0)
-//            {
-//                unitsCombo->setCurrentText("Gravitational constant (g)");
-//            }
-//            else if(unit.compare("ft") == 0)
-//            {
-//                unitsCombo->setCurrentText("Feet");
-//            }
-//            else if(unit.compare("m") == 0)
-//            {
-//                unitsCombo->setCurrentText("Meter");
-//            }
-//            else
-//            {
-//                this->errorMessage("The unit type "+unit+" is not recognized");
-//                return false;
-//            }
-//        }
-//        else
-//        {
-//            // Default is g
-//            unitsCombo->setCurrentText("Gravitational constant (g)");
-//        }
-
-//        return true;
-//    }
 
     return true;
 }

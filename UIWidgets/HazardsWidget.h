@@ -64,11 +64,13 @@ public:
 
 signals:
     void gridFileChangedSignal(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
 
 private slots:
 
     void shakeMapLoadingFinished(const bool value);
     void gridFileChangedSlot(QString motionDir, QString eventFile);
+    void eventTypeChangedSlot(QString eventType);
 
 private:
 

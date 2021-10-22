@@ -99,6 +99,8 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
     //SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
 
+    connect(this,SIGNAL(eventTypeChangedSignal(QString&)), theLocalMapping, SLOT(currentEventTypeChanged(QString&)));
+
     theLocalMapping->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
     //theLocalMapping->addComponent(QString("Site Response"), QString("SiteResponse"), siteResponse);
 
@@ -171,6 +173,12 @@ bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObj){
 void HazardToAssetBuilding::hazardGridFileChangedSlot(QString motionDir, QString eventFile)
 {
     emit hazardGridFileChangedSIGNAL(motionDir, eventFile);
+}
+
+
+void HazardToAssetBuilding::eventTypeChangedSlot(QString eventType)
+{
+    emit eventTypeChangedSignal(eventType);
 }
 
 

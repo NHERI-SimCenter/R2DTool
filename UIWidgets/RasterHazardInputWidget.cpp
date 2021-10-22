@@ -73,6 +73,7 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     unitsWidget = nullptr;
     dataProvider = nullptr;
     rasterlayer = nullptr;
+    eventTypeCombo = nullptr;
 
     fileInputWidget = nullptr;
     eventFile = "";
@@ -98,6 +99,8 @@ RasterHazardInputWidget::~RasterHazardInputWidget()
 
 
 bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
+
+    emit eventTypeChangedSignal(eventTypeCombo->currentData().toString());
 
     jsonObject["Application"] = "UserInputRasterHazard";
 
@@ -188,7 +191,7 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     fileLayout->addWidget(browseFileButton,     0,2);
 
     QLabel* eventTypeLabel = new QLabel("Event Type:",this);
-    QComboBox* eventTypeCombo = new QComboBox(this);
+    eventTypeCombo = new QComboBox(this);
     eventTypeCombo->addItem("Earthquake","Earthquake");
     eventTypeCombo->addItem("Hurricane","Hurricane");
     eventTypeCombo->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);

@@ -279,8 +279,8 @@ void RectangleGrid::updateGeometry(void)
         latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt,mapCanvas);
         latMax = theVisWidget->getLatFromScreenPoint(topRightPnt,mapCanvas);
 
-        lonMin = theVisWidget->getLongFromScreenPoint(bottomLeftPnt,mapCanvas);
-        lonMax = theVisWidget->getLongFromScreenPoint(topRightPnt,mapCanvas);
+        lonMin = theVisWidget->getLongFromScreenPoint(topRightPnt,mapCanvas);
+        lonMax = theVisWidget->getLongFromScreenPoint(bottomLeftPnt,mapCanvas);
 
         gridSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
         gridSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);

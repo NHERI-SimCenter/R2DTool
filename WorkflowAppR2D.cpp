@@ -233,6 +233,8 @@ void WorkflowAppR2D::initialize(void)
 
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
+    connect(theHazardsWidget,SIGNAL(eventTypeChangedSignal(QString)), theHazardToAssetWidget, SLOT(eventTypeChangedSlot(QString)));
+
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);

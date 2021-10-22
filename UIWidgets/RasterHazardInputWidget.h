@@ -53,6 +53,7 @@ class SimCenterUnitsWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
+class QComboBox;
 class QGridLayout;
 
 class RasterHazardInputWidget : public SimCenterAppWidget
@@ -80,6 +81,7 @@ private slots:
 
 signals:
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
     void loadingComplete(const bool value);
 
 private:
@@ -97,6 +99,8 @@ private:
     QgsRasterLayer* rasterlayer;
 
     SimCenterUnitsWidget* unitsWidget;
+
+    QComboBox* eventTypeCombo;
 };
 
 #endif // RasterHazardInputWidget_H

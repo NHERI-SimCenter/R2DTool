@@ -833,6 +833,7 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
+    emit eventTypeChangedSignal("Earthquake");
 
     jsonObject["Application"] = "UserInputShakeMap";
 

@@ -102,6 +102,13 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     connect(theHurricaneSelectionWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theRasterHazardWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
 
+    connect(theShakeMapWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theEQSSWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theUserInputGMWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theUserInputHurricaneWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theHurricaneSelectionWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theRasterHazardWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+
 }
 
 
@@ -130,6 +137,12 @@ void HazardsWidget::shakeMapLoadingFinished(const bool value)
 void HazardsWidget::gridFileChangedSlot(QString motionD, QString eventF)
 {
     emit gridFileChangedSignal(motionD, eventF);
+}
+
+
+void HazardsWidget::eventTypeChangedSlot(QString eventType)
+{
+    emit eventTypeChangedSignal(eventType);
 }
 
 
