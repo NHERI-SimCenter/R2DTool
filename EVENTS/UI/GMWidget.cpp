@@ -240,8 +240,6 @@ void GMWidget::setupConnections()
 
         peerClient.signIn(userName, password);
 
-        //m_eventGMDir->hide();
-
         runHazardSimulation();
     });
 
@@ -255,7 +253,6 @@ void GMWidget::setupConnections()
     // connect output director path change to EventGMDirWidget
     connect(m_appConfig, &GmAppConfig::outputDirectoryPathChanged, m_eventGMDir, &EventGMDirWidget::setEventFile);
     connect(m_appConfig, &GmAppConfig::outputDirectoryPathChanged, m_eventGMDir, &EventGMDirWidget::setMotionDir);
-
 
     connect(m_siteConfigWidget->getSiteGridWidget(), &SiteGridWidget::selectGridOnMap, this, &GMWidget::showGISWindow);
 
@@ -544,7 +541,6 @@ bool GMWidget::inputFromJSON(QJsonObject &/*jsonObject*/){
 void GMWidget::runHazardSimulation(void)
 {
 
-    mutex.lock();
     simulationComplete = false;
 
     QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
@@ -794,8 +790,8 @@ void GMWidget::runHazardSimulation(void)
     this->getProgressDialog()->showProgressBar();
 
     process->start(pythonPath, args);
-    process->waitForStarted();
-    mutex.unlock();
+    //process->waitForStarted();
+    process->waitForFinished();
 }
 
 
@@ -833,8 +829,6 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
         this->getProgressDialog()->hideProgressBar();
 
-        //m_eventGMDir->show();
-
         return;
     }
 
@@ -855,7 +849,6 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         this->errorMessage(errText);
         this->getProgressDialog()->hideProgressBar();
     }
-    //m_eventGMDir->show();
 
 }
 
@@ -1260,12 +1253,7 @@ bool GMWidget::copyFiles(QString &destDir)
     // this helps to avoid copy previous run's files
     if (!simulationComplete) {
         // try to run the Hazard Simulation first
-        mutex.lock();
         m_runButton->animateClick();
-        mutex.unlock();
-        bool updatedStatus = this->getSimulationStatus();
-        if (!updatedStatus)
-            return false;
     }
     // create dir and copy motion files
     QDir destDIR(destDir);
@@ -1301,8 +1289,6 @@ void GMWidget::updateSimulationTag()
 
 bool GMWidget::getSimulationStatus()
 {
-    mutex.lock();
     bool tmp = simulationComplete;
-    mutex.unlock();
     return tmp;
 }

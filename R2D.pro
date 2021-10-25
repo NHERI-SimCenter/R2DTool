@@ -108,6 +108,7 @@ INCLUDEPATH += $$PWD/Utils \
 
 SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/EarthquakeRuptureForecastWidget.cpp \
+            Events/UI/EventGMDirWidget.cpp \
             Events/UI/GMPE.cpp \
             Events/UI/GMPEWidget.cpp \
             Events/UI/GMWidget.cpp \
@@ -227,6 +228,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
 
 HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/EarthquakeRuptureForecastWidget.h \
+            Events/UI/EventGMDirWidget.h \
             Events/UI/GMPE.h \
             Events/UI/GMPEWidget.h \
             Events/UI/GMWidget.h \

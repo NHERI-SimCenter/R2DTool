@@ -580,10 +580,10 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
         progressDialog->hideProgressBar();
         return;
     }
-
     res = theHazardsWidget->copyFiles(templateDirectory);
     if(!res)
     {
+        theComponentSelection->displayComponent("HAZ");
         errorMessage("Error in copy files in "+theHazardsWidget->objectName());
         progressDialog->hideProgressBar();
         return;

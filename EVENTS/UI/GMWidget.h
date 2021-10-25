@@ -45,7 +45,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QProcess>
 #include <QJsonObject>
-#include <QMutex>
 
 class EventGMDirWidget;
 class GMPE;
@@ -148,7 +147,6 @@ private:
     EventGMDirWidget *m_eventGMDir;
     QString eventPath;
     QString motionFolder;
-    QMutex mutex;
 
     VisualizationWidget* theVisualizationWidget;
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
