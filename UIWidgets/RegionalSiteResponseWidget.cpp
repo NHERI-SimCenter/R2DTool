@@ -42,13 +42,25 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 
-// GIS Layers
+
+
+#ifdef ARC_GIS
+#include "ArcGISVisualizationWidget.h"
 #include "FeatureCollectionLayer.h"
 #include "GroupLayer.h"
 #include "Layer.h"
 #include "LayerListModel.h"
 #include "SimpleMarkerSymbol.h"
 #include "SimpleRenderer.h"
+
+using namespace Esri::ArcGISRuntime;
+#endif
+
+#ifdef Q_GIS
+#include "QGISVisualizationWidget.h"
+
+#include <qgsvectorlayer.h>
+#endif
 
 #include <QApplication>
 #include <QDialog>
@@ -67,7 +79,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDir>
 #include <QGroupBox>
 
-using namespace Esri::ArcGISRuntime;
 
 RegionalSiteResponseWidget::RegionalSiteResponseWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
@@ -106,6 +117,7 @@ bool RegionalSiteResponseWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
         appData["inputEventFile"]=eventFile; // may be valid on others computer
         appData["inputEventFileDir"]=QString("");
     }
+    
     QFileInfo theDir(motionDir);
     if (theDir.exists()) {
         appData["inputMotionDir"]=theDir.absoluteFilePath();
@@ -206,16 +218,16 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         if (appData.contains("siteResponseScript")) {
 
-            QString fileName;
-            QString pathToFile;
-            pathToFile = appData["scriptPath"].toString();
-
+            QString fileName = appData["siteResponseScript"].toString();
+            QString pathToFile = appData["scriptPath"].toString();
             QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
             //
             // files downloaded possibly from a remote run will be in input_data/relevantDIR
             //
 
+	    qDebug() << "full SR path: " << fullFilePath;
+	    
             if (!QFileInfo::exists(fullFilePath)){
                 fullFilePath = QDir::currentPath() + QDir::separator()
                         + "input_data" + QDir::separator() + QString("simcModelDir") + QDir::separator() + fileName;
@@ -232,13 +244,14 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
             QString fileName = appData["soilGridParametersFile"].toString();
             QString pathToFile = appData["soilParametersPath"].toString();
-
             QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
             //
             // files downloaded possibly from a remote run will be in input_data/relevantDIR
             //
 
+	    qDebug() << "full SP file: " << fullFilePath;
+	    
             if (!QFileInfo::exists(fullFilePath)){
                 fullFilePath = QDir::currentPath() + QDir::separator()
                         + "input_data" + QDir::separator() + fileName;
@@ -251,8 +264,6 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             soilFileLineEdit->setText(fullFilePath);
         }
 
-
-
         return true;
     }
 
@@ -262,25 +273,6 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 void RegionalSiteResponseWidget::showUserGMLayers(bool state)
 {
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
-
-
-    if(state == false)
-    {
-        layersTreeView->removeItemFromTree("User Ground Motions");
-
-        return;
-    }
-
-
-    // Check if there is a 'User Ground Motions' root item in the tree
-    auto shakeMapTreeItem = layersTreeView->getTreeItem("User Ground Motions",nullptr);
-
-    auto itemUID = theVisualizationWidget->createUniqueID();
-
-    // If there is no item, create one
-    if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersTreeView->addItemToTree("User Ground Motions",itemUID);
 
 }
 
@@ -479,209 +471,9 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
 }
 
 void RegionalSiteResponseWidget::loadUserGMData(void) {
-    CSVReaderWriter csvTool;
-
-    QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
-
-    if(!err.isEmpty())
-    {
-        this->errorMessage(err);
-        return;
-    }
-
-    if(data.empty())
-        return;
-
-    userGMStackedWidget->setCurrentWidget(progressBarWidget);
-    progressBarWidget->setVisible(true);
-
-    QApplication::processEvents();
-
-    //progressBar->setRange(0,inputFiles.size());
-    progressBar->setRange(0, data.count());
-
-    progressBar->setValue(0);
-
-    // Create the table to store the fields
-    QList<Field> tableFields;
-    tableFields.append(Field::createText("AssetType", "NULL",4));
-    tableFields.append(Field::createText("TabName", "NULL",4));
-    tableFields.append(Field::createText("Station Name", "NULL",4));
-    tableFields.append(Field::createText("Latitude", "NULL",8));
-    tableFields.append(Field::createText("Longitude", "NULL",9));
-    tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
-    tableFields.append(Field::createText("Ground Motions","",1));
-
-    auto gridFeatureCollection = new FeatureCollection(this);
-
-    // Create the feature collection table/layers
-    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
-    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
-
-    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
-
-    gridLayer->setName("Ground Motion Grid Points");
-    gridLayer->setAutoFetchLegendInfos(true);
-
-    // Create red cross SimpleMarkerSymbol
-    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
-
-    // Create renderer and set symbol to crossSymbol
-    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
-    renderer->setLabel("Ground motion grid points");
-
-    // Set the renderer for the feature layer
-    gridFeatureCollectionTable->setRenderer(renderer);
-
-    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
-    // gridLayer->setMinScale(80000);
-
-    // Pop off the row that contains the header information
-    data.pop_front();
-
-    auto numRows = data.size();
-
-    int count = 0;
-
-    // Get the data
-    for(int i = 0; i<numRows; ++i)
-    {
-        auto rowStr = data.at(i);
-
-        auto stationName = rowStr[0];
-
-        // Path to station files, e.g., site0.csv
-        auto stationPath = motionDir + QDir::separator() + stationName;
-
-        bool ok;
-        auto lon = rowStr[1].toDouble(&ok);
-
-        if(!ok)
-        {
-            QString errMsg = "Error longitude to a double, check the value";
-            this->errorMessage(errMsg);
-
-            userGMStackedWidget->setCurrentWidget(inputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        auto lat = rowStr[2].toDouble(&ok);
-
-        if(!ok)
-        {
-            QString errMsg = "Error latitude to a double, check the value";
-            this->errorMessage(errMsg);
-
-            userGMStackedWidget->setCurrentWidget(inputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        GroundMotionStation GMStation(stationPath,lat,lon);
-
-        try
-        {
-            GMStation.importGroundMotions();
-        }
-        catch(QString msg)
-        {
-
-            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
-
-            this->errorMessage(errorMessage);
-
-            userGMStackedWidget->setCurrentWidget(inputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        stationList.push_back(GMStation);
-
-        // create the feature attributes
-        QMap<QString, QVariant> featureAttributes;
-
-        //  auto attrbText = GMStation.
-        //  auto attrbVal = pointData[i];
-        //  featureAttributes.insert(attrbText,attrbVal);
-
-        auto vecGMs = GMStation.getStationGroundMotions();
-        featureAttributes.insert("Number of Ground Motions", vecGMs.size());
-
-
-        QString GMNames;
-        for(int i = 0; i<vecGMs.size(); ++i)
-        {
-            auto GMName = vecGMs.at(i).getName();
-
-            GMNames.append(GMName);
-
-            if(i != vecGMs.size()-1)
-                GMNames.append(", ");
-
-        }
-
-        featureAttributes.insert("Station Name", stationName);
-        featureAttributes.insert("Ground Motions", GMNames);
-        featureAttributes.insert("AssetType", "GroundMotionGridPoint");
-        featureAttributes.insert("TabName", "Ground Motion Grid Point");
-
-        auto latitude = GMStation.getLatitude();
-        auto longitude = GMStation.getLongitude();
-
-        featureAttributes.insert("Latitude", latitude);
-        featureAttributes.insert("Longitude", longitude);
-
-        // Create the point and add it to the feature table
-        Point point(longitude,latitude);
-        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
-
-        gridFeatureCollectionTable->addFeature(feature);
-
-
-        ++count;
-        progressLabel->clear();
-        progressBar->setValue(count);
-
-        QApplication::processEvents();
-    }
-
-    // Create a new layer
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
-
-    // Check if there is a 'User Ground Motions' root item in the tree
-    auto userInputTreeItem = layersTreeView->getTreeItem("User Ground Motions", nullptr);
-
-    // If there is no item, create one
-    if(userInputTreeItem == nullptr)
-    {
-        auto itemUID = theVisualizationWidget->createUniqueID();
-        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", itemUID);
-    }
-
-
-    // Add the event layer to the layer tree
-    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
-
-    progressLabel->setVisible(false);
-
-    // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(gridLayer,userInputTreeItem);
-
-    // Reset the widget back to the input pane and close
-    userGMStackedWidget->setCurrentWidget(inputWidget);
-    inputWidget->setVisible(true);
-
-    if(userGMStackedWidget->isModal())
-        userGMStackedWidget->close();
+  
 
     emit loadingComplete(true);
-
-    //emit outputDirectoryPathChanged(motionDir, eventFile);
 
     return;
 }
