@@ -85,7 +85,6 @@ private:
     RegionalSiteResponseWidget* theRegionalSiteResponseWidget;  
     UserInputHurricaneWidget* theUserInputHurricaneWidget;
     HurricaneSelectionWidget* theHurricaneSelectionWidget;
-    SimCenterAppWidget* theHurricaneSelectionWidget;
     SimCenterAppWidget* theRasterHazardWidget;
 };
 

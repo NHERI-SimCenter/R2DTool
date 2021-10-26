@@ -111,7 +111,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     connect(theShakeMapWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theEQSSWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theUserInputGMWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
-    connect(theRegionalSiteResponseWidgetWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));    
+    connect(theRegionalSiteResponseWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theUserInputHurricaneWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theHurricaneSelectionWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theRasterHazardWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
