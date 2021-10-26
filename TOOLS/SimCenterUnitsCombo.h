@@ -52,7 +52,7 @@ public:
     enum Type {
         UNDEFINED = 0x000,
         LENGTH = 0x100,
-        mm, cm, m, km, in, ft, mi,
+        mm, cm, m, km, inch, ft, mi,
         FORCE = 0x200,
         N, kN, lb, kips,
         PRESSURE = 0x300,
