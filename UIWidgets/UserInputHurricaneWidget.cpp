@@ -115,21 +115,6 @@ bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "UserInputHurricane";
 
     QJsonObject appData;
-    QFileInfo theFile(eventFile);
-    if (theFile.exists()) {
-        appData["eventFile"]=theFile.fileName();
-        appData["eventFileDir"]=theFile.path();
-    } else {
-        appData["eventFile"]=eventFile; // may be valid on others computer
-        appData["eventFileDir"]=QString("");
-    }
-    QFileInfo theDir(eventDir);
-    if (theDir.exists()) {
-        appData["eventDir"]=theDir.absoluteFilePath();
-    } else {
-        appData["eventDir"]=QString("None");
-    }
-
     jsonObject["ApplicationData"]=appData;
 
     return true;
@@ -138,19 +123,94 @@ bool UserInputHurricaneWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool UserInputHurricaneWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    auto res = unitsWidget->outputToJSON(jsonObj);
 
+    QFileInfo theFile(eventFile);
+    if (theFile.exists()) {
+        jsonObj["eventFile"]=theFile.fileName();
+        jsonObj["eventFilePath"]=theFile.path();
+    } else {
+        jsonObj["eventFile"]=eventFile; // may be valid on others computer
+        jsonObj["eventFilePath"]=QString("");
+    }
+
+    // output eventDir if not same as eventFile's path
+    QString eventFilePath = QFileInfo(eventFile).absolutePath();
+    if (eventFilePath != eventDir) {
+      
+      QFileInfo theDir(eventDir);
+      if (theDir.exists()) {
+	jsonObj["eventDir"]=theDir.absoluteFilePath();
+      } else {
+	jsonObj["eventDir"]=QString("None");
+      }
+    }
+       
+    auto res = unitsWidget->outputToJSON(jsonObj);
+    
     return res;
 }
 
 
 bool UserInputHurricaneWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    // Set the units
-    auto res = unitsWidget->inputFromJSON(jsonObject);
 
-    // If setting of units failed, provide default units and issue a warning
-    if(!res)
+  QString fileName;
+  QString pathToFile;
+  
+  if (jsonObject.contains("eventFile"))
+    fileName = jsonObject["eventFile"].toString();
+  if (jsonObject.contains("eventFileDir"))
+    pathToFile = jsonObject["eventFileDir"].toString();
+  else
+    pathToFile = QDir::currentPath();
+
+  QString fullFilePath= pathToFile + QDir::separator() + fileName;
+
+  // adam .. adam .. adam
+  if (!QFileInfo::exists(fullFilePath)){
+    fullFilePath = pathToFile + QDir::separator()
+      + "input_data" + QDir::separator() + fileName;
+    
+    if (!QFile::exists(fullFilePath)) {
+      this->errorMessage("UserInputWF - could not find EventGrid.csv file");
+      return false;
+    }
+  }
+
+  eventFileLineEdit->setText(fullFilePath);
+  eventFile = fullFilePath;
+
+  if (jsonObject.contains("eventDir")) {
+    eventDir = jsonObject["eventDir"].toString();
+  
+    QDir motionD(eventDir);
+  
+    if (!motionD.exists()){
+      
+      QString trialDir = QDir::currentPath() +
+	QDir::separator() + "input_data" + eventDir;
+      if (motionD.exists(trialDir)) {
+	eventDir = trialDir;
+	eventDirLineEdit->setText(trialDir);
+      } else {
+	this->errorMessage("UserInputGM - could not find motion dir" + eventDir + " " + trialDir);
+	return false;
+      }
+    }
+  } else {
+    eventDir = QFileInfo(fullFilePath).absolutePath();
+  }
+
+  // set the line dit
+  eventDirLineEdit->setText(eventDir);
+
+  this->loadUserWFData();	
+  
+  // Set the units
+  auto res = unitsWidget->inputFromJSON(jsonObject);
+  
+  // If setting of units failed, provide default units and issue a warning
+  if(!res)
     {
         auto paramNames = unitsWidget->getParameterNames();
 
@@ -175,62 +235,7 @@ bool UserInputHurricaneWidget::inputFromJSON(QJsonObject &jsonObject)
 
 bool UserInputHurricaneWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
-    if (jsonObj.contains("ApplicationData")) {
-        QJsonObject appData = jsonObj["ApplicationData"].toObject();
-
-        QString fileName;
-        QString pathToFile;
-
-        if (appData.contains("eventFile"))
-            fileName = appData["eventFile"].toString();
-        if (appData.contains("eventFileDir"))
-            pathToFile = appData["eventFileDir"].toString();
-        else
-            pathToFile = QDir::currentPath();
-
-        QString fullFilePath= pathToFile + QDir::separator() + fileName;
-
-        // adam .. adam .. adam
-        if (!QFileInfo::exists(fullFilePath)){
-            fullFilePath = pathToFile + QDir::separator()
-                    + "input_data" + QDir::separator() + fileName;
-
-            if (!QFile::exists(fullFilePath)) {
-                this->errorMessage("UserInputWF - could not find EventGrid.csv file");
-                return false;
-            }
-        }
-
-        eventFileLineEdit->setText(fullFilePath);
-        eventFile = fullFilePath;
-
-        if (appData.contains("eventDir"))
-        {
-            eventDir = appData["eventDir"].toString();
-
-            QDir evtD(eventDir);
-
-            if (!evtD.exists()){
-                QString trialDir = QDir::currentPath() +
-                        QDir::separator() + "input_data" + eventDir;
-                if (evtD.exists(trialDir)) {
-                    eventDir = trialDir;
-                    eventDirLineEdit->setText(trialDir);
-                } else {
-                    this->errorMessage("UserInputHurricane - could not find hurricane field dir" + eventDir + " " + trialDir);
-                    return false;
-                }
-            } else {
-                eventDirLineEdit->setText(eventDir);
-            }
-        }
-
-        this->loadUserWFData();
-
-        return true;
-    }
-
-    return false;
+  return true;
 }
 
 
@@ -422,7 +427,7 @@ void UserInputHurricaneWidget::chooseEventFileDialog(void)
 
     // if file
     //    check valid
-    //    set motionDir if file in dir that contains all the motions
+    //    set eventDir if file in dir that contains all the motions
     //    invoke loadUserGMData
 
     CSVReaderWriter csvTool;
@@ -442,7 +447,7 @@ void UserInputHurricaneWidget::chooseEventFileDialog(void)
     eventFile = newEventFile;
     eventFileLineEdit->setText(eventFile);
 
-    // check if file in dir with all motions, if so set motionDir
+    // check if file in dir with all motions, if so set eventDir
     // Pop off the row that contains the header information
     data.pop_front();
     auto numRows = data.size();
@@ -983,7 +988,39 @@ void UserInputHurricaneWidget::showProgressBar(void)
 }
 
 
+bool
+UserInputHurricaneWidget::copyFiles(QString &destDir)
+{
+    // create dir and copy motion files
+    QDir destDIR(destDir);
+    if (!destDIR.exists()) {
+      qDebug() << "userInputGMWidget::copyFiles dest dir does not exist: " << destDir;
+      return false;
+    }
+
+    QFileInfo eventFileInfo(eventFile);
+    if (eventFileInfo.exists()) {
+        this->copyFile(eventFile, destDir);
+    } else {
+      qDebug() << "userInputGMWidget::copyFiles eventFile does not exist: " << eventFile;
+      return false;
+    }
+
+    QDir eventDirInfo(eventDir);
+    if (eventDirInfo.exists()) {
+        return this->copyPath(eventDir, destDir, false);
+    } else {
+      qDebug() << "userInputGMWidget::copyFiles motionDir does not exist: " << eventDir;
+      return false;
+    }
+
+    // should never get here
+    return false;
+}
+
+
 void UserInputHurricaneWidget::hideProgressBar(void)
+
 {
     theStackedWidget->setCurrentWidget(fileInputWidget);
     progressBarWidget->setVisible(false);

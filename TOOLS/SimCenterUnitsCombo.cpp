@@ -132,7 +132,7 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
         this->addItem("Centimeters", SimCenter::Unit::Type::cm);
         this->addItem("Meters", SimCenter::Unit::Type::m);
         this->addItem("Kilometers", SimCenter::Unit::Type::km);
-        this->addItem("Inches", SimCenter::Unit::Type::in);
+        this->addItem("Inches", SimCenter::Unit::Type::inch);
         this->addItem("Feet", SimCenter::Unit::Type::ft);
         this->addItem("Miles", SimCenter::Unit::Type::mi);
 
@@ -194,7 +194,7 @@ void SimCenterUnitsCombo::populateComboText(const SimCenter::Unit::Type unitType
         this->addChildItem("Centimeters", SimCenter::Unit::Type::cm);
         this->addChildItem("Meters", SimCenter::Unit::Type::m);
         this->addChildItem("Kilometers", SimCenter::Unit::Type::km);
-        this->addChildItem("Inches", SimCenter::Unit::Type::in);
+        this->addChildItem("Inches", SimCenter::Unit::Type::inch);
         this->addChildItem("Feet", SimCenter::Unit::Type::ft);
         this->addChildItem("Miles", SimCenter::Unit::Type::mi);
 

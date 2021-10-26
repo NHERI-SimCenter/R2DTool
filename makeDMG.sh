@@ -15,7 +15,7 @@ pathToDakota="/Users/fmckenna/dakota-6.12.0"
 mkdir -p build
 cd build
 conan install .. --build missing
-qmake ../R2D.pro
+qmake ../$appName.pro
 make
 
 #
@@ -47,39 +47,44 @@ macdeployqt $appFile
 #
 
 # Define the paths to the application and to libEsriCommonQt.dylib - this should not change
-pathAppBin=$pathApp/Contents/MacOS/R2D
-pathAppLib=$pathApp/Contents/Frameworks/libEsriCommonQt.dylib
+#pathAppBin=$pathApp/Contents/MacOS/R2D
+#pathAppLib=$pathApp/Contents/Frameworks/libEsriCommonQt.dylib
 
 # Get the paths that are in the libraries - these paths will be changed to relative paths instead of the absolute paths
-pathEsriCommonQt=$(otool -L $pathAppBin | grep libEsriCommonQt.dylib | awk '{print $1}')
-pathLibruntimecore=$(otool -L $pathAppLib | grep libruntimecore.dylib | awk '{print $1}')
+#pathEsriCommonQt=$(otool -L $pathAppBin | grep libEsriCommonQt.dylib | awk '{print $1}')
+#pathLibruntimecore=$(otool -L $pathAppLib | grep libruntimecore.dylib | awk '{print $1}')
 
-echo $pathEsriCommonQt
-echo $pathLibruntimecore
+#echo $pathEsriCommonQt
+#echo $pathLibruntimecore
 
 # Use install name tool to change these to relative paths
-install_name_tool -change $pathEsriCommonQt @rpath/libEsriCommonQt.dylib $pathAppBin
-install_name_tool -change $pathLibruntimecore @rpath/libruntimecore.dylib $pathAppLib
+#install_name_tool -change $pathEsriCommonQt @rpath/libEsriCommonQt.dylib $pathAppBin
+#install_name_tool -change $pathLibruntimecore @rpath/libruntimecore.dylib $pathAppLib
 
 # Check to make sure it worked
-pathEsriCommonQt=$(otool -L $pathAppBin | grep libEsriCommonQt.dylib | awk '{print $1}')
-pathLibruntimecore=$(otool -L $pathAppLib | grep libruntimecore.dylib | awk '{print $1}')
+#pathEsriCommonQt=$(otool -L $pathAppBin | grep libEsriCommonQt.dylib | awk '{print $1}')
+#pathLibruntimecore=$(otool -L $pathAppLib | grep libruntimecore.dylib | awk '{print $1}')
 
-if [ "$pathEsriCommonQt" != "@rpath/libEsriCommonQt.dylib" ]; then
-    echo "Failed to change the path $pathEsriCommonQt"
-	exit
-fi
+#if [ "$pathEsriCommonQt" != "@rpath/libEsriCommonQt.dylib" ]; then
+#    echo "Failed to change the path $pathEsriCommonQt"
+#	exit
+#fi
 
-if [ "$pathLibruntimecore" != "@rpath/libruntimecore.dylib" ]; then
-    echo "Failed to change the path $pathLibruntimecore"
-	exit
-fi
+#if [ "$pathLibruntimecore" != "@rpath/libruntimecore.dylib" ]; then
+#    echo "Failed to change the path $pathLibruntimecore"
+#	exit
+#fi
 
 #
 # copy needed file from SimCenterBackendApplications
 #
 
+
+mkdir  $pathApp/Contents/MacOS/Examples
+mkdir  $pathApp/Contents/MacOS/Databases
+cp     ../../R2DExamples/Examples.json $pathApp/Contents/MacOS/Examples
 cp -fR $pathToBackendApps/applications $pathApp/Contents/MacOS
+cp -fR $pathToBackendApps/applications/performRegionalEventSimulation/regionalWindField/database/historical_storm/* $pathApp/Contents/MacOS/Databases
 mkdir  $pathApp/Contents/MacOS/applications/opensees
 mkdir  $pathApp/Contents/MacOS/applications/dakota
 mkdir  $pathApp/Contents/MacOS/Examples
@@ -89,9 +94,15 @@ cp -fr $pathToDakota/* $pathApp/Contents/MacOS/applications/dakota
 cp -fr $pathApp/../../Examples/Examples.json $pathApp/Contents/MacOS/Examples
 cp -fr $pathApp/../../Databases/* $pathApp/Contents/MacOS/Databases
 
+mkdir $pathApp/Contents/MacOS/share
+mkdir $pathApp/Contents/MacOS/lib
+mkdir $pathApp/Contents/MacOS/lib/qgis
+cp -fr $pathApp/../../../qgisplugin/mac/Install/lib/* $pathApp/Contents/Frameworks
+cp -fr $pathApp/../../../qgisplugin/mac/qgis-deps-0.8.0/stage/lib/* $pathApp/Contents/Frameworks
+cp -fr $pathApp/../../../qgisplugin/mac/Install/share/* $pathApp/Contents/MacOS/share
+cp -fr $pathApp/../../../qgisplugin/mac/Install/qgis/* $pathApp/Contents/MacOS/lib/qgis
 
-
-# remove unwanted to make this thing smaller
+# remove unwanted stuff
 
 declare -a notWantedApp=("createSAM/mdofBuildingModel/" 
 			 "createSAM/openSeesInput"
@@ -153,6 +164,9 @@ hdiutil create $dmgFile -fs HFS+ -srcfolder ./$appFile -format UDZO -volname $ap
 echo "codesign --force --sign "$appleCredential" $dmgFile"
 codesign --force --sign "$appleCredential" $dmgFile
 
+echo "Issue the following: " 
+echo "xcrun altool --notarize-app -u $appleID -p $appleAppPassword -f ./$dmgFile --primary-bundle-id altool --verbose"
+
 #
 # notorize , create zip file & send to apple
 #
@@ -163,11 +177,11 @@ codesign --force --sign "$appleCredential" $dmgFile
 #echo "xcrun altool --notarize-app -u appleID -p appleAppPassword -f ./$appName.zip --primary-bundle-id altool"
 #echo "returns id: ID"
 
-echo "xcrun altool --notarize-app -u $appleID -p $appleAppPassword -f ./$dmgFile --primary-bundle-id altool"
 echo ""
 echo "returns id: ID .. wait for email indicating success"
 echo "To check status"
 echo "xcrun altool --notarization-info ID  -u $appleID  -p $appleAppPassword"
 echo ""
 echo "Finally staple the dmg"
-echo "xcrun stapler staple \"$appName\" $dmgFle"
+
+echo "xcrun stapler staple \"$appName\" $dmgFile"

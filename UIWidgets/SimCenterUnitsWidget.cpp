@@ -100,7 +100,7 @@ bool SimCenterUnitsWidget::outputToJSON(QJsonObject &jsonObject)
         }
     }
 
-    jsonObject["Units"] = unitsObj;
+    jsonObject["units"] = unitsObj;
 
     return true;
 }
@@ -108,8 +108,7 @@ bool SimCenterUnitsWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool SimCenterUnitsWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-
-    auto unitsObj = jsonObject.value("Units").toObject();
+    auto unitsObj = jsonObject.value("units").toObject();
 
     if(unitsObj.isEmpty())
         return false;

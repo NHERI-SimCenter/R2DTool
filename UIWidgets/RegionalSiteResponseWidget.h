@@ -1,5 +1,5 @@
-#ifndef SIMCENTERUNITSCOMBO_H
-#define SIMCENTERUNITSCOMBO_H
+#ifndef RegionalSiteResponseWidget_H
+#define RegionalSiteResponseWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,70 +38,90 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "JsonSerializable.h"
+#include "GroundMotionStation.h"
+#include "SimCenterAppWidget.h"
 
-#include <QComboBox>
+#include <memory>
 
-namespace SimCenter {
+#include <QMap>
 
-class Unit :  QObject{
+class VisualizationWidget;
 
-    Q_OBJECT
+class QStackedWidget;
+class QLineEdit;
+class QProgressBar;
+class QLabel;
 
-public:
-    enum Type {
-        UNDEFINED = 0x000,
-        LENGTH = 0x100,
-        mm, cm, m, km, inch, ft, mi,
-        FORCE = 0x200,
-        N, kN, lb, kips,
-        PRESSURE = 0x300,
-        Pa, MPa, GPa, bar, atm,
-        TIME = 0x400,
-        sec, min, hr, day,
-        VELOCITY = 0x500,
-        cmps, mps, kph , fps, mph, kts,
-        ACCEL = 0x600,
-        cmps2, mps2, inchps2, ftps2, g, lng, pctg,
-        DIMEMSIONLESS = 0x700,
-        scalar,
-        ALL = 0x800,
-    };
-
-    Q_ENUM(Type)
-
-    Type type;
-
-};
-
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class ArcGISMapImageLayer;
+class GroupLayer;
+class FeatureCollectionLayer;
+class KmlLayer;
+class Layer;
+}
 }
 
-// The combo name should be the key for the json file
-class SimCenterUnitsCombo : public QComboBox
+
+class RegionalSiteResponseWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    SimCenterUnitsCombo(SimCenter::Unit::Type unitType, QString comboName, QWidget* parent = nullptr);
+    RegionalSiteResponseWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~RegionalSiteResponseWidget();
 
-    void addParentItem(const QString& text);
-    void addChildItem(const QString& text, const QVariant& data);
+    void showUserGMLayers(bool state);
 
-    QString getCurrentUnitString(void);
-    bool setCurrentUnitString(const QString& unit);
+    QStackedWidget* getRegionalSiteResponseWidget(void);
 
-    bool setCurrentUnit(SimCenter::Unit::Type unitType);
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
+    bool copyFiles(QString &destDir);
 
-    QString getName() const;
+    void clear(void);
+
+public slots:
+
+    void showUserGMSelectDialog(void);
+
+private slots:
+
+    void loadUserGMData(void);
+    void chooseEventFileDialog(void);
+    void chooseMotionDirDialog(void);
+    void soilParamaterFileDialog(void);
+    void soilScriptFileDialog(void);
+
+
+signals:
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void loadingComplete(const bool value);
 
 private:
-    void populateComboText(const SimCenter::Unit::Type unitType);
 
-    template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
-    template<typename UnitEnum> UnitEnum unitStringToEnum(QString unitString);
+    std::unique_ptr<QStackedWidget> userGMStackedWidget;
 
-    SimCenter::Unit::Type type;
-    QString name;
+    VisualizationWidget* theVisualizationWidget;
+
+    QString eventFile;
+    QString motionDir;
+
+    QLineEdit *eventFileLineEdit;
+    QLineEdit *motionDirLineEdit;
+    QLineEdit *soilFileLineEdit;
+    QLineEdit *siteResponseScriptLineEdit; 
+
+    QLabel* progressLabel;
+    QWidget* progressBarWidget;
+    QWidget* inputWidget;
+    QProgressBar* progressBar;
+
+    QVector<GroundMotionStation> stationList;
+
 };
 
-#endif // SIMCENTERUNITSCOMBO_H
+#endif // RegionalSiteResponseWidget_H

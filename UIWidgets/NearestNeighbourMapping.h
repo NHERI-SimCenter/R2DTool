@@ -62,12 +62,9 @@ public slots:
 signals:
 
 private:
-
-    QString eventGridPath;
-    QString motionDirPath;
-
-    QLineEdit* samplesLineEdit;
-    QLineEdit* neighborsLineEdit;
+    QLineEdit *samplesLineEdit;
+    QLineEdit *neighborsLineEdit;
+    QLineEdit *randomSeed;
 };
 
 

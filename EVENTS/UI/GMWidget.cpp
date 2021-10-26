@@ -461,7 +461,7 @@ bool GMWidget::outputToJSON(QJsonObject &jsonObj)
         unitsObj["factor"] = "scalar";
     }
 
-    jsonObj["Units"] = unitsObj;
+    jsonObj["units"] = unitsObj;
 
     return true;
 }

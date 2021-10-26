@@ -46,6 +46,7 @@ class ShakeMapWidget;
 class HurricaneSelectionWidget;
 class UserInputHurricaneWidget;
 class UserInputGMWidget;
+class RegionalSiteResponseWidget;
 class VisualizationWidget;
 
 class QGroupBox;
@@ -77,11 +78,13 @@ private:
     RandomVariablesContainer* theRandomVariablesContainer;
 
     VisualizationWidget* theVisualizationWidget;
-    SimCenterAppWidget* theEQSSWidget;
-    SimCenterAppWidget* theShakeMapWidget;
-    SimCenterAppWidget* theUserInputGMWidget;
-    SimCenterAppWidget* theUserInputHurricaneWidget;
-    SimCenterAppWidget* theHurricaneSelectionWidget;
+
+    GMWidget* theEQSSWidget;
+    ShakeMapWidget* theShakeMapWidget;
+    UserInputGMWidget* theUserInputGMWidget;
+    RegionalSiteResponseWidget* theRegionalSiteResponseWidget;  
+    UserInputHurricaneWidget* theUserInputHurricaneWidget;
+    HurricaneSelectionWidget* theHurricaneSelectionWidget;
     SimCenterAppWidget* theRasterHazardWidget;
 };
 

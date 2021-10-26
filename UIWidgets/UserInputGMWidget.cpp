@@ -112,20 +112,6 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "UserInputGM";
 
     QJsonObject appData;
-    QFileInfo theFile(eventFile);
-    if (theFile.exists()) {
-        appData["eventFile"]=theFile.fileName();
-        appData["eventFileDir"]=theFile.path();
-    } else {
-        appData["eventFile"]=eventFile; // may be valid on others computer
-        appData["eventFileDir"]=QString("");
-    }
-    QFileInfo theDir(motionDir);
-    if (theDir.exists()) {
-        appData["motionDir"]=theDir.absoluteFilePath();
-    } else {
-        appData["motionDir"]=QString("None");
-    }
 
     jsonObject["ApplicationData"]=appData;
 
@@ -135,83 +121,106 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    auto res = unitsWidget->outputToJSON(jsonObj);
+  QFileInfo theFile(eventFile);
+  if (theFile.exists()) {
+    jsonObj["eventFile"]=theFile.fileName();
+    jsonObj["eventFilePath"]=theFile.path();
+  } else {
+    jsonObj["eventFile"]=eventFile; // may be valid on others computer
+    jsonObj["eventFilePath"]=QString("");
+  }
 
-    return res;
+  // output motionDir if not same as eventFile's path
+  QString eventFilePath = QFileInfo(eventFile).absolutePath();
+  if (eventFilePath != motionDir) {
+    
+    QFileInfo theDir(motionDir);
+    if (theDir.exists()) {
+      jsonObj["motionDir"]=theDir.absoluteFilePath();
+    } else {
+      jsonObj["motionDir"]=QString("None");
+    }
+  }
+  
+  auto res = unitsWidget->outputToJSON(jsonObj);
+  
+  return res;
 }
 
 
 bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
-    if (jsonObj.contains("ApplicationData")) {
-        QJsonObject appData = jsonObj["ApplicationData"].toObject();
-
-        QString fileName;
-        QString pathToFile;
-
-        if (appData.contains("eventFile"))
-            fileName = appData["eventFile"].toString();
-        if (appData.contains("eventFileDir"))
-            pathToFile = appData["eventFileDir"].toString();
-        else
-            pathToFile=QDir::currentPath();
-
-        QString fullFilePath= pathToFile + QDir::separator() + fileName;
-
-        // adam .. adam .. adam
-        if (!QFileInfo::exists(fullFilePath)){
-            fullFilePath = pathToFile + QDir::separator()
-                    + "input_data" + QDir::separator() + fileName;
-
-            if (!QFile::exists(fullFilePath)) {
-                this->errorMessage("UserInputGM - could not find event file");
-                return false;
-            }
-        }
-
-        eventFileLineEdit->setText(fullFilePath);
-        eventFile = fullFilePath;
-
-        if (appData.contains("motionDir"))
-            motionDir = appData["motionDir"].toString();
-
-        QDir motionD(motionDir);
-
-        if (!motionD.exists()){
-            QString trialDir = QDir::currentPath() +
-                    QDir::separator() + "input_data" + motionDir;
-            if (motionD.exists(trialDir)) {
-                motionDir = trialDir;
-                motionDirLineEdit->setText(trialDir);
-            } else {
-                this->errorMessage("UserInputGM - could not find motion dir" + motionDir + " " + trialDir);
-                return false;
-            }
-        } else {
-            motionDirLineEdit->setText(motionDir);
-        }
-
-        this->loadUserGMData();
-
-        return true;
-    }
-
-    return false;
+  return true;
 }
 
 
 bool UserInputGMWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    // Set the units
-    auto res = unitsWidget->inputFromJSON(jsonObject);
+  QString fileName;
+  QString pathToFile;
+  
+  if (jsonObject.contains("eventFile"))
+    fileName = jsonObject["eventFile"].toString();
+  if (jsonObject.contains("eventFilePath"))
+    pathToFile = jsonObject["eventFilePath"].toString();
+  else
+    pathToFile=QDir::currentPath();
+  
+  QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
-    // If setting of units failed, provide default units and issue a warning
-    if(!res)
+  // adam .. adam .. adam .. ADAM .. ADAM
+  if (!QFileInfo::exists(fullFilePath)){
+    
+    fullFilePath = pathToFile + QDir::separator()
+      + "input_data" + QDir::separator() + fileName;
+
+    if (!QFile::exists(fullFilePath)) {
+      this->errorMessage("UserInputGM - could not find event file");
+      return false;
+    }
+  }
+  
+  eventFileLineEdit->setText(fullFilePath);
+  eventFile = fullFilePath;
+  
+  if (jsonObject.contains("motionDir")) {
+    motionDir = jsonObject["motionDir"].toString();
+  
+    QDir motionD(motionDir);
+  
+    if (!motionD.exists()){
+      
+      QString trialDir = QDir::currentPath() +
+	QDir::separator() + "input_data" + motionDir;
+      if (motionD.exists(trialDir)) {
+	motionDir = trialDir;
+	motionDirLineEdit->setText(trialDir);
+      } else {
+	this->errorMessage("UserInputGM - could not find motion dir" + motionDir + " " + trialDir);
+	return false;
+      }
+    }
+  } else {
+    motionDir = QFileInfo(fullFilePath).absolutePath();
+  }
+
+  // set the line dit
+  motionDirLineEdit->setText(motionDir);
+
+
+  // load the motions
+  this->loadUserGMData();
+  
+  // read in the units
+  bool res = unitsWidget->inputFromJSON(jsonObject);
+  
+  // If setting of units failed, provide default units and issue a warning
+  if(!res)
     {
-        auto paramNames = unitsWidget->getParameterNames();
-
-        this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
-
+      auto paramNames = unitsWidget->getParameterNames();
+      
+      this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
+      
         for(auto&& it : paramNames)
         {
             auto res = unitsWidget->setUnit(it,"g");
@@ -260,7 +269,7 @@ QStackedWidget* UserInputGMWidget::getUserInputGMWidget(void)
     QPushButton *browseFolderButton = new QPushButton("Browse");
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
-
+    
     unitsWidget = new SimCenterUnitsWidget();
 
     fileLayout->addWidget(selectFolderText,   1,0);
@@ -420,7 +429,7 @@ void UserInputGMWidget::chooseMotionDirDialog(void)
     }
 
     motionDir = newPath;
-    motionDirLineEdit->setText(motionDir);
+    // motionDirLineEdit->setText(motionDir);
 
     // check if dir contains EventGrid.csv file, if it does set the file
     QFileInfo eventFileInfo(newPath, "EventGrid.csv");
@@ -909,6 +918,35 @@ void UserInputGMWidget::showProgressBar(void)
     progressBarWidget->setVisible(true);
 }
 
+bool
+UserInputGMWidget::copyFiles(QString &destDir)
+{
+    // create dir and copy motion files
+    QDir destDIR(destDir);
+    if (!destDIR.exists()) {
+      qDebug() << "userInputGMWidget::copyFiles dest dir does not exist: " << destDir;
+      return false;
+    }
+
+    QFileInfo eventFileInfo(eventFile);
+    if (eventFileInfo.exists()) {
+        this->copyFile(eventFile, destDir);
+    } else {
+      qDebug() << "userInputGMWidget::copyFiles eventFile does not exist: " << eventFile;
+      return false;
+    }
+
+    QDir motionDirInfo(motionDir);
+    if (motionDirInfo.exists()) {
+        return this->copyPath(motionDir, destDir, false);
+    } else {
+      qDebug() << "userInputGMWidget::copyFiles motionDir does not exist: " << motionDir;
+      return false;
+    }
+
+    // should never get here
+    return false;
+}
 
 void UserInputGMWidget::hideProgressBar(void)
 {

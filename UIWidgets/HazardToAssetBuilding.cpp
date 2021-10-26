@@ -124,10 +124,14 @@ HazardToAssetBuilding::~HazardToAssetBuilding()
 bool HazardToAssetBuilding::outputToJSON(QJsonObject &jsonObj)
 {
     bool result = true;
-    if (theRegionalMapping->outputToJSON(jsonObj)  != true)
-        result = false;
-    if (theLocalMapping->outputToJSON(jsonObj)  != true)
-        result = false;
+    if (theRegionalMapping->outputToJSON(jsonObj)  != true) {
+      errorMessage(QString("Regional Mapping Widget returned failure in outputToJSON"));
+      result = false;
+    }
+    if (theLocalMapping->outputToJSON(jsonObj)  != true) {
+      errorMessage(QString("Local Mapping Widget returned failure in outputToJSON"));      
+      result = false;
+    }
 
     return result;
 }
@@ -186,10 +190,15 @@ bool HazardToAssetBuilding::copyFiles(QString &destName)
 {
     bool result = true;
 
-    if (theRegionalMapping->copyFiles(destName) != true)
+    if (theRegionalMapping->copyFiles(destName) != true) {
         result = false;
-    if (theLocalMapping->copyFiles(destName) != true)
+	
+	return result;
+    }
+    if (theLocalMapping->copyFiles(destName) != true) {
+      
         result = false;
+    }
 
     return result;
 }
