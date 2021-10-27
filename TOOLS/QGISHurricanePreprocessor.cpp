@@ -217,7 +217,7 @@ QgsVectorLayer* QGISHurricanePreprocessor::loadHurricaneDatabaseData(const QStri
 
         auto polyline = this->getTrackGeometry(&hurricane, err);
 
-        if(polyline.isEmpty())
+        if(polyline.isEmpty() || polyline.isNull())
             return nullptr;
 
         feature.setGeometry(polyline);
@@ -225,11 +225,10 @@ QgsVectorLayer* QGISHurricanePreprocessor::loadHurricaneDatabaseData(const QStri
         feature.setAttributes(featureAttributes);
 
         featList.push_back(feature);
-
     }
 
     // Create the buildings group layer that will hold the sublayers
-    allHurricanesLayer = theVisualizationWidget->addVectorLayer("LineString","All Hurricanes");
+    allHurricanesLayer = theVisualizationWidget->addVectorLayer("linestring","All Hurricanes");
 
     if(allHurricanesLayer == nullptr)
     {
@@ -268,7 +267,6 @@ QgsVectorLayer* QGISHurricanePreprocessor::loadHurricaneDatabaseData(const QStri
 void QGISHurricanePreprocessor::clear(void)
 {
     hurricanes.clear();
-    delete allHurricanesLayer;
     allHurricanesLayer = nullptr;
 }
 
@@ -556,50 +554,41 @@ QgsGeometry QGISHurricanePreprocessor::getTrackGeometry(HurricaneObject* hurrica
     }
 
     // Each row is a point on the hurricane track
-    //    PartCollection* trackCollection = new PartCollection(SpatialReference::wgs84(), theParent);
-    double latitude = 0.0;
-    double longitude = 0.0;
-
     QgsPolylineXY polyLine;
 
     for(int j = 0; j<hurricane->size(); ++j)
     {
         QStringList trackPoint = (*hurricane)[j];
 
-        //        QgsPointXY pointPrev(longitude,latitude);
+        bool res = false;
 
         // Create the geometry for visualization
         // By default will use USA_LAT and USA_LON, if not available fall back on the LAT and LON below
-        latitude = trackPoint.at(indexLat).toDouble();
-        longitude = trackPoint.at(indexLon).toDouble();
+        auto latitude = trackPoint.at(indexLat).toDouble(&res);
 
+        if(res == false)
+        {
+            err = "Could not find the lat/lon from hurricane track points";
+            return QgsGeometry();
+        }
+
+        auto longitude = trackPoint.at(indexLon).toDouble(&res);
+
+        if(res == false)
+        {
+            err = "Could not find the lat/lon from hurricane track points";
+            return QgsGeometry();
+        }
+
+        if(latitude == 0.0 || longitude == 0.0)
+        {
+            err = "Could not find the lat/lon from hurricane track points";
+            return QgsGeometry();
+        }
 
         QgsPointXY pointNow(longitude,latitude);
 
         polyLine.push_back(pointNow);
-
-        //  if(latitude == 0.0 || longitude == 0.0)
-        //  {
-        //      latitude = trackPoint.at(indexLat).toDouble();
-        //      longitude = trackPoint.at(indexLon).toDouble();
-
-        //      if(latitude == 0.0 || longitude == 0.0)
-        //      {
-        //          err = "Error getting the latitude and longitude";
-        //          return -1;
-        //      }
-        //  }
-
-        //        Point point(longitude,latitude);
-
-        //        if(j != 0)
-        //        {
-        //            Part* partj = new Part(SpatialReference::wgs84(), theParent);
-        //            partj->addPoint(point);
-        //            partj->addPoint(pointPrev);
-
-        //            trackCollection->addPart(partj);
-        //        }
     }
 
     QgsGeometry geom = QgsGeometry::fromPolylineXY(polyLine);

@@ -1251,5 +1251,7 @@ void PelicunPostProcessor::clear(void)
     pelicunResultsTableWidget->clear();
 
     sortComboBox->setCurrentIndex(0);
+
+    mapViewSubWidget->clear();
 }
 
