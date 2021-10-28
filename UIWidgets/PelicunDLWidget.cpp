@@ -263,14 +263,29 @@ bool PelicunDLWidget::copyFiles(QString &destName)
       return false;
     }
 
-    // Do not copy the file, output a new csv which will have the changes that the user makes in the table
-    bool res = this->copyFile(compLineEditText, destName);
-    if (!res) {
-      QString msg = QString("Could not copy auto script file: ") + compLineEditText;
-      this->errorMessage(msg);
+    QDir fileDir(componentFile.absolutePath());
+    QString lastDir = fileDir.dirName();
+    if (lastDir != QString("input_data")) {
+
+        bool res = this->copyPath(componentFile.absolutePath(), destName, false);
+        if (!res) {
+            QString msg = QString("Could not copy dir containing auto script file: ") + compLineEditText;
+            this->errorMessage(msg);
+            return res;
+        }
+
+    } else {
+
+        // Do not copy the file, output a new csv which will have the changes that the user makes in the table
+        bool res = this->copyFile(compLineEditText, destName);
+        if (!res) {
+            QString msg = QString("Could not copy auto script file: ") + compLineEditText;
+            this->errorMessage(msg);
+            return res;
+        }
     }
-    
-    return res;
+
+    return true;
 }
 
 
