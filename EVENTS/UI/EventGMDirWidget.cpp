@@ -1,5 +1,3 @@
-#ifndef INTENSITYMEASURE_H
-#define INTENSITYMEASURE_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,57 +34,78 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong, Frank McKenna
 
-#include "JsonSerializable.h"
+#include "EventGMDirWidget.h"
 
-#include <QObject>
-#include <QJsonArray>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QCheckBox>
+#include <QPushButton>
+#include <QDir>
+#include <QFileDialog>
+#include <QDebug>
 
-class IntensityMeasure : public QObject, JsonSerializable
+EventGMDirWidget::EventGMDirWidget(QWidget *parent): QWidget(parent)
 {
-    Q_OBJECT
-public:
-    explicit IntensityMeasure(QObject *parent = nullptr);
+    QVBoxLayout* layout = new QVBoxLayout(this);
 
-    QString type() const;
+    QGroupBox* evtGMDirGroupBox = new QGroupBox(this);
+    evtGMDirGroupBox->setTitle("Output Directory");
+    evtGMDirGroupBox->setContentsMargins(0,0,0,0);
 
-    const QStringList& validTypes();
+    this->setMinimumWidth(375);
 
-    QList<double> periods() const;
-    void setPeriods(const QList<double> &periods);
-    void setPeriods(const QString &periods);
-    void addPeriod(double period);
-    double getImtTruc() const;
+    QGridLayout* gridLayout = new QGridLayout(evtGMDirGroupBox);
+    evtGMDirGroupBox->setLayout(gridLayout);
 
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
+    QLabel* gmDirLabel = new QLabel(tr("Event and/or GM"),this);
+    motionDirLineEdit = new QLineEdit();
+    motionDirLineEdit->setText(motionDir);
 
-    void reset(void);
+    useEvtFolderButton = new QPushButton(tr("Browser"),this);
+    connect(useEvtFolderButton, &QPushButton::clicked, this, &EventGMDirWidget::browseEventFolderDir);
 
-signals:
-    void typeChanged(QString newType);
-    void imtScaleChanged(QString newScale);
+    gridLayout->addWidget(gmDirLabel,1,0);
+    gridLayout->addWidget(motionDirLineEdit,1,1);
+    gridLayout->addWidget(useEvtFolderButton,1,2);
 
-public slots:
-    bool setType(const QString &type);
-    void setImtLevels(const QString &value);
-    void setImtScale(const QString &value);
-    void setImtTruc(double value);
+    layout->addWidget(evtGMDirGroupBox);
+    this->setLayout(layout);
+}
 
-private:
-    QString m_type;
-    QList<double> m_periods;
+void EventGMDirWidget::setEventFile(const QString &value)
+{
+    eventFile = value;
+    this->sendEventFileMotionDir();
+}
 
-    QString periodsText;
+void EventGMDirWidget::setMotionDir(const QString &value)
+{
+    motionDir = value;
+    motionDirLineEdit->setText(motionDir);
+    this->sendEventFileMotionDir();
+}
 
-    QJsonArray imtLevels = {0.01,10.0,100}; // default intensity measure levels
-    QString imtScale = "Log"; // default intensity measure scale is log
+void EventGMDirWidget::sendEventFileMotionDir(void)
+{
+    emit useEventFileMotionDir(this->eventFile, this->motionDir);
+}
 
-    double imtTruc = 3.0; // default trucation levels 3 \sigma
+void EventGMDirWidget::browseEventFolderDir(void)
+{
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::Directory);
+    QString tmp = dialog.getExistingDirectory(this,tr("Event Folder"),QString(QDir(motionDir).absolutePath()));
+    dialog.close();
+    if(!tmp.isEmpty())
+    {
+        this->setMotionDir(tmp);
+        this->setEventFile(tmp + QDir::separator() + "EventGrid.csv");
+    }
+}
 
-public:
-    QJsonObject getJson();
-};
-
-#endif // INTENSITYMEASURE_H

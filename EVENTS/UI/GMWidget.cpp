@@ -137,7 +137,7 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     this->m_selectionWidget = new RecordSelectionWidget(*this->m_selectionconfig);
 
     m_runButton = new QPushButton(tr("&Run Hazard Simulation"));
-    m_settingButton = new QPushButton(tr("&Settings"));
+    //m_settingButton = new QPushButton(tr("&Path Settings"));
 
 #ifdef ARC_GIS
     auto mapView = theVisualizationWidget->getMapViewWidget();
@@ -156,7 +156,7 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig);
 
     auto buttonsLayout = new QHBoxLayout();
-    buttonsLayout->addWidget(this->m_settingButton);
+    //buttonsLayout->addWidget(this->m_settingButton);
     buttonsLayout->addWidget(this->m_runButton);
 
     toolsGridLayout->addWidget(this->m_siteConfigWidget,   0,0,4,1);
@@ -168,9 +168,12 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     toolsGridLayout->addWidget(this->m_gmpeWidget,            4,1);
     toolsGridLayout->addWidget(this->m_intensityMeasureWidget,5,1);
     toolsGridLayout->addLayout(buttonsLayout,                 6,1);
+    toolsGridLayout->addWidget(this->m_eventGMDir,6,0);
+    //m_eventGMDir->hide();
 
     toolsGridLayout->setHorizontalSpacing(5);
     toolsGridLayout->setVerticalSpacing(0);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     toolsGridLayout->setRowStretch(7,1);
 
@@ -204,6 +207,18 @@ void GMWidget::setAppConfig(void)
 
 void GMWidget::setupConnections()
 {
+    // GMPE options (link between source type and GMPE options)
+    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
+            m_gmpeWidget, SLOT(handleAvailableGMPE(QString)));
+
+    // correlation model options (link between source type and correlation model options)
+    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
+            spatialCorrWidget, SLOT(handleAvailableModel(QString)));
+
+    // Intensity Measure Levels options (link between source type and intensity measure levels options)
+    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
+            m_intensityMeasureWidget, SLOT(handleIntensityMeasureLevels(QString)));
+
     //Connecting the run button
     connect(m_runButton, &QPushButton::clicked, this, [this]()
     {
@@ -250,7 +265,11 @@ void GMWidget::setupConnections()
         this->statusMessage(statusUpdate);
     });
 
-    connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
+    //connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
+
+    // connect output director path change to EventGMDirWidget
+    connect(m_appConfig, &GmAppConfig::outputDirectoryPathChanged, m_eventGMDir, &EventGMDirWidget::setEventFile);
+    connect(m_appConfig, &GmAppConfig::outputDirectoryPathChanged, m_eventGMDir, &EventGMDirWidget::setMotionDir);
 
     connect(m_siteConfigWidget->getSiteGridWidget(), &SiteGridWidget::selectGridOnMap, this, &GMWidget::showGISWindow);
 
@@ -261,12 +280,20 @@ void GMWidget::setupConnections()
         this->getProgressDialog()->hideProgressBar();
     });
 
+    // connect use event and ground motion dir to Hazard widget to switch
+    connect(m_eventGMDir, &EventGMDirWidget::useEventFileMotionDir, this, &GMWidget::sendEventFileMotionDir);
+
+    // connect configuration change to simulation tag updating
+    connect(this, &GMWidget::configUpdated, this, &GMWidget::updateSimulationTag);
+
 }
 
 
 void GMWidget::initAppConfig()
 {
     m_appConfig = new GmAppConfig(this);
+    // Adding the EventGMDir widget
+    this->m_eventGMDir = new EventGMDirWidget();
 
     //First, We will look into settings
     QSettings settings;
@@ -275,6 +302,8 @@ void GMWidget::initAppConfig()
     m_appConfig->setOutputFilePath(settings.value("OutputFilePath", "").toString());
     m_appConfig->setUsername(settings.value("RDBUsername", "").toString());
     m_appConfig->setPassword(settings.value("RDBPassword", "").toString());
+    m_eventGMDir->setEventFile(settings.value("OutputFilePath", "").toString());
+    m_eventGMDir->setMotionDir(settings.value("OutputFilePath", "").toString());
 
     //If path is missing, create a working directory in Applications working directory
     if(m_appConfig->getWorkDirectoryPath().isEmpty() || !QFile::exists(m_appConfig->getWorkDirectoryPath()))
@@ -374,6 +403,10 @@ void GMWidget::initAppConfig()
         QString outputFilePath = workingDir + QDir::separator() + "HazardSimulation" +  QDir::separator() + "GroundMotions" +  QDir::separator() +  "Output";
 
         m_appConfig->setOutputFilePath(outputFilePath);
+        eventPath = outputFilePath + QDir::separator() + "EventGrid.csv";
+        motionFolder = outputFilePath;
+        m_eventGMDir->setEventFile(eventPath);
+        m_eventGMDir->setMotionDir(motionFolder);
     }
 
 }
@@ -438,10 +471,87 @@ GMWidget::outputAppDataToJSON(QJsonObject &jsonObj) {
 
     jsonObj["Application"] = "EQSS";
 
+    if(simulationComplete == false)
+    {
+        this->errorMessage("Earthquake Scenario Simulation is not completed - please click \"Run Hazard Simulation\"");
+        return false;
+    }
     QJsonObject appData;
+    QFileInfo theFile(eventPath);
+    qDebug() << eventPath;
+    if (theFile.exists()) {
+        appData["eventFile"]=theFile.fileName();
+        appData["eventFileDir"]=theFile.path();
+    } else {
+        appData["eventFile"]=eventPath; // may be valid on others computer
+        appData["eventFileDir"]=QString("");
+    }
+    QFileInfo theDir(motionFolder);
+    qDebug() << motionFolder;
+    if (theDir.exists()) {
+        appData["motionDir"]=theDir.absoluteFilePath();
+    } else {
+        appData["motionDir"]=QString("None");
+    }
     jsonObj["ApplicationData"]=appData;
 
     return true;
+}
+
+bool GMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
+{
+    if (jsonObj.contains("ApplicationData")) {
+        QJsonObject appData = jsonObj["ApplicationData"].toObject();
+
+        QString fileName;
+        QString pathToFile;
+
+        if (appData.contains("eventFile"))
+            fileName = appData["eventFile"].toString();
+        if (appData.contains("eventFileDir"))
+            pathToFile = appData["eventFileDir"].toString();
+        else
+            pathToFile=QDir::currentPath();
+
+        QString fullFilePath= pathToFile + QDir::separator() + fileName;
+
+        if (!QFileInfo::exists(fullFilePath)){
+            fullFilePath = pathToFile + QDir::separator() + "input_data" + QDir::separator() + fileName;
+
+            if (!QFile::exists(fullFilePath)) {
+                this->errorMessage("GMWidget - could not find event file");
+                return false;
+            }
+        }
+
+        eventPath = fullFilePath;
+        m_eventGMDir->setEventFile(eventPath);
+
+        if (appData.contains("motionDir"))
+            motionFolder = appData["motionDir"].toString();
+
+        QDir motionD(motionFolder);
+
+        if (!motionD.exists()){
+            QString trialDir = QDir::currentPath() +
+                    QDir::separator() + "input_data" + motionFolder;
+            if (motionD.exists(trialDir)) {
+                motionFolder = trialDir;
+                m_eventGMDir->setMotionDir(motionFolder);
+            } else {
+                this->errorMessage("GMWidget - could not find motion dir" + motionFolder + " " + trialDir);
+                return false;
+            }
+        } else {
+            m_eventGMDir->setMotionDir(motionFolder);
+        }
+
+        //this->loadUserGMData();
+
+        return true;
+    }
+
+    return false;
 }
 
 bool GMWidget::outputToJSON(QJsonObject &jsonObj)
@@ -567,7 +677,16 @@ void GMWidget::runHazardSimulation(void)
 
     // Get the GMPE Json object
     QJsonObject GMPEobj;
-    m_gmpe->outputToJSON(GMPEobj);
+    qDebug() << QString(m_ruptureWidget->getWidgetType());
+    if (m_ruptureWidget->getWidgetType().compare("OpenQuake Classical")==0)
+    {
+        GMPEobj.insert("Type", "LogicTree");
+        GMPEobj.insert("Parameters", m_ruptureWidget->getGMPELogicTree());
+    }
+    else
+    {
+        m_gmpe->outputToJSON(GMPEobj);
+    }
 
     // Get the Vs30 Json object
     QJsonObject Vs30obj;
@@ -733,7 +852,8 @@ void GMWidget::runHazardSimulation(void)
     this->getProgressDialog()->showProgressBar();
 
     process->start(pythonPath, args);
-    process->waitForStarted();
+    //process->waitForStarted();
+    process->waitForFinished();
 }
 
 
@@ -799,7 +919,6 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         this->getProgressDialog()->hideProgressBar();
     }
 
-
 }
 
 
@@ -852,6 +971,8 @@ int GMWidget::downloadRecords(void)
 
     theRecordsListFile.close();
 
+    qDebug()<<QString::number(recordsListToDownload.empty());
+
     // Check if any of the records exist, do not need to download them again
     const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
 
@@ -874,7 +995,12 @@ int GMWidget::downloadRecords(void)
     }
 
 
-    this->downloadRecordBatch();
+    qDebug()<<QString::number(recordsListToDownload.isEmpty());
+    qDebug()<<QString::number(recordsListToDownload.empty());
+    if (!recordsListToDownload.isEmpty())
+    {
+            this->downloadRecordBatch();
+    }
 
     return 0;
 }
@@ -1419,6 +1545,60 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
 GmAppConfig *GMWidget::appConfig() const
 {
     return m_appConfig;
+}
+
+void GMWidget::sendEventFileMotionDir(const QString &eventFile, const QString &motionDir)
+{
+    eventPath = eventFile;
+    motionFolder = motionDir;
+    m_appConfig->setOutputFilePath(motionDir);
+    emit useEventFileMotionDir(motionDir, eventFile);
+}
+
+bool GMWidget::copyFiles(QString &destDir)
+{
+    // checking if the simulation is done
+    // this helps to avoid copy previous run's files
+    if (!simulationComplete) {
+        // try to run the Hazard Simulation first
+        m_runButton->animateClick();
+    }
+    // create dir and copy motion files
+    QDir destDIR(destDir);
+    if (!destDIR.exists()) {
+        qDebug() << "GMWidget::copyFiles dest dir does not exist: " << destDir;
+        return false;
+    }
+
+    QFileInfo eventFileInfo(eventPath);
+    if (eventFileInfo.exists()) {
+        this->copyFile(eventPath, destDir);
+    } else {
+        qDebug() << "GMWidget::copyFiles eventFile does not exist: " << eventPath;
+        return false;
+    }
+
+    QDir motionDirInfo(motionFolder);
+    if (motionDirInfo.exists()) {
+        return this->copyPath(motionFolder, destDir, false);
+    } else {
+        qDebug() << "GMWidget::copyFiles motionFolder does not exist: " << motionFolder;
+        return false;
+    }
+
+    // should never get here
+    return false;
+}
+
+void GMWidget::updateSimulationTag()
+{
+    simulationComplete = false;
+}
+
+bool GMWidget::getSimulationStatus()
+{
+    bool tmp = simulationComplete;
+    return tmp;
 }
 
 

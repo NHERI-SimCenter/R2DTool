@@ -1,5 +1,6 @@
-#ifndef INTENSITYMEASURE_H
-#define INTENSITYMEASURE_H
+#ifndef OpenQuakeClassicalWidget_H
+#define OpenQuakeClassicalWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,57 +37,70 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "JsonSerializable.h"
+#include "SimCenterWidget.h"
 
-#include <QObject>
-#include <QJsonArray>
+class OpenQuakeClassical;
 
-class IntensityMeasure : public QObject, JsonSerializable
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class QDoubleSpinBox;
+class QCheckBox;
+class QComboBox;
+
+class OpenQuakeClassicalWidget : public SimCenterWidget
 {
     Q_OBJECT
+
 public:
-    explicit IntensityMeasure(QObject *parent = nullptr);
+    explicit OpenQuakeClassicalWidget(QWidget *parent = nullptr);
 
-    QString type() const;
-
-    const QStringList& validTypes();
-
-    QList<double> periods() const;
-    void setPeriods(const QList<double> &periods);
-    void setPeriods(const QString &periods);
-    void addPeriod(double period);
-    double getImtTruc() const;
-
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
-
-    void reset(void);
+    OpenQuakeClassical* getRuptureSource() const;
 
 signals:
-    void typeChanged(QString newType);
-    void imtScaleChanged(QString newScale);
 
 public slots:
-    bool setType(const QString &type);
-    void setImtLevels(const QString &value);
-    void setImtScale(const QString &value);
-    void setImtTruc(double value);
+    void loadSourceLogicTree();
+    void loadGMPELogicTree();
+    void loadSourceDir();
+    void handleOQVersionChanged(const QString& selection);
 
 private:
-    QString m_type;
-    QList<double> m_periods;
+    OpenQuakeClassical* m_eqRupture;
+    QComboBox* ModelTypeCombo;
+    QLineEdit* sourceFilenameLineEdit;
+    QLineEdit* gmpeFilenameLineEdit;
+    QLineEdit* sourceDirLineEdit;
+    QString sourceFilePath;
+    QString gmpeFilePath;
+    QString sourceDir;
+    QDoubleSpinBox* m_rupMeshBox;
+    QDoubleSpinBox* m_areaMeshBox;
+    QDoubleSpinBox* m_maxDistanceBox;
+    QPushButton* browseSourceFileButton;
+    QPushButton* browseGMPEFileButton;
+    QPushButton* browseSourceDirButton;
 
-    QString periodsText;
+    QLineEdit* rpLineEdit;
+    QLineEdit* randSeedLineEdit;
+    QLineEdit* quantLineEdit;
+    QLineEdit* ivgtTimeLineEdit;
 
-    QJsonArray imtLevels = {0.01,10.0,100}; // default intensity measure levels
-    QString imtScale = "Log"; // default intensity measure scale is log
+    QCheckBox* indivHCCheckBox;
+    QCheckBox* meanHCCheckBox;
+    QCheckBox* hazMapCheckBox;
+    QCheckBox* UHSCheckBox;
 
-    double imtTruc = 3.0; // default trucation levels 3 \sigma
+    QComboBox* oqVersionCombo;
+    QString oqVersion = "3.12.0";
 
-public:
-    QJsonObject getJson();
+    void setupConnections();
+    void setSourceFile(QString dirPath);
+    void setGMPEFile(QString dirPath);
+    void setSourceDir(QString dirPath);
+
 };
 
-#endif // INTENSITYMEASURE_H
+#endif // OpenQuakeClassicalWidget_H

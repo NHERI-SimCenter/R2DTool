@@ -134,4 +134,3 @@ bool EarthquakeRuptureForecast::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
-

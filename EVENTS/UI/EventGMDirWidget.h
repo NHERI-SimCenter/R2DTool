@@ -1,5 +1,5 @@
-#ifndef INTENSITYMEASURE_H
-#define INTENSITYMEASURE_H
+#ifndef EventGMDirWidget_H
+#define EventGMDirWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,57 +36,39 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong, Frank McKenna
 
-#include "JsonSerializable.h"
+#include <QWidget>
 
-#include <QObject>
-#include <QJsonArray>
+class QComboBox;
+class QCheckBox;
+class QLineEdit;
+class QPushButton;
 
-class IntensityMeasure : public QObject, JsonSerializable
+class EventGMDirWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit IntensityMeasure(QObject *parent = nullptr);
-
-    QString type() const;
-
-    const QStringList& validTypes();
-
-    QList<double> periods() const;
-    void setPeriods(const QList<double> &periods);
-    void setPeriods(const QString &periods);
-    void addPeriod(double period);
-    double getImtTruc() const;
-
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
-
-    void reset(void);
+    explicit EventGMDirWidget(QWidget *parent = nullptr);
+    void browseEventFolderDir(void);
 
 signals:
-    void typeChanged(QString newType);
-    void imtScaleChanged(QString newScale);
+    void useEventFileMotionDir(QString evtFile, QString gmDir);
 
 public slots:
-    bool setType(const QString &type);
-    void setImtLevels(const QString &value);
-    void setImtScale(const QString &value);
-    void setImtTruc(double value);
+
+    void setEventFile(const QString &value);
+    void setMotionDir(const QString &value);
+    void sendEventFileMotionDir();
 
 private:
-    QString m_type;
-    QList<double> m_periods;
 
-    QString periodsText;
+    QString eventFile; // event file path
+    QString motionDir; // ground motion directories
 
-    QJsonArray imtLevels = {0.01,10.0,100}; // default intensity measure levels
-    QString imtScale = "Log"; // default intensity measure scale is log
+    QLineEdit *motionDirLineEdit; // LineEdit for ground motion directories
 
-    double imtTruc = 3.0; // default trucation levels 3 \sigma
-
-public:
-    QJsonObject getJson();
+    QPushButton* useEvtFolderButton;
 };
 
-#endif // INTENSITYMEASURE_H
+#endif // EventGMDirWidget_H
