@@ -655,6 +655,8 @@ void HurricaneSelectionWidget::clear(void)
     divLonSpinBox->setValue(10);
 
     selectedHurricaneObj.clear();
+
+    mapViewSubWidget->clear();
 }
 
 

@@ -829,11 +829,20 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
     jsonObject["Events"] = eventsArray;
 #else
 
+    QFileInfo theFile(pathToEventFile);
+    if (theFile.exists()) {
+        jsonObject["eventFile"]=theFile.fileName();
+        jsonObject["eventFilePath"]=theFile.path();
+    } else {
+        jsonObject["eventFile"]=pathToEventFile; // may be valid on others computer
+        jsonObject["eventFilePath"]=QString("");
+    }
+
     QJsonObject unitsObj;
 
     unitsObj["PGA"] = "g";
 
-    jsonObject["Units"] = unitsObj;
+    jsonObject["units"] = unitsObj;
 
 #endif
 
@@ -848,27 +857,8 @@ bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     jsonObject["Application"] = "UserInputShakeMap";
 
     QJsonObject appData;
-    QFileInfo theFile(pathToEventFile);
-    if (theFile.exists()) {
-        appData["eventFile"]=theFile.fileName();
-        appData["eventFileDir"]=theFile.path();
-    } else {
-        appData["eventFile"]=pathToEventFile; // may be valid on others computer
-        appData["eventFileDir"]=QString("");
-    }
-    QFileInfo theDir(motionDir);
-    if (theDir.exists()) {
-        appData["motionDir"]=theDir.absoluteFilePath();
-    } else {
-        appData["motionDir"]=QString("None");
-    }
 
     appData["Directory"] = pathToShakeMapDirectory;
-
-    QJsonObject unitsData;
-
-    unitsData.insert("PGA","g");
-    appData.insert("Units",unitsData);
 
     jsonObject["ApplicationData"]=appData;
 
