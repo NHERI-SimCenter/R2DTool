@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("1.1.1");
+    QCoreApplication::setApplicationVersion("1.1.2");
 
     // GoogleAnalytics::SetTrackingId("UA-186298856-1");
     GoogleAnalytics::StartSession();
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 
     w.setAbout(aboutTitle, aboutSource);
 
-    QString version("Version 1.1.1");
+    QString version("Version 1.1.2");
     w.setVersion(version);
 
     QString citeText("Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Kuanshi Zhong, & Wael Elhaddad. (2021, June 25). NHERI-SimCenter/R2DTool: Version 1.1.0 (Version v1.1.0). Zenodo. http://doi.org/10.5281/zenodo.5033626");

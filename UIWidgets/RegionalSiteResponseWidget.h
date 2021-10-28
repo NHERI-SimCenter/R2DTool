@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 
 class VisualizationWidget;
+class SimCenterUnitsWidget;
 
 class QStackedWidget;
 class QLineEdit;
@@ -77,9 +78,11 @@ public:
 
     QStackedWidget* getRegionalSiteResponseWidget(void);
 
+    bool inputFromJSON(QJsonObject &jsonObj);  
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
+  
     bool copyFiles(QString &destDir);
 
     void clear(void);
@@ -121,6 +124,8 @@ private:
     QProgressBar* progressBar;
 
     QVector<GroundMotionStation> stationList;
+
+  SimCenterUnitsWidget* unitsWidget;
 
 };
 
