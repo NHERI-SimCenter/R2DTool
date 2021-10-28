@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RegionalSiteResponseWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
-
+#include "SimCenterUnitsWidget.h"
 
 
 #ifdef ARC_GIS
@@ -89,7 +89,8 @@ RegionalSiteResponseWidget::RegionalSiteResponseWidget(VisualizationWidget* visW
     progressLabel = nullptr;
     eventFile = "";
     motionDir = "";
-
+    unitsWidget = nullptr;
+    
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(this->getRegionalSiteResponseWidget());
     layout->addStretch();
@@ -112,10 +113,10 @@ bool RegionalSiteResponseWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     QFileInfo theFile(eventFile);
     if (theFile.exists()) {
         appData["inputEventFile"]=theFile.fileName();
-        appData["inputEventFileDir"]=theFile.path();
+        appData["inputEventFilePath"]=theFile.path();
     } else {
         appData["inputEventFile"]=eventFile; // may be valid on others computer
-        appData["inputEventFileDir"]=QString("");
+        appData["inputEventFilePath"]=QString("");
     }
     
     QFileInfo theDir(motionDir);
@@ -128,20 +129,20 @@ bool RegionalSiteResponseWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     QFileInfo theScript(siteResponseScriptLineEdit->text());
     if (theScript.exists()) {
         appData["siteResponseScript"]=theScript.fileName();
-        appData["scriptPath"]=theScript.path();
+        appData["siteResponseScriptPath"]=theScript.path();
     } else {
       appData["siteResponseScript"]=siteResponseScriptLineEdit->text();
-        appData["scriptPath"]=QString("");
+        appData["siteResponseScriptPath"]=QString("");
     }
 
 
     QFileInfo theSoil(soilFileLineEdit->text());
     if (theSoil.exists()) {
         appData["soilGridParametersFile"]=theSoil.fileName();
-        appData["soilParametersPath"]=theSoil.path();
+        appData["soilGridParametersFilePath"]=theSoil.path();
     } else {
       appData["soilGridParametersFile"]=soilFileLineEdit->text();
-      appData["soilParametersPath"]=QString("");
+      appData["soilGridParametersFilePath"]=QString("");
     }
 
     // just for when running the app (copyFiles places stuff in the following dir
@@ -156,13 +157,15 @@ bool RegionalSiteResponseWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool RegionalSiteResponseWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    return true;
+  bool res = unitsWidget->outputToJSON(jsonObj);  
+  return true;
 }
 
 
 bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
-    if (jsonObj.contains("ApplicationData")) {
+  qDebug() << "RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)";
+  if (jsonObj.contains("ApplicationData")) {
         QJsonObject appData = jsonObj["ApplicationData"].toObject();
 
         QString fileName;
@@ -170,12 +173,18 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         if (appData.contains("inputEventFile"))
             fileName = appData["inputEventFile"].toString();
-        if (appData.contains("inputEventFileDir"))
-            pathToFile = appData["inputEventFileDir"].toString();
-        else
+        if (appData.contains("inputEventFilePath")) {
+            pathToFile = appData["inputEventFilePath"].toString();
+	    QDir pathToFileDir(pathToFile);
+	    if (!pathToFileDir.exists()) {
+	      pathToFile = QDir::currentPath() + QDir::separator() + pathToFile;
+	    }
+	} else
             pathToFile=QDir::currentPath();
 
         QString fullFilePath= pathToFile + QDir::separator() + fileName;
+
+	QString msg = QString("No Event File found in following locations: " ) + fullFilePath;
 
         //
         // files downloaded possibly from a remote run will be in input_data/relevantDIR
@@ -184,85 +193,128 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         if (!QFileInfo::exists(fullFilePath)){
             pathToFile=QDir::currentPath();
             fullFilePath = pathToFile + QDir::separator()
-                    + "input_data" + QDir::separator() + QString("simcMotionDir") + QDir::separator() + fileName;
+                    + "input_data" + QDir::separator() + QDir::separator() + fileName;
 
             if (!QFile::exists(fullFilePath)) {
                 this->errorMessage("RegionalSiteResponse - could not find event file");
-                return false;
-            }
+
+		msg += QString("; ") + fullFilePath;
+
+		pathToFile=QDir::currentPath();
+		fullFilePath = pathToFile + QDir::separator()
+		  + "input_data" + QDir::separator() + QString("simcMotionDir") + QDir::separator() + fileName;
+		if (!QFile::exists(fullFilePath)) {
+
+		  msg += QString("; ") + fullFilePath;		  
+		  this->errorMessage(msg);
+		  
+		  return false;
+		}
+	    }
         }
 
         eventFileLineEdit->setText(fullFilePath);
         eventFile = fullFilePath;
 
         if (appData.contains("inputMotionDir"))
-            motionDir = appData["inputMotionDir"].toString();
-
+	  motionDir = appData["inputMotionDir"].toString();
+	else {
+	  motionDir = QFileInfo(eventFile).absolutePath();
+	}
+	  
         QDir motionD(motionDir);
 
+	msg = QString("No Motion Dir found in following locations: ") + motionDir;	
+	
         if (!motionD.exists()){
-            QString trialDir = QDir::currentPath() +
-                    QDir::separator() + "input_data" + QDir::separator() + "simcInputMotion";
+
+	  QString trialDir = QDir::currentPath() +
+	    QDir::separator() + "input_data" + QDir::separator() + motionDir;
+	  
             if (motionD.exists(trialDir)) {
                 motionDir = trialDir;
                 motionDirLineEdit->setText(trialDir);
             } else {
-                this->errorMessage("RegionalSiteResponse - could not find motion dir" + motionDir + " " + trialDir);
-                return false;
-            }
-        } else {
-            motionDirLineEdit->setText(motionDir);
+		  msg += QString("; ") + trialDir;		  	      
+
+		  trialDir = QDir::currentPath() +
+                    QDir::separator() + "input_data" + QDir::separator() + "simcInputMotion";
+		  if (motionD.exists(trialDir)) {
+		    motionDir = trialDir;
+		  } else {
+		    
+		    msg += QString("; ") + trialDir; 
+		    this->errorMessage(msg);
+		    return false;
+		  }
+	    }
         }
+	
+	motionDirLineEdit->setText(motionDir);
 
         this->loadUserGMData();
 
         if (appData.contains("siteResponseScript")) {
 
             QString fileName = appData["siteResponseScript"].toString();
-            QString pathToFile = appData["scriptPath"].toString();
+            QString pathToFile = appData["siteResponseScriptPath"].toString();
             QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
             //
             // files downloaded possibly from a remote run will be in input_data/relevantDIR
             //
 
-	    qDebug() << "full SR path: " << fullFilePath;
-	    
+	    msg = QString("No site response script found in following locations: " ) + fullFilePath;		    
             if (!QFileInfo::exists(fullFilePath)){
-                fullFilePath = QDir::currentPath() + QDir::separator()
-                        + "input_data" + QDir::separator() + QString("simcModelDir") + QDir::separator() + fileName;
 
+	      fullFilePath = QDir::currentPath() + QDir::separator()
+		+ "input_data" + QDir::separator() + fileName;
+
+	      if (!QFile::exists(fullFilePath)) {
+		msg += QString("; ") + fullFilePath; 		  
+	
+		fullFilePath = QDir::currentPath() + QDir::separator()
+		  + "input_data" + QDir::separator() + QString("simcModelDir") + QDir::separator() + fileName;
+		
                 if (!QFile::exists(fullFilePath)) {
-                    this->errorMessage("RegionalSiteResponse - could not find site response script");
-                    return false;
+		  msg += QString("; ") + fullFilePath; 		  
+		  return false;
                 }
-            }
+	      }
+	    }
             siteResponseScriptLineEdit->setText(fullFilePath);
-        }
+        } else {
+	  this->errorMessage("RegionalSiteResponse - no siteResponseScript key provided");
+	  return false;
+	}
 
         if (appData.contains("soilGridParametersFile")) {
 
             QString fileName = appData["soilGridParametersFile"].toString();
-            QString pathToFile = appData["soilParametersPath"].toString();
+            QString pathToFile = appData["soilGridParametersFilePath"].toString();
             QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
             //
             // files downloaded possibly from a remote run will be in input_data/relevantDIR
             //
 
-	    qDebug() << "full SP file: " << fullFilePath;
+	    msg = QString("No soil grid parameters file found in following locations: " ) + fullFilePath;		    	    
 	    
             if (!QFileInfo::exists(fullFilePath)){
                 fullFilePath = QDir::currentPath() + QDir::separator()
                         + "input_data" + QDir::separator() + fileName;
 
                 if (!QFile::exists(fullFilePath)) {
-                    this->errorMessage("RegionalSiteResponse - could not find site response script");
-                    return false;
+		  msg += "; " + fullFilePath;
+		  this->errorMessage("msg");
+		  return false;
                 }
             }
             soilFileLineEdit->setText(fullFilePath);
-        }
+        } else {
+	  this->errorMessage("RegionalSiteResponse - no soilGridParametersFile key provided");
+	  return false;
+	}	  
 
         return true;
     }
@@ -270,6 +322,36 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
     return false;
 }
 
+bool RegionalSiteResponseWidget::inputFromJSON(QJsonObject &jsonObj) {
+
+  qDebug() << "RegionalSiteResponseWidget::inputFromJSON(QJsonObject &jsonObj)";  
+  // read in the units
+  bool res = unitsWidget->inputFromJSON(jsonObj);
+
+  qDebug() << "RegionalSiteResponse units::inputFromJSON returned: " << res;
+  
+  // If setting of units failed, provide default units and issue a warning
+  if(!res)
+    {
+      auto paramNames = unitsWidget->getParameterNames();
+      
+      this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
+      
+        for(auto&& it : paramNames)
+        {
+            auto res = unitsWidget->setUnit(it,"g");
+
+            if(res == 0)
+                this->infoMessage("For parameter "+it+" setting default unit as: g");
+            else
+                this->errorMessage("Failed to set default units for parameter "+it);
+        }
+
+        this->infoMessage("Warning \\!/: Check if the units are correct!");
+    }
+
+    return res;
+}
 
 void RegionalSiteResponseWidget::showUserGMLayers(bool state)
 {
@@ -302,7 +384,6 @@ QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
     soilLayout->addWidget(soilFileLineEdit, 0, 1);
     QPushButton *browseSoilFileButton = new QPushButton("Browse");
     soilLayout->addWidget(browseSoilFileButton, 0, 2);
-
 
     connect(browseSoilFileButton, &QPushButton::clicked, this, [this]() {
         QString fileName = QFileDialog::getOpenFileName(this, "Specify Soil Properties", "",  "CSV files (*.csv) ;;All files (*)");
@@ -369,6 +450,10 @@ QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
     motionLayout->setColumnStretch(1,3);
 
     inputLayout->addWidget(motionGroupBox);
+
+    unitsWidget = new SimCenterUnitsWidget();
+    
+    inputLayout->addWidget(unitsWidget);
     inputLayout->addStretch();
 
 
@@ -456,7 +541,6 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
       qDebug() << "RegionalSiteResponse:copyFiles event grid file does not exist:" << eventFile;
       return false;
     }
-
 
     QDir motionDirInfo(motionDir);
     if (motionDirInfo.exists()) {
