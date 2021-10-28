@@ -56,10 +56,7 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
 //     inputFileLineEdit->setText("/Users/steve/Documents/R2D/RemoteWorkDir/inputRWHALE.json");
 //     resultsFolderLineEdit->setText("/Users/steve/Documents/R2D/RemoteWorkDir");
 
-     inputFileLineEdit->setText("/Users/steve/Desktop/tmp.SimCenter/inputRWHALE.json");
-     resultsFolderLineEdit->setText("/Users/steve/Desktop/tmp.SimCenter/Results");
-
-     this->handleLoadResults();
+//     this->handleLoadResults();
 }
 
 
