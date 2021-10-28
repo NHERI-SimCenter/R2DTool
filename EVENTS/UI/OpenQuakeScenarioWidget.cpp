@@ -85,22 +85,34 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterWid
     browseFileButton->setMaximumWidth(150);
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(loadRupFile()));
 
+    // OpenQuake Version
+    QLabel* oqVerLabel = new QLabel(tr("OpenQuake Version:"),this);
+    oqVersionCombo = new QComboBox(this);
+    oqVersionCombo->addItem("3.12");
+    oqVersionCombo->addItem("3.11");
+    oqVersionCombo->addItem("3.10");
+    connect(oqVersionCombo,&QComboBox::currentTextChanged,this,&OpenQuakeScenarioWidget::handleOQVersionChanged);
+
+    // version
+    layout->addWidget(oqVerLabel,0,0);
+    layout->addWidget(oqVersionCombo,0,1,1,1);
+
     // if line-type ruptures are defined -> mesh size in length
-    layout->addWidget(rupMeshLabel,0,0);
-    layout->addWidget(m_rupMeshBox,0,1);
+    layout->addWidget(rupMeshLabel,1,0);
+    layout->addWidget(m_rupMeshBox,1,1);
 
     // if area-type or complex rutpures are defined are defined -> mesh size in area
-    layout->addWidget(areaMeshLabel,0,2);
-    layout->addWidget(m_areaMeshBox,0,3);
+    layout->addWidget(areaMeshLabel,1,2);
+    layout->addWidget(m_areaMeshBox,1,3);
 
     // maximum considered distance between the rupture and sites
-    layout->addWidget(distMaxLabel,0,4);
-    layout->addWidget(m_maxDistanceBox,0,5);
+    layout->addWidget(distMaxLabel,1,4);
+    layout->addWidget(m_maxDistanceBox,1,5);
 
     // rupture definition (.xml)
-    layout->addWidget(filenameLabel,1,0);
-    layout->addWidget(FilenameLineEdit,1,1,1,4);
-    layout->addWidget(browseFileButton,1,5);
+    layout->addWidget(filenameLabel,2,0);
+    layout->addWidget(FilenameLineEdit,2,1,1,4);
+    layout->addWidget(browseFileButton,2,5);
 
     this->setLayout(layout);
 
@@ -115,6 +127,22 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterWid
     this->setupConnections();
 }
 
+void OpenQuakeScenarioWidget::handleOQVersionChanged(const QString& selection)
+{
+    if(selection.compare("3.10") == 0)
+    {
+        oq_version = "3.10.1";
+    }
+    else if(selection.compare("3.11") == 0)
+    {
+        oq_version = "3.11.4";
+    }
+    else if(selection.compare("3.12") == 0)
+    {
+        oq_version = "3.12.0"; // this is the latest version 09/27/21
+    }
+    m_eqRupture->setOQVersion(oq_version);
+}
 
 OpenQuakeScenario* OpenQuakeScenarioWidget::getRuptureSource() const
 {

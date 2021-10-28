@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class PointSourceRuptureWidget;
 class EarthquakeRuptureForecastWidget;
 class OpenQuakeScenarioWidget;
+class OpenQuakeClassicalWidget;
 
 class QGroupBox;
 class QComboBox;
@@ -54,11 +55,17 @@ class RuptureWidget : public SimCenterAppWidget
 public:
     explicit RuptureWidget(QWidget *parent = nullptr);
 
+    QJsonObject getJson(void);
+    QString getWidgetType(void) const;
+    QString getGMPELogicTree(void) const;
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
 
 public slots:
     void handleSelectionChanged(const QString& selection);
+
+signals:
+    void widgetTypeChanged(QString newWidgetType);
 
 private:
     QGroupBox* ruptureGroupBox;
@@ -67,6 +74,8 @@ private:
     PointSourceRuptureWidget* pointSourceWidget;
     EarthquakeRuptureForecastWidget* erfWidget;
     OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
+    OpenQuakeClassicalWidget* oqcpWidget; // widget connecting OpenQuake classical PSHA
+    QString widgetType = "OpenSHA ERF"; // widget type
 };
 
 #endif // RUPTUREWIDGET_H

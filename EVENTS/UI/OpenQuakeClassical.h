@@ -1,5 +1,5 @@
-#ifndef INTENSITYMEASURE_H
-#define INTENSITYMEASURE_H
+#ifndef OpenQuakeClassical_H
+#define OpenQuakeClassical_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,57 +36,74 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
 #include "JsonSerializable.h"
-
-#include <QObject>
+#include "SimCenterWidget.h"
 #include <QJsonArray>
+#include "ZipUtils.h"
 
-class IntensityMeasure : public QObject, JsonSerializable
+class OpenQuakeClassical : public SimCenterWidget, JsonSerializable
 {
     Q_OBJECT
+
 public:
-    explicit IntensityMeasure(QObject *parent = nullptr);
+    OpenQuakeClassical(double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent = nullptr);
 
-    QString type() const;
+    double getRupMesh() const;
+    double getAreaMesh() const;
+    double getMaxDistance() const;
+    QString getRupFilename() const;
+    QString getGMPEFilename() const;
+    void setOQVersion(const QString &value);
 
-    const QStringList& validTypes();
-
-    QList<double> periods() const;
-    void setPeriods(const QList<double> &periods);
-    void setPeriods(const QString &periods);
-    void addPeriod(double period);
-    double getImtTruc() const;
-
+    //QJsonObject getJson();
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
 
     void reset(void);
 
 signals:
-    void typeChanged(QString newType);
-    void imtScaleChanged(QString newScale);
 
 public slots:
-    bool setType(const QString &type);
-    void setImtLevels(const QString &value);
-    void setImtScale(const QString &value);
-    void setImtTruc(double value);
+    void setRupMesh(double magnitude);
+    void setAreaMesh(double magnitude);
+    void setMaxDistance(double value);
+    void setSourceFilename(const QString &value);
+    void setGMPEFilename(const QString &value);
+    void setSourceModelDir(const QString &value);
+    void setOpenQuakeVersion(const QString &value);
+    void setIndivHC(int state);
+    void setMeanHC(int state);
+    void setHazMap(int state);
+    void setUHS(int state);
+    void setReturnPeriod(const QString &value);
+    void setRandSeed(const QString &value);
+    void setQuantiles(const QString &value);
+    void setTimeSpan(const QString &value);
 
 private:
-    QString m_type;
-    QList<double> m_periods;
+    double rupMesh;
+    double areaMesh;
+    double maxDistance;
+    double timeSpan = 1;
+    int randSeed = 14;
+    bool indivHC = true;
+    bool meanHC = true;
+    bool hazMap = true;
+    bool UHS = true;
+    int returnPeriod = 500;
+    QJsonArray quant = {0.1,0.5,0.9};
+    QString oq_version = "3.12.0"; // default OpenQuake version
 
-    QString periodsText;
+    QString sourceFilename;
+    QString gmpeFilename;
+    QString sourceDefDir; // directory of individual source model xml files
 
-    QJsonArray imtLevels = {0.01,10.0,100}; // default intensity measure levels
-    QString imtScale = "Log"; // default intensity measure scale is log
+    bool copySourceFile();
+    bool copyGMPEFile();
+    bool copySourceModelFile();
 
-    double imtTruc = 3.0; // default trucation levels 3 \sigma
-
-public:
-    QJsonObject getJson();
 };
 
-#endif // INTENSITYMEASURE_H
+#endif // OpenQuakeClassical_H

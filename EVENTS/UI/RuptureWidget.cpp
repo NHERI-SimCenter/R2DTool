@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "EarthquakeRuptureForecastWidget.h"
 #include "OpenQuakeScenario.h"
 #include "OpenQuakeScenarioWidget.h"
+#include "OpenQuakeClassical.h"
+#include "OpenQuakeClassicalWidget.h"
 #include "PointSourceRupture.h"
 #include "PointSourceRuptureWidget.h"
 #include "RuptureWidget.h"
@@ -59,22 +61,25 @@ RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
     // add widgets connecting the OpenQuake-type hazard
     // OpenQuake scenario-based
     oqsbWidget = new OpenQuakeScenarioWidget(parent);
+    // OpenQuake classical PSHA
+    oqcpWidget = new OpenQuakeClassicalWidget(parent);
 
     theRootStackedWidget->addWidget(pointSourceWidget);
     theRootStackedWidget->addWidget(erfWidget);
     theRootStackedWidget->addWidget(oqsbWidget);
+    theRootStackedWidget->addWidget(oqcpWidget);
 
     theRootStackedWidget->setCurrentWidget(erfWidget);
 
-    ruptureGroupBox = new QGroupBox(tr("Earthquake Rupture"));
+    ruptureGroupBox = new QGroupBox(tr("Earthquake Scenario"));
     QVBoxLayout* boxLayout = new QVBoxLayout(ruptureGroupBox);
 
     ruptureSelectionCombo = new QComboBox(this);
 
     ruptureSelectionCombo->addItem("Earthquake Rupture Forecast");
     ruptureSelectionCombo->addItem("Point Source");
-
-    //    ruptureSelectionCombo->addItem("OpenQuake Scenario-Based");
+    ruptureSelectionCombo->addItem("OpenQuake Scenario-Based");
+    ruptureSelectionCombo->addItem("OpenQuake Classifcal PSHA");
 
     connect(ruptureSelectionCombo,&QComboBox::currentTextChanged,this,&RuptureWidget::handleSelectionChanged);
 
@@ -96,10 +101,11 @@ bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
         erfWidget->getRuptureSource()->outputToJSON(jsonObject);
     else if(ruptureSelectionCombo->currentText().compare("OpenQuake Scenario-Based") == 0)
         oqsbWidget->getRuptureSource()->outputToJSON(jsonObject);
-
+    else if(ruptureSelectionCombo->currentText().compare("OpenQuake Classifcal PSHA") == 0)
+        oqcpWidget->getRuptureSource()->outputToJSON(jsonObject);
+    
     return true;
 }
-
 
 bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
@@ -110,10 +116,43 @@ bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 void RuptureWidget::handleSelectionChanged(const QString& selection)
 {
     if(selection.compare("Point Source") == 0)
+    {
         theRootStackedWidget->setCurrentWidget(pointSourceWidget);
+        widgetType = "OpenSHA Point";
+    }
     else if(selection.compare("Earthquake Rupture Forecast") == 0)
+    {
         theRootStackedWidget->setCurrentWidget(erfWidget);
+        widgetType = "OpenSHA ERF";
+    }
     else if(selection.compare("OpenQuake Scenario-Based") == 0)
+    {
         theRootStackedWidget->setCurrentWidget(oqsbWidget);
+        widgetType = "OpenQuake Scenario";
+    }
+    else if(selection.compare("OpenQuake Classifcal PSHA") == 0)
+    {
+        theRootStackedWidget->setCurrentWidget(oqcpWidget);
+        widgetType = "OpenQuake Classical";
+    }
+    emit widgetTypeChanged(widgetType);
 
+}
+
+
+QString RuptureWidget::getWidgetType() const
+{
+    return widgetType;
+}
+
+
+QString RuptureWidget::getGMPELogicTree() const
+{
+    QString gmpeLT = "";
+    if (widgetType.compare("OpenQuake Classical")==0)
+    {
+        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
+    }
+
+    return gmpeLT;
 }
