@@ -41,52 +41,21 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 #include "GISLegendView.h"
 
-#include "Error.h"
-
 #include <QMap>
 #include <QObject>
 #include <QUuid>
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Map;
-class Error;
-class MapGraphicsView;
-class Feature;
-class FeatureTable;
-class FeatureLayer;
-class GraphicsOverlay;
-class FeatureCollectionLayer;
-class FeatureCollectionTable;
-class FeatureCollection;
-class IdentifyLayerResult;
-class FeatureQueryResult;
-class ClassBreaksRenderer;
-class SimpleRenderer;
-class GroupLayer;
-class KmlLayer;
-class Layer;
-class Point;
-enum class LoadStatus;
-class ArcGISMapImageLayer;
-class RasterLayer;
-}
-}
-
-class ConvexHull;
-class PolygonBoundary;
-class ComponentInputWidget;
-class LayerTreeView;
-class LayerTreeItem;
+#ifdef ARC_GIS
 class SimCenterMapGraphicsView;
-class TreeModel;
+#endif
 
-class QGroupBox;
-class QComboBox;
-class QTreeView;
-class QSplitter;
+#ifdef Q_GIS
+class SimCenterMapcanvasWidget;
+class QgsMapCanvas;
+#endif
+
+class ComponentInputWidget;
+class QGraphicsView;
 class QVBoxLayout;
 
 class VisualizationWidget : public  SimCenterAppWidget
@@ -97,60 +66,37 @@ public:
     explicit VisualizationWidget(QWidget* parent);
     virtual ~VisualizationWidget();
 
+#ifdef ARC_GIS
     SimCenterMapGraphicsView* getMapViewWidget() const;
+    // Get the latitude or longitude from a point on the screen
+    virtual double getLatFromScreenPoint(const QPointF& point) = 0;
+    virtual double getLongFromScreenPoint(const QPointF& point) = 0;
+    virtual QPointF getScreenPointFromLatLong(const double& latitude, const double& longitude) = 0;
+#endif
 
-    // Note: the component type must match the "AssetType" value set to the features
-    void registerComponentWidget(const QString assetType, ComponentInputWidget* widget);
+#ifdef Q_GIS
+    virtual SimCenterMapcanvasWidget* getMapViewWidget(const QString& name) = 0;
 
-    ComponentInputWidget* getComponentWidget(const QString type);
+    virtual SimCenterMapcanvasWidget* testNewMapCanvas() = 0;
+    virtual void testNewMapCanvas2() = 0;
 
-    // Add component to 'selected layer'
-    LayerTreeItem* addSelectedFeatureLayerToMap(Esri::ArcGISRuntime::Layer* featLayer);
+    virtual double getLatFromScreenPoint(const QPointF& point, const QgsMapCanvas* canvas ) = 0;
+    virtual double getLongFromScreenPoint(const QPointF& point, const QgsMapCanvas* canvas) = 0;
 
-    Esri::ArcGISRuntime::FeatureCollectionLayer* createAndAddJsonLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, QColor color = QColor(0,0,0,0));
-
-    // Adds a raster layer to the map
-    Esri::ArcGISRuntime::RasterLayer* createAndAddRasterLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem);
-
-    // Adds a shapefile layer to the map
-    Esri::ArcGISRuntime::FeatureLayer* createAndAddShapefileLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem = nullptr);
-
-    // Add a KML (google earth)
-    Esri::ArcGISRuntime::KmlLayer* createAndAddKMLLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem, double opacity = 1.0);
-
-    // From a geodatabase
-    void createAndAddGeoDatabaseLayer(const QString& filePath, const QString& layerName, LayerTreeItem* parentItem = nullptr);
-
-    // Create a layer from a map server URL
-    Esri::ArcGISRuntime::ArcGISMapImageLayer* createAndAddMapServerLayer(const QString& url, const QString& layerName, LayerTreeItem* parentItem);
-
-    Esri::ArcGISRuntime::Layer* getLayer(const QString& layerID);
+    virtual QPointF getScreenPointFromLatLong(const double& latitude, const double& longitude, const QgsMapCanvas* canvas) = 0;
+#endif
 
     // Get the visualization widget
-    QWidget *getVisWidget();
-
-    // Get the latitude or longitude from a point on the screen
-    double getLatFromScreenPoint(const QPointF& point);
-    double getLongFromScreenPoint(const QPointF& point);
-
-    QPointF getScreenPointFromLatLong(const double& latitude, const double& longitude);
-
-    Esri::ArcGISRuntime::Map *getMapGIS(void) const;
-
-    LayerTreeItem* addLayerToMap(Esri::ArcGISRuntime::Layer* layer, LayerTreeItem* parent = nullptr, Esri::ArcGISRuntime::GroupLayer* groupLayer = nullptr);
-
-    // Removes a given layer from the map
-    bool removeLayerFromMap(Esri::ArcGISRuntime::Layer* layer);
-    void removeLayerFromMap(const QString layerID);
-    bool removeLayerFromMapAndTree(const QString layerID);
-
-    LayerTreeView *getLayersTree() const;
+    virtual QWidget *getVisWidget() = 0;
 
     QString createUniqueID(void);
 
-    void takeScreenShot(void);
+    virtual void takeScreenShot(void);
 
-    void clear(void);
+    virtual void clear(void) = 0;
+
+    // Clear the currently selected features (i.e., features highlighted by clicking on them)
+    virtual void clearSelection(void) = 0;
 
     // Updates the value of an attribute for a selected component
     void updateSelectedComponent(const QString& assetType, const QString& uid, const QString& attribute, const QVariant& value);
@@ -161,124 +107,28 @@ public:
     // Hides the map legend
     void hideLegend(void);
 
-    // Clear the currently selected features (i.e., features highlighted by clicking on them)
-    void clearSelection(void);
-
-    // Get the list of features that are currently selected (i.e., features highlighted by clicking on them)
-    QList<Esri::ArcGISRuntime::Feature *> getSelectedFeaturesList() const;
-
-    // Returns a rectangular geometry item of dimensions x and y around a center point
-    Esri::ArcGISRuntime::Geometry getRectGeometryFromPoint(const Esri::ArcGISRuntime::Point& pnt, const double sizeX, double sizeY = 0);
-
-    // Returns a geometry from the geojson format
-    Esri::ArcGISRuntime::Geometry getPolygonGeometryFromJson(const QString& geoJson);
-    Esri::ArcGISRuntime::Geometry getPolygonGeometryFromJson(const QJsonArray& geoJson);
-
-    Esri::ArcGISRuntime::Geometry getMultilineStringGeometryFromJson(const QString& geoJson);
-    Esri::ArcGISRuntime::Geometry getMultilineStringGeometryFromJson(const QJsonArray& geoJson);
-    Esri::ArcGISRuntime::Geometry getMultiPolygonGeometryFromJson(const QJsonArray& geoJson);
-
-    Esri::ArcGISRuntime::FeatureCollectionTable* getMultilineFeatureTable(const QJsonObject& geomObject, const QJsonObject& featObj, const QString& layerName, const QColor color);
-    Esri::ArcGISRuntime::FeatureCollectionTable* getMultipolygonFeatureTable(const QJsonObject& geomObject, const QJsonObject& featObj, const QString& layerName, const QColor color);
-
-    // Programatically set the visibility of a layer
-    void setLayerVisibility(const QString& layerID, const bool val);
-
-    // Returns a map containing the IDs of all asynchronous tasks
-    QMap<QUuid, QString>& getTaskIDMap(void);
-
-    // Returns the tool to select a polygon boundary
-    PolygonBoundary* getThePolygonBoundaryTool(void) const;
-
-    // Get the list of features saved from the latest query
-    QList<Esri::ArcGISRuntime::FeatureQueryResult *> getFeaturesFromQueryList() const;
-
-    // Sets the view elevation above the ground level
-    void setViewElevation(double val);
-
 signals:
     // Emit a screen shot of the current GIS view
     void emitScreenshot(QImage img);
-    void taskSelectionComplete();
 
 public slots:    
-    void zoomToLayer(const QString layerID);
-//    void loadPipelineData(void);
-    void changeLayerOrder(const int from, const int to);
-    void handleLayerChecked(LayerTreeItem* item);
-    void handleOpacityChange(const QString& layerID, const double opacity);
-    void handlePlotColorChange(const QString& layerID);
 
-    void exportImageComplete(QUuid id, QImage img);
-    void onMouseClicked(QMouseEvent& mouseEvent);
-    void onMouseClickedGlobal(QPoint pos);
-    void setCurrentlyViewable(bool status);
-    void handleLegendChange(const QString layerUID);
-    void handleLegendChange(const Esri::ArcGISRuntime::Layer* layer);
-    void selectFeaturesForAnalysisQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
+    virtual void handleLegendChange(const QString layerUID) = 0;
+    virtual void zoomToLayer(const QString layerID) = 0;
 
 private slots:
-    void identifyLayersCompleted(QUuid taskID, const QList<Esri::ArcGISRuntime::IdentifyLayerResult*>& results);
-    void fieldQueryCompleted(QUuid taskID, Esri::ArcGISRuntime::FeatureQueryResult* rawResult);
 
-    void handleSelectFeatures(void);
-    void handleAsyncLayerLoad(Esri::ArcGISRuntime::Error layerLoadStatus);
-    void handleBasemapSelection(const QString selection);
-    void handleFieldQuerySelection(void);
-    void handleArcGISError(Esri::ArcGISRuntime::Error error);
-    void setLegendInfo();
+protected:
 
-    // Zooms the map to the extents of the data present in the visible map
-    void zoomToExtents(void);
-
-    // Asset selection
-    void handleSelectAreaMap(void);
-    void handleClearSelectAreaMap(void);
-    void handleSelectFeaturesForAnalysis(void);
-
-private:
-
-    LayerTreeView* layersTree;
-
-    // Map to hold the component input widgets (key = type of component or asset, e.g., BUILDINGS)
-    QMap<QString, ComponentInputWidget*> componentWidgetsMap;
-
-    QComboBox* baseMapCombo;
-
-    // This function runs a query on all features in a table
-    // It returns the all of the features in the table where the text in the field "FieldName" matches the search text
-    void runFieldQuery(const QString& fieldName, const QString& searchText);
-
-    Esri::ArcGISRuntime::Map* mapGIS = nullptr;
+#ifdef ARC_GIS
     SimCenterMapGraphicsView *mapViewWidget = nullptr;
-    QVBoxLayout *mapViewLayout;
-
-    QList<Esri::ArcGISRuntime::FeatureQueryResult*>  featuresFromQueryList;
-    QList<Esri::ArcGISRuntime::FeatureQueryResult*>  fieldQueryFeaturesList;
-
-    QMap<QUuid,QString> taskIDMap;
-    QMap<QUuid,QString> layerLoadMap;
-
-    // Map to store the layers
-    QMap<QString, Esri::ArcGISRuntime::Layer*> layersMap;
-
-    Esri::ArcGISRuntime::ClassBreaksRenderer* createPointRenderer(void);
-
-    Esri::ArcGISRuntime::GroupLayer* selectedObjectsLayer = nullptr;
-    LayerTreeItem* selectedObjectsTreeItem = nullptr;
-
-    // The GIS widget
-    QSplitter* visWidget;
-    void createVisualizationWidget(void);
+#endif
 
     // The legend view
     GISLegendView* legendView;
 
-    Esri::ArcGISRuntime::GraphicsOverlay* selectedFeaturesOverlay = nullptr;
-    QList<Esri::ArcGISRuntime::Feature*> selectedFeaturesList;
+    QVBoxLayout *mainLayout;
 
-    std::unique_ptr<ConvexHull> theConvexHullTool;
-    std::unique_ptr<PolygonBoundary> thePolygonBoundaryTool;
 };
 
 #endif // VISUALIZATIONWIDGET_H

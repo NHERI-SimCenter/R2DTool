@@ -39,7 +39,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ComponentDatabase.h"
+
+#ifdef ARC_GIS
 #include "EmbeddedMapViewWidget.h"
+#endif
+
+#ifdef Q_GIS
+#include "SimCenterMapcanvasWidget.h"
+#endif
 
 #include <QString>
 #include <QMainWindow>
@@ -48,7 +55,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <set>
 
 class REmpiricalProbabilityDistribution;
-class EmbeddedMapViewWidget;
 class VisualizationWidget;
 
 class QDockWidget;
@@ -56,6 +62,7 @@ class QTableWidget;
 class QGridLayout;
 class QLabel;
 class QComboBox;
+class QGraphicsView;
 
 namespace QtCharts
 {
@@ -63,16 +70,6 @@ class QChartView;
 class QBarSet;
 class QChart;
 }
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Map;
-class MapGraphicsView;
-}
-}
-
 
 class PelicunPostProcessor : public QMainWindow
 {
@@ -137,6 +134,10 @@ private slots:
 
     void restoreUI(void);
 
+protected:
+
+    void showEvent(QShowEvent *e);
+
 private:
 
     int processDVResults(const QVector<QStringList>& DVResults);
@@ -174,8 +175,9 @@ private:
 
     QComboBox* sortComboBox;
 
-    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
+    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+
+    QGraphicsView* mapViewMainWidget;
 
     QtCharts::QChart *casualtiesChart;
     QtCharts::QChart *RFDiagChart;
@@ -190,8 +192,6 @@ private:
     int createLossesChart(QtCharts::QBarSet *structLossSet, QtCharts::QBarSet *NSAccLossSet, QtCharts::QBarSet *NSDriftLossSet);
 
     int createCasualtiesChart(QtCharts::QBarSet *casualtiesSet);
-
-    QVector<Component> buildingsVec;
 
     QByteArray uiState;
 

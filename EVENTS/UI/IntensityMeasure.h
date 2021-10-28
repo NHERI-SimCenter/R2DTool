@@ -59,6 +59,11 @@ public:
     void addPeriod(double period);
     double getImtTruc() const;
 
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
+
 signals:
     void typeChanged(QString newType);
     void imtScaleChanged(QString newScale);

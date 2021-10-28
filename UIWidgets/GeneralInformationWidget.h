@@ -1,4 +1,4 @@
-#ifndef GENERALINFORMATIONWIDGET_H
+﻿#ifndef GENERALINFORMATIONWIDGET_H
 #define GENERALINFORMATIONWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class QLineEdit;
 class QGridLayout;
 class QComboBox;
+class SimCenterUnitsCombo;
 class QCheckBox;
 
 class GeneralInformationWidget : public SimCenterWidget
@@ -69,10 +70,12 @@ public:
     Q_ENUM(ForceUnit)
     enum TimeUnit{sec, seconds, min, minutes, hr, hour};
     Q_ENUM(TimeUnit)
+    enum TemperatureUnit{C, F, K};
+    Q_ENUM(TemperatureUnit)
+    enum SpeedUnit{mph, kph};
+    Q_ENUM(SpeedUnit)
 
     bool setAssetTypeState(QString assetType, bool);
-    QString getLengthUnit();
-    QString getForceUnit();
 
 signals:
     void assetChanged(QString name, bool checked);
@@ -83,9 +86,9 @@ private:
 
     QLineEdit* nameEdit;
 
-    QComboBox* unitsForceCombo;
-    QComboBox* unitsLengthCombo;
-    QComboBox* unitsTimeCombo;
+    SimCenterUnitsCombo* unitsForceCombo;
+    SimCenterUnitsCombo* unitsLengthCombo;
+    SimCenterUnitsCombo* unitsTimeCombo;
 
     QCheckBox* buildingsCheckBox;
     QCheckBox* soilCheckBox;
@@ -97,11 +100,9 @@ private:
     QCheckBox* EDPCheckBox;
     QCheckBox* DMCheckBox;
     QCheckBox* DVCheckBox;
-    QCheckBox* BIMCheckBox;
     QCheckBox* realizationCheckBox;
+    QCheckBox* BIMCheckBox;
 
-    template<typename UnitEnum> QString unitEnumToString(UnitEnum enumValue);
-    template<typename UnitEnum> UnitEnum unitStringToEnum(QString unitString);
 };
 
 

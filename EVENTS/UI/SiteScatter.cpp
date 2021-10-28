@@ -90,9 +90,22 @@ QList<UserSpecifiedSite> SiteScatter::getSiteList()
 }
 
 
-QJsonObject SiteScatter::getJson()
+bool SiteScatter::outputToJSON(QJsonObject &jsonObject)
 {
-    QJsonObject siteJson;
-    siteJson.insert("Type","Scatter");
-    return siteJson;
+    jsonObject.insert("Type","Scatter");
+
+    return true;
 }
+
+
+bool SiteScatter::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
+}
+
+
+void SiteScatter::reset(void)
+{
+
+}
+

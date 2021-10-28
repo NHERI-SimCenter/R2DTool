@@ -1,4 +1,4 @@
-﻿/* *****************************************************************************
+/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -55,28 +55,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SiteScatterWidget.h"
 #include "SiteWidget.h"
 #include "SpatialCorrelationWidget.h"
-#include "LayerTreeView.h"
 #include "VisualizationWidget.h"
 #include "Vs30Widget.h"
 #include "WorkflowAppR2D.h"
+#include "PeerNgaWest2Client.h"
+#include "PeerLoginDialog.h"
+#include "ZipUtils.h"
 
 #ifdef INCLUDE_USER_PASS
 #include "R2DUserPass.h"
 #else
 #include "SampleUserPass.h"
 #endif
-
-// GIS includes
-#include "MapGraphicsView.h"
-#include "Map.h"
-#include "Point.h"
-#include "FeatureCollection.h"
-#include "FeatureCollectionLayer.h"
-#include "SimpleRenderer.h"
-#include "SimpleMarkerSymbol.h"
-#include "PeerNgaWest2Client.h"
-#include "PeerLoginDialog.h"
-#include "ZipUtils.h"
 
 #include <QDir>
 #include <QFile>
@@ -90,10 +80,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStringList>
 #include <QString>
 
-using namespace Esri::ArcGISRuntime;
+#ifdef Q_GIS
+#include "SimCenterMapcanvasWidget.h"
+#include "QGISVisualizationWidget.h"
+#include "MapViewWindow.h"
+#include <qgsmapcanvas.h>
+#include <qgsvectorlayer.h>
+#endif
 
-GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+#ifdef ARC_GIS
+// GIS includes
+#include "SimCenterMapGraphicsView.h"
+#include "MapGraphicsView.h"
+#include "Map.h"
+#include "Point.h"
+#include "FeatureCollection.h"
+#include "FeatureCollectionLayer.h"
+#include "SimpleRenderer.h"
+#include "SimpleMarkerSymbol.h"
+#include "LayerTreeView.h"
+#include "ArcGISVisualizationWidget.h"
+using namespace Esri::ArcGISRuntime;
+#endif
+
+GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    mapViewSubWidget = nullptr;
+
     initAppConfig();
 
     simulationComplete = false;
@@ -107,36 +120,40 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     toolsGridLayout->setContentsMargins(0,0,0,0);
 
     // Adding Site Config Widget
-    this->m_siteConfig = new SiteConfig();
+    this->m_siteConfig = new SiteConfig(this);
     this->m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig);
 
-    this->m_ruptureWidget = new RuptureWidget(this);
+    this->m_ruptureWidget = new RuptureWidget();
 
-    this->m_gmpe = new GMPE();
-    this->m_gmpeWidget = new GMPEWidget(*this->m_gmpe, this);
+    this->m_gmpe = new GMPE(this);
+    this->m_gmpeWidget = new GMPEWidget(*this->m_gmpe);
 
-    this->m_intensityMeasure = new IntensityMeasure();
-    this->m_intensityMeasureWidget = new IntensityMeasureWidget(*this->m_intensityMeasure, this);
+    this->m_intensityMeasure = new IntensityMeasure(this);
+    this->m_intensityMeasureWidget = new IntensityMeasureWidget(*this->m_intensityMeasure);
 
-    spatialCorrWidget = new SpatialCorrelationWidget(this);
+    spatialCorrWidget = new SpatialCorrelationWidget();
 
-    this->m_selectionconfig = new RecordSelectionConfig();
-    this->m_selectionWidget = new RecordSelectionWidget(*this->m_selectionconfig, this);
+    this->m_selectionconfig = new RecordSelectionConfig(this);
+    this->m_selectionWidget = new RecordSelectionWidget(*this->m_selectionconfig);
 
     m_runButton = new QPushButton(tr("&Run Hazard Simulation"));
     //m_settingButton = new QPushButton(tr("&Path Settings"));
 
-    // Create a map view that will be used for selecting the grid points
-    mapViewSubWidget = std::make_unique<MapViewSubWidget>(nullptr);
+#ifdef ARC_GIS
+    auto mapView = theVisualizationWidget->getMapViewWidget();
 
-    // Adding vs30 widget
-    this->m_vs30 = new Vs30();
-    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig, this);
+    // Create a map view that will be used for selecting the grid points
+    mapViewSubWidget = std::make_unique<MapViewSubWidget>(mapView);
 
     auto userGrid = mapViewSubWidget->getGrid();
     userGrid->createGrid();
     userGrid->setSiteGridConfig(m_siteConfig);
     userGrid->setVisualizationWidget(theVisualizationWidget);
+#endif
+
+    // Adding vs30 widget
+    this->m_vs30 = new Vs30(this);
+    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig);
 
     auto buttonsLayout = new QHBoxLayout();
     //buttonsLayout->addWidget(this->m_settingButton);
@@ -158,7 +175,7 @@ GMWidget::GMWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterA
     toolsGridLayout->setVerticalSpacing(0);
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
-    this->setLayout(toolsGridLayout);
+    toolsGridLayout->setRowStretch(7,1);
 
     setupConnections();
 
@@ -259,8 +276,8 @@ void GMWidget::setupConnections()
 
     connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString zipFile)
     {
-       this->parseDownloadedRecords(zipFile);
-       this->getProgressDialog()->hideProgressBar();
+        this->parseDownloadedRecords(zipFile);
+        this->getProgressDialog()->hideProgressBar();
     });
 
     // connect use event and ground motion dir to Hazard widget to switch
@@ -274,11 +291,9 @@ void GMWidget::setupConnections()
 
 void GMWidget::initAppConfig()
 {
-
     m_appConfig = new GmAppConfig(this);
     // Adding the EventGMDir widget
     this->m_eventGMDir = new EventGMDirWidget();
-
 
     //First, We will look into settings
     QSettings settings;
@@ -421,15 +436,39 @@ void GMWidget::resetAppSettings(void)
 
 void GMWidget::showGISWindow(void)
 {
-    mapViewSubWidget->show();
-    mapViewSubWidget->addGridToScene();
+    //    theVisualizationWidget->testNewMapCanvas();
 
-    mapViewSubWidget->setWindowTitle(QApplication::translate("toplevel", "Select ground motion grid"));
+#ifdef ARC_GIS
+    mapViewSubWidget->addGridToScene();
+#endif
+
+#ifdef Q_GIS
+    if(mapViewSubWidget == nullptr)
+    {
+        auto mapViewWidget = theVisualizationWidget->getMapViewWidget("Select grid on map");
+        mapViewSubWidget = new MapViewWindow(mapViewWidget);
+
+        auto mapCanvas = mapViewWidget->mapCanvas();
+
+        userGrid = new RectangleGrid(mapCanvas);
+        // Also important to get events from QGIS
+        mapCanvas->setMapTool(userGrid);
+        userGrid->createGrid();
+        userGrid->setSiteGridConfig(m_siteConfig);
+        userGrid->setVisualizationWidget(theVisualizationWidget);
+    }
+#endif
+
+    mapViewSubWidget->show();
+    userGrid->show();
 }
 
 
 bool
 GMWidget::outputAppDataToJSON(QJsonObject &jsonObj) {
+
+    emit eventTypeChangedSignal("Earthquake");
+
     jsonObj["Application"] = "EQSS";
 
     if(simulationComplete == false)
@@ -517,16 +556,22 @@ bool GMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 bool GMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    /*
-    if(simulationComplete == false)
+
+    QJsonObject unitsObj;
+
+    // Only IMs
+    if (m_selectionconfig->getDatabase().size() == 0)
     {
-        return true;
+        auto IMType = m_intensityMeasure->type();
+        unitsObj[IMType] = "g";
+    }
+    else // Time history download selected
+    {
+        unitsObj["TH_file"] = "g";
+        unitsObj["factor"] = "scalar";
     }
 
-    auto pathToEventGridFolder = m_appConfig->getOutputDirectoryPath() + QDir::separator();
-
-    jsonObj.insert("pathEventData", pathToEventGridFolder);
-    */
+    jsonObj["units"] = unitsObj;
 
     return true;
 }
@@ -573,7 +618,14 @@ void GMWidget::runHazardSimulation(void)
     }
 
     // Remove the grid from the visualization screen
+#ifdef ARC_GIS
     mapViewSubWidget->removeGridFromScene();
+#endif
+
+#ifdef Q_GIS
+    if(userGrid)
+        userGrid->hide();
+#endif
 
     // First check if the settings are valid
     QString err;
@@ -611,7 +663,8 @@ void GMWidget::runHazardSimulation(void)
     scenarioObj.insert("Number", 1);
     scenarioObj.insert("Generator", "Selection");
 
-    auto EqRupture = m_ruptureWidget->getJson();
+    QJsonObject EqRupture;
+    m_ruptureWidget->outputToJSON(EqRupture);
 
     if(EqRupture.isEmpty())
     {
@@ -632,11 +685,12 @@ void GMWidget::runHazardSimulation(void)
     }
     else
     {
-        GMPEobj = m_gmpe->getJson();
+        m_gmpe->outputToJSON(GMPEobj);
     }
 
     // Get the Vs30 Json object
-    auto Vs30obj = m_vs30->getJson();
+    QJsonObject Vs30obj;
+    m_vs30->outputToJSON(Vs30obj);
     siteObj.insert("Vs30", Vs30obj);
 
     // Get the correlation model Json object
@@ -697,11 +751,19 @@ void GMWidget::runHazardSimulation(void)
             return;
         }
 
+#ifdef ARC_GIS
         // Create the objects needed to visualize the grid in the GIS
         auto siteGrid = mapViewSubWidget->getGrid();
 
         // Get the vector of grid nodes
         auto gridNodeVec = siteGrid->getGridNodeVec();
+#endif
+
+#ifdef Q_GIS
+        // Get the vector of grid nodes
+        auto gridNodeVec = userGrid->getGridNodeVec();
+        auto mapCanvas = mapViewSubWidget->getMapCanvasWidget()->mapCanvas();
+#endif
 
         for(int i = 0; i<gridNodeVec.size(); ++i)
         {
@@ -715,8 +777,8 @@ void GMWidget::runHazardSimulation(void)
             auto screenPoint = gridNode->getPoint();
 
             // The latitude and longitude
-            auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint);
-            auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint);
+            auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint,mapCanvas);
+            auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint,mapCanvas);
 
             stationRow.push_back(QString::number(latitude));
             stationRow.push_back(QString::number(longitude));
@@ -827,6 +889,13 @@ void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         // Saving the event grid path
         auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
         emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
+
+        // Load the results
+        QString errMsg;
+        auto res = this->processDownloadedRecords(errMsg);
+        if(res != 0)
+            this->errorMessage("Failed to process event grid file with the following error: " + errMsg);
+
         this->getProgressDialog()->hideProgressBar();
 
         return;
@@ -963,9 +1032,252 @@ void GMWidget::downloadRecordBatch(void)
     }
 }
 
-
+#ifdef Q_GIS
 int GMWidget::processDownloadedRecords(QString& errorMessage)
 {
+
+    auto qgisVizWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(qgisVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to QGISVisualizationWidget";
+        return -1;
+    }
+
+    QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+
+    // Account for the different directory structure if only want IMs
+    if(m_selectionconfig->getDatabase().size() == 0)
+        pathToOutputDirectory += "IMs" + QString(QDir::separator());
+
+    pathToOutputDirectory += "EventGrid.csv";
+
+    const QFileInfo inputFile(pathToOutputDirectory);
+
+    if (!inputFile.exists() || !inputFile.isFile())
+    {
+        errorMessage ="A file does not exist at the path: " + pathToOutputDirectory;
+        return -1;
+    }
+
+    QStringList acceptableFileExtensions = {"*.CSV", "*.csv"};
+
+    QStringList inputFiles = inputFile.dir().entryList(acceptableFileExtensions,QDir::Files);
+
+    if(inputFiles.empty())
+    {
+        errorMessage ="No files with .csv extensions were found at the path: "+pathToOutputDirectory;
+        return -1;
+    }
+
+    // QString fileName = inputFile.fileName();
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(pathToOutputDirectory,err);
+
+    if(!err.isEmpty())
+    {
+        errorMessage = err;
+        return -1;
+    }
+
+    if(data.empty())
+        return -1;
+
+    auto motionDir = inputFile.dir().absolutePath() ;
+
+    QApplication::processEvents();
+
+    this->getProgressDialog()->setProgressBarRange(0,inputFiles.size());
+    this->getProgressDialog()->setProgressBarValue(0);
+
+    QApplication::processEvents();
+
+    // Get the headers in the first station file - assume that the rest will be the same
+    auto rowStr = data.at(1);
+    auto stationName = rowStr[0];
+
+    // Path to station files, e.g., site0.csv
+    auto stationFilePath = motionDir + QDir::separator() + stationName;
+
+    QString err2;
+    QVector<QStringList> sampleStationData = csvTool.parseCSVFile(stationFilePath,err);
+
+    // Return if there is an error or the station data is empty
+    if(!err2.isEmpty())
+    {
+        errorMessage = "Could not parse the first station with the following error: "+err2;
+        return -1;
+    }
+
+    if(sampleStationData.size() < 2)
+    {
+        errorMessage = "The file " + stationFilePath + " is empty";
+        return -1;
+    }
+
+    // Get the header file
+    auto stationDataHeadings = sampleStationData.first();
+
+    // Create the fields
+    QList<QgsField> attribFields;
+    attribFields.push_back(QgsField("AssetType", QVariant::String));
+    attribFields.push_back(QgsField("TabName", QVariant::String));
+    attribFields.push_back(QgsField("Station Name", QVariant::String));
+    attribFields.push_back(QgsField("Latitude", QVariant::Double));
+    attribFields.push_back(QgsField("Longitude", QVariant::Double));
+
+    for(auto&& it : stationDataHeadings)
+        attribFields.push_back(QgsField(it, QVariant::String));
+
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    int count = 0;
+
+    auto maxToDisp = 20;
+
+    QgsFeatureList featureList;
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        auto stationName = rowStr[0];
+
+        // Path to station files, e.g., site0.csv
+        auto stationPath = motionDir + QDir::separator() + stationName;
+
+        bool ok;
+        auto lon = rowStr[1].toDouble(&ok);
+
+        if(!ok)
+        {
+            errorMessage = "Error longitude to a double, check the value";
+            return -1;
+        }
+
+        auto lat = rowStr[2].toDouble(&ok);
+
+        if(!ok)
+        {
+            errorMessage = "Error latitude to a double, check the value";
+            return -1;
+        }
+
+        GroundMotionStation GMStation(stationPath,lat,lon);
+
+        try
+        {
+            GMStation.importGroundMotions();
+        }
+        catch(QString msg)
+        {
+            errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
+            return -1;
+        }
+
+        auto stationData = GMStation.getStationData();
+
+        // create the feature attributes
+        QgsAttributes featAttributes(attribFields.size());
+
+        auto latitude = GMStation.getLatitude();
+        auto longitude = GMStation.getLongitude();
+
+        featAttributes[0] = "GroundMotionGridPoint";     // "AssetType"
+        featAttributes[1] = "Ground Motion Grid Point";  // "TabName"
+        featAttributes[2] = stationName;                 // "Station Name"
+        featAttributes[3] = latitude;                    // "Latitude"
+        featAttributes[4] = longitude;                   // "Longitude"
+
+        // The number of headings in the file
+        auto numParams = stationData.front().size();
+
+        maxToDisp = (maxToDisp<stationData.size() ? maxToDisp : stationData.size());
+
+        QVector<QString> dataStrs(numParams);
+
+        for(int i = 0; i<maxToDisp-1; ++i)
+        {
+            auto stationParams = stationData[i];
+
+            for(int j = 0; j<numParams; ++j)
+            {
+                dataStrs[j] += stationParams[j] + ", ";
+            }
+        }
+
+        for(int j = 0; j<numParams; ++j)
+        {
+            auto str = dataStrs[j] ;
+            str += stationData[maxToDisp-1][j];
+
+            if(maxToDisp<stationData.size())
+                str += "...";
+
+            featAttributes[5+j] = str;
+        }
+
+        // Create the feature
+        QgsFeature feature;
+        feature.setGeometry(QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude)));
+        feature.setAttributes(featAttributes);
+        featureList.append(feature);
+
+        ++count;
+        this->getProgressDialog()->setProgressBarValue(count);
+
+        QApplication::processEvents();
+    }
+
+
+    auto vectorLayer = qgisVizWidget->addVectorLayer("Point", "Ground Motion Grid");
+
+    if(vectorLayer == nullptr)
+    {
+        errorMessage = "Error creating a layer";
+        return -1;
+    }
+
+    auto dProvider = vectorLayer->dataProvider();
+    auto res = dProvider->addAttributes(attribFields);
+
+    if(!res)
+    {
+        errorMessage = "Error adding attribute fields to layer";
+        qgisVizWidget->removeLayer(vectorLayer);
+        return -1;
+    }
+
+    vectorLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    dProvider->addFeatures(featureList);
+    vectorLayer->updateExtents();
+
+    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+
+    return 0;
+}
+#endif
+
+#ifdef ARC_GIS
+int GMWidget::processDownloadedRecords(QString& errorMessage)
+{
+
+    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(arcVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return -1;
+    }
+
     auto pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator() + "EventGrid.csv";
 
     const QFileInfo inputFile(pathToOutputDirectory);
@@ -1143,7 +1455,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     }
 
     // Create a new layer
-    LayerTreeView *layersTreeView = theVisualizationWidget->getLayersTree();
+    LayerTreeView *layersTreeView = arcVizWidget->getLayersTree();
 
     // Check if there is a 'User Ground Motions' root item in the tree
     auto userInputTreeItem = layersTreeView->getTreeItem("EQ Hazard Simulation Grid", nullptr);
@@ -1156,10 +1468,13 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     auto eventItem = layersTreeView->addItemToTree(fileName, QString(), userInputTreeItem);
 
     // Add the event layer to the map
-    theVisualizationWidget->addLayerToMap(gridLayer,eventItem);
+    arcVizWidget->addLayerToMap(gridLayer,eventItem);
 
     return 0;
 }
+#endif
+
+
 
 
 int GMWidget::parseDownloadedRecords(QString zipFile)
@@ -1207,7 +1522,7 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     auto res2 = this->processDownloadedRecords(errMsg);
     if(res2 != 0)
     {
-        this->errorMessage(errMsg);
+        this->errorMessage("Failed to process event grid file with the following error: " + errMsg);
         return res2;
     }
 
@@ -1218,11 +1533,11 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     this->statusMessage("Earthquake hazard simulation complete.");
 
     simulationComplete = true;
-
     auto eventGridFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + QString("EventGrid.csv");
 
     emit outputDirectoryPathChanged(m_appConfig->getOutputDirectoryPath(), eventGridFile);
-    // progressDialog->hide();
+
+    this->getProgressDialog()->hideProgressBar();
 
     return 0;
 }
@@ -1230,13 +1545,6 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
 GmAppConfig *GMWidget::appConfig() const
 {
     return m_appConfig;
-}
-
-
-void GMWidget::setCurrentlyViewable(bool status){
-
-    if (status == true)
-        mapViewSubWidget->setCurrentlyViewable(status);
 }
 
 void GMWidget::sendEventFileMotionDir(const QString &eventFile, const QString &motionDir)
@@ -1292,3 +1600,12 @@ bool GMWidget::getSimulationStatus()
     bool tmp = simulationComplete;
     return tmp;
 }
+
+
+#ifdef ARC_GIS
+void GMWidget::setCurrentlyViewable(bool status){
+
+    if (status == true)
+        mapViewSubWidget->setCurrentlyViewable(status);
+}
+#endif

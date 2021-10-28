@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 AssetInputDelegate::AssetInputDelegate()
 {
-    this->setMaximumWidth(1000);
+    // this->setMaximumWidth(1000);
     this->setMinimumWidth(400);
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     this->setPlaceholderText("e.g., 1, 3, 5-10, 12");
@@ -69,9 +69,19 @@ void AssetInputDelegate::clear()
 }
 
 
-void AssetInputDelegate::insertSelectedCompoonent(const int id)
+void AssetInputDelegate::insertSelectedComponent(const int id)
 {
     selectedComponentIDs.insert(id);
+
+    // Reset the text on the line edit
+    this->setText(this->getComponentAnalysisList());
+}
+
+
+void AssetInputDelegate::insertSelectedComponents(const QVector<int>& ids)
+{
+    for(auto&& id : ids)
+        selectedComponentIDs.insert(id);
 
     // Reset the text on the line edit
     this->setText(this->getComponentAnalysisList());

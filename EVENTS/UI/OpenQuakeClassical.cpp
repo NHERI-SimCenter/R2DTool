@@ -213,27 +213,27 @@ void OpenQuakeClassical::setQuantiles(const QString &value)
 }
 
 
-QJsonObject OpenQuakeClassical::getJson()
+bool OpenQuakeClassical::outputToJSON(QJsonObject &jsonObject)
 {
     // Extract the filename from the path
     QString filename;
     filename = this->sourceFilename.section('/', -1);
 
     QJsonObject rupture;
-    rupture.insert("Type", "OpenQuakeClassicalPSHA");
-    rupture.insert("Filename",filename);
-    rupture.insert("RupMesh", rupMesh);
-    rupture.insert("AreaMesh", areaMesh);
-    rupture.insert("max_Dist", maxDistance);
-    rupture.insert("TimeSpan", timeSpan);
-    rupture.insert("Seed", randSeed);
-    rupture.insert("IndivHazCurv", indivHC);
-    rupture.insert("MeanHazCurv", meanHC);
-    rupture.insert("Quantiles", quant);
-    rupture.insert("HazMap", hazMap);
-    rupture.insert("UHS", UHS);
-    rupture.insert("ReturnPeriod", returnPeriod);
-    rupture.insert("OQVersion",oq_version);
+    jsonObject.insert("Type", "OpenQuakeClassicalPSHA");
+    jsonObject.insert("Filename",filename);
+    jsonObject.insert("RupMesh", rupMesh);
+    jsonObject.insert("AreaMesh", areaMesh);
+    jsonObject.insert("max_Dist", maxDistance);
+    jsonObject.insert("TimeSpan", timeSpan);
+    jsonObject.insert("Seed", randSeed);
+    jsonObject.insert("IndivHazCurv", indivHC);
+    jsonObject.insert("MeanHazCurv", meanHC);
+    jsonObject.insert("Quantiles", quant);
+    jsonObject.insert("HazMap", hazMap);
+    jsonObject.insert("UHS", UHS);
+    jsonObject.insert("ReturnPeriod", returnPeriod);
+    jsonObject.insert("OQVersion",oq_version);
 
     //Also need to copy rupture file for OpenQuake runs
     if (! this->copySourceFile())
@@ -241,7 +241,7 @@ QJsonObject OpenQuakeClassical::getJson()
         QString errMsg = "Cannot copy the source logic tree file.";
         qDebug() << errMsg;
         this->errorMessage(errMsg);
-        return rupture;
+        return false;
     }
 
     if (! this->copyGMPEFile())
@@ -249,7 +249,7 @@ QJsonObject OpenQuakeClassical::getJson()
         QString errMsg = "Cannot copy the GMPE logic tree file.";
         qDebug() << errMsg;
         this->errorMessage(errMsg);
-        return rupture;
+        return false;
     }
 
 
@@ -258,11 +258,16 @@ QJsonObject OpenQuakeClassical::getJson()
         QString errMsg = "Cannot copy the Source Model.";
         qDebug() << errMsg;
         this->errorMessage(errMsg);
-        return rupture;
+        return false;
     }
 
 
-    return rupture;
+    return true;
+}
+
+bool OpenQuakeClassical::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
 }
 
 bool OpenQuakeClassical::copySourceFile()
@@ -467,4 +472,8 @@ bool OpenQuakeClassical::copySourceModelFile()
 
 }
 
+void OpenQuakeClassical::reset(void)
+{
+
+}
 

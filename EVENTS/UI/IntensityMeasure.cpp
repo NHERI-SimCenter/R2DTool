@@ -185,3 +185,40 @@ double IntensityMeasure::getImtTruc() const
 {
     return imtTruc;
 }
+bool IntensityMeasure::outputToJSON(QJsonObject &jsonObject)
+{
+    if(m_type.compare("Spectral Accelerations (SA)") == 0)
+        jsonObject.insert("Type", "SA");
+    else if(m_type.compare("Peak Ground Acceleration (PGA)") == 0)
+        jsonObject.insert("Type", "PGA");
+    else
+    {
+        jsonObject.insert("Type", "UNKNOWN");
+        qDebug()<<"Warning, the type of intensity measure "<<m_type<<" is not recognized";
+    }
+
+    QJsonArray arrayPeriods;
+
+    for(auto&& it : m_periods)
+    {
+        arrayPeriods.append(it);
+    }
+    jsonObject.insert("Periods", arrayPeriods);
+
+    return true;
+}
+
+
+bool IntensityMeasure::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
+}
+
+
+void IntensityMeasure::reset(void)
+{
+
+}
+
+
+

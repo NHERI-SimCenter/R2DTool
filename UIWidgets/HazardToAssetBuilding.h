@@ -64,9 +64,11 @@ public:
 
 public slots:
     void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
+    void eventTypeChangedSlot(QString eventType);
 
 signals:
     void hazardGridFileChangedSIGNAL(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString& eventType);
 
 private:
     SimCenterAppSelection *theRegionalMapping;

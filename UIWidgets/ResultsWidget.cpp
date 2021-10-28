@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "sectiontitle.h"
 
 #include <QCheckBox>
+#include <QApplication>
 #include <QDebug>
 #include <QDir>
 #include <QMenu>
@@ -61,8 +62,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QFileDialog>
-
-using namespace Esri::ArcGISRuntime;
 
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
@@ -214,22 +213,22 @@ bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 }
 
 
+#ifdef ARC_GIS
 void ResultsWidget::setCurrentlyViewable(bool status){
 
     if (status == true)
         thePelicunPostProcessor->setCurrentlyViewable(status);
 }
+#endif
 
 
 int ResultsWidget::processResults(QString resultsDirectory)
 {
-
     //auto SCPrefs = SimCenterPreferences::getInstance();
 
     //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
 
     qDebug() << resultsDirectory;
-
     try
     {
         if(DVApp.compare("Pelicun") == 0)

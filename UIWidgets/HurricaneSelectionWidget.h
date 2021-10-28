@@ -39,19 +39,29 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-#include "EmbeddedMapViewWidget.h"
-#include "HurricanePreprocessor.h"
 #include "WindFieldStation.h"
+#include "HurricaneObject.h"
 
 #include <memory>
 
 #include <QProcess>
 #include <QMap>
 
+#ifdef ARC_GIS
+#include "EmbeddedMapViewWidget.h"
+#endif
+
+#ifdef Q_GIS
+class SimCenterMapcanvasWidget;
+class RectangleGrid;
+class NodeHandle;
+class QgsVectorLayer;
+#endif
+
 class VisualizationWidget;
-class SiteConfig;
-class SiteGrid;
 class HurricaneParameterWidget;
+class SiteGrid;
+class SiteConfig;
 
 class QStackedWidget;
 class QLineEdit;
@@ -60,18 +70,6 @@ class QPushButton;
 class QLabel;
 class QProcess;
 class QSpinBox;
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Feature;
-class FeatureCollectionLayer;
-class FeatureCollectionTable;
-class SimpleRenderer;
-}
-}
-
 
 class HurricaneSelectionWidget : public SimCenterAppWidget
 {
@@ -86,14 +84,27 @@ public:
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
-
+    bool copyFiles(QString &destDir);
     void clear(void);
 
+#ifdef ARC_GIS
     void setCurrentlyViewable(bool status);
-
-    void createHurricaneVisuals(HurricaneObject* hurricane);
+#endif
 
     int loadResults(const QString& outputDir);
+
+    virtual int createHurricaneVisuals(HurricaneObject* hurricane) = 0;
+
+#ifdef ARC_GIS
+    virtual int importHurricaneTrackData(const QString &eventFile, QString &err) = 0;
+#endif
+
+#ifdef Q_GIS
+    virtual QgsVectorLayer* importHurricaneTrackData(const QString &eventFile, QString &err) = 0;
+    virtual int updateGridLayerFeatures(QgsFeatureList& featList) = 0;
+#endif
+
+    QString getTerrainGeojsonPath();
 
 public slots:
 
@@ -108,51 +119,69 @@ public slots:
     // Displays the text output of the process in the dialog
     void handleProcessTextOutput(void);
 
-    // Handle the area selection for track truncation
-    void handleSelectAreaMap(void);
-    void handleClearSelectAreaMap(void);
-    void handleAreaSelected(void);
-
-private slots:
+protected slots:
 
     void runHazardSimulation(void);
-    void handleHurricaneSelect(void);
     void handleHurricaneTrackImport(void);
-    void handleTerrainImport(void);
     void loadHurricaneTrackData(void);
     void loadHurricaneButtonClicked(void);
     void showGridOnMap(void);
     void showPointOnMap(void);
-    void handleGridSelected(void);
-    void handleLandfallPointSelected(void);
-    void clearGridFromMap(void);
-    void clearLandfallFromMap(void);
+    virtual void handleHurricaneSelect(void) = 0;
+    virtual void clearGridFromMap(void) = 0;
+    virtual void handleGridSelected(void) = 0;
+    virtual void handleLandfallPointSelected(void) = 0;
+    virtual void clearLandfallFromMap(void) = 0;
 
 signals:
     void loadingComplete(const bool value);
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
 
-private:
+protected:
 
-    std::unique_ptr<QStackedWidget> theStackedWidget;
-    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
-    std::unique_ptr<HurricanePreprocessor> hurricaneImportTool;
-    HurricaneParameterWidget* hurricaneParamsWidget;
-    VisualizationWidget* theVisualizationWidget;
+    void showEvent(QShowEvent *e);
 
-    QString eventDatabaseFile;
+    QJsonArray getTerrainData(void);
+
+    QPushButton* truncTrackSelectButton = nullptr;
+    QPushButton* truncTrackApplyButton = nullptr;
+    QPushButton* truncTrackClearButton = nullptr;
+    QPushButton* browseTerrainButton = nullptr;
 
     QLabel* selectedHurricaneName;
     QLabel* selectedHurricaneSID;
     QLabel* selectedHurricaneSeason;
 
+    QVector<QStringList> gridData;
+
+    HurricaneObject selectedHurricaneObj;
+#ifdef ARC_GIS
+    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
+#endif
+
+#ifdef Q_GIS
+    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+    std::unique_ptr<RectangleGrid> userGrid;
+    std::unique_ptr<NodeHandle> userPoint;
+#endif
+
+    HurricaneParameterWidget* hurricaneParamsWidget;
+
+    QProgressBar* progressBar;
+
+protected:
+
+    QStackedWidget* theStackedWidget;
+
+    QString eventDatabaseFile;
+
     QLabel* progressLabel;
     QWidget* progressBarWidget;
     QWidget* fileInputWidget;
-    QProgressBar* progressBar;
     SiteConfig* siteConfig;
     SiteGrid* siteGrid;
     QLineEdit* numIMsLineEdit;
+    QLineEdit* trackLineEdit;
     QSpinBox* divLatSpinBox;
     QSpinBox* divLonSpinBox;
 
@@ -160,25 +189,14 @@ private:
     QWidget* selectHurricaneWidget;
     QWidget* specifyHurricaneWidget;
     QPushButton* loadDbButton;
-    QLineEdit* trackLineEdit;
     QLineEdit* terrainLineEdit;
 
-    QVector<QStringList> gridData;
-    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
-
     QMap<QString,WindFieldStation> stationMap;
-
-    Esri::ArcGISRuntime::Feature* selectedHurricaneFeature;
-    Esri::ArcGISRuntime::GroupLayer* selectedHurricaneLayer;
-    LayerTreeItem* selectedHurricaneItem;
-    LayerTreeItem* landfallItem;
-    LayerTreeItem* hurricaneTrackItem;
-    LayerTreeItem* hurricaneTrackPointsItem;
 
     QProcess* process;
     QPushButton* runButton;
 
-    HurricaneObject selectedHurricaneObj;
+    VisualizationWidget* theVizWidget;
 };
 
 #endif // HurricaneSelectionWidget_H

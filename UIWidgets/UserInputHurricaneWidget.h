@@ -45,12 +45,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 
 class VisualizationWidget;
+class SimCenterUnitsWidget;
 
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
 
+#ifdef Arc_GIS
 namespace Esri
 {
 namespace ArcGISRuntime
@@ -62,7 +64,7 @@ class KmlLayer;
 class Layer;
 }
 }
-
+#endif
 
 class UserInputHurricaneWidget : public SimCenterAppWidget
 {
@@ -72,14 +74,13 @@ public:
     UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputHurricaneWidget();
 
-    void showUserWFLayers(bool state);
-
     QStackedWidget* getUserInputHurricaneWidget(void);
 
+    bool inputFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
-
+    bool copyFiles(QString &destDir);
     void clear(void);
 
 public slots:
@@ -96,10 +97,14 @@ private slots:
 signals:
     void outputDirectoryPathChanged(QString eventDir, QString eventFile);
     void loadingComplete(const bool value);
+    void eventTypeChangedSignal(QString eventType);
 
 private:
 
-    std::unique_ptr<QStackedWidget> theStackedWidget;
+    void showProgressBar(void);
+    void hideProgressBar(void);
+
+    QStackedWidget* theStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
@@ -113,6 +118,8 @@ private:
     QWidget* progressBarWidget;
     QWidget* fileInputWidget;
     QProgressBar* progressBar;
+
+    SimCenterUnitsWidget* unitsWidget;
 
 };
 

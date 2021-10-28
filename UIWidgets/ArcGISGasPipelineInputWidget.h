@@ -1,5 +1,5 @@
-#ifndef GasPipelineInputWidget_H
-#define GasPipelineInputWidget_H
+#ifndef ArcGISGasPipelineInputWidget_H
+#define ArcGISGasPipelineInputWidget_H
 
 #include "ComponentInputWidget.h"
 
@@ -9,24 +9,27 @@ namespace ArcGISRuntime
 {
 class ClassBreaksRenderer;
 class Renderer;
+class FeatureCollectionTable;
 class SimpleRenderer;
 class Feature;
 class Geometry;
 }
 }
 
-class GasPipelineInputWidget : public ComponentInputWidget
+class ArcGISGasPipelineInputWidget : public ComponentInputWidget
 {
 public:
-    GasPipelineInputWidget(QWidget *parent, QString componentType, QString appType = QString());
+    ArcGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType = QString());
 
     int loadComponentVisualization();
 
     Esri::ArcGISRuntime::Feature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
-    int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
+    int removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
     Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
 
     void clear();
+
+    Esri::ArcGISRuntime::FeatureCollectionLayer *getSelectedFeaturesLayer() const;
 
 private:
 
@@ -37,4 +40,4 @@ private:
     Esri::ArcGISRuntime::FeatureCollectionTable* selectedFeaturesTable = nullptr;
 };
 
-#endif // GasPipelineInputWidget_H
+#endif // ArcGISGasPipelineInputWidget_H

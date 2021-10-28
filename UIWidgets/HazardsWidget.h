@@ -46,6 +46,7 @@ class ShakeMapWidget;
 class HurricaneSelectionWidget;
 class UserInputHurricaneWidget;
 class UserInputGMWidget;
+class RegionalSiteResponseWidget;
 class VisualizationWidget;
 
 class QGroupBox;
@@ -58,26 +59,33 @@ public:
     HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
     ~HazardsWidget();
 
+#ifdef ARC_GIS
     void setCurrentlyViewable(bool status);
+#endif
 
 signals:
     void gridFileChangedSignal(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
 
 private slots:
 
     void shakeMapLoadingFinished(const bool value);
     void gridFileChangedSlot(QString motionDir, QString eventFile);
+    void eventTypeChangedSlot(QString eventType);
 
 private:
 
     RandomVariablesContainer* theRandomVariablesContainer;
 
     VisualizationWidget* theVisualizationWidget;
+
     GMWidget* theEQSSWidget;
     ShakeMapWidget* theShakeMapWidget;
     UserInputGMWidget* theUserInputGMWidget;
+    RegionalSiteResponseWidget* theRegionalSiteResponseWidget;  
     UserInputHurricaneWidget* theUserInputHurricaneWidget;
     HurricaneSelectionWidget* theHurricaneSelectionWidget;
+    SimCenterAppWidget* theRasterHazardWidget;
 };
 
 #endif // HAZARDS_WIDGET_H

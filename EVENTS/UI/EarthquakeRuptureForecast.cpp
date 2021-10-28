@@ -81,6 +81,12 @@ void EarthquakeRuptureForecast::setMaxDistance(double value)
 }
 
 
+void EarthquakeRuptureForecast::reset(void)
+{
+
+}
+
+
 QString EarthquakeRuptureForecast::getEQName() const
 {
     return EQName;
@@ -111,15 +117,20 @@ double EarthquakeRuptureForecast::getMaxDistance() const
 }
 
 
-QJsonObject EarthquakeRuptureForecast::getJson()
+bool EarthquakeRuptureForecast::outputToJSON(QJsonObject &jsonObject)
 {
-    QJsonObject rupture;
-    rupture.insert("Type", "ERF");
-    rupture.insert("Model",EQModelType);
-    rupture.insert("Name", EQName);
-    rupture.insert("min_Mag", magnitudeMin);
-    rupture.insert("max_Mag", magnitudeMax);
-    rupture.insert("max_Dist", maxDistance);
+    jsonObject.insert("Type", "ERF");
+    jsonObject.insert("Model",EQModelType);
+    jsonObject.insert("Name", EQName);
+    jsonObject.insert("min_Mag", magnitudeMin);
+    jsonObject.insert("max_Mag", magnitudeMax);
+    jsonObject.insert("max_Dist", maxDistance);
 
-    return rupture;
+    return true;
+}
+
+
+bool EarthquakeRuptureForecast::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
 }

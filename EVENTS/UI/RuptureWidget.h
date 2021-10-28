@@ -58,6 +58,8 @@ public:
     QJsonObject getJson(void);
     QString getWidgetType(void) const;
     QString getGMPELogicTree(void) const;
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
 
 public slots:
     void handleSelectionChanged(const QString& selection);

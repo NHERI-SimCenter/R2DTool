@@ -57,7 +57,11 @@ public:
     QString getGMPEFilename() const;
     void setOQVersion(const QString &value);
 
-    QJsonObject getJson();
+    //QJsonObject getJson();
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
 
 signals:
 

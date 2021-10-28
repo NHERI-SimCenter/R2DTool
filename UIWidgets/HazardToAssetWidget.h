@@ -56,9 +56,11 @@ public:
 
 signals:
     void hazardGridFileChangedSignal(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
 
 private slots:
     void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
+    void eventTypeChangedSlot(QString eventType);
 
 private:
     SimCenterAppWidget *buildingWidget;

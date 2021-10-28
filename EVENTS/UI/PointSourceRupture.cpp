@@ -78,26 +78,37 @@ void PointSourceRupture::setAverageRake(double averageRake)
 }
 
 
-QJsonObject PointSourceRupture::getJson()
+bool PointSourceRupture::outputToJSON(QJsonObject &jsonObject)
 {
-    QJsonObject rupture;
-    rupture.insert("Type", "PointSource");
-    rupture.insert("Magnitude", m_magnitude);
+    jsonObject.insert("Type", "PointSource");
+    jsonObject.insert("Magnitude", m_magnitude);
     QJsonObject location;
     location.insert("Latitude", m_location.latitude());
     location.insert("Longitude", m_location.longitude());
     location.insert("Depth", m_location.depth());
-    rupture.insert("Location", location);
-    rupture.insert("AverageRake", m_averageRake);
-    rupture.insert("AverageDip", m_averageDip);
+    jsonObject.insert("Location", location);
+    jsonObject.insert("AverageRake", m_averageRake);
+    jsonObject.insert("AverageDip", m_averageDip);
 
-    return rupture;
+    return true;
+}
+
+
+bool PointSourceRupture::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
 }
 
 
 double PointSourceRupture::averageDip() const
 {
     return m_averageDip;
+}
+
+
+void PointSourceRupture::reset(void)
+{
+
 }
 
 

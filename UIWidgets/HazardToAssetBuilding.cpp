@@ -63,13 +63,14 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     : SimCenterAppWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Hazard to Local Asset Event"));
     label->setMinimumWidth(150);
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
@@ -98,6 +99,8 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
     //SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
 
+    connect(this,SIGNAL(eventTypeChangedSignal(QString&)), theLocalMapping, SLOT(currentEventTypeChanged(QString&)));
+
     theLocalMapping->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
     //theLocalMapping->addComponent(QString("Site Response"), QString("SiteResponse"), siteResponse);
 
@@ -108,7 +111,6 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
 
     mainLayout->addStretch();
     this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
     this->setMaximumWidth(750);
 }
 
@@ -122,10 +124,14 @@ HazardToAssetBuilding::~HazardToAssetBuilding()
 bool HazardToAssetBuilding::outputToJSON(QJsonObject &jsonObj)
 {
     bool result = true;
-    if (theRegionalMapping->outputToJSON(jsonObj)  != true)
-        result = false;
-    if (theLocalMapping->outputToJSON(jsonObj)  != true)
-        result = false;
+    if (theRegionalMapping->outputToJSON(jsonObj)  != true) {
+      errorMessage(QString("Regional Mapping Widget returned failure in outputToJSON"));
+      result = false;
+    }
+    if (theLocalMapping->outputToJSON(jsonObj)  != true) {
+      errorMessage(QString("Local Mapping Widget returned failure in outputToJSON"));      
+      result = false;
+    }
 
     return result;
 }
@@ -174,14 +180,25 @@ void HazardToAssetBuilding::hazardGridFileChangedSlot(QString motionDir, QString
 }
 
 
+void HazardToAssetBuilding::eventTypeChangedSlot(QString eventType)
+{
+    emit eventTypeChangedSignal(eventType);
+}
+
+
 bool HazardToAssetBuilding::copyFiles(QString &destName)
 {
     bool result = true;
 
-    if (theRegionalMapping->copyFiles(destName) != true)
+    if (theRegionalMapping->copyFiles(destName) != true) {
         result = false;
-    if (theLocalMapping->copyFiles(destName) != true)
+	
+	return result;
+    }
+    if (theLocalMapping->copyFiles(destName) != true) {
+      
         result = false;
+    }
 
     return result;
 }

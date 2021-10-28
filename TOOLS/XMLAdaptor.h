@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QObject;
 
+#ifdef ARC_GIS
 namespace Esri
 {
 namespace ArcGISRuntime
@@ -53,13 +54,23 @@ namespace ArcGISRuntime
 class FeatureCollectionLayer;
 }
 }
+#endif
+
+#ifdef Q_GIS
+class QGISVisualizationWidget;
+class QgsVectorLayer;
+#endif
 
 class XMLAdaptor
 {
 public:
     XMLAdaptor();
 
+#ifdef ARC_GIS
     Esri::ArcGISRuntime::FeatureCollectionLayer* parseXMLFile(const QString& filePath, QString& errMessage, QObject* parent = nullptr);
+#endif
+
+    QgsVectorLayer* parseXMLFile(const QString& filePath, QString& errMessage, QGISVisualizationWidget* GISVisWidget);
 
     QString getEventName() const;
 

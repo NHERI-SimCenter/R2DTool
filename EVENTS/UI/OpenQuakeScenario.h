@@ -56,7 +56,10 @@ public:
     QString getRupFilename() const;
     void setOQVersion(const QString &value);
 
-    QJsonObject getJson();
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
 
 signals:
 

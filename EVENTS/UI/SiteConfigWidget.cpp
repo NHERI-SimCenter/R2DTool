@@ -21,7 +21,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QWidget *parent) : QW
     QLabel* numGMLabel= new QLabel("Number of ground motions per site:",this);
     numGMLineEdit = new QLineEdit(this);
     numGMLineEdit->setText("1");
-    auto validator = new QIntValidator(1, 50, this);
+    auto validator = new QIntValidator(1, 99999999, this);
     numGMLineEdit->setValidator(validator);
 
     QRadioButton* siteRadioButton = new QRadioButton(tr("Single Location"));

@@ -39,8 +39,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "GISSelectable.h"
 #include "ComponentDatabase.h"
-#include "VisualizationWidget.h"
 
 #include <set>
 
@@ -48,65 +48,77 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QObject>
 
 class AssetInputDelegate;
+class ComponentTableView;
+class VisualizationWidget;
+
+#ifdef ARC_GIS
+
+class ArcGISVisualizationWidget;
 
 namespace Esri
 {
 namespace ArcGISRuntime
 {
 class ClassBreaksRenderer;
+class FeatureCollectionLayer;
 class SimpleRenderer;
 class Feature;
 class Geometry;
 }
 }
+#endif
+
+#ifdef Q_GIS
+class QgsFeature;
+class QGISVisualizationWidget;
+class QgsVectorLayer;
+class QgsGeometry;
+#endif
 
 class QGroupBox;
 class QLineEdit;
 class QTableWidget;
 class QLabel;
 
-class ComponentInputWidget : public  SimCenterAppWidget
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
+class ComponentInputWidget : public  SimCenterAppWidget, public GISSelectable
 {
     Q_OBJECT
 
 public:
-    explicit ComponentInputWidget(QWidget *parent, QString componentType, QString appType = QString());
+    explicit ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
     virtual ~ComponentInputWidget();
 
-    virtual int loadComponentVisualization();
+    virtual int loadComponentVisualization() = 0;
 
+#ifdef ARC_GIS
     virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
     virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
-
     virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
+    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
+#endif
 
-    QGroupBox* getComponentsWidget(void);
+    void insertSelectedAssets(QgsFeatureIds& featureIds);
+    void clearSelectedAssets(void);
 
-    QTableWidget *getTableWidget() const;
+    ComponentTableView *getTableWidget() const;
 
     // Set the filter string and select the components
     void setFilterString(const QString& filter);
     QString getFilterString(void);
 
-    void insertSelectedComponent(const int ComponentID);
-
     int numberComponentsSelected(void);
-
-    ComponentDatabase* getComponentDatabase();
-
-    void updateComponentAttribute(const int ID, const QString& attribute, const QVariant& value);
-    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
 
     // Set custom labels in widget
     void setComponentType(const QString &value);
     void setLabel1(const QString &value);
     void setLabel2(const QString &value);
-    void setLabel3(const QString &value);  
+    void setLabel3(const QString &value);
     void setGroupBoxText(const QString &value);
 
-    void loadFileFromPath(QString& path);
-    void selectAllComponents(void);
-  
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &rvObject);
@@ -117,28 +129,35 @@ public:
 
     virtual void clear(void);
 
-    void setTheVisualizationWidget(VisualizationWidget *value);
+    QStringList getTableHorizontalHeadings();
 
-    QStringList getTableHorizontalHeadings() const;
+    // Selects all of the components for analysis
+    void selectAllComponents(void);
 
 signals:
-    void componentDataLoaded();
+    void headingValuesChanged(QStringList);
 
 public slots:
     void handleComponentSelection(void);
-    void handleCellChanged(int row, int column);
+    void handleCellChanged(const int row, const int col);
 
-private slots:
+protected slots:
     void selectComponents(void);
-    void loadComponentData(void);
+    virtual void loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
-    void clearLayerSelectedForAnalysis(void);
 
 protected:
-    VisualizationWidget* theVisualizationWidget;
-    QTableWidget* componentTableWidget;
-    ComponentDatabase theComponentDb;
+
+#ifdef ARC_GIS
+    ArcGISVisualizationWidget* theVisualizationWidget;
+#endif
+
+    QGISVisualizationWidget* theVisualizationWidget;
+
+    ComponentTableView* componentTableWidget;
+
+    ComponentDatabase*  theComponentDb;
 
     // Returns a vector of sorted items that are unique
     template <typename T>
@@ -153,25 +172,34 @@ protected:
         vec.resize(std::distance(vec.begin(), ip));
     }
 
-private:
-    QString pathToComponentInfoFile;
-    QLineEdit* componentFileLineEdit;
+#ifdef OpenSRA
+    JsonGroupBoxWidget* locationWidget;
+#endif
+
     AssetInputDelegate* selectComponentsLineEdit;
-    QLabel* componentInfoText;
+
+    int offset;
+
+    QString pathToComponentInputFile;
+    QLineEdit* componentFileLineEdit;
     QGroupBox* componentGroupBox;
+
+    QLabel* label1 = nullptr;
+    QLabel* label2 = nullptr;
+    QLabel* label3 = nullptr;
 
     QString appType;
     QString componentType;
-    QString label1;
-    QString label2;
-    QString label3;
 
     QStringList tableHorizontalHeadings;
 
     void createComponentsBox(void);
 
+#ifdef ARC_GIS
     // Map to store the selected features according to their UID
     QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
+#endif
+
 };
 
 #endif // ComponentInputWidget_H

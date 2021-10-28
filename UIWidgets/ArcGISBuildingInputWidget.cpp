@@ -1,4 +1,46 @@
-#include "BuildingInputWidget.h"
+/* *****************************************************************************
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Stevan Gavrilovic
+
+#include "ArcGISBuildingInputWidget.h"
+#include "ArcGISVisualizationWidget.h"
+
+#include "ComponentTableView.h"
+#include "ComponentDatabaseManager.h"
 
 #include "Field.h"
 #include "GroupLayer.h"
@@ -10,19 +52,16 @@
 #include "SimpleFillSymbol.h"
 #include "SimpleLineSymbol.h"
 
-#include <QTableWidget>
-
 using namespace Esri::ArcGISRuntime;
 
-BuildingInputWidget::BuildingInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
+ArcGISBuildingInputWidget::ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
 {
-
+    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 }
 
 
-int BuildingInputWidget::loadComponentVisualization()
+int ArcGISBuildingInputWidget::loadComponentVisualization()
 {
-
     QList<Field> fields;
     fields.append(Field::createDouble("LossRatio", "0.0"));
     fields.append(Field::createText("ID", "NULL",4));
@@ -38,9 +77,7 @@ int BuildingInputWidget::loadComponentVisualization()
     // Set the table headers as fields in the table
     for(int i = 1; i<componentTableWidget->columnCount(); ++i)
     {
-        auto headerItem = componentTableWidget->horizontalHeaderItem(i);
-
-        auto fieldText = headerItem->text();
+        auto fieldText = componentTableWidget->horizontalHeaderItem(i);
 
         if(fieldText.compare(columnFilter) == 0)
             columnToMapLayers = i;
@@ -66,7 +103,7 @@ int BuildingInputWidget::loadComponentVisualization()
     for(int i = 0; i<nRows; ++i)
     {
         // Organize the layers according to occupancy type
-        auto occupancyType = componentTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+        auto occupancyType = componentTableWidget->item(i,columnToMapLayers).toString().toStdString();
 
         vecLayerItems.push_back(occupancyType);
     }
@@ -125,7 +162,7 @@ int BuildingInputWidget::loadComponentVisualization()
         // Create a new building
         Component building;
 
-        QString buildingIDStr = componentTableWidget->item(i,0)->data(0).toString();
+        QString buildingIDStr = componentTableWidget->item(i,0).toString();
 
         int buildingID = buildingIDStr.toInt();
 
@@ -136,8 +173,8 @@ int BuildingInputWidget::loadComponentVisualization()
         // The feature attributes are the columns from the table
         for(int j = 1; j<componentTableWidget->columnCount(); ++j)
         {
-            auto attrbText = componentTableWidget->horizontalHeaderItem(j)->text();
-            auto attrbVal = componentTableWidget->item(i,j)->data(0);
+            auto attrbText = componentTableWidget->horizontalHeaderItem(j);
+            auto attrbVal = componentTableWidget->item(i,j).toString();
 
             buildingAttributeMap.insert(attrbText,attrbVal);
 
@@ -155,11 +192,11 @@ int BuildingInputWidget::loadComponentVisualization()
         featureAttributes.insert("TabName", buildingIDStr);
         featureAttributes.insert("UID", uid);
 
-        auto latitude = componentTableWidget->item(i,indexLatitude)->data(0).toDouble();
-        auto longitude = componentTableWidget->item(i,indexLongitude)->data(0).toDouble();
+        auto latitude = componentTableWidget->item(i,indexLatitude).toDouble();
+        auto longitude = componentTableWidget->item(i,indexLongitude).toDouble();
 
         // Get the feature collection table for this layer
-        auto layerTag = componentTableWidget->item(i,columnToMapLayers)->data(0).toString().toStdString();
+        auto layerTag = componentTableWidget->item(i,columnToMapLayers).toString().toStdString();
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
@@ -168,7 +205,7 @@ int BuildingInputWidget::loadComponentVisualization()
         // If a footprint is given use that
         if(indexFootprint != -1)
         {
-            QString footprint = componentTableWidget->item(i,indexFootprint)->data(0).toString();
+            QString footprint = componentTableWidget->item(i,indexFootprint).toString();
 
             if(footprint.compare("NA") == 0)
             {
@@ -229,7 +266,7 @@ int BuildingInputWidget::loadComponentVisualization()
 }
 
 
-Feature* BuildingInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Geometry& geom)
+Feature* ArcGISBuildingInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Geometry& geom)
 {
     Feature* feat = selectedBuildingsTable->createFeature(featureAttributes,geom,this);
     selectedBuildingsTable->addFeature(feat);
@@ -238,7 +275,7 @@ Feature* BuildingInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>&
 }
 
 
-int BuildingInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
+int ArcGISBuildingInputWidget::removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
 {
     selectedBuildingsTable->deleteFeature(feat);
 
@@ -246,7 +283,7 @@ int BuildingInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Fea
 }
 
 
-SimpleRenderer* BuildingInputWidget::createBuildingRenderer(void)
+SimpleRenderer* ArcGISBuildingInputWidget::createBuildingRenderer(void)
 {
     SimpleFillSymbol* fillSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle::Solid, QColor(0, 0, 255, 125), this);
 
@@ -258,13 +295,13 @@ SimpleRenderer* BuildingInputWidget::createBuildingRenderer(void)
 }
 
 
-Esri::ArcGISRuntime::FeatureCollectionLayer* BuildingInputWidget::getSelectedFeatureLayer(void)
+Esri::ArcGISRuntime::FeatureCollectionLayer* ArcGISBuildingInputWidget::getSelectedFeatureLayer(void)
 {
     return selectedBuildingsLayer;
 }
 
 
-void BuildingInputWidget::clear()
+void ArcGISBuildingInputWidget::clear()
 {
     delete selectedBuildingsLayer;
     delete selectedBuildingsTable;
@@ -276,7 +313,7 @@ void BuildingInputWidget::clear()
 }
 
 
-ClassBreaksRenderer* BuildingInputWidget::createSelectedBuildingRenderer(double outlineWidth)
+ClassBreaksRenderer* ArcGISBuildingInputWidget::createSelectedBuildingRenderer(double outlineWidth)
 {
     // Images stored in base64 format
     //    QByteArray buildingImg1 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWhJREFUSInt1jFrwkAYxvF/SDpJBaHFtlN0dlP0O3TWSWobOnZvidA2QycHZ9cGhNKlX0FwcPcLCC4OrWKGDMKZdKmg1WpOo1LwgYMb3nt/HHdwp7HjaHsDTdM8GgwGFnADXITU/xN4j0QiD9Vq1Z0Bh8PhE1AOCZrkFLhzXfcYuJ4BPc+7ChmbzuVkMn2GZ1sETxaBUkkkEnQ6Hel1a4GGYZBOp6nX6ySTSVKpFACWZTEajcIFDcMgl8sBUCwW6ff7xGIxAFRVXbleCpzGADRNIx6Py7QIDv7G1k0gMCiWzWZpNBqbgTI7KxQKjMdjms3memCpVCKTyeD7PoqirAQVRSGfzyOEoNVqyYO2bWPbNpVKhWg0uhJst9vUarWlNft7LQ7gAfzfYLkc7Ofh+74U2AP0RUVCiEDgkvQWga/A86ad/8jHHKjr+ku321U9z7sFzkOCvoA3x3Hu50DTNAXw+DO2lp3f0m97bGdscCiEZAAAAABJRU5ErkJggg==";

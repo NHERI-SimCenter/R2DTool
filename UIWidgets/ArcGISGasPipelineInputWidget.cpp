@@ -1,4 +1,7 @@
-#include "GasPipelineInputWidget.h"
+#include "ArcGISGasPipelineInputWidget.h"
+#include "ArcGISVisualizationWidget.h"
+
+#include "ComponentTableView.h"
 
 #include "Field.h"
 #include "GroupLayer.h"
@@ -11,17 +14,15 @@
 #include "SimpleLineSymbol.h"
 #include "PolylineBuilder.h"
 
-#include <QTableWidget>
-
 using namespace Esri::ArcGISRuntime;
 
-GasPipelineInputWidget::GasPipelineInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
+ArcGISGasPipelineInputWidget::ArcGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
 {
 
 }
 
 
-int GasPipelineInputWidget::loadComponentVisualization()
+int ArcGISGasPipelineInputWidget::loadComponentVisualization()
 {
     // Select a column that will define the pipeline layers
     //    int columnToMapLayers = 0;
@@ -35,11 +36,13 @@ int GasPipelineInputWidget::loadComponentVisualization()
     fields.append(Field::createText("TabName", "NULL",4));
     fields.append(Field::createText("UID", "NULL",4));
 
+    auto nCols = componentTableWidget->columnCount();
+
     // Set the table headers as fields in the table
-    for(int i =0; i<componentTableWidget->columnCount(); ++i)
+    for(int i =0; i<nCols; ++i)
     {
         auto headerItem = componentTableWidget->horizontalHeaderItem(i);
-        auto fieldText = headerItem->text();
+        auto fieldText = headerItem;
         fields.append(Field::createText(fieldText, fieldText,fieldText.size()));
     }
 
@@ -128,7 +131,7 @@ int GasPipelineInputWidget::loadComponentVisualization()
         // Create a new pipeline
         Component pipeline;
 
-        QString pipelineIDStr = componentTableWidget->item(i,0)->data(0).toString();
+        QString pipelineIDStr = componentTableWidget->item(i,0).toString();
 
         int pipelineID =  pipelineIDStr.toInt();
 
@@ -137,10 +140,10 @@ int GasPipelineInputWidget::loadComponentVisualization()
         QMap<QString, QVariant> pipelineAttributeMap;
 
         // The feature attributes are the columns from the table
-        for(int j = 0; j<componentTableWidget->columnCount(); ++j)
+        for(int j = 0; j<nCols; ++j)
         {
-            auto attrbText = componentTableWidget->horizontalHeaderItem(j)->text();
-            auto attrbVal = componentTableWidget->item(i,j)->data(0);
+            auto attrbText = componentTableWidget->horizontalHeaderItem(j);
+            auto attrbVal = componentTableWidget->item(i,j);
 
             pipelineAttributeMap.insert(attrbText,attrbVal.toString());
 
@@ -155,7 +158,7 @@ int GasPipelineInputWidget::loadComponentVisualization()
         featureAttributes.insert("ID", pipelineIDStr);
         featureAttributes.insert("RepairRate", 0.0);
         featureAttributes.insert("AssetType", "GASPIPELINES");
-        featureAttributes.insert("TabName", componentTableWidget->item(i,0)->data(0).toString());
+        featureAttributes.insert("TabName", componentTableWidget->item(i,0).toString());
         featureAttributes.insert("UID", uid);
 
         // Get the feature collection table from the map
@@ -164,11 +167,11 @@ int GasPipelineInputWidget::loadComponentVisualization()
 
         auto featureCollectionTable = tablesMap.at(layerTag);
 
-        auto latitudeStart = componentTableWidget->item(i,indexLatStart)->data(0).toDouble();
-        auto longitudeStart = componentTableWidget->item(i,indexLonStart)->data(0).toDouble();
+        auto latitudeStart = componentTableWidget->item(i,indexLatStart).toDouble();
+        auto longitudeStart = componentTableWidget->item(i,indexLonStart).toDouble();
 
-        auto latitudeEnd = componentTableWidget->item(i,indexLatEnd)->data(0).toDouble();
-        auto longitudeEnd = componentTableWidget->item(i,indexLonEnd)->data(0).toDouble();
+        auto latitudeEnd = componentTableWidget->item(i,indexLatEnd).toDouble();
+        auto longitudeEnd = componentTableWidget->item(i,indexLonEnd).toDouble();
 
         // Create the points and add it to the feature table
         PolylineBuilder polylineBuilder(SpatialReference::wgs84());
@@ -210,7 +213,7 @@ int GasPipelineInputWidget::loadComponentVisualization()
 }
 
 
-Feature* GasPipelineInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Geometry& geom)
+Feature* ArcGISGasPipelineInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Geometry& geom)
 {
     Feature* feat = selectedFeaturesTable->createFeature(featureAttributes,geom,this);
     selectedFeaturesTable->addFeature(feat);
@@ -219,7 +222,7 @@ Feature* GasPipelineInputWidget::addFeatureToSelectedLayer(QMap<QString, QVarian
 }
 
 
-int GasPipelineInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
+int ArcGISGasPipelineInputWidget::removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat)
 {
     selectedFeaturesTable->deleteFeature(feat);
 
@@ -227,13 +230,13 @@ int GasPipelineInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::
 }
 
 
-Esri::ArcGISRuntime::FeatureCollectionLayer* GasPipelineInputWidget::getSelectedFeatureLayer(void)
+Esri::ArcGISRuntime::FeatureCollectionLayer* ArcGISGasPipelineInputWidget::getSelectedFeatureLayer(void)
 {
     return selectedFeaturesLayer;
 }
 
 
-void GasPipelineInputWidget::clear()
+void ArcGISGasPipelineInputWidget::clear()
 {
     delete selectedFeaturesLayer;
     delete selectedFeaturesTable;
@@ -245,7 +248,7 @@ void GasPipelineInputWidget::clear()
 }
 
 
-Renderer* GasPipelineInputWidget::createSelectedPipelineRenderer(double outlineWidth)
+Renderer* ArcGISGasPipelineInputWidget::createSelectedPipelineRenderer(double outlineWidth)
 {
 
     SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(0, 0, 0), 5.0f /*width*/, this);
@@ -278,10 +281,15 @@ Renderer* GasPipelineInputWidget::createSelectedPipelineRenderer(double outlineW
     return new ClassBreaksRenderer("RepairRate", classBreaks, this);
 }
 
-
-Renderer* GasPipelineInputWidget::createPipelineRenderer(void)
+Esri::ArcGISRuntime::FeatureCollectionLayer *ArcGISGasPipelineInputWidget::getSelectedFeaturesLayer() const
 {
-    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(125, 125, 125), 4.0f /*width*/, this);
+    return selectedFeaturesLayer;
+}
+
+
+Renderer* ArcGISGasPipelineInputWidget::createPipelineRenderer(void)
+{
+    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(85, 85, 85), 4.0f /*width*/, this);
 
     SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol1, this);
 

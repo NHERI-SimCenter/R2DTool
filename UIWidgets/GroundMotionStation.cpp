@@ -85,6 +85,8 @@ void GroundMotionStation::importGroundMotions(void)
     // Pop off the row that contains the header information
     data.pop_front();
 
+    stationData = data;
+
     auto numRows = data.size();
     auto numCols = tableHeadings.size();
 
@@ -231,7 +233,20 @@ void GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,
 
 }
 
+#ifdef Q_GIS
+QgsFeature GroundMotionStation::getStationFeature() const
+{
+    return stationFeature;
+}
 
+void GroundMotionStation::setStationFeature(const QgsFeature &value)
+{
+    stationFeature = value;
+}
+#endif
+
+
+#ifdef ARC_GIS
 QMap<QString, QVariant> GroundMotionStation::getStationAttributes() const
 {
     return stationAttributes;
@@ -242,6 +257,7 @@ void GroundMotionStation::setStationAttributes(const QMap<QString, QVariant> &va
 {
     stationAttributes = value;
 }
+#endif
 
 
 QVector<GroundMotionTimeHistory> GroundMotionStation::getStationGroundMotions() const
@@ -254,4 +270,10 @@ QString GroundMotionStation::getStationFilePath() const
 {
     return stationFilePath;
 }
+
+QVector<QStringList> GroundMotionStation::getStationData() const
+{
+    return stationData;
+}
+
 

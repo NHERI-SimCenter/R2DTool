@@ -40,13 +40,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeModel.h"
 #include "LayerTreeView.h"
 #include "TreeViewStyle.h"
-#include "VisualizationWidget.h"
+#include "ArcGISVisualizationWidget.h"
 
 #include <QDebug>
 #include <QMenu>
 #include <QPointer>
 
-LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : QTreeView(parent), theVisualizationWidget(visWidget)
+LayerTreeView::LayerTreeView(QWidget *parent, ArcGISVisualizationWidget* visWidget) : QTreeView(parent), theVisualizationWidget(visWidget)
 {
     layersModel = new LayerTreeModel(this);
     this->setModel(layersModel);
@@ -66,10 +66,10 @@ LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : 
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(layersModel, &LayerTreeModel::rowPositionChanged, visWidget, &VisualizationWidget::changeLayerOrder);
+    connect(layersModel, &LayerTreeModel::rowPositionChanged, visWidget, &ArcGISVisualizationWidget::changeLayerOrder);
 
     // Connect the layers tree with the function that turns the layers visibility on/off in the GIS map
-    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerChecked);
+    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &ArcGISVisualizationWidget::handleLayerChecked);
 
     connect(this, &QWidget::customContextMenuRequested, this, &LayerTreeView::showPopup);
 
@@ -82,9 +82,9 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
 {
     auto newItem = layersModel->addItemToTree(itemText, layerID, parent);
 
-    connect(newItem, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
-    connect(newItem, &LayerTreeItem::plotColorChanged, theVisualizationWidget, &VisualizationWidget::handlePlotColorChange);
-    connect(newItem, &LayerTreeItem::zoomLayerExtents, theVisualizationWidget, &VisualizationWidget::zoomToLayer);
+    connect(newItem, &LayerTreeItem::opacityChanged, theVisualizationWidget, &ArcGISVisualizationWidget::handleOpacityChange);
+    connect(newItem, &LayerTreeItem::plotColorChanged, theVisualizationWidget, &ArcGISVisualizationWidget::handlePlotColorChange);
+    connect(newItem, &LayerTreeItem::zoomLayerExtents, theVisualizationWidget, &ArcGISVisualizationWidget::zoomToLayer);
     connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeItemFromTree);
     connect(newItem, &TreeItem::removingChildItem, this, &LayerTreeView::removeLayer);
 
