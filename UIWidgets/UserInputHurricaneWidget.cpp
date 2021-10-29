@@ -159,12 +159,12 @@ bool UserInputHurricaneWidget::inputFromJSON(QJsonObject &jsonObject)
   
   if (jsonObject.contains("eventFile"))
     fileName = jsonObject["eventFile"].toString();
-  if (jsonObject.contains("eventFileDir"))
-    pathToFile = jsonObject["eventFileDir"].toString();
+  if (jsonObject.contains("eventFilePath"))
+    pathToFile = jsonObject["eventFilePath"].toString();
   else
     pathToFile = QDir::currentPath();
 
-  QString fullFilePath= pathToFile + QDir::separator() + fileName;
+  QString fullFilePath = pathToFile + QDir::separator() + fileName;
 
   // adam .. adam .. adam
   if (!QFileInfo::exists(fullFilePath)){
@@ -193,7 +193,7 @@ bool UserInputHurricaneWidget::inputFromJSON(QJsonObject &jsonObject)
 	eventDir = trialDir;
 	eventDirLineEdit->setText(trialDir);
       } else {
-	this->errorMessage("UserInputGM - could not find motion dir" + eventDir + " " + trialDir);
+    this->errorMessage("UserInputGM - could not find wind field dir" + eventDir + " " + trialDir);
 	return false;
       }
     }

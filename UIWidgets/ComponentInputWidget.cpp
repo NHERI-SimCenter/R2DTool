@@ -780,7 +780,8 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         if (fileInfo.exists(fileName)) {
 
-            selectComponentsLineEdit->setText(fileName);
+            pathToComponentInputFile = fileName;
+            componentFileLineEdit->setText(fileName);
 
             this->loadComponentData();
             foundFile = true;
