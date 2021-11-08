@@ -205,7 +205,6 @@ void ComponentInputWidget::loadComponentData(void)
         return;
     }
     
-    componentTableWidget->clear();
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
     
     label3->show();
@@ -244,6 +243,8 @@ void ComponentInputWidget::loadComponentData(void)
 
 void ComponentInputWidget::chooseComponentInfoFileDialog(void)
 {
+    this->clear();
+
     pathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
     
     // Return if the user cancels
@@ -252,7 +253,7 @@ void ComponentInputWidget::chooseComponentInfoFileDialog(void)
         pathToComponentInputFile = "NULL";
         return;
     }
-    
+
     // Set file name & entry in qLine edit
     componentFileLineEdit->setText(pathToComponentInputFile);
     
