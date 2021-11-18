@@ -75,7 +75,7 @@ public:
     bool updateComponentAttribute(const qint64 id, const QString& attribute, const QVariant& value);
 
     // Fast, use for batch updates
-    bool updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values);
+    bool updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values, QString& error);
 
     QVariant getAttributeValue(const qint64 id, const QString& attribute, const QVariant defaultVal = QVariant());
 

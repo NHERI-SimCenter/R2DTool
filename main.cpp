@@ -66,7 +66,6 @@ using namespace Esri::ArcGISRuntime;
 #endif
 
 #ifdef Q_GIS
-#include "qgisapp.h"
 #include "qgsapplication.h"
 #endif
 
