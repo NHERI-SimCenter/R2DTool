@@ -49,10 +49,6 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # Select one of the following GIS librarys
 DEFINES +=  Q_GIS #ARC_GIS
-#DEFINES += ARC_GIS
-
-# Does this build include the secret user pass for PEER database access?
-DEFINES += INCLUDE_USER_PASS
 
 # Specify the path to the Simcenter common directory
 PATH_TO_COMMON=../SimCenterCommon
@@ -424,6 +420,16 @@ HEADERS +=  Tools/QGISHurricanePreprocessor.h \
             UIWidgets/ShapefileBuildingInputWidget.h \
             UIWidgets/MapViewWindow.h \
 
+}
+
+
+# Does this build include the secret user pass for PEER database access? Check if the password file exists.
+exists( $$PWD/R2DUserPass.h ) {
+
+    DEFINES += INCLUDE_USER_PASS
+
+} else {
+    message( "Warning: PEER password file not found. Look in the file SampleUserPass.h to add your credentials" )
 }
 
 
