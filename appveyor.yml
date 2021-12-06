@@ -26,21 +26,21 @@ for:
        
     install:
        - uname
-	   - git clone https://github.com/NHERI-SimCenter/SimCenterBackendApplications.git 
+       - git clone https://github.com/NHERI-SimCenter/SimCenterBackendApplications.git 
        - git clone https://github.com/NHERI-SimCenter/SimCenterCommon.git
        - git clone https://github.com/NHERI-SimCenter/R2DTool.git
-	   - git clone https://github.com/NHERI-SimCenter/R2DExamples.git
-	   - git clone https://github.com/sgavrilovic/QGISPlugin.git
+       - git clone https://github.com/NHERI-SimCenter/R2DExamples.git
+       - git clone https://github.com/sgavrilovic/QGISPlugin.git
 
     build_script:
-	   #
+       #
        # build SimCenterBackendApplications
-	   #
+       #
        - cd SimCenterBackendApplications
        - chmod 'u+x' makeEXE.sh
        - ./makeEXE.sh
        - cd ..
-	   
+        
        #
        # build R2D
        #
@@ -75,11 +75,11 @@ for:
        - pip install conan
        - conan user
        - conan remote add simcenter https://nherisimcenter.jfrog.io/artifactory/api/conan/simcenter
-	   - git clone https://github.com/NHERI-SimCenter/SimCenterBackendApplications.git
+       - git clone https://github.com/NHERI-SimCenter/SimCenterBackendApplications.git
        - git clone https://github.com/NHERI-SimCenter/SimCenterCommon.git
        - git clone https://github.com/NHERI-SimCenter/R2DTool.git
-	   - git clone https://github.com/NHERI-SimCenter/R2DExamples.git
-	   - git clone https://github.com/sgavrilovic/QGISPlugin.git
+       - git clone https://github.com/NHERI-SimCenter/R2DExamples.git
+       - git clone https://github.com/sgavrilovic/QGISPlugin.git
        
     build_script:
        #
@@ -124,8 +124,8 @@ for:
        - cmd: git clone https://github.com/NHERI-SimCenter/SimCenterBackendApplications.git
        - git clone https://github.com/NHERI-SimCenter/SimCenterCommon.git
        - git clone https://github.com/NHERI-SimCenter/R2DTool.git
-	   - git clone https://github.com/NHERI-SimCenter/R2DExamples.git
-	   - git clone https://github.com/sgavrilovic/QGISPlugin.git
+       - git clone https://github.com/NHERI-SimCenter/R2DExamples.git
+       - git clone https://github.com/sgavrilovic/QGISPlugin.git
        - cmd: dir
 
     build_script:
@@ -140,7 +140,7 @@ for:
       - cmd: cmake --install .
       - cmd: cd ..
       - cmd: cd ..
-	  
+      
       #
       # build R2D
       #
