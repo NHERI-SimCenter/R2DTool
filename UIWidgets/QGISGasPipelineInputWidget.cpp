@@ -33,7 +33,7 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
     for(int i = 0; i<featFields.size(); ++i)
         attribFields.push_back(featFields[i]);
 
-    // Create the buildings layer
+    // Create the pipelines layer
     auto mainLayer = theVisualizationWidget->addVectorLayer("linestring","All Pipelines");
 
     if(mainLayer == nullptr)

@@ -168,6 +168,7 @@ int main(int argc, char *argv[])
 
     // Start the Application
     QgsApplication a( argc, argv, true );
+
 #endif
 
     // create a remote interface
