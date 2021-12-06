@@ -26,7 +26,7 @@ then
 fi
 
 # make
-make
+make -j8
 status=$?;
 if [[ $status != 0 ]]
 then

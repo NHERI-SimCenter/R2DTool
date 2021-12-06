@@ -37,7 +37,11 @@
 # Written by: Stevan Gavrilovic, Frank McKenna
 
 QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel
-QT += xml 3dcore 3drender 3dextras macextras opengl
+QT += xml 3dcore 3drender 3dextras opengl
+
+mac {
+QT += macextras
+}
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -106,7 +110,7 @@ contains(DEFINES, ARC_GIS)  {
 
 } contains(DEFINES, Q_GIS)  {
 
-    PATH_TO_QGIS_PLUGIN=../qgisplugin
+    PATH_TO_QGIS_PLUGIN=../QGISPlugin
 
     message("Building with QGIS library")
 
@@ -498,7 +502,9 @@ mac {
 
 mkpath($$EXAMPLES_DIR)
 
-message($PATH_TO_EXAMPLES)
+message($$PATH_TO_EXAMPLES)
+
+exists( $$shell_path($$PATH_TO_EXAMPLES/Examples.json) ) {
 
 # Copies the examples folder into the build directory
 Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples.json)) $$shell_quote($$shell_path($$EXAMPLES_DIR))
@@ -514,5 +520,8 @@ export(CopyDbs.commands)
 
 QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
+} else {
+message("Warning: Could not find Examples.json, skipping copy functionality")
+}
 }
 }
