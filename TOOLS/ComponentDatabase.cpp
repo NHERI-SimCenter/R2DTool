@@ -214,22 +214,31 @@ bool ComponentDatabase::clearSelectedLayer(void)
 }
 
 
-bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values)
+bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values, QString& error)
 {
     if(selectedLayer == nullptr)
+    {
+        error = "Error, could not find the 'selected assets layer' containing the assets that were selected for analysis. Could not batch update field: "+fieldName;
         return false;
+    }
 
     auto numSelectedFeatures = selectedFeaturesSet.size();
 
     auto numFeatSelLayer = selectedLayer->featureCount();
 
     if(values.size() != numSelectedFeatures || numSelectedFeatures != numFeatSelLayer)
+    {
+        error = "Error, the number of assets in the imported data ("+QString::number(values.size())+ ") should be equal to the number of assets in the 'selected assets layer' (" + QString::number(numSelectedFeatures)+ "). /n Failed to batch update attribute: "+fieldName+". Please ensure all assets are loaded and added to the selected features layer in the input file stage.";
         return false;
+    }
 
     auto field = selectedLayer->dataProvider()->fieldNameIndex(fieldName);
 
     if(field == -1)
+    {
+        error = "Error, failed to find the field "+fieldName+" in the imported results";
         return false;
+    }
 
     QgsFeatureRequest featRequest (selectedFeaturesSet);
 
@@ -258,17 +267,26 @@ bool ComponentDatabase::updateComponentAttributes(const QString& fieldName, cons
     }
 
     if(values.size() != featList.size())
+    {
+        error = "Error, inconsist sizes of values to update and number of updated features. Please contact developers. Could not batch update field: "+fieldName;
         return false;
+    }
 
     auto res = selectedLayer->dataProvider()->truncate();
 
     if(!res)
+    {
+        error = "Error, failed to remove existing features in the 'Selected Asset Layer' data provider. Please contact developers. Could not batch update field: "+fieldName;
         return false;
+    }
 
     res = selectedLayer->dataProvider()->addFeatures(featList);
 
     if(!res)
+    {
+        error = "Error, failed to add features to the 'Selected Asset Layer' data provider. Please contact developers. Could not batch update field: "+fieldName;
         return false;
+    }
 
     selectedLayer->updateExtents();
 

@@ -134,6 +134,10 @@ public:
     // Selects all of the components for analysis
     void selectAllComponents(void);
 
+#ifdef OpenSRA
+    bool loadFileFromPath(const QString& filePath);
+#endif
+
 signals:
     void headingValuesChanged(QStringList);
 
@@ -143,7 +147,7 @@ public slots:
 
 protected slots:
     void selectComponents(void);
-    virtual void loadComponentData(void);
+    virtual bool loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
 

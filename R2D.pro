@@ -37,7 +37,11 @@
 # Written by: Stevan Gavrilovic, Frank McKenna
 
 QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel
-QT += xml 3dcore 3drender 3dextras macextras opengl
+QT += xml 3dcore 3drender 3dextras opengl
+
+mac {
+QT += macextras
+}
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -49,16 +53,12 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # Select one of the following GIS librarys
 DEFINES +=  Q_GIS #ARC_GIS
-#DEFINES += ARC_GIS
-
-# Does this build include the secret user pass for PEER database access?
-DEFINES += INCLUDE_USER_PASS
 
 # Specify the path to the Simcenter common directory
 PATH_TO_COMMON=../SimCenterCommon
 
 # Specify the path to the R2D tool examples folder
-PATH_TO_EXAMPLES=../R2DExamples
+PATH_TO_EXAMPLES=../../R2DExamples
 
 
 ## ADVANCED USAGE BELOW ##
@@ -110,7 +110,7 @@ contains(DEFINES, ARC_GIS)  {
 
 } contains(DEFINES, Q_GIS)  {
 
-    PATH_TO_QGIS_PLUGIN=../qgisplugin
+    PATH_TO_QGIS_PLUGIN=../QGISPlugin
 
     message("Building with QGIS library")
 
@@ -427,6 +427,16 @@ HEADERS +=  Tools/QGISHurricanePreprocessor.h \
 }
 
 
+# Does this build include the secret user pass for PEER database access? Check if the password file exists.
+exists( $$PWD/R2DUserPass.h ) {
+
+    DEFINES += INCLUDE_USER_PASS
+
+} else {
+    message( "Warning: PEER password file not found. Look in the file SampleUserPass.h to add your credentials" )
+}
+
+
 contains(DEFINES, INCLUDE_USER_PASS) {
 
 HEADERS += R2DUserPass.h \
@@ -492,7 +502,9 @@ mac {
 
 mkpath($$EXAMPLES_DIR)
 
-message($PATH_TO_EXAMPLES)
+message($$PATH_TO_EXAMPLES)
+
+exists( $$shell_path($$PATH_TO_EXAMPLES/Examples.json) ) {
 
 # Copies the examples folder into the build directory
 Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples.json)) $$shell_quote($$shell_path($$EXAMPLES_DIR))
@@ -508,5 +520,8 @@ export(CopyDbs.commands)
 
 QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
+} else {
+message("Warning: Could not find Examples.json, skipping copy functionality")
+}
 }
 }

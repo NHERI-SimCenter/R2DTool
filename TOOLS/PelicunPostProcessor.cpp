@@ -585,11 +585,11 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Starting editing
     theBuildingDB->startEditing();
 
-    auto res = theBuildingDB->updateComponentAttributes("LossRatio",attributes);
+    QString errMsg;
+    auto res = theBuildingDB->updateComponentAttributes("LossRatio",attributes,errMsg);
     if(!res)
     {
-        QString msg = "Error updating component attribute: Loss Ratio";
-        throw msg;
+        throw errMsg;
     }
 
     // Commit the changes

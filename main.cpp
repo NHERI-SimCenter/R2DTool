@@ -66,7 +66,6 @@ using namespace Esri::ArcGISRuntime;
 #endif
 
 #ifdef Q_GIS
-#include "qgisapp.h"
 #include "qgsapplication.h"
 #endif
 
@@ -169,6 +168,7 @@ int main(int argc, char *argv[])
 
     // Start the Application
     QgsApplication a( argc, argv, true );
+
 #endif
 
     // create a remote interface

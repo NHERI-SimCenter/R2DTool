@@ -124,14 +124,31 @@ ComponentInputWidget::~ComponentInputWidget()
 }
 
 
-void ComponentInputWidget::loadComponentData(void)
+#ifdef OpenSRA
+bool ComponentInputWidget::loadFileFromPath(const QString& filePath)
+{
+    QFileInfo fileInfo;
+    if (!fileInfo.exists(filePath))
+        return false;
+
+    pathToComponentInputFile = filePath;
+    componentFileLineEdit->setText(filePath);
+
+    this->loadComponentData();
+
+    return true;
+}
+#endif
+
+
+bool ComponentInputWidget::loadComponentData(void)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
         this->chooseComponentInfoFileDialog();
     
     if(pathToComponentInputFile.compare("NULL") == 0)
-        return;
+        return false;
     
     // Check if the directory exists
     QFile file(pathToComponentInputFile);
@@ -144,7 +161,7 @@ void ComponentInputWidget::loadComponentData(void)
         {
             QString errMsg = "Cannot find the file: "+ pathToComponentInputFile + "\n" +"Check your directory and try again.";
             this->errorMessage(errMsg);
-            return;
+            return false;
         }
         else
         {
@@ -164,13 +181,13 @@ void ComponentInputWidget::loadComponentData(void)
     if(!err.isEmpty())
     {
         this->errorMessage(err);
-        return;
+        return false;
     }
     
     if(data.empty())
     {
         this->errorMessage("Input file is empty");
-        return;
+        return false;
     }
     
     // Get the header file
@@ -190,7 +207,7 @@ void ComponentInputWidget::loadComponentData(void)
     if(numRows == 0)
     {
         this->errorMessage("Input file is empty");
-        return;
+        return false;
     }
     else{
         this->statusMessage("Loading visualization for " + QString::number(numRows)+ " assets");
@@ -202,10 +219,9 @@ void ComponentInputWidget::loadComponentData(void)
     if(firstRow.empty())
     {
         this->errorMessage("First row is empty");
-        return;
+        return false;
     }
     
-    componentTableWidget->clear();
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
     
     label3->show();
@@ -222,7 +238,7 @@ void ComponentInputWidget::loadComponentData(void)
     {
         QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
         this->errorMessage(msg);
-        return;
+        return false;
     }
 
 
@@ -238,12 +254,14 @@ void ComponentInputWidget::loadComponentData(void)
     this->statusMessage("Done loading assets");
     QApplication::processEvents();
     
-    return;
+    return true;
 }
 
 
 void ComponentInputWidget::chooseComponentInfoFileDialog(void)
 {
+    this->clear();
+
     pathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
     
     // Return if the user cancels
@@ -252,7 +270,7 @@ void ComponentInputWidget::chooseComponentInfoFileDialog(void)
         pathToComponentInputFile = "NULL";
         return;
     }
-    
+
     // Set file name & entry in qLine edit
     componentFileLineEdit->setText(pathToComponentInputFile);
     
@@ -338,8 +356,10 @@ void ComponentInputWidget::createComponentsBox(void)
         return;
     }
     
-    auto theWidgetFactory = std::make_unique<WidgetFactory>(this);
-    
+    auto theWidgetFactory = new WidgetFactory(this);
+
+    WorkflowAppOpenSRA::getInstance()->setTheWidgetFactory(theWidgetFactory);
+
     QJsonObject paramsObj = thisObj["Params"].toObject();
     
     // The string given in the Methods and params json file
@@ -382,14 +402,12 @@ void ComponentInputWidget::createComponentsBox(void)
     pathLayout->addWidget(pathText);
     pathLayout->addWidget(componentFileLineEdit);
     pathLayout->addWidget(browseFileButton);
-    
+
     // Add a vertical spacer at the bottom to push everything up
-    gridLayout->addWidget(topText);
+    gridLayout->addWidget(label1);
     gridLayout->addLayout(pathLayout);
-    gridLayout->addWidget(selectComponentsText);
-    
-    gridLayout->addWidget(selectComponentsText);
-    
+    gridLayout->addWidget(label2);
+        
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(selectComponentsButton);
@@ -397,8 +415,10 @@ void ComponentInputWidget::createComponentsBox(void)
     
     gridLayout->addLayout(selectComponentsLayout);
     gridLayout->addWidget(locationWidget);
-    gridLayout->addWidget(componentInfoText,0,Qt::AlignCenter);
+    gridLayout->addWidget(label3,0,Qt::AlignCenter);
     gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
+
+    gridLayout->addStretch();
     
 #else
     QHBoxLayout* pathLayout = new QHBoxLayout();
