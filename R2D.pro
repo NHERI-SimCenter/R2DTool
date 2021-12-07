@@ -58,7 +58,7 @@ DEFINES +=  Q_GIS #ARC_GIS
 PATH_TO_COMMON=../SimCenterCommon
 
 # Specify the path to the R2D tool examples folder
-PATH_TO_EXAMPLES=../R2DExamples
+PATH_TO_EXAMPLES=../../R2DExamples
 
 
 ## ADVANCED USAGE BELOW ##
