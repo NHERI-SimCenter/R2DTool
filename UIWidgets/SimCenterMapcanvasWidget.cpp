@@ -1,15 +1,26 @@
-﻿#include "SimCenterMapcanvasWidget.h"
+#include "SimCenterMapcanvasWidget.h"
 #include "QGISVisualizationWidget.h"
+#include "ListTreeModel.h"
 
 #include <qgsmapcanvas.h>
 #include <qgsvectorlayer.h>
 #include <qgsappmaptools.h>
 #include <qgsmaptool.h>
+#include <qgslayertreeview.h>
+#include <qgslayertree.h>
+#include <qgslayertreemodel.h>
+#include <qgslayertreelayer.h>
 
 #include <QVBoxLayout>
+#include <QToolButton>
+#include <QSplitter>
 
 SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisualizationWidget *mainVisWidget) : theVisualizationWidget(mainVisWidget)
 {
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     setWindowTitle(name);
     thisMapCanvas = new QgsMapCanvas();
@@ -21,14 +32,68 @@ SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisu
     this->setAcceptDrops(true);
     thisMapCanvas->setAcceptDrops(true);
 
-    auto mainLayout = new QHBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(0);
+    auto mainWidget = new QSplitter();
+    mainWidget->setContentsMargins(0, 0, 0, 0);
+    mainWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    mainLayout->addWidget(thisMapCanvas);
+    mainLayout->addWidget(mainWidget);
+
+    auto layerTreeView = theVisualizationWidget->getLayerTreeView();
+    auto model = layerTreeView->layerTreeModel();
+
+//    rootNode = new QgsLayerTree();
+//    QgsLayerTreeModel *treeModel = new QgsLayerTreeModel(rootNode, this);
+//    treeModel->setFlag( QgsLayerTreeModel::AllowNodeReorder );
+//    treeModel->setFlag( QgsLayerTreeModel::AllowNodeRename );
+//    treeModel->setFlag( QgsLayerTreeModel::ShowLegend );
+//    treeModel->setFlag( QgsLayerTreeModel::AllowNodeChangeVisibility );
+//    treeModel->setFlag( QgsLayerTreeModel::UseTextFormatting );
+//    treeModel->setAutoCollapseLegendNodes( 10 );
+
+    legendTreeView = new QgsLayerTreeView(this);
+// legendTreeView->setStyleSheet("QTreeView::item:hover{background-color:#FFFF00;}");
+    legendTreeView->setModel(model);
+
+    mainWidget->addWidget(legendTreeView);
+    mainWidget->addWidget(thisMapCanvas);
 
     mMapTools = std::make_unique<QgsAppMapTools>(thisMapCanvas, nullptr);
+
+    // Now add the splitter handle
+    // Note: index 0 handle is always hidden, index 1 is between the two widgets
+    QSplitterHandle *handle = mainWidget->handle(1);
+
+    if(handle == nullptr)
+    {
+        qDebug()<<"Error getting the handle";
+        return;
+    }
+
+    auto buttonHandle = new QToolButton(handle);
+    QVBoxLayout *layout = new QVBoxLayout(handle);
+    layout->setSpacing(0);
+    layout->setMargin(0);
+
+    mainWidget->setHandleWidth(15);
+
+    buttonHandle->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    buttonHandle->setDown(false);
+    buttonHandle->setAutoRaise(false);
+    buttonHandle->setCheckable(false);
+    buttonHandle->setArrowType(Qt::RightArrow);
+    buttonHandle->setStyleSheet("QToolButton{border:0px solid}; QToolButton:pressed {border:0px solid}");
+    buttonHandle->setIconSize(buttonHandle->size());
+    layout->addWidget(buttonHandle);
+
+    mainWidget->setStretchFactor(1,2);
 }
+
+
+//void SimCenterMapcanvasWidget::addLayerToLegend(QgsMapLayer* layer)
+//{
+//    rootNode->addLayer(layer);
+//    legendTreeView->expandAll();
+//}
 
 
 void SimCenterMapcanvasWidget::setMapTool(QgsMapTool *mapTool)
@@ -65,6 +130,7 @@ void SimCenterMapcanvasWidget::clear(void)
     currentLayer = nullptr;
     selectedIds.clear();
     deselectedIds.clear();
+//    rootNode->clear();
 }
 
 
@@ -85,6 +151,13 @@ void SimCenterMapcanvasWidget::enableSelectionTool(void)
     auto selectTool = mMapTools->mapTool(QgsAppMapTools::SelectFeatures);
     thisMapCanvas->setMapTool(selectTool);
     thisMapCanvas->unsetCursor();
+}
+
+
+void SimCenterMapcanvasWidget::enableIdentifyTool(void)
+{
+    auto selectTool = mMapTools->mapTool(QgsAppMapTools::Identify);
+    thisMapCanvas->setMapTool(selectTool);
 }
 
 

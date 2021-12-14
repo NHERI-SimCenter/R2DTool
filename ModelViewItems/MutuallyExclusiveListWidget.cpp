@@ -50,6 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 MutuallyExclusiveListWidget::MutuallyExclusiveListWidget(QWidget *parent, QString headerText) : QTreeView(parent)
 {
+    this->setContentsMargins(0, 0, 0, 0);
+
     checkedItem = nullptr;
 
     treeModel = new CheckableTreeModel(this, headerText);

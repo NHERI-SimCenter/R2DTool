@@ -7,7 +7,13 @@
 
 class QgsMapCanvas;
 class QgsVectorLayer;
+class QgsLayerTreeNode;
+class QgsLayerTree;
+class QgsMapLayer;
+
 class QGISVisualizationWidget;
+
+class QTreeView;
 
 class SimCenterMapcanvasWidget : public QWidget
 {
@@ -21,6 +27,8 @@ public:
 
     void enablePanTool(void);
 
+    void enableIdentifyTool(void);
+
     void enableSelectionTool(void);
 
     void enablePolygonSelectionTool(void);
@@ -32,6 +40,8 @@ public:
     QgsFeatureIds getSelectedIds() const;
 
     void clear(void);
+
+//    void addLayerToLegend(QgsMapLayer* layer);
 
 protected:
 
@@ -47,11 +57,14 @@ private slots:
 
 private:
 
+    QTreeView* legendTreeView = nullptr;
     QgsMapCanvas *thisMapCanvas = nullptr;
     QGISVisualizationWidget* theVisualizationWidget;
     QgsMapCanvas *mainCanvas = nullptr;
 
     QgsVectorLayer* currentLayer = nullptr;
+
+//    QgsLayerTree *rootNode = nullptr;
 
     std::unique_ptr<QgsAppMapTools> mMapTools;
 
