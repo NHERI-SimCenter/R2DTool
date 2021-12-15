@@ -85,11 +85,12 @@ RegionalSiteResponseWidget::RegionalSiteResponseWidget(VisualizationWidget* visW
     progressBar = nullptr;
     inputWidget = nullptr;
     progressBarWidget = nullptr;
-    userGMStackedWidget = nullptr;
+    theStackedWidget = nullptr;
     progressLabel = nullptr;
     eventFile = "";
     motionDir = "";
     unitsWidget = nullptr;
+    //    theStackedWidget = nullptr;    
     
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(this->getRegionalSiteResponseWidget());
@@ -113,41 +114,47 @@ bool RegionalSiteResponseWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     QFileInfo theFile(eventFile);
     if (theFile.exists()) {
         appData["inputEventFile"]=theFile.fileName();
-        appData["inputEventFilePath"]=theFile.path();
+	QDir dirFile(theFile.path());
+        // appData["inputEventFilePath"]=theFile.path();
+	appData["inputEventFilePath"]=dirFile.dirName();
     } else {
         appData["inputEventFile"]=eventFile; // may be valid on others computer
         appData["inputEventFilePath"]=QString("");
     }
     
-    QFileInfo theDir(motionDir);
+    QDir theDir(motionDir);
     if (theDir.exists()) {
-        appData["inputMotionDir"]=theDir.absoluteFilePath();
+      // appData["inputMotionDir"]=theDir.path();
+      appData["inputMotionDir"]=theDir.dirName();
     } else {
-        appData["inputMotionDir"]=QString(motionDir);
+      appData["inputMotionDir"]=QString(motionDir);
     }
     
+
     QFileInfo theScript(siteResponseScriptLineEdit->text());
     if (theScript.exists()) {
         appData["siteResponseScript"]=theScript.fileName();
-        appData["siteResponseScriptPath"]=theScript.path();
+        // appData["siteResponseScriptPath"]=theScript.path();
+	QDir dirFile(theScript.path());
+	appData["siteResponseScriptPath"]=dirFile.dirName();	
     } else {
       appData["siteResponseScript"]=siteResponseScriptLineEdit->text();
-        appData["siteResponseScriptPath"]=QString("");
+      appData["siteResponseScriptPath"]=QString("");
     }
 
 
     QFileInfo theSoil(soilFileLineEdit->text());
     if (theSoil.exists()) {
         appData["soilGridParametersFile"]=theSoil.fileName();
-        appData["soilGridParametersFilePath"]=theSoil.path();
+        //appData["soilGridParametersFilePath"]=theSoil.path();
+	QDir dirFile(theSoil.path());
+	appData["soilGridParametersFilePath"]=dirFile.dirName();		
     } else {
       appData["soilGridParametersFile"]=soilFileLineEdit->text();
       appData["soilGridParametersFilePath"]=QString("");
     }
 
-    // just for when running the app (copyFiles places stuff in the following dir
-    appData["motionDir"]=QString("simcInputMotion/");
-    appData["modelDir"]=QString("simcModelDir/");
+    appData["filter"]=filterLineEdit->text();
     
     jsonObject["ApplicationData"]=appData;
 
@@ -157,14 +164,15 @@ bool RegionalSiteResponseWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool RegionalSiteResponseWidget::outputToJSON(QJsonObject &jsonObj)
 {
-  bool res = unitsWidget->outputToJSON(jsonObj);  
+  bool res = unitsWidget->outputToJSON(jsonObj);
+  jsonObj["eventFile"]="siteResponseOutputMotions/EventGrid.csv";
+  
   return true;
 }
 
 
 bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
-  qDebug() << "RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)";
   if (jsonObj.contains("ApplicationData")) {
         QJsonObject appData = jsonObj["ApplicationData"].toObject();
 
@@ -173,14 +181,31 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         if (appData.contains("inputEventFile"))
             fileName = appData["inputEventFile"].toString();
+	
         if (appData.contains("inputEventFilePath")) {
-            pathToFile = appData["inputEventFilePath"].toString();
+	    QString path = appData["inputEventFilePath"].toString();
+            pathToFile = path;
 	    QDir pathToFileDir(pathToFile);
 	    if (!pathToFileDir.exists()) {
-	      pathToFile = QDir::currentPath() + QDir::separator() + pathToFile;
+	      pathToFile = QDir::currentPath() + QDir::separator() + path;
+	      pathToFileDir.setPath(pathToFile);
+	    } 
+	    if (!pathToFileDir.exists()) {
+	      pathToFile = QDir::currentPath() + QDir::separator() + "input_data" + QDir::separator() + path;
+	    }
+	} else if (appData.contains("inputMotionDir")) {
+            QString path = appData["inputMotionDir"].toString();
+	    pathToFile = path;
+	    QDir pathToFileDir(pathToFile);
+	    if (!pathToFileDir.exists()) {
+	      pathToFile = QDir::currentPath() + QDir::separator() + path;
+	      pathToFileDir.setPath(pathToFile);
+	    } 
+	    if (!pathToFileDir.exists()) {
+	      pathToFile = QDir::currentPath() + QDir::separator() + "input_data" + QDir::separator() + path;
 	    }
 	} else
-            pathToFile=QDir::currentPath();
+	  pathToFile=QDir::currentPath();
 
         QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
@@ -191,34 +216,25 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         //
 
         if (!QFileInfo::exists(fullFilePath)){
-            pathToFile=QDir::currentPath();
-            fullFilePath = pathToFile + QDir::separator()
-                    + "input_data" + QDir::separator() + QDir::separator() + fileName;
-
-            if (!QFile::exists(fullFilePath)) {
-                this->errorMessage("RegionalSiteResponse - could not find event file");
-
-		msg += QString("; ") + fullFilePath;
-
-		pathToFile=QDir::currentPath();
-		fullFilePath = pathToFile + QDir::separator()
-		  + "input_data" + QDir::separator() + QString("simcMotionDir") + QDir::separator() + fileName;
-		if (!QFile::exists(fullFilePath)) {
-
-		  msg += QString("; ") + fullFilePath;		  
-		  this->errorMessage(msg);
-		  
-		  return false;
-		}
-	    }
-        }
+	  this->errorMessage(msg);
+	  return false;
+	} 
 
         eventFileLineEdit->setText(fullFilePath);
         eventFile = fullFilePath;
 
-        if (appData.contains("inputMotionDir"))
-	  motionDir = appData["inputMotionDir"].toString();
-	else {
+        if (appData.contains("inputMotionDir")) {
+	  QString path = appData["inputMotionDir"].toString();
+	  motionDir = path;
+	  QDir pathToMotionDir(motionDir);
+	  if (!pathToMotionDir.exists()) {
+	    motionDir = QDir::currentPath() + QDir::separator() + path;
+	    pathToMotionDir.setPath(motionDir);
+	  } 
+	  if (!pathToMotionDir.exists()) {
+	    motionDir = QDir::currentPath() + QDir::separator() + "input_data" + QDir::separator() + path;
+	  }	  
+	} else {
 	  motionDir = QFileInfo(eventFile).absolutePath();
 	}
 	  
@@ -227,34 +243,15 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 	msg = QString("No Motion Dir found in following locations: ") + motionDir;	
 	
         if (!motionD.exists()){
-
-	  QString trialDir = QDir::currentPath() +
-	    QDir::separator() + "input_data" + QDir::separator() + motionDir;
-	  
-            if (motionD.exists(trialDir)) {
-                motionDir = trialDir;
-                motionDirLineEdit->setText(trialDir);
-            } else {
-		  msg += QString("; ") + trialDir;		  	      
-
-		  trialDir = QDir::currentPath() +
-                    QDir::separator() + "input_data" + QDir::separator() + "simcInputMotion";
-		  if (motionD.exists(trialDir)) {
-		    motionDir = trialDir;
-		  } else {
-		    
-		    msg += QString("; ") + trialDir; 
-		    this->errorMessage(msg);
-		    return false;
-		  }
-	    }
-        }
+	  this->errorMessage(msg);
+	  return false;
+	}
 	
 	motionDirLineEdit->setText(motionDir);
-
+	
         this->loadUserGMData();
-
-        if (appData.contains("siteResponseScript")) {
+	
+        if (appData.contains("siteResponseScript") && appData.contains("siteResponseScriptPath")) {
 
             QString fileName = appData["siteResponseScript"].toString();
             QString pathToFile = appData["siteResponseScriptPath"].toString();
@@ -264,31 +261,32 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             // files downloaded possibly from a remote run will be in input_data/relevantDIR
             //
 
-	    msg = QString("No site response script found in following locations: " ) + fullFilePath;		    
+	    msg = QString("No site response script found in following locations: " ) + fullFilePath;
             if (!QFileInfo::exists(fullFilePath)){
 
 	      fullFilePath = QDir::currentPath() + QDir::separator()
-		+ "input_data" + QDir::separator() + fileName;
+		+ "input_data" + QDir::separator() + pathToFile + QDir::separator() + fileName;
 
 	      if (!QFile::exists(fullFilePath)) {
 		msg += QString("; ") + fullFilePath; 		  
 	
-		fullFilePath = QDir::currentPath() + QDir::separator()
-		  + "input_data" + QDir::separator() + QString("simcModelDir") + QDir::separator() + fileName;
+		fullFilePath = QDir::currentPath() + QDir::separator() + pathToFile +
+		  QDir::separator() + fileName;
 		
                 if (!QFile::exists(fullFilePath)) {
-		  msg += QString("; ") + fullFilePath; 		  
+		  msg += QString("; ") + fullFilePath;
+		  this->errorMessage(msg);		  
 		  return false;
                 }
 	      }
 	    }
             siteResponseScriptLineEdit->setText(fullFilePath);
         } else {
-	  this->errorMessage("RegionalSiteResponse - no siteResponseScript key provided");
+	  this->errorMessage("RegionalSiteResponse - no siteResponseScript or siteResponseScriptPath key provided");
 	  return false;
 	}
 
-        if (appData.contains("soilGridParametersFile")) {
+        if (appData.contains("soilGridParametersFile") && appData.contains("soilGridParametersFilePath")) {
 
             QString fileName = appData["soilGridParametersFile"].toString();
             QString pathToFile = appData["soilGridParametersFilePath"].toString();
@@ -298,44 +296,59 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             // files downloaded possibly from a remote run will be in input_data/relevantDIR
             //
 
-	    msg = QString("No soil grid parameters file found in following locations: " ) + fullFilePath;		    	    
-	    
-            if (!QFileInfo::exists(fullFilePath)){
-                fullFilePath = QDir::currentPath() + QDir::separator()
-                        + "input_data" + QDir::separator() + fileName;
+	    msg = QString("No soil grid parameters file found in following locations: " ) + fullFilePath;
 
+            if (!QFileInfo::exists(fullFilePath)){
+
+	      fullFilePath = QDir::currentPath() + QDir::separator()
+		+ "input_data" + QDir::separator() + pathToFile + QDir::separator() + fileName;	    
+
+	      if (!QFile::exists(fullFilePath)) {
+		msg += QString("; ") + fullFilePath; 		  
+	
+		fullFilePath = QDir::currentPath() + QDir::separator() + pathToFile
+		  + QDir::separator() + fileName;
+		
                 if (!QFile::exists(fullFilePath)) {
-		  msg += "; " + fullFilePath;
-		  this->errorMessage("msg");
+		  msg += QString("; ") + fullFilePath;
+		  this->errorMessage(msg);		  
 		  return false;
                 }
+	      }
             }
+	    
             soilFileLineEdit->setText(fullFilePath);
+	    
         } else {
 	  this->errorMessage("RegionalSiteResponse - no soilGridParametersFile key provided");
 	  return false;
-	}	  
+	}
 
-        return true;
-    }
+        if (appData.contains("filter"))
+            this->setFilterString(appData["filter"].toString());
 
-    return false;
+	return true;
+  }
+
+  
+  // load the motions
+  //  this->loadUserGMData();
+
+  return false;
 }
 
 bool RegionalSiteResponseWidget::inputFromJSON(QJsonObject &jsonObj) {
 
-  qDebug() << "RegionalSiteResponseWidget::inputFromJSON(QJsonObject &jsonObj)";  
   // read in the units
+  
   bool res = unitsWidget->inputFromJSON(jsonObj);
 
-  qDebug() << "RegionalSiteResponse units::inputFromJSON returned: " << res;
-  
   // If setting of units failed, provide default units and issue a warning
   if(!res)
     {
       auto paramNames = unitsWidget->getParameterNames();
       
-      this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
+      this->infoMessage("Warning: Failed to find units in SiteResponseWidget widget. Setting default units for the following parameters:");
       
         for(auto&& it : paramNames)
         {
@@ -361,12 +374,14 @@ void RegionalSiteResponseWidget::showUserGMLayers(bool state)
 
 QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
 {
-    if (userGMStackedWidget)
-        return userGMStackedWidget.get();
 
-    userGMStackedWidget = std::make_unique<QStackedWidget>();
+  if (theStackedWidget)
+    return theStackedWidget;
+  
+  theStackedWidget = new QStackedWidget();
+  
 
-    //
+  //
     // soil stuff: properties and site response script
     //
 
@@ -418,6 +433,11 @@ QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
         }
     );
 
+
+    soilLayout->addWidget(new QLabel("Filter"), 2, 0);
+    filterLineEdit = new QLineEdit();
+    soilLayout->addWidget(filterLineEdit, 2, 1);    
+    
     inputLayout->addWidget(soilGroupBox);
 
     //
@@ -481,28 +501,28 @@ QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
     // add file and progress widgets to stacked widgets, then set defaults
     //
 
-    userGMStackedWidget->addWidget(inputWidget);
-    userGMStackedWidget->addWidget(progressBarWidget);
+    theStackedWidget->addWidget(inputWidget);
+    theStackedWidget->addWidget(progressBarWidget);
 
-    userGMStackedWidget->setCurrentWidget(inputWidget);
+    theStackedWidget->setCurrentWidget(inputWidget);
 
-    userGMStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
+    theStackedWidget->setWindowTitle("Select folder containing earthquake ground motions");
 
-    return userGMStackedWidget.get();
+    return theStackedWidget;
 }
 
 
 void RegionalSiteResponseWidget::showUserGMSelectDialog(void)
 {
 
-    if (!userGMStackedWidget)
+    if (!theStackedWidget)
     {
         this->getRegionalSiteResponseWidget();
     }
 
-    userGMStackedWidget->show();
-    userGMStackedWidget->raise();
-    userGMStackedWidget->activateWindow();
+    theStackedWidget->show();
+    theStackedWidget->raise();
+    theStackedWidget->activateWindow();
 }
 
 bool
@@ -510,16 +530,30 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
 {
     // create dir and copy motion files
     QDir destDIR(destDir);
-    QString modelDir = destDir + QDir::separator() + QString("simcModelDir");
-    QString motionDir = destDir + QDir::separator() + QString("simcMotionDir");
-    destDIR.mkpath(modelDir);
-    destDIR.mkpath(motionDir);
 
+    QString motion = "simcMotion";
+    QString model = "simcModel";
+    
+    QDir theMotionDir(motionDir);    
+    if (theMotionDir.exists()) 
+      motion=theMotionDir.dirName();
+
+    QFileInfo theScript(siteResponseScriptLineEdit->text());
+    if (theScript.exists()) {
+	QDir theScriptDir(theScript.path());
+	model=theScriptDir.dirName();	
+    }
+    
+    QString newModelDir = destDir + QDir::separator() + model;
+    QString newMotionDir = destDir + QDir::separator() + motion;   
+
+    destDIR.mkpath(newModelDir);
+    destDIR.mkpath(newMotionDir);
 
     QString soilParameteres = soilFileLineEdit->text();
     QFileInfo soilParametersFile(soilParameteres);
     if (soilParametersFile.exists())
-      this->copyFile(soilParameteres, destDir);
+      this->copyFile(soilParameteres, newModelDir);
     else {
       qDebug() << "RegionalSiteResponse:copyFiles soil parameters files does not exist:" << soilParameteres;
       return false;
@@ -528,7 +562,7 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
     QString script = siteResponseScriptLineEdit->text();
     QFileInfo scriptFile(script);
     if (scriptFile.exists()) {
-      this->copyPath(scriptFile.path(), modelDir, false);
+      this->copyPath(scriptFile.path(), newModelDir, false);
     } else {
       qDebug() << "RegionalSiteResponse:copyFiles script file does not exist:" << scriptFile;
       return false;
@@ -536,15 +570,14 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
 
     QFileInfo eventFileInfo(eventFile);
     if (eventFileInfo.exists()) {
-      this->copyFile(eventFile, motionDir);
+      this->copyFile(eventFile, newMotionDir);
     } else {
       qDebug() << "RegionalSiteResponse:copyFiles event grid file does not exist:" << eventFile;
       return false;
     }
 
-    QDir motionDirInfo(motionDir);
-    if (motionDirInfo.exists()) {
-      return this->copyPath(motionDir, motionDir, false);
+    if (theMotionDir.exists()) {
+      return this->copyPath(motionDir, newMotionDir, false);
     } else {
       qDebug() << "RegionalSiteResponse:copyFiles motion Dir file does not exist:" << motionDir;
       return false;
@@ -554,19 +587,468 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
     return false;
 }
 
-void RegionalSiteResponseWidget::loadUserGMData(void) {
-  
+#ifdef Q_GIS
+void RegionalSiteResponseWidget::loadUserGMData(void)
+{
+    auto qgisVizWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
 
-    emit loadingComplete(true);
+    if(qgisVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return;
+    }
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    this->showProgressBar();
+
+    QApplication::processEvents();
+
+    //progressBar->setRange(0,inputFiles.size());
+    progressBar->setRange(0, data.count());
+    progressBar->setValue(0);
+
+    // Get the headers in the first station file - assume that the rest will be the same
+    auto rowStr = data.at(1);
+    auto stationName = rowStr[0];
+
+    // Path to station files, e.g., site0.csv
+    auto stationFilePath = motionDir + QDir::separator() + stationName;
+
+    QString err2;
+    QVector<QStringList> sampleStationData = csvTool.parseCSVFile(stationFilePath,err);
+
+    // Return if there is an error or the station data is empty
+    if(!err2.isEmpty())
+    {
+        this->errorMessage("Could not parse the first station with the following error: "+err2);
+        return;
+    }
+
+    if(sampleStationData.size() < 2)
+    {
+        this->errorMessage("The file " + stationFilePath + " is empty");
+        return;
+    }
+
+    // Get the header file
+    auto stationDataHeadings = sampleStationData.first();
+
+    // Create the fields
+    QList<QgsField> attribFields;
+    attribFields.push_back(QgsField("AssetType", QVariant::String));
+    attribFields.push_back(QgsField("TabName", QVariant::String));
+    attribFields.push_back(QgsField("Station Name", QVariant::String));
+    attribFields.push_back(QgsField("Latitude", QVariant::Double));
+    attribFields.push_back(QgsField("Longitude", QVariant::Double));
+
+    for(auto&& it : stationDataHeadings)
+    {
+        attribFields.push_back(QgsField(it, QVariant::String));
+        unitsWidget->addNewUnitItem(it);
+    }
+
+    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
+    // gridLayer->setMinScale(80000);
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    int count = 0;
+
+    auto maxToDisp = 20;
+
+    QgsFeatureList featureList;
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        auto stationName = rowStr[0];
+
+        // Path to station files, e.g., site0.csv
+        auto stationPath = motionDir + QDir::separator() + stationName;
+
+        bool ok;
+        auto lon = rowStr[1].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error longitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            this->hideProgressBar();
+
+            return;
+        }
+
+        auto lat = rowStr[2].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error latitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            this->hideProgressBar();
+
+            return;
+        }
+
+        GroundMotionStation GMStation(stationPath,lat,lon);
+
+        try
+        {
+            GMStation.importGroundMotions();
+        }
+        catch(QString msg)
+        {
+            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
+            this->errorMessage(errorMessage);
+
+            this->hideProgressBar();
+
+            return;
+        }
+
+        auto stationData = GMStation.getStationData();
+
+        // create the feature attributes
+        QgsAttributes featAttributes(attribFields.size());
+
+        auto latitude = GMStation.getLatitude();
+        auto longitude = GMStation.getLongitude();
+
+        featAttributes[0] = "GroundMotionGridPoint";     // "AssetType"
+        featAttributes[1] = "Ground Motion Grid Point";  // "TabName"
+        featAttributes[2] = stationName;                 // "Station Name"
+        featAttributes[3] = latitude;                    // "Latitude"
+        featAttributes[4] = longitude;                   // "Longitude"
+
+        // The number of headings in the file
+        auto numParams = stationData.front().size();
+
+        maxToDisp = (maxToDisp<stationData.size() ? maxToDisp : stationData.size());
+
+        QVector<QString> dataStrs(numParams);
+
+        for(int i = 0; i<maxToDisp-1; ++i)
+        {
+            auto stationParams = stationData[i];
+
+            for(int j = 0; j<numParams; ++j)
+            {
+                dataStrs[j] += stationParams[j] + ", ";
+            }
+        }
+
+        for(int j = 0; j<numParams; ++j)
+        {
+            auto str = dataStrs[j] ;
+            str += stationData[maxToDisp-1][j];
+
+            if(maxToDisp<stationData.size())
+                str += "...";
+
+            featAttributes[5+j] = str;
+        }
+
+        // Create the feature
+        QgsFeature feature;
+        feature.setGeometry(QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude)));
+        feature.setAttributes(featAttributes);
+        featureList.append(feature);
+
+        ++count;
+        progressLabel->clear();
+        progressBar->setValue(count);
+
+        QApplication::processEvents();
+    }
+
+
+    auto vectorLayer = qgisVizWidget->addVectorLayer("Point", "Ground Motion Input Grid");
+
+    if(vectorLayer == nullptr)
+    {
+        this->errorMessage("Error creating a layer");
+        this->hideProgressBar();
+        return;
+    }
+
+    auto dProvider = vectorLayer->dataProvider();
+    auto res = dProvider->addAttributes(attribFields);
+
+    if(!res)
+    {
+        this->errorMessage("Error adding attribute fields to layer");
+        qgisVizWidget->removeLayer(vectorLayer);
+        this->hideProgressBar();
+        return;
+    }
+
+    vectorLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    dProvider->addFeatures(featureList);
+    vectorLayer->updateExtents();
+
+    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+
+    progressLabel->setVisible(false);
+
+    // Reset the widget back to the input pane and close
+    this->hideProgressBar();
+
+    /*
+    if(theStackedWidget->isModal())
+        theStackedWidget->close();
+    */
+    
+   emit loadingComplete(true);
+
+    emit outputDirectoryPathChanged(motionDir, eventFile);
 
     return;
 }
+#endif
+
+#ifdef ARC_GIS
+void RegionalSiteResponseWidget::loadUserGMData(void)
+{
+
+    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(arcVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return;
+    }
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
+
+    if(!err.isEmpty())
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    if(data.empty())
+        return;
+
+    theStackedWidget->setCurrentWidget(progressBarWidget);
+    progressBarWidget->setVisible(true);
+
+    QApplication::processEvents();
+
+    //progressBar->setRange(0,inputFiles.size());
+    progressBar->setRange(0, data.count());
+
+    progressBar->setValue(0);
+
+    // Create the table to store the fields
+    QList<Field> tableFields;
+    tableFields.append(Field::createText("AssetType", "NULL",4));
+    tableFields.append(Field::createText("TabName", "NULL",4));
+    tableFields.append(Field::createText("Station Name", "NULL",4));
+    tableFields.append(Field::createText("Latitude", "NULL",8));
+    tableFields.append(Field::createText("Longitude", "NULL",9));
+    tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
+    tableFields.append(Field::createText("Ground Motions","",1));
+
+    auto gridFeatureCollection = new FeatureCollection(this);
+
+    // Create the feature collection table/layers
+    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
+    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
+
+    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+
+    gridLayer->setName("Ground Motion Grid Points");
+    gridLayer->setAutoFetchLegendInfos(true);
+
+    // Create red cross SimpleMarkerSymbol
+    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
+
+    // Create renderer and set symbol to crossSymbol
+    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+    renderer->setLabel("Ground motion grid points");
+
+    // Set the renderer for the feature layer
+    gridFeatureCollectionTable->setRenderer(renderer);
+
+    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
+    // gridLayer->setMinScale(80000);
+
+    // Pop off the row that contains the header information
+    data.pop_front();
+
+    auto numRows = data.size();
+
+    int count = 0;
+
+    // Get the data
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rowStr = data.at(i);
+
+        auto stationName = rowStr[0];
+
+        // Path to station files, e.g., site0.csv
+        auto stationPath = motionDir + QDir::separator() + stationName;
+
+        bool ok;
+        auto lon = rowStr[1].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error longitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            theStackedWidget->setCurrentWidget(inputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        auto lat = rowStr[2].toDouble(&ok);
+
+        if(!ok)
+        {
+            QString errMsg = "Error latitude to a double, check the value";
+            this->errorMessage(errMsg);
+
+            theStackedWidget->setCurrentWidget(inputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        GroundMotionStation GMStation(stationPath,lat,lon);
+
+        try
+        {
+            GMStation.importGroundMotions();
+        }
+        catch(QString msg)
+        {
+
+            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
+
+            this->errorMessage(errorMessage);
+
+            theStackedWidget->setCurrentWidget(inputWidget);
+            progressBarWidget->setVisible(false);
+
+            return;
+        }
+
+        // create the feature attributes
+        QMap<QString, QVariant> featureAttributes;
+
+        //  auto attrbText = GMStation.
+        //  auto attrbVal = pointData[i];
+        //  featureAttributes.insert(attrbText,attrbVal);
+
+        auto vecGMs = GMStation.getStationGroundMotions();
+        featureAttributes.insert("Number of Ground Motions", vecGMs.size());
+
+
+        QString GMNames;
+        for(int i = 0; i<vecGMs.size(); ++i)
+        {
+            auto GMName = vecGMs.at(i).getName();
+
+            GMNames.append(GMName);
+
+            if(i != vecGMs.size()-1)
+                GMNames.append(", ");
+
+        }
+
+        featureAttributes.insert("Station Name", stationName);
+        featureAttributes.insert("Ground Motions", GMNames);
+        featureAttributes.insert("AssetType", "GroundMotionGridPoint");
+        featureAttributes.insert("TabName", "Ground Motion Grid Point");
+
+        auto latitude = GMStation.getLatitude();
+        auto longitude = GMStation.getLongitude();
+
+        featureAttributes.insert("Latitude", latitude);
+        featureAttributes.insert("Longitude", longitude);
+
+        // Create the point and add it to the feature table
+        Point point(longitude,latitude);
+        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+
+        gridFeatureCollectionTable->addFeature(feature);
+
+
+        ++count;
+        progressLabel->clear();
+        progressBar->setValue(count);
+
+        QApplication::processEvents();
+    }
+
+    // Create a new layer
+    auto layersTreeView = arcVizWidget->getLayersTree();
+
+    // Check if there is a 'User Ground Motions' root item in the tree
+    auto userInputTreeItem = layersTreeView->getTreeItem("User Ground Motions", nullptr);
+
+    // If there is no item, create one
+    if(userInputTreeItem == nullptr)
+    {
+        auto itemUID = theVisualizationWidget->createUniqueID();
+        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", itemUID);
+    }
+
+
+    // Add the event layer to the layer tree
+    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
+
+    progressLabel->setVisible(false);
+
+    // Add the event layer to the map
+    arcVizWidget->addLayerToMap(gridLayer,userInputTreeItem);
+
+    // Reset the widget back to the input pane and close
+    theStackedWidget->setCurrentWidget(inputWidget);
+    inputWidget->setVisible(true);
+
+    if(theStackedWidget->isModal())
+        theStackedWidget->close();
+
+    emit loadingComplete(true);
+
+    emit outputDirectoryPathChanged(motionDir, eventFile);
+
+    return;
+}
+#endif
+
 
 void RegionalSiteResponseWidget::soilParamaterFileDialog(void)
 {
-    userGMStackedWidget->show();
-    userGMStackedWidget->raise();
-    userGMStackedWidget->activateWindow();
+    theStackedWidget->show();
+    theStackedWidget->raise();
+    theStackedWidget->activateWindow();
 
     QFileDialog dialog(this);
     QString newFile = QFileDialog::getOpenFileName(this,tr("Soil Parameters File"));
@@ -706,4 +1188,30 @@ void RegionalSiteResponseWidget::clear(void)
     motionDirLineEdit->clear();
 
     stationList.clear();
+}
+
+void RegionalSiteResponseWidget::showProgressBar(void)
+{
+    theStackedWidget->setCurrentWidget(progressBarWidget);
+    inputWidget->setVisible(false);
+    progressBarWidget->setVisible(true);
+}
+
+void RegionalSiteResponseWidget::hideProgressBar(void)
+{
+    theStackedWidget->setCurrentWidget(inputWidget);
+    progressBarWidget->setVisible(false);
+    inputWidget->setVisible(true);
+}
+
+
+
+void RegionalSiteResponseWidget::setFilterString(const QString& filter)
+{
+  filterLineEdit->setText(filter);
+}
+
+QString RegionalSiteResponseWidget::getFilterString(void)
+{
+    return filterLineEdit->text();
 }
