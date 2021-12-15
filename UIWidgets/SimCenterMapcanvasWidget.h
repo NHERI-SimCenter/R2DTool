@@ -10,10 +10,9 @@ class QgsVectorLayer;
 class QgsLayerTreeNode;
 class QgsLayerTree;
 class QgsMapLayer;
+class QgsLayerTreeView;
 
 class QGISVisualizationWidget;
-
-class QTreeView;
 
 class SimCenterMapcanvasWidget : public QWidget
 {
@@ -57,7 +56,7 @@ private slots:
 
 private:
 
-    QTreeView* legendTreeView = nullptr;
+    QgsLayerTreeView* legendTreeView = nullptr;
     QgsMapCanvas *thisMapCanvas = nullptr;
     QGISVisualizationWidget* theVisualizationWidget;
     QgsMapCanvas *mainCanvas = nullptr;

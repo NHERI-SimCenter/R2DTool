@@ -10,6 +10,8 @@
 #include <qgslayertree.h>
 #include <qgslayertreemodel.h>
 #include <qgslayertreelayer.h>
+#include <qgisapp.h>
+#include <qgsapplayertreeviewmenuprovider.h>
 
 #include <QVBoxLayout>
 #include <QToolButton>
@@ -53,6 +55,36 @@ SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisu
     legendTreeView = new QgsLayerTreeView(this);
 // legendTreeView->setStyleSheet("QTreeView::item:hover{background-color:#FFFF00;}");
     legendTreeView->setModel(model);
+
+    auto qGISApp = theVisualizationWidget->getQgis();
+
+    legendTreeView->setMenuProvider( new QgsAppLayerTreeViewMenuProvider(legendTreeView, thisMapCanvas));
+
+    connect( legendTreeView, &QAbstractItemView::doubleClicked, qGISApp, &QgisApp::layerTreeViewDoubleClicked );
+    connect( legendTreeView->selectionModel(), &QItemSelectionModel::currentChanged, qGISApp, &QgisApp::updateNewLayerInsertionPoint );
+
+    //connect( legendTreeView, &QgsLayerTreeView::currentLayerChanged, qGISApp, &QgisApp::onActiveLayerChanged );
+//    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+//             qGISApp, &QgisApp::legendLayerSelectionChanged );
+//    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+//             qGISApp, &QgisApp::activateDeactivateMultipleLayersRelatedActions );
+//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::addedChildren,
+//             qGISApp, &QgisApp::markDirty );
+//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::addedChildren,
+//             qGISApp, &QgisApp::updateNewLayerInsertionPoint );
+//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::removedChildren,
+//             qGISApp, &QgisApp::markDirty );
+//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::removedChildren,
+//             qGISApp, &QgisApp::updateNewLayerInsertionPoint );
+//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::visibilityChanged,
+//             qGISApp, &QgisApp::markDirty );
+//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::customPropertyChanged,
+//             qGISApp, [ = ]( QgsLayerTreeNode *, const QString & key )
+//    {
+//        // only mark dirty for non-view only changes
+//        if ( !QgsLayerTreeView::viewOnlyCustomProperties().contains( key ) )
+//            qGISApp->markDirty();
+//    } );
 
     mainWidget->addWidget(legendTreeView);
     mainWidget->addWidget(thisMapCanvas);
