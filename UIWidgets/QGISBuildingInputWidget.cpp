@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISVisualizationWidget.h"
 #include "ComponentTableView.h"
 #include "ComponentDatabaseManager.h"
+#include "AssetFilterDelegate.h"
 
 #include <qgsfield.h>
 #include <qgsfillsymbol.h>
@@ -116,6 +117,8 @@ int QGISBuildingInputWidget::loadComponentVisualization()
     mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
     theComponentDb->setMainLayer(mainLayer);
+
+    filterDelegateWidget  = new AssetFilterDelegate(mainLayer);
 
     auto numAtrb = attribFields.size();
 

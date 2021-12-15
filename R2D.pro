@@ -180,6 +180,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             ModelViewItems/ListTreeModel.cpp \
             ModelViewItems/CustomListWidget.cpp \
             Tools/AssetInputDelegate.cpp \
+            Tools/AssetFilterDelegate.cpp \
             Tools/SimCenterUnitsCombo.cpp \
             Tools/ComponentDatabase.cpp \
             Tools/CSVReaderWriter.cpp \
@@ -287,6 +288,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/Vs30.h \
             Events/UI/Vs30Widget.h \
             Tools/AssetInputDelegate.h \
+            Tools/AssetFilterDelegate.h \
             Tools/SimCenterUnitsCombo.h \
             Tools/ComponentDatabase.h \
             Tools/CSVReaderWriter.h \

@@ -37,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "AssetInputDelegate.h"
+#include "AssetFilterDelegate.h"
 #include "ComponentInputWidget.h"
 #include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
@@ -107,7 +108,7 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
 
     auto txt1 = "Load information from a CSV file";
     auto txt2  = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
-    "Define a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+    "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
 
     auto txt3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
 
@@ -308,7 +309,8 @@ void ComponentInputWidget::createComponentsBox(void)
     //    componentFileLineEdit->setMaximumWidth(750);
     componentFileLineEdit->setMinimumWidth(400);
     componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    
+
+
     QPushButton *browseFileButton = new QPushButton();
     browseFileButton->setText(tr("Browse"));
     browseFileButton->setMaximumWidth(150);
@@ -334,6 +336,11 @@ void ComponentInputWidget::createComponentsBox(void)
     clearSelectionButton->setMaximumWidth(150);
     
     connect(clearSelectionButton,SIGNAL(clicked()),this,SLOT(clearComponentSelection()));
+
+    QPushButton *filterExpressionButton = new QPushButton();
+    filterExpressionButton->setText(tr("Advanced Filter"));
+    filterExpressionButton->setMaximumWidth(150);
+    connect(filterExpressionButton,SIGNAL(clicked()),this,SLOT(handleComponentFilter()));
     
     // Text label for Component information
     label3 = new QLabel();
@@ -429,14 +436,16 @@ void ComponentInputWidget::createComponentsBox(void)
     // Add a vertical spacer at the bottom to push everything up
     gridLayout->addWidget(label1);
     gridLayout->addLayout(pathLayout);
-    gridLayout->addWidget(label2);
 
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
+    selectComponentsLayout->addWidget(label2);
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
+    selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(selectComponentsButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
     
     gridLayout->addLayout(selectComponentsLayout);
+
     gridLayout->addWidget(label3,0,Qt::AlignCenter);
     gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
     
@@ -944,31 +953,34 @@ bool ComponentInputWidget::copyFiles(QString &destName)
 
 
     // For testing, creates a csv file of only the selected components
-    //    qDebug()<<"Saving selected components to .csv";
-    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+//    qDebug()<<"Saving selected components to .csv";
+//    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
+//    QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-    //    selectedData[0] = headerInfo;
+//    selectedData[0] = headerValues;
 
-    //    int i = 0;
-    //    for(auto&& rowID : selectedIDs)
-    //    {
-    //        QStringList rowData;
-    //        rowData.reserve(nCols);
+//    auto nCols = componentTableWidget->columnCount();
 
-    //        for(int j = 0; j<nCols; ++j)
-    //        {
-    //            auto item = componentTableWidget->item(rowID-1,j)->data(0).toString();
+//    int i = 0;
+//    for(auto&& rowID : selectedIDs)
+//    {
+//        QStringList rowData;
+//        rowData.reserve(nCols);
 
-    //            rowData<<item;
-    //        }
-    //        selectedData[i+1] = rowData;
+//        for(int j = 0; j<nCols; ++j)
+//        {
+//            auto item = componentTableWidget->item(rowID-1,j).toString();
 
-    //        ++i;
-    //    }
+//            rowData<<item;
+//        }
+//        selectedData[i+1] = rowData;
 
-    //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+//        ++i;
+//    }
+
+//    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+    // For testing end
 
     return true;
 }
@@ -1083,4 +1095,53 @@ void ComponentInputWidget::clearSelectedAssets(void)
 {
     this->clearComponentSelection();
 }
+
+
+void ComponentInputWidget::handleComponentFilter(void)
+{
+    auto mainAssetLayer = theComponentDb->getMainLayer();
+
+    if(mainAssetLayer == nullptr)
+    {
+        this->statusMessage("Please import assets to create filter");
+        return;
+    }
+
+    QVector<int> filterIds;
+    auto res = filterDelegateWidget->openQueryBuilderDialog(filterIds);
+
+    if(res == -1)
+    {
+        this->errorMessage("Error creating the filter");
+        return;
+    }
+
+    if(!filterIds.isEmpty())
+    {
+        selectComponentsLineEdit->insertSelectedComponents(filterIds);
+        selectComponentsLineEdit->selectComponents();
+    }
+}
+
+
+int ComponentInputWidget::applyFilterString(const QString& filter)
+{
+    QVector<int> filterIds;
+    auto res = filterDelegateWidget->setFilterString(filter,filterIds);
+
+    if(res == -1)
+    {
+        this->errorMessage("Error setting the filter string");
+        return -1;
+    }
+
+    if(!filterIds.isEmpty())
+    {
+        selectComponentsLineEdit->insertSelectedComponents(filterIds);
+        selectComponentsLineEdit->selectComponents();
+    }
+
+    return 0;
+}
+
 
