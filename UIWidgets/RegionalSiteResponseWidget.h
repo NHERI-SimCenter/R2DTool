@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class VisualizationWidget;
 class SimCenterUnitsWidget;
 
+class ComponentInputWidget;
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
@@ -106,7 +107,12 @@ signals:
 
 private:
 
-    std::unique_ptr<QStackedWidget> userGMStackedWidget;
+  void showProgressBar(void);
+  void hideProgressBar(void);
+  void setFilterString(const QString& filter);
+  QString getFilterString(void);
+  
+  QStackedWidget* theStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
@@ -116,7 +122,8 @@ private:
     QLineEdit *eventFileLineEdit;
     QLineEdit *motionDirLineEdit;
     QLineEdit *soilFileLineEdit;
-    QLineEdit *siteResponseScriptLineEdit; 
+    QLineEdit *siteResponseScriptLineEdit;
+    QLineEdit *filterLineEdit;
 
     QLabel* progressLabel;
     QWidget* progressBarWidget;
@@ -125,8 +132,9 @@ private:
 
     QVector<GroundMotionStation> stationList;
 
-  SimCenterUnitsWidget* unitsWidget;
-
+    SimCenterUnitsWidget* unitsWidget;
+  
+    ComponentInputWidget *theInputMotions;
 };
 
 #endif // RegionalSiteResponseWidget_H
