@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "HazardsWidget.h"
 #include "ShakeMapWidget.h"
 #include "HurricaneSelectionWidget.h"
+#include "OpenQuakeSelectionWidget.h"
 #include "UserInputHurricaneWidget.h"
 #include "RasterHazardInputWidget.h"
 #include "UserInputGMWidget.h"
@@ -85,6 +86,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 #ifdef Q_GIS
     theHurricaneSelectionWidget = new QGISHurricaneSelectionWidget(theVisualizationWidget,this);
     theRasterHazardWidget = new RasterHazardInputWidget(theVisualizationWidget,this);
+    theOpenQuakeSelectionWidget = new OpenQuakeSelectionWidget(theVisualizationWidget);
 #endif
 
     theRegionalSiteResponseWidget = new RegionalSiteResponseWidget(theVisualizationWidget);    
@@ -96,7 +98,8 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     this->addComponent("User Specified Hurricane", "UserInputHurricane", theUserInputHurricaneWidget);
     this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
     this->addComponent("Hurricane Scenario Simulation", "HurricaneSelection", theHurricaneSelectionWidget);
-    this->addComponent("Raster Defined Hazard", "UserInputRaster", theRasterHazardWidget);
+    this->addComponent("OpenQuake Selection Widget", "OQSelectionWidget", theOpenQuakeSelectionWidget);
+    //this->addComponent("Raster Defined Hazard", "UserInputRaster", theRasterHazardWidget);
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
 

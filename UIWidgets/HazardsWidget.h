@@ -44,6 +44,7 @@ class GMWidget;
 class RandomVariablesContainer;
 class ShakeMapWidget;
 class HurricaneSelectionWidget;
+class OpenQuakeSelectionWidget;
 class UserInputHurricaneWidget;
 class UserInputGMWidget;
 class RegionalSiteResponseWidget;
@@ -85,6 +86,7 @@ private:
     RegionalSiteResponseWidget* theRegionalSiteResponseWidget;  
     UserInputHurricaneWidget* theUserInputHurricaneWidget;
     HurricaneSelectionWidget* theHurricaneSelectionWidget;
+    OpenQuakeSelectionWidget* theOpenQuakeSelectionWidget;
     SimCenterAppWidget* theRasterHazardWidget;
 };
 

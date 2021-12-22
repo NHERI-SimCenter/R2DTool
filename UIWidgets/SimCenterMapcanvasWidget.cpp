@@ -12,6 +12,9 @@
 #include <qgslayertreelayer.h>
 #include <qgisapp.h>
 #include <qgsapplayertreeviewmenuprovider.h>
+#include <qgsmaptoolcapture.h>
+#include <qgsmaptoolselect.h>
+#include <qgsmaptoolselectionhandler.h>
 
 #include <QVBoxLayout>
 #include <QToolButton>
@@ -43,53 +46,77 @@ SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisu
     auto layerTreeView = theVisualizationWidget->getLayerTreeView();
     auto model = layerTreeView->layerTreeModel();
 
-//    rootNode = new QgsLayerTree();
-//    QgsLayerTreeModel *treeModel = new QgsLayerTreeModel(rootNode, this);
-//    treeModel->setFlag( QgsLayerTreeModel::AllowNodeReorder );
-//    treeModel->setFlag( QgsLayerTreeModel::AllowNodeRename );
-//    treeModel->setFlag( QgsLayerTreeModel::ShowLegend );
-//    treeModel->setFlag( QgsLayerTreeModel::AllowNodeChangeVisibility );
-//    treeModel->setFlag( QgsLayerTreeModel::UseTextFormatting );
-//    treeModel->setAutoCollapseLegendNodes( 10 );
+    //    rootNode = new QgsLayerTree();
+    //    QgsLayerTreeModel *treeModel = new QgsLayerTreeModel(rootNode, this);
+    //    treeModel->setFlag( QgsLayerTreeModel::AllowNodeReorder );
+    //    treeModel->setFlag( QgsLayerTreeModel::AllowNodeRename );
+    //    treeModel->setFlag( QgsLayerTreeModel::ShowLegend );
+    //    treeModel->setFlag( QgsLayerTreeModel::AllowNodeChangeVisibility );
+    //    treeModel->setFlag( QgsLayerTreeModel::UseTextFormatting );
+    //    treeModel->setAutoCollapseLegendNodes( 10 );
 
     legendTreeView = new QgsLayerTreeView(this);
-// legendTreeView->setStyleSheet("QTreeView::item:hover{background-color:#FFFF00;}");
+    // legendTreeView->setStyleSheet("QTreeView::item:hover{background-color:#FFFF00;}");
     legendTreeView->setModel(model);
 
     auto qGISApp = theVisualizationWidget->getQgis();
 
     legendTreeView->setMenuProvider( new QgsAppLayerTreeViewMenuProvider(legendTreeView, thisMapCanvas));
 
+    connect( legendTreeView, &QAbstractItemView::clicked, this, &SimCenterMapcanvasWidget::layerTreeViewClicked );
     connect( legendTreeView, &QAbstractItemView::doubleClicked, qGISApp, &QgisApp::layerTreeViewDoubleClicked );
     connect( legendTreeView->selectionModel(), &QItemSelectionModel::currentChanged, qGISApp, &QgisApp::updateNewLayerInsertionPoint );
 
     //connect( legendTreeView, &QgsLayerTreeView::currentLayerChanged, qGISApp, &QgisApp::onActiveLayerChanged );
-//    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
-//             qGISApp, &QgisApp::legendLayerSelectionChanged );
-//    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
-//             qGISApp, &QgisApp::activateDeactivateMultipleLayersRelatedActions );
-//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::addedChildren,
-//             qGISApp, &QgisApp::markDirty );
-//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::addedChildren,
-//             qGISApp, &QgisApp::updateNewLayerInsertionPoint );
-//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::removedChildren,
-//             qGISApp, &QgisApp::markDirty );
-//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::removedChildren,
-//             qGISApp, &QgisApp::updateNewLayerInsertionPoint );
-//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::visibilityChanged,
-//             qGISApp, &QgisApp::markDirty );
-//    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::customPropertyChanged,
-//             qGISApp, [ = ]( QgsLayerTreeNode *, const QString & key )
-//    {
-//        // only mark dirty for non-view only changes
-//        if ( !QgsLayerTreeView::viewOnlyCustomProperties().contains( key ) )
-//            qGISApp->markDirty();
-//    } );
+    //    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+    //             qGISApp, &QgisApp::legendLayerSelectionChanged );
+    //    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+    //             qGISApp, &QgisApp::activateDeactivateMultipleLayersRelatedActions );
+    //    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::addedChildren,
+    //             qGISApp, &QgisApp::markDirty );
+    //    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::addedChildren,
+    //             qGISApp, &QgisApp::updateNewLayerInsertionPoint );
+    //    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::removedChildren,
+    //             qGISApp, &QgisApp::markDirty );
+    //    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::removedChildren,
+    //             qGISApp, &QgisApp::updateNewLayerInsertionPoint );
+    //    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::visibilityChanged,
+    //             qGISApp, &QgisApp::markDirty );
+    //    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::customPropertyChanged,
+    //             qGISApp, [ = ]( QgsLayerTreeNode *, const QString & key )
+    //    {
+    //        // only mark dirty for non-view only changes
+    //        if ( !QgsLayerTreeView::viewOnlyCustomProperties().contains( key ) )
+    //            qGISApp->markDirty();
+    //    } );
 
     mainWidget->addWidget(legendTreeView);
     mainWidget->addWidget(thisMapCanvas);
 
     mMapTools = std::make_unique<QgsAppMapTools>(thisMapCanvas, nullptr);
+
+    auto captureTools = mMapTools->captureTools();
+
+    for ( QgsMapToolCapture *tool : captureTools )
+    {
+        if (tool->supportsTechnique(QgsMapToolCapture::CircularString))
+            tool->setCircularDigitizingEnabled(true);
+        if (tool->supportsTechnique(QgsMapToolCapture::Streaming))
+            tool->setStreamDigitizingEnabled(true);
+    }
+
+    auto simpleMapToolSelect = mMapTools->mapTool<QgsMapToolSelect>(QgsAppMapTools::SelectFeatures);
+    simpleMapToolSelect->setSelectionMode(QgsMapToolSelectionHandler::SelectSimple);
+
+
+    mMapTools->mapTool<QgsMapToolSelect>(QgsAppMapTools::SelectPolygon)->setSelectionMode(QgsMapToolSelectionHandler::SelectPolygon);
+    mMapTools->mapTool<QgsMapToolSelect>(QgsAppMapTools::SelectFreehand)->setSelectionMode(QgsMapToolSelectionHandler::SelectFreehand);
+
+    auto radiusMapToolSelect = mMapTools->mapTool<QgsMapToolSelect>( QgsAppMapTools::SelectRadius );
+    radiusMapToolSelect->setSelectionMode( QgsMapToolSelectionHandler::SelectRadius );
+
+    //connect(this,&SimCenterMapcanvasWidget::handleSelectionFinished,radiusMapToolSelect,&QgsMapToolSelectionHandler::geometryChanged);
+
 
     // Now add the splitter handle
     // Note: index 0 handle is always hidden, index 1 is between the two widgets
@@ -162,7 +189,7 @@ void SimCenterMapcanvasWidget::clear(void)
     currentLayer = nullptr;
     selectedIds.clear();
     deselectedIds.clear();
-//    rootNode->clear();
+    //    rootNode->clear();
 }
 
 
@@ -200,6 +227,20 @@ void SimCenterMapcanvasWidget::enablePolygonSelectionTool(void)
 }
 
 
+void SimCenterMapcanvasWidget::enableFreehandSelectionTool(void)
+{
+    auto selectTool = mMapTools->mapTool(QgsAppMapTools::SelectFreehand);
+    thisMapCanvas->setMapTool(selectTool);
+}
+
+
+void SimCenterMapcanvasWidget::enableRadiusSelectionTool(void)
+{
+    auto selectTool = mMapTools->mapTool(QgsAppMapTools::SelectRadius);
+    thisMapCanvas->setMapTool(selectTool,true);
+}
+
+
 void SimCenterMapcanvasWidget::enablePanTool(void)
 {
     thisMapCanvas->setMapTool(mMapTools->mapTool(QgsAppMapTools::Pan));
@@ -231,12 +272,43 @@ void SimCenterMapcanvasWidget::selectionChanged(const QgsFeatureIds &selected, c
         {
             auto featureIt = isVectorLayer->getFeatures(selected);
 
-            theVisualizationWidget->showFeaturePopUp(featureIt);
+            if(showPopUpOnSelection)
+                theVisualizationWidget->showFeaturePopUp(featureIt);
         }
     }
 
     selectedIds = selected;
     deselectedIds = deselected;
+}
+
+
+void SimCenterMapcanvasWidget::layerTreeViewClicked(const QModelIndex &index)
+{
+    Q_UNUSED(index)
+
+    if (legendTreeView)
+    {
+        if (QgsMapLayer *layer = legendTreeView->currentLayer())
+        {
+            QgsVectorLayer *vlayer = qobject_cast<QgsVectorLayer*>(layer);
+            this->setCurrentLayer(vlayer);
+        }
+    }
+}
+
+
+void SimCenterMapcanvasWidget::setShowPopUpOnSelection(bool value)
+{
+    showPopUpOnSelection = value;
+}
+
+
+void SimCenterMapcanvasWidget::handleSelectionFinished(Qt::KeyboardModifiers modifiers)
+{
+    Q_UNUSED(modifiers)
+
+
+    qDebug()<<"Yes";
 }
 
 

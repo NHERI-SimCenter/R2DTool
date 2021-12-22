@@ -32,6 +32,10 @@ public:
 
     void enablePolygonSelectionTool(void);
 
+    void enableFreehandSelectionTool(void);
+
+    void enableRadiusSelectionTool(void);
+
     void setCurrentLayer(QgsVectorLayer* layer);
 
     void setMapTool(QgsMapTool *mapTool);
@@ -42,17 +46,23 @@ public:
 
 //    void addLayerToLegend(QgsMapLayer* layer);
 
+    void setShowPopUpOnSelection(bool value);
+
 protected:
 
 signals:
 
 private slots:
 
+    void handleSelectionFinished(Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+
     void selectionChanged(const QgsFeatureIds &selected, const QgsFeatureIds &deselected, bool clearAndSelect);
 
     void showLabels(bool show);
 
     void showAnnotations(bool show);
+
+    void layerTreeViewClicked(const QModelIndex &index);
 
 private:
 
@@ -69,6 +79,8 @@ private:
 
     QgsFeatureIds selectedIds;
     QgsFeatureIds deselectedIds;
+
+    bool showPopUpOnSelection = true;
 
 };
 
