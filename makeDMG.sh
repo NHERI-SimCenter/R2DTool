@@ -97,10 +97,11 @@ cp -fr $pathApp/../../Databases/* $pathApp/Contents/MacOS/Databases
 mkdir $pathApp/Contents/MacOS/share
 mkdir $pathApp/Contents/MacOS/lib
 mkdir $pathApp/Contents/MacOS/lib/qgis
-cp -fr $pathApp/../../../qgisplugin/mac/Install/lib/* $pathApp/Contents/Frameworks
-cp -fr $pathApp/../../../qgisplugin/mac/qgis-deps-0.8.0/stage/lib/* $pathApp/Contents/Frameworks
-cp -fr $pathApp/../../../qgisplugin/mac/Install/share/* $pathApp/Contents/MacOS/share
-cp -fr $pathApp/../../../qgisplugin/mac/Install/qgis/* $pathApp/Contents/MacOS/lib/qgis
+
+cp -fR $pathApp/../../../qgisplugin/mac/Install/lib/* $pathApp/Contents/Frameworks
+cp -fR $pathApp/../../../qgisplugin/mac/qgis-deps-0.8.0/stage/lib/* $pathApp/Contents/Frameworks
+cp -fR $pathApp/../../../qgisplugin/mac/Install/share/* $pathApp/Contents/MacOS/share
+cp -fR $pathApp/../../../qgisplugin/mac/Install/qgis/* $pathApp/Contents/MacOS/lib/qgis
 
 # remove unwanted stuff
 
@@ -153,8 +154,8 @@ echo $appleID
 # create one
 # then download certificate & get public key
 
-echo "codesign --deep --force --verbose --options=runtime  --sign "$appleCredential" $appFile"
-codesign --deep --force --verbose --options=runtime  --sign "$appleCredential" $appFile
+echo "codesign --deep --force --verbose --options=runtime --timestamp --sign "$appleCredential" $appFile"
+codesign --deep --force --verbose --options=runtime --timestamp --sign "$appleCredential" $appFile
 
 # create dmg
 echo "hdiutil create $dmgFile -fs HFS+ -srcfolder ./$appFile -format UDZO -volname $appName"
@@ -165,7 +166,7 @@ echo "codesign --force --sign "$appleCredential" $dmgFile"
 codesign --force --sign "$appleCredential" $dmgFile
 
 echo "Issue the following: " 
-echo "xcrun altool --notarize-app -u $appleID -p $appleAppPassword -f ./$dmgFile --primary-bundle-id altool --verbose"
+echo "xcrun altool --notarize-app -u $appleID -p $appleAppPassword -f ./$dmgFile --primary-bundle-id altool"
 
 #
 # notorize , create zip file & send to apple
