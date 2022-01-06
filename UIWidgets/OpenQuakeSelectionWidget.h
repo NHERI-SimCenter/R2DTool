@@ -48,6 +48,7 @@ class VisualizationWidget;
 
 class QgsMapLayer;
 class QgsVectorLayer;
+class QgsLayerTreeGroup;
 
 class QDomNodeList;
 class QStackedWidget;
@@ -67,7 +68,6 @@ public:
 
 
 public slots:
-
     void clear(void);
 
 signals:
@@ -79,6 +79,7 @@ protected:
     void showEvent(QShowEvent *e);
 
 private slots:
+    void clearSelection(void);
     void chooseImportFileDialog(void);
     void chooseExportFileDialog(void);
 
@@ -100,7 +101,13 @@ private:
 
     int getPointSources(QDomNodeList* pointSources);
 
-    int getCharacteristicLineSources(QDomNodeList* lineSources);
+    int getCharacteristicComplexLineSources(QDomNodeList* lineSources, bool isCharacteristic);
+
+    int getSimpleFaultSources(QDomNodeList* lineSources);
+
+    int getComplexFaultSources(QDomNodeList* lineSources);
+
+    int getAreaSources(QDomNodeList* lineSources);
 
     QWidget* fileInputWidget = nullptr;
     QProgressBar* progressBar = nullptr;
@@ -116,10 +123,11 @@ private:
 
     QgsVectorLayer* pointReferenceLayer = nullptr;
     QgsVectorLayer* lineReferenceLayer = nullptr;
+    QgsVectorLayer* areaReferenceLayer = nullptr;
 
     QgsVectorLayer* pointSelectedLayer = nullptr;
     QgsVectorLayer* lineSelectedLayer = nullptr;
-
+    QgsVectorLayer* areaSelectedLayer = nullptr;
 };
 
 #endif // OpenQuakeSelectionWidget_H

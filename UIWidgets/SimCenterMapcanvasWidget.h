@@ -44,9 +44,9 @@ public:
 
     void clear(void);
 
-//    void addLayerToLegend(QgsMapLayer* layer);
-
     void setShowPopUpOnSelection(bool value);
+
+    void deselectAllTreeItems(void);
 
 protected:
 
@@ -72,8 +72,6 @@ private:
     QgsMapCanvas *mainCanvas = nullptr;
 
     QgsVectorLayer* currentLayer = nullptr;
-
-//    QgsLayerTree *rootNode = nullptr;
 
     std::unique_ptr<QgsAppMapTools> mMapTools;
 
