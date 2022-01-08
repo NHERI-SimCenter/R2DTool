@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("2.0.0");
-    // GoogleAnalytics::SetTrackingId("UA-186298856-1");
+    //    GoogleAnalytics::SetTrackingId("UA-186298856-1");
     GoogleAnalytics::StartSession();
     GoogleAnalytics::ReportStart();
 
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
     QString version("Version 2.0.0");
     w.setVersion(version);
 
-    QString citeText("Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Kuanshi Zhong, & Wael Elhaddad. (2021, June 25). NHERI-SimCenter/R2DTool: Version 1.1.0 (Version v1.1.0). Zenodo. http://doi.org/10.5281/zenodo.5033626 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matt J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
+    QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Kuanshi Zhong, & Wael Elhaddad. (2022). NHERI-SimCenter/R2DTool: Version 2.0.0 (v2.0.0). Zenodo. https://doi.org/10.5281/zenodo.5812513 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matt J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
