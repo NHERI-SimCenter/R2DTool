@@ -1,5 +1,5 @@
-#ifndef ShapefileBuildingInputWidget_H
-#define ShapefileBuildingInputWidget_H
+#ifndef GISBuildingInputWidget_H
+#define GISBuildingInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -42,18 +42,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QgsVectorLayer;
 
-class ShapefileBuildingInputWidget : public  ComponentInputWidget
+class GISBuildingInputWidget : public  ComponentInputWidget
 {
     Q_OBJECT
 
 public:
-    explicit ShapefileBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-    virtual ~ShapefileBuildingInputWidget();
+    explicit GISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    virtual ~GISBuildingInputWidget();
 
     int loadComponentVisualization() override;
 
     bool outputAppDataToJSON(QJsonObject &jsonObject) override;
     bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+
+    bool copyFiles(QString &destName) override;
 
 private slots:
     bool loadComponentData(void) override;
@@ -64,4 +66,4 @@ private:
 
 };
 
-#endif // ShapefileBuildingInputWidget_H
+#endif // GISBuildingInputWidget_H

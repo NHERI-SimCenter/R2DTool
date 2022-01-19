@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
+#include <qgscoordinatereferencesystem.h>
+
 #include <memory>
 
 #include <QMap>
@@ -47,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class VisualizationWidget;
 class QGISVisualizationWidget;
 class QgsRasterDataProvider;
+class QgsProjectionSelectionWidget;
 class QgsRasterLayer;
 class SimCenterUnitsWidget;
 
@@ -70,7 +73,7 @@ public:
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
-
+    bool copyFiles(QString &destDir);
     void clear(void);
 
     // Returns the value of the raster layer in the given band
@@ -79,6 +82,7 @@ public:
 
 private slots:
     void chooseEventFileDialog(void);
+    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
 signals:
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
@@ -92,7 +96,12 @@ private:
     QGISVisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
-    QLineEdit *eventFileLineEdit;
+    QString pathToEventFile;
+
+    QStringList bandNames;
+
+    QString rasterFilePath;
+    QLineEdit *rasterPathLineEdit;
 
     QWidget* fileInputWidget;
 
@@ -100,7 +109,7 @@ private:
     QgsRasterLayer* rasterlayer;
 
     SimCenterUnitsWidget* unitsWidget;
-
+    QgsProjectionSelectionWidget* mCrsSelector;
     QComboBox* eventTypeCombo;
 };
 
