@@ -417,7 +417,7 @@ SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
             UIWidgets/QGISBuildingInputWidget.cpp \
             UIWidgets/RasterHazardInputWidget.cpp \
             UIWidgets/QGISHurricaneSelectionWidget.cpp \
-            UIWidgets/ShapefileBuildingInputWidget.cpp \
+            UIWidgets/GISBuildingInputWidget.cpp \
             UIWidgets/MapViewWindow.cpp \
 
 HEADERS +=  Tools/QGISHurricanePreprocessor.h \
@@ -425,7 +425,7 @@ HEADERS +=  Tools/QGISHurricanePreprocessor.h \
             UIWidgets/QGISBuildingInputWidget.h \
             UIWidgets/RasterHazardInputWidget.h \
             UIWidgets/QGISHurricaneSelectionWidget.h \
-            UIWidgets/ShapefileBuildingInputWidget.h \
+            UIWidgets/GISBuildingInputWidget.h \
             UIWidgets/MapViewWindow.h \
 
 }
