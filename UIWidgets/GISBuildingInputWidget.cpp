@@ -303,8 +303,8 @@ bool GISBuildingInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     // First get the default information and then modify
     ComponentInputWidget::outputAppDataToJSON(jsonObject);
 
-    // Here we will export everything to a .csv so we will cheat and say it is a CSV to BIM
-    jsonObject["Application"]="CSV_to_BIM";
+    // Here we will export everything to a .csv so we can use the CSV to BIM app
+    jsonObject["Application"]="GIS_to_BIM";
 
     // It assumes the file name stays the same, but we need to modify the extension so that it is in csv and not .gdb, or .shp, or whatever
     QFileInfo componentFile(componentFileLineEdit->text());
@@ -317,6 +317,8 @@ bool GISBuildingInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
         return false;
 
     appData["buildingSourceFile"] = baseNameCSV;
+
+    appData["buildingGISFile"] = componentFile.fileName();
 
     jsonObject["ApplicationData"] = appData;
 
@@ -343,8 +345,8 @@ bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
-        if (appData.contains("buildingSourceFile"))
-            fileName = appData["buildingSourceFile"].toString();
+        if (appData.contains("buildingGISFile"))
+            fileName = appData["buildingGISFile"].toString();
 
         if (fileInfo.exists(fileName)) {
 
@@ -355,8 +357,8 @@ bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         } else {
 
-            if (appData.contains("pathToSource"))
-                pathToFile = appData["pathToSource"].toString();
+            if (appData.contains("pathToGIS"))
+                pathToFile = appData["pathToGIS"].toString();
             else
                 pathToFile=QDir::currentPath();
 
@@ -410,7 +412,7 @@ bool GISBuildingInputWidget::copyFiles(QString &destName)
     if (!componentFile.exists())
         return false;
 
-    if (!QFile::copy(compLineEditText, destName + componentFile.fileName()))
+    if (!QFile::copy(compLineEditText, destName + QDir::separator() + componentFile.fileName()))
         return false;
 
     auto fileName = componentFile.baseName();

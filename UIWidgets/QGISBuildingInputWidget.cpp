@@ -57,7 +57,6 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 {
     // Create the building attributes that are fixed
     QgsFields featFields;
-    featFields.append(QgsField("LossRatio", QVariant::Double));
     featFields.append(QgsField("ID", QVariant::Int));
     featFields.append(QgsField("AssetType", QVariant::String));
     featFields.append(QgsField("TabName", QVariant::String));
@@ -135,21 +134,19 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         // Create a unique ID for the building
 //        auto uid = theVisualizationWidget->createUniqueID();
 
-        //  "LossRatio"
         //  "ID"
         //  "AssetType"
         //  "TabName"
 
-        featureAttributes[0] = QVariant(0.0);
-        featureAttributes[1] = QVariant(buildingID);
-        featureAttributes[2] = QVariant("BUILDINGS");
-        featureAttributes[3] = QVariant(buildingID);
+        featureAttributes[0] = QVariant(buildingID);
+        featureAttributes[1] = QVariant("BUILDINGS");
+        featureAttributes[2] = QVariant(buildingID);
 
         // The feature attributes are the columns from the table
         for(int j = 1; j<componentTableWidget->columnCount(); ++j)
         {
             auto attrbVal = componentTableWidget->item(i,j);
-            featureAttributes[3+j] = attrbVal;
+            featureAttributes[2+j] = attrbVal;
         }
 
         auto latitude = componentTableWidget->item(i,indexLatitude).toDouble();

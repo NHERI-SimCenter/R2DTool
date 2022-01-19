@@ -120,7 +120,24 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "UserInputRasterHazard";
 
     QJsonObject appData;
+
+    QFileInfo rasterFile (rasterPathLineEdit->text());
+
+    appData["rasterFile"] = rasterFile.fileName();
+
+    appData["CRS"] = mCrsSelector->crs().authid();
+
+    appData["eventClassification"] = eventTypeCombo->currentText();
+
+    QJsonArray bandArray;
+
+    for(auto&& it : bandNames)
+        bandArray.append(it);
+
+    appData["bands"] = bandArray;
+
     jsonObject["ApplicationData"]=appData;
+
 
     return true;
 }
