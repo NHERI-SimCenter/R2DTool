@@ -257,6 +257,7 @@ void GMWidget::setupConnections()
 
         peerClient.signIn(userName, password);
 
+
         runHazardSimulation();
     });
 
@@ -650,6 +651,7 @@ void GMWidget::runHazardSimulation(void)
 
     //    maxID = 5;
 
+
     QJsonObject siteObj;
     siteObj.insert("Type", "From_CSV");
     siteObj.insert("input_file", "SiteFile.csv");
@@ -678,7 +680,7 @@ void GMWidget::runHazardSimulation(void)
     // Get the GMPE Json object
     QJsonObject GMPEobj;
     qDebug() << QString(m_ruptureWidget->getWidgetType());
-    if (m_ruptureWidget->getWidgetType().compare("OpenQuake Classical")==0)
+    if (m_ruptureWidget->getWidgetType().compare("OpenQuake Classical")==0 || m_ruptureWidget->getWidgetType().compare("OpenQuake User-Specified")==0)
     {
         GMPEobj.insert("Type", "LogicTree");
         GMPEobj.insert("Parameters", m_ruptureWidget->getGMPELogicTree());

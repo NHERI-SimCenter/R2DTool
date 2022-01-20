@@ -44,6 +44,7 @@ class PointSourceRuptureWidget;
 class EarthquakeRuptureForecastWidget;
 class OpenQuakeScenarioWidget;
 class OpenQuakeClassicalWidget;
+class OpenQuakeUserSpecifiedWidget;
 
 class QGroupBox;
 class QComboBox;
@@ -75,6 +76,7 @@ private:
     EarthquakeRuptureForecastWidget* erfWidget;
     OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
     OpenQuakeClassicalWidget* oqcpWidget; // widget connecting OpenQuake classical PSHA
+    OpenQuakeUserSpecifiedWidget* oqcpuWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
     QString widgetType = "OpenSHA ERF"; // widget type
 };
 

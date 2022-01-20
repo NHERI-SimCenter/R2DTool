@@ -37,7 +37,7 @@
 # Written by: Stevan Gavrilovic, Frank McKenna
 
 QT += core gui charts concurrent network sql qml webenginewidgets webengine webchannel
-QT += xml 3dcore 3drender 3dextras macextras opengl
+QT += xml 3dcore 3drender 3dextras opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -155,6 +155,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/OpenQuakeClassicalWidget.cpp \
             Events/UI/OpenQuakeScenario.cpp \
             Events/UI/OpenQuakeScenarioWidget.cpp \
+            Events/UI/OpenQuakeUserSpecifiedWidget.cpp \
             Events/UI/PeerLoginDialog.cpp \
             Events/UI/PeerNGAWest2Client.cpp \
             Events/UI/PointSourceRupture.cpp \
@@ -267,6 +268,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/OpenQuakeClassicalWidget.h \
             Events/UI/OpenQuakeScenario.h \
             Events/UI/OpenQuakeScenarioWidget.h \
+            Events/UI/OpenQuakeUserSpecifiedWidget.h \
             Events/UI/PeerLoginDialog.h \
             Events/UI/PeerNGAWest2Client.h \
             Events/UI/PointSourceRupture.h \

@@ -1,5 +1,6 @@
-#ifndef OpenQuakeClassical_H
-#define OpenQuakeClassical_H
+#ifndef OpenQuakeUserSpecifiedWidget_H
+#define OpenQuakeUserSpecifiedWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,76 +39,54 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Kuanshi Zhong
 
-#include "JsonSerializable.h"
 #include "SimCenterWidget.h"
-#include <QJsonArray>
-#include "ZipUtils.h"
+#include "qsettings.h"
 
-class OpenQuakeClassical : public SimCenterWidget, JsonSerializable
+class OpenQuakeClassical;
+
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class QDoubleSpinBox;
+class QCheckBox;
+class QComboBox;
+
+class OpenQuakeUserSpecifiedWidget : public SimCenterWidget
 {
     Q_OBJECT
 
 public:
-    OpenQuakeClassical(int uMode, double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent = nullptr);
+    explicit OpenQuakeUserSpecifiedWidget(QWidget *parent = nullptr);
 
-    double getRupMesh() const;
-    double getAreaMesh() const;
-    double getMaxDistance() const;
-    QString getRupFilename() const;
-    QString getGMPEFilename() const;
-    void setOQVersion(const QString &value);
-
-    //QJsonObject getJson();
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
-
-    void reset(void);
+    OpenQuakeClassical* getRuptureSource() const;
 
 signals:
+    void updateTruncLevel(float value);
 
 public slots:
-    void setRupMesh(double magnitude);
-    void setAreaMesh(double magnitude);
-    void setMaxDistance(double value);
-    void setSourceFilename(const QString &value);
-    void setGMPEFilename(const QString &value);
-    void setSourceModelDir(const QString &value);
-    void setOpenQuakeVersion(const QString &value);
-    void setIndivHC(int state);
-    void setMeanHC(int state);
-    void setHazMap(int state);
-    void setUHS(int state);
-    void setReturnPeriod(const QString &value);
-    void setRandSeed(const QString &value);
-    void setQuantiles(const QString &value);
-    void setTimeSpan(const QString &value);
-    void setConfigFilename(const QString &value);
+    void loadSourceDir();
+    void loadConfigFile();
+    void handleOQVersionChanged(const QString& selection);
 
 private:
-    int userMode = 0;
-    double rupMesh;
-    double areaMesh;
-    double maxDistance;
-    double timeSpan = 1;
-    int randSeed = 14;
-    bool indivHC = true;
-    bool meanHC = true;
-    bool hazMap = true;
-    bool UHS = true;
-    int returnPeriod = 500;
-    QJsonArray quant = {0.1,0.5,0.9};
-    QString oq_version = "3.12.0"; // default OpenQuake version
+    OpenQuakeClassical* m_eqRupture;
+    QLineEdit* sourceDirLineEdit;
+    QString sourceDir;
+    QPushButton* browseSourceDirButton;
 
-    QString sourceFilename;
-    QString gmpeFilename;
-    QString sourceDefDir; // directory of individual source model xml files
-    QString configFilename;
+    QLineEdit* iniFilePathLineEdit;
+    QString iniFilePath;
+    QPushButton* browseIniFileButton;
 
-    bool copySourceFile();
-    bool copyGMPEFile();
-    bool copySourceModelFile();
-    bool copyConfigFile();
+    QComboBox* oqVersionCombo;
+    QString oqVersion = "3.12.0";
+
+    void setSourceDir(QString dirPath);
+    void setIniFile(QString dirPath);
+    void parseConfigFile();
+
+    QSettings* iniConfigSetting;
 
 };
 
-#endif // OpenQuakeClassical_H
+#endif // OpenQuakeUserSpecifiedWidget_H
