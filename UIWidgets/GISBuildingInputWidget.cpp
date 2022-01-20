@@ -72,7 +72,7 @@ GISBuildingInputWidget::GISBuildingInputWidget(QWidget *parent, VisualizationWid
     this->setLabel1(txt1);
 
     QString txt2 = "Enter the IDs of one or more buildings to analyze."
-    "Define a range of buildings with a dash and separate multiple buildings with a comma.";
+                   "Define a range of buildings with a dash and separate multiple buildings with a comma.";
     this->setLabel2(txt2);
 
     QString txt3 = "Building Information";
@@ -80,9 +80,9 @@ GISBuildingInputWidget::GISBuildingInputWidget(QWidget *parent, VisualizationWid
 
     theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 
-//    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonGIS/GalvestonBuildings/galveston-bldg-v7.shp";
-//    componentFileLineEdit->setText(pathToComponentInputFile);
-//    this->loadComponentData();
+    //    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonGIS/GalvestonBuildings/galveston-bldg-v7.shp";
+    //    componentFileLineEdit->setText(pathToComponentInputFile);
+    //    this->loadComponentData();
 }
 
 
@@ -244,7 +244,7 @@ bool GISBuildingInputWidget::loadComponentData(void)
     QVector<QStringList> data(numFeat);
 
     // Test to remove
-    auto start = high_resolution_clock::now();
+    // auto start = high_resolution_clock::now();
 
     QgsFeature feat;
     int i = 0;
@@ -271,10 +271,9 @@ bool GISBuildingInputWidget::loadComponentData(void)
     }
 
     // Test to remove
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(stop - start);
-    this->statusMessage("Done shapefile results "+QString::number(duration.count()));
-
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    this->statusMessage("Done shapefile results "+QString::number(duration.count()));
 
     componentTableWidget->clear();
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
@@ -445,33 +444,33 @@ bool GISBuildingInputWidget::copyFiles(QString &destName)
 
 
     // For testing, creates a csv file of only the selected components
-//    qDebug()<<"Saving selected components to .csv";
-//    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+    //    qDebug()<<"Saving selected components to .csv";
+    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-//    QVector<QStringList> selectedData(selectedIDs.size()+1);
+    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-//    selectedData[0] = headerValues;
+    //    selectedData[0] = headerValues;
 
-//    auto nCols = componentTableWidget->columnCount();
+    //    auto nCols = componentTableWidget->columnCount();
 
-//    int i = 0;
-//    for(auto&& rowID : selectedIDs)
-//    {
-//        QStringList rowData;
-//        rowData.reserve(nCols);
+    //    int i = 0;
+    //    for(auto&& rowID : selectedIDs)
+    //    {
+    //        QStringList rowData;
+    //        rowData.reserve(nCols);
 
-//        for(int j = 0; j<nCols; ++j)
-//        {
-//            auto item = componentTableWidget->item(rowID-1,j).toString();
+    //        for(int j = 0; j<nCols; ++j)
+    //        {
+    //            auto item = componentTableWidget->item(rowID-1,j).toString();
 
-//            rowData<<item;
-//        }
-//        selectedData[i+1] = rowData;
+    //            rowData<<item;
+    //        }
+    //        selectedData[i+1] = rowData;
 
-//        ++i;
-//    }
+    //        ++i;
+    //    }
 
-//    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+    //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
     // For testing end
 
     return true;

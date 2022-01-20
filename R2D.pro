@@ -225,6 +225,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/ModelWidget.cpp \
             UIWidgets/MultiComponentR2D.cpp \
             UIWidgets/NearestNeighbourMapping.cpp \
+            UIWidgets/SiteSpecifiedMapping.cpp \
             UIWidgets/NoneWidget.cpp \
             UIWidgets/OpenSeesPyBuildingModel.cpp \
             UIWidgets/PelicunDLWidget.cpp \
@@ -336,6 +337,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/ModelWidget.h \
             UIWidgets/MultiComponentR2D.h \
             UIWidgets/NearestNeighbourMapping.h \
+            UIWidgets/SiteSpecifiedMapping.h \
             UIWidgets/NoneWidget.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
             UIWidgets/PelicunDLWidget.h \

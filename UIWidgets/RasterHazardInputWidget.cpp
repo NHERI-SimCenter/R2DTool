@@ -568,8 +568,8 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
 
         auto point = pointDataVector.at(i);
 
-        auto lat = point.at(0);
-        auto lon = point.at(1);
+        auto lon = point.at(0);
+        auto lat = point.at(1);
 
         // Get the grid row
         QStringList gridRow = {stationFile, lat, lon};
