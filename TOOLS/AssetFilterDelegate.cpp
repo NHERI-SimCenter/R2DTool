@@ -1,5 +1,3 @@
-#ifndef HAZARDS_WIDGET_H
-#define HAZARDS_WIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,58 +34,75 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "SimCenterAppSelection.h"
+#include "AssetFilterDelegate.h"
 
-class GMWidget;
-class RandomVariablesContainer;
-class ShakeMapWidget;
-class HurricaneSelectionWidget;
-class OpenQuakeSelectionWidget;
-class UserInputHurricaneWidget;
-class UserInputGMWidget;
-class RegionalSiteResponseWidget;
-class VisualizationWidget;
+#include <QRegExpValidator>
 
-class QGroupBox;
+#include <qgsvectorlayer.h>
 
-class HazardsWidget : public  SimCenterAppSelection
+AssetFilterDelegate::AssetFilterDelegate(QgsVectorLayer *layer) : mainLayer(layer)
 {
-    Q_OBJECT
+    qb = std::make_unique<QgsQueryBuilder>(layer);
+}
 
-public:
-    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
-    ~HazardsWidget();
 
-#ifdef ARC_GIS
-    void setCurrentlyViewable(bool status);
-#endif
+int AssetFilterDelegate::openQueryBuilderDialog(QVector<int>& filterIds)
+{
+    // launch the query builder
+    QString subsetBefore = qb->sql();
 
-signals:
-    void gridFileChangedSignal(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
+    if (qb->exec() && (subsetBefore != qb->sql()))
+    {
+        auto newFilter = qb->sql();
 
-private slots:
+        mainLayer->setSubsetString(QString());
 
-    void shakeMapLoadingFinished(const bool value);
-    void gridFileChangedSlot(QString motionDir, QString eventFile);
-    void eventTypeChangedSlot(QString eventType);
+        return setFilterString(newFilter,filterIds);
+    }
 
-private:
+    return 1;
+}
 
-    RandomVariablesContainer* theRandomVariablesContainer;
 
-    VisualizationWidget* theVisualizationWidget;
+int AssetFilterDelegate::setFilterString(const QString& filter, QVector<int>& filterIds)
+{
+    // Quick return if the filter string is empty
+    if(filter.isEmpty())
+        return 1;
 
-    GMWidget* theEQSSWidget;
-    ShakeMapWidget* theShakeMapWidget;
-    UserInputGMWidget* theUserInputGMWidget;
-    RegionalSiteResponseWidget* theRegionalSiteResponseWidget;  
-    UserInputHurricaneWidget* theUserInputHurricaneWidget;
-    HurricaneSelectionWidget* theHurricaneSelectionWidget;
-    OpenQuakeSelectionWidget* theOpenQuakeSelectionWidget;
-    SimCenterAppWidget* theRasterHazardWidget;
-};
+    auto fieldIndex = mainLayer->dataProvider()->fieldNameIndex("ID");
 
-#endif // HAZARDS_WIDGET_H
+    if(fieldIndex == -1)
+        return -1;
+
+    QgsFeatureIterator filteredFeats = mainLayer->getFeatures(filter);
+
+    QgsFeature feature;
+    while (filteredFeats.nextFeature(feature))
+    {
+        bool ok = false;
+        auto featId = feature.attribute(fieldIndex).toInt(&ok);
+
+        if(ok)
+            filterIds.push_back(featId);
+        else
+            return -1;
+    }
+
+    return 0;
+}
+
+
+QString AssetFilterDelegate::getFilterString(void)
+{
+    return mainLayer->subsetString();
+}
+
+
+void AssetFilterDelegate::clear()
+{
+
+}
+

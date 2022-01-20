@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISVisualizationWidget.h"
 #include "ComponentTableView.h"
 #include "ComponentDatabaseManager.h"
+#include "AssetFilterDelegate.h"
 
 #include <qgsfield.h>
 #include <qgsfillsymbol.h>
@@ -96,7 +97,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
         layerType = "point";
 
     // Create the buildings layer
-    auto mainLayer = theVisualizationWidget->addVectorLayer(layerType,"All Buildings");
+    mainLayer = theVisualizationWidget->addVectorLayer(layerType,"All Buildings");
 
     if(mainLayer == nullptr)
     {
@@ -116,6 +117,8 @@ int QGISBuildingInputWidget::loadComponentVisualization()
     mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
     theComponentDb->setMainLayer(mainLayer);
+
+    filterDelegateWidget  = new AssetFilterDelegate(mainLayer);
 
     auto numAtrb = attribFields.size();
 
@@ -238,8 +241,7 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
-    // Create the selected building layer
-    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(layerType,"Selected Buildings");
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(layerType,"Selected Buildings");
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -281,6 +283,14 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
 void QGISBuildingInputWidget::clear()
 {    
+    if(selectedFeaturesLayer != nullptr)
+    {
+        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
+        theVisualizationWidget->deregisterLayerForSelection(selectedFeaturesLayer->id());
+    }
+    if(mainLayer != nullptr)
+        theVisualizationWidget->removeLayer(mainLayer);
+
     ComponentInputWidget::clear();
 }
 

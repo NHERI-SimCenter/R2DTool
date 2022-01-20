@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QObject>
 
 class AssetInputDelegate;
+class AssetFilterDelegate;
 class ComponentTableView;
 class VisualizationWidget;
 
@@ -134,6 +135,12 @@ public:
     // Selects all of the components for analysis
     void selectAllComponents(void);
 
+#ifdef OpenSRA
+    bool loadFileFromPath(const QString& filePath);
+#endif
+
+    int applyFilterString(const QString& filter);
+
 signals:
     void headingValuesChanged(QStringList);
 
@@ -143,9 +150,10 @@ public slots:
 
 protected slots:
     void selectComponents(void);
-    virtual void loadComponentData(void);
+    virtual bool loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
+    void handleComponentFilter(void);
 
 protected:
 
@@ -177,11 +185,13 @@ protected:
 #endif
 
     AssetInputDelegate* selectComponentsLineEdit;
+    AssetFilterDelegate* filterDelegateWidget;
 
     int offset;
 
     QString pathToComponentInputFile;
     QLineEdit* componentFileLineEdit;
+
     QGroupBox* componentGroupBox;
 
     QLabel* label1 = nullptr;

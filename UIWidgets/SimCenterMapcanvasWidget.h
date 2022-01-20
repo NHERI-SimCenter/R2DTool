@@ -7,6 +7,11 @@
 
 class QgsMapCanvas;
 class QgsVectorLayer;
+class QgsLayerTreeNode;
+class QgsLayerTree;
+class QgsMapLayer;
+class QgsLayerTreeView;
+
 class QGISVisualizationWidget;
 
 class SimCenterMapcanvasWidget : public QWidget
@@ -21,9 +26,15 @@ public:
 
     void enablePanTool(void);
 
+    void enableIdentifyTool(void);
+
     void enableSelectionTool(void);
 
     void enablePolygonSelectionTool(void);
+
+    void enableFreehandSelectionTool(void);
+
+    void enableRadiusSelectionTool(void);
 
     void setCurrentLayer(QgsVectorLayer* layer);
 
@@ -33,11 +44,17 @@ public:
 
     void clear(void);
 
+//    void addLayerToLegend(QgsMapLayer* layer);
+
+    void setShowPopUpOnSelection(bool value);
+
 protected:
 
 signals:
 
 private slots:
+
+    void handleSelectionFinished(Qt::KeyboardModifiers modifiers = Qt::NoModifier);
 
     void selectionChanged(const QgsFeatureIds &selected, const QgsFeatureIds &deselected, bool clearAndSelect);
 
@@ -45,18 +62,25 @@ private slots:
 
     void showAnnotations(bool show);
 
+    void layerTreeViewClicked(const QModelIndex &index);
+
 private:
 
+    QgsLayerTreeView* legendTreeView = nullptr;
     QgsMapCanvas *thisMapCanvas = nullptr;
     QGISVisualizationWidget* theVisualizationWidget;
     QgsMapCanvas *mainCanvas = nullptr;
 
     QgsVectorLayer* currentLayer = nullptr;
 
+//    QgsLayerTree *rootNode = nullptr;
+
     std::unique_ptr<QgsAppMapTools> mMapTools;
 
     QgsFeatureIds selectedIds;
     QgsFeatureIds deselectedIds;
+
+    bool showPopUpOnSelection = true;
 
 };
 

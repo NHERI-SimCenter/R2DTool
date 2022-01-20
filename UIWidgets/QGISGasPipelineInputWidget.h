@@ -53,8 +53,10 @@ public:
 
     void clear();
 
-
 private:
+
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
 
 };
 

@@ -1,5 +1,5 @@
-#ifndef RegionalSiteResponseWidget_H
-#define RegionalSiteResponseWidget_H
+#ifndef OpenQuakeSelectionWidget_H
+#define OpenQuakeSelectionWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,105 +36,90 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "GroundMotionStation.h"
 #include "SimCenterAppWidget.h"
 
-#include <memory>
+#include <qdom.h>
 
-#include <QMap>
-
+class SimCenterMapcanvasWidget;
+class QGISVisualizationWidget;
 class VisualizationWidget;
-class SimCenterUnitsWidget;
 
-class ComponentInputWidget;
+class QgsMapLayer;
+class QgsVectorLayer;
+
+class QDomNodeList;
 class QStackedWidget;
-class QLineEdit;
 class QProgressBar;
 class QLabel;
+class QLineEdit;
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ArcGISMapImageLayer;
-class GroupLayer;
-class FeatureCollectionLayer;
-class KmlLayer;
-class Layer;
-}
-}
-
-
-class RegionalSiteResponseWidget : public SimCenterAppWidget
+class OpenQuakeSelectionWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    RegionalSiteResponseWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~RegionalSiteResponseWidget();
+    OpenQuakeSelectionWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~OpenQuakeSelectionWidget();
 
-    void showUserGMLayers(bool state);
+    QStackedWidget* getOpenQuakeSelectionWidget(void);
 
-    QStackedWidget* getRegionalSiteResponseWidget(void);
-
-    bool inputFromJSON(QJsonObject &jsonObj);  
-    bool outputToJSON(QJsonObject &jsonObj);
-    bool inputAppDataFromJSON(QJsonObject &jsonObj);
-    bool outputAppDataToJSON(QJsonObject &jsonObj);
-  
-    bool copyFiles(QString &destDir);
-
-    void clear(void);
 
 public slots:
 
-    void showUserGMSelectDialog(void);
-
-private slots:
-
-    void loadUserGMData(void);
-    void chooseEventFileDialog(void);
-    void chooseMotionDirDialog(void);
-    void soilParamaterFileDialog(void);
-    void soilScriptFileDialog(void);
-
+    void clear(void);
 
 signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
     void loadingComplete(const bool value);
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+
+protected:
+
+    void showEvent(QShowEvent *e);
+
+private slots:
+    void chooseImportFileDialog(void);
+    void chooseExportFileDialog(void);
+
+    void handleRectangleSelect(void);
+    void handlePolygonSelect(void);
+    void handleRadiusSelect(void);
+    void handleFreehandSelect(void);
+    void handleNoneSelect(void);
+
+    void handleSelectionDone(void);
 
 private:
+    void loadOpenQuakeXMLData(void);
 
-  void showProgressBar(void);
-  void hideProgressBar(void);
-  void setFilterString(const QString& filter);
-  QString getFilterString(void);
-  
-  QStackedWidget* theStackedWidget;
+    QDomDocument xmlGMs;
 
-    VisualizationWidget* theVisualizationWidget;
+    QVector<QgsMapLayer*> referenceLayerGroup;
+    QVector<QgsMapLayer*> selectedLayerGroup;
 
-    QString eventFile;
-    QString motionDir;
+    int getPointSources(QDomNodeList* pointSources);
 
-    QLineEdit *eventFileLineEdit;
-    QLineEdit *motionDirLineEdit;
-    QLineEdit *soilFileLineEdit;
-    QLineEdit *siteResponseScriptLineEdit;
-    QLineEdit *filterLineEdit;
+    int getCharacteristicLineSources(QDomNodeList* lineSources);
 
-    QLabel* progressLabel;
-    QWidget* progressBarWidget;
-    QWidget* inputWidget;
-    QProgressBar* progressBar;
+    QWidget* fileInputWidget = nullptr;
+    QProgressBar* progressBar = nullptr;
+    QLabel* progressLabel = nullptr;
+    QWidget* progressBarWidget = nullptr;
+    QLineEdit* xmlImportPathLineEdit = nullptr;
+    QStackedWidget* theStackedWidget = nullptr;
 
-    QVector<GroundMotionStation> stationList;
+    QLineEdit* xmlExportPathLineEdit = nullptr;
 
-    SimCenterUnitsWidget* unitsWidget;
-  
-    ComponentInputWidget *theInputMotions;
+    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    QgsVectorLayer* pointReferenceLayer = nullptr;
+    QgsVectorLayer* lineReferenceLayer = nullptr;
+
+    QgsVectorLayer* pointSelectedLayer = nullptr;
+    QgsVectorLayer* lineSelectedLayer = nullptr;
+
 };
 
-#endif // RegionalSiteResponseWidget_H
+#endif // OpenQuakeSelectionWidget_H

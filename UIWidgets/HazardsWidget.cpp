@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "HazardsWidget.h"
 #include "ShakeMapWidget.h"
 #include "HurricaneSelectionWidget.h"
+#include "OpenQuakeSelectionWidget.h"
 #include "UserInputHurricaneWidget.h"
 #include "RasterHazardInputWidget.h"
 #include "UserInputGMWidget.h"
@@ -85,18 +86,20 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 #ifdef Q_GIS
     theHurricaneSelectionWidget = new QGISHurricaneSelectionWidget(theVisualizationWidget,this);
     theRasterHazardWidget = new RasterHazardInputWidget(theVisualizationWidget,this);
+    theOpenQuakeSelectionWidget = new OpenQuakeSelectionWidget(theVisualizationWidget);
 #endif
 
-    theRegionalSiteResponseWidget = new RegionalSiteResponseWidget(theVisualizationWidget);    
+    //    theRegionalSiteResponseWidget = new RegionalSiteResponseWidget(theVisualizationWidget);    
     
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
     this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);
-    this->addComponent("Regional Site Response", "RegionalSiteResponse", theRegionalSiteResponseWidget);    
+    //     this->addComponent("Regional Site Response", "RegionalSiteResponse", theRegionalSiteResponseWidget);    
 
     this->addComponent("User Specified Hurricane", "UserInputHurricane", theUserInputHurricaneWidget);
     this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
     this->addComponent("Hurricane Scenario Simulation", "HurricaneSelection", theHurricaneSelectionWidget);
-    this->addComponent("Raster Defined Hazard", "UserInputRaster", theRasterHazardWidget);
+    this->addComponent("OpenQuake Selection Widget", "OQSelectionWidget", theOpenQuakeSelectionWidget);
+    //this->addComponent("Raster Defined Hazard", "UserInputRaster", theRasterHazardWidget);
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
 
@@ -105,13 +108,13 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theUserInputHurricaneWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
     connect(theHurricaneSelectionWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
-    connect(theRegionalSiteResponseWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));    
+    //    connect(theRegionalSiteResponseWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));    
     connect(theRasterHazardWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
 
     connect(theShakeMapWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theEQSSWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theUserInputGMWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
-    connect(theRegionalSiteResponseWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    //    connect(theRegionalSiteResponseWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theUserInputHurricaneWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theHurricaneSelectionWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
     connect(theRasterHazardWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));

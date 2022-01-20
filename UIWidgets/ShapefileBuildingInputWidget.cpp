@@ -164,14 +164,14 @@ int ShapefileBuildingInputWidget::loadComponentVisualization()
 }
 
 
-void ShapefileBuildingInputWidget::loadComponentData(void)
+bool ShapefileBuildingInputWidget::loadComponentData(void)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
         this->chooseComponentInfoFileDialog();
 
     if(pathToComponentInputFile.compare("NULL") == 0)
-        return;
+        return false;
 
     // Check if the directory exists
     QFileInfo file(pathToComponentInputFile);
@@ -184,7 +184,7 @@ void ShapefileBuildingInputWidget::loadComponentData(void)
         {
             QString errMsg = "Cannot find the file: "+ pathToComponentInputFile + "\n" +"Check your directory and try again.";
             this->errorMessage(errMsg);
-            return;
+            return false;
         }
         else
         {
@@ -203,7 +203,7 @@ void ShapefileBuildingInputWidget::loadComponentData(void)
     if(numFeat == 0)
     {
         this->errorMessage("Input Shapefile does not have any features");
-        return;
+        return false;
     }
     else{
         this->statusMessage("Loading information for " + QString::number(numFeat)+ " assets");
@@ -220,7 +220,7 @@ void ShapefileBuildingInputWidget::loadComponentData(void)
     if(fields.size() == 0)
     {
         this->errorMessage("Input Shapefile layer does not have any fields. Will not show table");
-        return;
+        return false;
     }
 
     QStringList fieldsStrList;
@@ -289,7 +289,7 @@ void ShapefileBuildingInputWidget::loadComponentData(void)
     this->statusMessage("Done loading assets");
     QApplication::processEvents();
 
-    return;
+    return true;
 }
 
 

@@ -2,6 +2,7 @@
 #include "QGISVisualizationWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
+#include "AssetFilterDelegate.h"
 
 #include <qgsfeature.h>
 #include <qgslinesymbol.h>
@@ -17,7 +18,6 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
 {
 
     QgsFields featFields;
-    featFields.append(QgsField("RepairRate", QVariant::Double));
     featFields.append(QgsField("ID", QVariant::Int));
     featFields.append(QgsField("AssetType", QVariant::String));
     featFields.append(QgsField("TabName", QVariant::String));
@@ -29,12 +29,10 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
         featFields.append(QgsField(fieldText.toString(),fieldText.type()));
     }
 
-    QList<QgsField> attribFields;
-    for(int i = 0; i<featFields.size(); ++i)
-        attribFields.push_back(featFields[i]);
+    auto attribFields = featFields.toList();
 
-    // Create the buildings layer
-    auto mainLayer = theVisualizationWidget->addVectorLayer("linestring","All Pipelines");
+    // Create the pipelines layer
+    mainLayer = theVisualizationWidget->addVectorLayer("linestring","All Pipelines");
 
     if(mainLayer == nullptr)
     {
@@ -68,6 +66,7 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
         return -1;
     }
 
+    filterDelegateWidget  = new AssetFilterDelegate(mainLayer);
 
     // Get the number of rows
     auto nRows = componentTableWidget->rowCount();
@@ -88,21 +87,19 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
         // Create a unique ID for the building
         auto uid = theVisualizationWidget->createUniqueID();
 
-        // "RepairRate"
         // "ID"
         // "AssetType"
-        // "UID"
+        // "Tabname"
 
-        featureAttributes[0] = QVariant(0.0);
-        featureAttributes[1] = QVariant(pipelineID);
-        featureAttributes[2] = QVariant("GASPIPELINES");
-        featureAttributes[3] = QVariant(uid);
+        featureAttributes[0] = QVariant(pipelineID);
+        featureAttributes[1] = QVariant("GASPIPELINES");
+        featureAttributes[2] = QVariant("ID: "+QString::number(pipelineID));
 
         // The feature attributes are the columns from the table
         for(int j = 1; j<componentTableWidget->columnCount(); ++j)
         {
             auto attrbVal = componentTableWidget->item(i,j);
-            featureAttributes[3+j] = attrbVal;
+            featureAttributes[2+j] = attrbVal;
         }
 
         QgsFeature feature;
@@ -155,7 +152,7 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
     // Create the selected building layer
-    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Pipelines");
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Pipelines");
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -165,8 +162,8 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
 
     QgsLineSymbol* selectedLayerMarkerSymbol = new QgsLineSymbol();
 
-    selectedLayerMarkerSymbol->setWidth(0.8);
-    selectedLayerMarkerSymbol->setColor(Qt::yellow);
+    selectedLayerMarkerSymbol->setWidth(2.0);
+    selectedLayerMarkerSymbol->setColor(Qt::darkBlue);
     theVisualizationWidget->createSimpleRenderer(selectedLayerMarkerSymbol,selectedFeaturesLayer);
 
     auto pr2 = selectedFeaturesLayer->dataProvider();
@@ -192,44 +189,16 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
 
 void QGISGasPipelineInputWidget::clear()
 {
+//    if(selectedFeaturesLayer != nullptr)
+//    {
+//        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
+//        theVisualizationWidget->deregisterLayerForSelection(selectedFeaturesLayer->id());
+//    }
+//    if(mainLayer != nullptr)
+//        theVisualizationWidget->removeLayer(mainLayer);
+
     ComponentInputWidget::clear();
 }
-
-
-
-//Renderer* QGISGasPipelineInputWidget::createSelectedPipelineRenderer(double outlineWidth)
-//{
-
-//    SimpleLineSymbol* lineSymbol1 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(0, 0, 0), 5.0f /*width*/, this);
-//    SimpleLineSymbol* lineSymbol2 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(255,255,178), 5.0f /*width*/, this);
-//    SimpleLineSymbol* lineSymbol3 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(253,204,92), 5.0f /*width*/, this);
-//    SimpleLineSymbol* lineSymbol4 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(253,141,60),  5.0f /*width*/, this);
-//    SimpleLineSymbol* lineSymbol5 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(240,59,32),  5.0f /*width*/, this);
-//    SimpleLineSymbol* lineSymbol6 = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor(189,0,38),  5.0f /*width*/, this);
-
-//    QList<ClassBreak*> classBreaks;
-
-//    auto classBreak1 = new ClassBreak("0.0-0.001 number of repairs", "0.0-0.001 number of repairs", -0.00001, 1E-03, lineSymbol1, this);
-//    classBreaks.append(classBreak1);
-
-//    auto classBreak2 = new ClassBreak("0.001-0.01 number of repairs", "0.001-0.01 number of repairs", 1.00E-03, 1.00E-02, lineSymbol2, this);
-//    classBreaks.append(classBreak2);
-
-//    auto classBreak3 = new ClassBreak("0.01-0.1 number of repairs", "0.01-0.1 number of repairs", 1.00E-02, 1.00E-01, lineSymbol3, this);
-//    classBreaks.append(classBreak3);
-
-//    auto classBreak4 = new ClassBreak("0.1-1.0 number of repairs", "0.1-1.0 number of repairs", 1.00E-01, 1.00E+00, lineSymbol4, this);
-//    classBreaks.append(classBreak4);
-
-//    auto classBreak5 = new ClassBreak("1.0-10.0 number of repairs", "1.0-10.0 number of repairs", 1.00E+00, 1.00E+01, lineSymbol5, this);
-//    classBreaks.append(classBreak5);
-
-//    auto classBreak6 = new ClassBreak("10.0-100.0 number of repairs", "Loss Ratio Between 75% and 90%", 1.00E+01, 1.00E+10, lineSymbol6, this);
-//    classBreaks.append(classBreak6);
-
-//    return new ClassBreaksRenderer("RepairRate", classBreaks, this);
-//}
-
 
 
 

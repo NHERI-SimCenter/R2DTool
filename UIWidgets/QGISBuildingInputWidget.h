@@ -55,6 +55,8 @@ public:
 
 private:
 
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
 
 };
 

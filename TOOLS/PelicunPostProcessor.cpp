@@ -239,9 +239,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     // Get the map view widget
     auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
     mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
-
-    // Enable the selection tool
-    mapViewSubWidget->enableSelectionTool();
 #endif
 
 #ifdef ARC_GIS
@@ -334,6 +331,9 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
         errMsg = "The DV results are empty";
         throw errMsg;
     }
+
+    // Enable the selection tool
+    mapViewSubWidget->enableSelectionTool();
 
 }
 
@@ -585,11 +585,11 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Starting editing
     theBuildingDB->startEditing();
 
-    auto res = theBuildingDB->updateComponentAttributes("LossRatio",attributes);
+    QString errMsg;
+    auto res = theBuildingDB->updateComponentAttributes("LossRatio",attributes,errMsg);
     if(!res)
     {
-        QString msg = "Error updating component attribute: Loss Ratio";
-        throw msg;
+        throw errMsg;
     }
 
     // Commit the changes

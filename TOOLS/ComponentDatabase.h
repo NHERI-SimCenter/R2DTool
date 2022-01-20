@@ -75,7 +75,11 @@ public:
     bool updateComponentAttribute(const qint64 id, const QString& attribute, const QVariant& value);
 
     // Fast, use for batch updates
-    bool updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values);
+    bool updateComponentAttributes(const QString& fieldName, const QVector<QVariant>& values, QString& error);
+
+    // The field names passed as a vector and values passed as a matrix where each row is a component and each column is the fied value
+    // The number of provided attributes need to exactly match the number of the feature's fields.
+    bool addNewComponentAttributes(const QStringList& fieldNames, const QVector<QgsAttributes>& values, QString& error);
 
     QVariant getAttributeValue(const qint64 id, const QString& attribute, const QVariant defaultVal = QVariant());
 

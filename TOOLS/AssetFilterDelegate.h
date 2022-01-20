@@ -1,5 +1,5 @@
-#ifndef HAZARDS_WIDGET_H
-#define HAZARDS_WIDGET_H
+#ifndef AssetFilterDelegate_H
+#define AssetFilterDelegate_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,58 +36,40 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "SimCenterAppSelection.h"
+class QgsVectorLayer;
 
-class GMWidget;
-class RandomVariablesContainer;
-class ShakeMapWidget;
-class HurricaneSelectionWidget;
-class OpenQuakeSelectionWidget;
-class UserInputHurricaneWidget;
-class UserInputGMWidget;
-class RegionalSiteResponseWidget;
-class VisualizationWidget;
+#include <qgsquerybuilder.h>
 
-class QGroupBox;
+#include <QObject>
 
-class HazardsWidget : public  SimCenterAppSelection
+#include <set>
+
+class AssetFilterDelegate : public QObject
 {
     Q_OBJECT
 
 public:
-    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
-    ~HazardsWidget();
+    AssetFilterDelegate(QgsVectorLayer *layer);
 
-#ifdef ARC_GIS
-    void setCurrentlyViewable(bool status);
-#endif
+    int setFilterString(const QString& filter, QVector<int>& filterIds);
+
+    QString getFilterString(void);
+
+    void clear();
+
+    int openQueryBuilderDialog(QVector<int>& filterIds);
 
 signals:
-    void gridFileChangedSignal(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
-
-private slots:
-
-    void shakeMapLoadingFinished(const bool value);
-    void gridFileChangedSlot(QString motionDir, QString eventFile);
-    void eventTypeChangedSlot(QString eventType);
+    void filteringComplete(void);
 
 private:
 
-    RandomVariablesContainer* theRandomVariablesContainer;
+    std::unique_ptr<QgsQueryBuilder> qb = nullptr;
 
-    VisualizationWidget* theVisualizationWidget;
+    QgsVectorLayer* mainLayer = nullptr;
 
-    GMWidget* theEQSSWidget;
-    ShakeMapWidget* theShakeMapWidget;
-    UserInputGMWidget* theUserInputGMWidget;
-    RegionalSiteResponseWidget* theRegionalSiteResponseWidget;  
-    UserInputHurricaneWidget* theUserInputHurricaneWidget;
-    HurricaneSelectionWidget* theHurricaneSelectionWidget;
-    OpenQuakeSelectionWidget* theOpenQuakeSelectionWidget;
-    SimCenterAppWidget* theRasterHazardWidget;
 };
 
-#endif // HAZARDS_WIDGET_H
+#endif // AssetFilterDelegate_H
