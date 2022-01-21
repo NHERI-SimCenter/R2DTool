@@ -226,6 +226,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/ModelWidget.cpp \
             UIWidgets/MultiComponentR2D.cpp \
             UIWidgets/NearestNeighbourMapping.cpp \
+            UIWidgets/SiteSpecifiedMapping.cpp \
             UIWidgets/NoneWidget.cpp \
             UIWidgets/OpenSeesPyBuildingModel.cpp \
             UIWidgets/PelicunDLWidget.cpp \
@@ -338,6 +339,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/ModelWidget.h \
             UIWidgets/MultiComponentR2D.h \
             UIWidgets/NearestNeighbourMapping.h \
+            UIWidgets/SiteSpecifiedMapping.h \
             UIWidgets/NoneWidget.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
             UIWidgets/PelicunDLWidget.h \
@@ -419,7 +421,7 @@ SOURCES +=  Tools/QGISHurricanePreprocessor.cpp \
             UIWidgets/QGISBuildingInputWidget.cpp \
             UIWidgets/RasterHazardInputWidget.cpp \
             UIWidgets/QGISHurricaneSelectionWidget.cpp \
-            UIWidgets/ShapefileBuildingInputWidget.cpp \
+            UIWidgets/GISBuildingInputWidget.cpp \
             UIWidgets/MapViewWindow.cpp \
 
 HEADERS +=  Tools/QGISHurricanePreprocessor.h \
@@ -427,7 +429,7 @@ HEADERS +=  Tools/QGISHurricanePreprocessor.h \
             UIWidgets/QGISBuildingInputWidget.h \
             UIWidgets/RasterHazardInputWidget.h \
             UIWidgets/QGISHurricaneSelectionWidget.h \
-            UIWidgets/ShapefileBuildingInputWidget.h \
+            UIWidgets/GISBuildingInputWidget.h \
             UIWidgets/MapViewWindow.h \
 
 }

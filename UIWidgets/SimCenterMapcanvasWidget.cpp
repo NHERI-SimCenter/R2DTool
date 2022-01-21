@@ -66,10 +66,10 @@ SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisu
     connect( legendTreeView, &QAbstractItemView::clicked, this, &SimCenterMapcanvasWidget::layerTreeViewClicked );
     connect( legendTreeView, &QAbstractItemView::doubleClicked, qGISApp, &QgisApp::layerTreeViewDoubleClicked );
     connect( legendTreeView->selectionModel(), &QItemSelectionModel::currentChanged, qGISApp, &QgisApp::updateNewLayerInsertionPoint );
+    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+             qGISApp, &QgisApp::legendLayerSelectionChanged );
 
     //connect( legendTreeView, &QgsLayerTreeView::currentLayerChanged, qGISApp, &QgisApp::onActiveLayerChanged );
-    //    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
-    //             qGISApp, &QgisApp::legendLayerSelectionChanged );
     //    connect( legendTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
     //             qGISApp, &QgisApp::activateDeactivateMultipleLayersRelatedActions );
     //    connect( legendTreeView->layerTreeModel()->rootGroup(), &QgsLayerTreeNode::addedChildren,
@@ -146,13 +146,6 @@ SimCenterMapcanvasWidget::SimCenterMapcanvasWidget(const QString &name, QGISVisu
 
     mainWidget->setStretchFactor(1,2);
 }
-
-
-//void SimCenterMapcanvasWidget::addLayerToLegend(QgsMapLayer* layer)
-//{
-//    rootNode->addLayer(layer);
-//    legendTreeView->expandAll();
-//}
 
 
 void SimCenterMapcanvasWidget::setMapTool(QgsMapTool *mapTool)
@@ -303,12 +296,20 @@ void SimCenterMapcanvasWidget::setShowPopUpOnSelection(bool value)
 }
 
 
+void SimCenterMapcanvasWidget::deselectAllTreeItems(void)
+{
+    auto selectModel = legendTreeView->selectionModel();
+    selectModel->clearSelection();
+    selectModel->clearCurrentIndex();
+}
+
+
 void SimCenterMapcanvasWidget::handleSelectionFinished(Qt::KeyboardModifiers modifiers)
 {
     Q_UNUSED(modifiers)
 
 
-    qDebug()<<"Yes";
+    //qDebug()<<"Yes";
 }
 
 
