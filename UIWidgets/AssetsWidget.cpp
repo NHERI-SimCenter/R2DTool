@@ -51,7 +51,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifdef Q_GIS
 #include "QGISBuildingInputWidget.h"
 #include "QGISGasPipelineInputWidget.h"
-#include "ShapefileBuildingInputWidget.h"
+#include "GISBuildingInputWidget.h"
+#include "HousingUnitAllocationWidget.h"
 #endif
 
 // Qt headers
@@ -87,8 +88,8 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     QGISBuildingInputWidget *csvBuildingInventory = new QGISBuildingInputWidget(this, visualizationWidget, "Buildings","CSV_to_BIM");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
-    ShapefileBuildingInputWidget *shapefileBuildingInventory = new ShapefileBuildingInputWidget(this,visualizationWidget,"Buildings","ShapeFile_to_BIM");
-    buildingWidget->addComponent(QString("Shape File to BIM"), QString("CSV_to_BIM"), shapefileBuildingInventory);
+    GISBuildingInputWidget *GISBuildingInventory = new GISBuildingInputWidget(this,visualizationWidget,"Buildings","GIS_to_BIM");
+    buildingWidget->addComponent(QString("GIS File to BIM"), QString("GIS_to_BIM"), GISBuildingInventory);
 #endif
 
 #ifdef ARC_GIS

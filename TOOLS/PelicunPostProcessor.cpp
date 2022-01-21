@@ -89,6 +89,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
 
+#include <qgsattributes.h>
 #include <qgsmapcanvas.h>
 #endif
 
@@ -370,6 +371,8 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         headerStrings.append(headerStr);
     }
 
+    headerStrings.append("LossRatio");
+
 
     auto indexRCagg = headerStrings.indexOf("Repair Cost-aggregate--mean");
     auto indexRepairImpracProb = headerStrings.indexOf("Repair Impractical-probability--");
@@ -463,7 +466,8 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     auto selFeatLayer = theBuildingDB->getSelectedLayer();
     mapViewSubWidget->setCurrentLayer(selFeatLayer);
 
-    QVector<QVariant> attributes(DVResults.size()-numHeaderRows);
+    // Vector to hold the attributes
+    QVector< QgsAttributes > fieldAttributes(DVResults.size()-numHeaderRows, QgsAttributes(numHeaderColumns));
 
     // 4 rows of headers in the results file
     for(int i = numHeaderRows, count = 0; i<DVResults.size(); ++i, ++count)
@@ -575,7 +579,18 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
         pelicunResultsTableWidget->setItem(count,4, fatalitiesItem);
         pelicunResultsTableWidget->setItem(count,5, lossRatioItem);
 
-        attributes[count] = lossRatio;
+        auto& rowData = fieldAttributes[count];
+
+        // Populate the attributes vector with the results
+        for(int k = 0; k<inputRow.size(); ++k)
+        {
+            // Add the result to the database
+            auto value = inputRow.at(k);
+
+            rowData[k] = QVariant(value.toDouble());
+        }
+
+        rowData.push_back(lossRatio);
     }
 
     // Test to remove start
@@ -586,11 +601,9 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     theBuildingDB->startEditing();
 
     QString errMsg;
-    auto res = theBuildingDB->updateComponentAttributes("LossRatio",attributes,errMsg);
+    auto res = theBuildingDB->addNewComponentAttributes(headerStrings,fieldAttributes,errMsg);
     if(!res)
-    {
         throw errMsg;
-    }
 
     // Commit the changes
     theBuildingDB->commitChanges();

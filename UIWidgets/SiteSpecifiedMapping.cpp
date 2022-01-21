@@ -1,5 +1,3 @@
-#ifndef ShapefileBuildingInputWidget_H
-#define ShapefileBuildingInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,30 +36,69 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "SiteSpecifiedMapping.h"
+#include "SimCenterPreferences.h"
 
-class QgsVectorLayer;
+#include <QComboBox>
+#include <QDebug>
+#include <QDir>
+#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QIntValidator>
+#include <QJsonObject>
+#include <QLabel>
+#include <QLineEdit>
 
-class ShapefileBuildingInputWidget : public  ComponentInputWidget
+SiteSpecifiedMapping::SiteSpecifiedMapping(QWidget *parent) : SimCenterAppWidget(parent)
 {
-    Q_OBJECT
+    QVBoxLayout* regionalMapLayout = new QVBoxLayout(this);
 
-public:
-    explicit ShapefileBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-    virtual ~ShapefileBuildingInputWidget();
+    // create label and entry for seed to layout
 
-    int loadComponentVisualization() override;
+    infoLabel = new QLabel(this);
+    infoLabel->setText("Hazard values are provided,  or calculated,  at each asset site.");
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
-    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+    regionalMapLayout->addWidget(infoLabel);
+    regionalMapLayout->addStretch();
+}
 
-private slots:
-    bool loadComponentData(void) override;
 
-private:
+SiteSpecifiedMapping::~SiteSpecifiedMapping()
+{
 
-    QgsVectorLayer* shapeFileLayer = nullptr;
+}
 
-};
 
-#endif // ShapefileBuildingInputWidget_H
+bool SiteSpecifiedMapping::outputAppDataToJSON(QJsonObject &jsonObj)
+{
+    jsonObj["Application"] = QString("SiteSpecifiedEvents");
+
+    QJsonObject nearestNeigborObj;
+
+    jsonObj.insert("ApplicationData",nearestNeigborObj);
+
+    return true;
+}
+
+
+bool SiteSpecifiedMapping::inputAppDataFromJSON(QJsonObject &jsonObject)
+{
+    //qDebug() << __PRETTY_FUNCTION__ << jsonObject;
+
+//    if (jsonObject.contains("ApplicationData"))
+//    {
+//        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+//    }
+
+    return true;
+}
+
+
+void SiteSpecifiedMapping::clear(void)
+{
+
+}
+
+
+

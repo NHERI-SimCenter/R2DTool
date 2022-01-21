@@ -43,6 +43,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppR2D.h"
 #include "SimCenterUnitsCombo.h"
 #include "SimCenterUnitsWidget.h"
+#include "ComponentDatabaseManager.h"
+#include "ComponentDatabase.h"
+
+#include <cstdlib>
 
 #include <QApplication>
 #include <QDialog>
@@ -51,6 +55,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QFileInfo>
 #include <QGridLayout>
+#include <QJsonArray>
 #include <QLabel>
 #include <QLineEdit>
 #include <QProgressBar>
@@ -64,6 +69,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISVisualizationWidget.h"
 #include <qgsrasterlayer.h>
 #include <qgsrasterdataprovider.h>
+#include <qgscollapsiblegroupbox.h>
+#include <qgsprojectionselectionwidget.h>
+#include <qgsproject.h>
+
+// Test to remove start
+#include <chrono>
+using namespace std::chrono;
+// Test to remove end
+
 
 RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -74,9 +88,10 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     dataProvider = nullptr;
     rasterlayer = nullptr;
     eventTypeCombo = nullptr;
+    mCrsSelector = nullptr;
 
     fileInputWidget = nullptr;
-    eventFile = "";
+    rasterFilePath = "";
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(this->getRasterHazardInputWidget());
@@ -85,9 +100,9 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     this->setLayout(layout);
 
     // Test to remove start
-    // eventFile = "/Users/steve/Desktop/GalvestonTestbed/Surge_Raster.tif";
-    // eventFileLineEdit->setText(eventFile);
-    // this->loadRaster();
+    //     eventFile = "/Users/steve/Desktop/GalvestonTestbed/Surge_Raster.tif";
+    //     eventFileLineEdit->setText(eventFile);
+    //     this->loadRaster();
     // Test to remove end
 }
 
@@ -105,16 +120,24 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "UserInputRasterHazard";
 
     QJsonObject appData;
-    QFileInfo theFile(eventFile);
-    if (theFile.exists()) {
-        appData["eventFile"]=theFile.fileName();
-        appData["eventFileDir"]=theFile.path();
-    } else {
-        appData["eventFile"]=eventFile; // may be valid on others computer
-        appData["eventFileDir"]=QString("");
-    }
+
+    QFileInfo rasterFile (rasterPathLineEdit->text());
+
+    appData["rasterFile"] = rasterFile.fileName();
+
+    appData["CRS"] = mCrsSelector->crs().authid();
+
+    appData["eventClassification"] = eventTypeCombo->currentText();
+
+    QJsonArray bandArray;
+
+    for(auto&& it : bandNames)
+        bandArray.append(it);
+
+    appData["bands"] = bandArray;
 
     jsonObject["ApplicationData"]=appData;
+
 
     return true;
 }
@@ -122,6 +145,17 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool RasterHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 {
+
+    QFileInfo theFile(pathToEventFile);
+
+    if (theFile.exists()) {
+        jsonObj["eventFile"]= theFile.fileName();
+        jsonObj["eventFilePath"]=theFile.path();
+    } else {
+        jsonObj["eventFile"]=pathToEventFile; // may be valid on others computer
+        jsonObj["eventFilePath"]=QString("");
+    }
+
     auto res = unitsWidget->outputToJSON(jsonObj);
 
     if(!res)
@@ -136,6 +170,8 @@ bool RasterHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
     // Set the units
     auto res = unitsWidget->inputFromJSON(jsonObject);
 
+    //    auto list = unitsWidget->getParameterNames();
+
     // If setting of units failed, provide default units and issue a warning
     if(!res)
     {
@@ -146,6 +182,15 @@ bool RasterHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
         for(auto&& it : paramNames)
             this->infoMessage("For parameter: "+it);
 
+    }
+
+    if (jsonObject.contains("eventFile"))
+        eventFile = jsonObject["eventFile"].toString();
+
+    if(eventFile.isEmpty())
+    {
+        this->errorMessage("Raster hazard input widget -Error could not find the eventFile");
+        return false;
     }
 
     return res;
@@ -160,8 +205,8 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         QString fileName;
         QString pathToFile;
 
-        if (appData.contains("eventFile"))
-            fileName = appData["eventFile"].toString();
+        if (appData.contains("rasterFile"))
+            fileName = appData["rasterFile"].toString();
         if (appData.contains("eventFileDir"))
             pathToFile = appData["eventFileDir"].toString();
         else
@@ -175,16 +220,91 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
                     + "input_data" + QDir::separator() + fileName;
 
             if (!QFile::exists(fullFilePath)) {
-                this->errorMessage("UserInputGM - could not find event file");
+                this->errorMessage("Raster hazard input widget - could not find the raster file");
                 return false;
             }
         }
 
-        eventFileLineEdit->setText(fullFilePath);
-        eventFile = fullFilePath;
+        rasterPathLineEdit->setText(fullFilePath);
+        rasterFilePath = fullFilePath;
+
+        auto res = this->loadRaster();
+
+        if(res !=0)
+        {
+            this->errorMessage("Failed to load the raster");
+            return false;
+        }
+
+        auto bandArray = appData["bands"].toArray();
+
+        auto numBands = rasterlayer->bandCount();
+
+        if(bandArray.size() != numBands)
+        {
+            this->errorMessage("Error in loading rasater. The number of provided bands in the json file should be equal to the number of bands in the raster");
+            return false;
+        }
+
+        for(int i = 0; i<numBands; ++i)
+        {
+            // Note that band numbers start from 1 and not 0!
+            //auto bandName = rasterlayer->bandName(i+1);
+
+            auto bandName = bandArray.at(i).toString();
+
+            bandNames.append(bandName);
+
+            unitsWidget->addNewUnitItem(bandName);
+        }
+
+        auto eventType = appData["eventClassification"].toString();
+
+        if(eventType.isEmpty())
+        {
+            this->errorMessage("Error, please provide an event classification in the json input file");
+            return false;
+        }
+
+        auto eventIndex = eventTypeCombo->findText(eventType);
+
+        if(eventIndex == -1)
+        {
+            this->errorMessage("Error, the event classification "+eventType+" is not recognized");
+            return false;
+        }
+        else
+        {
+            eventTypeCombo->setCurrentIndex(eventIndex);
+        }
 
 
-        this->loadRaster();
+        auto crsValue = appData["CRS"].toString();
+
+        if(crsValue.isEmpty())
+        {
+            this->infoMessage("Warning: No coordinate reference system provided for raster layer, using project CRS. Check and change if necessary.");
+            QgsProject::instance()->crs();
+
+            auto projectCrs = QgsProject::instance()->crs();
+            mCrsSelector->setCrs(projectCrs);
+        }
+        else
+        {
+            QgsCoordinateReferenceSystem newCrs(crsValue);
+
+            if(!newCrs.isValid())
+            {
+                this->infoMessage("Warning: the provided coordinate reference system "+crsValue+" is not valid, using project crs. Check and change if necessary.");
+                auto projectCrs = QgsProject::instance()->crs();
+                mCrsSelector->setCrs(projectCrs);
+            }
+            else
+            {
+                mCrsSelector->setCrs(newCrs);
+            }
+        }
+
 
         return true;
     }
@@ -201,30 +321,43 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
     fileInputWidget->setLayout(fileLayout);
 
+    mCrsSelector = new QgsProjectionSelectionWidget();
+    mCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+    mCrsSelector->setObjectName(QString::fromUtf8("mCrsSelector"));
+    mCrsSelector->setFocusPolicy(Qt::StrongFocus);
+
+    connect(mCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,&RasterHazardInputWidget::handleLayerCrsChanged);
+
 
     QLabel* selectComponentsText = new QLabel("Event Raster File");
-    eventFileLineEdit = new QLineEdit();
+    rasterPathLineEdit = new QLineEdit();
     QPushButton *browseFileButton = new QPushButton("Browse");
 
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
 
     fileLayout->addWidget(selectComponentsText, 0,0);
-    fileLayout->addWidget(eventFileLineEdit,    0,1);
+    fileLayout->addWidget(rasterPathLineEdit,    0,1);
     fileLayout->addWidget(browseFileButton,     0,2);
 
     QLabel* eventTypeLabel = new QLabel("Event Type:",this);
     eventTypeCombo = new QComboBox(this);
     eventTypeCombo->addItem("Earthquake","Earthquake");
     eventTypeCombo->addItem("Hurricane","Hurricane");
-    eventTypeCombo->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
+    eventTypeCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     unitsWidget = new SimCenterUnitsWidget();
 
-    fileLayout->addWidget(eventTypeLabel, 1,0);
-    fileLayout->addWidget(eventTypeCombo, 1,1);
-    fileLayout->addWidget(unitsWidget, 2,0,1,3);
+    QLabel* crsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
 
-    fileLayout->setRowStretch(3,1);
+    fileLayout->addWidget(eventTypeLabel, 1,0);
+    fileLayout->addWidget(eventTypeCombo, 1,1,1,2);
+
+    fileLayout->addWidget(crsTypeLabel,2,0);
+    fileLayout->addWidget(mCrsSelector,2,1,1,2);
+
+    fileLayout->addWidget(unitsWidget, 3,0,1,3);
+
+    fileLayout->setRowStretch(4,1);
 
     return fileInputWidget;
 }
@@ -238,11 +371,13 @@ void RasterHazardInputWidget::chooseEventFileDialog(void)
     dialog.close();
 
     // Return if the user cancels or enters same file
-    if(newEventFile.isEmpty() || newEventFile == eventFile)
+    if(newEventFile.isEmpty() || newEventFile == rasterFilePath)
         return;
 
-    eventFile = newEventFile;
-    eventFileLineEdit->setText(eventFile);
+    rasterFilePath = newEventFile;
+    rasterPathLineEdit->setText(rasterFilePath);
+
+    eventFile.clear();
 
     this->loadRaster();
 
@@ -252,8 +387,16 @@ void RasterHazardInputWidget::chooseEventFileDialog(void)
 
 void RasterHazardInputWidget::clear(void)
 {
+    rasterFilePath.clear();
+    rasterPathLineEdit->clear();
+    bandNames.clear();
+
     eventFile.clear();
-    eventFileLineEdit->clear();
+    pathToEventFile.clear();
+
+    mCrsSelector->setCrs(QgsCoordinateReferenceSystem());
+
+    eventTypeCombo->setCurrentIndex(0);
 
     unitsWidget->clear();
 }
@@ -285,12 +428,11 @@ double RasterHazardInputWidget::sampleRaster(const double& x, const double& y, c
     if(!OK)
         this->errorMessage("Error, sampling the raster");
 
-    this->statusMessage(QString::number(testVal));
+    //this->statusMessage(QString::number(testVal));
 
     // Test val will be NAN at failure
     return testVal;
 }
-
 
 
 int RasterHazardInputWidget::loadRaster(void)
@@ -299,7 +441,7 @@ int RasterHazardInputWidget::loadRaster(void)
 
     QApplication::processEvents();
 
-    rasterlayer = theVisualizationWidget->addRasterLayer(eventFile, "Raster Hazard", "gdal");
+    rasterlayer = theVisualizationWidget->addRasterLayer(rasterFilePath, "Raster Hazard", "gdal");
 
     if(rasterlayer == nullptr)
     {
@@ -311,20 +453,158 @@ int RasterHazardInputWidget::loadRaster(void)
 
     dataProvider = rasterlayer->dataProvider();
 
-    auto numBands = rasterlayer->bandCount();
+    theVisualizationWidget->zoomToLayer(rasterlayer);
 
-    for(int i = 0; i<numBands; ++i)
-    {
-        // Note that band numbers start from 1 and not 0!
-        auto bandName = rasterlayer->bandName(i+1);
+    //    // Test to remove start
+    //    auto start = high_resolution_clock::now();
+    //    // Test to remove end
 
-        unitsWidget->addNewUnitItem(bandName);
-    }
+    //    for(int i = 0; i<1000000; ++i)
+    //    {
+    //        auto rnd = static_cast<double>(std::rand()/((RAND_MAX + 1u)/0.1));
+    //        this->sampleRaster(-94.87183+rnd,29.24216+rnd,1);
+    //    }
 
-    this->sampleRaster(-94.87183,29.24216,1);
+    //    // Test to remove start
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    this->statusMessage("Duration: "+QString::number(duration.count()));
+    //    // Test to remove end
+
 
     return 0;
 }
 
+
+void RasterHazardInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
+{
+    rasterlayer->setCrs(val);
+}
+
+
+bool RasterHazardInputWidget::copyFiles(QString &destDir)
+{
+    if(eventFile.isEmpty())
+    {
+        this->errorMessage("In raster hazard input widget, no eventFile given in copy files");
+        return false;
+    }
+
+    auto numBands = rasterlayer->bandCount();
+
+    if(numBands != bandNames.size())
+    {
+        this->infoMessage("In raster hazard input widget, the number of bands in the raster is not equal to the number of band names. Using generic names");
+
+        for(int i = 0; i<numBands; ++i)
+        {
+            auto bName = rasterlayer->bandName(i+1);
+            bandNames.append(bName);
+        }
+    }
+
+    pathToEventFile = destDir + QDir::separator() + eventFile;
+
+    QFileInfo rasterFileNameInfo(rasterFilePath);
+
+    auto rasterFileName = rasterFileNameInfo.fileName();
+
+    if (!QFile::copy(rasterFilePath, destDir + QDir::separator() + rasterFileName))
+        return false;
+
+    emit outputDirectoryPathChanged(destDir, pathToEventFile);
+
+    auto theBuildingDB = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+
+    auto numPoints = theBuildingDB->getSelectedLayer()->featureCount();
+
+    QVector<QStringList> pointDataVector;
+    pointDataVector.reserve(numPoints);
+
+    QgsFeatureIterator fit = theBuildingDB->getSelectedLayer()->getFeatures();
+
+    QgsFeature feature;
+    while (fit.nextFeature(feature))
+    {
+        // Sample the raster at the centroid of the geometry
+        auto centroid = feature.geometry().centroid().asPoint();
+
+        auto x = centroid.x();
+        auto y = centroid.y();
+
+        auto xstr = QString::number(x);
+        auto ystr = QString::number(y);
+
+        QStringList pointData;
+        pointData.append(xstr);
+        pointData.append(ystr);
+
+        for(int i = 0; i< bandNames.size(); ++i)
+        {
+            auto val = this->sampleRaster(x, y, i+1);
+            auto valStr = QString::number(val);
+
+            pointData.append(valStr);
+        }
+
+        pointDataVector.push_back(pointData);
+    }
+
+    CSVReaderWriter csvTool;
+
+    // First create the event grid file
+    QVector<QStringList> gridData;
+
+    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
+    gridData.push_back(headerRow);
+
+    QStringList stationHeader = bandNames;
+
+    QApplication::processEvents();
+
+    for(int i = 0; i<pointDataVector.size(); ++i)
+    {
+        auto stationFile = "Site_"+QString::number(i)+".csv";
+
+        auto point = pointDataVector.at(i);
+
+        auto lon = point.at(0);
+        auto lat = point.at(1);
+
+        // Get the grid row
+        QStringList gridRow = {stationFile, lat, lon};
+        gridData.push_back(gridRow);
+
+        QStringList stationRow = {point.begin()+2,point.end()};
+
+        // Save the station data
+        QVector<QStringList> stationData = {stationHeader};
+
+        stationData.push_back(stationRow);
+
+        QString pathToStationFile = destDir + QDir::separator() + stationFile;
+
+        QString err;
+        auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
+        if(res2 != 0)
+        {
+            this->errorMessage(err);
+            return false;
+        }
+
+    }
+
+    // Now save the site grid .csv file
+    QString err2;
+    auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
+    if(res2 != 0)
+    {
+        this->errorMessage(err2);
+        return false;
+    }
+
+
+    return true;
+}
 
 
