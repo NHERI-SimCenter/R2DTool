@@ -36,20 +36,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ShapefileBuildingInputWidget.h"
+#include "GISBuildingInputWidget.h"
 
 #include "AssetInputDelegate.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
 #include "ComponentDatabaseManager.h"
+#include "CSVReaderWriter.h"
+
+#include "QGISVisualizationWidget.h"
+
 #include <QDir>
 #include <QApplication>
 #include <QLineEdit>
 #include <QLabel>
 #include <QFileInfo>
 #include <QHeaderView>
-
-#include "QGISVisualizationWidget.h"
+#include <QMessageBox>
 
 #include <qgsfillsymbol.h>
 #include <qgsmarkersymbol.h>
@@ -60,16 +63,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 using namespace std::chrono;
 
 
-ShapefileBuildingInputWidget::ShapefileBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, appType)
+GISBuildingInputWidget::GISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {    
 
     this->setContentsMargins(0,0,0,0);
 
-    QString txt1 = "Load buildings from a Shapefile (.shp)";
+    QString txt1 = "Load buildings from a GIS file (.shp, .gdb., etc.)";
     this->setLabel1(txt1);
 
     QString txt2 = "Enter the IDs of one or more buildings to analyze."
-    "Define a range of buildings with a dash and separate multiple buildings with a comma.";
+                   "Define a range of buildings with a dash and separate multiple buildings with a comma.";
     this->setLabel2(txt2);
 
     QString txt3 = "Building Information";
@@ -77,19 +80,19 @@ ShapefileBuildingInputWidget::ShapefileBuildingInputWidget(QWidget *parent, Visu
 
     theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 
-//    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonGIS/GalvestonBuildings/galveston-bldg-v7.shp";
-//    componentFileLineEdit->setText(pathToComponentInputFile);
-//    this->loadComponentData();
+    //    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonGIS/GalvestonBuildings/galveston-bldg-v7.shp";
+    //    componentFileLineEdit->setText(pathToComponentInputFile);
+    //    this->loadComponentData();
 }
 
 
-ShapefileBuildingInputWidget::~ShapefileBuildingInputWidget()
+GISBuildingInputWidget::~GISBuildingInputWidget()
 {
 
 }
 
 
-int ShapefileBuildingInputWidget::loadComponentVisualization()
+int GISBuildingInputWidget::loadComponentVisualization()
 {
 
     //    enum GeometryType
@@ -164,7 +167,7 @@ int ShapefileBuildingInputWidget::loadComponentVisualization()
 }
 
 
-bool ShapefileBuildingInputWidget::loadComponentData(void)
+bool GISBuildingInputWidget::loadComponentData(void)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
@@ -233,7 +236,7 @@ bool ShapefileBuildingInputWidget::loadComponentData(void)
     }
 
     // Add the ID column to the headers
-    fieldsStrList.push_front("ID");
+    //fieldsStrList.push_front("ID");
 
     tableHorizontalHeadings = fieldsStrList;
 
@@ -241,13 +244,14 @@ bool ShapefileBuildingInputWidget::loadComponentData(void)
     QVector<QStringList> data(numFeat);
 
     // Test to remove
-    auto start = high_resolution_clock::now();
+    // auto start = high_resolution_clock::now();
 
     QgsFeature feat;
     int i = 0;
     while (features.nextFeature(feat))
     {
-        QStringList attributeStrList = {QString::number(i+1)};
+        //QStringList attributeStrList = {QString::number(i+1)};
+        QStringList attributeStrList;
 
         auto attributes = feat.attributes();
         for(int i = 0; i<attributes.size(); ++i)
@@ -267,10 +271,9 @@ bool ShapefileBuildingInputWidget::loadComponentData(void)
     }
 
     // Test to remove
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(stop - start);
-    this->statusMessage("Done shapefile results "+QString::number(duration.count()));
-
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    this->statusMessage("Done shapefile results "+QString::number(duration.count()));
 
     componentTableWidget->clear();
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
@@ -281,8 +284,8 @@ bool ShapefileBuildingInputWidget::loadComponentData(void)
 
     this->loadComponentVisualization();
 
-    // Required offset by -1
-    offset = -1;
+    // Offset is 0 since QGIS always numbers components starting at 1
+    offset = 0;
 
     theComponentDb->setOffset(offset);
 
@@ -293,46 +296,42 @@ bool ShapefileBuildingInputWidget::loadComponentData(void)
 }
 
 
-bool ShapefileBuildingInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool GISBuildingInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    jsonObject["Application"]=appType;
 
-    QJsonObject data;
+    // First get the default information and then modify
+    ComponentInputWidget::outputAppDataToJSON(jsonObject);
+
+    // Here we will export everything to a .csv so we can use the CSV to BIM app
+    jsonObject["Application"]="GIS_to_BIM";
+
+    // It assumes the file name stays the same, but we need to modify the extension so that it is in csv and not .gdb, or .shp, or whatever
     QFileInfo componentFile(componentFileLineEdit->text());
-    if (componentFile.exists()) {
-        data["buildingSourceFile"]=componentFile.fileName();
-        data["pathToSource"]=componentFile.path();
 
-        QString filterData = this->getFilterString();
+    QString baseNameCSV = componentFile.baseName() + ".csv";
 
-        if(filterData.isEmpty())
-        {
-            errorMessage("Please select components for analysis");
-            return false;
-        }
+    auto appData = jsonObject.value("ApplicationData").toObject();
 
-        data["filter"] = filterData;
-    }
-    else
-    {
-        data["sourceFile"]=QString("None");
-        data["pathToSource"]=QString("");
+    if(appData.isEmpty())
         return false;
-    }
 
-    jsonObject["ApplicationData"] = data;
+    appData["buildingSourceFile"] = baseNameCSV;
+
+    appData["buildingGISFile"] = componentFile.fileName();
+
+    jsonObject["ApplicationData"] = appData;
 
     return true;
 }
 
 
-bool ShapefileBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
     //jsonObject["Application"]=appType;
     if (jsonObject.contains("Application")) {
         if (appType != jsonObject["Application"].toString()) {
-            this->errorMessage("ShapefileBuildingInputWidget::inputFRommJSON app name conflict");
+            this->errorMessage("GISBuildingInputWidget::inputFRommJSON app name conflict");
             return false;
         }
     }
@@ -345,8 +344,8 @@ bool ShapefileBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
-        if (appData.contains("buildingSourceFile"))
-            fileName = appData["buildingSourceFile"].toString();
+        if (appData.contains("buildingGISFile"))
+            fileName = appData["buildingGISFile"].toString();
 
         if (fileInfo.exists(fileName)) {
 
@@ -357,8 +356,8 @@ bool ShapefileBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         } else {
 
-            if (appData.contains("pathToSource"))
-                pathToFile = appData["pathToSource"].toString();
+            if (appData.contains("pathToGIS"))
+                pathToFile = appData["pathToGIS"].toString();
             else
                 pathToFile=QDir::currentPath();
 
@@ -402,3 +401,77 @@ bool ShapefileBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     return true;
 }
 
+
+bool GISBuildingInputWidget::copyFiles(QString &destName)
+{
+    auto compLineEditText = componentFileLineEdit->text();
+
+    QFileInfo componentFile(compLineEditText);
+
+    if (!componentFile.exists())
+        return false;
+
+    if (!QFile::copy(compLineEditText, destName + QDir::separator() + componentFile.fileName()))
+        return false;
+
+    auto fileName = componentFile.baseName();
+
+    // Do not copy the file, output a new csv which will have the changes that the user makes in the table
+    //        if (componentFile.exists()) {
+    //            return this->copyFile(componentFileLineEdit->text(), destName);
+    //        }
+
+    auto pathToSaveFile = destName + QDir::separator() + fileName + ".csv";
+
+    auto nRows = componentTableWidget->rowCount();
+
+    if(nRows == 0)
+        return false;
+
+    auto data = componentTableWidget->getTableModel()->getTableData();
+
+    auto headerValues = componentTableWidget->getTableModel()->getHeaderStringList();
+
+    data.push_front(headerValues);
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    csvTool.saveCSVFile(data,pathToSaveFile,err);
+
+    if(!err.isEmpty())
+        return false;
+
+
+    // For testing, creates a csv file of only the selected components
+    //    qDebug()<<"Saving selected components to .csv";
+    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
+    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
+
+    //    selectedData[0] = headerValues;
+
+    //    auto nCols = componentTableWidget->columnCount();
+
+    //    int i = 0;
+    //    for(auto&& rowID : selectedIDs)
+    //    {
+    //        QStringList rowData;
+    //        rowData.reserve(nCols);
+
+    //        for(int j = 0; j<nCols; ++j)
+    //        {
+    //            auto item = componentTableWidget->item(rowID-1,j).toString();
+
+    //            rowData<<item;
+    //        }
+    //        selectedData[i+1] = rowData;
+
+    //        ++i;
+    //    }
+
+    //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+    // For testing end
+
+    return true;
+}

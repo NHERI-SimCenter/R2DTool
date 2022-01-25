@@ -99,7 +99,7 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
     this->addComponent("Hurricane Scenario Simulation", "HurricaneSelection", theHurricaneSelectionWidget);
     this->addComponent("OpenQuake Selection Widget", "OQSelectionWidget", theOpenQuakeSelectionWidget);
-    //this->addComponent("Raster Defined Hazard", "UserInputRaster", theRasterHazardWidget);
+    this->addComponent("Raster Defined Hazard", "UserInputRasterHazard", theRasterHazardWidget);
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
 
