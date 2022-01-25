@@ -527,13 +527,37 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
     while (fit.nextFeature(feature))
     {
         // Sample the raster at the centroid of the geometry
-        auto centroid = feature.geometry().centroid().asPoint();
+        //auto centroid = feature.geometry().centroid().asPoint();
+        //auto x = centroid.x();
+        //auto y = centroid.y();
 
-        auto x = centroid.x();
-        auto y = centroid.y();
+        // Get the latitude and lon of the builing
+        auto featAtrb = feature.attributes();
+        auto latIndx = feature.fieldNameIndex("Latitude");
+        auto lonIndx = feature.fieldNameIndex("Longitude");
 
-        auto xstr = QString::number(x);
-        auto ystr = QString::number(y);
+        if(latIndx == -1 || lonIndx == -1)
+        {
+            this->errorMessage("Could not get the latitude or longitude from the building attributes");
+            return false;
+        }
+
+        bool OK = false;
+        auto x = featAtrb.at(lonIndx).toDouble(&OK);
+        if(!OK)
+        {
+            this->errorMessage("Could not get the latitude from the building");
+            return false;
+        }
+        auto y = featAtrb.at(latIndx).toDouble(&OK);
+        if(!OK)
+        {
+            this->errorMessage("Could not get the latitude from the building");
+            return false;
+        }
+
+        auto xstr = QString::number(x,'g', 10);
+        auto ystr = QString::number(y,'g', 10);
 
         QStringList pointData;
         pointData.append(xstr);

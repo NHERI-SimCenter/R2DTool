@@ -52,7 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISBuildingInputWidget.h"
 #include "QGISGasPipelineInputWidget.h"
 #include "GISBuildingInputWidget.h"
-#include "HousingUnitAllocationWidget.h"
+//#include "HousingUnitAllocationWidget.h"
 #endif
 
 // Qt headers
@@ -90,6 +90,10 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
     GISBuildingInputWidget *GISBuildingInventory = new GISBuildingInputWidget(this,visualizationWidget,"Buildings","GIS_to_BIM");
     buildingWidget->addComponent(QString("GIS File to BIM"), QString("GIS_to_BIM"), GISBuildingInventory);
+
+
+//    HousingUnitAllocationWidget *housingUnitAllocation = new HousingUnitAllocationWidget(this,visualizationWidget);
+//    buildingWidget->addComponent(QString("Housing Unit Allocation"), QString("CSV_to_BIM"), housingUnitAllocation);
 #endif
 
 #ifdef ARC_GIS
