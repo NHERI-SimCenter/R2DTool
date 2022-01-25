@@ -665,11 +665,8 @@ void GMWidget::runHazardSimulation(void)
         for (int i = 0; i < IDs.size(); i++) {
             if (IDs[i].toInt() > tmpMax)
                 tmpMax = IDs[i].toInt();
-            else
-            {
-                if (IDs[i].toInt() < tmpMin)
-                    tmpMin = IDs[i].toInt();
-            }
+            if (IDs[i].toInt() < tmpMin)
+                tmpMin = IDs[i].toInt();
         }
         minID = tmpMin;
         maxID = tmpMax;
