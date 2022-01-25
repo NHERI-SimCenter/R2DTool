@@ -138,6 +138,8 @@ INCLUDEPATH += $$PWD/Utils \
 
 
 SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
+            Events/UI/BedrockDepth.cpp \
+            Events/UI/BedrockDepthWidget.cpp \
             Events/UI/EarthquakeRuptureForecastWidget.cpp \
             Events/UI/EventGMDirWidget.cpp \
             Events/UI/GMPE.cpp \
@@ -160,6 +162,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/PeerNGAWest2Client.cpp \
             Events/UI/PointSourceRupture.cpp \
             Events/UI/PointSourceRuptureWidget.cpp \
+            Events/UI/QGISSiteInputWidget.cpp \
             Events/UI/RecordSelectionConfig.cpp \
             Events/UI/RecordSelectionWidget.cpp \
             Events/UI/RuptureLocation.cpp \
@@ -172,6 +175,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/SiteScatter.cpp \
             Events/UI/SiteScatterWidget.cpp \
             Events/UI/SiteWidget.cpp \
+            Events/UI/SoilModel.cpp \
+            Events/UI/SoilModelWidget.cpp \
             Events/UI/SpatialCorrelationWidget.cpp \
             Events/UI/Vs30.cpp \
             Events/UI/Vs30Widget.cpp \
@@ -253,6 +258,8 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
 
 
 HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
+            Events/UI/BedrockDepth.h \
+            Events/UI/BedrockDepthWidget.h \
             Events/UI/EarthquakeRuptureForecastWidget.h \
             Events/UI/EventGMDirWidget.h \
             Events/UI/GMPE.h \
@@ -275,6 +282,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/PeerNGAWest2Client.h \
             Events/UI/PointSourceRupture.h \
             Events/UI/PointSourceRuptureWidget.h \
+            Events/UI/QGISSiteInputWidget.h \
             Events/UI/RecordSelectionConfig.h \
             Events/UI/RecordSelectionWidget.h \
             Events/UI/RuptureLocation.h \
@@ -287,6 +295,8 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Events/UI/SiteScatter.h \
             Events/UI/SiteScatterWidget.h \
             Events/UI/SiteWidget.h \
+            Events/UI/SoilModel.h \
+            Events/UI/SoilModelWidget.h \
             Events/UI/SpatialCorrelationWidget.h \
             Events/UI/Vs30.h \
             Events/UI/Vs30Widget.h \

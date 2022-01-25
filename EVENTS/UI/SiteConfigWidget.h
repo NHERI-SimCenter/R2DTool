@@ -6,25 +6,30 @@
 
 class SiteGridWidget;
 class SiteScatterWidget;
+class VisualizationWidget;
 
 class QButtonGroup;
 class QStackedWidget;
 class QLineEdit;
+class QGISSiteInputWidget;
 
 class SiteConfigWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit SiteConfigWidget(SiteConfig& siteconfig, QWidget *parent = nullptr);
+    explicit SiteConfigWidget(SiteConfig& siteconfig, VisualizationWidget* visWidget, bool soilResponse = false, QWidget *parent = nullptr);
 
     SiteGridWidget *getSiteGridWidget() const;
     SiteScatterWidget *getSiteScatterWidget() const;
+    QGISSiteInputWidget *getCsvSiteWidget();
 
     int getNumberOfGMPerSite(void);
 
 signals:
+    void soilDataCompleteSignal(bool flag);
 
 public slots:
+    void soilDataCompleteSlot(bool flag);
 
 private:
     SiteConfig& m_siteConfig;
@@ -32,7 +37,9 @@ private:
     QStackedWidget* m_stackedWidgets;
     SiteGridWidget* siteGridWidget;
     SiteScatterWidget* siteScatWidget;
+    QGISSiteInputWidget* csvSiteInventory;
     QLineEdit* numGMLineEdit;
+    VisualizationWidget* visualizationWidget;
 
     void setupConnections();
 };
