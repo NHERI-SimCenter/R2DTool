@@ -37,9 +37,9 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
         numGMLineEdit->setValidator(validator);
     }
 
-    QRadioButton* siteRadioButton = new QRadioButton(tr("Single Location"));
-    QRadioButton* gridRadioButton = new QRadioButton(tr("Grid of Locations"));
-    QRadioButton* scatRadioButton = new QRadioButton(tr("Scattering Locations"));
+    siteRadioButton = new QRadioButton(tr("Single Location"));
+    gridRadioButton = new QRadioButton(tr("Grid of Locations"));
+    scatRadioButton = new QRadioButton(tr("Scattering Locations"));
     //QRadioButton* csvfRadioButton = new QRadioButton(tr("CSV Inventory"));
     m_typeButtonsGroup->addButton(siteRadioButton, 0);
     m_typeButtonsGroup->addButton(gridRadioButton, 1);
@@ -81,7 +81,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
 
     //add a new one for site inventory
     if (soilResponse)
-        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Soil","regionalGroundMotion");
+        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Soil","RegionalSiteResponse");
     else
         csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Site","regionalGroundMotion");
     csvSiteInventory->setMaximumWidth(800);
@@ -185,7 +185,13 @@ void SiteConfigWidget::setupConnections()
         }
     });
 
+    connect(&m_siteConfig, &SiteConfig::typeChanged, [this](SiteConfig::SiteType siteType)
+    {
+        emit siteTypeChangedSignal(siteType);
+    });
+
     connect(csvSiteInventory, SIGNAL(soilDataCompleteSignal(bool)), this, SLOT(soilDataCompleteSlot(bool)));
+    connect(this, SIGNAL(setSiteFilter(QString)), csvSiteInventory, SLOT(setSiteFilter(QString)));
 }
 
 
@@ -198,5 +204,32 @@ int SiteConfigWidget::getNumberOfGMPerSite(void)
         return numGM;
 
     return -1;
+}
+
+
+QString SiteConfigWidget::getFilter(void)
+{
+    QString filter = "";
+    if (m_siteConfig.getType() == SiteConfig::SiteType::UserCSV)
+        filter = csvSiteInventory->getFilterString();
+
+    return filter;
+}
+
+void SiteConfigWidget::setSiteFilterSlot(QString filter)
+{
+    if (m_siteConfig.getType() == SiteConfig::SiteType::UserCSV)
+        emit setSiteFilterSignal(filter);
+}
+
+
+void SiteConfigWidget::setSiteType(SiteConfig::SiteType siteType)
+{
+    if (siteType==SiteConfig::SiteType::Single)
+        siteRadioButton->click();
+    else if (siteType==SiteConfig::SiteType::Grid)
+        gridRadioButton->click();
+    else if (siteType==SiteConfig::SiteType::UserCSV)
+        scatRadioButton->click();
 }
 

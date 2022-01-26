@@ -55,12 +55,15 @@ public:
 
     void reloadComponentData(QString newDataFile);
 
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+
     void clear();
 
 signals:
     void soilDataCompleteSignal(bool flag);
 
 public slots:
+    void setSiteFilter(QString filter);
 
 private:
 

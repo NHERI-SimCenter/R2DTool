@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsmarkersymbol.h>
 
 #include <QFileInfo>;
+#include <QDir>;
 
 QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
@@ -298,6 +299,9 @@ int QGISSiteInputWidget::loadComponentVisualization()
         }
     }
 
+    // check soil data
+    this->checkSoilDataComplete();
+
     return 0;
 }
 
@@ -317,8 +321,6 @@ void QGISSiteInputWidget::reloadComponentData(QString newDataFile)
     {
         this->errorMessage("Cannot reload the site data file "+newDataFile);
     }
-    // check soil data
-    this->checkSoilDataComplete();
 }
 
 
@@ -448,4 +450,85 @@ void QGISSiteInputWidget::clear()
 }
 
 
+void QGISSiteInputWidget::setSiteFilter(QString filter)
+{
+    this->componentFileLineEdit->setText(filter);
+}
+
+bool QGISSiteInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+{
+
+    //jsonObject["Application"]=appType;
+    if (jsonObject.contains("Application")) {
+        if (appType != jsonObject["Application"].toString()) {
+            this->errorMessage("QGISSiteInputWidget::inputFRommJSON app name conflict");
+            return false;
+        }
+    }
+
+
+    if (jsonObject.contains("ApplicationData")) {
+        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+        QFileInfo fileInfo;
+        QString fileName;
+        QString pathToFile;
+        bool foundFile = false;
+        if (appData.contains("soilGridParametersFile"))
+            fileName = appData["soilGridParametersFile"].toString();
+
+        if (fileInfo.exists(fileName)) {
+
+            pathToComponentInputFile = fileName;
+            componentFileLineEdit->setText(fileName);
+
+            this->loadComponentData();
+            foundFile = true;
+
+        } else {
+
+            if (appData.contains("soilGridParametersFilePath"))
+                pathToFile = QDir::currentPath() + QDir::separator()
+                        + "input_data" + QDir::separator() + appData["soilGridParametersFilePath"].toString();
+            else
+                pathToFile=QDir::currentPath();
+
+            pathToComponentInputFile = pathToFile + QDir::separator() + fileName;
+
+            if (fileInfo.exists(pathToComponentInputFile)) {
+                componentFileLineEdit->setText(pathToComponentInputFile);
+                foundFile = true;
+                this->loadComponentData();
+
+            } else {
+                // adam .. adam .. adam
+                pathToComponentInputFile = pathToFile + QDir::separator()
+                        + "input_data" + QDir::separator() + fileName;
+                if (fileInfo.exists(pathToComponentInputFile)) {
+                    componentFileLineEdit->setText(pathToComponentInputFile);
+                    foundFile = true;
+                    this->loadComponentData();
+                }
+                else
+                {
+                    QString errMessage = appType + " no file found at: " + fileName;
+                    this->errorMessage(errMessage);
+                    return false;
+                }
+            }
+        }
+        if(foundFile == false)
+        {
+            QString errMessage = appType + " no file found: " + fileName;
+            this->errorMessage(errMessage);
+            return false;
+        }
+
+        if (appData.contains("filter"))
+            this->setFilterString(appData["filter"].toString());
+
+    }
+
+    return true;
+}
 

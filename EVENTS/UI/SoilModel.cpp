@@ -82,8 +82,7 @@ const QStringList &SoilModel::validTypesUser()
 {
     static QStringList validTypes = QStringList()
             << "Elastic Isotropic"
-            << "Multiaxial Cyclic Plasticity"
-            << "Mixed";
+            << "Multiaxial Cyclic Plasticity";
 
     return validTypes;
 }
@@ -93,8 +92,7 @@ const QStringList &SoilModel::validTypes()
 {
     static QStringList validTypes = QStringList()
             << "Elastic Isotropic"
-            << "Multiaxial Cyclic Plasticity"
-            << "Mixed";
+            << "Multiaxial Cyclic Plasticity";
 
     return validTypes;
 }

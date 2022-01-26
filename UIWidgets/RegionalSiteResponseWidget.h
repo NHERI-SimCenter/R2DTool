@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "GroundMotionStation.h"
 #include "SimCenterAppWidget.h"
+#include "SiteConfig.h"
 
 #include <memory>
 
@@ -77,8 +78,8 @@ class Vs30; // vs30 info
 class Vs30Widget; // vs30 setup widget
 class BedrockDepth;
 class BedrockDepthWidget;
-//class SoilModel;
-//class SoilModelWidget;
+class SoilModel;
+class SoilModelWidget;
 
 
 class RegionalSiteResponseWidget : public SimCenterAppWidget
@@ -118,6 +119,7 @@ public slots:
     void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
     void setSiteDataFile(bool flag);
+    void setSoilModelWidget(SiteConfig::SiteType siteType);
 
 private slots:
 
@@ -131,6 +133,8 @@ private slots:
 signals:
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
     void loadingComplete(const bool value);
+    void writeSiteDataCsv(bool);
+    void siteFilterSignal(QString filter);
 
 private:
 
@@ -181,11 +185,14 @@ private:
     BedrockDepth* m_bedrockDepth;
     BedrockDepthWidget* m_bedrockDepthWidget;
 
-    //SoilModel* m_soilModel;
-    //SoilModelWidget* m_soilModelWidget;
+    SoilModel* m_soilModel;
+    SoilModelWidget* m_soilModelWidget;
 
     QPushButton* m_runButton;
     QProcess* processSiteData;
+
+    bool siteDataFlag;
+    bool soilModelFlag;
 
 #ifdef ARC_GIS
     std::unique_ptr<MapViewSubWidget> mapViewSubWidget;

@@ -12,6 +12,7 @@ class QButtonGroup;
 class QStackedWidget;
 class QLineEdit;
 class QGISSiteInputWidget;
+class QRadioButton;
 
 class SiteConfigWidget : public QWidget
 {
@@ -24,12 +25,17 @@ public:
     QGISSiteInputWidget *getCsvSiteWidget();
 
     int getNumberOfGMPerSite(void);
+    QString getFilter(void);
+    void setSiteType(SiteConfig::SiteType siteType);
 
 signals:
     void soilDataCompleteSignal(bool flag);
+    void setSiteFilterSignal(QString filter);
+    void siteTypeChangedSignal(SiteConfig::SiteType siteType);
 
 public slots:
     void soilDataCompleteSlot(bool flag);
+    void setSiteFilterSlot(QString filter);
 
 private:
     SiteConfig& m_siteConfig;
@@ -40,6 +46,10 @@ private:
     QGISSiteInputWidget* csvSiteInventory;
     QLineEdit* numGMLineEdit;
     VisualizationWidget* visualizationWidget;
+
+    QRadioButton* siteRadioButton;
+    QRadioButton* gridRadioButton;
+    QRadioButton* scatRadioButton;
 
     void setupConnections();
 };

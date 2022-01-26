@@ -49,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "MapViewSubWidget.h"
 #include "Vs30Widget.h"
 #include "BedrockDepthWidget.h"
-//#include "SoilModelWidget.h"
+#include "SoilModelWidget.h"
 #include "GridNode.h"
 #include "SimCenterPreferences.h"
 #include "QGISSiteInputWidget.h"
@@ -187,6 +187,8 @@ bool RegionalSiteResponseWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
       appData["soilGridParametersFilePath"]=QString("");
     }
 
+    // set Filter first
+    this->setFilterString(filterLineEdit->text());
     appData["filter"]=filterLineEdit->text();
     
     jsonObject["ApplicationData"]=appData;
@@ -206,6 +208,14 @@ bool RegionalSiteResponseWidget::outputToJSON(QJsonObject &jsonObj)
 
 bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
+    // first pass jsonObj to QGISSiteWidget object if it's used
+    // for loading an existing run we use the UserCSV
+    this->m_siteConfigWidget->setSiteType(SiteConfig::SiteType::UserCSV);
+    qDebug() << this->m_siteConfig->getType();
+    if (this->m_siteConfig->getType()==SiteConfig::SiteType::UserCSV)
+    {
+        this->m_siteConfigWidget->getCsvSiteWidget()->inputAppDataFromJSON(jsonObj);
+    }
   if (jsonObj.contains("ApplicationData")) {
         QJsonObject appData = jsonObj["ApplicationData"].toObject();
 
@@ -358,6 +368,8 @@ bool RegionalSiteResponseWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 	}
 
         if (appData.contains("filter"))
+            // first send this filter to the site configure widget
+            emit siteFilterSignal(appData["filter"].toString());
             this->setFilterString(appData["filter"].toString());
 
 	return true;
@@ -469,9 +481,9 @@ QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
     );
 
 
-    soilLayout->addWidget(new QLabel("Filter"), 1, 0);
+    //soilLayout->addWidget(new QLabel("Filter"), 1, 0);
     filterLineEdit = new QLineEdit();
-    soilLayout->addWidget(filterLineEdit, 1, 1);
+    //soilLayout->addWidget(filterLineEdit, 1, 1);
     
     inputLayout->addWidget(soilGroupBox);
 
@@ -563,9 +575,11 @@ QStackedWidget* RegionalSiteResponseWidget::getSiteWidget(VisualizationWidget* v
     m_siteConfig = new SiteConfig(this);
     bool soilResponse = true;
     m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig, visWidget, soilResponse);
-    inputSiteLayout->addWidget(m_siteConfigWidget,0,0,3,1);
+    inputSiteLayout->addWidget(m_siteConfigWidget,0,0,4,1);
     // connection: QGIS soil data completeness
     connect(m_siteConfigWidget, SIGNAL(soilDataCompleteSignal(bool)), this, SLOT(setSiteDataFile(bool)));
+    connect(this, SIGNAL(writeSiteDataCsv(bool)), this, SLOT(setSiteDataFile(bool)));
+    connect(this, SIGNAL(siteFilterSignal(QString)), m_siteConfigWidget, SLOT(setSiteFilterSlot(QString)));
 
     // adding vs30 widget
     m_vs30 = new Vs30(this);
@@ -577,19 +591,18 @@ QStackedWidget* RegionalSiteResponseWidget::getSiteWidget(VisualizationWidget* v
     m_bedrockDepthWidget = new BedrockDepthWidget(*m_bedrockDepth, *m_siteConfig);
     inputSiteLayout->addWidget(m_bedrockDepthWidget,1,1);
 
-    /***
     // adding soil model widget
     m_soilModel = new SoilModel(this);
     m_soilModelWidget = new SoilModelWidget(*m_soilModel, *m_siteConfig);
-    inputSiteLayout->addWidget(m_soilModelWidget,2,2,1,1);
-    ***/
+    inputSiteLayout->addWidget(m_soilModelWidget,2,1);
+    connect(m_siteConfigWidget, SIGNAL(siteTypeChangedSignal(SiteConfig::SiteType)), this, SLOT(setSoilModelWidget(SiteConfig::SiteType)));
 
     // set up directories
     this->setDir();
 
     // get site data button
     m_runButton = new QPushButton(tr("&Fetch Site Data"));
-    inputSiteLayout->addWidget(m_runButton,2,1);
+    inputSiteLayout->addWidget(m_runButton,3,1);
     connect(m_runButton, &QPushButton::clicked, this, [this]()
     {
         // Get the type of site definition, i.e., single or grid
@@ -638,6 +651,10 @@ QStackedWidget* RegionalSiteResponseWidget::getSiteWidget(VisualizationWidget* v
     theSiteStackedWidget->addWidget(inputSiteWidget);
     theSiteStackedWidget->setCurrentWidget(inputSiteWidget);
 
+    // site data completeness
+    siteDataFlag = false;
+    soilModelFlag = true;
+
     return theSiteStackedWidget;
 }
 
@@ -685,8 +702,17 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
     if (soilParametersFile.exists())
       this->copyFile(soilParameteres, newModelDir);
     else {
-      qDebug() << "RegionalSiteResponse:copyFiles soil parameters files does not exist:" << soilParameteres;
-      return false;
+        // here we need to see if the site data is complete
+        // if so we will send a signal to let QGIS site to write the csv for soilParameters
+        // this happens when user directly loaded a complete site data csv (so no data fetching)
+        // if not, report the error
+        if (siteDataFlag)
+            emit writeSiteDataCsv(true);
+        else
+        {
+            this->errorMessage("RegionalSiteResponse:copyFiles soil parameters files does not exist: "+soilParameteres);
+            return false;
+        }
     }
 
     QString script = siteResponseScriptLineEdit->text();
@@ -694,7 +720,7 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
     if (scriptFile.exists()) {
       this->copyPath(scriptFile.path(), newModelDir, false);
     } else {
-      qDebug() << "RegionalSiteResponse:copyFiles script file does not exist:" << scriptFile;
+      this->errorMessage("RegionalSiteResponse:copyFiles script file does not exist: "+scriptFile.path());
       return false;
     }   
 
@@ -702,14 +728,14 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
     if (eventFileInfo.exists()) {
       this->copyFile(eventFile, newMotionDir);
     } else {
-      qDebug() << "RegionalSiteResponse:copyFiles event grid file does not exist:" << eventFile;
+      this->errorMessage("RegionalSiteResponse:copyFiles event grid file does not exist: "+eventFile);
       return false;
     }
 
     if (theMotionDir.exists()) {
       return this->copyPath(motionDir, newMotionDir, false);
     } else {
-      qDebug() << "RegionalSiteResponse:copyFiles motion Dir file does not exist:" << motionDir;
+      this->errorMessage("RegionalSiteResponse:copyFiles motion Dir file does not exist: "+motionDir);
       return false;
     }
 
@@ -1338,7 +1364,10 @@ void RegionalSiteResponseWidget::hideProgressBar(void)
 
 void RegionalSiteResponseWidget::setFilterString(const QString& filter)
 {
-  filterLineEdit->setText(filter);
+    if (filterLineEdit->text().isEmpty())
+        filterLineEdit->setText(m_siteConfigWidget->getFilter());
+    else
+        filterLineEdit->setText(filter);
 }
 
 QString RegionalSiteResponseWidget::getFilterString(void)
@@ -1426,6 +1455,7 @@ void RegionalSiteResponseWidget::setDir(void)
 
 void RegionalSiteResponseWidget::setSiteDataFile(bool flag)
 {
+    siteDataFlag = flag;
     if (flag)
     {
         if(!m_siteConfigWidget->getCsvSiteWidget()->copyFiles(outputSiteDataDir))
@@ -1512,12 +1542,12 @@ void RegionalSiteResponseWidget::getSiteData(void)
     m_bedrockDepth->outputToJSON(depthToRockObj);
     siteObj.insert("BedrockDepth", depthToRockObj);
 
-    /***
-    // soil model
-    QJsonObject soilModelObj;
-    m_soilModel->outputToJSON(soilModelObj);
-    siteObj.insert("SoilModel", soilModelObj);
-    ***/
+    if (soilModelFlag) {
+        // soil model
+        QJsonObject soilModelObj;
+        m_soilModel->outputToJSON(soilModelObj);
+        siteObj.insert("SoilModel", soilModelObj);
+    }
 
     // direcotry
     QJsonObject dirObj;
@@ -1690,9 +1720,24 @@ void RegionalSiteResponseWidget::handleProcessFinished(int exitCode, QProcess::E
     soilFileLineEdit->setText(siteDataFilePath);
 
     // reload the QGISSite Input widget
+    this->m_siteConfigWidget->setSiteType(SiteConfig::SiteType::UserCSV);
     if(m_siteConfig->getType() == SiteConfig::SiteType::UserCSV)
     {
         m_siteConfigWidget->getCsvSiteWidget()->reloadComponentData(siteDataFilePath);
     }
 
+}
+
+void RegionalSiteResponseWidget::setSoilModelWidget(SiteConfig::SiteType siteType)
+{
+    if (siteType==SiteConfig::SiteType::UserCSV)
+    {
+        m_soilModelWidget->setVisible(false);
+        soilModelFlag = false;
+    }
+    else
+    {
+        m_soilModelWidget->setVisible(true);
+        soilModelFlag = true;
+    }
 }
