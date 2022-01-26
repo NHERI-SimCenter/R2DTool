@@ -212,7 +212,11 @@ QString SiteConfigWidget::getFilter(void)
     QString filter = "";
     if (m_siteConfig.getType() == SiteConfig::SiteType::UserCSV)
         filter = csvSiteInventory->getFilterString();
-
+    else if (m_siteConfig.getType() == SiteConfig::SiteType::Grid)
+    {
+        int siteNum = siteGridWidget->getSiteGrid().getNumSites();
+        filter = "0-"+QString::number(siteNum-1);
+    }
     return filter;
 }
 

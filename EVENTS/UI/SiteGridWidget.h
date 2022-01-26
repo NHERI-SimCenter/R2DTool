@@ -13,6 +13,8 @@ public:
 
     bool getGridCreated() const;
 
+    SiteGrid getSiteGrid();
+
 signals:
 
     void selectGridOnMap();

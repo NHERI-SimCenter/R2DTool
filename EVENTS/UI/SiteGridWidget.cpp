@@ -151,3 +151,8 @@ void SiteGridWidget::selectGridButtonPressed()
     emit selectGridOnMap();
     gridCreated = true;
 }
+
+void SiteGridWidget::getSiteGrid()
+{
+    return m_siteGrid;
+}
