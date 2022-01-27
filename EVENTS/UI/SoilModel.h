@@ -51,6 +51,7 @@ public:
     QString type() const;
     const QStringList& validTypes();
     const QStringList& validTypesUser();
+    QString getUserModelPath();
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
@@ -62,9 +63,11 @@ signals:
 
 public slots:
     bool setType(const QString &type);
+    void setUserModelPath(QString userModelPath);
 
 private:
     QString m_type;
+    QString m_userModelPath;
 
 };
 

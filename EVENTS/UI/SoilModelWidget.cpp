@@ -45,6 +45,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QSizePolicy>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QFileDialog>
 
 SoilModelWidget::SoilModelWidget(SoilModel& soilModel, SiteConfig& siteConfig, QWidget *parent): QWidget(parent), m_soilModel(soilModel)
 {
@@ -65,7 +68,24 @@ SoilModelWidget::SoilModelWidget(SoilModel& soilModel, SiteConfig& siteConfig, Q
 
     soilModelGroupBox->setLayout(formLayout);
 
+    // user model box
+    m_userModelBox = new QGroupBox(this);
+    m_userModelBox->setTitle("User-Defined Soil Model");
+
+    QHBoxLayout* userFormLayout = new QHBoxLayout(m_userModelBox);
+    QLabel* userTypeLabel = new QLabel(tr("User model script:"),this);
+
+    m_userModelFile = new QLineEdit("");
+    m_userModelButton = new QPushButton(tr("Browser"));
+
+    userFormLayout->addWidget(userTypeLabel);
+    userFormLayout->addWidget(m_userModelFile);
+    userFormLayout->addWidget(m_userModelButton);
+    m_userModelBox->setVisible(false);
+
+    //
     layout->addWidget(soilModelGroupBox);
+    layout->addWidget(m_userModelBox);
     this->setLayout(layout);
 
     QStringList validType;
@@ -85,4 +105,50 @@ void SoilModelWidget::setupConnections()
 
     connect(&this->m_soilModel, &SoilModel::typeChanged,
             this->m_typeBox, &QComboBox::setCurrentText);
+
+    connect(&this->m_soilModel, &SoilModel::typeChanged, this, [this](QString type) {
+        if (type.compare("User")==0)
+            m_userModelBox->setVisible(true);
+        else
+        {
+            m_userModelBox->setVisible(false);
+            m_userModelFile->setText("");
+        }
+    });
+
+    connect(m_userModelButton, &QPushButton::clicked,
+            this, &SoilModelWidget::loadUserModelFile);
+
+    connect(this, SIGNAL(userModelFileChanged(QString)), &this->m_soilModel, SLOT(setUserModelPath(QString)));
+}
+
+void SoilModelWidget::loadUserModelFile()
+{
+    userModelFilePath=QFileDialog::getOpenFileName(this,tr("Model File (.py)"));
+    if(userModelFilePath.isEmpty())
+    {
+        userModelFilePath = "NULL";
+        return;
+    }
+    this->setModelFile(userModelFilePath);
+
+    //Connecting the filename
+    if (userModelFilePath.compare("Null") == 0 && userModelFilePath.contains(".py", Qt::CaseInsensitive))
+    {
+        QString errMsg = "Please choose a Model File (.py)";
+        qDebug() << errMsg;
+        return;
+    }
+}
+
+void SoilModelWidget::setModelFile(QString dirPath)
+{
+    m_userModelFile->setText(dirPath);
+    emit userModelFileChanged(dirPath);
+    return;
+}
+
+QString SoilModelWidget::getModelPathFile()
+{
+    return m_userModelFile->text();
 }

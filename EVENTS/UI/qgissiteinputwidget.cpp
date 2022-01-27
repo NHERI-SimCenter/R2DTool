@@ -396,7 +396,7 @@ int QGISSiteInputWidget::checkSoilParamComplete()
             checkList = attrbFullSoilEI;
         else if (soilModelType.compare("BA")==0)
             checkList = attrbFullSoilBA;
-        else if (soilModelType.compare("User")==0)
+        else if (soilModelType.compare("USER")==0)
         {
             // no checks (user is responsable for giving all needed parameters)
             this->statusMessage("No check is made for user-defined soil models - please make sure that all needed parameters are provided.");

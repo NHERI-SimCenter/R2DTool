@@ -44,6 +44,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QWidget>
 
 class QComboBox;
+class QLineEdit;
+class QPushButton;
+class QGroupBox;
 
 class SoilModelWidget : public QWidget
 {
@@ -51,13 +54,23 @@ class SoilModelWidget : public QWidget
 public:
     explicit SoilModelWidget(SoilModel& soilModel, SiteConfig& siteConfig, QWidget *parent = nullptr);
 
+    QString getModelPathFile(void);
+
 signals:
+    void userModelFileChanged(QString modelFilePath);
 
 public slots:
+    void loadUserModelFile(void);
 
 private:
     SoilModel& m_soilModel;
     QComboBox* m_typeBox;
+    QGroupBox* m_userModelBox;
+    QLineEdit* m_userModelFile;
+    QPushButton* m_userModelButton;
+    QString userModelFilePath;
+
+    void setModelFile(QString dirPath);
 
     void setupConnections();
 };

@@ -698,6 +698,12 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
     destDIR.mkpath(newModelDir);
     destDIR.mkpath(newMotionDir);
 
+    // copy soil model file if any
+    if (!m_soilModelWidget->getModelPathFile().isEmpty())
+    {
+        this->copyFile(m_soilModelWidget->getModelPathFile(), destDir);
+    }
+
     QString soilParameteres = soilFileLineEdit->text();
     QFileInfo soilParametersFile(soilParameteres);
     if (soilParametersFile.exists())

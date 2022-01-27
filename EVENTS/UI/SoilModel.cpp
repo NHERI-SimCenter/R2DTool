@@ -37,10 +37,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Kuanshi Zhong
 
 #include "SoilModel.h"
+#include <QFileInfo>
 
 SoilModel::SoilModel(QObject *parent) : QObject(parent)
 {
     this->m_type = "Elastic Isotropic";
+    this->m_userModelPath = "";
 }
 
 
@@ -66,7 +68,13 @@ bool SoilModel::setType(const QString &type)
 bool SoilModel::outputToJSON(QJsonObject &jsonObject)
 {
     jsonObject.insert("Type", m_type);
-    jsonObject.insert("Parameters", QJsonObject());
+    if (m_type.compare("User")==0)
+    {
+        QFileInfo theFile(m_userModelPath);
+        jsonObject.insert("Parameters", theFile.fileName());
+    }
+    else
+        jsonObject.insert("Parameters", QJsonObject());
 
     return true;
 }
@@ -82,7 +90,8 @@ const QStringList &SoilModel::validTypesUser()
 {
     static QStringList validTypes = QStringList()
             << "Elastic Isotropic"
-            << "Multiaxial Cyclic Plasticity";
+            << "Multiaxial Cyclic Plasticity"
+            << "User";
 
     return validTypes;
 }
@@ -92,13 +101,27 @@ const QStringList &SoilModel::validTypes()
 {
     static QStringList validTypes = QStringList()
             << "Elastic Isotropic"
-            << "Multiaxial Cyclic Plasticity";
+            << "Multiaxial Cyclic Plasticity"
+            << "User";
 
     return validTypes;
+}
+
+
+void SoilModel::setUserModelPath(QString userModelPath)
+{
+    m_userModelPath = userModelPath;
+}
+
+
+QString SoilModel::getUserModelPath()
+{
+    return m_userModelPath;
 }
 
 
 void SoilModel::reset(void)
 {
     this->m_type = "Elastic Isotropic";
+    this->m_userModelPath = "";
 }
