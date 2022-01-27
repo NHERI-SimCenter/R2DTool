@@ -596,6 +596,7 @@ QStackedWidget* RegionalSiteResponseWidget::getSiteWidget(VisualizationWidget* v
     m_soilModelWidget = new SoilModelWidget(*m_soilModel, *m_siteConfig);
     inputSiteLayout->addWidget(m_soilModelWidget,2,1);
     connect(m_siteConfigWidget, SIGNAL(siteTypeChangedSignal(SiteConfig::SiteType)), this, SLOT(setSoilModelWidget(SiteConfig::SiteType)));
+    connect(m_siteConfigWidget, SIGNAL(activateSoilModelWidgetSignal(bool)), this, SLOT(activateSoilModelWidget(bool)));
 
     // set up directories
     this->setDir();
@@ -1364,7 +1365,7 @@ void RegionalSiteResponseWidget::hideProgressBar(void)
 
 void RegionalSiteResponseWidget::setFilterString(const QString& filter)
 {
-    if (filterLineEdit->text().isEmpty())
+    if (filter.isEmpty())
         filterLineEdit->setText(m_siteConfigWidget->getFilter());
     else
         filterLineEdit->setText(filter);
@@ -1513,7 +1514,6 @@ void RegionalSiteResponseWidget::getSiteData(void)
             filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
         }
         QStringList IDs = filterIDs.split(QRegExp(",|-"), QString::SkipEmptyParts);
-        qDebug() << IDs;
         int tmpMin = 10000000;
         int tmpMax = 0;
         for (int i = 0; i < IDs.size(); i++) {
@@ -1644,7 +1644,6 @@ void RegionalSiteResponseWidget::getSiteData(void)
     {
         QString pathToSiteLocationFile = inputSiteDataDir + QDir::separator() + "SiteFile.csv";
         CSVReaderWriter csvTool;
-        qDebug() << gridData;
         auto res = csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err);
         if(res != 0)
         {
@@ -1719,8 +1718,16 @@ void RegionalSiteResponseWidget::handleProcessFinished(int exitCode, QProcess::E
     QString siteDataFilePath = outputSiteDataDir + QDir::separator() + "SiteModelData.csv";
     soilFileLineEdit->setText(siteDataFilePath);
 
-    // reload the QGISSite Input widget
+    // filter
+    this->setFilterString(filterLineEdit->text());
+
+    // switch QGISSite Input widget
     this->m_siteConfigWidget->setSiteType(SiteConfig::SiteType::UserCSV);
+
+    // set filter
+    emit siteFilterSignal(filterLineEdit->text());
+
+    // reload
     if(m_siteConfig->getType() == SiteConfig::SiteType::UserCSV)
     {
         m_siteConfigWidget->getCsvSiteWidget()->reloadComponentData(siteDataFilePath);
@@ -1739,5 +1746,19 @@ void RegionalSiteResponseWidget::setSoilModelWidget(SiteConfig::SiteType siteTyp
     {
         m_soilModelWidget->setVisible(true);
         soilModelFlag = true;
+    }
+}
+
+void RegionalSiteResponseWidget::activateSoilModelWidget(bool flag)
+{
+    if (flag)
+    {
+        m_soilModelWidget->setVisible(true);
+        soilModelFlag = true;
+    }
+    else
+    {
+        m_soilModelWidget->setVisible(false);
+        soilModelFlag = false;
     }
 }

@@ -120,6 +120,7 @@ public slots:
 
     void setSiteDataFile(bool flag);
     void setSoilModelWidget(SiteConfig::SiteType siteType);
+    void activateSoilModelWidget(bool flag);
 
 private slots:
 

@@ -32,10 +32,12 @@ signals:
     void soilDataCompleteSignal(bool flag);
     void setSiteFilterSignal(QString filter);
     void siteTypeChangedSignal(SiteConfig::SiteType siteType);
+    void activateSoilModelWidgetSignal(bool flag);
 
 public slots:
     void soilDataCompleteSlot(bool flag);
     void setSiteFilterSlot(QString filter);
+    void activateSoilModelWidgetSlot(bool flag);
 
 private:
     SiteConfig& m_siteConfig;

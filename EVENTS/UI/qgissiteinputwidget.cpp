@@ -62,7 +62,8 @@ int QGISSiteInputWidget::loadComponentVisualization()
     soilPropComplete = false;
     soilParamComplete = false;
     // check soil data
-    this->checkSoilDataComplete();
+    if (componentType.compare("Soil")==0)
+        this->checkSoilDataComplete();
 
     // Create the building attributes that are fixed
     QgsFields featFields;
@@ -98,10 +99,12 @@ int QGISSiteInputWidget::loadComponentVisualization()
     }
 
     // soil model is required for componentType = Soil
-    if (componentType.compare("Soil")==0 && !indexModelType)
+    if (componentType.compare("Soil")==0 && indexModelType==-1)
     {
-        this->errorMessage("Could not find Model in the header columns");
-        return -1;
+        this->statusMessage("Could not find Model in the header columns");
+        //return -1;
+        emit activateSoilModelWidget(true);
+        this->statusMessage("Please define soil model type...");
     }
 
     // Get the number of rows
@@ -292,15 +295,23 @@ int QGISSiteInputWidget::loadComponentVisualization()
     // check soil modeling parameter completeness
     if (componentType.compare("Soil")==0)
     {
-        if (this->checkSoilParamComplete()==2)
+        int flag = this->checkSoilParamComplete();
+        if (flag == 2)
         {
             this->errorMessage("Model type error: currently, BA and EI are valid.");
             return -1;
         }
+        if (flag == 3)
+        {
+            // no "Model" column in the csv
+            // send a signal to bring the soil model widget up
+            emit activateSoilModelWidget(true);
+        }
     }
 
     // check soil data
-    this->checkSoilDataComplete();
+    if (componentType.compare("Soil")==0)
+        this->checkSoilDataComplete();
 
     return 0;
 }
@@ -372,6 +383,10 @@ int QGISSiteInputWidget::checkSoilParamComplete()
     auto headers = this->getTableHorizontalHeadings();
     // soil model index
     auto indexSoilModel = headers.indexOf("Model");
+    if (indexSoilModel == -1)
+        return 3;
+    else
+        emit activateSoilModelWidget(false);
     // loop all rows
     for(int i = 0; i<nRows; ++i)
     {
@@ -381,9 +396,16 @@ int QGISSiteInputWidget::checkSoilParamComplete()
             checkList = attrbFullSoilEI;
         else if (soilModelType.compare("BA")==0)
             checkList = attrbFullSoilBA;
+        else if (soilModelType.compare("User")==0)
+        {
+            // no checks (user is responsable for giving all needed parameters)
+            this->statusMessage("No check is made for user-defined soil models - please make sure that all needed parameters are provided.");
+            soilParamComplete = true;
+            return 0;
+        }
         else
         {
-            this->errorMessage("The soil model type "+soilModelType+" is not supported yet...");
+            this->errorMessage("The soil model type defined on Row #"+QString::number(i+1)+" "+soilModelType+" is not found/supported...");
             {
                 soilParamComplete = false;
                 return 2;
@@ -395,7 +417,7 @@ int QGISSiteInputWidget::checkSoilParamComplete()
             if (i == 0)
             {
                 // first check if the header(s) is(are) avaliable
-                if (!headers.indexOf(checkList[j]))
+                if (headers.indexOf(checkList[j]) == -1)
                 {
                     this->statusMessage("Attribute "+checkList[j]+" is missing - please fetch site data.");
                     soilParamComplete = false;
@@ -452,7 +474,7 @@ void QGISSiteInputWidget::clear()
 
 void QGISSiteInputWidget::setSiteFilter(QString filter)
 {
-    this->componentFileLineEdit->setText(filter);
+    this->setFilterString(filter);
 }
 
 bool QGISSiteInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)

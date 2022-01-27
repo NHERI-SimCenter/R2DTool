@@ -13,7 +13,7 @@ public:
 
     bool getGridCreated() const;
 
-    SiteGrid getSiteGrid();
+    int getNumSites();
 
 signals:
 

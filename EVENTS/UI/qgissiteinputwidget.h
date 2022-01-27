@@ -61,6 +61,7 @@ public:
 
 signals:
     void soilDataCompleteSignal(bool flag);
+    void activateSoilModelWidget(bool flag);
 
 public slots:
     void setSiteFilter(QString filter);

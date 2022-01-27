@@ -191,7 +191,8 @@ void SiteConfigWidget::setupConnections()
     });
 
     connect(csvSiteInventory, SIGNAL(soilDataCompleteSignal(bool)), this, SLOT(soilDataCompleteSlot(bool)));
-    connect(this, SIGNAL(setSiteFilter(QString)), csvSiteInventory, SLOT(setSiteFilter(QString)));
+    connect(this, SIGNAL(setSiteFilterSignal(QString)), csvSiteInventory, SLOT(setSiteFilter(QString)));
+    connect(csvSiteInventory, SIGNAL(activateSoilModelWidget(bool)), this, SLOT(activateSoilModelWidgetSlot(bool)));
 }
 
 
@@ -214,7 +215,7 @@ QString SiteConfigWidget::getFilter(void)
         filter = csvSiteInventory->getFilterString();
     else if (m_siteConfig.getType() == SiteConfig::SiteType::Grid)
     {
-        int siteNum = siteGridWidget->getSiteGrid().getNumSites();
+        int siteNum = siteGridWidget->getNumSites();
         filter = "0-"+QString::number(siteNum-1);
     }
     return filter;
@@ -235,5 +236,10 @@ void SiteConfigWidget::setSiteType(SiteConfig::SiteType siteType)
         gridRadioButton->click();
     else if (siteType==SiteConfig::SiteType::UserCSV)
         scatRadioButton->click();
+}
+
+void SiteConfigWidget::activateSoilModelWidgetSlot(bool flag)
+{
+    emit activateSoilModelWidgetSignal(flag);
 }
 
