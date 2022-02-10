@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 #include "SimCenterUnitsWidget.h"
+#include "SiteWidget.h"
 #include "SiteConfig.h"
 #include "SiteConfigWidget.h"
 #include "SiteGridWidget.h"
@@ -610,9 +611,9 @@ QStackedWidget* RegionalSiteResponseWidget::getSiteWidget(VisualizationWidget* v
         auto type = m_siteConfig->getType();
         if(type == SiteConfig::SiteType::Single)
         {
-            QString msg = "Single site selection not supported yet";
-            this->infoMessage(msg);
-            return;
+            //QString msg = "Single site selection not supported yet";
+            //this->infoMessage(msg);
+            //return;
         }
         else if(type == SiteConfig::SiteType::Grid)
         {
@@ -745,6 +746,10 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
       this->errorMessage("RegionalSiteResponse:copyFiles motion Dir file does not exist: "+motionDir);
       return false;
     }
+
+    // rename the motion dir
+    QDir dir_motions(newMotionDir);
+    dir_motions.rename(newMotionDir, dir_motions.dirName()+QDir::separator()+"inputMotions");
 
     // should never get here
     return false;
@@ -1501,7 +1506,11 @@ void RegionalSiteResponseWidget::getSiteData(void)
     // site json
     int minID = 0;
     int maxID = 1;
-    if(m_siteConfig->getType() == SiteConfig::SiteType::Grid)
+    if(m_siteConfig->getType() == SiteConfig::SiteType::Single)
+    {
+        maxID = 0;
+    }
+    else if(m_siteConfig->getType() == SiteConfig::SiteType::Grid)
     {
         maxID = m_siteConfig->siteGrid().getNumSites() - 1;
     }
@@ -1575,7 +1584,14 @@ void RegionalSiteResponseWidget::getSiteData(void)
     bool writeSiteFile = true;
     if(type == SiteConfig::SiteType::Single)
     {
-        qDebug()<<"Single site selection not supported yet";
+        // The latitude and longitude
+        auto longitude = m_siteConfigWidget->getSiteWidget()->get_longitude();
+        auto latitude = m_siteConfigWidget->getSiteWidget()->get_latitude();
+        QStringList stationRow;
+        stationRow.push_back(QString::number(0));
+        stationRow.push_back(QString::number(latitude));
+        stationRow.push_back(QString::number(longitude));
+        gridData.push_back(stationRow);
     }
     else if(type == SiteConfig::SiteType::Grid)
     {

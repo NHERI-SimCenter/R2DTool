@@ -111,3 +111,16 @@ void SiteWidget::setupConnections()
             this->m_longitudeBox,
             &QDoubleSpinBox::setValue);
 }
+
+
+double SiteWidget::get_longitude()
+{
+    double longitude = m_longitudeBox->text().toDouble();
+    return longitude;
+}
+
+double SiteWidget::get_latitude()
+{
+    double latitude = m_latitudeBox->text().toDouble();
+    return latitude;
+}

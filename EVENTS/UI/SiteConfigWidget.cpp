@@ -68,7 +68,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     m_stackedWidgets = new QStackedWidget(this);
 
     //We will add the site to the stacked widget
-    SiteWidget* siteWidget = new SiteWidget(siteconfig.site());
+    siteWidget = new SiteWidget(siteconfig.site());
     m_stackedWidgets->addWidget(siteWidget);
 
     //we will also add a grid widget
@@ -123,6 +123,11 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     }
 
     setupConnections();
+}
+
+SiteWidget *SiteConfigWidget::getSiteWidget()
+{
+    return siteWidget;
 }
 
 SiteGridWidget *SiteConfigWidget::getSiteGridWidget() const

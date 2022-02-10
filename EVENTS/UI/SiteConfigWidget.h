@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "SiteConfig.h"
 
+class SiteWidget;
 class SiteGridWidget;
 class SiteScatterWidget;
 class VisualizationWidget;
@@ -20,6 +21,7 @@ class SiteConfigWidget : public QWidget
 public:
     explicit SiteConfigWidget(SiteConfig& siteconfig, VisualizationWidget* visWidget, bool soilResponse = false, QWidget *parent = nullptr);
 
+    SiteWidget *getSiteWidget();
     SiteGridWidget *getSiteGridWidget() const;
     SiteScatterWidget *getSiteScatterWidget() const;
     QGISSiteInputWidget *getCsvSiteWidget();
@@ -43,6 +45,7 @@ private:
     SiteConfig& m_siteConfig;
     QButtonGroup* m_typeButtonsGroup;
     QStackedWidget* m_stackedWidgets;
+    SiteWidget* siteWidget;
     SiteGridWidget* siteGridWidget;
     SiteScatterWidget* siteScatWidget;
     QGISSiteInputWidget* csvSiteInventory;

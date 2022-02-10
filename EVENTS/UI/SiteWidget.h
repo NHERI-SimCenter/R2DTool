@@ -48,6 +48,8 @@ class SiteWidget : public QWidget
     Q_OBJECT
 public:
     explicit SiteWidget(Site& site, QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
+    double get_latitude();
+    double get_longitude();
 
 private:
     Site& m_site;
