@@ -84,35 +84,56 @@ EarthquakeRuptureForecastWidget::EarthquakeRuptureForecastWidget(QWidget *parent
 
     EQNameLineEdit = new QLineEdit(this);
 
+    // number of scenarios
+    QLabel* NumScenarioLabel= new QLabel(tr("Number of scenarios:"),this);
+    NumScenarioLineEdit = new QLineEdit(this);
+    NumScenarioLineEdit->setText("1");
+    auto validator = new QIntValidator(1, 9999, this);
+    NumScenarioLineEdit->setValidator(validator);
+
+    // sampling methods
+    QLabel* SamplingLabel = new QLabel(tr("Sampling method:"),this);
+    SamplingMethodCombo = new QComboBox(this);
+    SamplingMethodCombo->addItem("Random");
+    SamplingMethodCombo->addItem("MAF");
+    SamplingMethodCombo->setCurrentIndex(0); // default at Random
+
     // Add a horizontal
     auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    layout->addWidget(magMinLabel,0,0);
-    layout->addWidget(m_magnitudeMinBox,0,1);
+    layout->addWidget(NumScenarioLabel,0,0);
+    layout->addWidget(NumScenarioLineEdit,0,1);
 
-    layout->addWidget(magMaxLabel,0,2);
-    layout->addWidget(m_magnitudeMaxBox,0,3);
+    layout->addWidget(SamplingLabel,0,2);
+    layout->addWidget(SamplingMethodCombo,0,3);
 
-    layout->addWidget(distMaxLabel,0,4);
-    layout->addWidget(m_maxDistanceBox,0,5);
+    layout->addWidget(magMinLabel,1,0);
+    layout->addWidget(m_magnitudeMinBox,1,1);
 
-    layout->addItem(hspacer,0,6);
+    layout->addWidget(magMaxLabel,1,2);
+    layout->addWidget(m_magnitudeMaxBox,1,3);
 
-    layout->addWidget(nameLabel,1,0);
-    layout->addWidget(EQNameLineEdit,1,1,1,6);
+    layout->addWidget(distMaxLabel,1,4);
+    layout->addWidget(m_maxDistanceBox,1,5);
 
-    layout->addWidget(modelLabel,2,0);
-    layout->addWidget(ModelTypeCombo,2,1,1,6);
+    layout->addItem(hspacer,1,6);
+
+    layout->addWidget(nameLabel,2,0);
+    layout->addWidget(EQNameLineEdit,2,1,1,6);
+
+    layout->addWidget(modelLabel,3,0);
+    layout->addWidget(ModelTypeCombo,3,1,1,6);
 
     this->setLayout(layout);
 
     //We need to set initial values
-    m_eqRupture = new EarthquakeRuptureForecast(7.0,8.0,200.0, ModelTypeCombo->currentText(),"San Andreas",this);
+    m_eqRupture = new EarthquakeRuptureForecast(7.0,8.0,200.0, ModelTypeCombo->currentText(),"San Andreas",SamplingMethodCombo->currentText(),NumScenarioLineEdit->text().toInt(),this);
 
     this->m_magnitudeMinBox->setValue(m_eqRupture->getMagnitudeMin());
     this->m_magnitudeMaxBox->setValue(m_eqRupture->getMagnitudeMax());
     this->m_maxDistanceBox->setValue(m_eqRupture->getMaxDistance());
     this->EQNameLineEdit->setText(m_eqRupture->getEQName());
+    this->NumScenarioLineEdit->setText(QString::number(m_eqRupture->getNumScen()));
 
     this->setupConnections();
 }
@@ -140,8 +161,15 @@ void EarthquakeRuptureForecastWidget::setupConnections()
     connect(this->EQNameLineEdit, &QLineEdit::textChanged,
             this->m_eqRupture, &EarthquakeRuptureForecast::setEQName);
 
+    connect(this->NumScenarioLineEdit, &QLineEdit::textChanged,
+            this->m_eqRupture, &EarthquakeRuptureForecast::setNumScen);
+
     connect(this->ModelTypeCombo, &QComboBox::currentTextChanged,
             this->m_eqRupture, &EarthquakeRuptureForecast::setEQModelType);
+
+    connect(this->SamplingMethodCombo, &QComboBox::currentTextChanged,
+            this->m_eqRupture, &EarthquakeRuptureForecast::setSamplingMethod);
+
 
 }
 

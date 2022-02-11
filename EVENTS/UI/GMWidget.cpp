@@ -662,11 +662,19 @@ void GMWidget::runHazardSimulation(void)
 
     QJsonObject scenarioObj;
     scenarioObj.insert("Type", "Earthquake");
+    // get scenario number
     scenarioObj.insert("Number", 1);
     scenarioObj.insert("Generator", "Selection");
 
     QJsonObject EqRupture;
     m_ruptureWidget->outputToJSON(EqRupture);
+
+    // number of scenarios for ERF widget
+    if (m_ruptureWidget->getWidgetType().compare("OpenSHA ERF")==0)
+    {
+        if (EqRupture.contains("Number"))
+            scenarioObj["Number"] = EqRupture["Number"];
+    }
 
     if(EqRupture.isEmpty())
     {

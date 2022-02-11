@@ -67,6 +67,11 @@ private:
     QDoubleSpinBox* m_magnitudeMaxBox;
     QDoubleSpinBox* m_maxDistanceBox;
 
+    // number of scenarios
+    QLineEdit* NumScenarioLineEdit;
+    // sampling methods
+    QComboBox* SamplingMethodCombo;
+
     void setupConnections();
 
 };
