@@ -108,7 +108,7 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
 
     auto txt1 = "Load information from a CSV file";
     auto txt2  = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
-    "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+                                                                             "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
 
     auto txt3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
 
@@ -414,7 +414,7 @@ void ComponentInputWidget::createComponentsBox(void)
     gridLayout->addWidget(label1);
     gridLayout->addLayout(pathLayout);
     gridLayout->addWidget(label2);
-        
+
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(selectComponentsButton);
@@ -675,13 +675,13 @@ QStringList ComponentInputWidget::getTableHorizontalHeadings()
 
 void ComponentInputWidget::clearComponentSelection(void)
 {
-    auto nRows = componentTableWidget->rowCount();
+    //    auto nRows = componentTableWidget->rowCount();
 
     // Hide all rows in the table
-    for(int i = 0; i<nRows; ++i)
-    {
-        componentTableWidget->setRowHidden(i,false);
-    }
+    //    for(int i = 0; i<nRows; ++i)
+    //    {
+    //        componentTableWidget->setRowHidden(i,false);
+    //    }
 
     selectComponentsLineEdit->clear();
 
@@ -953,33 +953,33 @@ bool ComponentInputWidget::copyFiles(QString &destName)
 
 
     // For testing, creates a csv file of only the selected components
-//    qDebug()<<"Saving selected components to .csv";
-//    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+    //    qDebug()<<"Saving selected components to .csv";
+    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-//    QVector<QStringList> selectedData(selectedIDs.size()+1);
+    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-//    selectedData[0] = headerValues;
+    //    selectedData[0] = headerValues;
 
-//    auto nCols = componentTableWidget->columnCount();
+    //    auto nCols = componentTableWidget->columnCount();
 
-//    int i = 0;
-//    for(auto&& rowID : selectedIDs)
-//    {
-//        QStringList rowData;
-//        rowData.reserve(nCols);
+    //    int i = 0;
+    //    for(auto&& rowID : selectedIDs)
+    //    {
+    //        QStringList rowData;
+    //        rowData.reserve(nCols);
 
-//        for(int j = 0; j<nCols; ++j)
-//        {
-//            auto item = componentTableWidget->item(rowID-1,j).toString();
+    //        for(int j = 0; j<nCols; ++j)
+    //        {
+    //            auto item = componentTableWidget->item(rowID-1,j).toString();
 
-//            rowData<<item;
-//        }
-//        selectedData[i+1] = rowData;
+    //            rowData<<item;
+    //        }
+    //        selectedData[i+1] = rowData;
 
-//        ++i;
-//    }
+    //        ++i;
+    //    }
 
-//    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+    //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
     // For testing end
 
     return true;

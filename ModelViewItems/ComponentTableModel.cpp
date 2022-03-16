@@ -36,7 +36,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include "TreeItem.h"
 #include "ComponentTableModel.h"
 
 #include <QDataStream>

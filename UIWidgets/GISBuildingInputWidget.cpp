@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GISBuildingInputWidget.h"
 
 #include "AssetInputDelegate.h"
+#include "AssetFilterDelegate.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
 #include "ComponentDatabaseManager.h"
@@ -161,6 +162,9 @@ int GISBuildingInputWidget::loadComponentVisualization()
     theVisualizationWidget->createLayerGroup(mapLayers,"Buildings");
 
     theComponentDb->setMainLayer(shapeFileLayer);
+
+    filterDelegateWidget  = new AssetFilterDelegate(shapeFileLayer);
+
     theComponentDb->setSelectedLayer(selectedFeaturesLayer);
 
     return 0;
@@ -200,6 +204,12 @@ bool GISBuildingInputWidget::loadComponentData(void)
     auto fName = file.fileName();
 
     shapeFileLayer = theVisualizationWidget->addVectorLayer(pathToComponentInputFile, fName, "ogr");
+
+    if(shapeFileLayer == nullptr)
+    {
+        this->errorMessage("Error, failed to add GIS layer");
+        return false;
+    }
 
     auto numFeat = shapeFileLayer->featureCount();
 
@@ -340,16 +350,18 @@ bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     if (jsonObject.contains("ApplicationData")) {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
-        QFileInfo fileInfo;
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
         if (appData.contains("buildingGISFile"))
             fileName = appData["buildingGISFile"].toString();
 
-        if (fileInfo.exists(fileName)) {
+        QFileInfo fileInfo(fileName);
 
-            selectComponentsLineEdit->setText(fileName);
+        if (fileInfo.exists()) {
+
+            componentFileLineEdit->setText(fileInfo.absoluteFilePath());
+            pathToComponentInputFile = fileInfo.absoluteFilePath();
 
             this->loadComponentData();
             foundFile = true;

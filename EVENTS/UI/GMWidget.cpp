@@ -451,6 +451,7 @@ void GMWidget::showGISWindow(void)
         auto mapCanvas = mapViewWidget->mapCanvas();
 
         userGrid = new RectangleGrid(mapCanvas);
+
         // Also important to get events from QGIS
         mapCanvas->setMapTool(userGrid);
         userGrid->createGrid();

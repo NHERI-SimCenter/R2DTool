@@ -13,9 +13,9 @@ public:
 
     static ComponentDatabaseManager *getInstance(void);
 
-    ComponentDatabase *getBuildingComponentDb();
-
-    ComponentDatabase* getPipelineComponentDb();
+    ComponentDatabase* getBuildingComponentDb();
+    ComponentDatabase* getPipelineComponentDb();    
+    ComponentDatabase* getCPTComponentDb();
 
 private:
 
@@ -23,6 +23,7 @@ private:
 
     std::unique_ptr<ComponentDatabase> theBuildingComponentDb;
     std::unique_ptr<ComponentDatabase> thePipelineComponentDb;
+    std::unique_ptr<ComponentDatabase> theCPTComponentDb;
 
 };
 
