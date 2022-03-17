@@ -68,6 +68,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "QGISVisualizationWidget.h"
 #include <qgsrasterlayer.h>
+#include <qgshuesaturationfilter.h>
 #include <qgsrasterdataprovider.h>
 #include <qgscollapsiblegroupbox.h>
 #include <qgsprojectionselectionwidget.h>
@@ -228,6 +229,28 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         rasterPathLineEdit->setText(fullFilePath);
         rasterFilePath = fullFilePath;
 
+        // Get the event type
+        auto eventType = appData["eventClassification"].toString();
+
+        if(eventType.isEmpty())
+        {
+            this->errorMessage("Error, please provide an event classification in the json input file");
+            return false;
+        }
+
+        auto eventIndex = eventTypeCombo->findText(eventType);
+
+        if(eventIndex == -1)
+        {
+            this->errorMessage("Error, the event classification "+eventType+" is not recognized");
+            return false;
+        }
+        else
+        {
+            eventTypeCombo->setCurrentIndex(eventIndex);
+        }
+
+
         auto res = this->loadRaster();
 
         if(res !=0)
@@ -258,27 +281,8 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             unitsWidget->addNewUnitItem(bandName);
         }
 
-        auto eventType = appData["eventClassification"].toString();
 
-        if(eventType.isEmpty())
-        {
-            this->errorMessage("Error, please provide an event classification in the json input file");
-            return false;
-        }
-
-        auto eventIndex = eventTypeCombo->findText(eventType);
-
-        if(eventIndex == -1)
-        {
-            this->errorMessage("Error, the event classification "+eventType+" is not recognized");
-            return false;
-        }
-        else
-        {
-            eventTypeCombo->setCurrentIndex(eventIndex);
-        }
-
-
+        // Set the CRS
         auto crsValue = appData["CRS"].toString();
 
         if(crsValue.isEmpty())
@@ -453,6 +457,20 @@ int RasterHazardInputWidget::loadRaster(void)
     }
 
     rasterlayer->setOpacity(0.5);
+
+    auto evtType = eventTypeCombo->currentText();
+
+    if(evtType.compare("Tsunami") == 0)
+    {
+        QgsHueSaturationFilter *hueSaturationFilter = rasterlayer->hueSaturationFilter();
+        hueSaturationFilter->setSaturation(100);
+        hueSaturationFilter->setGrayscaleMode(QgsHueSaturationFilter::GrayscaleMode::GrayscaleOff);
+        hueSaturationFilter->setColorizeOn(true);
+        QColor col(Qt::blue);
+        hueSaturationFilter->setColorizeColor(col);
+        hueSaturationFilter->setColorizeStrength(100);
+        rasterlayer->setBlendMode( QPainter::CompositionMode_SourceOver);
+    }
 
     dataProvider = rasterlayer->dataProvider();
 
