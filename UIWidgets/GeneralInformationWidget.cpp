@@ -111,6 +111,7 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     outputsObj.insert("DV", DVCheckBox->isChecked());
     outputsObj.insert("every_realization", realizationCheckBox->isChecked());
     outputsObj.insert("BIM", BIMCheckBox->isChecked());
+    outputsObj.insert("IM", IMCheckBox->isChecked());
 
 
     QJsonObject assetsObj;
@@ -164,6 +165,7 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
         DVCheckBox->setChecked(outObj["DV"].toBool());
         realizationCheckBox->setChecked(outObj["every_realization"].toBool());
         BIMCheckBox->setChecked(outObj["BIM"].toBool());
+        IMCheckBox->setChecked(outObj["IM"].toBool());
     }
 
     if (jsonObject.contains("assets")) {
@@ -271,12 +273,14 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     DVCheckBox = new QCheckBox("Decision variables (DV)");
     realizationCheckBox = new QCheckBox("Output EDP, DM, and DV every sampling realization");
     BIMCheckBox = new QCheckBox("Output building BIM");
+    IMCheckBox = new QCheckBox("Output site IM");
 
     EDPCheckBox->setChecked(true);
     DMCheckBox->setChecked(true);
     DVCheckBox->setChecked(true);
     realizationCheckBox->setChecked(false);
     BIMCheckBox->setChecked(false);
+    IMCheckBox->setChecked(false);
 
     QGroupBox* outputGroupBox = new QGroupBox("Output Settings");
     outputGroupBox->setContentsMargins(0,5,0,0);
@@ -286,6 +290,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     outputLayout->addWidget(DVCheckBox);
     outputLayout->addWidget(realizationCheckBox);
     outputLayout->addWidget(BIMCheckBox);
+    outputLayout->addWidget(IMCheckBox);
 
 
     /*
@@ -343,4 +348,5 @@ void GeneralInformationWidget::clear(void)
     DVCheckBox->setChecked(false);
     realizationCheckBox->setChecked(false);
     BIMCheckBox->setChecked(false);
+    IMCheckBox->setChecked(false);
 }
