@@ -321,7 +321,7 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
 {
 
     // file  input
-    fileInputWidget = new QWidget(this);
+    fileInputWidget = new QWidget();
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
     fileInputWidget->setLayout(fileLayout);
 
@@ -499,7 +499,8 @@ int RasterHazardInputWidget::loadRaster(void)
 
 void RasterHazardInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
 {
-    rasterlayer->setCrs(val);
+    if(rasterlayer)
+        rasterlayer->setCrs(val);
 }
 
 
