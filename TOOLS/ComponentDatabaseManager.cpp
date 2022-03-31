@@ -10,6 +10,9 @@ ComponentDatabaseManager::ComponentDatabaseManager()
     theInstance = this;
     theBuildingComponentDb = nullptr;
     theSiteComponentDb = nullptr;
+    thePipelineComponentDb = nullptr;
+    theCPTComponentDb = nullptr;
+
 }
 
 
@@ -39,6 +42,7 @@ ComponentDatabase* ComponentDatabaseManager::getPipelineComponentDb()
     return thePipelineComponentDb.get();
 }
 
+
 // add site component db
 ComponentDatabase* ComponentDatabaseManager::getSiteComponentDb()
 {
@@ -47,3 +51,14 @@ ComponentDatabase* ComponentDatabaseManager::getSiteComponentDb()
 
     return theSiteComponentDb.get();
 }
+
+
+ComponentDatabase* ComponentDatabaseManager::getCPTComponentDb()
+{
+    if(theCPTComponentDb == nullptr)
+        theCPTComponentDb = std::make_unique<ComponentDatabase>();
+
+    return theCPTComponentDb.get();
+}
+
+

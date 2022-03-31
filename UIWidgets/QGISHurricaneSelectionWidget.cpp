@@ -381,6 +381,9 @@ void QGISHurricaneSelectionWidget::handleGridSelected(void)
     progressLabel->setVisible(false);
 
     userGrid->hide();
+
+    // Enable selection
+    mapViewSubWidget->enableSelectionTool();
 }
 
 
@@ -469,7 +472,10 @@ void QGISHurricaneSelectionWidget::handleTerrainImport(void)
 void QGISHurricaneSelectionWidget::handleClearSelectAreaMap(void)
 {
     mapViewSubWidget->enableSelectionTool();
-    hurricaneTrackPointsLayer->removeSelection();
+
+    if(hurricaneTrackPointsLayer)
+        hurricaneTrackPointsLayer->removeSelection();
+
     mapViewSubWidget->mapCanvas()->setCurrentLayer(nullptr);
 }
 
@@ -486,6 +492,10 @@ void QGISHurricaneSelectionWidget::handleSelectAreaMap(void)
 
 void QGISHurricaneSelectionWidget::handleAreaSelected(void)
 {
+
+    if(selectedHurricaneObj.empty() || hurricaneTrackPointsLayer == nullptr)
+        return;
+
     HurricaneObject newHurricaneObj = selectedHurricaneObj;
 
     QVector<QStringList>& hurricaneData = newHurricaneObj.getHurricaneData();

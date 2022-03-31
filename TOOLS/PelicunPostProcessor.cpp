@@ -619,6 +619,9 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Apply the default renderer
     QGISVisWidget->createPrettyGraduatedRenderer("LossRatio",Qt::yellow,Qt::red,5,theBuildingDB->getSelectedLayer());
 
+    // Change the name to say loss ratio
+    theBuildingDB->getSelectedLayer()->setName("Loss Ratio");
+
     //  CASUALTIES
     QBarSet *casualtiesSet = new QBarSet("Casualties");
 

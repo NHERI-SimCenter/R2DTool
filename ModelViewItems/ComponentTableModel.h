@@ -40,8 +40,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QAbstractTableModel>
 
-class TreeItem;
-
 class ComponentTableModel : public QAbstractTableModel
 {
     Q_OBJECT

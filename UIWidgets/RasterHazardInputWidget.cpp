@@ -68,6 +68,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "QGISVisualizationWidget.h"
 #include <qgsrasterlayer.h>
+#include <qgshuesaturationfilter.h>
 #include <qgsrasterdataprovider.h>
 #include <qgscollapsiblegroupbox.h>
 #include <qgsprojectionselectionwidget.h>
@@ -228,6 +229,28 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         rasterPathLineEdit->setText(fullFilePath);
         rasterFilePath = fullFilePath;
 
+        // Get the event type
+        auto eventType = appData["eventClassification"].toString();
+
+        if(eventType.isEmpty())
+        {
+            this->errorMessage("Error, please provide an event classification in the json input file");
+            return false;
+        }
+
+        auto eventIndex = eventTypeCombo->findText(eventType);
+
+        if(eventIndex == -1)
+        {
+            this->errorMessage("Error, the event classification "+eventType+" is not recognized");
+            return false;
+        }
+        else
+        {
+            eventTypeCombo->setCurrentIndex(eventIndex);
+        }
+
+
         auto res = this->loadRaster();
 
         if(res !=0)
@@ -258,27 +281,8 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             unitsWidget->addNewUnitItem(bandName);
         }
 
-        auto eventType = appData["eventClassification"].toString();
 
-        if(eventType.isEmpty())
-        {
-            this->errorMessage("Error, please provide an event classification in the json input file");
-            return false;
-        }
-
-        auto eventIndex = eventTypeCombo->findText(eventType);
-
-        if(eventIndex == -1)
-        {
-            this->errorMessage("Error, the event classification "+eventType+" is not recognized");
-            return false;
-        }
-        else
-        {
-            eventTypeCombo->setCurrentIndex(eventIndex);
-        }
-
-
+        // Set the CRS
         auto crsValue = appData["CRS"].toString();
 
         if(crsValue.isEmpty())
@@ -343,6 +347,7 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     eventTypeCombo = new QComboBox(this);
     eventTypeCombo->addItem("Earthquake","Earthquake");
     eventTypeCombo->addItem("Hurricane","Hurricane");
+    eventTypeCombo->addItem("Tsunami","Tsunami");
     eventTypeCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     unitsWidget = new SimCenterUnitsWidget();
@@ -423,14 +428,16 @@ double RasterHazardInputWidget::sampleRaster(const double& x, const double& y, c
 
     // Use the sample method below as this is considerably more efficient than
     bool OK;
-    auto testVal = dataProvider->sample(point,bandNumber,&OK);
+    auto testVal = dataProvider->sample(point,bandNumber,&OK);  // Test val will be NAN at failure
 
     if(!OK)
-        this->errorMessage("Error, sampling the raster");
+    {
+        this->infoMessage("Warning, error sampling the raster, asset may be out of bounds. Setting raster value to zero");
+        testVal = 0.0;
+    }
 
     //this->statusMessage(QString::number(testVal));
 
-    // Test val will be NAN at failure
     return testVal;
 }
 
@@ -450,6 +457,20 @@ int RasterHazardInputWidget::loadRaster(void)
     }
 
     rasterlayer->setOpacity(0.5);
+
+    auto evtType = eventTypeCombo->currentText();
+
+    if(evtType.compare("Tsunami") == 0)
+    {
+        QgsHueSaturationFilter *hueSaturationFilter = rasterlayer->hueSaturationFilter();
+        hueSaturationFilter->setSaturation(100);
+        hueSaturationFilter->setGrayscaleMode(QgsHueSaturationFilter::GrayscaleMode::GrayscaleOff);
+        hueSaturationFilter->setColorizeOn(true);
+        QColor col(Qt::blue);
+        hueSaturationFilter->setColorizeColor(col);
+        hueSaturationFilter->setColorizeStrength(100);
+        rasterlayer->setBlendMode( QPainter::CompositionMode_SourceOver);
+    }
 
     dataProvider = rasterlayer->dataProvider();
 
@@ -526,34 +547,39 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
     QgsFeature feature;
     while (fit.nextFeature(feature))
     {
-        // Sample the raster at the centroid of the geometry
-        //auto centroid = feature.geometry().centroid().asPoint();
-        //auto x = centroid.x();
-        //auto y = centroid.y();
 
-        // Get the latitude and lon of the builing
+        // Get the latitude and lon of the asset
         auto featAtrb = feature.attributes();
         auto latIndx = feature.fieldNameIndex("Latitude");
         auto lonIndx = feature.fieldNameIndex("Longitude");
 
-        if(latIndx == -1 || lonIndx == -1)
-        {
-            this->errorMessage("Could not get the latitude or longitude from the building attributes");
-            return false;
-        }
+        double x = 0.0;
+        double y = 0.0;
 
-        bool OK = false;
-        auto x = featAtrb.at(lonIndx).toDouble(&OK);
-        if(!OK)
+        // First check if the lat/lon is explicitly provided
+        if(latIndx != -1 || lonIndx != -1)
         {
-            this->errorMessage("Could not get the latitude from the building");
-            return false;
+
+            bool OK = false;
+            x = featAtrb.at(lonIndx).toDouble(&OK);
+            if(!OK)
+            {
+                this->errorMessage("Could not get the latitude from the asset");
+                return false;
+            }
+            y = featAtrb.at(latIndx).toDouble(&OK);
+            if(!OK)
+            {
+                this->errorMessage("Could not get the latitude from the asset");
+                return false;
+            }
         }
-        auto y = featAtrb.at(latIndx).toDouble(&OK);
-        if(!OK)
+        else // Get the centroid of the geometry and use that as asset location
         {
-            this->errorMessage("Could not get the latitude from the building");
-            return false;
+            // Sample the raster at the centroid of the geometry
+            auto centroid = feature.geometry().centroid().asPoint();
+            x = centroid.x();
+            y = centroid.y();
         }
 
         auto xstr = QString::number(x,'g', 10);

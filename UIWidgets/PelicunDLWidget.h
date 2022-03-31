@@ -61,13 +61,17 @@ public:
 
     bool copyFiles(QString &destName);
 
+    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
+
 public slots:
 
     void handleComboBoxChanged(const QString &text);
-    void handleBrowseButtonPressed(void);
+    void handleBrowseButton1Pressed(void);
+    void handleBrowseButton2Pressed(void);
 
 private:
     QWidget* autoPopulateScriptWidget;
+    QWidget* fragDirWidget;
 
     QComboBox* DLTypeComboBox;
     QLineEdit* realizationsLineEdit;
@@ -77,6 +81,7 @@ private:
     QCheckBox* coupledEDPCheckBox;
     QCheckBox* groundFailureCheckBox;
     QLineEdit* autoPopulationScriptLineEdit;
+    QLineEdit* fragilityDirLineEdit;
 };
 
 #endif // PelicunDLWidget_H
