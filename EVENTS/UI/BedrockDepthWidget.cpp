@@ -1,5 +1,3 @@
-#ifndef SITEWIDGET_H
-#define SITEWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,28 +34,55 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "Site.h"
+#include "BedrockDepthWidget.h"
 
-#include <QWidget>
-#include <QtWidgets>
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QStringListModel>
+#include <QComboBox>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QSizePolicy>
 
-class SiteWidget : public QWidget
+BedrockDepthWidget::BedrockDepthWidget(BedrockDepth& bedrockDepth, SiteConfig& siteConfig, QWidget *parent): QWidget(parent), m_bedrockDpeth(bedrockDepth)
 {
-    Q_OBJECT
-public:
-    explicit SiteWidget(Site& site, QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
-    double get_latitude();
-    double get_longitude();
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    QGroupBox* bedrockDepthGroupBox = new QGroupBox(this);
+    bedrockDepthGroupBox->setTitle("Bedrock Depth Model (if DepthToRock not provided by users)");
 
-private:
-    Site& m_site;
-    QGroupBox* m_locationGroupBox;
-    QDoubleSpinBox* m_latitudeBox;
-    QDoubleSpinBox* m_longitudeBox;
+    QHBoxLayout* formLayout = new QHBoxLayout(bedrockDepthGroupBox);
+    m_typeBox = new QComboBox(this);
 
-    void setupConnections();
-};
+    m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-#endif // SITEWIDGET_H
+    QLabel* typeLabel = new QLabel(tr("Type:"),this);
+
+    formLayout->addWidget(typeLabel);
+    formLayout->addWidget(m_typeBox);
+//    formLayout->addStretch(1);
+
+    bedrockDepthGroupBox->setLayout(formLayout);
+
+    layout->addWidget(bedrockDepthGroupBox);
+    this->setLayout(layout);
+
+    QStringList validType;
+    validType = this->m_bedrockDpeth.validTypes();
+
+    QStringListModel* typeModel = new QStringListModel(validType);
+    m_typeBox->setModel(typeModel);
+    m_typeBox->setCurrentIndex(validType.indexOf(m_bedrockDpeth.type()));
+    this->setupConnections();
+}
+
+
+void BedrockDepthWidget::setupConnections()
+{
+    connect(this->m_typeBox, &QComboBox::currentTextChanged,
+            &this->m_bedrockDpeth, &BedrockDepth::setType);
+
+    connect(&this->m_bedrockDpeth, &BedrockDepth::typeChanged,
+            this->m_typeBox, &QComboBox::setCurrentText);
+}

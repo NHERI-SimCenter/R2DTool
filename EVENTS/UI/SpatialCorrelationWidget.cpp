@@ -133,7 +133,7 @@ QJsonObject SpatialCorrelationWidget::getJsonScaling()
 
 void SpatialCorrelationWidget::handleAvailableModel(const QString sourceType)
 {
-    if (sourceType.compare("OpenQuake Classical")==0)
+    if (sourceType.compare("OpenQuake Classical")==0 || sourceType.compare("OpenQuake User-Specified")==0)
     {
         // No IM correlation is considered for UHS in Classical PSHA
         m_correlationBoxInter->hide();

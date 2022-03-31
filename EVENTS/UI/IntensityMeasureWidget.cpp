@@ -16,7 +16,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
 
-    QGroupBox* imGroupBox = new QGroupBox(this);
+    imGroupBox = new QGroupBox(this);
     imGroupBox->setTitle("Intensity Measure");
     imGroupBox->setContentsMargins(0,0,0,0);
 
@@ -25,7 +25,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     QGridLayout* gridLayout = new QGridLayout(imGroupBox);
     imGroupBox->setLayout(gridLayout);
 
-    QLabel* typeLabel = new QLabel(tr("Type:"),this);
+    typeLabel = new QLabel(tr("Type:"),this);
 
     m_typeBox = new QComboBox(this);
     m_typeBox->addItem("Spectral Accelerations (SA)", "SA");
@@ -200,6 +200,7 @@ void IntensityMeasureWidget::handleIntensityMeasureLevels(const QString sourceTy
 {
     if (sourceType.compare("OpenQuake Classical")==0)
     {
+        imGroupBox->show();
         // users are expected to give intensity measure levels
         imtLevelLabel->show();
         imtLevelLineEdit->show();
@@ -208,8 +209,13 @@ void IntensityMeasureWidget::handleIntensityMeasureLevels(const QString sourceTy
         imtTrucLabel->show();
         imtTrucBox->show();
     }
+    else if (sourceType.compare("OpenQuake User-Specified")==0)
+    {
+        imGroupBox->hide();
+    }
     else
     {
+        imGroupBox->show();
         imtLevelLabel->hide();
         imtLevelLineEdit->hide();
         scaleBox->hide();

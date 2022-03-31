@@ -86,10 +86,16 @@ void GMPEWidget::setupConnections()
 
 void GMPEWidget::handleAvailableGMPE(const QString sourceType)
 {
-    if (sourceType.compare("OpenQuake Classical")==0)
+    if (sourceType.compare("OpenQuake Classical")==0 || sourceType.compare("OpenQuake User-Specified")==0)
     {
         // users are expected to upload a GMPE logic tree, so the GMPE
         // widget needs to be hiden
+        m_typeBox->hide();
+        gmpeGroupBox->hide();
+        this->setVisible(false);
+    }
+    else if (sourceType.compare("OpenQuake User-Specified")==0)
+    {
         m_typeBox->hide();
         gmpeGroupBox->hide();
         this->setVisible(false);

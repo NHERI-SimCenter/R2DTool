@@ -1,5 +1,5 @@
-#ifndef SITEWIDGET_H
-#define SITEWIDGET_H
+#ifndef SOILMODELWIDGET_H
+#define SOILMODELWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,28 +36,43 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "Site.h"
+#include "SoilModel.h"
+#include "SiteConfig.h"
 
 #include <QWidget>
-#include <QtWidgets>
 
-class SiteWidget : public QWidget
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class QGroupBox;
+
+class SoilModelWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit SiteWidget(Site& site, QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
-    double get_latitude();
-    double get_longitude();
+    explicit SoilModelWidget(SoilModel& soilModel, SiteConfig& siteConfig, QWidget *parent = nullptr);
+
+    QString getModelPathFile(void);
+
+signals:
+    void userModelFileChanged(QString modelFilePath);
+
+public slots:
+    void loadUserModelFile(void);
 
 private:
-    Site& m_site;
-    QGroupBox* m_locationGroupBox;
-    QDoubleSpinBox* m_latitudeBox;
-    QDoubleSpinBox* m_longitudeBox;
+    SoilModel& m_soilModel;
+    QComboBox* m_typeBox;
+    QGroupBox* m_userModelBox;
+    QLineEdit* m_userModelFile;
+    QPushButton* m_userModelButton;
+    QString userModelFilePath;
+
+    void setModelFile(QString dirPath);
 
     void setupConnections();
 };
 
-#endif // SITEWIDGET_H
+#endif // SOILMODELWIDGET_H

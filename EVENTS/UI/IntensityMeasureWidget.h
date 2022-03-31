@@ -11,6 +11,7 @@ class QCheckBox;
 class QLineEdit;
 class QRegExpValidator;
 class QDoubleSpinBox;
+class QGroupBox;
 
 class IntensityMeasureWidget : public QWidget
 {
@@ -31,6 +32,7 @@ public slots:
 
 private:
     IntensityMeasure& m_intensityMeasure;
+    QLabel* typeLabel;
     QComboBox* m_typeBox;
     QLineEdit* periodsLineEdit;
     QRegExpValidator* LEValidator;
@@ -44,6 +46,8 @@ private:
 
     QDoubleSpinBox* imtTrucBox;
     QLabel* imtTrucLabel;
+
+    QGroupBox* imGroupBox;
 
     void setupConnections();
 };

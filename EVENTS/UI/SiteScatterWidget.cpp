@@ -97,12 +97,12 @@ SiteScatterWidget::SiteScatterWidget(SiteScatter& siteScatter, QWidget *parent) 
     siteSpreadSheet->setColumnCount(7);
     siteSpreadSheet->setRowCount(1);
     QStringList tableHeadings;
-    tableHeadings << "Station" << "Latitude" << "Longitude" << "Vs30 (m/s)" << "z1pt0 (km)" << "z2pt5 (km)" << "zTR (m)";
+    tableHeadings << "Station" << "Latitude" << "Longitude" << "Vs30" << "DepthToRock" << "z1pt0" << "z2pt5";
     siteSpreadSheet->setHorizontalHeaderLabels(tableHeadings);
     previewGroup->setMaximumHeight(300);
 
     // Default headers in input csv
-    defaultCSVHeader << "Station" << "Latitude" << "Longitude" << "Vs30" << "z1pt0" << "z2pt5" << "zTR";
+    defaultCSVHeader << "Station" << "Latitude" << "Longitude" << "Vs30" << "DepthToRock" << "z1pt0" << "z2pt5";
     for (int i = 0; i != defaultCSVHeader.length(); ++i)
         attributeIndex.insert(defaultCSVHeader[i], i);
 
@@ -260,6 +260,10 @@ int SiteScatterWidget::parseSiteFile(const QString& pathToFile)
         {
             site.SiteNum = curSite[attributeIndex["Station"]].toInt();
         }
+        else if (colName.contains("id"))
+        {
+            site.SiteNum = curSite[attributeIndex["Station"]].toInt();
+        }
         else
         {
             QString errMsg = "Please include the \"Station\" in the site file.";
@@ -292,19 +296,31 @@ int SiteScatterWidget::parseSiteFile(const QString& pathToFile)
 
         // Optional fields (can be extended in future)
         if (colName.contains("Vs30"))
+        {
             site.Vs30 = curSite[attributeIndex["Vs30"]];
+        }
         else
             site.Vs30 = "";
         if (colName.contains("z1pt0"))
+        {
             site.z1pt0 = curSite[attributeIndex["z1pt0"]];
+        }
         else
             site.z1pt0 = "";
         if (colName.contains("z2pt5"))
+        {
             site.z2pt5 = curSite[attributeIndex["z2pt5"]];
+        }
         else
             site.z2pt5 = "";
         if (colName.contains("zTR"))
+        {
             site.zTR = curSite[attributeIndex["zTR"]];
+        }
+        else if (colName.contains("DepthToRock"))
+        {
+            site.zTR = curSite[attributeIndex["DepthToRock"]];
+        }
         else
             site.zTR = "";
 
@@ -474,7 +490,7 @@ void SiteScatterWidget::updateSiteSpreadSheet(const QList<UserSpecifiedSite>& si
     {
         QList<QString> tableRow;
         tableRow << QString::number(siteList[i].SiteNum) << siteList[i].Latitude << siteList[i].Longitude
-                 << siteList[i].Vs30 << siteList[i].z1pt0 << siteList[i].z2pt5 << siteList[i].zTR;
+                 << siteList[i].Vs30 << siteList[i].zTR << siteList[i].z1pt0 << siteList[i].z2pt5;
 
         QTableWidgetItem *item;
         for (int j = 0; j != defaultCSVHeader.length(); ++j)

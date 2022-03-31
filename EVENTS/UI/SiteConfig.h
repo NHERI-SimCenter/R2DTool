@@ -52,7 +52,7 @@ class SiteConfig : public QObject, public JsonSerializable
 
 public:
     explicit SiteConfig(QObject *parent = nullptr);
-    enum SiteType {Single = 0, Grid = 1, Scatter = 2};
+    enum SiteType {Single = 0, Grid = 1, Scatter = 2, UserCSV = 3};
 
     Site& site();
     SiteGrid& siteGrid();

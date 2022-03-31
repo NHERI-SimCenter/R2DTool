@@ -1,5 +1,5 @@
-#ifndef SITEWIDGET_H
-#define SITEWIDGET_H
+#ifndef QGISSITEINPUTWIDGET_H
+#define QGISSITEINPUTWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,28 +36,59 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "Site.h"
+#include "ComponentInputWidget.h"
 
-#include <QWidget>
-#include <QtWidgets>
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
+class QStringList;
 
-class SiteWidget : public QWidget
+class QGISSiteInputWidget : public ComponentInputWidget
 {
     Q_OBJECT
 public:
-    explicit SiteWidget(Site& site, QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
-    double get_latitude();
-    double get_longitude();
+    QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+
+    int loadComponentVisualization();
+
+    void reloadComponentData(QString newDataFile);
+
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+
+    void clear();
+
+signals:
+    void soilDataCompleteSignal(bool flag);
+    void activateSoilModelWidget(bool flag);
+
+public slots:
+    void setSiteFilter(QString filter);
 
 private:
-    Site& m_site;
-    QGroupBox* m_locationGroupBox;
-    QDoubleSpinBox* m_latitudeBox;
-    QDoubleSpinBox* m_longitudeBox;
 
-    void setupConnections();
+    void checkSoilPropComplete(void);
+    int checkSoilParamComplete(void);
+    void checkSoilDataComplete(void);
+
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+
+    // minimum required attributes
+    QStringList attrbMinReqSite = {"Latitude", "Longitude"}; // componentType = site
+    QStringList attrbMinReqSoil = {"Latitude", "Longitude", "SoilModel"}; // componentType = soil
+
+    // Soil properties attributes completeness
+    bool soilPropComplete = false;
+
+    // Soil model full attributes
+    QStringList attrbFullSoilEI = {"Den"}; // soil model = EI
+    QStringList attrbFullSoilBA = {"Den", "Su_rat", "h/G", "m", "h0", "chi"}; // soil model = BA
+
+    // Soil model attributes completeness
+    bool soilParamComplete = false;
+
 };
 
-#endif // SITEWIDGET_H
+#endif // QGISSITEINPUTWIDGET_H

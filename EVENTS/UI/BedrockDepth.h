@@ -1,5 +1,5 @@
-#ifndef SITEWIDGET_H
-#define SITEWIDGET_H
+#ifndef BEDROCKDEPTH_H
+#define BEDROCKDEPTH_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,28 +36,36 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "Site.h"
+#include "JsonSerializable.h"
 
-#include <QWidget>
-#include <QtWidgets>
+#include <QObject>
 
-class SiteWidget : public QWidget
+class BedrockDepth : public QObject, JsonSerializable
 {
     Q_OBJECT
 public:
-    explicit SiteWidget(Site& site, QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
-    double get_latitude();
-    double get_longitude();
+    explicit BedrockDepth(QObject *parent = nullptr);
+
+    QString type() const;
+    const QStringList& validTypes();
+    const QStringList& validTypesUser();
+
+    bool outputToJSON(QJsonObject &jsonObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
+
+signals:
+    void typeChanged(QString newType);
+
+public slots:
+    bool setType(const QString &type);
 
 private:
-    Site& m_site;
-    QGroupBox* m_locationGroupBox;
-    QDoubleSpinBox* m_latitudeBox;
-    QDoubleSpinBox* m_longitudeBox;
+    QString m_type;
 
-    void setupConnections();
 };
 
-#endif // SITEWIDGET_H
+#endif // BEDROCKDEPTH_H

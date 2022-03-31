@@ -151,8 +151,8 @@ bool MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "MDOF-LU";
     QJsonObject dataObj;
 
-    dataObj["stdStiffness"] = stdStiffness->text();
-    dataObj["stdDamping"] = stdDamping->text();
+    dataObj["stdStiffness"] = stdStiffness->text().toDouble();
+    dataObj["stdDamping"] = stdDamping->text().toDouble();
 
     if(storyHeight->text() != "") {
         dataObj["storyHeight"] = stdDamping->text();

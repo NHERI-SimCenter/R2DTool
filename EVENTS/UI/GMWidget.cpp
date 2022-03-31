@@ -61,6 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PeerNgaWest2Client.h"
 #include "PeerLoginDialog.h"
 #include "ZipUtils.h"
+#include "QGISSiteInputWidget.h"
 
 #ifdef INCLUDE_USER_PASS
 #include "R2DUserPass.h"
@@ -121,7 +122,7 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
 
     // Adding Site Config Widget
     this->m_siteConfig = new SiteConfig(this);
-    this->m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig);
+    this->m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig, visWidget);
 
     this->m_ruptureWidget = new RuptureWidget();
 
@@ -256,6 +257,7 @@ void GMWidget::setupConnections()
         QString password = getPEERPassWord();
 
         peerClient.signIn(userName, password);
+
 
         runHazardSimulation();
     });
@@ -648,8 +650,31 @@ void GMWidget::runHazardSimulation(void)
         minID = m_siteConfigWidget->getSiteScatterWidget()->getMinID();
         maxID = m_siteConfigWidget->getSiteScatterWidget()->getMaxID();
     }
+    else if(m_siteConfig->getType() == SiteConfig::SiteType::UserCSV)
+    {
+        QString filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
+        if (filterIDs.isEmpty())
+        {
+            this->statusMessage("Warning: no filters defined - will load all sites.");
+            m_siteConfigWidget->getCsvSiteWidget()->selectAllComponents();
+            filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
+        }
+        QStringList IDs = filterIDs.split(QRegExp(",|-"), QString::SkipEmptyParts);
+        qDebug() << IDs;
+        int tmpMin = 10000000;
+        int tmpMax = 0;
+        for (int i = 0; i < IDs.size(); i++) {
+            if (IDs[i].toInt() > tmpMax)
+                tmpMax = IDs[i].toInt();
+            if (IDs[i].toInt() < tmpMin)
+                tmpMin = IDs[i].toInt();
+        }
+        minID = tmpMin;
+        maxID = tmpMax;
+    }
 
     //    maxID = 5;
+
 
     QJsonObject siteObj;
     siteObj.insert("Type", "From_CSV");
@@ -679,7 +704,7 @@ void GMWidget::runHazardSimulation(void)
     // Get the GMPE Json object
     QJsonObject GMPEobj;
     qDebug() << QString(m_ruptureWidget->getWidgetType());
-    if (m_ruptureWidget->getWidgetType().compare("OpenQuake Classical")==0)
+    if (m_ruptureWidget->getWidgetType().compare("OpenQuake Classical")==0 || m_ruptureWidget->getWidgetType().compare("OpenQuake User-Specified")==0)
     {
         GMPEobj.insert("Type", "LogicTree");
         GMPEobj.insert("Parameters", m_ruptureWidget->getGMPELogicTree());
@@ -795,6 +820,30 @@ void GMWidget::runHazardSimulation(void)
         if(!m_siteConfigWidget->getSiteScatterWidget()->copySiteFile(pathToInputDir))
         {
             this->errorMessage("Error copying site file to inputput directory");
+        }
+    }
+    else if(type == SiteConfig::SiteType::UserCSV)
+    {
+        // Site file will be copied to the input directory
+        writeSiteFile = false;
+        if(!m_siteConfigWidget->getCsvSiteWidget()->copyFiles(pathToInputDir))
+        {
+            this->errorMessage("Error copying site file to inputput directory");
+        }
+        else
+        {
+            QFileInfo csv_origin(m_siteConfigWidget->getCsvSiteWidget()->getPathToComponentFile());
+            QFile csv_file(pathToInputDir + QDir::separator() + csv_origin.fileName());
+            if (!csv_file.fileName().contains("SiteFile.csv", Qt::CaseSensitive))
+            {
+                QFileInfo csv_t(pathToInputDir + QDir::separator() + "SiteFile.csv");
+                if (csv_t.exists() && csv_t.isFile())
+                {
+                    QFile csv_tf(pathToInputDir + QDir::separator() + "SiteFile.csv");
+                    csv_tf.remove();
+                }
+                csv_file.rename(pathToInputDir + QDir::separator() + "SiteFile.csv");
+            }
         }
     }
 

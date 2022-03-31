@@ -83,8 +83,8 @@ const QStringList &Vs30::validTypesUser()
     static QStringList validTypes = QStringList()
             << "CGS/Wills Vs30 (Wills et al., 2015)"
             << "Thompson California Vs30 (Thompson et al., 2018)"
-            << "Global Vs30 (Heath et al., 2020)"
-            << "User Defined";
+            << "Global Vs30 (Heath et al., 2020)";
+            //<< "National Crustal Model (Boyd et al., 2019)";
 
     return validTypes;
 }
@@ -96,6 +96,7 @@ const QStringList &Vs30::validTypes()
             << "CGS/Wills Vs30 (Wills et al., 2015)"
             << "Thompson California Vs30 (Thompson et al., 2018)"
             << "Global Vs30 (Heath et al., 2020)";
+            //<< "National Crustal Model (Boyd et al., 2019)";
 
     return validTypes;
 }
