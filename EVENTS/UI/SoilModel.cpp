@@ -1,5 +1,3 @@
-#ifndef SITEWIDGET_H
-#define SITEWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,28 +34,94 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "Site.h"
+#include "SoilModel.h"
+#include <QFileInfo>
 
-#include <QWidget>
-#include <QtWidgets>
-
-class SiteWidget : public QWidget
+SoilModel::SoilModel(QObject *parent) : QObject(parent)
 {
-    Q_OBJECT
-public:
-    explicit SiteWidget(Site& site, QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
-    double get_latitude();
-    double get_longitude();
+    this->m_type = "Elastic Isotropic";
+    this->m_userModelPath = "";
+}
 
-private:
-    Site& m_site;
-    QGroupBox* m_locationGroupBox;
-    QDoubleSpinBox* m_latitudeBox;
-    QDoubleSpinBox* m_longitudeBox;
 
-    void setupConnections();
-};
+QString SoilModel::type() const
+{
+    return m_type;
+}
 
-#endif // SITEWIDGET_H
+
+bool SoilModel::setType(const QString &type)
+{
+    if(m_type!= type && this->validTypes().contains(type, Qt::CaseInsensitive))
+    {
+        m_type = type;
+        emit typeChanged(m_type);
+        return true;
+    }
+
+    return false;
+}
+
+
+bool SoilModel::outputToJSON(QJsonObject &jsonObject)
+{
+    jsonObject.insert("Type", m_type);
+    if (m_type.compare("User")==0)
+    {
+        QFileInfo theFile(m_userModelPath);
+        jsonObject.insert("Parameters", theFile.fileName());
+    }
+    else
+        jsonObject.insert("Parameters", QJsonObject());
+
+    return true;
+}
+
+
+bool SoilModel::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
+}
+
+
+const QStringList &SoilModel::validTypesUser()
+{
+    static QStringList validTypes = QStringList()
+            << "Elastic Isotropic"
+            << "Multiaxial Cyclic Plasticity"
+            << "User";
+
+    return validTypes;
+}
+
+
+const QStringList &SoilModel::validTypes()
+{
+    static QStringList validTypes = QStringList()
+            << "Elastic Isotropic"
+            << "Multiaxial Cyclic Plasticity"
+            << "User";
+
+    return validTypes;
+}
+
+
+void SoilModel::setUserModelPath(QString userModelPath)
+{
+    m_userModelPath = userModelPath;
+}
+
+
+QString SoilModel::getUserModelPath()
+{
+    return m_userModelPath;
+}
+
+
+void SoilModel::reset(void)
+{
+    this->m_type = "Elastic Isotropic";
+    this->m_userModelPath = "";
+}

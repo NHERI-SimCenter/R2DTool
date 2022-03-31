@@ -151,3 +151,9 @@ void SiteGridWidget::selectGridButtonPressed()
     emit selectGridOnMap();
     gridCreated = true;
 }
+
+int SiteGridWidget::getNumSites()
+{
+    int numSites = (m_longitudeDivBox->text().toInt()+1) * (m_longitudeDivBox->text().toInt()+1);
+    return numSites;
+}

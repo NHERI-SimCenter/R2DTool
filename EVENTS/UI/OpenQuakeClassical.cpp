@@ -47,8 +47,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDirIterator>
 using namespace ZipUtils;
 
-OpenQuakeClassical::OpenQuakeClassical(double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent) :
-    SimCenterWidget(parent), rupMesh(rMesh), areaMesh(aMesh), maxDistance(maxDist), sourceFilename(rFile)
+OpenQuakeClassical::OpenQuakeClassical(int uMode, double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent) :
+    SimCenterWidget(parent), userMode(uMode), rupMesh(rMesh), areaMesh(aMesh), maxDistance(maxDist), sourceFilename(rFile)
 {
 
 }
@@ -125,6 +125,11 @@ void OpenQuakeClassical::setOpenQuakeVersion(const QString &value)
 void OpenQuakeClassical::setGMPEFilename(const QString &value)
 {
     gmpeFilename = value;
+}
+
+void OpenQuakeClassical::setConfigFilename(const QString &value)
+{
+    configFilename = value;
 }
 
 
@@ -215,12 +220,18 @@ void OpenQuakeClassical::setQuantiles(const QString &value)
 
 bool OpenQuakeClassical::outputToJSON(QJsonObject &jsonObject)
 {
+    qDebug() << "OpenQuakeClassical: writing rupture JSON...";
     // Extract the filename from the path
     QString filename;
     filename = this->sourceFilename.section('/', -1);
 
     QJsonObject rupture;
-    jsonObject.insert("Type", "OpenQuakeClassicalPSHA");
+    if (userMode == 0) {
+        jsonObject.insert("Type", "OpenQuakeClassicalPSHA");
+    } else {
+        jsonObject.insert("Type", "OpenQuakeUserConfig");
+        jsonObject.insert("ConfigFile", configFilename.section('/', -1));
+    }
     jsonObject.insert("Filename",filename);
     jsonObject.insert("RupMesh", rupMesh);
     jsonObject.insert("AreaMesh", areaMesh);
@@ -252,7 +263,6 @@ bool OpenQuakeClassical::outputToJSON(QJsonObject &jsonObject)
         return false;
     }
 
-
     if (! this->copySourceModelFile())
     {
         QString errMsg = "Cannot copy the Source Model.";
@@ -261,6 +271,16 @@ bool OpenQuakeClassical::outputToJSON(QJsonObject &jsonObject)
         return false;
     }
 
+    if (userMode == 1) {
+        // copy the ini
+        if (! this->copyConfigFile())
+        {
+            QString errMsg = "Cannot copy the configuration file.";
+            qDebug() << errMsg;
+            this->errorMessage(errMsg);
+            return false;
+        }
+    }
 
     return true;
 }
@@ -292,7 +312,7 @@ bool OpenQuakeClassical::copySourceFile()
     QFile fileToCopy(sfilename);
 
     if (! fileToCopy.exists()) {
-        QString errMsg = "Cannot find the source logic tree file." + QString(sfilename);
+        QString errMsg = "Cannot find the source logic tree file: " + QString(sfilename);
         qDebug() << errMsg;
         this->errorMessage(errMsg);
         return false;
@@ -470,6 +490,50 @@ bool OpenQuakeClassical::copySourceModelFile()
 
     return copyFlag;
 
+}
+
+bool OpenQuakeClassical::copyConfigFile()
+{
+    // Destination directory
+    QString destinationDir;
+    destinationDir = SimCenterPreferences::getInstance()->getLocalWorkDir() + QDir::separator() +
+            "HazardSimulation" + QDir::separator() + QString("GroundMotions") + QDir::separator() + "Input";
+    QDir dirInput(destinationDir);
+    if (!dirInput.exists())
+        if (!dirInput.mkpath(destinationDir))
+        {
+            QString errMsg = QString("Could not make the input directory.");
+            qDebug() << errMsg;
+            this->errorMessage(errMsg);
+            return false;
+        }
+
+    // source logic tree file
+    QString cfilename = this->configFilename;
+
+    QFile fileToCopy(cfilename);
+
+    if (! fileToCopy.exists()) {
+        QString errMsg = "Cannot find the GMPE logic tree file." + QString(cfilename);
+        qDebug() << errMsg;
+        this->errorMessage(errMsg);
+        return false;
+    }
+
+    QFileInfo fileInfo(cfilename);
+    QString theFile = fileInfo.fileName();
+
+    // Overwriting check
+    QFile distFile(destinationDir + QDir::separator() + theFile);
+    if (distFile.exists())
+    {
+        distFile.remove();
+        QString warnMsg = "Overwriting the existing configuration file in the input directory.";
+        qDebug() << warnMsg;
+        //this->messageDialog(warnMsg);
+    }
+
+    return fileToCopy.copy(destinationDir + QDir::separator() + theFile);
 }
 
 void OpenQuakeClassical::reset(void)

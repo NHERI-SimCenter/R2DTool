@@ -1,5 +1,3 @@
-#ifndef SITEWIDGET_H
-#define SITEWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,28 +34,71 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "Site.h"
+#include "BedrockDepth.h"
 
-#include <QWidget>
-#include <QtWidgets>
-
-class SiteWidget : public QWidget
+BedrockDepth::BedrockDepth(QObject *parent) : QObject(parent)
 {
-    Q_OBJECT
-public:
-    explicit SiteWidget(Site& site, QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
-    double get_latitude();
-    double get_longitude();
+    this->m_type = "SoilGrid250 (Hengl et al., 2017)";
+}
 
-private:
-    Site& m_site;
-    QGroupBox* m_locationGroupBox;
-    QDoubleSpinBox* m_latitudeBox;
-    QDoubleSpinBox* m_longitudeBox;
 
-    void setupConnections();
-};
+QString BedrockDepth::type() const
+{
+    return m_type;
+}
 
-#endif // SITEWIDGET_H
+
+bool BedrockDepth::setType(const QString &type)
+{
+    if(m_type!= type && this->validTypes().contains(type, Qt::CaseInsensitive))
+    {
+        m_type = type;
+        emit typeChanged(m_type);
+        return true;
+    }
+
+    return false;
+}
+
+
+bool BedrockDepth::outputToJSON(QJsonObject &jsonObject)
+{
+    jsonObject.insert("Type", m_type);
+    jsonObject.insert("Parameters", QJsonObject());
+
+    return true;
+}
+
+
+bool BedrockDepth::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+    return true;
+}
+
+
+const QStringList &BedrockDepth::validTypesUser()
+{
+    static QStringList validTypes = QStringList()
+            << "SoilGrid250 (Hengl et al., 2017)";
+            //<< "National Crustal Model (Boyd et al., 2019)";
+
+    return validTypes;
+}
+
+
+const QStringList &BedrockDepth::validTypes()
+{
+    static QStringList validTypes = QStringList()
+            << "SoilGrid250 (Hengl et al., 2017)";
+            //<< "National Crustal Model (Boyd et al., 2019)";
+
+    return validTypes;
+}
+
+
+void BedrockDepth::reset(void)
+{
+    this->m_type = "SoilGrid250 (Hengl et al., 2017)";
+}

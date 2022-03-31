@@ -1,5 +1,6 @@
-#ifndef SITEWIDGET_H
-#define SITEWIDGET_H
+#ifndef OpenQuakeUserSpecifiedWidget_H
+#define OpenQuakeUserSpecifiedWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,28 +37,56 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "Site.h"
+#include "SimCenterWidget.h"
+#include "qsettings.h"
 
-#include <QWidget>
-#include <QtWidgets>
+class OpenQuakeClassical;
 
-class SiteWidget : public QWidget
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class QDoubleSpinBox;
+class QCheckBox;
+class QComboBox;
+
+class OpenQuakeUserSpecifiedWidget : public SimCenterWidget
 {
     Q_OBJECT
+
 public:
-    explicit SiteWidget(Site& site, QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
-    double get_latitude();
-    double get_longitude();
+    explicit OpenQuakeUserSpecifiedWidget(QWidget *parent = nullptr);
+
+    OpenQuakeClassical* getRuptureSource() const;
+
+signals:
+    void updateTruncLevel(float value);
+
+public slots:
+    void loadSourceDir();
+    void loadConfigFile();
+    void handleOQVersionChanged(const QString& selection);
 
 private:
-    Site& m_site;
-    QGroupBox* m_locationGroupBox;
-    QDoubleSpinBox* m_latitudeBox;
-    QDoubleSpinBox* m_longitudeBox;
+    OpenQuakeClassical* m_eqRupture;
+    QLineEdit* sourceDirLineEdit;
+    QString sourceDir;
+    QPushButton* browseSourceDirButton;
 
-    void setupConnections();
+    QLineEdit* iniFilePathLineEdit;
+    QString iniFilePath;
+    QPushButton* browseIniFileButton;
+
+    QComboBox* oqVersionCombo;
+    QString oqVersion = "3.12.0";
+
+    void setSourceDir(QString dirPath);
+    void setIniFile(QString dirPath);
+    void parseConfigFile();
+
+    QSettings* iniConfigSetting;
+
 };
 
-#endif // SITEWIDGET_H
+#endif // OpenQuakeUserSpecifiedWidget_H

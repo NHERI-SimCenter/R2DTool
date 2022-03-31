@@ -48,7 +48,7 @@ class OpenQuakeClassical : public SimCenterWidget, JsonSerializable
     Q_OBJECT
 
 public:
-    OpenQuakeClassical(double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent = nullptr);
+    OpenQuakeClassical(int uMode, double rMesh, double aMesh, double maxDist, QString rFile, QWidget *parent = nullptr);
 
     double getRupMesh() const;
     double getAreaMesh() const;
@@ -81,8 +81,10 @@ public slots:
     void setRandSeed(const QString &value);
     void setQuantiles(const QString &value);
     void setTimeSpan(const QString &value);
+    void setConfigFilename(const QString &value);
 
 private:
+    int userMode = 0;
     double rupMesh;
     double areaMesh;
     double maxDistance;
@@ -99,10 +101,12 @@ private:
     QString sourceFilename;
     QString gmpeFilename;
     QString sourceDefDir; // directory of individual source model xml files
+    QString configFilename;
 
     bool copySourceFile();
     bool copyGMPEFile();
     bool copySourceModelFile();
+    bool copyConfigFile();
 
 };
 

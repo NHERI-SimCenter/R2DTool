@@ -17,14 +17,16 @@ public:
     ComponentDatabase* getPipelineComponentDb();    
     ComponentDatabase* getCPTComponentDb();
 
+    ComponentDatabase* getSiteComponentDb();
+
 private:
 
     static ComponentDatabaseManager *theInstance;
 
     std::unique_ptr<ComponentDatabase> theBuildingComponentDb;
     std::unique_ptr<ComponentDatabase> thePipelineComponentDb;
+    std::unique_ptr<ComponentDatabase> theSiteComponentDb;
     std::unique_ptr<ComponentDatabase> theCPTComponentDb;
-
 };
 
 #endif // COMPONENTDATABASEMANAGER_H

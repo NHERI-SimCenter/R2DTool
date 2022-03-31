@@ -13,6 +13,8 @@ public:
 
     bool getGridCreated() const;
 
+    int getNumSites();
+
 signals:
 
     void selectGridOnMap();
