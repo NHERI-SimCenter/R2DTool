@@ -219,6 +219,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
             UIWidgets/HazardToAssetWidget.cpp \
             UIWidgets/HazardsWidget.cpp \
+            UIWidgets/HousingUnitAllocationWidget.cpp \
             UIWidgets/HurricaneParameterWidget.cpp \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
             UIWidgets/MDOF_LU.cpp \
@@ -331,6 +332,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/HazardToAssetBuilding.h \
             UIWidgets/HazardToAssetWidget.h \
             UIWidgets/HazardsWidget.h \
+            UIWidgets/HousingUnitAllocationWidget.h \
             UIWidgets/HurricaneParameterWidget.h \
             UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
             UIWidgets/MDOF_LU.h \
@@ -481,6 +483,9 @@ DATABASE_DIR=$$DESTDIR/Databases
     DATABASE_DIR=$$OUT_PWD/R2D.app/Contents/MacOS
 
     mkpath($$OUT_PWD/R2D.app/Contents/MacOS)
+
+    mkpath($$OUT_PWD/R2D.app/Contents/MacOS/Examples)
+
     }
 }
 
@@ -505,8 +510,6 @@ win32 {
 
 }else {
 mac {
-
-mkpath($$EXAMPLES_DIR)
 
 message($$PATH_TO_EXAMPLES)
 

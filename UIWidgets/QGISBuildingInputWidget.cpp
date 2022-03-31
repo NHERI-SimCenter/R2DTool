@@ -280,13 +280,13 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
 void QGISBuildingInputWidget::clear()
 {    
-    if(selectedFeaturesLayer != nullptr)
-    {
-        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
-        theVisualizationWidget->deregisterLayerForSelection(selectedFeaturesLayer->id());
-    }
-    if(mainLayer != nullptr)
-        theVisualizationWidget->removeLayer(mainLayer);
+//    if(selectedFeaturesLayer != nullptr)
+//    {
+//        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
+//        theVisualizationWidget->deregisterLayerForSelection(selectedFeaturesLayer->id());
+//    }
+//    if(mainLayer != nullptr)
+//        theVisualizationWidget->removeLayer(mainLayer);
 
     ComponentInputWidget::clear();
 }
