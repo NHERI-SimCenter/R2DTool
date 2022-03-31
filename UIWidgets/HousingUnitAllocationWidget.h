@@ -36,16 +36,26 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include "SimCenterAppWidget.h"
 
 #include <qgsfeature.h>
 #include <QMap>
+#include <QProcess>
+
+#include <set>
 
 class QgsVectorLayer;
 class QGISVisualizationWidget;
+class QgsProjectionSelectionWidget;
+
 class VisualizationWidget;
+
+class QProcess;
+class QPushButton;
+class QLineEdit;
+class QComboBox;
 
 struct Building;
 struct CensusBlockGroup;
@@ -124,8 +134,6 @@ public:
     bool outputAppDataToJSON(QJsonObject &jsonObject) override;
     bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
 
-    int createInputFiles();
-
     int importJoinAssets();
 
     void clear() override;
@@ -136,32 +144,73 @@ signals:
     void emitStatusMsg(QString);
     void emitInfoMsg(QString);
 
+    void emitCreateLayerMainThread(QString,QString);
+
+    void emitLayerCreationFinished();
+
+    void emitStartProcessMainThread(QString,QStringList);
+
 private slots:
 
+    // Handle the status/error messages from the multiple threads (progress dialog must be called from the main thread)
     void handleErrorMsg(const QString msg);
     void handleStatusMsg(const QString msg);
     void handleInfoMsg(const QString msg);
 
+    // Creates the .GDB GIS files from which the population demographics will be extracted to append to the housing database
+    // This runs a python script
+    int createGISFiles(void);
+
+    // Handles the results when the user is finished
+    void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+    // Brings up the dialog and tells the user that the process has started
+    void handleProcessStarted(void);
+
+    // Displays the text output of the process in the dialog
+    void handleProcessTextOutput(void);
+
+    void handleCreateGISFilesButtonPressed(void);
+
+    void handleBlockLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+    void handleBuildingLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+
+    void browseGISresultsFolderDir(void);
+    void browseBlockLevelGISFile(void);
+    void browseBuildingGISFile(void);
+
+    int importBuidlingsLayer(void);
+    int importCensusBlockLayer(void);
+
+    int handleRunJoinButtonPressed();
+
+    void handleCreateLayerMainThread(const QString& path, const QString& name);
+    void handleProcessStartedMainThread(const QString& pythonPath, const QStringList& args);
+
 private:
+
+    QWidget* getHUAWidget(void);
+
+    // Returns a set of counties that the building inventory resides in
+    std::set<QString> getCountiesFromBuildingInventory(void);
 
     std::unique_ptr<std::thread> thread;
 
     QgsVectorLayer* parcelsLayer = nullptr;
 
-    // Mutex to sample the building layer
+    void getStandardOutputDir(void);
+
+    // Mutex for the building layer
     std::mutex buildingLayerSemaphore;
+
     QgsVectorLayer* buildingsLayer = nullptr;
-
     QgsVectorLayer* addressPointLayer = nullptr;
-
     QgsVectorLayer* blockLayer = nullptr;
     QgsVectorLayer* blockGroupLayer = nullptr;
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-//    QVector<std::shared_ptr<Building>> buildingsMap;
-//    QVector<std::shared_ptr<Parcel>> parcelsMap;
-
+    // Store the assets in a hash map for quick access according to its ID
     QMap<QgsFeatureId,std::shared_ptr<Building>> buildingsMap;
     QMap<QgsFeatureId,std::shared_ptr<Parcel>> parcelsMap;
     QMap<QgsFeatureId,std::shared_ptr<HousingUnit>> housingUnitMap;
@@ -172,6 +221,27 @@ private:
     int linkBuildingsAndParcels(void);
 
     int extractCensusData(void);
+
+    QProcess* process = nullptr;
+
+    QgsProjectionSelectionWidget* mblockLevelCrsSelector = nullptr;
+
+    QgsProjectionSelectionWidget* buildingCrsSelector = nullptr;
+
+
+    QComboBox* censusVintageCombo = nullptr;
+    QLineEdit* blockLevelPathLineEdit = nullptr;
+    QLineEdit* gisDirLineEdit = nullptr;
+
+    QLineEdit* buildingsPathLineEdit = nullptr;
+
+    QPushButton* runGetCensusButton = nullptr;
+
+    QPushButton* runJoinButton = nullptr;
+
+    // Map to store layers that were created in the main thread
+    QMap<QString, QgsVectorLayer*> Layermap;
+
 
 };
 

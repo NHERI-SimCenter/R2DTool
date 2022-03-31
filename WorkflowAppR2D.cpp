@@ -270,6 +270,7 @@ void WorkflowAppR2D::initialize(void)
 
     // Test to remove start
     // theComponentSelection->displayComponent("HAZ");
+    // loadFile("/Users/steve/Desktop/Seaside/input_data/input.json");
     //  loadResults();
     // Test to remove end
 
