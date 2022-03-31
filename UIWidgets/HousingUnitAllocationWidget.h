@@ -176,7 +176,7 @@ private slots:
     void handleBuildingLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
     void browseGISresultsFolderDir(void);
-
+    void browseBlockLevelGISFile(void);
     void browseBuildingGISFile(void);
 
     int importBuidlingsLayer(void);

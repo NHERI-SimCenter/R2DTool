@@ -539,30 +539,31 @@ int HousingUnitAllocationWidget::importJoinAssets()
         return -1;
     }
 
-    if(parcelsLayer == nullptr)
-    {
-        emit emitStatusMsg("No parcels layer found, skipping import of parcels.");
-    }
-    else
-    {
+    // TODO: implement parcels
+//    if(parcelsLayer == nullptr)
+//    {
+//        emit emitStatusMsg("No parcels layer found, skipping import of parcels.");
+//    }
+//    else
+//    {
 
-        auto future3 = std::async(&HousingUnitAllocationWidget::getParcelFeatures, this);
+//        auto future3 = std::async(&HousingUnitAllocationWidget::getParcelFeatures, this);
 
-        if(future3.get() != 0)
-        {
-            emit emitErrorMsg("Error getting the parcel features");
-            return -1;
-        }
+//        if(future3.get() != 0)
+//        {
+//            emit emitErrorMsg("Error getting the parcel features");
+//            return -1;
+//        }
 
-        auto future4 = std::async(&HousingUnitAllocationWidget::linkBuildingsAndParcels, this);
+//        auto future4 = std::async(&HousingUnitAllocationWidget::linkBuildingsAndParcels, this);
 
-        if(future4.get() != 0)
-        {
-            emit emitErrorMsg("Error getting the parcel features");
-            return -1;
-        }
+//        if(future4.get() != 0)
+//        {
+//            emit emitErrorMsg("Error getting the parcel features");
+//            return -1;
+//        }
 
-    }
+//    }
 
     emit emitStatusMsg("Done extracting informatiom from census layer(s).");
     QApplication::processEvents();
@@ -574,6 +575,7 @@ int HousingUnitAllocationWidget::importJoinAssets()
 bool HousingUnitAllocationWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
+    Q_UNUSED(jsonObject);
 
     return true;
 }
@@ -582,7 +584,7 @@ bool HousingUnitAllocationWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 bool HousingUnitAllocationWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
-
+    Q_UNUSED(jsonObject);
 
     return true;
 }
@@ -776,7 +778,7 @@ int HousingUnitAllocationWidget::extractCensusData(void)
 
     if(blockLayer == nullptr || buildingsLayer == nullptr)
     {
-        emit emitErrorMsg("Error in extracting census data. nullptr received.");
+        emit emitErrorMsg("Error in extracting census data. Either a block layer or buildings layer is missing.");
         return -1;
     }
 
@@ -987,7 +989,7 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
     blockLevelPathLineEdit = new QLineEdit();
     QPushButton *browseFileButton = new QPushButton("Browse");
 
-    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
+    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(browseBlockLevelGISFile()));
 
     mainLayout->addWidget(buildingPathText, 0,0);
     mainLayout->addWidget(buildingsPathLineEdit, 0,1);
@@ -1168,6 +1170,24 @@ void HousingUnitAllocationWidget::browseBuildingGISFile(void)
     auto res = this->importBuidlingsLayer();
     if(res != 0)
         this->errorMessage("Error importing the building layer");
+}
+
+
+void HousingUnitAllocationWidget::browseBlockLevelGISFile(void)
+{
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    QString tmp = dialog.getOpenFileName(this,tr("GIS file of block level data"),QString(QDir(buildingsPathLineEdit->text()).absolutePath()));
+    dialog.close();
+    if(!tmp.isEmpty())
+        blockLevelPathLineEdit->setText(tmp);
+    else
+        return;
+
+    auto res = this->importCensusBlockLayer();
+    if(res != 0)
+        this->errorMessage("Error importing the census block layer");
+
 }
 
 
