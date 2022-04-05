@@ -43,19 +43,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsfeature.h>
 #include <QMap>
 #include <QProcess>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 #include <set>
+
+class VisualizationWidget;
 
 class QgsVectorLayer;
 class QGISVisualizationWidget;
 class QgsProjectionSelectionWidget;
 
-class VisualizationWidget;
-
 class QProcess;
 class QPushButton;
 class QLineEdit;
 class QComboBox;
+class QNetworkReply;
+class QNetworkAccessManager;
 
 struct Building;
 struct CensusBlockGroup;
@@ -150,6 +154,9 @@ signals:
 
     void emitStartProcessMainThread(QString,QStringList);
 
+    void emitDownloadMainThread(QString,QString);
+
+
 private slots:
 
     // Handle the status/error messages from the multiple threads (progress dialog must be called from the main thread)
@@ -186,6 +193,15 @@ private slots:
 
     void handleCreateLayerMainThread(const QString& path, const QString& name);
     void handleProcessStartedMainThread(const QString& pythonPath, const QStringList& args);
+
+
+    void handleDownloadMainThread(const QString& url, const QString& path);
+
+    void handleDownloadFinished(QNetworkReply* reply);
+
+    void handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+
+    void handleDownloadError(QNetworkReply::NetworkError code);
 
 private:
 
@@ -241,6 +257,12 @@ private:
 
     // Map to store layers that were created in the main thread
     QMap<QString, QgsVectorLayer*> Layermap;
+
+    bool downloadCountyFiles(const QString& path);
+
+    bool downloadingCensus = false;
+
+    QNetworkAccessManager fileDownloadManager;
 
 
 };
