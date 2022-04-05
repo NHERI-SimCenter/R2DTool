@@ -44,6 +44,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentDatabaseManager.h"
 #include "QGISVisualizationWidget.h"
 #include <Utils/PythonProgressDialog.h>
+#include "NetworkDownloadManager.h"
+#include "ZipUtils.h"
 
 #include <QDir>
 #include <QApplication>
@@ -99,13 +101,16 @@ HousingUnitAllocationWidget::HousingUnitAllocationWidget(QWidget *parent, Visual
     connect(this,&HousingUnitAllocationWidget::emitCreateLayerMainThread,this,&HousingUnitAllocationWidget::handleCreateLayerMainThread);
     connect(this,&HousingUnitAllocationWidget::emitStartProcessMainThread,this,&HousingUnitAllocationWidget::handleProcessStartedMainThread);
 
+    connect(&fileDownloadManager,&QNetworkAccessManager::finished, this, &HousingUnitAllocationWidget::handleDownloadFinished);
+
+    connect(this,&HousingUnitAllocationWidget::emitDownloadMainThread,this,&HousingUnitAllocationWidget::handleDownloadMainThread);
 
     // Test to remove start
-//    auto buildingsGISFile =  "/Users/steve/Desktop/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
+    //    auto buildingsGISFile =  "/Users/steve/Desktop/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
 
-//    buildingsPathLineEdit->setText(buildingsGISFile);
-//    this->importBuidlingsLayer();
-//    buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
+    //    buildingsPathLineEdit->setText(buildingsGISFile);
+    //    this->importBuidlingsLayer();
+    //    buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
 
     //    this->createGISFiles();
     // Test to remove end
@@ -120,8 +125,6 @@ HousingUnitAllocationWidget::~HousingUnitAllocationWidget()
 
 std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(void)
 {
-
-    emit emitStatusMsg("Getting counties for the building inventory.");
 
     std::set<QString> res;
 
@@ -140,9 +143,35 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
     // Return if database does not exist
     if(!file.exists())
     {
-        emit emitErrorMsg("The counties shapefile does not exist");
+
+        if(downloadingCensus)
+            return res;
+
+        emit emitErrorMsg("The counties shapefile does not exist. Attempting to download the county files");
+
+        auto countiesFolder =  pathToCountiesGIS = QCoreApplication::applicationDirPath() +
+                QDir::separator() + "Databases" + QDir::separator() + "USCounties2021";
+
+        QDir dirWork(countiesFolder);
+
+        if (!dirWork.exists())
+            if (!dirWork.mkpath(countiesFolder))
+            {
+                QString errorMessage = QString("Could not create the directory: ") + countiesFolder;
+
+                emit emitErrorMsg(errorMessage);
+
+                return res;
+            }
+
+        auto savePath =countiesFolder + QDir::separator() + "counties.zip";
+
+        auto success = downloadCountyFiles(savePath);
+
         return res;
     }
+
+    emit emitStatusMsg("Getting counties for the building inventory.");
 
     //auto countiesLayer = theVisualizationWidget->addVectorLayer(pathToCountiesGIS, "Counties", "ogr");
 
@@ -364,6 +393,13 @@ int HousingUnitAllocationWidget::createGISFiles(void)
 
     if(countiesSet.empty())
     {
+        if(downloadingCensus == true)
+        {
+            QString statusMessage = "Download of census county files in progress please wait. It might take a while.";
+            emit emitStatusMsg(statusMessage);
+            return 0;
+        }
+
         QString errorMessage = "Empty set of counties, check buildings exist and coordinate reference system places them within the US.";
         emit emitErrorMsg(errorMessage);
         return -1;
@@ -540,30 +576,30 @@ int HousingUnitAllocationWidget::importJoinAssets()
     }
 
     // TODO: implement parcels
-//    if(parcelsLayer == nullptr)
-//    {
-//        emit emitStatusMsg("No parcels layer found, skipping import of parcels.");
-//    }
-//    else
-//    {
+    //    if(parcelsLayer == nullptr)
+    //    {
+    //        emit emitStatusMsg("No parcels layer found, skipping import of parcels.");
+    //    }
+    //    else
+    //    {
 
-//        auto future3 = std::async(&HousingUnitAllocationWidget::getParcelFeatures, this);
+    //        auto future3 = std::async(&HousingUnitAllocationWidget::getParcelFeatures, this);
 
-//        if(future3.get() != 0)
-//        {
-//            emit emitErrorMsg("Error getting the parcel features");
-//            return -1;
-//        }
+    //        if(future3.get() != 0)
+    //        {
+    //            emit emitErrorMsg("Error getting the parcel features");
+    //            return -1;
+    //        }
 
-//        auto future4 = std::async(&HousingUnitAllocationWidget::linkBuildingsAndParcels, this);
+    //        auto future4 = std::async(&HousingUnitAllocationWidget::linkBuildingsAndParcels, this);
 
-//        if(future4.get() != 0)
-//        {
-//            emit emitErrorMsg("Error getting the parcel features");
-//            return -1;
-//        }
+    //        if(future4.get() != 0)
+    //        {
+    //            emit emitErrorMsg("Error getting the parcel features");
+    //            return -1;
+    //        }
 
-//    }
+    //    }
 
     emit emitStatusMsg("Done extracting informatiom from census layer(s).");
     QApplication::processEvents();
@@ -859,7 +895,7 @@ int HousingUnitAllocationWidget::extractCensusData(void)
             {
                 QgsAttributes featAtrbs = it.attributes();
 
-//                auto fieldIDx = it.fieldNameIndex("fid");
+                //                auto fieldIDx = it.fieldNameIndex("fid");
 
                 for(int i = 0; i<featAtrbs.size(); ++i)
                 {
@@ -940,12 +976,21 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
 
     connect(browseBuidlingFileButton,SIGNAL(clicked()),this,SLOT(browseBuildingGISFile()));
 
+    QLabel* buildCrsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
+
     buildingCrsSelector = new QgsProjectionSelectionWidget();
     buildingCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     buildingCrsSelector->setObjectName(QString::fromUtf8("mCrsSelector"));
     buildingCrsSelector->setFocusPolicy(Qt::StrongFocus);
 
     connect(buildingCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,&HousingUnitAllocationWidget::handleBuildingLayerCrsChanged);
+
+    auto buildingHBox = new QHBoxLayout();
+    buildingHBox->addWidget(buildingPathText);
+    buildingHBox->addWidget(buildingsPathLineEdit);
+    buildingHBox->addWidget(browseBuidlingFileButton);
+    buildingHBox->addWidget(buildCrsTypeLabel);
+    buildingHBox->addWidget(buildingCrsSelector);
 
 
     mblockLevelCrsSelector = new QgsProjectionSelectionWidget();
@@ -991,15 +1036,7 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
 
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(browseBlockLevelGISFile()));
 
-    mainLayout->addWidget(buildingPathText, 0,0);
-    mainLayout->addWidget(buildingsPathLineEdit, 0,1);
-    mainLayout->addWidget(browseBuidlingFileButton, 0,2);
-
-    QLabel* buildCrsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
-
-    mainLayout->addWidget(buildCrsTypeLabel,0,3);
-    mainLayout->addWidget(buildingCrsSelector,0,4);
-
+    mainLayout->addLayout(buildingHBox,0,0,1,5);
     mainLayout->addWidget(censusDataGB, 1,0,1,5);
 
     mainLayout->addWidget(selectPathText, 2,0);
@@ -1210,3 +1247,113 @@ void HousingUnitAllocationWidget::handleProcessStartedMainThread(const QString& 
     process->waitForFinished();
 }
 
+
+bool HousingUnitAllocationWidget::downloadCountyFiles(const QString& path)
+{
+
+    if(downloadingCensus == true)
+        return false;
+
+    QString dlUrl = "https://www2.census.gov/geo/tiger/TIGER2021/COUNTY/tl_2021_us_county.zip";
+
+    emit emitStatusMsg("Downloading county file from "+dlUrl+" please wait");
+
+    emit emitDownloadMainThread(dlUrl,path);
+
+    return true;
+}
+
+
+void HousingUnitAllocationWidget::handleDownloadMainThread(const QString& url, const QString& path)
+{
+    QNetworkRequest request(url);
+    QNetworkReply *reply = fileDownloadManager.get(request);
+
+    reply->setProperty("FilePath",path);
+
+    connect(reply,&QNetworkReply::downloadProgress, this, &HousingUnitAllocationWidget::handleDownloadProgress);
+    connect(reply,&QNetworkReply::errorOccurred, this, &HousingUnitAllocationWidget::handleDownloadError);
+
+    downloadingCensus = true;
+}
+
+
+void HousingUnitAllocationWidget::handleDownloadFinished(QNetworkReply* reply)
+{
+
+    downloadingCensus = false;
+
+    if(reply)
+    {
+        emit emitStatusMsg("Download complete");
+    }
+    else
+    {
+        emit emitErrorMsg("Download failed");
+        return;
+    }
+
+    auto filePath = reply->property("FilePath").toString();
+
+    if(filePath.isEmpty())
+    {
+        emit emitErrorMsg("Empty file path could not save file");
+        reply->deleteLater();
+        return;
+    }
+
+
+    // Try to open the file path for writing
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        QString err = "Could not open %s for writing: %s\n" + filePath + file.errorString();
+        emit emitErrorMsg(err);
+        reply->deleteLater();
+        return;
+    }
+
+    file.write(reply->readAll());
+    file.close();
+
+    emit emitStatusMsg("Unzipping file "+filePath);
+
+    // Now unzip the file
+    auto pathToOutputDirectory = QCoreApplication::applicationDirPath() +
+            QDir::separator() + "Databases" + QDir::separator() + "USCounties2021" + QDir::separator();
+
+    bool result =  ZipUtils::UnzipFile(filePath, pathToOutputDirectory);
+    if (result == false)
+    {
+        QString err = "Error in unziping the downloaded example files";
+        emit emitErrorMsg(err);
+        reply->deleteLater();
+        return;
+    }
+
+    reply->deleteLater();
+
+    // Remove the zip file
+    QFile zipFile (filePath);
+    zipFile.remove();
+
+    emit emitStatusMsg("File unzipping finished. Click on 'Download Census Data' again to run census data download");
+}
+
+
+void HousingUnitAllocationWidget::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+    if(bytesReceived==0 && bytesTotal==0)
+    {
+        emit emitErrorMsg("Download error");
+
+    }
+
+    emit emitStatusMsg("Download progress "+QString::number(static_cast<int>(static_cast<double>(bytesReceived)/bytesTotal * 100.0)) + "%");
+}
+
+
+void HousingUnitAllocationWidget::handleDownloadError(QNetworkReply::NetworkError code)
+{
+    emit emitErrorMsg("Error in download with code "+QString(code));
+}
