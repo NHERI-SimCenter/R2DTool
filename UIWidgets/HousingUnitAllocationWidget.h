@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QProcess>
 
 #include <set>
+#include <thread>
 
 class QgsVectorLayer;
 class QGISVisualizationWidget;
