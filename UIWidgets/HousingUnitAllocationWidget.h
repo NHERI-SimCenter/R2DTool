@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <set>
 #include <thread>
+#include <mutex>
 
 class VisualizationWidget;
 
