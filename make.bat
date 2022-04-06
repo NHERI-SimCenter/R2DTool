@@ -42,6 +42,29 @@ git clone https://github.com/NHERI-SimCenter/SimCenterCommon.git
 git clone https://github.com/NHERI-SimCenter/R2DTool.git
 git clone https://github.com/NHERI-SimCenter/R2DExamples.git
 git clone https://github.com/sgavrilovic/QGISPlugin.git
+
+:: Update the repos if they already exist
+
+cd QGISPlugin
+git pull
+cd ..
+
+cd R2DExamples
+git pull
+cd ..
+
+cd R2DTool
+git pull
+cd ..
+
+cd SimCenterBackendApplications
+git pull
+cd ..
+
+cd SimCenterCommon
+git pull
+cd ..
+
 dir
 
 :: Build the backend
