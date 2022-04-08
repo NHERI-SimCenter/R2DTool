@@ -42,6 +42,29 @@ git clone https://github.com/NHERI-SimCenter/SimCenterCommon.git
 git clone https://github.com/NHERI-SimCenter/R2DTool.git
 git clone https://github.com/NHERI-SimCenter/R2DExamples.git
 git clone https://github.com/sgavrilovic/QGISPlugin.git
+
+:: Update the repos if they already exist
+
+cd QGISPlugin
+git pull
+cd ..
+
+cd R2DExamples
+git pull
+cd ..
+
+cd R2DTool
+git pull
+cd ..
+
+cd SimCenterBackendApplications
+git pull
+cd ..
+
+cd SimCenterCommon
+git pull
+cd ..
+
 dir
 
 :: Build the backend
@@ -62,41 +85,40 @@ cd ..
 
 copy R2DUserPass.h %CD%\R2DTool\
 
-cd R2DTool
 mkdir build
 cd build
-conan install .. --build missing
-qmake ..\R2D.pro
-set CL=/MP
-nmake
+conan install ..\R2DTool --build missing
+qmake ..\R2DTool\R2D.pro
+:: set CL=/MP
+:: nmake
+C:\Qt\Tools\QtCreator\bin\jom\jom.exe
 cd ..
 
-cd ..
 
 :: Run windeployqt to copy over the qt dlls
 
-%QT%\windeployqt.exe %BATCHPATH%\R2DTool\build
+%QT%\windeployqt.exe %BATCHPATH%\build
 
 :: Copy over the QGIS files
 
-xcopy /s /y %BATCHPATH%\QGISPlugin\win\DLLs %BATCHPATH%R2DTool\build\
+>NUL xcopy /s /y %BATCHPATH%\QGISPlugin\win\DLLs %BATCHPATH%build\
  
 :: Copy over the QGIS plugins 
 
-xcopy /s /y %BATCHPATH%QGISPlugin\mac\Install\share\qgis %BATCHPATH%R2DTool\build\
+>NUL xcopy /s /y %BATCHPATH%QGISPlugin\mac\Install\share\qgis %BATCHPATH%build\
 
 :: Copy over the example file
 
-mkdir %BATCHPATH%R2DTool\build\Examples
+mkdir %BATCHPATH%build\Examples
 
-copy %BATCHPATH%R2DExamples\Examples.json %CD%\R2DTool\build\Examples\
+>NUL copy %BATCHPATH%R2DExamples\Examples.json %CD%\build\Examples\
 
 :: Copy over the applications folder
 
-mkdir %BATCHPATH%R2DTool\build\applications
+mkdir %BATCHPATH%R2DTool\applications
 
-xcopy /s /y %BATCHPATH%SimCenterBackendApplications\applications %BATCHPATH%R2DTool\build\applications\
+>NUL xcopy /s /y %BATCHPATH%SimCenterBackendApplications\applications %BATCHPATH%build\applications\
 
 ECHO "Done Building R2D for Windows"
 
-ECHO "You can find R2D.exe in "%BATCHPATH%R2DTool\build
+ECHO "You can find R2D.exe in "%BATCHPATH%build
