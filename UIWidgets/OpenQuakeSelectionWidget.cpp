@@ -60,8 +60,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 OpenQuakeSelectionWidget::OpenQuakeSelectionWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
-
     assert(visWidget);
+
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5,0,0,0);
