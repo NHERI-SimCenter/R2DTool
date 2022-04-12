@@ -4,6 +4,7 @@
 #include "SiteScatterWidget.h"
 #include "ComponentInputWidget.h"
 #include "VisualizationWidget.h"
+#include "VerticalScrollingWidget.h"
 
 #ifdef Q_GIS
 #include "QGISSiteInputWidget.h"
@@ -18,13 +19,14 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     : QWidget(parent), m_siteConfig(siteconfig), visualizationWidget(visWidget)
 {
     QGroupBox* siteGroupBox = new QGroupBox(tr("Site"));
+    siteGroupBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     QVBoxLayout* groupLayout = new QVBoxLayout(siteGroupBox);
     groupLayout->setContentsMargins(0,0,0,0);
     groupLayout->setSpacing(0);
 
     //First we need to add type radio buttons
-    m_typeButtonsGroup = new QButtonGroup(this);
+    m_typeButtonsGroup = new QButtonGroup();
 
     // Number of ground motions per site
     QLabel* numGMLabel;
@@ -46,11 +48,10 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     m_typeButtonsGroup->addButton(scatRadioButton, 2);
     //m_typeButtonsGroup->addButton(csvfRadioButton, 3);
 
-    QWidget* typeGroupBox = new QWidget(this);
+    QWidget* typeGroupBox = new QWidget();
     typeGroupBox->setContentsMargins(0,0,0,0);
     typeGroupBox->setStyleSheet("QGroupBox { font-weight: normal;}");
     QHBoxLayout* typeLayout = new QHBoxLayout(typeGroupBox);
-    typeGroupBox->setLayout(typeLayout);
     typeLayout->addWidget(siteRadioButton);
     typeLayout->addWidget(gridRadioButton);
     typeLayout->addWidget(scatRadioButton);
@@ -65,7 +66,8 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     groupLayout->addWidget(typeGroupBox);
 
     //We will add stacked widget to switch between grid and single location
-    m_stackedWidgets = new QStackedWidget(this);
+    m_stackedWidgets = new QStackedWidget();
+    m_stackedWidgets->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
 
     //We will add the site to the stacked widget
     siteWidget = new SiteWidget(siteconfig.site());
@@ -84,21 +86,15 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
         csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Soils","RegionalSiteResponse");
     else
         csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Sites","regionalGroundMotion");
-    //csvSiteInventory->setMaximumWidth(800);
-    csvSiteInventory->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
-    QScrollArea *sa = new QScrollArea;
-    sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    sa->setWidgetResizable(true);
-    sa->setLineWidth(0);
-    sa->setFrameShape(QFrame::NoFrame);
-    sa->setWidget(csvSiteInventory);
-    sa->setMinimumHeight(300);
+
+    csvSiteInventory->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    auto sa = new VerticalScrollingWidget(csvSiteInventory);
+
     m_stackedWidgets->addWidget(sa);
 
     groupLayout->addWidget(m_stackedWidgets);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
-    siteGroupBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     layout->addWidget(siteGroupBox);
 
     if(m_siteConfig.getType() == SiteConfig::SiteType::Single)

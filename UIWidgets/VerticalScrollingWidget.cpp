@@ -36,70 +36,32 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "GMPEWidget.h"
+#include "VerticalScrollingWidget.h"
 
-#include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QLabel>
-#include <QSizePolicy>
+#include <QEvent>
+#include <QScrollBar>
 
-GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): QWidget(parent), m_gmpe(gmpe)
+VerticalScrollingWidget::VerticalScrollingWidget(QWidget* childWiddget, QWidget* parent) : QScrollArea(parent), scrollAreaWidgetContents(childWiddget)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    gmpeGroupBox = new QGroupBox(this);
-    gmpeGroupBox->setTitle("Ground Motion Prediction Equation");
+    setWidgetResizable(true);
+    setFrameStyle(QFrame::NoFrame);
+    setLineWidth(0);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-    QHBoxLayout* formLayout = new QHBoxLayout(gmpeGroupBox);
-    m_typeBox = new QComboBox(this);
+    scrollAreaWidgetContents->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    setWidget(scrollAreaWidgetContents);
 
-    QLabel* typeLabel = new QLabel(tr("Type:"),this);
-
-    formLayout->addWidget(typeLabel);
-    formLayout->addWidget(m_typeBox);
-
-    layout->addWidget(gmpeGroupBox);
-
-    const QStringList validType = this->m_gmpe.validTypes();
-
-    QStringListModel* typeModel = new QStringListModel(validType);
-    m_typeBox->setModel(typeModel);
-    m_typeBox->setCurrentIndex(validType.indexOf(m_gmpe.type()));
-    this->setupConnections();
+    scrollAreaWidgetContents->installEventFilter(this);
 }
 
 
-void GMPEWidget::setupConnections()
+bool VerticalScrollingWidget::eventFilter(QObject *o, QEvent *e)
 {
-    connect(this->m_typeBox, &QComboBox::currentTextChanged,
-            &this->m_gmpe, &GMPE::setType);
+    if(o == scrollAreaWidgetContents && e->type() == QEvent::Resize)
+        setMinimumWidth(scrollAreaWidgetContents->minimumSizeHint().width() + verticalScrollBar()->width() + 5);
 
-    connect(&this->m_gmpe, &GMPE::typeChanged,
-            this->m_typeBox, &QComboBox::setCurrentText);
-}
-
-
-void GMPEWidget::handleAvailableGMPE(const QString sourceType)
-{
-    if (sourceType.compare("OpenQuake Classical")==0 || sourceType.compare("OpenQuake User-Specified")==0)
-    {
-        // users are expected to upload a GMPE logic tree, so the GMPE
-        // widget needs to be hiden
-        m_typeBox->hide();
-        gmpeGroupBox->hide();
-        this->setVisible(false);
-    }
-    else if (sourceType.compare("OpenQuake User-Specified")==0)
-    {
-        m_typeBox->hide();
-        gmpeGroupBox->hide();
-        this->setVisible(false);
-    }
-    else
-    {
-        m_typeBox->show();
-        gmpeGroupBox->show();
-        this->setVisible(true);
-    }
+    return false;
 }

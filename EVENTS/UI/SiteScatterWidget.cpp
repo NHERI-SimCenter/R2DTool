@@ -99,7 +99,7 @@ SiteScatterWidget::SiteScatterWidget(SiteScatter& siteScatter, QWidget *parent) 
     QStringList tableHeadings;
     tableHeadings << "Station" << "Latitude" << "Longitude" << "Vs30" << "DepthToRock" << "z1pt0" << "z2pt5";
     siteSpreadSheet->setHorizontalHeaderLabels(tableHeadings);
-    previewGroup->setMaximumHeight(300);
+    //previewGroup->setMaximumHeight(300);
 
     // Default headers in input csv
     defaultCSVHeader << "Station" << "Latitude" << "Longitude" << "Vs30" << "DepthToRock" << "z1pt0" << "z2pt5";

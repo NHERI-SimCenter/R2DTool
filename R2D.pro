@@ -219,6 +219,7 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/LoadResultsDialog.cpp \
             UIWidgets/SimCenterUnitsWidget.cpp \
+            UIWidgets/VerticalScrollingWidget.cpp \
             UIWidgets/WindFieldStation.cpp \
             UIWidgets/GroundMotionTimeHistory.cpp \
             UIWidgets/HazardToAssetBuilding.cpp \
@@ -337,6 +338,7 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/GroundMotionStation.h \
             UIWidgets/LoadResultsDialog.h \
             UIWidgets/SimCenterUnitsWidget.h \
+            UIWidgets/VerticalScrollingWidget.h \
             UIWidgets/WindFieldStation.h \
             UIWidgets/GroundMotionTimeHistory.h \
             UIWidgets/HazardToAssetBuilding.h \

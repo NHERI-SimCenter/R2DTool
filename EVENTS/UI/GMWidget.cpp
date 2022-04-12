@@ -118,8 +118,8 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     connect(process, &QProcess::readyReadStandardOutput, this, &GMWidget::handleProcessTextOutput);
     connect(process, &QProcess::started, this, &GMWidget::handleProcessStarted);
 
-    QGridLayout* toolsGridLayout = new QGridLayout(this);
-    toolsGridLayout->setContentsMargins(0,0,0,0);
+//    QGridLayout* toolsGridLayout = new QGridLayout(this);
+//    toolsGridLayout->setContentsMargins(0,0,0,0);
 
     // Adding Site Config Widget
     this->m_siteConfig = new SiteConfig(this);
@@ -161,23 +161,45 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     //buttonsLayout->addWidget(this->m_settingButton);
     buttonsLayout->addWidget(this->m_runButton);
 
-    toolsGridLayout->addWidget(this->m_siteConfigWidget,   0,0,4,1);
-    toolsGridLayout->addWidget(this->m_ruptureWidget,      4,0,2,1);
+    QHBoxLayout* mainLayout = new QHBoxLayout(this);
+    mainLayout->setContentsMargins(0,0,0,0);
 
-    toolsGridLayout->addWidget(this->spatialCorrWidget,       0,1,2,1);
-    toolsGridLayout->addWidget(this->m_selectionWidget,       2,1);
-    toolsGridLayout->addWidget(this->m_vs30Widget,            3,1); // vs30 widget
-    toolsGridLayout->addWidget(this->m_gmpeWidget,            4,1);
-    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,5,1);
-    toolsGridLayout->addLayout(buttonsLayout,                 6,1);
-    toolsGridLayout->addWidget(this->m_eventGMDir,6,0);
-    //m_eventGMDir->hide();
+    QVBoxLayout* lhs = new QVBoxLayout();
 
-    toolsGridLayout->setHorizontalSpacing(5);
-    toolsGridLayout->setVerticalSpacing(0);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    m_ruptureWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    lhs->addWidget(m_siteConfigWidget);
+    lhs->addWidget(m_vs30Widget);
+    lhs->addWidget(spatialCorrWidget);
+    lhs->addWidget(m_eventGMDir);
 
-    toolsGridLayout->setRowStretch(7,1);
+    QVBoxLayout* rhs = new QVBoxLayout();
+    rhs->addWidget(m_ruptureWidget);
+    rhs->addWidget(m_selectionWidget);
+    rhs->addWidget(m_gmpeWidget);
+    rhs->addWidget(m_intensityMeasureWidget);
+    rhs->addLayout(buttonsLayout);
+
+
+    mainLayout->addLayout(lhs);
+    mainLayout->addLayout(rhs);
+
+//    toolsGridLayout->addWidget(this->m_siteConfigWidget,        0,0,4,1,Qt::AlignTop);
+//    toolsGridLayout->addWidget(this->m_ruptureWidget,           4,0,2,1);
+//    toolsGridLayout->addWidget(this->m_eventGMDir,              6,0);
+
+//    toolsGridLayout->addWidget(this->spatialCorrWidget,         0,1,Qt::AlignTop);
+//    toolsGridLayout->addWidget(this->m_selectionWidget,         2,1);
+//    toolsGridLayout->addWidget(this->m_vs30Widget,              3,1);
+//    toolsGridLayout->addWidget(this->m_gmpeWidget,              4,1);
+//    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,  5,1);
+//    toolsGridLayout->addLayout(buttonsLayout,                   6,1);
+//    //m_eventGMDir->hide();
+
+//    toolsGridLayout->setHorizontalSpacing(5);
+//    toolsGridLayout->setVerticalSpacing(0);
+    //this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+
+    //toolsGridLayout->setRowStretch(7,1);
 
     setupConnections();
 

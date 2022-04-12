@@ -80,7 +80,7 @@ SiteWidget::SiteWidget(Site& site, QWidget *parent, Qt::Orientation orientation)
     }
 
     layout->addWidget(m_locationGroupBox);
-    layout->addStretch();
+    //layout->addStretch();
 
     layout->setContentsMargins(0, 0, 0, 0);
 
