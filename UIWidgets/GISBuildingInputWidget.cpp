@@ -139,6 +139,11 @@ int GISBuildingInputWidget::loadComponentVisualization()
     {
         selectFeatSymbol = new QgsFillSymbol();
     }
+    else
+    {
+        this->errorMessage("Type of geometry is not supported");
+        return -1;
+    }
 
     selectFeatSymbol->setColor(Qt::yellow);
 

@@ -88,12 +88,6 @@ bool CSVtoBIMModelingWidget::outputToJSON(QJsonObject &jsonObj)
 
     jsonObj.insert("Application", "CSV_to_BIM");
 
-    auto mainWindowWidget = WorkflowAppR2D::getInstance();
-
-    auto assetsWidget = mainWindowWidget->getAssetsWidget();
-
-    //auto buildingSourceFile = assetsWidget->getBuildingWidget()->getPathToComponentFile();
-
     QJsonObject appDataObj;
     appDataObj.insert("Min", 1);
     appDataObj.insert("Max", 3);

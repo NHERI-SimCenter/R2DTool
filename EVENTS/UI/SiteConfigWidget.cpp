@@ -81,10 +81,10 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
 
     //add a new one for site inventory
     if (soilResponse)
-        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Soil","RegionalSiteResponse");
+        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Soils","RegionalSiteResponse");
     else
-        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Site","regionalGroundMotion");
-    csvSiteInventory->setMaximumWidth(800);
+        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Sites","regionalGroundMotion");
+    //csvSiteInventory->setMaximumWidth(800);
     csvSiteInventory->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
     QScrollArea *sa = new QScrollArea;
     sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

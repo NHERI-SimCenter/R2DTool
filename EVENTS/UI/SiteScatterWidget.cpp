@@ -470,7 +470,7 @@ void SiteScatterWidget::updateSiteSpreadSheet(const QList<UserSpecifiedSite>& si
     }
 
     siteSpreadSheet->clear();
-    siteSpreadSheet->setColumnCount(attributeIndex.keys().length());
+    siteSpreadSheet->setColumnCount(attributeIndex.size());
     siteSpreadSheet->setRowCount(siteList.size());
     QStringList tableHeadings;
     foreach (const QString str, defaultCSVHeader)

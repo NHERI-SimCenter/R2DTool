@@ -45,7 +45,7 @@ SimCenterEventRegional::SimCenterEventRegional(QWidget *parent)
     :SimCenterAppWidget(parent)
 {
 
-    QVBoxLayout *Vlayout = new QVBoxLayout(this);
+    //QVBoxLayout *Vlayout = new QVBoxLayout(this);
 
 }
 

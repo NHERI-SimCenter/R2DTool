@@ -196,7 +196,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Tools/REmpiricalProbabilityDistribution.cpp \
             Tools/TablePrinter.cpp \
             Tools/XMLAdaptor.cpp \
-            Tools/ShakeMapClient.cpp \
             UIWidgets/AnalysisWidget.cpp \
             UIWidgets/AssetsModelWidget.cpp \
             UIWidgets/AssetsWidget.cpp \
@@ -314,7 +313,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             Tools/TableNumberItem.h \
             Tools/TablePrinter.h \
             Tools/XMLAdaptor.h \
-            Tools/shakeMapClient.h \
             UIWidgets/AnalysisWidget.h \
             UIWidgets/AssetsModelWidget.h \
             UIWidgets/AssetsWidget.h \

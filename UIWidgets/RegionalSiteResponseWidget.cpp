@@ -201,6 +201,10 @@ bool RegionalSiteResponseWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 bool RegionalSiteResponseWidget::outputToJSON(QJsonObject &jsonObj)
 {
   bool res = unitsWidget->outputToJSON(jsonObj);
+
+  if(res == false)
+      return res;
+
   jsonObj["eventFile"]="siteResponseOutputMotions/EventGrid.csv";
   
   return true;

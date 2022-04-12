@@ -91,7 +91,7 @@ PelicunDLWidget::PelicunDLWidget(QWidget *parent): SimCenterAppWidget(parent)
     groundFailureCheckBox= new QCheckBox("Include ground failure");
 
     autoPopulateScriptWidget = new QWidget();
-    auto autoPopScriptLabel = new QLabel("Auto populate script:");
+    auto autoPopScriptLabel = new QLabel("Auto-populate script:");
     autoPopulationScriptLineEdit = new QLineEdit();
     auto browseButton = new QPushButton("Browse");
     connect(browseButton,&QPushButton::pressed,this,&PelicunDLWidget::handleBrowseButton1Pressed);

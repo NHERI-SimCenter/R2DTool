@@ -107,6 +107,7 @@ using namespace Esri::ArcGISRuntime;
 GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     mapViewSubWidget = nullptr;
+    userGrid = nullptr;
 
     initAppConfig();
 
@@ -787,6 +788,14 @@ void GMWidget::runHazardSimulation(void)
 
 #ifdef Q_GIS
         // Get the vector of grid nodes
+
+        if(userGrid == nullptr)
+        {
+            QString err = "Please create a user-grid";
+            this->errorMessage(err);
+            return;
+        }
+
         auto gridNodeVec = userGrid->getGridNodeVec();
         auto mapCanvas = mapViewSubWidget->getMapCanvasWidget()->mapCanvas();
 #endif

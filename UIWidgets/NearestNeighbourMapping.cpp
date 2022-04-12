@@ -58,7 +58,7 @@ NearestNeighbourMapping::NearestNeighbourMapping(QWidget *parent) : SimCenterApp
 
     // create label and entry for seed to layout
     srand(time(NULL));
-    int randomNumber = rand() % 1000 + 1;
+    int randomNumber = arc4random() % 1000 + 1;
     randomSeed = new QLineEdit();
     randomSeed->setText(QString::number(randomNumber));
     randomSeed->setToolTip("Set the seed");
@@ -139,7 +139,7 @@ void NearestNeighbourMapping::clear(void)
     neighborsLineEdit->clear();
     
     srand(time(NULL));
-    int randomNumber = rand() % 1000 + 1;
+    int randomNumber = arc4random() % 1000 + 1;
     randomSeed->setText(QString::number(randomNumber));    
 }
 

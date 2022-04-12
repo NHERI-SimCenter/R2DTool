@@ -166,7 +166,7 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
 
         auto savePath =countiesFolder + QDir::separator() + "counties.zip";
 
-        auto success = downloadCountyFiles(savePath);
+        downloadCountyFiles(savePath);
 
         return res;
     }

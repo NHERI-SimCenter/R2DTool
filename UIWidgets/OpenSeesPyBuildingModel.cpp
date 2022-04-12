@@ -180,8 +180,6 @@ bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
     QJsonObject dataObj;
 
     QString fileName = filePathLineEdit->text();
-    QFileInfo fileInfo(fileName);
-
 
     dataObj["dofMap"]=responseNodes->text();
     dataObj["ndm"]=ndm->text().toInt();

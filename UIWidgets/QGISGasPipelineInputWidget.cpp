@@ -85,7 +85,7 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
         int pipelineID =  pipelineIDStr.toInt();
 
         // Create a unique ID for the building
-        auto uid = theVisualizationWidget->createUniqueID();
+//        auto uid = theVisualizationWidget->createUniqueID();
 
         // "ID"
         // "AssetType"

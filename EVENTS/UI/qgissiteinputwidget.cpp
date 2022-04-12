@@ -47,8 +47,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-#include <QFileInfo>;
-#include <QDir>;
+#include <QFileInfo>
+#include <QDir>
 
 QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
@@ -88,8 +88,8 @@ int QGISSiteInputWidget::loadComponentVisualization()
     auto indexFootprint = headers.indexOf("Footprint");
     auto indexLatitude = headers.indexOf("Latitude");
     auto indexLongitude = headers.indexOf("Longitude");
-    auto indexVs30 = headers.indexOf("Vs30");
-    auto indexDepthToRock = headers.indexOf("DepthToRock");
+//    auto indexVs30 = headers.indexOf("Vs30");
+//    auto indexDepthToRock = headers.indexOf("DepthToRock");
     auto indexModelType = headers.indexOf("Model");
 
     if(indexLongitude == -1 || indexLatitude == -1)
@@ -175,10 +175,10 @@ int QGISSiteInputWidget::loadComponentVisualization()
         auto longitude = componentTableWidget->item(i,indexLongitude).toDouble();
 
         // If a vs30 is given
-        if (indexVs30 != -1)
-        {
-            auto vs30 = componentTableWidget->item(i,indexVs30).toDouble();
-        }
+//        if (indexVs30 != -1)
+//        {
+//            auto vs30 = componentTableWidget->item(i,indexVs30).toDouble();
+//        }
 
         QgsFeature feature;
         feature.setFields(featFields);
@@ -238,12 +238,12 @@ int QGISSiteInputWidget::loadComponentVisualization()
     mainLayer->commitChanges(true);
     mainLayer->updateExtents();
 
-    QgsSymbol* markerSymbol = nullptr;
+//    QgsSymbol* markerSymbol = nullptr;
 
-    if(indexFootprint != -1)
-        markerSymbol = new QgsFillSymbol();
-    else
-        markerSymbol = new QgsMarkerSymbol();
+//    if(indexFootprint != -1)
+//        markerSymbol = new QgsFillSymbol();
+//    else
+//        markerSymbol = new QgsMarkerSymbol();
 
 //    auto numFeat = mainLayer->featureCount();
 
