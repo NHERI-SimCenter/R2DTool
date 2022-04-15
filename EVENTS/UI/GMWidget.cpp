@@ -252,11 +252,19 @@ void GMWidget::setupConnections()
             }
         }
 
+        // kz: only contact PEER NGA when the databse is set to "NGA West"
+        if(this->m_selectionconfig->getDatabase().compare("NGAWest2")==0) {
+            QString userName = getPEERUserName();
+            QString password = getPEERPassWord();
+            peerClient.signIn(userName, password);
+        }
+        /***
         // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
         QString userName = getPEERUserName();
         QString password = getPEERPassWord();
 
         peerClient.signIn(userName, password);
+        ***/
 
 
         runHazardSimulation();
