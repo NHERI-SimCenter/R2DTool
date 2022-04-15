@@ -230,11 +230,15 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     tableWidgetLayout->addWidget(pelicunResultsTableWidget);
     tableWidgetLayout->addStretch(0);
 
-    QDockWidget* tableDock = new QDockWidget("Detailed Results",this);
+    //QDockWidget* tableDock = new QDockWidget("Detailed Results",this);
+    tableDock = new QDockWidget("Detailed Results",this);
     tableDock->setObjectName("TableDock");
     tableDock->setWidget(tableWidget);
     tableDock->setMinimumWidth(475);
     addDockWidget(Qt::RightDockWidgetArea, tableDock);
+
+    tableDock2 = new QDockWidget(tr("Site Responses"), this);
+    tableDock2->setObjectName("Site Responses");
 
 #ifdef Q_GIS
     // Get the map view widget
@@ -300,6 +304,8 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
     QString DMResultsSheet;
     QString DVResultsSheet;
     QString EDPreultsSheet;
+    // kz: adding IM results
+    QString IMresultsSheet;
 
     for(auto&& it : existingCSVFiles)
     {
@@ -309,6 +315,8 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
             DVResultsSheet = it;
         else if(it.startsWith("EDP_"))
             EDPreultsSheet = it;
+        else if(it.startsWith("IM_"))
+            IMresultsSheet = it;
     }
 
     CSVReaderWriter csvTool;
@@ -324,6 +332,17 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
     EDPdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + EDPreultsSheet,errMsg);
     if(!errMsg.isEmpty())
         throw errMsg;
+
+    if(!IMresultsSheet.isEmpty()) {
+        IMdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + IMresultsSheet,errMsg);
+        if(!errMsg.isEmpty())
+            throw errMsg;
+        if(!IMdata.empty())
+        {
+            this->addSiteResponseTable();
+            this->processIMResults(IMdata);
+        }
+    }
 
     if(!DVdata.empty())
         this->processDVResults(DVdata);
@@ -614,7 +633,8 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // Test to remove end
     PythonProgressDialog::getInstance()->appendText("Done processing results "/*+QString::number(duration.count())*/);
 
-    QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+    //QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+    QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
 
     // Apply the default renderer
     QGISVisWidget->createPrettyGraduatedRenderer("LossRatio",Qt::yellow,Qt::red,5,theBuildingDB->getSelectedLayer());
@@ -1196,6 +1216,13 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
     TablePrinter prettyTablePrinter;
     prettyTablePrinter.printToTable(&cursor, pelicunResultsTableWidget,"Asset Results");
 
+    if(!IMdata.isEmpty())
+    {
+        cursor.insertText("Individual Site Responses\n",boldFormat);
+        TablePrinter prettyTablePrinter;
+        prettyTablePrinter.printToTable(&cursor, siteResponseTableWidget,"Site Response Results");
+    }
+
     document->print(&printer);
 
     return 0;
@@ -1249,11 +1276,127 @@ void PelicunPostProcessor::setCurrentlyViewable(bool status){
 }
 
 
+void PelicunPostProcessor::addSiteResponseTable(void)
+{
+    // kz: adding a dock layer for different assets
+    // site table
+    this->tabifyDockWidget(tableDock,tableDock2);
+    tableDock->setFocus();
+    if(viewMenu)
+    {
+        viewMenu->addAction(tableDock2->toggleViewAction());
+    }
+    tableWidget2 = new QWidget(this);
+    auto tableWidgetLayout = new QVBoxLayout(tableWidget2);
+    siteResponseTableWidget = new QTableWidget(this);
+    siteResponseTableWidget->verticalHeader()->setVisible(false);
+    siteResponseTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    siteResponseTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    siteResponseTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+    siteResponseTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    siteResponseTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    siteResponseTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    siteResponseTableWidget->setItemDelegate(new DoubleDelegate(this,3));
+    tableWidgetLayout->addWidget(siteResponseTableWidget);
+    tableDock2->setWidget(tableWidget2);
+}
+
+int PelicunPostProcessor::processIMResults(const QVector<QStringList>& IMResults)
+{
+    qDebug() << "Starting processing IM results";
+    if(IMResults.size() < numHeaderRows)
+    {
+        QString msg = "No IM results to import!";
+        throw msg;
+    }
+
+    auto numHeaderColumnsFull = IMResults.at(0).size();
+
+    QStringList headerStringsFull = {"Site ID"};
+    QStringList headerStrings = {"Site ID"};
+    for(int i = 1; i<numHeaderColumnsFull; ++i)
+    {
+        QString headerStr = IMResults.at(0).at(i) +"-"+ IMResults.at(2).at(i) +"-"+ IMResults.at(3).at(i);
+        headerStringsFull.append(headerStr);
+        if (headerStr.contains("median"))
+        {
+            if (headerStr.contains("PG") || headerStr.contains("SA(1.0s)"))
+                headerStrings.append(headerStr);
+        }
+    }
+    auto numHeaderColumns = headerStrings.size();
+    siteResponseTableWidget->setColumnCount(headerStrings.size());
+    siteResponseTableWidget->setHorizontalHeaderLabels(headerStrings);
+    siteResponseTableWidget->setRowCount(IMResults.size()-numHeaderRows);
+
+    // Get the site database
+    auto theSiteDB = ComponentDatabaseManager::getInstance()->getSiteComponentDb();
+    if(theSiteDB == nullptr)
+    {
+        QString msg = "Error getting the site database from the input widget!";
+        throw msg;
+    }
+    if(theSiteDB->isEmpty())
+    {
+        QString msg = "Site database is empty";
+        throw msg;
+    }
+
+    auto selFeatLayer = theSiteDB->getSelectedLayer();
+    mapViewSubWidget->setCurrentLayer(selFeatLayer);
+
+    // Vector to hold the attributes
+    QVector< QgsAttributes > fieldAttributes2(IMResults.size()-numHeaderRows, QgsAttributes(numHeaderColumns));
+
+    // Loop over all sites
+    for(int i = numHeaderRows, count = 0; i<IMResults.size(); ++i, ++count)
+    {
+        auto inputRow = IMResults.at(i);
+        auto siteID = new TableNumberItem(QString::number(objectToInt(inputRow.at(0))));
+        siteResponseTableWidget->setItem(count, 0, siteID);
+        // Loop over all IMs
+        for(int  j = 1; j < headerStrings.size(); j++)
+        {
+            auto curItem = new TableNumberItem(QString::number(objectToDouble(inputRow.at(headerStringsFull.indexOf(headerStrings.at(j))))));
+            siteResponseTableWidget->setItem(count, j, curItem);
+        }
+        auto& rowData = fieldAttributes2[count];
+        // Populate the attributes vector with the results
+        //for(int k = 0; k<inputRow.size(); ++k)
+        for(int  k = 0; k < headerStrings.size(); k++)
+        {
+            // Add the result to the database
+            auto value = inputRow.at(headerStringsFull.indexOf(headerStrings.at(k)));
+            qDebug() << value;
+            rowData[k] = QVariant(value.toDouble());
+        }
+    }
+
+    // Starting editing
+    theSiteDB->startEditing();
+    QString errMsg;
+    auto res = theSiteDB->addNewComponentAttributes(headerStrings,fieldAttributes2,errMsg);
+    if(!res)
+        throw errMsg;
+
+    // Commit the changes
+    theSiteDB->commitChanges();
+
+    PythonProgressDialog::getInstance()->appendText("Done processing site response results "/*+QString::number(duration.count())*/);
+    // Apply the default renderer
+    QGISVisWidget->createPrettyGraduatedRenderer("PGA-1-median",Qt::yellow,Qt::red,5,theSiteDB->getSelectedLayer());
+    theSiteDB->getSelectedLayer()->setName("Site Response (PGA in Dir.1, g)");
+}
+
+
 void PelicunPostProcessor::clear(void)
 {
     DMdata.clear();
     DVdata.clear();
     EDPdata.clear();
+    if(!IMdata.isEmpty())
+        siteResponseTableWidget->clear();
+    IMdata.clear();
 
     outputFilePath.clear();
 
