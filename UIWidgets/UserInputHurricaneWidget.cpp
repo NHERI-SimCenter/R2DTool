@@ -730,7 +730,7 @@ void UserInputHurricaneWidget::loadUserWFData(void)
     dProvider->addFeatures(featureList);
     vectorLayer->updateExtents();
 
-    QGsVisWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+    QGsVisWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::black,2.0,vectorLayer);
 
     progressLabel->setVisible(false);
 

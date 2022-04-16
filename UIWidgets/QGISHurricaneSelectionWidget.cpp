@@ -376,7 +376,7 @@ void QGISHurricaneSelectionWidget::handleGridSelected(void)
     dProvider->addFeatures(featureList);
     gridLayer->updateExtents();
 
-    theVisualizationWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,gridLayer);
+    theVisualizationWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::black,2.0,gridLayer);
 
     progressLabel->setVisible(false);
 

@@ -656,7 +656,7 @@ int OpenQuakeSelectionWidget::getPointSources(QDomNodeList* pointSources)
     dProvider->addFeatures(featureList);
     pointReferenceLayer->updateExtents();
 
-    theVisualizationWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,pointReferenceLayer);
+    theVisualizationWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::black,2.0,pointReferenceLayer);
 
 
     return 0;
@@ -1228,7 +1228,7 @@ void OpenQuakeSelectionWidget::handleSelectionDone(void)
                 pointSelectedLayer->setName("Selected Point Sources");
 
                 // Render the selected layer as dark yellow
-                theVisualizationWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::darkYellow,2.0,pointSelectedLayer);
+                theVisualizationWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::darkYellow,2.0,pointSelectedLayer);
 
                 theVisualizationWidget->addMapLayer(pointSelectedLayer);
 

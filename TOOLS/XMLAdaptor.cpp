@@ -592,7 +592,7 @@ QgsVectorLayer* XMLAdaptor::parseXMLFile(const QString& filePath, QString& errMe
     dProvider->addFeatures(featureList);
     vectorLayer->updateExtents();
 
-    GISVisWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+    GISVisWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::black,2.0,vectorLayer);
 
     return vectorLayer;
 }

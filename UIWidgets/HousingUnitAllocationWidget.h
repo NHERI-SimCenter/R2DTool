@@ -40,7 +40,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
+#include <qgscoordinatereferencesystem.h>
 #include <qgsfeature.h>
+
 #include <QMap>
 #include <QProcess>
 #include <QNetworkAccessManager>

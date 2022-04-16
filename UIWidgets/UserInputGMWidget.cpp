@@ -674,7 +674,7 @@ void UserInputGMWidget::loadUserGMData(void)
     dProvider->addFeatures(featureList);
     vectorLayer->updateExtents();
 
-    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+    qgisVizWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::black,2.0,vectorLayer);
 
     progressLabel->setVisible(false);
 

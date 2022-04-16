@@ -182,7 +182,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             Events/UI/Vs30Widget.cpp \
             ModelViewItems/ComponentTableModel.cpp \
             ModelViewItems/ComponentTableView.cpp \
-            ModelViewItems/GISLegendView.cpp \
             ModelViewItems/ListTreeModel.cpp \
             ModelViewItems/CustomListWidget.cpp \
             Tools/AssetInputDelegate.cpp \
@@ -215,7 +214,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/EarthquakeInputWidget.cpp \
             UIWidgets/EngDemandParameterWidget.cpp \
             UIWidgets/GeneralInformationWidget.cpp \
-            UIWidgets/GISSelectable.cpp \
             UIWidgets/GroundMotionStation.cpp \
             UIWidgets/LoadResultsDialog.cpp \
             UIWidgets/SimCenterUnitsWidget.cpp \
@@ -236,11 +234,9 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/NoneWidget.cpp \
             UIWidgets/OpenSeesPyBuildingModel.cpp \
             UIWidgets/PelicunDLWidget.cpp \
-            UIWidgets/PopUpWidget.cpp \
             UIWidgets/ResultsWidget.cpp \
             UIWidgets/SecondaryComponentSelection.cpp \
             UIWidgets/ShakeMapWidget.cpp \
-            UIWidgets/SimCenterMapcanvasWidget.cpp \
             UIWidgets/SimCenterEventRegional.cpp \
             UIWidgets/StructuralModelingWidget.cpp \
             UIWidgets/UQWidget.cpp \
@@ -250,7 +246,6 @@ SOURCES +=  Events/UI/EarthquakeRuptureForecast.cpp \
             UIWidgets/HurricaneSelectionWidget.cpp \
             UIWidgets/OpenQuakeSelectionWidget.cpp \
             UIWidgets/UserInputHurricaneWidget.cpp \
-            UIWidgets/VisualizationWidget.cpp \        
             GraphicElements/NodeHandle.cpp \
             GraphicElements/RectangleGrid.cpp \
             GraphicElements/GridNode.cpp \
@@ -334,7 +329,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/EarthquakeInputWidget.h \
             UIWidgets/EngDemandParameterWidget.h \
             UIWidgets/GeneralInformationWidget.h \
-            UIWidgets/GISSelectable.h \
             UIWidgets/GroundMotionStation.h \
             UIWidgets/LoadResultsDialog.h \
             UIWidgets/SimCenterUnitsWidget.h \
@@ -355,12 +349,10 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/NoneWidget.h \
             UIWidgets/OpenSeesPyBuildingModel.h \
             UIWidgets/PelicunDLWidget.h \
-            UIWidgets/PopUpWidget.h \
             UIWidgets/ResultsWidget.h \
             UIWidgets/SecondaryComponentSelection.h \
             UIWidgets/ShakeMapWidget.h \
             UIWidgets/SimCenterEventRegional.h \
-            UIWidgets/SimCenterMapcanvasWidget.h \
             UIWidgets/StructuralModelingWidget.h \
             UIWidgets/UQWidget.h \
             UIWidgets/UserDefinedEDPR.h \
@@ -370,11 +362,9 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
             UIWidgets/OpenQuakeSelectionWidget.h \
             UIWidgets/UserInputHurricaneWidget.h \
             UIWidgets/HurricaneObject.h \
-            UIWidgets/VisualizationWidget.h \
             ModelViewItems/CustomListWidget.h \
             ModelViewItems/ComponentTableModel.h \
             ModelViewItems/ComponentTableView.h \
-            ModelViewItems/GISLegendView.h \
             ModelViewItems/ListTreeModel.h \
             GraphicElements/GridNode.h \
             GraphicElements/NodeHandle.h \
@@ -385,7 +375,6 @@ HEADERS +=  Events/UI/EarthquakeRuptureForecast.h \
 contains(DEFINES, ARC_GIS)  {
 
 SOURCES +=  ModelViewItems/ArcGISLegendView.cpp \
-            UIWidgets/ArcGISVisualizationWidget.cpp \
             GraphicElements/ConvexHull.cpp \
             GraphicElements/PolygonBoundary.cpp \
             ModelViewItems/LayerTreeView.cpp \
