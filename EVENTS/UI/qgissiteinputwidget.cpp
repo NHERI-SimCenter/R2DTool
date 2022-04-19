@@ -47,8 +47,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-#include <QFileInfo>;
-#include <QDir>;
+#include <QFileInfo>
+#include <QDir>
 
 QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
