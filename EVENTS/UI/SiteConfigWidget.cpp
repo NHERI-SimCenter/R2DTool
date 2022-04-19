@@ -87,7 +87,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     csvSiteInventory->setMaximumWidth(800);
     csvSiteInventory->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
     QScrollArea *sa = new QScrollArea;
-    sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     sa->setWidgetResizable(true);
     sa->setLineWidth(0);
     sa->setFrameShape(QFrame::NoFrame);
