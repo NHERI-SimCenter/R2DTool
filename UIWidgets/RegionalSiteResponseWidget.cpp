@@ -435,7 +435,7 @@ QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
     QVBoxLayout *inputLayout = new QVBoxLayout(this);
     inputWidget->setLayout(inputLayout);
     
-    QGroupBox *soilGroupBox = new QGroupBox("Soil Properties");
+    QGroupBox *soilGroupBox = new QGroupBox("Soil Model");
     soilGroupBox->setContentsMargins(0,5,0,0);
     QGridLayout *soilLayout = new QGridLayout();
     soilGroupBox->setLayout(soilLayout);
@@ -462,7 +462,7 @@ QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
 
     //connect(browseSoilFileButton, &QPushButton::clicked, this, &RegionalSiteResponseWidget::soilParamaterFileDialog);
 
-    soilLayout->addWidget(new QLabel("Site Response Script"), 0, 0);
+    soilLayout->addWidget(new QLabel("Modeling Script"), 0, 0);
     siteResponseScriptLineEdit = new QLineEdit();
     soilLayout->addWidget(siteResponseScriptLineEdit,0, 1);
     QPushButton *browseScriptButton = new QPushButton("Browse");

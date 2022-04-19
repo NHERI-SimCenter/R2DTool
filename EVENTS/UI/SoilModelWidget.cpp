@@ -53,7 +53,7 @@ SoilModelWidget::SoilModelWidget(SoilModel& soilModel, SiteConfig& siteConfig, Q
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* soilModelGroupBox = new QGroupBox(this);
-    soilModelGroupBox->setTitle("Soil Model (if not defined by users)");
+    soilModelGroupBox->setTitle("Soil Model Type (if not defined by users)");
 
     QHBoxLayout* formLayout = new QHBoxLayout(soilModelGroupBox);
     m_typeBox = new QComboBox(this);

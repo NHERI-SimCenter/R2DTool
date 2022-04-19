@@ -252,11 +252,19 @@ void GMWidget::setupConnections()
             }
         }
 
+        // kz: only contact PEER NGA when the databse is set to "NGA West"
+        if(this->m_selectionconfig->getDatabase().compare("NGAWest2")==0) {
+            QString userName = getPEERUserName();
+            QString password = getPEERPassWord();
+            peerClient.signIn(userName, password);
+        }
+        /***
         // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
         QString userName = getPEERUserName();
         QString password = getPEERPassWord();
 
         peerClient.signIn(userName, password);
+        ***/
 
 
         runHazardSimulation();
@@ -766,7 +774,20 @@ void GMWidget::runHazardSimulation(void)
 
     if(type == SiteConfig::SiteType::Single)
     {
-        qDebug()<<"Single site selection not supported yet";
+        //qDebug()<<"Single site selection not supported yet";
+        QStringList stationRow;
+
+        // The station id
+        stationRow.push_back(QString::number(0));
+
+        // The latitude and longitude
+        auto longitude = m_siteConfig->site().location().longitude();
+        auto latitude = m_siteConfig->site().location().latitude();
+
+        stationRow.push_back(QString::number(latitude));
+        stationRow.push_back(QString::number(longitude));
+
+        gridData.push_back(stationRow);
     }
     else if(type == SiteConfig::SiteType::Grid)
     {
