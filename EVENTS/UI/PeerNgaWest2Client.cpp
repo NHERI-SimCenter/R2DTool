@@ -74,7 +74,7 @@ void PeerNgaWest2Client::signIn(QString username, QString password)
     //a more secure way of handling password might be needed
     this->username = username;
     this->password = password;
-
+    
     QNetworkRequest peerSignInPageRequest(QUrl("https://ngawest2.berkeley.edu/users/sign_in"));
     signInPageReply = networkManager.get(peerSignInPageRequest);
 }
@@ -262,7 +262,9 @@ void PeerNgaWest2Client::processSignInPageReply()
 
 #else
     QRegularExpression regex("[\\s\\S]+authenticity_token.+value=\"(.+)\".+<\\/div>");
+    //    qDebug() << "REPLY\n" << QString(signInPageReply->readAll());
     auto match = regex.match(QString(signInPageReply->readAll()));
+    
     if (match.hasMatch()) {
 
     } else {
@@ -465,9 +467,6 @@ void PeerNgaWest2Client::processPostSpectrumReply()
             params.addQueryItem("search[vs30]", "");
             params.addQueryItem("search[duration]", "");
             params.addQueryItem("search[pulse]", "1");
-            params.addQueryItem("search[synth_Pulse]", "1");
-            params.addQueryItem("search[synth_FaultType]", "0");
-            params.addQueryItem("search[synth_Adjacency]", "0");
             params.addQueryItem("search[SRmeanFlag]", "0");
             params.addQueryItem("search[vs30]", "");
             params.addQueryItem("search[rrup]", "");

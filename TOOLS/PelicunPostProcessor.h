@@ -63,6 +63,7 @@ class QGridLayout;
 class QLabel;
 class QComboBox;
 class QGraphicsView;
+class QVBoxLayout;
 
 namespace QtCharts
 {
@@ -145,6 +146,7 @@ private:
     QVector<QStringList> DMdata;
     QVector<QStringList> DVdata;
     QVector<QStringList> EDPdata;
+    QVector<QStringList> IMdata;
 
     QString outputFilePath;
 
@@ -197,6 +199,23 @@ private:
 
     // The number of header rows in the Pelicun results file
     int numHeaderRows;
+
+    // kz: adding a dock layer under detailed results for different assets
+    QDockWidget* tableDock;
+    QDockWidget* tableDock2;
+
+    // site response data table
+    QTableWidget* siteResponseTableWidget;
+    QWidget *tableWidget2;
+
+    // kz: adding site response result table
+    void addSiteResponseTable(void);
+
+    // processIMResults
+    int processIMResults(const QVector<QStringList>& IMResults);
+
+    // QGIS visualization
+    QGISVisualizationWidget* QGISVisWidget;
 };
 
 #endif // PELICUNPOSTPROCESSOR_H
