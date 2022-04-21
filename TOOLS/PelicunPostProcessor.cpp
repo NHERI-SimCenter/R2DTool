@@ -305,7 +305,7 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
     QString DVResultsSheet;
     QString EDPreultsSheet;
     // kz: adding IM results
-    QString IMresultsSheet;
+    QStringList IMresultsSheet;
 
     for(auto&& it : existingCSVFiles)
     {
@@ -316,7 +316,7 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
         else if(it.startsWith("EDP_"))
             EDPreultsSheet = it;
         else if(it.startsWith("IM_"))
-            IMresultsSheet = it;
+            IMresultsSheet.append(it);
     }
 
     CSVReaderWriter csvTool;
@@ -333,14 +333,16 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
     if(!errMsg.isEmpty())
         throw errMsg;
 
-    if(!IMresultsSheet.isEmpty()) {
-        IMdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + IMresultsSheet,errMsg);
-        if(!errMsg.isEmpty())
-            throw errMsg;
-        if(!IMdata.empty())
-        {
-            this->addSiteResponseTable();
-            this->processIMResults(IMdata);
+    if(IMresultsSheet.size()) {
+        for (auto&& curFile : IMresultsSheet) {
+            IMdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + curFile,errMsg);
+            if(!errMsg.isEmpty())
+                throw errMsg;
+            if(!IMdata.empty() && IMdata.size()>numHeaderRows)
+            {
+                this->addSiteResponseTable();
+                this->processIMResults(IMdata);
+            }
         }
     }
 
@@ -1367,7 +1369,6 @@ int PelicunPostProcessor::processIMResults(const QVector<QStringList>& IMResults
         {
             // Add the result to the database
             auto value = inputRow.at(headerStringsFull.indexOf(headerStrings.at(k)));
-            qDebug() << value;
             rowData[k] = QVariant(value.toDouble());
         }
     }
