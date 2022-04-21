@@ -324,12 +324,7 @@ void ComponentInputWidget::createComponentsBox(void)
     
     selectComponentsLineEdit = new AssetInputDelegate();
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ComponentInputWidget::handleComponentSelection);
-    
-    QPushButton *selectComponentsButton = new QPushButton();
-    selectComponentsButton->setText(tr("Select"));
-    selectComponentsButton->setMaximumWidth(150);
-    
-    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
+    connect(selectComponentsLineEdit,&QLineEdit::editingFinished,this,&ComponentInputWidget::selectComponents);
     
     QPushButton *clearSelectionButton = new QPushButton();
     clearSelectionButton->setText(tr("Clear Selection"));
@@ -417,7 +412,6 @@ void ComponentInputWidget::createComponentsBox(void)
 
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
-    selectComponentsLayout->addWidget(selectComponentsButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
     
     gridLayout->addLayout(selectComponentsLayout);
@@ -441,7 +435,6 @@ void ComponentInputWidget::createComponentsBox(void)
     selectComponentsLayout->addWidget(label2);
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(filterExpressionButton);
-    selectComponentsLayout->addWidget(selectComponentsButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
     
     gridLayout->addLayout(selectComponentsLayout);

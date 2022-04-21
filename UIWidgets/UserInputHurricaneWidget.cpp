@@ -517,6 +517,9 @@ void UserInputHurricaneWidget::loadUserWFData(void)
         return;
     }
 
+    // Clear the units widget
+    unitsWidget->clear();
+
     this->statusMessage("Loading wind field data");
     CSVReaderWriter csvTool;
 

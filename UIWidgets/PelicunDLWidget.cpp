@@ -434,6 +434,12 @@ bool PelicunDLWidget::recursiveCopy(const QString &sourcePath, const QString &de
                 return false;
         }
     } else {
+
+        // Rewrite the file in the event that it already exists
+        if(QFile::exists(destPath))
+            if(!QFile::remove(destPath))
+                return false;
+
         if (!QFile::copy(sourcePath, destPath))
             return false;
     }

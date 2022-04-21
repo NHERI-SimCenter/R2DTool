@@ -71,6 +71,8 @@ signals:
 private:
 
     std::set<int> selectedComponentIDs;
+
+    QString prevText;
 };
 
 #endif // ASSETINPUTDELEGATE_H

@@ -64,6 +64,7 @@ int AssetInputDelegate::size()
 
 void AssetInputDelegate::clear()
 {
+    prevText.clear();
     selectedComponentIDs.clear();
     this->QLineEdit::clear();
 }
@@ -91,6 +92,11 @@ void AssetInputDelegate::insertSelectedComponents(const QVector<int>& ids)
 void AssetInputDelegate::selectComponents()
 {
     auto inputText = this->text();
+
+    if(inputText==prevText)
+        return;
+
+    selectedComponentIDs.clear();
 
     // Quick return if the input text is empty
     if(inputText.isEmpty())
@@ -153,7 +159,10 @@ void AssetInputDelegate::selectComponents()
     }
 
     // Reset the text on the line edit
-    this->setText(this->getComponentAnalysisList());
+    auto sortedIds = this->getComponentAnalysisList();
+    this->setText(sortedIds);
+
+    prevText=sortedIds;
 
     emit componentSelectionComplete();
 }
