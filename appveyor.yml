@@ -150,8 +150,7 @@ for:
       - cmd: cd build
       - cmd: conan install .. --build missing
       - cmd: qmake ..\R2D.pro
-      - cmd: set CL=/MP
-      - cmd: nmake
+      - cmd: C:\Qt\Tools\QtCreator\bin\jom.exe
       - cmd: cd ..
 
       - cmd: cd ..

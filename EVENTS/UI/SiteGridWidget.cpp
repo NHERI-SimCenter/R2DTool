@@ -65,7 +65,7 @@ SiteGridWidget::SiteGridWidget(SiteGrid& siteGrid, QWidget *parent) : QWidget(pa
     layout->addWidget(latitudeGroupBox);
     layout->addWidget(longitudeGroupBox);
     layout->addWidget(selectGridButton,Qt::AlignLeft);
-    layout->addStretch();
+    //layout->addStretch();
     //Now we need to setup the connections
     setupConnections();
 }

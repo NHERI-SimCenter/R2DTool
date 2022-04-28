@@ -90,7 +90,7 @@ GeneralInformationWidget::~GeneralInformationWidget()
 bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
 {
     auto runDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
-    auto appDir = SimCenterPreferences::getInstance()->getAppDir();
+    // auto appDir = SimCenterPreferences::getInstance()->getAppDir();
 
     jsonObj.insert("Name", nameEdit->text());
     jsonObj.insert("Author", "SimCenter");
@@ -226,34 +226,34 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     transportationCheckBox = new QCheckBox("Transportation Network");
 
     soilCheckBox->setCheckable(false);
-    gasCheckBox->setCheckable(false);
+    gasCheckBox->setCheckable(true);
     waterCheckBox->setCheckable(false);
     sewerCheckBox->setCheckable(false);
     transportationCheckBox->setCheckable(false);
 
     soilCheckBox->setEnabled(false);
-    gasCheckBox->setEnabled(false);
+    gasCheckBox->setEnabled(true);
     waterCheckBox->setEnabled(false);
     sewerCheckBox->setEnabled(false);
     transportationCheckBox->setEnabled(false);
 
     connect(buildingsCheckBox, &QCheckBox::stateChanged, this, [=](){
-        emit(assetChanged("Buildings",buildingsCheckBox->isChecked()));
+        emit assetChanged("Buildings",buildingsCheckBox->isChecked());
     });
     connect(soilCheckBox, &QCheckBox::stateChanged, this, [=](){
-        emit(assetChanged("Soil",soilCheckBox->isChecked()));
+        emit assetChanged("Soil",soilCheckBox->isChecked());
     });
     connect(gasCheckBox, &QCheckBox::stateChanged, this, [=](){
-        emit(assetChanged("Gas Network",gasCheckBox->isChecked()));
+        emit assetChanged("Gas Network",gasCheckBox->isChecked());
     });
     connect(waterCheckBox, &QCheckBox::stateChanged, this, [=](){
-        emit(assetChanged("Water Network",waterCheckBox->isChecked()));
+        emit assetChanged("Water Network",waterCheckBox->isChecked());
     });
     connect(sewerCheckBox, &QCheckBox::stateChanged, this, [=](){
-        this->assetChanged("Water Network",sewerCheckBox->isChecked());
+       emit assetChanged("Sewer Network",sewerCheckBox->isChecked());
     });
     connect(transportationCheckBox, &QCheckBox::stateChanged, this, [=](){
-        emit(assetChanged("TransportationNetwork",transportationCheckBox->isChecked()));
+        emit assetChanged("TransportationNetwork",transportationCheckBox->isChecked());
     });
 
 

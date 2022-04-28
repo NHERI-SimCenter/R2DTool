@@ -14,6 +14,7 @@ class QStackedWidget;
 class QLineEdit;
 class QGISSiteInputWidget;
 class QRadioButton;
+class QScrollArea;
 
 class SiteConfigWidget : public QWidget
 {

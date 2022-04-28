@@ -1,5 +1,3 @@
-#ifndef GISSelectable_H
-#define GISSelectable_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,18 +36,32 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <qgsfeature.h>
+#include "VerticalScrollingWidget.h"
 
-class GISSelectable
+#include <QVBoxLayout>
+#include <QEvent>
+#include <QScrollBar>
+
+VerticalScrollingWidget::VerticalScrollingWidget(QWidget* childWiddget, QWidget* parent) : QScrollArea(parent), scrollAreaWidgetContents(childWiddget)
 {
+    setWidgetResizable(true);
+    setFrameStyle(QFrame::NoFrame);
+    setLineWidth(0);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-public:
-    explicit GISSelectable();
-    virtual ~GISSelectable();
+    scrollAreaWidgetContents->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    virtual void insertSelectedAssets(QgsFeatureIds& featureIds) = 0;
-    virtual void clearSelectedAssets(void) = 0;
+    setWidget(scrollAreaWidgetContents);
 
-};
+    scrollAreaWidgetContents->installEventFilter(this);
+}
 
-#endif // GISSelectable_H
+
+bool VerticalScrollingWidget::eventFilter(QObject *o, QEvent *e)
+{
+    if(o == scrollAreaWidgetContents && e->type() == QEvent::Resize)
+        setMinimumWidth(scrollAreaWidgetContents->minimumSizeHint().width() + verticalScrollBar()->width() + 5);
+
+    return false;
+}

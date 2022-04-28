@@ -52,18 +52,14 @@ GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): QWidget(parent), m_gmpe(gmp
     QHBoxLayout* formLayout = new QHBoxLayout(gmpeGroupBox);
     m_typeBox = new QComboBox(this);
 
+    m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+
     QLabel* typeLabel = new QLabel(tr("Type:"),this);
 
     formLayout->addWidget(typeLabel);
     formLayout->addWidget(m_typeBox);
-//    formLayout->addStretch(1);
-
-    gmpeGroupBox->setLayout(formLayout);
-    //FMK gmpeGroupBox->setMinimumWidth(400);
-    //FMK gmpeGroupBox->setMaximumWidth(500);
 
     layout->addWidget(gmpeGroupBox);
-    this->setLayout(layout);
 
     const QStringList validType = this->m_gmpe.validTypes();
 

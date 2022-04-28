@@ -99,7 +99,7 @@ mkdir $pathApp/Contents/MacOS/lib
 mkdir $pathApp/Contents/MacOS/lib/qgis
 
 cp -fR $pathApp/../../../qgisplugin/mac/Install/lib/* $pathApp/Contents/Frameworks
-cp -fR $pathApp/../../../qgisplugin/mac/qgis-deps-0.8.0/stage/lib/* $pathApp/Contents/Frameworks
+cp -fR $pathApp/../../../qgisplugin/mac/qgis-deps-0.9/stage/lib/* $pathApp/Contents/Frameworks
 cp -fR $pathApp/../../../qgisplugin/mac/Install/share/* $pathApp/Contents/MacOS/share
 cp -fR $pathApp/../../../qgisplugin/mac/Install/qgis/* $pathApp/Contents/MacOS/lib/qgis
 

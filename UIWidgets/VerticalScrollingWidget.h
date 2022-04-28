@@ -1,3 +1,5 @@
+#ifndef VERTICALSCROLLINGWIDGET_H
+#define VERTICALSCROLLINGWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,40 +38,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "PopUpWidget.h"
+#include <QScrollArea>
 
-#include <QPushButton>
-#include <QTabWidget>
-#include <QVBoxLayout>
-
-PopUpWidget::PopUpWidget(QWidget *parent) : QDialog(parent)
+class VerticalScrollingWidget: public QScrollArea
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+public:
+    VerticalScrollingWidget(QWidget* childWiddget, QWidget* parent = nullptr);
 
-    this->setMinimumWidth(350);
-    this->setMinimumHeight(350);
+    bool eventFilter(QObject *o, QEvent *e);
 
-    theTabWidget = new QTabWidget(this);
-    theTabWidget->setDocumentMode(true);
+private:
+    QWidget* scrollAreaWidgetContents = nullptr;
+};
 
-    QPushButton *closeButton = new QPushButton(this);
-    closeButton->setText(tr("Close"));
-    closeButton->setMaximumWidth(150);
-
-    mainLayout->addWidget(theTabWidget);
-    mainLayout->addWidget(closeButton,Qt::AlignHCenter);
-
-    connect(closeButton,SIGNAL(clicked()),this,SLOT(close()));
-}
-
-
-PopUpWidget::~PopUpWidget()
-{
-
-}
-
-
-void PopUpWidget::addTab(QWidget *tab, const QString& label)
-{
-    theTabWidget->addTab(tab,label);
-}
+#endif // VERTICALSCROLLINGWIDGET_H

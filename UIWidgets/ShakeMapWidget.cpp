@@ -233,7 +233,7 @@ int ShakeMapWidget::loadShakeMapData(void)
     {
         auto relPathToDir = QCoreApplication::applicationDirPath() + QDir::separator() + pathToShakeMapDirectory;
 
-        if (!QFileInfo(relPathToDir).exists())
+        if (!QFileInfo::exists(relPathToDir))
         {
             QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
             errorMessage(errMsg);

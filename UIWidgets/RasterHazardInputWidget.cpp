@@ -384,7 +384,27 @@ void RasterHazardInputWidget::chooseEventFileDialog(void)
 
     eventFile.clear();
 
-    this->loadRaster();
+    auto res = this->loadRaster();
+
+    if(res !=0)
+    {
+        this->errorMessage("Failed to load the raster");
+        return;
+    }
+
+    auto numBands = rasterlayer->bandCount();
+
+    unitsWidget->clear();
+
+    for(int i = 0; i<numBands; ++i)
+    {
+        // Note that band numbers start from 1 and not 0!
+        auto bandName = rasterlayer->bandName(i+1);
+
+        bandNames.append(bandName);
+
+        unitsWidget->addNewUnitItem(bandName);
+    }
 
     return;
 }

@@ -121,106 +121,106 @@ bool UserInputGMWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool UserInputGMWidget::outputToJSON(QJsonObject &jsonObj)
 {
-  QFileInfo theFile(eventFile);
-  if (theFile.exists()) {
-    jsonObj["eventFile"]=theFile.fileName();
-    jsonObj["eventFilePath"]=theFile.path();
-  } else {
-    jsonObj["eventFile"]=eventFile; // may be valid on others computer
-    jsonObj["eventFilePath"]=QString("");
-  }
-
-  // output motionDir if not same as eventFile's path
-  QString eventFilePath = QFileInfo(eventFile).absolutePath();
-  if (eventFilePath != motionDir) {
-    
-    QFileInfo theDir(motionDir);
-    if (theDir.exists()) {
-      jsonObj["motionDir"]=theDir.absoluteFilePath();
+    QFileInfo theFile(eventFile);
+    if (theFile.exists()) {
+        jsonObj["eventFile"]=theFile.fileName();
+        jsonObj["eventFilePath"]=theFile.path();
     } else {
-      jsonObj["motionDir"]=QString("None");
+        jsonObj["eventFile"]=eventFile; // may be valid on others computer
+        jsonObj["eventFilePath"]=QString("");
     }
-  }
-  
-  auto res = unitsWidget->outputToJSON(jsonObj);
-  
-  return res;
+
+    // output motionDir if not same as eventFile's path
+    QString eventFilePath = QFileInfo(eventFile).absolutePath();
+    if (eventFilePath != motionDir) {
+
+        QFileInfo theDir(motionDir);
+        if (theDir.exists()) {
+            jsonObj["motionDir"]=theDir.absoluteFilePath();
+        } else {
+            jsonObj["motionDir"]=QString("None");
+        }
+    }
+
+    auto res = unitsWidget->outputToJSON(jsonObj);
+
+    return res;
 }
 
 
 bool UserInputGMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
-  return true;
+    return true;
 }
 
 
 bool UserInputGMWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-  QString fileName;
-  QString pathToFile;
-  
-  if (jsonObject.contains("eventFile"))
-    fileName = jsonObject["eventFile"].toString();
-  if (jsonObject.contains("eventFilePath"))
-    pathToFile = jsonObject["eventFilePath"].toString();
-  else
-    pathToFile=QDir::currentPath();
-  
-  QString fullFilePath= pathToFile + QDir::separator() + fileName;
+    QString fileName;
+    QString pathToFile;
 
-  // adam .. adam .. adam .. ADAM .. ADAM
-  if (!QFileInfo::exists(fullFilePath)){
-    
-    fullFilePath = pathToFile + QDir::separator()
-      + "input_data" + QDir::separator() + fileName;
+    if (jsonObject.contains("eventFile"))
+        fileName = jsonObject["eventFile"].toString();
+    if (jsonObject.contains("eventFilePath"))
+        pathToFile = jsonObject["eventFilePath"].toString();
+    else
+        pathToFile=QDir::currentPath();
 
-    if (!QFile::exists(fullFilePath)) {
-      this->errorMessage("UserInputGM - could not find event file");
-      return false;
+    QString fullFilePath= pathToFile + QDir::separator() + fileName;
+
+    // adam .. adam .. adam .. ADAM .. ADAM
+    if (!QFileInfo::exists(fullFilePath)){
+
+        fullFilePath = pathToFile + QDir::separator()
+                + "input_data" + QDir::separator() + fileName;
+
+        if (!QFile::exists(fullFilePath)) {
+            this->errorMessage("UserInputGM - could not find event file");
+            return false;
+        }
     }
-  }
-  
-  eventFileLineEdit->setText(fullFilePath);
-  eventFile = fullFilePath;
-  
-  if (jsonObject.contains("motionDir")) {
-    motionDir = jsonObject["motionDir"].toString();
-  
-    QDir motionD(motionDir);
-  
-    if (!motionD.exists()){
-      
-      QString trialDir = QDir::currentPath() +
-	QDir::separator() + "input_data" + motionDir;
-      if (motionD.exists(trialDir)) {
-	motionDir = trialDir;
-	motionDirLineEdit->setText(trialDir);
-      } else {
-	this->errorMessage("UserInputGM - could not find motion dir" + motionDir + " " + trialDir);
-	return false;
-      }
+
+    eventFileLineEdit->setText(fullFilePath);
+    eventFile = fullFilePath;
+
+    if (jsonObject.contains("motionDir")) {
+        motionDir = jsonObject["motionDir"].toString();
+
+        QDir motionD(motionDir);
+
+        if (!motionD.exists()){
+
+            QString trialDir = QDir::currentPath() +
+                    QDir::separator() + "input_data" + motionDir;
+            if (motionD.exists(trialDir)) {
+                motionDir = trialDir;
+                motionDirLineEdit->setText(trialDir);
+            } else {
+                this->errorMessage("UserInputGM - could not find motion dir" + motionDir + " " + trialDir);
+                return false;
+            }
+        }
+    } else {
+        motionDir = QFileInfo(fullFilePath).absolutePath();
     }
-  } else {
-    motionDir = QFileInfo(fullFilePath).absolutePath();
-  }
 
-  // set the line dit
-  motionDirLineEdit->setText(motionDir);
+    // set the line dit
+    motionDirLineEdit->setText(motionDir);
 
 
-  // load the motions
-  this->loadUserGMData();
-  
-  // read in the units
-  bool res = unitsWidget->inputFromJSON(jsonObject);
-  
-  // If setting of units failed, provide default units and issue a warning
-  if(!res)
+    // load the motions
+    this->loadUserGMData();
+
+    // read in the units
+    bool res = unitsWidget->inputFromJSON(jsonObject);
+
+    // If setting of units failed, provide default units and issue a warning
+    if(!res)
     {
-      auto paramNames = unitsWidget->getParameterNames();
-      
-      this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
-      
+        auto paramNames = unitsWidget->getParameterNames();
+
+        this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
+
         for(auto&& it : paramNames)
         {
             auto res = unitsWidget->setUnit(it,"g");
@@ -463,9 +463,12 @@ void UserInputGMWidget::loadUserGMData(void)
 
     if(qgisVizWidget == nullptr)
     {
-        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        qDebug()<<"Failed to cast to QGISVisualizationWidget";
         return;
     }
+
+    // Clear the units widget
+    unitsWidget->clear();
 
     CSVReaderWriter csvTool;
 
@@ -492,6 +495,8 @@ void UserInputGMWidget::loadUserGMData(void)
     // Get the headers in the first station file - assume that the rest will be the same
     auto rowStr = data.at(1);
     auto stationName = rowStr[0];
+
+    auto eventColHeaders = data.at(0);
 
     // Path to station files, e.g., site0.csv
     auto stationFilePath = motionDir + QDir::separator() + stationName;
@@ -541,6 +546,21 @@ void UserInputGMWidget::loadUserGMData(void)
 
     auto maxToDisp = 20;
 
+    int latIndex = this->getIndexOfVal(eventColHeaders, "lat");
+    int lonIndex = this->getIndexOfVal(eventColHeaders, "lon");
+
+    if(latIndex == -1)
+    {
+        this->infoMessage("Warning, could not find the index for latitude in the file "+stationFilePath+ ", the heading for latitude should contain the letters 'lat'. Assuming latitude will be in the third column ");
+        latIndex = 2;
+    }
+
+    if(lonIndex == -1)
+    {
+        this->infoMessage("Warning, could not find the index for longitude in the file "+stationFilePath+ ", the heading for longitude should contain the letters 'lon'. Assuming longitude will be in the second column ");
+        lonIndex = 1;
+    }
+
     QgsFeatureList featureList;
     // Get the data
     for(int i = 0; i<numRows; ++i)
@@ -553,11 +573,11 @@ void UserInputGMWidget::loadUserGMData(void)
         auto stationPath = motionDir + QDir::separator() + stationName;
 
         bool ok;
-        auto lon = rowStr[1].toDouble(&ok);
+        auto lon = rowStr[lonIndex].toDouble(&ok);
 
         if(!ok)
         {
-            QString errMsg = "Error longitude to a double, check the value";
+            QString errMsg = "Error longitude to a double, check the value in "+stationName;
             this->errorMessage(errMsg);
 
             this->hideProgressBar();
@@ -565,11 +585,11 @@ void UserInputGMWidget::loadUserGMData(void)
             return;
         }
 
-        auto lat = rowStr[2].toDouble(&ok);
+        auto lat = rowStr[latIndex].toDouble(&ok);
 
         if(!ok)
         {
-            QString errMsg = "Error latitude to a double, check the value";
+            QString errMsg = "Error latitude to a double, check the value in "+stationName;
             this->errorMessage(errMsg);
 
             this->hideProgressBar();
@@ -674,7 +694,7 @@ void UserInputGMWidget::loadUserGMData(void)
     dProvider->addFeatures(featureList);
     vectorLayer->updateExtents();
 
-    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+    qgisVizWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::black,2.0,vectorLayer);
 
     progressLabel->setVisible(false);
 
@@ -924,24 +944,24 @@ UserInputGMWidget::copyFiles(QString &destDir)
     // create dir and copy motion files
     QDir destDIR(destDir);
     if (!destDIR.exists()) {
-      qDebug() << "userInputGMWidget::copyFiles dest dir does not exist: " << destDir;
-      return false;
+        qDebug() << "userInputGMWidget::copyFiles dest dir does not exist: " << destDir;
+        return false;
     }
 
     QFileInfo eventFileInfo(eventFile);
     if (eventFileInfo.exists()) {
         this->copyFile(eventFile, destDir);
     } else {
-      qDebug() << "userInputGMWidget::copyFiles eventFile does not exist: " << eventFile;
-      return false;
+        qDebug() << "userInputGMWidget::copyFiles eventFile does not exist: " << eventFile;
+        return false;
     }
 
     QDir motionDirInfo(motionDir);
     if (motionDirInfo.exists()) {
         return this->copyPath(motionDir, destDir, false);
     } else {
-      qDebug() << "userInputGMWidget::copyFiles motionDir does not exist: " << motionDir;
-      return false;
+        qDebug() << "userInputGMWidget::copyFiles motionDir does not exist: " << motionDir;
+        return false;
     }
 
     // should never get here
@@ -953,4 +973,17 @@ void UserInputGMWidget::hideProgressBar(void)
     theStackedWidget->setCurrentWidget(fileInputWidget);
     progressBarWidget->setVisible(false);
     fileInputWidget->setVisible(true);
+}
+
+
+int UserInputGMWidget::getIndexOfVal(const QStringList& headersStr, const QString val)
+{
+    for(int i =0; i<headersStr.size(); ++i)
+    {
+        QString headerStr = headersStr.at(i);
+        if(headerStr.contains(val, Qt::CaseInsensitive))
+            return i;
+    }
+
+    return -1;
 }

@@ -88,7 +88,7 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     auto smallVSpacer = new QSpacerItem(0,20);
 
 
-    auto Vspacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    // auto Vspacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
     //gridLayout->addItem(Vspacer,0,0,1,2);
     gridLayout->addWidget(spatialCorrelationInterLabel,1,0);
     gridLayout->addWidget(m_correlationBoxInter,1,1);

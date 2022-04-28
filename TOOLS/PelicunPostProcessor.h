@@ -89,8 +89,8 @@ public:
     template <typename T>
     auto objectToDouble(T obj)
     {
-        // Assume a zero value if the string is empty
-        if(obj.isNull())
+        // Assume a zero value if the string is empty or null
+        if(obj.isNull() || obj.isEmpty())
             return 0.0;
 
         bool OK;
@@ -106,8 +106,8 @@ public:
     template <typename T>
     auto objectToInt(T obj)
     {
-        // Assume a zero value if the string is empty
-        if(obj.isNull())
+        // Assume a zero value if the string is empty or null
+        if(obj.isNull() || obj.isEmpty())
             return 0;
 
         bool OK;

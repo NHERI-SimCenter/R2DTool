@@ -510,7 +510,7 @@ QgsVectorLayer* QGISHurricanePreprocessor::createLandfallVisualization(const dou
 
     layer->updateExtents();
 
-    theVisualizationWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Diamond,Qt::blue,4.0,layer);
+    theVisualizationWidget->createSymbolRenderer(Qgis::MarkerShape::Diamond,Qt::blue,4.0,layer);
 
     return layer;
 }

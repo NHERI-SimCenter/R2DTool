@@ -352,7 +352,7 @@ void PeerNgaWest2Client::processUploadFileReply()
     postSpectraParameters.addQueryItem("model[ID]", "0");
     postSpectraParameters.addQueryItem("spectra[menu_Mechanism]", "1");
 
-    for (auto cookie: networkManager.cookieJar()->cookiesForUrl(QUrl("https://ngawest2.berkeley.edu")))
+    for (auto& cookie: networkManager.cookieJar()->cookiesForUrl(QUrl("https://ngawest2.berkeley.edu")))
         if (0 == cookie.name().compare("upload_file"))
             postSpectraParameters.addQueryItem("spectra[filename]", cookie.value());
 
@@ -364,7 +364,7 @@ void PeerNgaWest2Client::processUploadFileReply()
 
 void PeerNgaWest2Client::processPostSpectrumReply()
 {
-    QByteArray data = postSpectraReply->readAll();
+    //QByteArray data = postSpectraReply->readAll();
     if(postSpectraReply->error() != QNetworkReply::NoError)
     {
         //if it fails we will retry
