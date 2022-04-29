@@ -9,8 +9,8 @@ CONFIG += c++17
 
 DEFINES +=  Q_GIS
 
-PATH_TO_COMMON=../../../SimCenterCommon
-PATH_TO_QGIS_PLUGIN=../../../QGISPlugin
+PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_QGIS_PLUGIN=../../QGISPlugin
 
 
 QT += widgets testlib charts network xml 3dcore 3drender 3dextras opengl sql concurrent
