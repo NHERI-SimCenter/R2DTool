@@ -120,7 +120,7 @@ for:
        - cmd: conan profile update settings.compiler.version="16" default
        - cmd: conan remote add simcenter https://nherisimcenter.jfrog.io/artifactory/api/conan/simcenter
        - cmd: echo %PATH%
-	  
+
     cache:
        - jom_1_1_3.zip
 	  
@@ -132,10 +132,10 @@ for:
        - git clone https://github.com/sgavrilovic/QGISPlugin.git
        - cmd: dir
 
-	   # Get jom
-	   - if not exist jom_1_1_3.zip appveyor DownloadFile "https://download.qt.io/official_releases/jom/jom_1_1_3.zip"
-	   - 7z x -y jom_1_1_3.zip -oc:\jom\
-	   - set PATH=%PATH%;c:\jom\;
+       # Get jom
+       - if not exist jom_1_1_3.zip appveyor DownloadFile "https://download.qt.io/official_releases/jom/jom_1_1_3.zip"
+       - 7z x -y jom_1_1_3.zip -oc:\jom\
+       - set PATH=%PATH%;c:\jom\;
 
     build_script:
       # build simcenter backend
