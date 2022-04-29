@@ -55,6 +55,55 @@ then
     exit $status;
 fi
 
+# Download dakota and opensees, extract them, and install them to the build/applications folder
+mkdir dakota
+
+cd dakota
+
+curl -O  https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.15.0-public-darwin.Darwin.x86_64-cli.tar.gz
+tar -xf *.tar.gz
+
+cd ..
+
+mkdir  ./build/applications/dakota
+
+cp -rf ./dakota/dakota-*/* ./build/applications/dakota
+
+status=$?;
+if [[ $status != 0 ]]
+then
+    echo "Error copying dakota to applications dir";
+    exit $status;
+fi
+
+mkdir opensees
+
+cd opensees
+
+curl -O  https://opensees.berkeley.edu/OpenSees/code/OpenSees3.3.0Mac.tar.gz
+
+tar -xf *.tar.gz
+
+cd ..
+
+mkdir  ./build/applications/opensees
+
+cp -rf ./opensees/opensees*/* ./build/applications/opensees
+
+status=$?;
+if [[ $status != 0 ]]
+then
+    echo "Error copying opensees to applications dir";
+    exit $status;
+fi
+
+# Disable gatekeeper because dakota is unsigned
+sudo spctl --master-disable
+
+# Install simcenter python package
+/Users/appveyor/venv3.8.12/bin/python3 -m pip install nheri-simcenter
+
+
 # Run the test app
 ./build/R2DTest
 
