@@ -67,12 +67,19 @@ cd ..
 
 mkdir  ./build/applications/dakota
 
+status=$?;
+if [[ $status != 0 ]]
+then
+    echo "Error making the dakota dir";
+    exit $status;
+fi
+
 cp -rf ./dakota/dakota-*/* ./build/applications/dakota
 
 status=$?;
 if [[ $status != 0 ]]
 then
-    echo "Error copying dakota to applications dir";
+    echo "Error copying dakota to build/applications/dakota dir";
     exit $status;
 fi
 
@@ -88,7 +95,14 @@ cd ..
 
 mkdir  ./build/applications/opensees
 
-cp -rf ./opensees/opensees*/* ./build/applications/opensees
+status=$?;
+if [[ $status != 0 ]]
+then
+    echo "Error making the build/applications/opensees dir";
+    exit $status;
+fi
+
+cp -rf ./opensees/OpenSees*/* ./build/applications/opensees
 
 status=$?;
 if [[ $status != 0 ]]
@@ -99,10 +113,6 @@ fi
 
 # Disable gatekeeper because dakota is unsigned
 sudo spctl --master-disable
-
-# Install simcenter python package
-/Users/appveyor/venv3.8.12/bin/python3 -m pip install nheri-simcenter
-
 
 # Run the test app
 ./build/R2DTest
