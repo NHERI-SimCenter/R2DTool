@@ -5,7 +5,8 @@
 #  University of California, Berkeley  #
 #--------------------------------------#
 
-INCLUDEPATH +=  $$PATH_TO_COMMON/Workflow/UQ \
+INCLUDEPATH +=  $$PATH_TO_COMMON/Common \
+                $$PATH_TO_COMMON/Workflow/UQ \
                 $$PATH_TO_COMMON/Workflow/UQ/dakota \
                 $$PATH_TO_COMMON/Workflow/ANALYSIS \
                 $$PATH_TO_COMMON/Workflow/WORKFLOW \	

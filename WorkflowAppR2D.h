@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class AnalysisWidget;
 class Application;
+class LocalApplication;
 class AssetsWidget;
 class DLWidget;
 class EngDemandParameterWidget;
@@ -94,6 +95,8 @@ public:
     AssetsWidget *getAssetsWidget() const;
     GeneralInformationWidget *getGeneralInformationWidget() const;
 
+    LocalApplication *getLocalApp() const;
+
 signals:
 
 public slots:  
@@ -138,7 +141,7 @@ private:
     //
 
     RunWidget *theRunWidget;
-    Application *localApp;
+    LocalApplication *localApp;
     Application *remoteApp;
     RemoteJobManager *theJobManager;
 

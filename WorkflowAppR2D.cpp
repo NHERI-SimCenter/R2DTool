@@ -810,6 +810,12 @@ void WorkflowAppR2D::runComplete()
 }
 
 
+LocalApplication *WorkflowAppR2D::getLocalApp() const
+{
+    return localApp;
+}
+
+
 void WorkflowAppR2D::loadResults(void)
 {
     if(resultsDialog == nullptr)
