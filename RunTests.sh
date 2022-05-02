@@ -111,6 +111,9 @@ then
     exit $status;
 fi
 
+# Install nheri-sincenter python repositories
+python3 -m pip install nheri-simcenter
+
 # Disable gatekeeper because dakota is unsigned
 sudo spctl --master-disable
 
