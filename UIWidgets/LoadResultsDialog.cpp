@@ -1,5 +1,5 @@
 #include "LoadResultsDialog.h"
-#include "utils/PythonProgressDialog.h"
+#include "Utils/PythonProgressDialog.h"
 #include "WorkflowAppWidget.h"
 
 #include <QGridLayout>
