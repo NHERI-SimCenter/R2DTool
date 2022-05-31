@@ -102,8 +102,6 @@ signals:
 
 private:
 
-    int getIndexOfVal(const QStringList& headersStr, const QString val);
-
     void showProgressBar(void);
     void hideProgressBar(void);
 

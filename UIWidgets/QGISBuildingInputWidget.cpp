@@ -76,8 +76,8 @@ int QGISBuildingInputWidget::loadComponentVisualization()
 
     // First check if a footprint was provided
     auto indexFootprint = headers.indexOf("Footprint");
-    auto indexLatitude = headers.indexOf("Latitude");
-    auto indexLongitude = headers.indexOf("Longitude");
+    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, "latitude");
+    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, "longitude");
 
     if(indexLongitude == -1 || indexLatitude == -1)
     {

@@ -53,8 +53,8 @@ for:
        - qmake --version
        - gcc --version
        - python --version
-       - chmod 'u+x' RunTests.sh
-       - ./RunTests.sh
+       #- chmod 'u+x' RunTests.sh
+       #- ./RunTests.sh
 
   # Ubuntu1804 
   -
