@@ -140,16 +140,16 @@ for:
 
     build_script:
       # build simcenter backend
-      - cmd: dir
-      - cmd: cd SimCenterBackendApplications
-      - cmd: mkdir build
-      - cmd: cd build
-      - cmd: conan install .. --build missing
-      - cmd: cmake .. -G "Visual Studio 16 2019"
-      - cmd: cmake --build . --config Release
-      - cmd: cmake --install .
-      - cmd: cd ..
-      - cmd: cd ..
+      #- cmd: dir
+      #- cmd: cd SimCenterBackendApplications
+      #- cmd: mkdir build
+      #- cmd: cd build
+      #- cmd: conan install .. --build missing
+      #- cmd: cmake .. -G "Visual Studio 16 2019"
+      #- cmd: cmake --build . --config Release
+      #- cmd: cmake --install .
+      #- cmd: cd ..
+      #- cmd: cd ..
       
       #
       # build R2D
