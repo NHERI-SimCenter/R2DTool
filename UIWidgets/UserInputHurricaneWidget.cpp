@@ -588,8 +588,8 @@ void UserInputHurricaneWidget::loadUserWFData(void)
 
     auto headerInfo = data.front();
 
-    auto latIndex = headerInfo.indexOf("Latitude");
-    auto lonIndex = headerInfo.indexOf("Longitude");
+    int latIndex = theVisualizationWidget->getIndexOfVal(headerInfo, "latitude");
+    int lonIndex = theVisualizationWidget->getIndexOfVal(headerInfo, "longitude");
 
     if(latIndex == -1 || lonIndex == -1)
     {

@@ -546,8 +546,8 @@ void UserInputGMWidget::loadUserGMData(void)
 
     auto maxToDisp = 20;
 
-    int latIndex = this->getIndexOfVal(eventColHeaders, "lat");
-    int lonIndex = this->getIndexOfVal(eventColHeaders, "lon");
+    int latIndex = theVisualizationWidget->getIndexOfVal(eventColHeaders, "latitude");
+    int lonIndex = theVisualizationWidget->getIndexOfVal(eventColHeaders, "longitude");
 
     if(latIndex == -1)
     {
@@ -975,15 +975,3 @@ void UserInputGMWidget::hideProgressBar(void)
     fileInputWidget->setVisible(true);
 }
 
-
-int UserInputGMWidget::getIndexOfVal(const QStringList& headersStr, const QString val)
-{
-    for(int i =0; i<headersStr.size(); ++i)
-    {
-        QString headerStr = headersStr.at(i);
-        if(headerStr.contains(val, Qt::CaseInsensitive))
-            return i;
-    }
-
-    return -1;
-}

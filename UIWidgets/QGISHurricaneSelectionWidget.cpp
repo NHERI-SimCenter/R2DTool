@@ -459,12 +459,17 @@ void QGISHurricaneSelectionWidget::handleTerrainImport(void)
     // Extract the features
     auto pathToFile = HurricaneSelectionWidget::getTerrainGeojsonPath();
 
+    if(pathToFile.isEmpty())
+        return;
+
     terrainRoughnessLayer = theVisualizationWidget->addVectorLayer(pathToFile,"Terrain Roughness", "ogr");
 
     terrainRoughnessLayer->setOpacity(0.4);
 
     if(terrainRoughnessLayer == nullptr)
         this->errorMessage("Failed to load terrain roughness layer");
+
+    terrainRoughnessLayer->setOpacity(0.4);
 
 }
 

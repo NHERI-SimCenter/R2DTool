@@ -106,13 +106,13 @@ HousingUnitAllocationWidget::HousingUnitAllocationWidget(QWidget *parent, Visual
     connect(this,&HousingUnitAllocationWidget::emitDownloadMainThread,this,&HousingUnitAllocationWidget::handleDownloadMainThread);
 
     // Test to remove start
-    //    auto buildingsGISFile =  "/Users/steve/Desktop/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
+//        auto buildingsGISFile =  "/Users/steve/Desktop/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
 
-    //    buildingsPathLineEdit->setText(buildingsGISFile);
-    //    this->importBuidlingsLayer();
-    //    buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
+//        buildingsPathLineEdit->setText(buildingsGISFile);
+//        this->importBuidlingsLayer();
+//        buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
 
-    //    this->createGISFiles();
+//        this->createGISFiles();
     // Test to remove end
 }
 
@@ -452,7 +452,8 @@ int HousingUnitAllocationWidget::createGISFiles(void)
     }
     QStringList args = {pathToHUAScript,"--census_config",pathToConfigFile};
 
-    //    qDebug()<<"Census Command:"<<args[0]<<" "<<args[1]<<" "<<args[2];
+    qDebug()<<"Census Python Path: "<<pathToHUAScript;
+    qDebug()<<"Census Command: "<<args[0]<<" "<<args[1]<<" "<<args[2];
 
     emit emitStartProcessMainThread(pythonPath, args);
 
