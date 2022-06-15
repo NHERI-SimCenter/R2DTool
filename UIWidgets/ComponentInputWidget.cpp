@@ -75,12 +75,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <string>
 #include <algorithm>
 
-#ifdef OpenSRA
-#include "WorkflowAppOpenSRA.h"
-#include "WidgetFactory.h"
-#include "JsonGroupBoxWidget.h"
-#endif
-
 ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), appType(appType), componentType(componentType)
 {
 #ifdef ARC_GIS
@@ -101,10 +95,8 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
     this->setContentsMargins(0,0,0,0);
 
     pathToComponentInputFile = "NULL";
-    componentGroupBox = nullptr;
-    componentFileLineEdit = nullptr;
 
-    this->createComponentsBox();
+    ComponentInputWidget::createComponentsBox();
 
     auto txt1 = "Load information from a CSV file";
     auto txt2  = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
@@ -124,22 +116,6 @@ ComponentInputWidget::~ComponentInputWidget()
     
 }
 
-
-#ifdef OpenSRA
-bool ComponentInputWidget::loadFileFromPath(const QString& filePath)
-{
-    QFileInfo fileInfo;
-    if (!fileInfo.exists(filePath))
-        return false;
-
-    pathToComponentInputFile = filePath;
-    componentFileLineEdit->setText(filePath);
-
-    this->loadComponentData();
-
-    return true;
-}
-#endif
 
 
 bool ComponentInputWidget::loadComponentData(void)
@@ -293,12 +269,12 @@ void ComponentInputWidget::createComponentsBox(void)
     componentGroupBox->setFlat(true);
     componentGroupBox->setContentsMargins(0,0,0,0);
     
-    QVBoxLayout* gridLayout = new QVBoxLayout();
-    gridLayout->setMargin(0);
-    gridLayout->setSpacing(5);
-    gridLayout->setContentsMargins(10,0,0,0);
+    mainGridLayout = new QVBoxLayout();
+    mainGridLayout->setMargin(0);
+    mainGridLayout->setSpacing(5);
+    mainGridLayout->setContentsMargins(10,0,0,0);
     
-    componentGroupBox->setLayout(gridLayout);
+    componentGroupBox->setLayout(mainGridLayout);
     
     label1 = new QLabel();
     
@@ -347,89 +323,14 @@ void ComponentInputWidget::createComponentsBox(void)
     
     connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &ComponentInputWidget::handleCellChanged);
     
-#ifdef OpenSRA
-    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
-    
-    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["SiteLocationParams"].toObject();
-    
-    if(thisObj.isEmpty())
-    {
-        this->errorMessage("Json object is empty in " + QString(__FUNCTION__));
-        return;
-    }
-    
-    auto theWidgetFactory = new WidgetFactory(this);
-
-    WorkflowAppOpenSRA::getInstance()->setTheWidgetFactory(theWidgetFactory);
-
-    QJsonObject paramsObj = thisObj["Params"].toObject();
-    
-    // The string given in the Methods and params json file
-    QString nameStr = "SiteLocationParams";
-    
-    auto widgetLabelText = thisObj["NameToDisplay"].toString();
-    
-    if(widgetLabelText.isEmpty())
-    {
-        this->errorMessage("Could not find the *NameToDisplay* key in object json for " + nameStr);
-        return;
-    }
-    
-    locationWidget = new JsonGroupBoxWidget(this);
-    locationWidget->setObjectName(nameStr);
-    
-    locationWidget->setTitle(widgetLabelText);
-    
-    QJsonObject paramsLat;
-    paramsLat["LatBegin"] = paramsObj.value("LatBegin");
-    paramsLat["LatMid"] = paramsObj.value("LatMid");
-    paramsLat["LatEnd"] = paramsObj.value("LatEnd");
-    
-    QJsonObject paramsLon;
-    paramsLon["LonBegin"] = paramsObj.value("LonBegin");
-    paramsLon["LonMid"] = paramsObj.value("LonMid");
-    paramsLon["LonEnd"] = paramsObj.value("LonEnd");
-    paramsLon["Length"] = paramsObj.value("Length");
-    
-    auto latLayout = theWidgetFactory->getLayoutFromParams(paramsLat,nameStr,locationWidget, Qt::Horizontal);
-    auto lonLayout = theWidgetFactory->getLayoutFromParams(paramsLon,nameStr,locationWidget, Qt::Horizontal);
-    
-    QVBoxLayout* latLonLayout = new QVBoxLayout();
-    latLonLayout->addLayout(latLayout);
-    latLonLayout->addLayout(lonLayout);
-    
-    locationWidget->setLayout(latLonLayout);
-    
-    QHBoxLayout* pathLayout = new QHBoxLayout();
-    pathLayout->addWidget(pathText);
-    pathLayout->addWidget(componentFileLineEdit);
-    pathLayout->addWidget(browseFileButton);
-
-    // Add a vertical spacer at the bottom to push everything up
-    gridLayout->addWidget(label1);
-    gridLayout->addLayout(pathLayout);
-    gridLayout->addWidget(label2);
-
-    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
-    selectComponentsLayout->addWidget(selectComponentsLineEdit);
-    selectComponentsLayout->addWidget(clearSelectionButton);
-    
-    gridLayout->addLayout(selectComponentsLayout);
-    gridLayout->addWidget(locationWidget);
-    gridLayout->addWidget(label3,0,Qt::AlignCenter);
-    gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
-
-    gridLayout->addStretch();
-    
-#else
     QHBoxLayout* pathLayout = new QHBoxLayout();
     pathLayout->addWidget(pathText);
     pathLayout->addWidget(componentFileLineEdit);
     pathLayout->addWidget(browseFileButton);
     
     // Add a vertical spacer at the bottom to push everything up
-    gridLayout->addWidget(label1);
-    gridLayout->addLayout(pathLayout);
+    mainGridLayout->addWidget(label1);
+    mainGridLayout->addLayout(pathLayout);
 
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
     selectComponentsLayout->addWidget(label2);
@@ -437,15 +338,14 @@ void ComponentInputWidget::createComponentsBox(void)
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
     
-    gridLayout->addLayout(selectComponentsLayout);
+    mainGridLayout->addLayout(selectComponentsLayout);
 
-    gridLayout->addWidget(label3,0,Qt::AlignCenter);
-    gridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
+    mainGridLayout->addWidget(label3,0,Qt::AlignCenter);
+    mainGridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
     
-    gridLayout->addStretch();
-#endif
-    
-    this->setLayout(gridLayout);
+    mainGridLayout->addStretch();
+
+    this->setLayout(mainGridLayout);
 }
 
 
@@ -888,22 +788,15 @@ void ComponentInputWidget::selectAllComponents(void)
 
 bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 {
-#ifdef OpenSRA
-    locationWidget->outputToJSON(rvObject);
-#else
     Q_UNUSED(rvObject);
-#endif
+
     return true;
 }
 
 
 bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
-#ifdef OpenSRA
-    locationWidget->inputFromJSON(rvObject);
-#else
     Q_UNUSED(rvObject);
-#endif
 
     return true;
 }
@@ -985,6 +878,7 @@ void ComponentInputWidget::clear(void)
     pathToComponentInputFile.clear();
     componentFileLineEdit->clear();
     selectComponentsLineEdit->clear();
+    filterDelegateWidget->clear();
     componentTableWidget->clear();
     componentTableWidget->hide();
     tableHorizontalHeadings.clear();

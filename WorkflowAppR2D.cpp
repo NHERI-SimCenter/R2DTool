@@ -443,37 +443,37 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
         }
 
         if (theModelingWidget->inputAppDataFromJSON(apps) == false) {
-            this->errorMessage("UQ failed to read input data");
+            this->errorMessage("MOD failed to read input data");
             theModelingWidget->clear();
             result = false;
         }
 
         if (theAnalysisWidget->inputAppDataFromJSON(apps) == false) {
-            this->errorMessage("UQ failed to read input data");
+            this->errorMessage("ANA failed to read input data");
             theAnalysisWidget->clear();
             result = false;
         }
 
         if (theHazardToAssetWidget->inputAppDataFromJSON(apps) == false) {
-            this->errorMessage("UQ failed to read input data");
+            this->errorMessage("HTA failed to read input data");
             theHazardToAssetWidget->clear();
             result = false;
         }
 
         if (theAssetsWidget->inputAppDataFromJSON(apps) == false) {
-            this->errorMessage("UQ failed to read input data");
+            this->errorMessage("ASD failed to read input data");
             theAssetsWidget->clear();
             result = false;
         }
 
         if (theHazardsWidget->inputAppDataFromJSON(apps) == false) {
-            this->errorMessage("UQ failed to read input data");
+            this->errorMessage("HAZ failed to read input data");
             theHazardsWidget->clear();
             result = false;
         }
 
         if (theDamageAndLossWidget->inputAppDataFromJSON(apps) == false) {
-            this->errorMessage("UQ failed to read input data");
+            this->errorMessage("DL failed to read input data");
             theDamageAndLossWidget->clear();
             result = false;
         }

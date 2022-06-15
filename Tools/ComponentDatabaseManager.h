@@ -13,10 +13,20 @@ public:
 
     static ComponentDatabaseManager *getInstance(void);
 
+    // Buildings
     ComponentDatabase* getBuildingComponentDb();
-    ComponentDatabase* getPipelineComponentDb();    
-    ComponentDatabase* getCPTComponentDb();
 
+    // Natural gas distribution network
+    ComponentDatabase* getGasPipelineComponentDb();
+    ComponentDatabase* getWellsandCaprocksComponentDb();
+    ComponentDatabase* getAboveGroundGasInfrastructureComponentDb();
+
+    // Water distribution network
+    ComponentDatabase* getWaterNetworkPipeComponentDb();
+    ComponentDatabase* getWaterNetworkNodeComponentDb();
+
+    // Site-specific information
+    ComponentDatabase* getCPTComponentDb();
     ComponentDatabase* getSiteComponentDb();
 
 private:
@@ -24,7 +34,11 @@ private:
     static ComponentDatabaseManager *theInstance;
 
     std::unique_ptr<ComponentDatabase> theBuildingComponentDb;
-    std::unique_ptr<ComponentDatabase> thePipelineComponentDb;
+    std::unique_ptr<ComponentDatabase> theGasPipelineComponentDb;
+    std::unique_ptr<ComponentDatabase> theWellsandCaptrocksComponentDb;
+    std::unique_ptr<ComponentDatabase> theAboveGroundInfrastructureComponentDb;
+    std::unique_ptr<ComponentDatabase> theWaterNetworkPipeComponentDb;
+    std::unique_ptr<ComponentDatabase> theWaterNetworkNodeComponentDb;
     std::unique_ptr<ComponentDatabase> theSiteComponentDb;
     std::unique_ptr<ComponentDatabase> theCPTComponentDb;
 };

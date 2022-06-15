@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifdef Q_GIS
 #include "QGISBuildingInputWidget.h"
 #include "QGISGasPipelineInputWidget.h"
+#include "QGISWaterNetworkInputWidget.h"
 #include "GISBuildingInputWidget.h"
 #include "HousingUnitAllocationWidget.h"
 #endif
@@ -77,7 +78,8 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Building"), this);
-    pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
+    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("GasPipelines"), this);
+    waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("WaterPipelines"), this);
 
 #ifdef ARC_GIS
     ArcGISBuildingInputWidget *csvBuildingInventory = new ArcGISBuildingInputWidget(this,"Buildings","CSV_to_BIM");
@@ -102,14 +104,20 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
 #ifdef Q_GIS
     QGISGasPipelineInputWidget *csvPipelineInventory = new QGISGasPipelineInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
-    pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+    gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+
+
+    QGISWaterNetworkInputWidget *csvWaterNetworkInventory = new QGISWaterNetworkInputWidget(this, visualizationWidget);
+    waterNetworkWidget->addComponent(QString("CSV to Water Network"), QString("CSV_to_WATERNETWORK"), csvWaterNetworkInventory);
+
 #endif
 
     // QString pathToPipelineInfoFile = "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
     // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",pipelineWidget);
+    this->addComponent("Gas Network",gasPipelineWidget);
+    this->addComponent("Water Network",waterNetworkWidget);
     this->hideAll();
 }
 
@@ -123,7 +131,8 @@ AssetsWidget::~AssetsWidget()
 void AssetsWidget::clear(void)
 {
     buildingWidget->clear();
-    pipelineWidget->clear();
+    gasPipelineWidget->clear();
+    waterNetworkWidget->clear();
 }
 
 

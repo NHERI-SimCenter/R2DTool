@@ -2,19 +2,32 @@
 #include "QGISVisualizationWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
+#include "ComponentTableModel.h"
 #include "AssetFilterDelegate.h"
+#include "AssetInputDelegate.h"
+
+#ifdef OpenSRA
+#include "WorkflowAppOpenSRA.h"
+#include "WidgetFactory.h"
+#include "JsonGroupBoxWidget.h"
+#endif
 
 #include <qgsfeature.h>
 #include <qgslinesymbol.h>
 
+#include <QFileInfo>
+
 
 QGISGasPipelineInputWidget::QGISGasPipelineInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
-    theComponentDb = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
+    theComponentDb = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
+
+    QGISGasPipelineInputWidget::createComponentsBox();
+
 }
 
 
-int QGISGasPipelineInputWidget::loadComponentVisualization()
+int QGISGasPipelineInputWidget::loadComponentVisualization(void)
 {
 
     QgsFields featFields;
@@ -185,6 +198,104 @@ int QGISGasPipelineInputWidget::loadComponentVisualization()
 
     return 0;
 }
+
+
+#ifdef OpenSRA
+bool QGISGasPipelineInputWidget::loadFileFromPath(const QString& filePath)
+{
+    QFileInfo fileInfo;
+    if (!fileInfo.exists(filePath))
+        return false;
+
+    pathToComponentInputFile = filePath;
+    componentFileLineEdit->setText(filePath);
+
+    this->loadComponentData();
+
+    return true;
+}
+
+
+bool QGISGasPipelineInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+
+    locationWidget->outputToJSON(rvObject);
+
+    return true;
+}
+
+
+bool QGISGasPipelineInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+
+    locationWidget->inputFromJSON(rvObject);
+
+    return true;
+}
+
+
+void QGISGasPipelineInputWidget::createComponentsBox(void)
+{
+    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
+
+    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["SiteLocationParams"].toObject();
+
+    if(thisObj.isEmpty())
+    {
+        this->errorMessage("Json object is empty in " + QString(__FUNCTION__));
+        return;
+    }
+
+    auto theWidgetFactory = new WidgetFactory(this);
+
+    WorkflowAppOpenSRA::getInstance()->setTheWidgetFactory(theWidgetFactory);
+
+    QJsonObject paramsObj = thisObj["Params"].toObject();
+
+    // The string given in the Methods and params json file
+    QString nameStr = "SiteLocationParams";
+
+    auto widgetLabelText = thisObj["NameToDisplay"].toString();
+
+    if(widgetLabelText.isEmpty())
+    {
+        this->errorMessage("Could not find the *NameToDisplay* key in object json for " + nameStr);
+        return;
+    }
+
+    locationWidget = new JsonGroupBoxWidget(this);
+    locationWidget->setObjectName(nameStr);
+
+    locationWidget->setTitle(widgetLabelText);
+
+    QJsonObject paramsLat;
+    paramsLat["LatBegin"] = paramsObj.value("LatBegin");
+    paramsLat["LatMid"] = paramsObj.value("LatMid");
+    paramsLat["LatEnd"] = paramsObj.value("LatEnd");
+
+    QJsonObject paramsLon;
+    paramsLon["LonBegin"] = paramsObj.value("LonBegin");
+    paramsLon["LonMid"] = paramsObj.value("LonMid");
+    paramsLon["LonEnd"] = paramsObj.value("LonEnd");
+    paramsLon["Length"] = paramsObj.value("Length");
+
+    auto latLayout = theWidgetFactory->getLayoutFromParams(paramsLat,nameStr,locationWidget, Qt::Horizontal);
+    auto lonLayout = theWidgetFactory->getLayoutFromParams(paramsLon,nameStr,locationWidget, Qt::Horizontal);
+
+    QVBoxLayout* latLonLayout = new QVBoxLayout();
+    latLonLayout->addLayout(latLayout);
+    latLonLayout->addLayout(lonLayout);
+
+    locationWidget->setLayout(latLonLayout);
+
+    auto insPoint = mainGridLayout->count();
+
+    mainGridLayout->insertWidget(insPoint-3,locationWidget);
+}
+
+
+#endif
+
 
 
 void QGISGasPipelineInputWidget::clear()

@@ -119,6 +119,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/BuildingSimulationWidget.cpp \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.cpp \
             $$PWD/UIWidgets/ComponentInputWidget.cpp \
+            $$PWD/UIWidgets/NonselectableComponentInputWidget.cpp \
             $$PWD/UIWidgets/DLWidget.cpp \
             $$PWD/UIWidgets/DamageMeasureWidget.cpp \
             $$PWD/UIWidgets/DecisionVariableWidget.cpp \
@@ -232,6 +233,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/BuildingSimulationWidget.h \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.h \
             $$PWD/UIWidgets/ComponentInputWidget.h \
+            $$PWD/UIWidgets/NonselectableComponentInputWidget.h \
             $$PWD/UIWidgets/DLWidget.h \
             $$PWD/UIWidgets/DamageMeasureWidget.h \
             $$PWD/UIWidgets/DecisionVariableWidget.h \
@@ -330,6 +332,7 @@ contains(DEFINES, Q_GIS)  {
 SOURCES +=  $$PWD/Tools/QGISHurricanePreprocessor.cpp \
             $$PWD/UIWidgets/QGISGasPipelineInputWidget.cpp \
             $$PWD/UIWidgets/QGISBuildingInputWidget.cpp \
+            $$PWD/UIWidgets/QGISWaterNetworkInputWidget.cpp \
             $$PWD/UIWidgets/RasterHazardInputWidget.cpp \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.cpp \
             $$PWD/UIWidgets/GISBuildingInputWidget.cpp \
@@ -338,6 +341,7 @@ SOURCES +=  $$PWD/Tools/QGISHurricanePreprocessor.cpp \
 HEADERS +=  $$PWD/Tools/QGISHurricanePreprocessor.h \
             $$PWD/UIWidgets/QGISGasPipelineInputWidget.h \
             $$PWD/UIWidgets/QGISBuildingInputWidget.h \
+            $$PWD/UIWidgets/QGISWaterNetworkInputWidget.h \
             $$PWD/UIWidgets/RasterHazardInputWidget.h \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.h \
             $$PWD/UIWidgets/GISBuildingInputWidget.h \

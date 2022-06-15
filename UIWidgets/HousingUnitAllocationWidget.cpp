@@ -106,13 +106,16 @@ HousingUnitAllocationWidget::HousingUnitAllocationWidget(QWidget *parent, Visual
     connect(this,&HousingUnitAllocationWidget::emitDownloadMainThread,this,&HousingUnitAllocationWidget::handleDownloadMainThread);
 
     // Test to remove start
-//        auto buildingsGISFile =  "/Users/steve/Desktop/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
+    auto buildingsGISFile =  "/Users/steve/Desktop/SimCenter/Examples/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
 
-//        buildingsPathLineEdit->setText(buildingsGISFile);
-//        this->importBuidlingsLayer();
-//        buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
+    buildingsPathLineEdit->setText(buildingsGISFile);
+    this->importBuidlingsLayer();
+    buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
 
-//        this->createGISFiles();
+    censusVintageCombo->setCurrentText("2010");
+    ACSVintageCombo->setCurrentText("2010");
+
+    // this->createGISFiles();
     // Test to remove end
 }
 
@@ -171,7 +174,7 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
         return res;
     }
 
-    emit emitStatusMsg("Getting counties for the building inventory.");
+    emit emitStatusMsg("Getting counties containing the building inventory.");
 
     //auto countiesLayer = theVisualizationWidget->addVectorLayer(pathToCountiesGIS, "Counties", "ogr");
 
@@ -412,13 +415,42 @@ int HousingUnitAllocationWidget::createGISFiles(void)
         countiesArr.append(it);
     }
 
-    auto vintage = censusVintageCombo->currentText();
+    auto censusVintage = censusVintageCombo->currentText();
+    auto ACSVintage = ACSVintageCombo->currentText();
+
+    QJsonArray censusVarsArr;
+    auto censusVarsText = censusVarsLineEdit->text();
+
+    if(!censusVarsText.isEmpty())
+    {
+        QStringList censusVars =censusVarsText.split( ",",Qt::SkipEmptyParts);
+
+        for(auto&& it : censusVars)
+            censusVarsArr.append(it);
+    }
+
+    QJsonArray ACSVarsArr;
+    auto ACSVarsText = ACSVarsLineEdit->text();
+
+    if(!ACSVarsText.isEmpty())
+    {
+
+        QStringList ACSVars = ACSVarsText.split( ",", Qt::SkipEmptyParts);
+
+
+        for(auto&& it : ACSVars)
+            ACSVarsArr.append(it);
+    }
 
     QJsonObject configFile;
 
     configFile.insert("OutputDirectory",outputDir);
     configFile.insert("CountiesArray",countiesArr);
-    configFile.insert("Vintage",vintage);
+    configFile.insert("PopulationDemographicsVintage",censusVintage);
+    configFile.insert("HouseholdIncomeVintage",ACSVintage);
+
+    configFile.insert("CensusVariablesArray",censusVarsArr);
+    configFile.insert("ACSVariablesArray",ACSVarsArr);
 
     QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
 
@@ -523,12 +555,12 @@ int HousingUnitAllocationWidget::importBuidlingsLayer(void)
 }
 
 
-int HousingUnitAllocationWidget::importCensusBlockLayer(void)
+int HousingUnitAllocationWidget::importCensusDemographicsLayer(void)
 {
 
-    this->statusMessage("Importing census block layer.");
+    this->statusMessage("Importing census population demographics layer.");
 
-    auto path = blockLevelPathLineEdit->text();
+    auto path = censusPathLineEdit->text();
 
     QFileInfo fileInfo(path);
     if (!fileInfo.exists())
@@ -539,18 +571,51 @@ int HousingUnitAllocationWidget::importCensusBlockLayer(void)
 
 
     // Create the census block layer
-    blockLayer = theVisualizationWidget->addVectorLayer(path, "Census Blocks", "ogr");
+    censusBlockLayer = theVisualizationWidget->addVectorLayer(path,censusVintageCombo->currentText() + "Census Population Demographics", "ogr");
 
-    if(blockLayer == nullptr)
+    if(censusBlockLayer == nullptr)
     {
         this->errorMessage("Error creating the census block layer");
         return -1;
     }
 
-    mblockLevelCrsSelector->setCrs(QgsCoordinateReferenceSystem("EPSG:4326"));
-    blockLayer->setOpacity(0.50);
+    mCensusCrsSelector->setCrs(QgsCoordinateReferenceSystem("EPSG:4326"));
+    censusBlockLayer->setOpacity(0.50);
 
-    this->statusMessage("Importing census block layer complete.");
+    this->statusMessage("Importing census population demographics layer complete.");
+
+    return 0;
+}
+
+
+int HousingUnitAllocationWidget::importACSIncomeLayer(void)
+{
+
+    this->statusMessage("Importing ACS household income layer.");
+
+    auto path = ACSPathLineEdit->text();
+
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists())
+    {
+        this->errorMessage("Error the file does not exist at the path: "+path);
+        return -1;
+    }
+
+
+    // Create the census block layer
+    ACSBlockGroupLayer = theVisualizationWidget->addVectorLayer(path,ACSVintageCombo->currentText()+" ACS Household Income", "ogr");
+
+    if(ACSBlockGroupLayer == nullptr)
+    {
+        this->errorMessage("Error creating the census block layer");
+        return -1;
+    }
+
+    mACSCrsSelector->setCrs(QgsCoordinateReferenceSystem("EPSG:4326"));
+    ACSBlockGroupLayer->setOpacity(0.50);
+
+    this->statusMessage("Importing ACS household income layer complete.");
 
     return 0;
 }
@@ -568,9 +633,17 @@ int HousingUnitAllocationWidget::importJoinAssets()
         return -1;
     }
 
-    auto future2 = std::async(&HousingUnitAllocationWidget::getBuildingFeatures, this);
+    auto future2 = std::async(&HousingUnitAllocationWidget::extractACSData, this);
 
     if(future2.get() != 0)
+    {
+        emit emitErrorMsg("Error extracting ACS data");
+        return -1;
+    }
+
+    auto future3 = std::async(&HousingUnitAllocationWidget::getBuildingFeatures, this);
+
+    if(future3.get() != 0)
     {
         emit emitErrorMsg("Error getting the building features");
         return -1;
@@ -808,132 +881,49 @@ int HousingUnitAllocationWidget::linkBuildingsAndParcels(void)
 
 int HousingUnitAllocationWidget::extractCensusData(void)
 {
-    emit emitStatusMsg("Extracting census data.");
+    emit emitStatusMsg("Extracting census population demographics data.");
 
     // Lock access to the building layer
     std::unique_lock<std::mutex> lck (buildingLayerSemaphore);
 
-    if(blockLayer == nullptr || buildingsLayer == nullptr)
+    if(censusBlockLayer == nullptr || buildingsLayer == nullptr)
     {
-        emit emitErrorMsg("Error in extracting census data. Either a block layer or buildings layer is missing.");
-        return -1;
-    }
-
-    auto blockLayerFields = blockLayer->fields();
-
-    QStringList fieldNames;
-    for(int i = 0; i<blockLayerFields.count(); ++i)
-    {
-        auto field = blockLayerFields.at(i);
-        auto fieldName = field.name();
-
-        if(fieldName.compare("fid") == 0)
-            continue;
-
-        fieldNames.append("BLOCKLAYER_"+fieldName);
-    }
-
-    std::vector<QgsFeature> blockFeatVec;
-    blockFeatVec.reserve(blockLayer->featureCount());
-
-    auto blockFeatures = blockLayer->getFeatures();
-    QgsFeature blockFeat;
-
-    // Coordinate transformation to transform from the block layer crs to the building layer crs - in the case where they are different
-    if(buildingsLayer->crs() != blockLayer->crs())
-    {
-        QgsCoordinateTransform coordTrans(blockLayer->crs(), buildingsLayer->crs(), QgsProject::instance());
-        while (blockFeatures.nextFeature(blockFeat))
-        {
-            auto geom = blockFeat.geometry();
-            geom.get()->transform(coordTrans);
-            blockFeat.setGeometry(geom);
-            blockFeatVec.push_back(blockFeat);
-        }
-    }
-    else
-    {
-        while (blockFeatures.nextFeature(blockFeat))
-            blockFeatVec.push_back(blockFeat);
-    }
-
-    auto numFeat = buildingsLayer->featureCount();
-
-    if(numFeat == 0)
-    {
-        emit emitErrorMsg("Error, number of features is zero in the buildings layer "+buildingsLayer->name());
-        return -1;
-    }
-
-    QVector< QgsAttributes > fieldAttributes(numFeat, QgsAttributes(fieldNames.size()));
-
-    // Need to return the features with ascending ids so that when we set the updated features to the layer, things will be in order
-    QgsFeatureRequest featRequest;
-    QgsFeatureRequest::OrderByClause orderByClause(QString("id"),true);
-    QList<QgsFeatureRequest::OrderByClause> obcList = {orderByClause};
-    QgsFeatureRequest::OrderBy orderBy(obcList);
-    featRequest.setOrderBy(orderBy);
-
-    auto buildingFeatures = buildingsLayer->getFeatures(featRequest);
-    QgsFeature buildingFeat;
-    int count = 0;
-    while (buildingFeatures.nextFeature(buildingFeat))
-    {
-        // Get the building centroid
-        auto buildCentroidPoint = buildingFeat.geometry().centroid().asPoint();
-
-        // Did we find the information that we are looking for
-        bool found = false;
-
-        //Iterate through the blockLayer features
-        for(auto&& it : blockFeatVec)
-        {
-            auto blockGeom = it.geometry();
-
-            // Do bounding box check which is very fast to check if building is within a block group
-            auto bb = blockGeom.boundingBox();
-            if(bb.contains(buildCentroidPoint))
-            {
-                QgsAttributes featAtrbs = it.attributes();
-
-                //                auto fieldIDx = it.fieldNameIndex("fid");
-
-                for(int i = 0; i<featAtrbs.size(); ++i)
-                {
-                    auto atrb = featAtrbs.at(i);
-
-                    fieldAttributes[count][i] = atrb;
-                }
-
-                found = true;
-                break;
-            }
-        }
-
-        if(!found)
-        {
-            emit emitErrorMsg("Error: could not find a census block for the feature  "+QString::number(buildingFeat.id()));
-            return -1;
-        }
-
-        ++count;
-    }
-
-    if(fieldNames.size() != fieldAttributes.front().size())
-    {
-        emit emitErrorMsg("Error: inconsistency between the field names and number of attributes  "+QString::number(buildingFeat.id()));
+        emit emitErrorMsg("Error in extracting census data. Either a census layer or buildings layer is missing.");
         return -1;
     }
 
     QString errMsg;
-    auto res = theVisualizationWidget->addNewFeatureAttributesToLayer(buildingsLayer,fieldNames,fieldAttributes,errMsg);
+
+    auto res = theVisualizationWidget->joinLayers(censusBlockLayer,buildingsLayer,"CENSUSLAYER_",errMsg);
     if(res != 0)
-    {
         emit emitErrorMsg(errMsg);
+
+    emit emitStatusMsg("Done extracting census data.");
+
+    return 0;
+}
+
+
+int HousingUnitAllocationWidget::extractACSData(void)
+{
+    emit emitStatusMsg("Extracting ACS household income data.");
+
+    // Lock access to the building layer
+    std::unique_lock<std::mutex> lck (buildingLayerSemaphore);
+
+    if(ACSBlockGroupLayer == nullptr || buildingsLayer == nullptr)
+    {
+        emit emitErrorMsg("Error in extracting ACS data. Either a ACS layer or buildings layer is missing.");
         return -1;
     }
 
-    emit emitStatusMsg("Done extracting census data.");
+    QString errMsg;
+
+    auto res = theVisualizationWidget->joinLayers(ACSBlockGroupLayer,buildingsLayer,"ACSLAYER_",errMsg);
+    if(res != 0)
+        emit emitErrorMsg(errMsg);
+
+    emit emitStatusMsg("Done extracting ACS data.");
 
     return 0;
 }
@@ -993,21 +983,19 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
     buildingHBox->addWidget(buildCrsTypeLabel);
     buildingHBox->addWidget(buildingCrsSelector);
 
-
-    mblockLevelCrsSelector = new QgsProjectionSelectionWidget();
-    mblockLevelCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-    mblockLevelCrsSelector->setObjectName(QString::fromUtf8("mCrsSelector"));
-    mblockLevelCrsSelector->setFocusPolicy(Qt::StrongFocus);
-
-    connect(mblockLevelCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,&HousingUnitAllocationWidget::handleBlockLayerCrsChanged);
-
-    QGroupBox* censusDataGB = new QGroupBox("Download Census Data (create .gdb files from scratch)");
+    QGroupBox* censusDataGB = new QGroupBox("Download Census & ACS Data (create .gdb files from scratch)");
     QGridLayout* cdGBLayout = new QGridLayout(censusDataGB);
 
-    QLabel* censusVintageLabel = new QLabel("Census date:");
+    QLabel* censusVintageLabel = new QLabel("Decennial Census date:");
     censusVintageCombo = new QComboBox();
-    censusVintageCombo->addItems(QStringList({"2000","2010"}));
-    censusVintageCombo->setCurrentText("2010");
+    censusVintageCombo->addItems(QStringList({"2010","2020"}));
+    censusVintageCombo->setCurrentText("2020");
+
+    QLabel* ACSVintageLabel = new QLabel("American Community Survey date:");
+    ACSVintageCombo = new QComboBox();
+    ACSVintageCombo->addItems(QStringList({"2010","2015","2020"}));
+    ACSVintageCombo->setCurrentText("2020");
+
 
     // Output dir where the results will be stored
     QLabel* gisDirLabel = new QLabel(tr("Directory to store created .GIS files"),this);
@@ -1022,38 +1010,113 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
     runGetCensusButton = new QPushButton("Download Census Data");
     connect(runGetCensusButton, &QPushButton::clicked, this, &HousingUnitAllocationWidget::handleCreateGISFilesButtonPressed);
 
+    // Line edit to add custom census variables to pull from API
+    censusVarsLineEdit = new QLineEdit;
+    censusVarsLineEdit->setPlaceholderText("Enter custom census variables as a comma separated list, e.g., P2_001N,P2_002N,P2_005N");
+
+    QCheckBox* customCensusVarsCheckBox = new QCheckBox;
+    customCensusVarsCheckBox->setText("Custom census variables");
+    customCensusVarsCheckBox->setChecked(false);
+
+    censusVarsLineEdit->setEnabled(false);
+
+    connect(customCensusVarsCheckBox,&QCheckBox::toggled,this,[&](bool state){
+        censusVarsLineEdit->setEnabled(state);
+        if(!state)
+            censusVarsLineEdit->clear();});
+
+    // Line edit to add custom census variables to pull from API
+    ACSVarsLineEdit = new QLineEdit;
+    ACSVarsLineEdit->setPlaceholderText("Enter custom ACS variables as a comma separated list, e.g., B19001_001E,B19001_002E");
+
+    QCheckBox* customACSVarsCheckBox = new QCheckBox;
+    customACSVarsCheckBox->setText("Custom ACS variables");
+    customACSVarsCheckBox->setChecked(false);
+
+    ACSVarsLineEdit->setEnabled(false);
+
+    connect(customACSVarsCheckBox,&QCheckBox::toggled,this,[&](bool state){
+        ACSVarsLineEdit->setEnabled(state);
+        if(!state)
+            ACSVarsLineEdit->clear();});
+
+
     cdGBLayout->addWidget(censusVintageLabel,0,0);
     cdGBLayout->addWidget(censusVintageCombo,0,1,1,2);
 
-    cdGBLayout->addWidget(gisDirLabel,1,0);
-    cdGBLayout->addWidget(gisDirLineEdit,1,1);
-    cdGBLayout->addWidget(getGISFolderButton,1,2);
+    cdGBLayout->addWidget(customCensusVarsCheckBox,1,0);
+    cdGBLayout->addWidget(censusVarsLineEdit,1,1,1,2);
 
-    cdGBLayout->addWidget(runGetCensusButton,2,0,1,3);
+    cdGBLayout->addWidget(ACSVintageLabel,2,0);
+    cdGBLayout->addWidget(ACSVintageCombo,2,1,1,2);
 
-    QLabel* selectPathText = new QLabel("Census Block-level GIS file (.gdb, .shp, etc.) for population demographics");
-    blockLevelPathLineEdit = new QLineEdit();
-    QPushButton *browseFileButton = new QPushButton("Browse");
+    cdGBLayout->addWidget(customACSVarsCheckBox,3,0);
+    cdGBLayout->addWidget(ACSVarsLineEdit,3,1,1,2);
 
-    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(browseBlockLevelGISFile()));
+    cdGBLayout->addWidget(gisDirLabel,4,0);
+    cdGBLayout->addWidget(gisDirLineEdit,4,1);
+    cdGBLayout->addWidget(getGISFolderButton,4,2);
+
+    cdGBLayout->addWidget(runGetCensusButton,5,0,1,3);
+
+    QLabel* selectCensusPathText = new QLabel("Decennial Census Data GIS file (.gdb, .shp, etc.) for population demographics");
+    censusPathLineEdit = new QLineEdit();
+    QPushButton *browseCensusFileButton = new QPushButton("Browse");
+    connect(browseCensusFileButton,SIGNAL(clicked()),this,SLOT(browseCensusGISFile()));
+
+    QLabel* censusCrsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
+
+    mCensusCrsSelector = new QgsProjectionSelectionWidget();
+    mCensusCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+    mCensusCrsSelector->setObjectName(QString::fromUtf8("mCrsSelector"));
+    mCensusCrsSelector->setFocusPolicy(Qt::StrongFocus);
+    connect(mCensusCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,&HousingUnitAllocationWidget::handleCensusLayerCrsChanged);
+
+    QGroupBox* censusGroupBox = new QGroupBox("Decennial Census");
+    censusGroupBox->setContentsMargins(0,0,0,0);
+    QGridLayout* censusLayout = new QGridLayout(censusGroupBox);
+
+    censusLayout->addWidget(selectCensusPathText, 1,0);
+    censusLayout->addWidget(censusPathLineEdit, 1,1);
+    censusLayout->addWidget(browseCensusFileButton, 1,2);
+    censusLayout->addWidget(censusCrsTypeLabel,2,0);
+    censusLayout->addWidget(mCensusCrsSelector,2,1);
+
+
+    QLabel* selectACSPathText = new QLabel("ACS Data GIS file (.gdb, .shp, etc.) for population demographics");
+    ACSPathLineEdit = new QLineEdit();
+    QPushButton *browseACSFileButton = new QPushButton("Browse");
+    connect(browseACSFileButton,SIGNAL(clicked()),this,SLOT(browseACSGISFile()));
+
+    QLabel* ACScrsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
+
+    mACSCrsSelector = new QgsProjectionSelectionWidget();
+    mACSCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+    mACSCrsSelector->setObjectName(QString::fromUtf8("mCrsSelector"));
+    mACSCrsSelector->setFocusPolicy(Qt::StrongFocus);
+    connect(mACSCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,&HousingUnitAllocationWidget::handleACSLayerCrsChanged);
+
+    QGroupBox* ACSGroupBox = new QGroupBox("American Community Survey (ACS)");
+    ACSGroupBox->setContentsMargins(0,0,0,0);
+    QGridLayout* ACSLayout = new QGridLayout(ACSGroupBox);
+
+    ACSLayout->addWidget(selectACSPathText, 1,0);
+    ACSLayout->addWidget(ACSPathLineEdit, 1,1);
+    ACSLayout->addWidget(browseACSFileButton, 1,2);
+    ACSLayout->addWidget(ACScrsTypeLabel,2,0);
+    ACSLayout->addWidget(mACSCrsSelector,2,1);
 
     mainLayout->addLayout(buildingHBox,0,0,1,5);
     mainLayout->addWidget(censusDataGB, 1,0,1,5);
+    mainLayout->addWidget(censusGroupBox, 2,0,1,5);
+    mainLayout->addWidget(ACSGroupBox, 3,0,1,5);
 
-    mainLayout->addWidget(selectPathText, 2,0);
-    mainLayout->addWidget(blockLevelPathLineEdit, 2,1);
-    mainLayout->addWidget(browseFileButton, 2,2);
-
-    QLabel* crsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
-
-    mainLayout->addWidget(crsTypeLabel,2,3);
-    mainLayout->addWidget(mblockLevelCrsSelector,2,4);
-
-    runJoinButton = new QPushButton("Run");
+    // Button to run the join between all layers
+    runJoinButton = new QPushButton("Run Join");
     connect(runJoinButton, &QPushButton::clicked, this, &HousingUnitAllocationWidget::handleRunJoinButtonPressed);
 
-    mainLayout->addWidget(runJoinButton,3,0);
-    mainLayout->setRowStretch(3,1);
+    mainLayout->addWidget(runJoinButton,4,0);
+    mainLayout->setRowStretch(4,1);
 
     return mainWidget;
 }
@@ -1100,17 +1163,29 @@ void HousingUnitAllocationWidget::handleProcessFinished(int exitCode, QProcess::
         return;
     }
 
-    auto fileName = "CensusData"+censusVintageCombo->currentText()+".shp";
+    auto censusFileName = "PopulationDemographicsCensus"+censusVintageCombo->currentText()+".shp";
 
-    blockLevelPathLineEdit->setText(pathToResultsDirectory+fileName);
+    censusPathLineEdit->setText(pathToResultsDirectory+censusFileName);
 
-    this->importCensusBlockLayer();
+    auto res = this->importCensusDemographicsLayer();
+    if(res != 0)
+        this->errorMessage("Error importing the population demographics layer");
+
+    auto ACSFileName = "HouseholdIncomeACS"+ACSVintageCombo->currentText()+".shp";
+
+    ACSPathLineEdit->setText(pathToResultsDirectory+ACSFileName);
+
+    res = this->importACSIncomeLayer();
+    if(res != 0)
+        this->errorMessage("Error importing the ACS household income layer");
 }
 
 
 void HousingUnitAllocationWidget::handleProcessStarted(void)
 {
-    this->statusMessage("Running script in the background");
+    this->statusMessage("Running script in the background to download census and ACS data. This may take a while.");
+    QApplication::processEvents();
+
     this->runGetCensusButton->setEnabled(false);
 }
 
@@ -1123,10 +1198,17 @@ void HousingUnitAllocationWidget::handleProcessTextOutput(void)
 }
 
 
-void HousingUnitAllocationWidget::handleBlockLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
+void HousingUnitAllocationWidget::handleCensusLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
 {
-    if(blockLayer)
-        blockLayer->setCrs(val);
+    if(censusBlockLayer)
+        censusBlockLayer->setCrs(val);
+}
+
+
+void HousingUnitAllocationWidget::handleACSLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
+{
+    if(ACSBlockGroupLayer)
+        ACSBlockGroupLayer->setCrs(val);
 }
 
 
@@ -1164,7 +1246,7 @@ void HousingUnitAllocationWidget::getStandardOutputDir(void)
         }
 
 
-    QString outputFilePath = workingDir + QDir::separator() + "HousingDemograhics";
+    QString outputFilePath = workingDir + QDir::separator() + "HousingDemographics";
 
     QDir dirGISPoutput(outputFilePath);
 
@@ -1211,20 +1293,37 @@ void HousingUnitAllocationWidget::browseBuildingGISFile(void)
 }
 
 
-void HousingUnitAllocationWidget::browseBlockLevelGISFile(void)
+void HousingUnitAllocationWidget::browseCensusGISFile(void)
 {
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::ExistingFile);
-    QString tmp = dialog.getOpenFileName(this,tr("GIS file of block level data"),QString(QDir(buildingsPathLineEdit->text()).absolutePath()));
+    QString tmp = dialog.getOpenFileName(this,tr("GIS file containing census data"),QString(QDir(censusPathLineEdit->text()).absolutePath()));
     dialog.close();
     if(!tmp.isEmpty())
-        blockLevelPathLineEdit->setText(tmp);
+        censusPathLineEdit->setText(tmp);
     else
         return;
 
-    auto res = this->importCensusBlockLayer();
+    auto res = this->importCensusDemographicsLayer();
     if(res != 0)
-        this->errorMessage("Error importing the census block layer");
+        this->errorMessage("Error importing the census demographics layer");
+}
+
+
+void HousingUnitAllocationWidget::browseACSGISFile(void)
+{
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    QString tmp = dialog.getOpenFileName(this,tr("GIS file containing ACS data"),QString(QDir(ACSPathLineEdit->text()).absolutePath()));
+    dialog.close();
+    if(!tmp.isEmpty())
+        ACSPathLineEdit->setText(tmp);
+    else
+        return;
+
+    auto res = this->importACSIncomeLayer();
+    if(res != 0)
+        this->errorMessage("Error importing the ACS household income layer");
 
 }
 

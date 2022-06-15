@@ -10,7 +10,7 @@ ComponentDatabaseManager::ComponentDatabaseManager()
     theInstance = this;
     theBuildingComponentDb = nullptr;
     theSiteComponentDb = nullptr;
-    thePipelineComponentDb = nullptr;
+    theGasPipelineComponentDb = nullptr;
     theCPTComponentDb = nullptr;
 
 }
@@ -34,12 +34,48 @@ ComponentDatabase* ComponentDatabaseManager::getBuildingComponentDb()
 }
 
 
-ComponentDatabase* ComponentDatabaseManager::getPipelineComponentDb()
+ComponentDatabase* ComponentDatabaseManager::getGasPipelineComponentDb()
 {
-    if(thePipelineComponentDb == nullptr)
-        thePipelineComponentDb = std::make_unique<ComponentDatabase>();
+    if(theGasPipelineComponentDb == nullptr)
+        theGasPipelineComponentDb = std::make_unique<ComponentDatabase>();
 
-    return thePipelineComponentDb.get();
+    return theGasPipelineComponentDb.get();
+}
+
+
+ComponentDatabase* ComponentDatabaseManager::getWaterNetworkPipeComponentDb()
+{
+    if(theWaterNetworkPipeComponentDb == nullptr)
+        theWaterNetworkPipeComponentDb = std::make_unique<ComponentDatabase>();
+
+    return theWaterNetworkPipeComponentDb.get();
+}
+
+
+ComponentDatabase* ComponentDatabaseManager::getWellsandCaprocksComponentDb()
+{
+    if(theWellsandCaptrocksComponentDb == nullptr)
+        theWellsandCaptrocksComponentDb = std::make_unique<ComponentDatabase>();
+
+    return theWellsandCaptrocksComponentDb.get();
+}
+
+
+ComponentDatabase* ComponentDatabaseManager::getAboveGroundGasInfrastructureComponentDb()
+{
+    if(theAboveGroundInfrastructureComponentDb == nullptr)
+        theAboveGroundInfrastructureComponentDb = std::make_unique<ComponentDatabase>();
+
+    return theAboveGroundInfrastructureComponentDb.get();
+}
+
+
+ComponentDatabase* ComponentDatabaseManager::getWaterNetworkNodeComponentDb()
+{
+    if(theWaterNetworkNodeComponentDb == nullptr)
+        theWaterNetworkNodeComponentDb = std::make_unique<ComponentDatabase>();
+
+    return theWaterNetworkNodeComponentDb.get();
 }
 
 

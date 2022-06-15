@@ -1,5 +1,5 @@
-#ifndef ComponentInputWidget_H
-#define ComponentInputWidget_H
+#ifndef NonselectableComponentInputWidget_H
+#define NonselectableComponentInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,7 +39,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-#include "GISSelectable.h"
 #include "ComponentDatabase.h"
 
 #include <set>
@@ -47,74 +46,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QString>
 #include <QObject>
 
-class AssetInputDelegate;
-class AssetFilterDelegate;
 class ComponentTableView;
-class VisualizationWidget;
 
-#ifdef ARC_GIS
-
-class ArcGISVisualizationWidget;
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ClassBreaksRenderer;
-class FeatureCollectionLayer;
-class SimpleRenderer;
-class Feature;
-class Geometry;
-}
-}
-#endif
-
-#ifdef Q_GIS
 class QgsFeature;
 class QGISVisualizationWidget;
 class QgsVectorLayer;
 class QgsGeometry;
-#endif
 
 class QGroupBox;
 class QLineEdit;
 class QTableWidget;
 class QLabel;
-class QVBoxLayout;
 
-class ComponentInputWidget : public  SimCenterAppWidget, public GISSelectable
+
+class NonselectableComponentInputWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-    virtual ~ComponentInputWidget();
-
-    virtual int loadComponentVisualization() = 0;
-
-#ifdef ARC_GIS
-    virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
-    virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
-    virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
-    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
-#endif
-
-    void insertSelectedAssets(QgsFeatureIds& featureIds);
-    void clearSelectedAssets(void);
+    explicit NonselectableComponentInputWidget(QWidget *parent, ComponentDatabase* compDB, QGISVisualizationWidget* visWidget, QString componentType);
+    virtual ~NonselectableComponentInputWidget();
 
     ComponentTableView *getTableWidget() const;
-
-    // Set the filter string and select the components
-    void setFilterString(const QString& filter);
-    QString getFilterString(void);
-
-    int numberComponentsSelected(void);
 
     // Set custom labels in widget
     void setComponentType(const QString &value);
     void setLabel1(const QString &value);
     void setLabel2(const QString &value);
-    void setLabel3(const QString &value);
     void setGroupBoxText(const QString &value);
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -129,35 +87,29 @@ public:
 
     QStringList getTableHorizontalHeadings();
 
-    // Selects all of the components for analysis
-    void selectAllComponents(void);
+    bool isEmpty();
 
-    int applyFilterString(const QString& filter);
+    void setPathToComponentInputFile(const QString &newPathToComponentInputFile);
 
 signals:
     void headingValuesChanged(QStringList);
+    void doneLoadingComponents(void);
+
 
 public slots:
-    void handleComponentSelection(void);
     void handleCellChanged(const int row, const int col);
+    virtual bool loadComponentData(void);
 
 protected slots:
-    void selectComponents(void);
-    virtual bool loadComponentData(void);
     void chooseComponentInfoFileDialog(void);
-    void clearComponentSelection(void);
-    void handleComponentFilter(void);
 
 protected:
 
-#ifdef ARC_GIS
-    ArcGISVisualizationWidget* theVisualizationWidget;
-#endif
+    QGISVisualizationWidget* theVisualizationWidget;
 
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    ComponentTableView* componentTableWidget;
 
-    ComponentTableView* componentTableWidget = nullptr;
-    ComponentDatabase*  theComponentDb = nullptr;
+    ComponentDatabase*  theComponentDb;
 
     // Returns a vector of sorted items that are unique
     template <typename T>
@@ -172,33 +124,22 @@ protected:
         vec.resize(std::distance(vec.begin(), ip));
     }
 
-    AssetInputDelegate* selectComponentsLineEdit = nullptr;
-    AssetFilterDelegate* filterDelegateWidget = nullptr;
-
     int offset;
 
     QString pathToComponentInputFile;
-    QLineEdit* componentFileLineEdit = nullptr;
+    QLineEdit* componentFileLineEdit;
 
-    QGroupBox* componentGroupBox = nullptr;
-    QVBoxLayout* mainGridLayout = nullptr;
+    QGroupBox* componentGroupBox;
 
     QLabel* label1 = nullptr;
     QLabel* label2 = nullptr;
-    QLabel* label3 = nullptr;
 
     QString appType;
     QString componentType;
 
     QStringList tableHorizontalHeadings;
 
-    virtual void createComponentsBox(void);
-
-#ifdef ARC_GIS
-    // Map to store the selected features according to their UID
-    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
-#endif
-
+    void createComponentsBox(void);
 };
 
-#endif // ComponentInputWidget_H
+#endif // NonselectableComponentInputWidget_H

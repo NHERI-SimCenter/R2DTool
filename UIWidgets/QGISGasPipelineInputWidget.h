@@ -44,16 +44,33 @@ class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
 class QGISGasPipelineInputWidget : public ComponentInputWidget
 {
 public:
     QGISGasPipelineInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
-    int loadComponentVisualization();
+#ifdef OpenSRA
+    bool loadFileFromPath(const QString& filePath);
 
-    void clear();
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+
+    void createComponentsBox(void) override;
+#endif
+
+    int loadComponentVisualization(void) override;
+
+    void clear() override;
 
 private:
+
+#ifdef OpenSRA
+    JsonGroupBoxWidget* locationWidget = nullptr;
+#endif
 
     QgsVectorLayer* mainLayer = nullptr;
     QgsVectorLayer* selectedFeaturesLayer = nullptr;

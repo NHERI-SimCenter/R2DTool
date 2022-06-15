@@ -1,10 +1,10 @@
-﻿#ifndef AssetsWidget_H
-#define AssetsWidget_H
+#ifndef QGISWaterNetworkInputWidget_H
+#define QGISWaterNetworkInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -28,36 +28,66 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "MultiComponentR2D.h"
+#include "ComponentInputWidget.h"
 
-class SimCenterAppSelection;
-class VisualizationWidget;
+class NonselectableComponentInputWidget;
 
-class AssetsWidget : public  MultiComponentR2D
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
+
+class QGISWaterNetworkInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit AssetsWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~AssetsWidget();
+    QGISWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
 
-    void clear(void);
+    int loadNodesVisualization();
+    int loadPipelinesVisualization();
+
+    void clear();
+
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool copyFiles(QString &destName);
+
+public slots:
+    void handleAssetsLoaded();
+
+protected slots:
+    void chooseFileDialog(void);
 
 private:
-    SimCenterAppSelection* buildingWidget = nullptr;
-    SimCenterAppSelection* gasPipelineWidget = nullptr;
-    SimCenterAppSelection* waterNetworkWidget = nullptr;
-    VisualizationWidget* visualizationWidget = nullptr;
+
+    // The .inp file (EPANET format)
+    QString pathToINPInputFile;
+    QLineEdit* inpFileLineEdit;
+
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    ComponentDatabase*  theNodesDb = nullptr;
+    ComponentDatabase*  thePipelinesDb = nullptr;
+
+    NonselectableComponentInputWidget* theNodesWidget = nullptr;
+    NonselectableComponentInputWidget* thePipelinesWidget = nullptr;
+
+    QgsVectorLayer* nodesMainLayer = nullptr;
+    QgsVectorLayer* pipelinesMainLayer = nullptr;
+
+    // ID, QgsGeometry
+    QMap<int, QgsPointXY> nodePointsMap;
+
 };
 
-#endif // AssetsWidget_H
+#endif // QGISWaterNetworkInputWidget_H

@@ -183,15 +183,18 @@ private slots:
 
     void handleCreateGISFilesButtonPressed(void);
 
-    void handleBlockLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+    void handleCensusLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+    void handleACSLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
     void handleBuildingLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
     void browseGISresultsFolderDir(void);
-    void browseBlockLevelGISFile(void);
+    void browseCensusGISFile(void);
+    void browseACSGISFile(void);
     void browseBuildingGISFile(void);
 
     int importBuidlingsLayer(void);
-    int importCensusBlockLayer(void);
+    int importCensusDemographicsLayer(void);
+    int importACSIncomeLayer(void);
 
     int handleRunJoinButtonPressed();
 
@@ -225,8 +228,8 @@ private:
 
     QgsVectorLayer* buildingsLayer = nullptr;
     QgsVectorLayer* addressPointLayer = nullptr;
-    QgsVectorLayer* blockLayer = nullptr;
-    QgsVectorLayer* blockGroupLayer = nullptr;
+    QgsVectorLayer* censusBlockLayer = nullptr;
+    QgsVectorLayer* ACSBlockGroupLayer = nullptr;
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
@@ -241,18 +244,23 @@ private:
     int linkBuildingsAndParcels(void);
 
     int extractCensusData(void);
+    int extractACSData(void);
 
     QProcess* process = nullptr;
 
-    QgsProjectionSelectionWidget* mblockLevelCrsSelector = nullptr;
-
+    QgsProjectionSelectionWidget* mCensusCrsSelector = nullptr;
+    QgsProjectionSelectionWidget* mACSCrsSelector = nullptr;
     QgsProjectionSelectionWidget* buildingCrsSelector = nullptr;
 
-
     QComboBox* censusVintageCombo = nullptr;
-    QLineEdit* blockLevelPathLineEdit = nullptr;
-    QLineEdit* gisDirLineEdit = nullptr;
+    QComboBox* ACSVintageCombo = nullptr;
 
+    QLineEdit* censusVarsLineEdit = nullptr;
+    QLineEdit* ACSVarsLineEdit = nullptr;
+
+    QLineEdit* censusPathLineEdit = nullptr;
+    QLineEdit* ACSPathLineEdit = nullptr;
+    QLineEdit* gisDirLineEdit = nullptr;
     QLineEdit* buildingsPathLineEdit = nullptr;
 
     QPushButton* runGetCensusButton = nullptr;
