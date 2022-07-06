@@ -54,7 +54,7 @@ public:
     QGISGasPipelineInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
 #ifdef OpenSRA
-    bool loadFileFromPath(const QString& filePath);
+    bool loadFileFromPath(const QString& filePath) override;
 
     bool inputFromJSON(QJsonObject &rvObject) override;
     bool outputToJSON(QJsonObject &rvObject) override;
@@ -62,7 +62,7 @@ public:
     void createComponentsBox(void) override;
 #endif
 
-    int loadComponentVisualization(void) override;
+    int loadAssetVisualization(void) override;
 
     void clear() override;
 

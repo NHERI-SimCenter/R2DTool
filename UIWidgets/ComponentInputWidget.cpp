@@ -117,8 +117,7 @@ ComponentInputWidget::~ComponentInputWidget()
 }
 
 
-
-bool ComponentInputWidget::loadComponentData(void)
+bool ComponentInputWidget::loadAssetData(void)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
@@ -205,7 +204,7 @@ bool ComponentInputWidget::loadComponentData(void)
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     
-    this->loadComponentVisualization();
+    this->loadAssetVisualization();
 
     // Get the ID of the first and last component
     bool OK;
@@ -251,7 +250,7 @@ void ComponentInputWidget::chooseComponentInfoFileDialog(void)
     // Set file name & entry in qLine edit
     componentFileLineEdit->setText(pathToComponentInputFile);
     
-    this->loadComponentData();
+    this->loadAssetData();
     
     return;
 }
@@ -269,12 +268,12 @@ void ComponentInputWidget::createComponentsBox(void)
     componentGroupBox->setFlat(true);
     componentGroupBox->setContentsMargins(0,0,0,0);
     
-    mainGridLayout = new QVBoxLayout();
-    mainGridLayout->setMargin(0);
-    mainGridLayout->setSpacing(5);
-    mainGridLayout->setContentsMargins(10,0,0,0);
+    mainWidgetLayout = new QVBoxLayout();
+    mainWidgetLayout->setMargin(0);
+    mainWidgetLayout->setSpacing(5);
+    mainWidgetLayout->setContentsMargins(10,0,0,0);
     
-    componentGroupBox->setLayout(mainGridLayout);
+    componentGroupBox->setLayout(mainWidgetLayout);
     
     label1 = new QLabel();
     
@@ -329,8 +328,8 @@ void ComponentInputWidget::createComponentsBox(void)
     pathLayout->addWidget(browseFileButton);
     
     // Add a vertical spacer at the bottom to push everything up
-    mainGridLayout->addWidget(label1);
-    mainGridLayout->addLayout(pathLayout);
+    mainWidgetLayout->addWidget(label1);
+    mainWidgetLayout->addLayout(pathLayout);
 
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
     selectComponentsLayout->addWidget(label2);
@@ -338,14 +337,14 @@ void ComponentInputWidget::createComponentsBox(void)
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
     
-    mainGridLayout->addLayout(selectComponentsLayout);
+    mainWidgetLayout->addLayout(selectComponentsLayout);
 
-    mainGridLayout->addWidget(label3,0,Qt::AlignCenter);
-    mainGridLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
+    mainWidgetLayout->addWidget(label3,0,Qt::AlignCenter);
+    mainWidgetLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
     
-    mainGridLayout->addStretch();
+    mainWidgetLayout->addStretch();
 
-    this->setLayout(mainGridLayout);
+    this->setLayout(mainWidgetLayout);
 }
 
 
@@ -626,6 +625,14 @@ QString ComponentInputWidget::getPathToComponentFile(void) const
 }
 
 
+void ComponentInputWidget::setPathToComponentFile(const QString& path)
+{
+    pathToComponentInputFile = path;
+
+    componentFileLineEdit->setText(pathToComponentInputFile);
+}
+
+
 bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     jsonObject["Application"]=appType;
@@ -705,7 +712,7 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             pathToComponentInputFile = fileName;
             componentFileLineEdit->setText(fileName);
 
-            this->loadComponentData();
+            this->loadAssetData();
             foundFile = true;
 
         } else {
@@ -720,7 +727,7 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             if (fileInfo.exists(pathToComponentInputFile)) {
                 componentFileLineEdit->setText(pathToComponentInputFile);
                 foundFile = true;
-                this->loadComponentData();
+                this->loadAssetData();
 
             } else {
                 // adam .. adam .. adam
@@ -729,7 +736,7 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 if (fileInfo.exists(pathToComponentInputFile)) {
                     componentFileLineEdit->setText(pathToComponentInputFile);
                     foundFile = true;
-                    this->loadComponentData();
+                    this->loadAssetData();
                 }
                 else
                 {
@@ -923,10 +930,8 @@ Esri::ArcGISRuntime::FeatureCollectionLayer* ComponentInputWidget::getSelectedFe
 {
     return nullptr;
 }
-#endif
 
 
-#ifdef ARC_GIS
 void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
 {
 

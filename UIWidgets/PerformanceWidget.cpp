@@ -1,5 +1,3 @@
-#ifndef RasterHazardInputWidget_H
-#define RasterHazardInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,80 +36,64 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
+#include "ComponentInputWidget.h"
+#include "PerformanceWidget.h"
+#include "NoArgSimCenterApp.h"
+#include "NoneWidget.h"
+#include "WaterNetworkPerformanceModel.h"
+#include "SecondaryComponentSelection.h"
+#include "SimCenterAppSelection.h"
+#include "VisualizationWidget.h"
+#include "sectiontitle.h"
 
-#include <qgscoordinatereferencesystem.h>
+// Qt headers
+#include <QCheckBox>
+#include <QColorTransform>
+#include <QDebug>
+#include <QFileDialog>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QMessageBox>
+#include <QPointer>
+#include <QPushButton>
+#include <QTableWidget>
+#include <QVBoxLayout>
 
-#include <memory>
-
-#include <QMap>
-
-class VisualizationWidget;
-class QGISVisualizationWidget;
-class QgsRasterDataProvider;
-class QgsProjectionSelectionWidget;
-class QgsRasterLayer;
-class SimCenterUnitsWidget;
-class CRSSelectionWidget;
-
-class QLineEdit;
-class QProgressBar;
-class QLabel;
-class QComboBox;
-class QGridLayout;
-
-class RasterHazardInputWidget : public SimCenterAppWidget
+PerformanceWidget::PerformanceWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
+    : MultiComponentR2D(parent)
 {
-    Q_OBJECT
+    waterNetworkWidget = new SimCenterAppSelection(QString("Water Network Modeling"), QString("WaterNetworkModeling"), this);
 
-public:
-    RasterHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~RasterHazardInputWidget();
+    SimCenterAppWidget *waterNetworkPerfModel = new WaterNetworkPerformanceModel(theRVContainer,this);
+    SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
-    QWidget* getRasterHazardInputWidget(void);
+    waterNetworkWidget->addComponent(QString("Water Network Performance"), QString("WaterNetworkPerformance"), waterNetworkPerfModel);
+    waterNetworkWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-    bool inputFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &jsonObj);
-    bool inputAppDataFromJSON(QJsonObject &jsonObj);
-    bool outputAppDataToJSON(QJsonObject &jsonObj);
-    bool copyFiles(QString &destDir);
-    void clear(void);
+    this->addComponent("Water Network",waterNetworkWidget);
 
-    // Returns the value of the raster layer in the given band
-    // Note that band numbers start from 1 and not 0!
-    double sampleRaster(const double& x, const double& y, const int& bandNumber);
+    this->hideAll();
+}
 
-private slots:
-    void chooseEventFileDialog(void);
-    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
-signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
-    void loadingComplete(const bool value);
+PerformanceWidget::~PerformanceWidget()
+{
 
-private:
+}
 
-    int loadRaster(void);
 
-    QGISVisualizationWidget* theVisualizationWidget;
+void PerformanceWidget::clear(void)
+{
+    waterNetworkWidget->clear();
+}
 
-    QString eventFile;
-    QString pathToEventFile;
 
-    QStringList bandNames;
 
-    QString rasterFilePath;
-    QLineEdit *rasterPathLineEdit;
 
-    QWidget* fileInputWidget;
 
-    QgsRasterDataProvider* dataProvider;
-    QgsRasterLayer* rasterlayer;
 
-    SimCenterUnitsWidget* unitsWidget;
-    CRSSelectionWidget* crsSelectorWidget;
-    QComboBox* eventTypeCombo;
-};
-
-#endif // RasterHazardInputWidget_H

@@ -106,14 +106,14 @@ HousingUnitAllocationWidget::HousingUnitAllocationWidget(QWidget *parent, Visual
     connect(this,&HousingUnitAllocationWidget::emitDownloadMainThread,this,&HousingUnitAllocationWidget::handleDownloadMainThread);
 
     // Test to remove start
-    auto buildingsGISFile =  "/Users/steve/Desktop/SimCenter/Examples/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
+//    auto buildingsGISFile =  "/Users/steve/Desktop/SimCenter/Examples/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
 
-    buildingsPathLineEdit->setText(buildingsGISFile);
-    this->importBuidlingsLayer();
-    buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
+//    buildingsPathLineEdit->setText(buildingsGISFile);
+//    this->importBuidlingsLayer();
+//    buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
 
-    censusVintageCombo->setCurrentText("2010");
-    ACSVintageCombo->setCurrentText("2010");
+//    censusVintageCombo->setCurrentText("2010");
+//    ACSVintageCombo->setCurrentText("2010");
 
     // this->createGISFiles();
     // Test to remove end

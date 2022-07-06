@@ -49,7 +49,7 @@ class QGISBuildingInputWidget : public ComponentInputWidget
 public:
     QGISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
-    int loadComponentVisualization();
+    int loadAssetVisualization();
 
     void clear();
 

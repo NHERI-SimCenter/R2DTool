@@ -1,5 +1,5 @@
-#ifndef RasterHazardInputWidget_H
-#define RasterHazardInputWidget_H
+#ifndef CRSSELECTIONWIDGET_H
+#define CRSSELECTIONWIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,80 +38,39 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
+// Widget used to select the coordinate reference system
 
-#include <qgscoordinatereferencesystem.h>
+#include <QWidget>
+#include <QJsonObject>
 
-#include <memory>
+#include "qgscoordinatereferencesystem.h"
 
-#include <QMap>
-
-class VisualizationWidget;
-class QGISVisualizationWidget;
-class QgsRasterDataProvider;
 class QgsProjectionSelectionWidget;
-class QgsRasterLayer;
-class SimCenterUnitsWidget;
-class CRSSelectionWidget;
 
-class QLineEdit;
-class QProgressBar;
-class QLabel;
-class QComboBox;
-class QGridLayout;
-
-class RasterHazardInputWidget : public SimCenterAppWidget
+class CRSSelectionWidget : public QWidget
 {
+
     Q_OBJECT
 
 public:
-    RasterHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~RasterHazardInputWidget();
+    CRSSelectionWidget(QWidget* parent = nullptr);
 
-    QWidget* getRasterHazardInputWidget(void);
-
-    bool inputFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &jsonObj);
-    bool inputAppDataFromJSON(QJsonObject &jsonObj);
-    bool outputAppDataToJSON(QJsonObject &jsonObj);
-    bool copyFiles(QString &destDir);
     void clear(void);
 
-    // Returns the value of the raster layer in the given band
-    // Note that band numbers start from 1 and not 0!
-    double sampleRaster(const double& x, const double& y, const int& bandNumber);
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(const QJsonObject &jsonObj, QString& errMsg);
 
-private slots:
-    void chooseEventFileDialog(void);
-    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+    void setCRS(const QgsCoordinateReferenceSystem & val);
 
 signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
-    void loadingComplete(const bool value);
+
+    // Emitted when the selected CRS is changed
+    void crsChanged(const QgsCoordinateReferenceSystem& val);
 
 private:
 
-    int loadRaster(void);
+    QgsProjectionSelectionWidget* mCrsSelector = nullptr;
 
-    QGISVisualizationWidget* theVisualizationWidget;
-
-    QString eventFile;
-    QString pathToEventFile;
-
-    QStringList bandNames;
-
-    QString rasterFilePath;
-    QLineEdit *rasterPathLineEdit;
-
-    QWidget* fileInputWidget;
-
-    QgsRasterDataProvider* dataProvider;
-    QgsRasterLayer* rasterlayer;
-
-    SimCenterUnitsWidget* unitsWidget;
-    CRSSelectionWidget* crsSelectorWidget;
-    QComboBox* eventTypeCombo;
 };
 
-#endif // RasterHazardInputWidget_H
+#endif // CRSSELECTIONWIDGET_H

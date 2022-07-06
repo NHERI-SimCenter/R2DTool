@@ -42,9 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsfeature.h>
 #include <qgsfeaturerequest.h>
 
-ComponentDatabase::ComponentDatabase()
+ComponentDatabase::ComponentDatabase(QString type) : offset(0), componentType(type)
 {
-    offset = 0;
     messageHandler = PythonProgressDialog::getInstance();
 }
 

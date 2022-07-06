@@ -130,8 +130,8 @@ private slots:
     void soilParamaterFileDialog(void);
     void soilScriptFileDialog(void);
 
-
 signals:
+    void eventTypeChangedSignal(QString eventType);
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
     void loadingComplete(const bool value);
     void writeSiteDataCsv(bool);

@@ -145,7 +145,9 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/SiteSpecifiedMapping.cpp \
             $$PWD/UIWidgets/NoneWidget.cpp \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.cpp \
+            $$PWD/UIWidgets/WaterNetworkPerformanceModel.cpp \
             $$PWD/UIWidgets/PelicunDLWidget.cpp \
+            $$PWD/UIWidgets/PerformanceWidget.cpp \
             $$PWD/UIWidgets/ResultsWidget.cpp \
             $$PWD/UIWidgets/SecondaryComponentSelection.cpp \
             $$PWD/UIWidgets/ShakeMapWidget.cpp \
@@ -259,7 +261,9 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/SiteSpecifiedMapping.h \
             $$PWD/UIWidgets/NoneWidget.h \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.h \
+            $$PWD/UIWidgets/WaterNetworkPerformanceModel.h \
             $$PWD/UIWidgets/PelicunDLWidget.h \
+            $$PWD/UIWidgets/PerformanceWidget.h \
             $$PWD/UIWidgets/ResultsWidget.h \
             $$PWD/UIWidgets/SecondaryComponentSelection.h \
             $$PWD/UIWidgets/ShakeMapWidget.h \
@@ -332,20 +336,24 @@ contains(DEFINES, Q_GIS)  {
 SOURCES +=  $$PWD/Tools/QGISHurricanePreprocessor.cpp \
             $$PWD/UIWidgets/QGISGasPipelineInputWidget.cpp \
             $$PWD/UIWidgets/QGISBuildingInputWidget.cpp \
-            $$PWD/UIWidgets/QGISWaterNetworkInputWidget.cpp \
+            $$PWD/UIWidgets/QGISCSVWaterNetworkInputWidget.cpp \
             $$PWD/UIWidgets/RasterHazardInputWidget.cpp \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.cpp \
-            $$PWD/UIWidgets/GISBuildingInputWidget.cpp \
+            $$PWD/UIWidgets/GISAssetInputWidget.cpp \
+            $$PWD/UIWidgets/QGISWaterNetworkInputWidget.cpp \
             $$PWD/UIWidgets/MapViewWindow.cpp \
+            $$PWD/UIWidgets/CRSSelectionWidget.cpp \
 
 HEADERS +=  $$PWD/Tools/QGISHurricanePreprocessor.h \
             $$PWD/UIWidgets/QGISGasPipelineInputWidget.h \
             $$PWD/UIWidgets/QGISBuildingInputWidget.h \
-            $$PWD/UIWidgets/QGISWaterNetworkInputWidget.h \
+            $$PWD/UIWidgets/QGISCSVWaterNetworkInputWidget.h \
             $$PWD/UIWidgets/RasterHazardInputWidget.h \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.h \
-            $$PWD/UIWidgets/GISBuildingInputWidget.h \
+            $$PWD/UIWidgets/GISAssetInputWidget.h \
+            $$PWD/UIWidgets/QGISWaterNetworkInputWidget.h \
             $$PWD/UIWidgets/MapViewWindow.h \
+            $$PWD/UIWidgets/CRSSelectionWidget.h \
 
 }
 

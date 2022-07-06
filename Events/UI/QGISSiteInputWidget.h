@@ -51,7 +51,7 @@ class QGISSiteInputWidget : public ComponentInputWidget
 public:
     QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
-    int loadComponentVisualization();
+    int loadAssetVisualization();
 
     void reloadComponentData(QString newDataFile);
 

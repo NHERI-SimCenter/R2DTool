@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentDatabaseManager.h"
 #include "AssetFilterDelegate.h"
 
+#include <QFileInfo>
+
 #include <qgsfield.h>
 #include <qgsfillsymbol.h>
 #include <qgsvectorlayer.h>
@@ -50,15 +52,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 QGISWellsCaprocksInputWidget::QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
     theComponentDb = ComponentDatabaseManager::getInstance()->getWellsandCaprocksComponentDb();
-
-    // Test to remove
-//    pathToComponentInputFile = "/Users/steve/Desktop/ExWellCaprock.csv";
-//    this->loadComponentData();
-
 }
 
 
-int QGISWellsCaprocksInputWidget::loadComponentVisualization()
+#ifdef OpenSRA
+bool QGISWellsCaprocksInputWidget::loadFileFromPath(const QString& filePath)
+{
+    QFileInfo fileInfo;
+    if (!fileInfo.exists(filePath))
+        return false;
+
+    pathToComponentInputFile = filePath;
+    componentFileLineEdit->setText(filePath);
+
+    this->loadAssetData();
+
+    return true;
+}
+#endif
+
+
+int QGISWellsCaprocksInputWidget::loadAssetVisualization()
 {
     // Create the building attributes that are fixed
     QgsFields featFields;

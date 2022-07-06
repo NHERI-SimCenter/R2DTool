@@ -81,7 +81,7 @@ TreeItem* CustomListWidget::addItem(const QString item, QString model, const dou
 TreeItem* CustomListWidget::addItem(const QJsonObject& obj, TreeItem* parent)
 {
 
-    if(!obj.contains("ModelName") || !obj.contains("Key"))
+    if(!obj.contains("ModelName") || !obj.contains("Key") || !obj.contains("VarTypes"))
     {
         qCritical()<<"Something went wrong in "<<__FUNCTION__;
         return nullptr;
@@ -133,9 +133,16 @@ TreeItem* CustomListWidget::addItem(const QString item, TreeItem* parent)
 
 void CustomListWidget::removeItem(const QString& itemID)
 {
-    treeModel->removeItemFromTree(itemID);
+    auto res = treeModel->removeItemFromTree(itemID);
+
+    if(res == false)
+        return;
+
+    auto thisItem = this->getItemJsonObject(itemID);
 
     modelsMap.remove(itemID);
+
+    emit itemRemoved(thisItem);
 
     this->update();
 }
@@ -403,6 +410,21 @@ void CustomListWidget::selectRow(int i)
     emit clicked(rowIndex);
 }
 
+
+QStringList CustomListWidget::getListOfItems(void)
+{
+    QStringList items;
+
+    QVector<TreeItem *> allItems = treeModel->getAllChildren();
+
+    for(auto&& it : allItems)
+    {
+        auto name = it->getName();
+        items.append(name);
+    }
+
+    return items;
+}
 
 
 QJsonObject CustomListWidget::getItemJsonObject(const QString& itemID)

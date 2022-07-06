@@ -1,5 +1,5 @@
-#ifndef RasterHazardInputWidget_H
-#define RasterHazardInputWidget_H
+#ifndef GISAssetInputWidget_H
+#define GISAssetInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,80 +38,50 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
+#include "ComponentInputWidget.h"
 
-#include <qgscoordinatereferencesystem.h>
-
-#include <memory>
-
-#include <QMap>
-
-class VisualizationWidget;
-class QGISVisualizationWidget;
-class QgsRasterDataProvider;
-class QgsProjectionSelectionWidget;
-class QgsRasterLayer;
-class SimCenterUnitsWidget;
+class QgsVectorLayer;
 class CRSSelectionWidget;
 
-class QLineEdit;
-class QProgressBar;
-class QLabel;
-class QComboBox;
-class QGridLayout;
-
-class RasterHazardInputWidget : public SimCenterAppWidget
+class GISAssetInputWidget : public  ComponentInputWidget
 {
     Q_OBJECT
 
 public:
-    RasterHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~RasterHazardInputWidget();
+    explicit GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = "GIS_to_ASSET");
+    virtual ~GISAssetInputWidget();
 
-    QWidget* getRasterHazardInputWidget(void);
+    int loadAssetVisualization() override;
 
-    bool inputFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &jsonObj);
-    bool inputAppDataFromJSON(QJsonObject &jsonObj);
-    bool outputAppDataToJSON(QJsonObject &jsonObj);
-    bool copyFiles(QString &destDir);
-    void clear(void);
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
 
-    // Returns the value of the raster layer in the given band
-    // Note that band numbers start from 1 and not 0!
-    double sampleRaster(const double& x, const double& y, const int& bandNumber);
+    bool copyFiles(QString &destName) override;
 
-private slots:
-    void chooseEventFileDialog(void);
-    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+    void clear(void) override;
+
+    bool isEmpty();
+
+    // Set the coordinate reference system for the layer
+    void setCRS(const QgsCoordinateReferenceSystem & val);
+
+    // Get the asset layer
+    QgsVectorLayer *getAssetLayer() const;
 
 signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
-    void loadingComplete(const bool value);
+    void doneLoadingComponents(void);
+
+public slots:
+    bool loadAssetData(void) override;
+
+private slots:
+    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
 private:
 
-    int loadRaster(void);
+    QgsVectorLayer* vectorLayer = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
 
-    QGISVisualizationWidget* theVisualizationWidget;
-
-    QString eventFile;
-    QString pathToEventFile;
-
-    QStringList bandNames;
-
-    QString rasterFilePath;
-    QLineEdit *rasterPathLineEdit;
-
-    QWidget* fileInputWidget;
-
-    QgsRasterDataProvider* dataProvider;
-    QgsRasterLayer* rasterlayer;
-
-    SimCenterUnitsWidget* unitsWidget;
-    CRSSelectionWidget* crsSelectorWidget;
-    QComboBox* eventTypeCombo;
 };
 
-#endif // RasterHazardInputWidget_H
+#endif // GISAssetInputWidget_H

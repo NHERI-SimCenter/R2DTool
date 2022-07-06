@@ -1,5 +1,5 @@
-#ifndef RasterHazardInputWidget_H
-#define RasterHazardInputWidget_H
+#ifndef QGISCSVWaterNetworkInputWidget_H
+#define QGISCSVWaterNetworkInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,80 +38,49 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
+#include "ComponentInputWidget.h"
 
-#include <qgscoordinatereferencesystem.h>
+class NonselectableComponentInputWidget;
 
-#include <memory>
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
 
-#include <QMap>
-
-class VisualizationWidget;
-class QGISVisualizationWidget;
-class QgsRasterDataProvider;
-class QgsProjectionSelectionWidget;
-class QgsRasterLayer;
-class SimCenterUnitsWidget;
-class CRSSelectionWidget;
-
-class QLineEdit;
-class QProgressBar;
-class QLabel;
-class QComboBox;
-class QGridLayout;
-
-class RasterHazardInputWidget : public SimCenterAppWidget
+class QGISCSVWaterNetworkInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    RasterHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~RasterHazardInputWidget();
+    QGISCSVWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~QGISCSVWaterNetworkInputWidget();
 
-    QWidget* getRasterHazardInputWidget(void);
+    virtual int loadNodesVisualization();
+    virtual int loadPipelinesVisualization();
 
-    bool inputFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &jsonObj);
-    bool inputAppDataFromJSON(QJsonObject &jsonObj);
-    bool outputAppDataToJSON(QJsonObject &jsonObj);
-    bool copyFiles(QString &destDir);
-    void clear(void);
+    void clear();
 
-    // Returns the value of the raster layer in the given band
-    // Note that band numbers start from 1 and not 0!
-    double sampleRaster(const double& x, const double& y, const int& bandNumber);
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool copyFiles(QString &destName);
 
-private slots:
-    void chooseEventFileDialog(void);
-    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+protected slots:
+    void handleAssetsLoaded();
 
-signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
-    void loadingComplete(const bool value);
+protected:
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-private:
+    ComponentDatabase*  theNodesDb = nullptr;
+    ComponentDatabase*  thePipelinesDb = nullptr;
 
-    int loadRaster(void);
+    NonselectableComponentInputWidget* theNodesWidget = nullptr;
+    NonselectableComponentInputWidget* thePipelinesWidget = nullptr;
 
-    QGISVisualizationWidget* theVisualizationWidget;
+    QgsVectorLayer* nodesMainLayer = nullptr;
+    QgsVectorLayer* pipelinesMainLayer = nullptr;
 
-    QString eventFile;
-    QString pathToEventFile;
+    // ID, QgsGeometry
+    QMap<int, QgsPointXY> nodePointsMap;
 
-    QStringList bandNames;
-
-    QString rasterFilePath;
-    QLineEdit *rasterPathLineEdit;
-
-    QWidget* fileInputWidget;
-
-    QgsRasterDataProvider* dataProvider;
-    QgsRasterLayer* rasterlayer;
-
-    SimCenterUnitsWidget* unitsWidget;
-    CRSSelectionWidget* crsSelectorWidget;
-    QComboBox* eventTypeCombo;
 };
 
-#endif // RasterHazardInputWidget_H
+#endif // QGISCSVWaterNetworkInputWidget_H

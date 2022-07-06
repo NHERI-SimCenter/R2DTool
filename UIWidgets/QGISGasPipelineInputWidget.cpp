@@ -21,13 +21,10 @@
 QGISGasPipelineInputWidget::QGISGasPipelineInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
 {
     theComponentDb = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
-
-    QGISGasPipelineInputWidget::createComponentsBox();
-
 }
 
 
-int QGISGasPipelineInputWidget::loadComponentVisualization(void)
+int QGISGasPipelineInputWidget::loadAssetVisualization(void)
 {
 
     QgsFields featFields;
@@ -69,9 +66,9 @@ int QGISGasPipelineInputWidget::loadComponentVisualization(void)
     auto headers = this->getTableHorizontalHeadings();
 
     auto indexLatStart = headers.indexOf("LAT_BEGIN");
-    auto indexLonStart = headers.indexOf("LONG_BEGIN");
+    auto indexLonStart = headers.indexOf("LON_BEGIN");
     auto indexLatEnd = headers.indexOf("LAT_END");
-    auto indexLonEnd = headers.indexOf("LONG_END");
+    auto indexLonEnd = headers.indexOf("LON_END");
 
     if(indexLatStart == -1 || indexLonStart == -1 || indexLatEnd == -1 || indexLonEnd == -1)
     {
@@ -210,7 +207,7 @@ bool QGISGasPipelineInputWidget::loadFileFromPath(const QString& filePath)
     pathToComponentInputFile = filePath;
     componentFileLineEdit->setText(filePath);
 
-    this->loadComponentData();
+    this->loadAssetData();
 
     return true;
 }
@@ -288,9 +285,9 @@ void QGISGasPipelineInputWidget::createComponentsBox(void)
 
     locationWidget->setLayout(latLonLayout);
 
-    auto insPoint = mainGridLayout->count();
+    auto insPoint = mainWidgetLayout->count();
 
-    mainGridLayout->insertWidget(insPoint-3,locationWidget);
+    mainWidgetLayout->insertWidget(insPoint-3,locationWidget);
 }
 
 
@@ -300,14 +297,6 @@ void QGISGasPipelineInputWidget::createComponentsBox(void)
 
 void QGISGasPipelineInputWidget::clear()
 {
-//    if(selectedFeaturesLayer != nullptr)
-//    {
-//        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
-//        theVisualizationWidget->deregisterLayerForSelection(selectedFeaturesLayer->id());
-//    }
-//    if(mainLayer != nullptr)
-//        theVisualizationWidget->removeLayer(mainLayer);
-
     ComponentInputWidget::clear();
 }
 

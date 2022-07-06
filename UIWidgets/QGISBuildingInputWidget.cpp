@@ -53,7 +53,7 @@ QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, VisualizationW
 }
 
 
-int QGISBuildingInputWidget::loadComponentVisualization()
+int QGISBuildingInputWidget::loadAssetVisualization()
 {
     // Create the building attributes that are fixed
     QgsFields featFields;

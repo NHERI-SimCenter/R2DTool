@@ -22,7 +22,7 @@ ArcGISGasPipelineInputWidget::ArcGISGasPipelineInputWidget(QWidget *parent, QStr
 }
 
 
-int ArcGISGasPipelineInputWidget::loadComponentVisualization()
+int ArcGISGasPipelineInputWidget::loadAssetVisualization()
 {
     // Select a column that will define the pipeline layers
     //    int columnToMapLayers = 0;

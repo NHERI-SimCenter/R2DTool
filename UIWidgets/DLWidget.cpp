@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentInputWidget.h"
 #include "DLWidget.h"
 #include "PelicunDLWidget.h"
+#include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
@@ -66,15 +67,22 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
 
-    buildingWidget = new SimCenterAppSelection(QString("Damage & Loss Application"), QString("DL"), this);
+    buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("DL"), this);
 
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
     buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
 
-    pipelineWidget = new SimCenterAppSelection(QString("Damage & Loss Application"), QString("DL"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("DL"), this);
+
+    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("DL"), this);
+
+    SimCenterAppWidget *noneWidget = new NoneWidget(this);
+    WDNWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
+    this->addComponent("Water Network",WDNWidget);
+
     this->hideAll();
 }
 
@@ -89,6 +97,7 @@ void DLWidget::clear(void)
 {
     buildingWidget->clear();
     pipelineWidget->clear();
+    WDNWidget->clear();
 }
 
 

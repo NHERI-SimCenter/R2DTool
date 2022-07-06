@@ -1,5 +1,5 @@
-#ifndef GISBuildingInputWidget_H
-#define GISBuildingInputWidget_H
+#ifndef PerformanceWidget_H
+#define PerformanceWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,32 +38,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "MultiComponentR2D.h"
 
-class QgsVectorLayer;
+class SimCenterAppSelection;
+class RandomVariablesContainer;
 
-class GISBuildingInputWidget : public  ComponentInputWidget
+class PerformanceWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
 public:
-    explicit GISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-    virtual ~GISBuildingInputWidget();
+    explicit PerformanceWidget(QWidget *parent, RandomVariablesContainer * RVContainer);
+    ~PerformanceWidget();
 
-    int loadComponentVisualization() override;
-
-    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
-    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
-
-    bool copyFiles(QString &destName) override;
-
-private slots:
-    bool loadComponentData(void) override;
+    void clear(void);
 
 private:
-
-    QgsVectorLayer* shapeFileLayer = nullptr;
-
+    SimCenterAppSelection *waterNetworkWidget = nullptr;
 };
 
-#endif // GISBuildingInputWidget_H
+#endif // PerformanceWidget_H

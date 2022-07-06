@@ -54,7 +54,7 @@ class QgsFeature;
 class ComponentDatabase
 {
 public:
-    ComponentDatabase();
+    ComponentDatabase(QString type);
 
     bool isEmpty(void);
 
@@ -110,6 +110,8 @@ private:
     QgsVectorLayer* selectedLayer = nullptr;
 
     int offset;
+
+    QString componentType;
 };
 
 #endif // ComponentDATABASE_H

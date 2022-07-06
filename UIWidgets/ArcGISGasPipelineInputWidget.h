@@ -21,7 +21,7 @@ class ArcGISGasPipelineInputWidget : public ComponentInputWidget
 public:
     ArcGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType = QString());
 
-    int loadComponentVisualization();
+    int loadAssetVisualization();
 
     Esri::ArcGISRuntime::Feature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
     int removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);

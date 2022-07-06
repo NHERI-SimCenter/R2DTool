@@ -60,7 +60,7 @@ ArcGISBuildingInputWidget::ArcGISBuildingInputWidget(QWidget *parent, QString co
 }
 
 
-int ArcGISBuildingInputWidget::loadComponentVisualization()
+int ArcGISBuildingInputWidget::loadAssetVisualization()
 {
     QList<Field> fields;
     fields.append(Field::createDouble("LossRatio", "0.0"));

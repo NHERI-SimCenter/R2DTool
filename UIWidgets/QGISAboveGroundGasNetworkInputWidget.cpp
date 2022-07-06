@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentDatabaseManager.h"
 #include "AssetFilterDelegate.h"
 
+#include "QFileInfo"
+
 #include <qgsfield.h>
 #include <qgsfillsymbol.h>
 #include <qgsvectorlayer.h>
@@ -58,7 +60,7 @@ QGISAboveGroundGasNetworkInputWidget::QGISAboveGroundGasNetworkInputWidget(QWidg
 }
 
 
-int QGISAboveGroundGasNetworkInputWidget::loadComponentVisualization()
+int QGISAboveGroundGasNetworkInputWidget::loadAssetVisualization()
 {
     // Create the building attributes that are fixed
     QgsFields featFields;
@@ -224,17 +226,25 @@ int QGISAboveGroundGasNetworkInputWidget::loadComponentVisualization()
 }
 
 
+#ifdef OpenSRA
+bool QGISAboveGroundGasNetworkInputWidget::loadFileFromPath(const QString& filePath)
+{
+    QFileInfo fileInfo;
+    if (!fileInfo.exists(filePath))
+        return false;
+
+    pathToComponentInputFile = filePath;
+    componentFileLineEdit->setText(filePath);
+
+    this->loadAssetData();
+
+    return true;
+}
+#endif
+
 
 void QGISAboveGroundGasNetworkInputWidget::clear()
 {    
-//    if(selectedFeaturesLayer != nullptr)
-//    {
-//        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
-//        theVisualizationWidget->deregisterLayerForSelection(selectedFeaturesLayer->id());
-//    }
-//    if(mainLayer != nullptr)
-//        theVisualizationWidget->removeLayer(mainLayer);
-
     ComponentInputWidget::clear();
 }
 

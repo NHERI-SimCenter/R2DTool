@@ -70,8 +70,22 @@ public:
    }
 #endif
 
+   // Get and set the json obj for this parameter
+   inline const QJsonObject& getJsonObj() const
+   {
+       return jsonObj;
+   }
 
-private:
+
+   inline void setJsonObj(const QJsonObject &newJsonObj)
+   {
+       jsonObj = newJsonObj;
+   }
+
+protected:
+
+   QJsonObject jsonObj;
+
 
 };
 

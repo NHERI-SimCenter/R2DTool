@@ -49,9 +49,13 @@ class QGISWellsCaprocksInputWidget : public ComponentInputWidget
 public:
     QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
-    int loadComponentVisualization();
+    int loadAssetVisualization() override;
 
-    void clear();
+#ifdef OpenSRA
+    bool loadFileFromPath(const QString& filePath) override;
+#endif
+
+    void clear() override;
 
 private:
 

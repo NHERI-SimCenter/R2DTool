@@ -90,7 +90,11 @@ public:
     explicit ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
     virtual ~ComponentInputWidget();
 
-    virtual int loadComponentVisualization() = 0;
+    virtual int loadAssetVisualization() = 0;
+
+#ifdef OpenSRA
+    virtual bool loadFileFromPath(const QString& filePath) = 0;
+#endif
 
 #ifdef ARC_GIS
     virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
@@ -124,6 +128,7 @@ public:
     bool copyFiles(QString &destName);
 
     QString getPathToComponentFile(void) const;
+    void setPathToComponentFile(const QString& path);
 
     virtual void clear(void);
 
@@ -143,7 +148,7 @@ public slots:
 
 protected slots:
     void selectComponents(void);
-    virtual bool loadComponentData(void);
+    virtual bool loadAssetData(void);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
     void handleComponentFilter(void);
@@ -181,7 +186,7 @@ protected:
     QLineEdit* componentFileLineEdit = nullptr;
 
     QGroupBox* componentGroupBox = nullptr;
-    QVBoxLayout* mainGridLayout = nullptr;
+    QVBoxLayout* mainWidgetLayout = nullptr;
 
     QLabel* label1 = nullptr;
     QLabel* label2 = nullptr;

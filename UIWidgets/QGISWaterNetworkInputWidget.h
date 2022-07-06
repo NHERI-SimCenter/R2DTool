@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "ComponentInputWidget.h"
 
-class NonselectableComponentInputWidget;
+class GISAssetInputWidget;
 
 class QgsVectorLayer;
 class QgsFeature;
@@ -52,9 +52,10 @@ class QGISWaterNetworkInputWidget : public SimCenterAppWidget
 
 public:
     QGISWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~QGISWaterNetworkInputWidget();
 
-    int loadNodesVisualization();
-    int loadPipelinesVisualization();
+    virtual int loadNodesVisualization();
+    virtual int loadPipelinesVisualization();
 
     void clear();
 
@@ -62,31 +63,18 @@ public:
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool copyFiles(QString &destName);
 
-public slots:
+protected slots:
     void handleAssetsLoaded();
 
-protected slots:
-    void chooseFileDialog(void);
-
-private:
-
-    // The .inp file (EPANET format)
-    QString pathToINPInputFile;
-    QLineEdit* inpFileLineEdit;
+protected:
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    ComponentDatabase*  theNodesDb = nullptr;
-    ComponentDatabase*  thePipelinesDb = nullptr;
-
-    NonselectableComponentInputWidget* theNodesWidget = nullptr;
-    NonselectableComponentInputWidget* thePipelinesWidget = nullptr;
+    GISAssetInputWidget* theNodesWidget = nullptr;
+    GISAssetInputWidget* thePipelinesWidget = nullptr;
 
     QgsVectorLayer* nodesMainLayer = nullptr;
     QgsVectorLayer* pipelinesMainLayer = nullptr;
-
-    // ID, QgsGeometry
-    QMap<int, QgsPointXY> nodePointsMap;
 
 };
 

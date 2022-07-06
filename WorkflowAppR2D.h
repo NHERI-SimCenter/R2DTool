@@ -68,6 +68,7 @@ class UQOptions;
 class UQWidget;
 class UQ_Results;
 class VisualizationWidget;
+class PerformanceWidget;
 
 class WorkflowAppR2D : public WorkflowAppWidget
 {
@@ -135,6 +136,7 @@ private:
     RandomVariablesContainer* theRVs;
     ResultsWidget* theResultsWidget;
     LoadResultsDialog* resultsDialog;
+    PerformanceWidget* thePerformanceWidget;
 
     //
     // Objects for running the workflow and obtaining results

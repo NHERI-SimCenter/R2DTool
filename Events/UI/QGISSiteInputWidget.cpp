@@ -56,7 +56,7 @@ QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* v
 }
 
 
-int QGISSiteInputWidget::loadComponentVisualization()
+int QGISSiteInputWidget::loadAssetVisualization()
 {
     // initialization
     soilPropComplete = false;
@@ -324,7 +324,7 @@ void QGISSiteInputWidget::reloadComponentData(QString newDataFile)
         this->statusMessage("Loading the new site data file...");
         pathToComponentInputFile = newDataFile;
         componentFileLineEdit->setText(pathToComponentInputFile);
-        this->loadComponentData();
+        this->loadAssetData();
         this->statusMessage("New site data loaded.");
         this->applyFilterString(this->getFilterString());
     }
@@ -504,7 +504,7 @@ bool QGISSiteInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             pathToComponentInputFile = fileName;
             componentFileLineEdit->setText(fileName);
 
-            this->loadComponentData();
+            this->loadAssetData();
             foundFile = true;
 
         } else {
@@ -520,7 +520,7 @@ bool QGISSiteInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             if (fileInfo.exists(pathToComponentInputFile)) {
                 componentFileLineEdit->setText(pathToComponentInputFile);
                 foundFile = true;
-                this->loadComponentData();
+                this->loadAssetData();
 
             } else {
                 // adam .. adam .. adam
@@ -529,7 +529,7 @@ bool QGISSiteInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 if (fileInfo.exists(pathToComponentInputFile)) {
                     componentFileLineEdit->setText(pathToComponentInputFile);
                     foundFile = true;
-                    this->loadComponentData();
+                    this->loadAssetData();
                 }
                 else
                 {

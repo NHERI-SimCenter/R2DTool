@@ -36,13 +36,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "GISBuildingInputWidget.h"
+#include "GISAssetInputWidget.h"
 
 #include "AssetInputDelegate.h"
 #include "AssetFilterDelegate.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
 #include "ComponentDatabaseManager.h"
+#include "CRSSelectionWidget.h"
 #include "CSVReaderWriter.h"
 
 #include "QGISVisualizationWidget.h"
@@ -59,41 +60,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsmarkersymbol.h>
 #include <qgslinesymbol.h>
 
+
 // Test to remove
 #include <chrono>
 using namespace std::chrono;
 
 
-GISBuildingInputWidget::GISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
-{    
-
+GISAssetInputWidget::GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
+{
     this->setContentsMargins(0,0,0,0);
 
-    QString txt1 = "Load buildings from a GIS file (.shp, .gdb., etc.)";
+
+    QString txt1 = "Load "+componentType.toLower()+" from a GIS file (.shp, .gdb., etc.)";
     this->setLabel1(txt1);
 
-    QString txt2 = "Enter the IDs of one or more buildings to analyze."
-                   "Define a range of buildings with a dash and separate multiple buildings with a comma.";
+    QString txt2 = "Enter the IDs of one or more "+componentType.toLower()+" to analyze."
+                   "Define a range of "+componentType.toLower()+" with a dash and separate multiple "+componentType.toLower()+" with a comma.";
     this->setLabel2(txt2);
 
-    QString txt3 = "Building Information";
+    QString txt3 = componentType + " Information";
     this->setLabel3(txt3);
 
-    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+    // Remove the spaces
+    auto typeStr = componentType.remove(" ");
+
+    theComponentDb = ComponentDatabaseManager::getInstance()->getComponentDb(typeStr);
+
+    assert(theComponentDb);
+
+    // The CRS selection
+    crsSelectorWidget = new CRSSelectionWidget();
+
+    connect(crsSelectorWidget,&CRSSelectionWidget::crsChanged,this,&GISAssetInputWidget::handleLayerCrsChanged);
+
+    auto insPoint = mainWidgetLayout->count();
+    mainWidgetLayout->insertWidget(insPoint-3,crsSelectorWidget);
 
     //    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonGIS/GalvestonBuildings/galveston-bldg-v7.shp";
     //    componentFileLineEdit->setText(pathToComponentInputFile);
     //    this->loadComponentData();
+
+
 }
 
 
-GISBuildingInputWidget::~GISBuildingInputWidget()
+GISAssetInputWidget::~GISAssetInputWidget()
 {
 
 }
 
 
-int GISBuildingInputWidget::loadComponentVisualization()
+int GISAssetInputWidget::loadAssetVisualization()
 {
 
     //    enum GeometryType
@@ -105,7 +122,7 @@ int GISBuildingInputWidget::loadComponentVisualization()
     //      NullGeometry
     //    };
     // , "linestring", "polygon","multipoint","multilinestring","multipolygon"
-    auto type = shapeFileLayer->geometryType();
+    auto type = vectorLayer->geometryType();
 
     QString typeStr = "Null";
     if(type == QgsWkbTypes::PointGeometry)
@@ -116,7 +133,7 @@ int GISBuildingInputWidget::loadComponentVisualization()
         typeStr = "polygon";
 
     // Create the selected building layer
-    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(typeStr,"Selected Buildings");
+    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(typeStr,"Selected "+componentType);
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -124,7 +141,7 @@ int GISBuildingInputWidget::loadComponentVisualization()
         return -1;
     }
 
-    selectedFeaturesLayer->setCrs(shapeFileLayer->crs());
+    selectedFeaturesLayer->setCrs(vectorLayer->crs());
 
     QgsSymbol* selectFeatSymbol = nullptr;
     if(type == QgsWkbTypes::PointGeometry)
@@ -151,7 +168,7 @@ int GISBuildingInputWidget::loadComponentVisualization()
 
     auto pr2 = selectedFeaturesLayer->dataProvider();
 
-    auto fields = shapeFileLayer->dataProvider()->fields();
+    auto fields = vectorLayer->dataProvider()->fields();
 
     auto res2 = pr2->addAttributes(fields.toList());
 
@@ -162,13 +179,13 @@ int GISBuildingInputWidget::loadComponentVisualization()
 
     QVector<QgsMapLayer*> mapLayers;
     mapLayers.push_back(selectedFeaturesLayer);
-    mapLayers.push_back(shapeFileLayer);
+    mapLayers.push_back(vectorLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,"Buildings");
+    theVisualizationWidget->createLayerGroup(mapLayers,componentType);
 
-    theComponentDb->setMainLayer(shapeFileLayer);
+    theComponentDb->setMainLayer(vectorLayer);
 
-    filterDelegateWidget  = new AssetFilterDelegate(shapeFileLayer);
+    filterDelegateWidget  = new AssetFilterDelegate(vectorLayer);
 
     theComponentDb->setSelectedLayer(selectedFeaturesLayer);
 
@@ -176,7 +193,7 @@ int GISBuildingInputWidget::loadComponentVisualization()
 }
 
 
-bool GISBuildingInputWidget::loadComponentData(void)
+bool GISAssetInputWidget::loadAssetData(void)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
@@ -208,15 +225,15 @@ bool GISBuildingInputWidget::loadComponentData(void)
     // Name the layer according to the filename
     auto fName = file.fileName();
 
-    shapeFileLayer = theVisualizationWidget->addVectorLayer(pathToComponentInputFile, fName, "ogr");
+    vectorLayer = theVisualizationWidget->addVectorLayer(pathToComponentInputFile, fName, "ogr");
 
-    if(shapeFileLayer == nullptr)
+    if(vectorLayer == nullptr)
     {
         this->errorMessage("Error, failed to add GIS layer");
         return false;
     }
 
-    auto numFeat = shapeFileLayer->featureCount();
+    auto numFeat = vectorLayer->featureCount();
 
     if(numFeat == 0)
     {
@@ -228,12 +245,12 @@ bool GISBuildingInputWidget::loadComponentData(void)
         QApplication::processEvents();
     }
 
-    auto layerId = shapeFileLayer->id();
+    auto layerId = vectorLayer->id();
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
-    auto features = shapeFileLayer->getFeatures();
+    auto features = vectorLayer->getFeatures();
 
-    auto fields = shapeFileLayer->fields();
+    auto fields = vectorLayer->fields();
 
     if(fields.size() == 0)
     {
@@ -255,6 +272,8 @@ bool GISBuildingInputWidget::loadComponentData(void)
 
     tableHorizontalHeadings = fieldsStrList;
 
+    auto numFields = fieldsStrList.size();
+
     // Data containing the table
     QVector<QStringList> data(numFeat);
 
@@ -274,10 +293,13 @@ bool GISBuildingInputWidget::loadComponentData(void)
             auto attribute = attributes[i];
             auto attributeStr = attribute.toString();
 
-            if(attributeStr.compare("ID")==0)
-                continue;
-
             attributeStrList.push_back(attributeStr);
+        }
+
+        if(attributeStrList.size() != numFields)
+        {
+            this->errorMessage("Error, the number of attributes: "+QString::number(attributeStrList.size())+" for feature " +QString::number(feat.id())+" does not equal the number of fields "+QString::number(numFields));
+            return false;
         }
 
         data[i] = attributeStrList;
@@ -297,7 +319,7 @@ bool GISBuildingInputWidget::loadComponentData(void)
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
-    this->loadComponentVisualization();
+    this->loadAssetVisualization();
 
     // Offset is 0 since QGIS always numbers components starting at 1
     offset = 0;
@@ -307,18 +329,20 @@ bool GISBuildingInputWidget::loadComponentData(void)
     this->statusMessage("Done loading assets");
     QApplication::processEvents();
 
+    emit doneLoadingComponents();
+
     return true;
 }
 
 
-bool GISBuildingInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool GISAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
     // First get the default information and then modify
     ComponentInputWidget::outputAppDataToJSON(jsonObject);
 
-    // Here we will export everything to a .csv so we can use the CSV to BIM app
-    jsonObject["Application"]="GIS_to_BIM";
+    // Here we will export everything to a .csv
+    jsonObject["Application"] = appType;
 
     // It assumes the file name stays the same, but we need to modify the extension so that it is in csv and not .gdb, or .shp, or whatever
     QFileInfo componentFile(componentFileLineEdit->text());
@@ -330,9 +354,11 @@ bool GISBuildingInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     if(appData.isEmpty())
         return false;
 
-    appData["buildingSourceFile"] = baseNameCSV;
+    crsSelectorWidget->outputAppDataToJSON(appData);
 
-    appData["buildingGISFile"] = componentFile.fileName();
+    appData["assetSourceFile"] = baseNameCSV;
+
+    appData["assetGISFile"] = componentFile.fileName();
 
     jsonObject["ApplicationData"] = appData;
 
@@ -340,13 +366,13 @@ bool GISBuildingInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 }
 
 
-bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
     //jsonObject["Application"]=appType;
     if (jsonObject.contains("Application")) {
         if (appType != jsonObject["Application"].toString()) {
-            this->errorMessage("GISBuildingInputWidget::inputFRommJSON app name conflict");
+            this->errorMessage("GISAssetInputWidget::inputFRommJSON app name conflict");
             return false;
         }
     }
@@ -358,8 +384,8 @@ bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
-        if (appData.contains("buildingGISFile"))
-            fileName = appData["buildingGISFile"].toString();
+        if (appData.contains("assetGISFile"))
+            fileName = appData["assetGISFile"].toString();
 
         QFileInfo fileInfo(fileName);
 
@@ -368,7 +394,7 @@ bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             componentFileLineEdit->setText(fileInfo.absoluteFilePath());
             pathToComponentInputFile = fileInfo.absoluteFilePath();
 
-            this->loadComponentData();
+            this->loadAssetData();
             foundFile = true;
 
         } else {
@@ -383,7 +409,7 @@ bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             if (fileInfo.exists(pathToComponentInputFile)) {
                 componentFileLineEdit->setText(pathToComponentInputFile);
                 foundFile = true;
-                this->loadComponentData();
+                this->loadAssetData();
 
             } else {
                 // adam .. adam .. adam
@@ -392,7 +418,7 @@ bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 if (fileInfo.exists(pathToComponentInputFile)) {
                     componentFileLineEdit->setText(pathToComponentInputFile);
                     foundFile = true;
-                    this->loadComponentData();
+                    this->loadAssetData();
                 }
                 else
                 {
@@ -413,13 +439,32 @@ bool GISBuildingInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (appData.contains("filter"))
             this->setFilterString(appData["filter"].toString());
 
+
+        // Set the CRS
+        QString errMsg;
+        if(!crsSelectorWidget->inputAppDataFromJSON(appData,errMsg))
+            this->infoMessage(errMsg);
+
     }
+
 
     return true;
 }
 
 
-bool GISBuildingInputWidget::copyFiles(QString &destName)
+bool GISAssetInputWidget::isEmpty()
+{
+    if(vectorLayer == nullptr)
+        return true;
+
+    if(vectorLayer->featureCount() == 0)
+        return true;
+
+    return false;
+}
+
+
+bool GISAssetInputWidget::copyFiles(QString &destName)
 {
     auto compLineEditText = componentFileLineEdit->text();
 
@@ -491,4 +536,31 @@ bool GISBuildingInputWidget::copyFiles(QString &destName)
     // For testing end
 
     return true;
+}
+
+
+void GISAssetInputWidget::setCRS(const QgsCoordinateReferenceSystem & val)
+{
+    crsSelectorWidget->setCRS(val);
+}
+
+
+void GISAssetInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
+{
+    if(vectorLayer)
+        vectorLayer->setCrs(val);
+}
+
+
+QgsVectorLayer *GISAssetInputWidget::getAssetLayer() const
+{
+    return vectorLayer;
+}
+
+
+void GISAssetInputWidget::clear(void)
+{
+    crsSelectorWidget->clear();
+
+    ComponentInputWidget::clear();
 }

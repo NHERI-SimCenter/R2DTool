@@ -53,13 +53,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LocalApplication.h"
 #include "MainWindowWorkflowApp.h"
 #include "ModelWidget.h"
+#include "PerformanceWidget.h"
 #include "RandomVariablesContainer.h"
 #include "RemoteApplication.h"
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
 #include "ResultsWidget.h"
 #include "Utils/PythonProgressDialog.h"
-//#include "RunLocalWidget.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
 #include "UQWidget.h"
@@ -230,6 +230,7 @@ void WorkflowAppR2D::initialize(void)
     // theDecisionVariableWidget = new DecisionVariableWidget(this);
     theUQWidget = new UQWidget(this, theRVs);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
+    thePerformanceWidget = new PerformanceWidget(this,theRVs);
 
     connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
@@ -262,16 +263,20 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
+    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
+
 
     theComponentSelection->displayComponent("VIZ");
+
+    theComponentSelection->setItemWidthHeight(100,55);
 
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidget->setAssetTypeState("Buildings", true);
 
     // Test to remove start
     // theComponentSelection->displayComponent("HAZ");
-    // loadFile("/Users/steve/Desktop/Seaside/input_data/input.json");
-    //  loadResults();
+     loadFile("/Users/steve/Desktop/E11WaterNetwork/input.json");
+      loadResults();
     // Test to remove end
 
 }
@@ -347,6 +352,12 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
         this->errorMessage("Error writing DL data to output");
         result = false;
     }
+
+    if (thePerformanceWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing PRF data to output");
+        thePerformanceWidget->clear();
+        result = false;
+    }
     
     if (theUQWidget->outputAppDataToJSON(apps) == false) {
         this->errorMessage("Error writing UQ data to output");
@@ -383,6 +394,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     theAnalysisWidget->outputToJSON(jsonObjectTop);
     theDamageAndLossWidget->outputToJSON(jsonObjectTop);
     theHazardToAssetWidget->outputToJSON(jsonObjectTop);
+    thePerformanceWidget->outputToJSON(jsonObjectTop);
     //theUQWidget->outputToJSON(jsonObjectTop);
     //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
@@ -412,6 +424,7 @@ void WorkflowAppR2D::clear(void)
     theAssetsWidget->clear();
     theHazardsWidget->clear();
     theDamageAndLossWidget->clear();
+    thePerformanceWidget->clear();
     theResultsWidget->clear();
     theVisualizationWidget->clear();
     // progressDialog->clear();
@@ -475,6 +488,12 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
         if (theDamageAndLossWidget->inputAppDataFromJSON(apps) == false) {
             this->errorMessage("DL failed to read input data");
             theDamageAndLossWidget->clear();
+            result = false;
+        }
+
+        if (thePerformanceWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("PRF failed to read input data");
+            thePerformanceWidget->clear();
             result = false;
         }
 
@@ -759,10 +778,9 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         theHazardToAssetWidget->show(text);
         theModelingWidget->show(text);
         theAnalysisWidget->show(text);
-        // theEngDemandParamWidget->show(text);
+        thePerformanceWidget->show(text);
         theDamageAndLossWidget->show(text);
         theUQWidget->show(text);
-        //theDecisionVariableWidget->show(text);
     }
     else
     {
@@ -770,10 +788,9 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         theHazardToAssetWidget->hide(text);
         theModelingWidget->hide(text);
         theAnalysisWidget->hide(text);
-        // theEngDemandParamWidget->hide(text);
+        thePerformanceWidget->hide(text);
         theDamageAndLossWidget->hide(text);
         theUQWidget->hide(text);
-        //theDecisionVariableWidget->hide(text);
     }
 
 }

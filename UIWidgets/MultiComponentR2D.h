@@ -45,6 +45,7 @@ class QFrame;
 class QStackedWidget;
 class QPushButton;
 class QVBoxLayout;
+class QHBoxLayout;
 
 class MultiComponentR2D : public  SimCenterAppWidget
 {
@@ -67,19 +68,29 @@ public:
     bool addComponent(QString text, SimCenterAppWidget *);
     SimCenterAppWidget *getComponent(QString text);
 
+    // SG add
+    SimCenterAppWidget* getCurrentComponent(void);
+    void hideSelectionWidget(void);
+    int getCurrentIndex(void) const;
+    int getIndexOfComponent(QString text) const;
+
 public slots:
     void selectionChangedSlot(const QString &);
 
+signals:
+    void selectionChangedSignal(const QString &);
+
+protected:
+    virtual bool displayComponent(QString text);
+    QVBoxLayout *theMainLayout = nullptr;
 
 private:
-    virtual bool displayComponent(QString text);
-
     int currentIndex;
     int numHidden;
 
-    QFrame *theSelectionWidget;
-    QVBoxLayout *theSelectionLayout;
-    QStackedWidget *theStackedWidget;
+    QFrame *theSelectionWidget = nullptr;
+    QVBoxLayout *theSelectionLayout = nullptr;
+    QStackedWidget *theStackedWidget = nullptr;
 
     QList<QString> theNames;
     QList<QPushButton *>thePushButtons;

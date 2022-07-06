@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterUnitsWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentDatabase.h"
+#include "CRSSelectionWidget.h"
 
 #include <cstdlib>
 
@@ -71,7 +72,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgshuesaturationfilter.h>
 #include <qgsrasterdataprovider.h>
 #include <qgscollapsiblegroupbox.h>
-#include <qgsprojectionselectionwidget.h>
 #include <qgsproject.h>
 
 // Test to remove start
@@ -89,7 +89,6 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     dataProvider = nullptr;
     rasterlayer = nullptr;
     eventTypeCombo = nullptr;
-    mCrsSelector = nullptr;
 
     fileInputWidget = nullptr;
     rasterFilePath = "";
@@ -126,7 +125,7 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     appData["rasterFile"] = rasterFile.fileName();
 
-    appData["CRS"] = mCrsSelector->crs().authid();
+    crsSelectorWidget->outputAppDataToJSON(appData);
 
     appData["eventClassification"] = eventTypeCombo->currentText();
 
@@ -283,32 +282,9 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 
         // Set the CRS
-        auto crsValue = appData["CRS"].toString();
-
-        if(crsValue.isEmpty())
-        {
-            this->infoMessage("Warning: No coordinate reference system provided for raster layer, using project CRS. Check and change if necessary.");
-            QgsProject::instance()->crs();
-
-            auto projectCrs = QgsProject::instance()->crs();
-            mCrsSelector->setCrs(projectCrs);
-        }
-        else
-        {
-            QgsCoordinateReferenceSystem newCrs(crsValue);
-
-            if(!newCrs.isValid())
-            {
-                this->infoMessage("Warning: the provided coordinate reference system "+crsValue+" is not valid, using project crs. Check and change if necessary.");
-                auto projectCrs = QgsProject::instance()->crs();
-                mCrsSelector->setCrs(projectCrs);
-            }
-            else
-            {
-                mCrsSelector->setCrs(newCrs);
-            }
-        }
-
+        QString errMsg;
+        if(!crsSelectorWidget->inputAppDataFromJSON(appData,errMsg))
+            this->infoMessage(errMsg);
 
         return true;
     }
@@ -325,12 +301,9 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
     fileInputWidget->setLayout(fileLayout);
 
-    mCrsSelector = new QgsProjectionSelectionWidget();
-    mCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-    mCrsSelector->setObjectName(QString::fromUtf8("mCrsSelector"));
-    mCrsSelector->setFocusPolicy(Qt::StrongFocus);
+    crsSelectorWidget = new CRSSelectionWidget();
 
-    connect(mCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,&RasterHazardInputWidget::handleLayerCrsChanged);
+    connect(crsSelectorWidget,&CRSSelectionWidget::crsChanged,this,&RasterHazardInputWidget::handleLayerCrsChanged);
 
 
     QLabel* selectComponentsText = new QLabel("Event Raster File");
@@ -358,7 +331,7 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     fileLayout->addWidget(eventTypeCombo, 1,1,1,2);
 
     fileLayout->addWidget(crsTypeLabel,2,0);
-    fileLayout->addWidget(mCrsSelector,2,1,1,2);
+    fileLayout->addWidget(crsSelectorWidget,2,1,1,2);
 
     fileLayout->addWidget(unitsWidget, 3,0,1,3);
 
@@ -419,7 +392,7 @@ void RasterHazardInputWidget::clear(void)
     eventFile.clear();
     pathToEventFile.clear();
 
-    mCrsSelector->setCrs(QgsCoordinateReferenceSystem());
+    crsSelectorWidget->clear();
 
     eventTypeCombo->setCurrentIndex(0);
 
@@ -468,7 +441,9 @@ int RasterHazardInputWidget::loadRaster(void)
 
     QApplication::processEvents();
 
-    rasterlayer = theVisualizationWidget->addRasterLayer(rasterFilePath, "Raster Hazard", "gdal");
+    auto evtType = eventTypeCombo->currentText();
+
+    rasterlayer = theVisualizationWidget->addRasterLayer(rasterFilePath, evtType+" Raster Hazard", "gdal");
 
     if(rasterlayer == nullptr)
     {
@@ -478,8 +453,7 @@ int RasterHazardInputWidget::loadRaster(void)
 
     rasterlayer->setOpacity(0.5);
 
-    auto evtType = eventTypeCombo->currentText();
-
+    // Color it differently for the various hazards
     if(evtType.compare("Tsunami") == 0)
     {
         QgsHueSaturationFilter *hueSaturationFilter = rasterlayer->hueSaturationFilter();
@@ -487,6 +461,28 @@ int RasterHazardInputWidget::loadRaster(void)
         hueSaturationFilter->setGrayscaleMode(QgsHueSaturationFilter::GrayscaleMode::GrayscaleOff);
         hueSaturationFilter->setColorizeOn(true);
         QColor col(Qt::blue);
+        hueSaturationFilter->setColorizeColor(col);
+        hueSaturationFilter->setColorizeStrength(100);
+        rasterlayer->setBlendMode( QPainter::CompositionMode_SourceOver);
+    }
+    else if(evtType.compare("Earthquake") == 0)
+    {
+        QgsHueSaturationFilter *hueSaturationFilter = rasterlayer->hueSaturationFilter();
+        hueSaturationFilter->setSaturation(100);
+        hueSaturationFilter->setGrayscaleMode(QgsHueSaturationFilter::GrayscaleMode::GrayscaleOff);
+        hueSaturationFilter->setColorizeOn(true);
+        QColor col(Qt::darkRed);
+        hueSaturationFilter->setColorizeColor(col);
+        hueSaturationFilter->setColorizeStrength(100);
+        rasterlayer->setBlendMode( QPainter::CompositionMode_SourceOver);
+    }
+    else if(evtType.compare("Hurricane") == 0)
+    {
+        QgsHueSaturationFilter *hueSaturationFilter = rasterlayer->hueSaturationFilter();
+        hueSaturationFilter->setSaturation(100);
+        hueSaturationFilter->setGrayscaleMode(QgsHueSaturationFilter::GrayscaleMode::GrayscaleOff);
+        hueSaturationFilter->setColorizeOn(true);
+        QColor col(Qt::darkGray);
         hueSaturationFilter->setColorizeColor(col);
         hueSaturationFilter->setColorizeStrength(100);
         rasterlayer->setBlendMode( QPainter::CompositionMode_SourceOver);

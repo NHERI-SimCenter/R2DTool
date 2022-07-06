@@ -54,10 +54,10 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 DEFINES +=  Q_GIS #ARC_GIS
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Specify the path to the R2D tool examples folder
-PATH_TO_EXAMPLES=../../R2DExamples
+PATH_TO_EXAMPLES=../R2DExamples
 
 
 ## ADVANCED USAGE BELOW ##
@@ -109,7 +109,7 @@ contains(DEFINES, ARC_GIS)  {
 
 } contains(DEFINES, Q_GIS)  {
 
-    PATH_TO_QGIS_PLUGIN=../QGISPlugin
+    PATH_TO_QGIS_PLUGIN=../../QGISPlugin
 
     message("Building with QGIS library")
 
