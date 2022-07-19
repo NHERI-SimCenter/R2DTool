@@ -49,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-QGISAboveGroundGasNetworkInputWidget::QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
+QGISAboveGroundGasNetworkInputWidget::QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
     theComponentDb = ComponentDatabaseManager::getInstance()->getAboveGroundGasInfrastructureComponentDb();
 
@@ -245,7 +245,7 @@ bool QGISAboveGroundGasNetworkInputWidget::loadFileFromPath(const QString& fileP
 
 void QGISAboveGroundGasNetworkInputWidget::clear()
 {    
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }
 
 

@@ -85,12 +85,6 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget != nullptr);
 
-    unitsWidget = nullptr;
-    dataProvider = nullptr;
-    rasterlayer = nullptr;
-    eventTypeCombo = nullptr;
-
-    fileInputWidget = nullptr;
     rasterFilePath = "";
 
     QVBoxLayout *layout = new QVBoxLayout;
@@ -264,7 +258,7 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         if(bandArray.size() != numBands)
         {
-            this->errorMessage("Error in loading rasater. The number of provided bands in the json file should be equal to the number of bands in the raster");
+            this->errorMessage("Error in loading raster. The number of provided bands in the json file should be equal to the number of bands in the raster");
             return false;
         }
 
@@ -273,11 +267,13 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             // Note that band numbers start from 1 and not 0!
             //auto bandName = rasterlayer->bandName(i+1);
 
-            auto bandName = bandArray.at(i).toString();
+            auto unitStr = bandArray.at(i).toString();
 
-            bandNames.append(bandName);
+            auto labelName = "Band No. " + QString::number(i+1) + ": " + unitStr;
 
-            unitsWidget->addNewUnitItem(bandName);
+            bandNames.append(unitStr);
+
+            unitsWidget->addNewUnitItem(unitStr, labelName);
         }
 
 
@@ -376,7 +372,9 @@ void RasterHazardInputWidget::chooseEventFileDialog(void)
 
         bandNames.append(bandName);
 
-        unitsWidget->addNewUnitItem(bandName);
+        auto labelName = "Band No. " + QString::number(i+1) + ": " + bandName;
+
+        unitsWidget->addNewUnitItem(bandName,labelName);
     }
 
     return;

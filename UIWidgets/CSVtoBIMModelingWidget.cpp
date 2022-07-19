@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetsWidget.h"
 #include "CSVReaderWriter.h"
 #include "CSVtoBIMModelingWidget.h"
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 #include "WorkflowAppR2D.h"
 
 #include <QGridLayout>

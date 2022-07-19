@@ -1,5 +1,5 @@
-#ifndef QGISCSVWaterNetworkInputWidget_H
-#define QGISCSVWaterNetworkInputWidget_H
+#ifndef CSVWaterNetworkInputWidget_H
+#define CSVWaterNetworkInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,23 +38,26 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 
-class NonselectableComponentInputWidget;
+class NonselectableAssetInputWidget;
+class LineAssetInputWidget;
+class PointAssetInputWidget;
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISCSVWaterNetworkInputWidget : public SimCenterAppWidget
+class CSVWaterNetworkInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    QGISCSVWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
-    virtual ~QGISCSVWaterNetworkInputWidget();
+    CSVWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~CSVWaterNetworkInputWidget();
 
-    virtual int loadNodesVisualization();
+//    virtual int loadNodesVisualization();
+    int getNodeMap();
     virtual int loadPipelinesVisualization();
 
     void clear();
@@ -72,15 +75,20 @@ protected:
     ComponentDatabase*  theNodesDb = nullptr;
     ComponentDatabase*  thePipelinesDb = nullptr;
 
-    NonselectableComponentInputWidget* theNodesWidget = nullptr;
-    NonselectableComponentInputWidget* thePipelinesWidget = nullptr;
+//    NonselectableAssetInputWidget* theNodesWidget = nullptr;
+//    NonselectableAssetInputWidget* thePipelinesWidget = nullptr;
 
-    QgsVectorLayer* nodesMainLayer = nullptr;
+    PointAssetInputWidget* theNodesWidget = nullptr;
+    LineAssetInputWidget* thePipelinesWidget = nullptr;
+
+//    QgsVectorLayer* nodesMainLayer = nullptr;
     QgsVectorLayer* pipelinesMainLayer = nullptr;
+    QgsVectorLayer* pipelinesSelectedLayer = nullptr;
+
 
     // ID, QgsGeometry
     QMap<int, QgsPointXY> nodePointsMap;
 
 };
 
-#endif // QGISCSVWaterNetworkInputWidget_H
+#endif // CSVWaterNetworkInputWidget_H

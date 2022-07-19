@@ -38,14 +38,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Kuanshi Zhong
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 class QStringList;
 
-class QGISSiteInputWidget : public ComponentInputWidget
+class QGISSiteInputWidget : public AssetInputWidget
 {
     Q_OBJECT
 public:

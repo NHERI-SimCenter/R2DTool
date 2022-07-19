@@ -34,7 +34,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Kuanshi Zhong, adapted from QGISBuildingInputWidget by Stevan Gavrilovic
+// Written by: Kuanshi Zhong, adapted from PointAssetInputWidget by Stevan Gavrilovic
 
 #include "QGISSiteInputWidget.h"
 #include "QGISVisualizationWidget.h"
@@ -50,7 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileInfo>
 #include <QDir>
 
-QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
+QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
     theComponentDb = ComponentDatabaseManager::getInstance()->getSiteComponentDb();
 }
@@ -468,7 +468,7 @@ void QGISSiteInputWidget::clear()
     if(mainLayer != nullptr)
         theVisualizationWidget->removeLayer(mainLayer);
 
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }
 
 

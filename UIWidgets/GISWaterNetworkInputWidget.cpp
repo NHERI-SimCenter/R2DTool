@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "QGISWaterNetworkInputWidget.h"
+#include "GISWaterNetworkInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "GISAssetInputWidget.h"
 
@@ -48,7 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QVBoxLayout>
 
-QGISWaterNetworkInputWidget::QGISWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
+GISWaterNetworkInputWidget::GISWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
@@ -61,8 +61,8 @@ QGISWaterNetworkInputWidget::QGISWaterNetworkInputWidget(QWidget *parent, Visual
 
     thePipelinesWidget->setLabel1("Load water network pipeline information from a GIS file");
 
-    connect(theNodesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&QGISWaterNetworkInputWidget::handleAssetsLoaded);
-    connect(thePipelinesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&QGISWaterNetworkInputWidget::handleAssetsLoaded);
+    connect(theNodesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISWaterNetworkInputWidget::handleAssetsLoaded);
+    connect(thePipelinesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISWaterNetworkInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
@@ -98,13 +98,13 @@ QGISWaterNetworkInputWidget::QGISWaterNetworkInputWidget(QWidget *parent, Visual
 }
 
 
-QGISWaterNetworkInputWidget::~QGISWaterNetworkInputWidget()
+GISWaterNetworkInputWidget::~GISWaterNetworkInputWidget()
 {
 
 }
 
 
-bool QGISWaterNetworkInputWidget::copyFiles(QString &destName)
+bool GISWaterNetworkInputWidget::copyFiles(QString &destName)
 {
 
     auto res = theNodesWidget->copyFiles(destName);
@@ -119,7 +119,7 @@ bool QGISWaterNetworkInputWidget::copyFiles(QString &destName)
 }
 
 
-bool QGISWaterNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool GISWaterNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     jsonObject["Application"]="GIS_to_WATERNETWORK";
 
@@ -137,13 +137,13 @@ bool QGISWaterNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 }
 
 
-bool QGISWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool GISWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
     // Check the app type
     if (jsonObject.contains("Application")) {
         if ("GIS_to_WATERNETWORK" != jsonObject["Application"].toString()) {
-            this->errorMessage("QGISWaterNetworkInputWidget::inputFRommJSON app name conflict");
+            this->errorMessage("GISWaterNetworkInputWidget::inputFRommJSON app name conflict");
             return false;
         }
     }
@@ -151,7 +151,7 @@ bool QGISWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     if (!jsonObject.contains("ApplicationData"))
     {
-        this->errorMessage("QGISWaterNetworkInputWidget::inputFRommJSON app name conflict");
+        this->errorMessage("GISWaterNetworkInputWidget::inputFRommJSON app name conflict");
         return false;
     }
 
@@ -187,7 +187,7 @@ bool QGISWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 }
 
 
-int QGISWaterNetworkInputWidget::loadPipelinesVisualization()
+int GISWaterNetworkInputWidget::loadPipelinesVisualization()
 {
     pipelinesMainLayer = thePipelinesWidget->getAssetLayer();
 
@@ -209,7 +209,7 @@ int QGISWaterNetworkInputWidget::loadPipelinesVisualization()
 }
 
 
-int QGISWaterNetworkInputWidget::loadNodesVisualization()
+int GISWaterNetworkInputWidget::loadNodesVisualization()
 {
     nodesMainLayer = theNodesWidget->getAssetLayer();
 
@@ -229,14 +229,14 @@ int QGISWaterNetworkInputWidget::loadNodesVisualization()
 }
 
 
-void QGISWaterNetworkInputWidget::clear()
+void GISWaterNetworkInputWidget::clear()
 {
     theNodesWidget->clear();
     thePipelinesWidget->clear();
 }
 
 
-void QGISWaterNetworkInputWidget::handleAssetsLoaded()
+void GISWaterNetworkInputWidget::handleAssetsLoaded()
 {
     if(theNodesWidget->isEmpty() || thePipelinesWidget->isEmpty())
         return;

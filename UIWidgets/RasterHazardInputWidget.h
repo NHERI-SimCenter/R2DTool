@@ -94,7 +94,7 @@ private:
 
     int loadRaster(void);
 
-    QGISVisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
     QString eventFile;
     QString pathToEventFile;
@@ -102,16 +102,16 @@ private:
     QStringList bandNames;
 
     QString rasterFilePath;
-    QLineEdit *rasterPathLineEdit;
+    QLineEdit* rasterPathLineEdit = nullptr;
 
-    QWidget* fileInputWidget;
+    QWidget* fileInputWidget = nullptr;
 
-    QgsRasterDataProvider* dataProvider;
-    QgsRasterLayer* rasterlayer;
+    QgsRasterDataProvider* dataProvider = nullptr;
+    QgsRasterLayer* rasterlayer = nullptr;
 
-    SimCenterUnitsWidget* unitsWidget;
-    CRSSelectionWidget* crsSelectorWidget;
-    QComboBox* eventTypeCombo;
+    SimCenterUnitsWidget* unitsWidget = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+    QComboBox* eventTypeCombo = nullptr;
 };
 
 #endif // RasterHazardInputWidget_H

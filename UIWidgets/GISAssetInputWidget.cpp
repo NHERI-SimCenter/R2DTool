@@ -66,7 +66,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 using namespace std::chrono;
 
 
-GISAssetInputWidget::GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
+GISAssetInputWidget::GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
     this->setContentsMargins(0,0,0,0);
 
@@ -108,6 +108,14 @@ GISAssetInputWidget::~GISAssetInputWidget()
 {
 
 }
+
+
+#ifdef OpenSRA
+bool GISAssetInputWidget::loadFileFromPath(const QString& filePath)
+{
+
+}
+#endif
 
 
 int GISAssetInputWidget::loadAssetVisualization()
@@ -339,7 +347,7 @@ bool GISAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
     // First get the default information and then modify
-    ComponentInputWidget::outputAppDataToJSON(jsonObject);
+    AssetInputWidget::outputAppDataToJSON(jsonObject);
 
     // Here we will export everything to a .csv
     jsonObject["Application"] = appType;
@@ -562,5 +570,5 @@ void GISAssetInputWidget::clear(void)
 {
     crsSelectorWidget->clear();
 
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }

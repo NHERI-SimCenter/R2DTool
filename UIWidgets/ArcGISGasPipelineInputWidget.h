@@ -1,7 +1,7 @@
 #ifndef ArcGISGasPipelineInputWidget_H
 #define ArcGISGasPipelineInputWidget_H
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 
 namespace Esri
 {
@@ -16,7 +16,7 @@ class Geometry;
 }
 }
 
-class ArcGISGasPipelineInputWidget : public ComponentInputWidget
+class ArcGISGasPipelineInputWidget : public AssetInputWidget
 {
 public:
     ArcGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType = QString());

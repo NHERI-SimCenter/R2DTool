@@ -1,5 +1,5 @@
-#ifndef QGISWaterNetworkInputWidget_H
-#define QGISWaterNetworkInputWidget_H
+#ifndef UserInputFaultWidget_H
+#define UserInputFaultWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,46 +36,70 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "ComponentInputWidget.h"
+#include "SimCenterAppWidget.h"
 
-class GISAssetInputWidget;
+#include <memory>
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
+#include <QMap>
 
-class QGISWaterNetworkInputWidget : public SimCenterAppWidget
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class SimCenterUnitsWidget;
+
+class QStackedWidget;
+class QLineEdit;
+class QProgressBar;
+class QLabel;
+
+
+class UserInputFaultWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    QGISWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
-    virtual ~QGISWaterNetworkInputWidget();
+    UserInputFaultWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~UserInputFaultWidget();
 
-    virtual int loadNodesVisualization();
-    virtual int loadPipelinesVisualization();
+    QStackedWidget* getUserInputFaultWidget(void);
 
-    void clear();
+    bool inputFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
+    bool copyFiles(QString &destDir);
+    void clear(void);
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool copyFiles(QString &destName);
+public slots:
 
-protected slots:
-    void handleAssetsLoaded();
+    void showUserGMSelectDialog(void);
 
-protected:
+private slots:
 
+    void loadUserGMData(void);
+    void chooseEventFileDialog(void);
+
+signals:
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void loadingComplete(const bool value);
+
+private:
+
+    void showProgressBar(void);
+    void hideProgressBar(void);
+
+    QStackedWidget* theStackedWidget = nullptr;
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    GISAssetInputWidget* theNodesWidget = nullptr;
-    GISAssetInputWidget* thePipelinesWidget = nullptr;
+    QString eventFile;
+    QLineEdit *eventFileLineEdit;
 
-    QgsVectorLayer* nodesMainLayer = nullptr;
-    QgsVectorLayer* pipelinesMainLayer = nullptr;
+    QLabel* progressLabel = nullptr;
+    QWidget* progressBarWidget = nullptr;
+    QWidget* fileInputWidget = nullptr;
+    QProgressBar* progressBar = nullptr;
 
 };
 
-#endif // QGISWaterNetworkInputWidget_H
+#endif // UserInputFaultWidget_H

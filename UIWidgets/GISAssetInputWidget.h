@@ -38,12 +38,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 
 class QgsVectorLayer;
 class CRSSelectionWidget;
 
-class GISAssetInputWidget : public  ComponentInputWidget
+class GISAssetInputWidget : public  AssetInputWidget
 {
     Q_OBJECT
 
@@ -60,6 +60,10 @@ public:
 
     void clear(void) override;
 
+#ifdef OpenSRA
+    bool loadFileFromPath(const QString& filePath);
+#endif
+
     bool isEmpty();
 
     // Set the coordinate reference system for the layer
@@ -67,9 +71,6 @@ public:
 
     // Get the asset layer
     QgsVectorLayer *getAssetLayer() const;
-
-signals:
-    void doneLoadingComponents(void);
 
 public slots:
     bool loadAssetData(void) override;

@@ -1,5 +1,5 @@
-#ifndef QGISGasPipelineInputWidget_H
-#define QGISGasPipelineInputWidget_H
+#ifndef GISGasNetworkInputWidget_H
+#define GISGasNetworkInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,45 +36,48 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "SimCenterAppWidget.h"
+
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class GISAssetInputWidget;
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-#ifdef OpenSRA
-class JsonGroupBoxWidget;
-#endif
-
-class QGISGasPipelineInputWidget : public ComponentInputWidget
+class GISGasNetworkInputWidget : public SimCenterAppWidget
 {
+    Q_OBJECT
+
 public:
-    QGISGasPipelineInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    GISGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~GISGasNetworkInputWidget();
 
-#ifdef OpenSRA
-    bool loadFileFromPath(const QString& filePath) override;
+    virtual int loadPipelinesVisualization();
 
-    bool inputFromJSON(QJsonObject &rvObject) override;
-    bool outputToJSON(QJsonObject &rvObject) override;
+    void clear();
 
-    void createComponentsBox(void) override;
-#endif
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool copyFiles(QString &destName);
 
-    int loadAssetVisualization(void) override;
+signals:
+    void headingValuesChanged(QStringList);
 
-    void clear() override;
+protected slots:
+    void handleAssetsLoaded();
 
-private:
+protected:
 
-#ifdef OpenSRA
-    JsonGroupBoxWidget* locationWidget = nullptr;
-#endif
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    QgsVectorLayer* mainLayer = nullptr;
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+    GISAssetInputWidget* thePipelinesWidget = nullptr;
+
+    QgsVectorLayer* pipelinesMainLayer = nullptr;
 
 };
 
-#endif // QGISGasPipelineInputWidget_H
+#endif // GISGasNetworkInputWidget_H

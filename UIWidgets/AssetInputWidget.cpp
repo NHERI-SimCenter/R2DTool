@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetInputDelegate.h"
 #include "AssetFilterDelegate.h"
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 #include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
 #include "ComponentTableView.h"
@@ -75,7 +75,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <string>
 #include <algorithm>
 
-ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), appType(appType), componentType(componentType)
+AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), appType(appType), componentType(componentType)
 {
 #ifdef ARC_GIS
     theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(visWidget);
@@ -96,7 +96,7 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
 
     pathToComponentInputFile = "NULL";
 
-    ComponentInputWidget::createComponentsBox();
+    AssetInputWidget::createComponentsBox();
 
     auto txt1 = "Load information from a CSV file";
     auto txt2  = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
@@ -111,13 +111,13 @@ ComponentInputWidget::ComponentInputWidget(QWidget *parent, VisualizationWidget*
 }
 
 
-ComponentInputWidget::~ComponentInputWidget()
+AssetInputWidget::~AssetInputWidget()
 {
     
 }
 
 
-bool ComponentInputWidget::loadAssetData(void)
+bool AssetInputWidget::loadAssetData(void)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
@@ -229,12 +229,14 @@ bool ComponentInputWidget::loadAssetData(void)
     
     this->statusMessage("Done loading assets");
     QApplication::processEvents();
+
+    emit doneLoadingComponents();
     
     return true;
 }
 
 
-void ComponentInputWidget::chooseComponentInfoFileDialog(void)
+void AssetInputWidget::chooseComponentInfoFileDialog(void)
 {
     this->clear();
 
@@ -256,13 +258,13 @@ void ComponentInputWidget::chooseComponentInfoFileDialog(void)
 }
 
 
-ComponentTableView *ComponentInputWidget::getTableWidget() const
+ComponentTableView *AssetInputWidget::getTableWidget() const
 {
     return componentTableWidget;
 }
 
 
-void ComponentInputWidget::createComponentsBox(void)
+void AssetInputWidget::createComponentsBox(void)
 {
     componentGroupBox = new QGroupBox(componentType);
     componentGroupBox->setFlat(true);
@@ -298,8 +300,8 @@ void ComponentInputWidget::createComponentsBox(void)
     label2 = new QLabel();
     
     selectComponentsLineEdit = new AssetInputDelegate();
-    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ComponentInputWidget::handleComponentSelection);
-    connect(selectComponentsLineEdit,&QLineEdit::editingFinished,this,&ComponentInputWidget::selectComponents);
+    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&AssetInputWidget::handleComponentSelection);
+    connect(selectComponentsLineEdit,&QLineEdit::editingFinished,this,&AssetInputWidget::selectComponents);
     
     QPushButton *clearSelectionButton = new QPushButton();
     clearSelectionButton->setText(tr("Clear Selection"));
@@ -320,7 +322,7 @@ void ComponentInputWidget::createComponentsBox(void)
     // Create the table that will show the Component information
     componentTableWidget = new ComponentTableView();
     
-    connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &ComponentInputWidget::handleCellChanged);
+    connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &AssetInputWidget::handleCellChanged);
     
     QHBoxLayout* pathLayout = new QHBoxLayout();
     pathLayout->addWidget(pathText);
@@ -348,7 +350,7 @@ void ComponentInputWidget::createComponentsBox(void)
 }
 
 
-void ComponentInputWidget::selectComponents(void)
+void AssetInputWidget::selectComponents(void)
 {
     try
     {
@@ -362,7 +364,7 @@ void ComponentInputWidget::selectComponents(void)
 
 
 #ifdef ARC_GIS
-void ComponentInputWidget::handleComponentSelection(void)
+void AssetInputWidget::handleComponentSelection(void)
 {
     
     auto nRows = componentTableWidget->rowCount();
@@ -483,7 +485,7 @@ void ComponentInputWidget::handleComponentSelection(void)
 
 
 #ifdef Q_GIS
-void ComponentInputWidget::handleComponentSelection(void)
+void AssetInputWidget::handleComponentSelection(void)
 {
 
     auto nRows = componentTableWidget->rowCount();
@@ -559,13 +561,13 @@ void ComponentInputWidget::handleComponentSelection(void)
 
 
 
-QStringList ComponentInputWidget::getTableHorizontalHeadings()
+QStringList AssetInputWidget::getTableHorizontalHeadings()
 {
     return tableHorizontalHeadings;
 }
 
 
-void ComponentInputWidget::clearComponentSelection(void)
+void AssetInputWidget::clearComponentSelection(void)
 {
     //    auto nRows = componentTableWidget->rowCount();
 
@@ -583,49 +585,49 @@ void ComponentInputWidget::clearComponentSelection(void)
 }
 
 
-void ComponentInputWidget::setLabel1(const QString &value)
+void AssetInputWidget::setLabel1(const QString &value)
 {
     label1->setText(value);
 }
 
 
-void ComponentInputWidget::setLabel2(const QString &value)
+void AssetInputWidget::setLabel2(const QString &value)
 {
     label2->setText(value);
 }
 
 
-void ComponentInputWidget::setLabel3(const QString &value)
+void AssetInputWidget::setLabel3(const QString &value)
 {
     label3->setText(value);
 }
 
 
-void ComponentInputWidget::setGroupBoxText(const QString &value)
+void AssetInputWidget::setGroupBoxText(const QString &value)
 {
     componentGroupBox->setTitle(value);
 }
 
 
-void ComponentInputWidget::setComponentType(const QString &value)
+void AssetInputWidget::setComponentType(const QString &value)
 {
     componentType = value;
 }
 
 
-int ComponentInputWidget::numberComponentsSelected(void)
+int AssetInputWidget::numberComponentsSelected(void)
 {
     return selectComponentsLineEdit->size();
 }
 
 
-QString ComponentInputWidget::getPathToComponentFile(void) const
+QString AssetInputWidget::getPathToComponentFile(void) const
 {
     return pathToComponentInputFile;
 }
 
 
-void ComponentInputWidget::setPathToComponentFile(const QString& path)
+void AssetInputWidget::setPathToComponentFile(const QString& path)
 {
     pathToComponentInputFile = path;
 
@@ -633,14 +635,14 @@ void ComponentInputWidget::setPathToComponentFile(const QString& path)
 }
 
 
-bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     jsonObject["Application"]=appType;
 
     QJsonObject data;
     QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()) {
-        data["buildingSourceFile"]=componentFile.fileName();
+        data["assetInputFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
 
         QString filterData = this->getFilterString();
@@ -685,13 +687,13 @@ bool ComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 }
 
 
-bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool AssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
     //jsonObject["Application"]=appType;
     if (jsonObject.contains("Application")) {
         if (appType != jsonObject["Application"].toString()) {
-            this->errorMessage("ComponentINputWidget::inputFRommJSON app name conflict");
+            this->errorMessage("AssetInputWidget::inputFRommJSON app name conflict");
             return false;
         }
     }
@@ -704,8 +706,8 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
-        if (appData.contains("buildingSourceFile"))
-            fileName = appData["buildingSourceFile"].toString();
+        if (appData.contains("assetInputFile"))
+            fileName = appData["assetInputFile"].toString();
 
         if (fileInfo.exists(fileName)) {
 
@@ -758,19 +760,24 @@ bool ComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             this->setFilterString(appData["filter"].toString());
 
     }
+    else
+    {
+        this->errorMessage("Could not find app data in Component input widget");
+        return false;
+    }
 
     return true;
 }
 
 
-void ComponentInputWidget::setFilterString(const QString& filter)
+void AssetInputWidget::setFilterString(const QString& filter)
 {
     selectComponentsLineEdit->setText(filter);
     selectComponentsLineEdit->selectComponents();
 }
 
 
-QString ComponentInputWidget::getFilterString(void)
+QString AssetInputWidget::getFilterString(void)
 {
     QString filterData = selectComponentsLineEdit->getComponentAnalysisList();
 
@@ -778,7 +785,7 @@ QString ComponentInputWidget::getFilterString(void)
 }
 
 
-void ComponentInputWidget::selectAllComponents(void)
+void AssetInputWidget::selectAllComponents(void)
 {
     // Get the ID of the first and last component
     auto firstID = componentTableWidget->item(0,0).toString();
@@ -793,7 +800,7 @@ void ComponentInputWidget::selectAllComponents(void)
 }
 
 
-bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
+bool AssetInputWidget::outputToJSON(QJsonObject &rvObject)
 {
     Q_UNUSED(rvObject);
 
@@ -801,7 +808,7 @@ bool ComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 }
 
 
-bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
+bool AssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
     Q_UNUSED(rvObject);
 
@@ -809,7 +816,7 @@ bool ComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 }
 
 
-bool ComponentInputWidget::copyFiles(QString &destName)
+bool AssetInputWidget::copyFiles(QString &destName)
 {
     auto compLineEditText = componentFileLineEdit->text();
 
@@ -879,7 +886,7 @@ bool ComponentInputWidget::copyFiles(QString &destName)
 }
 
 
-void ComponentInputWidget::clear(void)
+void AssetInputWidget::clear(void)
 {
     theComponentDb->clear();
     pathToComponentInputFile.clear();
@@ -894,7 +901,7 @@ void ComponentInputWidget::clear(void)
 }
 
 
-void ComponentInputWidget::handleCellChanged(const int row, const int col)
+void AssetInputWidget::handleCellChanged(const int row, const int col)
 {
     auto ID = componentTableWidget->item(row,0).toInt();
 
@@ -914,25 +921,25 @@ void ComponentInputWidget::handleCellChanged(const int row, const int col)
 }
 
 #ifdef ARC_GIS
-Esri::ArcGISRuntime::Feature* ComponentInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Esri::ArcGISRuntime::Geometry& /*geom*/)
+Esri::ArcGISRuntime::Feature* AssetInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Esri::ArcGISRuntime::Geometry& /*geom*/)
 {
     return nullptr;
 }
 
 
-int ComponentInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* /*feat*/)
+int AssetInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* /*feat*/)
 {
     return -1;
 }
 
 
-Esri::ArcGISRuntime::FeatureCollectionLayer* ComponentInputWidget::getSelectedFeatureLayer(void)
+Esri::ArcGISRuntime::FeatureCollectionLayer* AssetInputWidget::getSelectedFeatureLayer(void)
 {
     return nullptr;
 }
 
 
-void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
+void AssetInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
 {
 
     if(selectedFeaturesForAnalysis.empty())
@@ -968,7 +975,7 @@ void ComponentInputWidget::updateSelectedComponentAttribute(const QString&  uid,
 #endif
 
 
-void ComponentInputWidget::insertSelectedAssets(QgsFeatureIds& featureIds)
+void AssetInputWidget::insertSelectedAssets(QgsFeatureIds& featureIds)
 {
 
     QVector<int> assetIds;
@@ -983,13 +990,13 @@ void ComponentInputWidget::insertSelectedAssets(QgsFeatureIds& featureIds)
 }
 
 
-void ComponentInputWidget::clearSelectedAssets(void)
+void AssetInputWidget::clearSelectedAssets(void)
 {
     this->clearComponentSelection();
 }
 
 
-void ComponentInputWidget::handleComponentFilter(void)
+void AssetInputWidget::handleComponentFilter(void)
 {
     auto mainAssetLayer = theComponentDb->getMainLayer();
 
@@ -1016,7 +1023,7 @@ void ComponentInputWidget::handleComponentFilter(void)
 }
 
 
-int ComponentInputWidget::applyFilterString(const QString& filter)
+int AssetInputWidget::applyFilterString(const QString& filter)
 {
     QVector<int> filterIds;
     auto res = filterDelegateWidget->setFilterString(filter,filterIds);
@@ -1036,4 +1043,12 @@ int ComponentInputWidget::applyFilterString(const QString& filter)
     return 0;
 }
 
+
+bool AssetInputWidget::isEmpty()
+{
+    if(componentTableWidget->rowCount() == 0)
+        return true;
+
+    return false;
+}
 

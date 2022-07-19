@@ -2,7 +2,6 @@
 #include "SiteWidget.h"
 #include "SiteGridWidget.h"
 #include "SiteScatterWidget.h"
-#include "ComponentInputWidget.h"
 #include "VisualizationWidget.h"
 #include "VerticalScrollingWidget.h"
 

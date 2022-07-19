@@ -54,8 +54,9 @@ public:
     void clear(void);
 
 private:
-    SimCenterAppSelection *buildingWidget;
-    SimCenterAppSelection *pipelineWidget;
+    SimCenterAppSelection *buildingWidget = nullptr;
+    SimCenterAppSelection *pipelineWidget = nullptr;
+    SimCenterAppSelection *WDNWidget = nullptr;
 };
 
 #endif // ModelWidget_H

@@ -1,5 +1,5 @@
-#ifndef ComponentInputWidget_H
-#define ComponentInputWidget_H
+#ifndef AssetInputWidget_H
+#define AssetInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,7 +36,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
+
+// Use this class to import assets in a csv format; functionality implemented in the 'loadAssetData' function
 
 #include "SimCenterAppWidget.h"
 #include "GISSelectable.h"
@@ -82,13 +84,13 @@ class QTableWidget;
 class QLabel;
 class QVBoxLayout;
 
-class ComponentInputWidget : public  SimCenterAppWidget, public GISSelectable
+class AssetInputWidget : public  SimCenterAppWidget, public GISSelectable
 {
     Q_OBJECT
 
 public:
-    explicit ComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-    virtual ~ComponentInputWidget();
+    explicit AssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    virtual ~AssetInputWidget();
 
     virtual int loadAssetVisualization() = 0;
 
@@ -139,8 +141,11 @@ public:
 
     int applyFilterString(const QString& filter);
 
+    bool isEmpty();
+
 signals:
     void headingValuesChanged(QStringList);
+    void doneLoadingComponents(void);
 
 public slots:
     void handleComponentSelection(void);
@@ -206,4 +211,4 @@ protected:
 
 };
 
-#endif // ComponentInputWidget_H
+#endif // AssetInputWidget_H

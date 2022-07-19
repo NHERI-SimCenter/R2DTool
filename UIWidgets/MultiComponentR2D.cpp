@@ -36,7 +36,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "ComponentInputWidget.h"
 #include "MultiComponentR2D.h"
 #include "SecondaryComponentSelection.h"
 #include "sectiontitle.h"

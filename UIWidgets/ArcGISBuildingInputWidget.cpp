@@ -54,7 +54,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace Esri::ArcGISRuntime;
 
-ArcGISBuildingInputWidget::ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
+ArcGISBuildingInputWidget::ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : AssetInputWidget(parent, componentType, appType)
 {
     theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 }
@@ -309,7 +309,7 @@ void ArcGISBuildingInputWidget::clear()
     selectedBuildingsLayer = nullptr;
     selectedBuildingsTable = nullptr;
 
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }
 
 

@@ -1,3 +1,5 @@
+#ifndef LineAssetInputWidget_H
+#define LineAssetInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -17,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,72 +36,48 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Dr. Stevan Gavrilovic
+
+// Use this class when your asset geometry is represented as a line, i.e., pipelines
+// The loadAssetVisualization function is specialized for line geometry rendering
 
 #include "AssetInputWidget.h"
-#include "HazardToAssetBuilding.h"
-#include "HazardToAssetWidget.h"
-#include "SecondaryComponentSelection.h"
-#include "SimCenterAppSelection.h"
-#include "VisualizationWidget.h"
-#include "sectiontitle.h"
 
-// Qt headers
-#include <QCheckBox>
-#include <QColorTransform>
-#include <QDebug>
-#include <QFileDialog>
-#include <QGroupBox>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QPushButton>
-#include <QString>
-#include <QTableWidget>
-#include <QVBoxLayout>
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
 
-HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentR2D(parent)
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
+class LineAssetInputWidget : public AssetInputWidget
 {
+public:
+    LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
-  buildingWidget = new HazardToAssetBuilding(this); 
-  pipelineWidget = new SimCenterAppSelection(QString("Hazard To Asset Application"), QString("HazardToAsset"), this);
-  
-  this->addComponent("Buildings", buildingWidget);
-  this->addComponent("Gas Network",pipelineWidget);
+#ifdef OpenSRA
+    bool loadFileFromPath(const QString& filePath) override;
 
-  connect(this, SIGNAL(hazardGridFileChangedSignal(QString, QString)), buildingWidget, SLOT(hazardGridFileChangedSlot(QString, QString)));
-  connect(this, SIGNAL(eventTypeChangedSignal(QString)), buildingWidget, SLOT(eventTypeChangedSlot(QString)));
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
 
-  this->hideAll();
-}
+    void createComponentsBox(void) override;
+#endif
 
+    int loadAssetVisualization(void) override;
 
-HazardToAssetWidget::~HazardToAssetWidget()
-{
+    void clear() override;
 
-}
+private:
 
+#ifdef OpenSRA
+    JsonGroupBoxWidget* locationWidget = nullptr;
+#endif
 
-void HazardToAssetWidget::hazardGridFileChangedSlot(QString motionDir, QString eventFile){
-    emit hazardGridFileChangedSignal(motionDir, eventFile);
-}
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
 
+};
 
-void HazardToAssetWidget::eventTypeChangedSlot(QString eventType)
-{
-    emit eventTypeChangedSignal(eventType);
-}
-
-
-void HazardToAssetWidget::clear(void)
-{
-    buildingWidget->clear();
-    pipelineWidget->clear();
-}
+#endif // LineAssetInputWidget_H

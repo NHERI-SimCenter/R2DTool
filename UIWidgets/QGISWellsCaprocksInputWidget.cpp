@@ -49,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-QGISWellsCaprocksInputWidget::QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
+QGISWellsCaprocksInputWidget::QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
     theComponentDb = ComponentDatabaseManager::getInstance()->getWellsandCaprocksComponentDb();
 }
@@ -249,7 +249,7 @@ void QGISWellsCaprocksInputWidget::clear()
 //    if(mainLayer != nullptr)
 //        theVisualizationWidget->removeLayer(mainLayer);
 
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }
 
 

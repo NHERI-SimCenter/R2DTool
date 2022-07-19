@@ -78,7 +78,7 @@ class RasterLayer;
 
 class ConvexHull;
 class PolygonBoundary;
-class ComponentInputWidget;
+class AssetInputWidget;
 class LayerTreeView;
 class LayerTreeItem;
 class SimCenterMapGraphicsView;

@@ -1,4 +1,4 @@
-#include "QGISGasPipelineInputWidget.h"
+#include "LineAssetInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
@@ -18,14 +18,31 @@
 #include <QFileInfo>
 
 
-QGISGasPipelineInputWidget::QGISGasPipelineInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
+LineAssetInputWidget::LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
     theComponentDb = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
 }
 
 
-int QGISGasPipelineInputWidget::loadAssetVisualization(void)
+int LineAssetInputWidget::loadAssetVisualization(void)
 {
+    auto headers = this->getTableHorizontalHeadings();
+
+    auto indexLatStart = headers.indexOf("LAT_BEGIN");
+    auto indexLonStart = headers.indexOf("LONG_BEGIN");
+    auto indexLatEnd = headers.indexOf("LAT_END");
+    auto indexLonEnd = headers.indexOf("LONG_END");
+
+    if(indexLatStart == -1 || indexLonStart == -1 || indexLatEnd == -1 || indexLonEnd == -1)
+    {
+        //Check if nodes are provided in lieu of lat and lon coordinates for the start and end
+        // If they are, the pipelines visualization should be handled separately
+        if(headers.indexOf("node1") != -1 && headers.indexOf("node2") != -1)
+            return 0;
+
+        errorMessage("Could not find the required lat./lon. header labels in the input file");
+        return -1;
+    }
 
     QgsFields featFields;
     featFields.append(QgsField("ID", QVariant::Int));
@@ -62,19 +79,6 @@ int QGISGasPipelineInputWidget::loadAssetVisualization(void)
     mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
     theComponentDb->setMainLayer(mainLayer);
-
-    auto headers = this->getTableHorizontalHeadings();
-
-    auto indexLatStart = headers.indexOf("LAT_BEGIN");
-    auto indexLonStart = headers.indexOf("LON_BEGIN");
-    auto indexLatEnd = headers.indexOf("LAT_END");
-    auto indexLonEnd = headers.indexOf("LON_END");
-
-    if(indexLatStart == -1 || indexLonStart == -1 || indexLatEnd == -1 || indexLonEnd == -1)
-    {
-        errorMessage("Could not find the required lat./lon. header labels in the input file");
-        return -1;
-    }
 
     filterDelegateWidget  = new AssetFilterDelegate(mainLayer);
 
@@ -198,7 +202,7 @@ int QGISGasPipelineInputWidget::loadAssetVisualization(void)
 
 
 #ifdef OpenSRA
-bool QGISGasPipelineInputWidget::loadFileFromPath(const QString& filePath)
+bool LineAssetInputWidget::loadFileFromPath(const QString& filePath)
 {
     QFileInfo fileInfo;
     if (!fileInfo.exists(filePath))
@@ -213,7 +217,7 @@ bool QGISGasPipelineInputWidget::loadFileFromPath(const QString& filePath)
 }
 
 
-bool QGISGasPipelineInputWidget::outputToJSON(QJsonObject &rvObject)
+bool LineAssetInputWidget::outputToJSON(QJsonObject &rvObject)
 {
 
     locationWidget->outputToJSON(rvObject);
@@ -222,7 +226,7 @@ bool QGISGasPipelineInputWidget::outputToJSON(QJsonObject &rvObject)
 }
 
 
-bool QGISGasPipelineInputWidget::inputFromJSON(QJsonObject &rvObject)
+bool LineAssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
 
     locationWidget->inputFromJSON(rvObject);
@@ -231,7 +235,7 @@ bool QGISGasPipelineInputWidget::inputFromJSON(QJsonObject &rvObject)
 }
 
 
-void QGISGasPipelineInputWidget::createComponentsBox(void)
+void LineAssetInputWidget::createComponentsBox(void)
 {
     auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
 
@@ -243,9 +247,7 @@ void QGISGasPipelineInputWidget::createComponentsBox(void)
         return;
     }
 
-    auto theWidgetFactory = new WidgetFactory(this);
-
-    WorkflowAppOpenSRA::getInstance()->setTheWidgetFactory(theWidgetFactory);
+    auto theWidgetFactory = WorkflowAppOpenSRA::getInstance()->getTheWidgetFactory();
 
     QJsonObject paramsObj = thisObj["Params"].toObject();
 
@@ -295,9 +297,9 @@ void QGISGasPipelineInputWidget::createComponentsBox(void)
 
 
 
-void QGISGasPipelineInputWidget::clear()
+void LineAssetInputWidget::clear()
 {
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }
 
 

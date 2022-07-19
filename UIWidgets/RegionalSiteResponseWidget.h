@@ -50,7 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class VisualizationWidget;
 class SimCenterUnitsWidget;
 
-class ComponentInputWidget;
+class AssetInputWidget;
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
@@ -173,7 +173,7 @@ private:
     SimCenterUnitsWidget* unitsWidget;
     SimCenterUnitsWidget* unitsSiteWidget;
   
-    ComponentInputWidget *theInputMotions;
+    AssetInputWidget *theInputMotions;
 
     QWidget* inputSiteWidget;
 

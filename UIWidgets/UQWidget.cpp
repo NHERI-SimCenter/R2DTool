@@ -36,7 +36,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "ComponentInputWidget.h"
 #include "DakotaInputSampling.h"
 #include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"

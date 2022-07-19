@@ -118,9 +118,9 @@ bool NonselectableComponentInputWidget::loadComponentData(void)
         return false;
     
     // Check if the directory exists
-    QFile file(pathToComponentInputFile);
+    QFileInfo file(pathToComponentInputFile);
     
-    if (!file.exists())
+    if (!file.exists() || !file.isFile())
     {
         auto relPathToComponentFile = QCoreApplication::applicationDirPath() + QDir::separator() + pathToComponentInputFile;
         

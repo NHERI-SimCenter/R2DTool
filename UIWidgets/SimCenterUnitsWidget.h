@@ -57,7 +57,7 @@ public:
 
     void clear(void);
 
-    void addNewUnitItem(const QString& name);
+    void addNewUnitItem(const QString& name, const QString& labelName = QString());
 
     int getNumberOfUnits(void);
 

@@ -38,13 +38,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISAboveGroundGasNetworkInputWidget : public ComponentInputWidget
+class QGISAboveGroundGasNetworkInputWidget : public AssetInputWidget
 {
 public:
     QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());

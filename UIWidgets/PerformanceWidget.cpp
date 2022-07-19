@@ -36,7 +36,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
 #include "PerformanceWidget.h"
 #include "NoArgSimCenterApp.h"
 #include "NoneWidget.h"

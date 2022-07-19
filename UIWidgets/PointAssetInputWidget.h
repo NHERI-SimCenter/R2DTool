@@ -1,5 +1,5 @@
-#ifndef QGISBuildingInputWidget_H
-#define QGISBuildingInputWidget_H
+#ifndef PointAssetInputWidget_H
+#define PointAssetInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,18 +36,21 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+// Use when you have assets that can be represented as a point, i.e., a building, water network node, etc.
+// The loadAssetVisualization function is specialized for point geometry rendering, note that in the special case that a 'footprint' column exists
+
+#include "AssetInputWidget.h"
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISBuildingInputWidget : public ComponentInputWidget
+class PointAssetInputWidget : public AssetInputWidget
 {
 public:
-    QGISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
 
     int loadAssetVisualization();
 
@@ -60,4 +63,4 @@ private:
 
 };
 
-#endif // QGISBuildingInputWidget_H
+#endif // PointAssetInputWidget_H

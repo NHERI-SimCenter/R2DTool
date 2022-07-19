@@ -85,8 +85,6 @@ public:
 protected:
 
    QJsonObject jsonObj;
-
-
 };
 
 #endif // JSONSERIALIZABLE_H

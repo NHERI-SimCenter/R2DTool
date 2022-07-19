@@ -1,9 +1,10 @@
-#include "QGISCSVWaterNetworkInputWidget.h"
+#include "CSVWaterNetworkInputWidget.h"
 #include "QGISVisualizationWidget.h"
+#include "LineAssetInputWidget.h"
+#include "PointAssetInputWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
-#include "NonselectableComponentInputWidget.h"
 
 #include "AssetFilterDelegate.h"
 #include "CSVReaderWriter.h"
@@ -17,24 +18,30 @@
 #include <QSplitter>
 
 
-QGISCSVWaterNetworkInputWidget::QGISCSVWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
+CSVWaterNetworkInputWidget::CSVWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-    theNodesDb = ComponentDatabaseManager::getInstance()->getWaterNetworkNodeComponentDb();
+//    theNodesDb = ComponentDatabaseManager::getInstance()->getWaterNetworkNodeComponentDb();
     thePipelinesDb = ComponentDatabaseManager::getInstance()->getWaterNetworkPipeComponentDb();
 
-    theNodesWidget = new NonselectableComponentInputWidget(this, theNodesDb, theVisualizationWidget, "Water Network Nodes");
+    //    theNodesWidget = new NonselectableAssetInputWidget(this, theNodesDb, theVisualizationWidget, "Water Network Nodes");
+    //QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString()
+    theNodesWidget = new PointAssetInputWidget(this, theVisualizationWidget, "Water Network Nodes", "CSV_to_ASSET");
 
     theNodesWidget->setLabel1("Load water network node information from a CSV file");
 
-    thePipelinesWidget = new NonselectableComponentInputWidget(this, thePipelinesDb, theVisualizationWidget, "Water Network Pipelines");
+    //    thePipelinesWidget = new NonselectableAssetInputWidget(this, thePipelinesDb, theVisualizationWidget, "Water Network Pipelines");
+    thePipelinesWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Water Network Pipelines", "CSV_to_ASSET");
 
     thePipelinesWidget->setLabel1("Load water network pipeline information from a CSV file");
 
-    connect(theNodesWidget,&NonselectableComponentInputWidget::doneLoadingComponents,this,&QGISCSVWaterNetworkInputWidget::handleAssetsLoaded);
-    connect(thePipelinesWidget,&NonselectableComponentInputWidget::doneLoadingComponents,this,&QGISCSVWaterNetworkInputWidget::handleAssetsLoaded);
+    //    connect(theNodesWidget,&NonselectableAssetInputWidget::doneLoadingComponents,this,&CSVWaterNetworkInputWidget::handleAssetsLoaded);
+    //    connect(thePipelinesWidget,&NonselectableAssetInputWidget::doneLoadingComponents,this,&CSVWaterNetworkInputWidget::handleAssetsLoaded);
+
+    connect(theNodesWidget,&LineAssetInputWidget::doneLoadingComponents,this,&CSVWaterNetworkInputWidget::handleAssetsLoaded);
+    connect(thePipelinesWidget,&LineAssetInputWidget::doneLoadingComponents,this,&CSVWaterNetworkInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
@@ -46,22 +53,22 @@ QGISCSVWaterNetworkInputWidget::QGISCSVWaterNetworkInputWidget(QWidget *parent, 
     mainLayout->addWidget(verticalSplitter);
 
     // Testing to remove
-//    theNodesWidget->setPathToComponentInputFile("/Users/steve/Desktop/SogaExample/node_information.csv");
-//    theNodesWidget->loadComponentData();
+    //    theNodesWidget->setPathToComponentInputFile("/Users/steve/Desktop/SogaExample/node_information.csv");
+    //    theNodesWidget->loadComponentData();
 
-//    thePipelinesWidget->setPathToComponentInputFile("/Users/steve/Desktop/SogaExample/pipe_information.csv");
-//    thePipelinesWidget->loadComponentData();
+    //    thePipelinesWidget->setPathToComponentInputFile("/Users/steve/Desktop/SogaExample/pipe_information.csv");
+    //    thePipelinesWidget->loadComponentData();
 
 }
 
 
-QGISCSVWaterNetworkInputWidget::~QGISCSVWaterNetworkInputWidget()
+CSVWaterNetworkInputWidget::~CSVWaterNetworkInputWidget()
 {
 
 }
 
 
-bool QGISCSVWaterNetworkInputWidget::copyFiles(QString &destName)
+bool CSVWaterNetworkInputWidget::copyFiles(QString &destName)
 {
     Q_UNUSED(destName);
 
@@ -103,7 +110,7 @@ bool QGISCSVWaterNetworkInputWidget::copyFiles(QString &destName)
 
 
 
-bool QGISCSVWaterNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool CSVWaterNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     jsonObject["Application"]="CSV_to_WATERNETWORK";
 
@@ -121,13 +128,13 @@ bool QGISCSVWaterNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject
 }
 
 
-bool QGISCSVWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool CSVWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
     // Check the app type
     if (jsonObject.contains("Application")) {
         if ("CSV_to_WATERNETWORK" != jsonObject["Application"].toString()) {
-            this->errorMessage("QGISCSVWaterNetworkInputWidget::inputFRommJSON app name conflict");
+            this->errorMessage("CSVWaterNetworkInputWidget::inputFRommJSON app name conflict");
             return false;
         }
     }
@@ -137,19 +144,45 @@ bool QGISCSVWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObjec
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
 
+        if(appData.contains("WaterNetworkNodes"))
+        {
+            auto assetObj = appData["WaterNetworkNodes"].toObject();
 
-        // Input the nodes
-        auto res = theNodesWidget->inputAppDataFromJSON(appData);
+            // Input the nodes
+            auto res = theNodesWidget->inputAppDataFromJSON(assetObj);
 
-        if(!res)
-            return res;
+            if(!res)
+                return res;
+        }
+        else
+        {
+            this->errorMessage("Could not find the 'WaterNetworkNodes' key in 'ApplicationData'");
+            return false;
+        }
 
-        // Input the pipes
-        res = thePipelinesWidget->inputAppDataFromJSON(appData);
+        if(appData.contains("WaterNetworkPipelines"))
+        {
 
-        if(!res)
-            return res;
+            auto assetObj = appData["WaterNetworkPipelines"].toObject();
 
+
+            // Input the pipes
+            auto res = thePipelinesWidget->inputAppDataFromJSON(assetObj);
+
+            if(!res)
+                return res;
+        }
+        else
+        {
+            this->errorMessage("Could not find the 'WaterNetworkPipelines' key in 'ApplicationData'");
+            return false;
+        }
+
+    }
+    else
+    {
+        this->errorMessage("Could not find the 'ApplicationData' key in 'CSV_to_WATERNETWORK' input");
+        return false;
     }
 
     return true;
@@ -158,12 +191,14 @@ bool QGISCSVWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObjec
 
 
 
-int QGISCSVWaterNetworkInputWidget::loadPipelinesVisualization()
+int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
 {
 
     if(nodePointsMap.isEmpty())
+    {
+        this->errorMessage("The node map is empty in WaterNetworkInputWidget");
         return -1;
-
+    }
 
     auto pipelinesTableWidget = thePipelinesWidget->getTableWidget();
 
@@ -312,17 +347,54 @@ int QGISCSVWaterNetworkInputWidget::loadPipelinesVisualization()
 
     theVisualizationWidget->zoomToLayer(pipelinesMainLayer);
 
+    auto layerId = pipelinesMainLayer->id();
+
+    theVisualizationWidget->registerLayerForSelection(layerId,thePipelinesWidget);
+
+    // Create the selected building layer
+    pipelinesSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Pipelines");
+
+    if(pipelinesSelectedLayer == nullptr)
+    {
+        this->errorMessage("Error adding the selected assets vector layer");
+        return -1;
+    }
+
+    QgsLineSymbol* selectedLayerMarkerSymbol = new QgsLineSymbol();
+
+    selectedLayerMarkerSymbol->setWidth(2.0);
+    selectedLayerMarkerSymbol->setColor(Qt::darkBlue);
+    theVisualizationWidget->createSimpleRenderer(selectedLayerMarkerSymbol,pipelinesSelectedLayer);
+
+    auto pr2 = pipelinesSelectedLayer->dataProvider();
+
+    auto res2 = pr2->addAttributes(attribFields);
+
+    if(!res2)
+        this->errorMessage("Error adding attributes to the layer");
+
+    pipelinesSelectedLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    thePipelinesDb->setSelectedLayer(pipelinesSelectedLayer);
+
     QVector<QgsMapLayer*> mapLayers;
-    mapLayers.push_back(nodesMainLayer);
+    mapLayers.push_back(pipelinesSelectedLayer);
     mapLayers.push_back(pipelinesMainLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,"Water Network");
+    theVisualizationWidget->createLayerGroup(mapLayers,"Pipelines");
+
+//    QVector<QgsMapLayer*> mapLayers;
+//    mapLayers.push_back(nodesMainLayer);
+//    mapLayers.push_back(pipelinesMainLayer);
+
+//    theVisualizationWidget->createLayerGroup(mapLayers,"Water Network");
 
     return 0;
 }
 
 
-int QGISCSVWaterNetworkInputWidget::loadNodesVisualization()
+/*
+int CSVWaterNetworkInputWidget::loadNodesVisualization()
 {
 
     auto theNodesTableWidget = theNodesWidget->getTableWidget();
@@ -463,12 +535,65 @@ int QGISCSVWaterNetworkInputWidget::loadNodesVisualization()
 
     return 0;
 }
+*/
 
 
-
-void QGISCSVWaterNetworkInputWidget::clear()
+int CSVWaterNetworkInputWidget::getNodeMap()
 {
-    theNodesDb->clear();
+
+    if(theNodesWidget->isEmpty())
+    {
+        this->errorMessage("Error, the nodes table is empty in WaterNetworkInputWidget");
+        return -1;
+    }
+
+    auto theNodesTableWidget = theNodesWidget->getTableWidget();
+
+    // Get the number of rows
+    auto nRows = theNodesTableWidget->rowCount();
+
+    auto headers = theNodesWidget->getTableHorizontalHeadings();
+
+    // First check if a footprint was provided
+    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, "latitude");
+    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, "longitude");
+
+    if(indexLongitude == -1 || indexLatitude == -1)
+    {
+        this->errorMessage("Could not find latitude and longitude in the header columns");
+        return -1;
+    }
+
+
+    for(int i = 0; i<nRows; ++i)
+    {
+
+        // Create a new node
+        QString nodeIDStr = theNodesTableWidget->item(i,0).toString();
+
+        int nodeID = nodeIDStr.toInt();
+
+        auto latitude = theNodesTableWidget->item(i,indexLatitude).toDouble();
+        auto longitude = theNodesTableWidget->item(i,indexLongitude).toDouble();
+
+        QgsPointXY point(longitude,latitude);
+        auto geom = QgsGeometry::fromPointXY(point);
+        if(geom.isEmpty())
+        {
+            this->errorMessage("Error creating the water network node geometry");
+            return -1;
+        }
+
+        nodePointsMap.insert(nodeID,point);
+    }
+
+    return 0;
+}
+
+
+void CSVWaterNetworkInputWidget::clear()
+{
+//    theNodesDb->clear();
     thePipelinesDb->clear();
     nodePointsMap.clear();
     theNodesWidget->clear();
@@ -476,16 +601,16 @@ void QGISCSVWaterNetworkInputWidget::clear()
 }
 
 
-void QGISCSVWaterNetworkInputWidget::handleAssetsLoaded()
+void CSVWaterNetworkInputWidget::handleAssetsLoaded()
 {
     if(theNodesWidget->isEmpty() || thePipelinesWidget->isEmpty())
         return;
 
-    auto res = this->loadNodesVisualization();
+    auto res = this->getNodeMap();
 
     if(res != 0)
     {
-        this->errorMessage("Error, failed to load the water network nodes visualization");
+        this->errorMessage("Error, failed to load the water network nodes mapped");
         return;
     }
 

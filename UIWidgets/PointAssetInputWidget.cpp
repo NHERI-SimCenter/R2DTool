@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "QGISBuildingInputWidget.h"
+#include "PointAssetInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "ComponentTableView.h"
 #include "ComponentDatabaseManager.h"
@@ -47,13 +47,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-QGISBuildingInputWidget::QGISBuildingInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : ComponentInputWidget(parent, visWidget, componentType, appType)
+PointAssetInputWidget::PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
     theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 }
 
 
-int QGISBuildingInputWidget::loadAssetVisualization()
+int PointAssetInputWidget::loadAssetVisualization()
 {
     // Create the building attributes that are fixed
     QgsFields featFields;
@@ -278,7 +278,7 @@ int QGISBuildingInputWidget::loadAssetVisualization()
 
 
 
-void QGISBuildingInputWidget::clear()
+void PointAssetInputWidget::clear()
 {    
 //    if(selectedFeaturesLayer != nullptr)
 //    {
@@ -288,7 +288,7 @@ void QGISBuildingInputWidget::clear()
 //    if(mainLayer != nullptr)
 //        theVisualizationWidget->removeLayer(mainLayer);
 
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }
 
 

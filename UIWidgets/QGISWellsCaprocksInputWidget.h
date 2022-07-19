@@ -38,13 +38,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISWellsCaprocksInputWidget : public ComponentInputWidget
+class QGISWellsCaprocksInputWidget : public AssetInputWidget
 {
 public:
     QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());

@@ -1,3 +1,5 @@
+#ifndef GISWaterNetworkInputWidget_H
+#define GISWaterNetworkInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -17,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,72 +36,48 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Dr. Stevan Gavrilovic
 
-#include "AssetInputWidget.h"
-#include "HazardToAssetBuilding.h"
-#include "HazardToAssetWidget.h"
-#include "SecondaryComponentSelection.h"
-#include "SimCenterAppSelection.h"
-#include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include "SimCenterAppWidget.h"
 
-// Qt headers
-#include <QCheckBox>
-#include <QColorTransform>
-#include <QDebug>
-#include <QFileDialog>
-#include <QGroupBox>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QPushButton>
-#include <QString>
-#include <QTableWidget>
-#include <QVBoxLayout>
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class GISAssetInputWidget;
 
-HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentR2D(parent)
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
+
+class GISWaterNetworkInputWidget : public SimCenterAppWidget
 {
+    Q_OBJECT
 
-  buildingWidget = new HazardToAssetBuilding(this); 
-  pipelineWidget = new SimCenterAppSelection(QString("Hazard To Asset Application"), QString("HazardToAsset"), this);
-  
-  this->addComponent("Buildings", buildingWidget);
-  this->addComponent("Gas Network",pipelineWidget);
+public:
+    GISWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~GISWaterNetworkInputWidget();
 
-  connect(this, SIGNAL(hazardGridFileChangedSignal(QString, QString)), buildingWidget, SLOT(hazardGridFileChangedSlot(QString, QString)));
-  connect(this, SIGNAL(eventTypeChangedSignal(QString)), buildingWidget, SLOT(eventTypeChangedSlot(QString)));
+    virtual int loadNodesVisualization();
+    virtual int loadPipelinesVisualization();
 
-  this->hideAll();
-}
+    void clear();
 
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool copyFiles(QString &destName);
 
-HazardToAssetWidget::~HazardToAssetWidget()
-{
+protected slots:
+    void handleAssetsLoaded();
 
-}
+protected:
 
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-void HazardToAssetWidget::hazardGridFileChangedSlot(QString motionDir, QString eventFile){
-    emit hazardGridFileChangedSignal(motionDir, eventFile);
-}
+    GISAssetInputWidget* theNodesWidget = nullptr;
+    GISAssetInputWidget* thePipelinesWidget = nullptr;
 
+    QgsVectorLayer* nodesMainLayer = nullptr;
+    QgsVectorLayer* pipelinesMainLayer = nullptr;
 
-void HazardToAssetWidget::eventTypeChangedSlot(QString eventType)
-{
-    emit eventTypeChangedSignal(eventType);
-}
+};
 
-
-void HazardToAssetWidget::clear(void)
-{
-    buildingWidget->clear();
-    pipelineWidget->clear();
-}
+#endif // GISWaterNetworkInputWidget_H
