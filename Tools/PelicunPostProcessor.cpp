@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "CSVReaderWriter.h"
 #include "ComponentDatabaseManager.h"
-#include "GeneralInformationWidget.h"
+#include "GeneralInformationWidgetR2D.h"
 #include "MainWindowWorkflowApp.h"
 #include "PelicunPostProcessor.h"
 #include "REmpiricalProbabilityDistribution.h"

@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "MDOF_LU.h"
 #include "SimCenterPreferences.h"
-#include "RandomVariablesContainer.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -51,8 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QTextEdit>
 
-MDOF_LU::MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), theRandomVariablesContainer(theRandomVariableIW)
+MDOF_LU::MDOF_LU(QWidget *parent)
+  : SimCenterAppWidget(parent)
 {
     QGridLayout *layout = new QGridLayout();
 

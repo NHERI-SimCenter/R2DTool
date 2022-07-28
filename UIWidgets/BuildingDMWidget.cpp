@@ -54,7 +54,7 @@ BuildingDMWidget::BuildingDMWidget(QWidget *parent) : SimCenterAppWidget(parent)
 
     theTabbedWidget = new QTabWidget(this);
 
-    theDMEQWidget = new BuildingDMEQWidget(nullptr,this);
+    theDMEQWidget = new BuildingDMEQWidget(this);
     theTabbedWidget->addTab(theDMEQWidget,"Earthquake DM");
 
     theTabbedWidget->setTabEnabled(1,true);

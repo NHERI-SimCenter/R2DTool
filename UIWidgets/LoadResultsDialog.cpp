@@ -134,7 +134,7 @@ void LoadResultsDialog::handleLoadResults(void)
 #ifdef OpenSRA
     workflowWidget->postprocessResults(resultsPath,QString(),QString());
 #else
-    workflowWidget->processResults(resultsPath,QString(),QString());
+    workflowWidget->processResults(resultsPath);
 #endif
 
     statusDialog->appendText("Done loading the results");

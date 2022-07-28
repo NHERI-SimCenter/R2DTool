@@ -49,8 +49,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QDebug>
 
-BuildingDMEQWidget::BuildingDMEQWidget(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), theCurrentWidget(0), theRandomVariablesContainer(theRandomVariableIW)
+BuildingDMEQWidget::BuildingDMEQWidget(QWidget *parent)
+    : SimCenterAppWidget(parent), theCurrentWidget(0)
 {
     QVBoxLayout *layout = new QVBoxLayout();
 

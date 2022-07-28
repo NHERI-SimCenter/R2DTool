@@ -51,7 +51,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QStackedWidget>
 
-EarthquakeInputWidget::EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
+EarthquakeInputWidget::EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget)
+  : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     theEQWidget = nullptr;
     theRootStackedWidget = nullptr;

@@ -97,7 +97,6 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/ModelViewItems/CustomListWidget.cpp \
             $$PWD/Tools/AssetInputDelegate.cpp \
             $$PWD/Tools/AssetFilterDelegate.cpp \
-            $$PWD/Tools/SimCenterUnitsCombo.cpp \
             $$PWD/Tools/ComponentDatabase.cpp \
             $$PWD/Tools/CSVReaderWriter.cpp \
             $$PWD/Tools/ComponentDatabaseManager.cpp \
@@ -124,7 +123,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/DecisionVariableWidget.cpp \
             $$PWD/UIWidgets/EarthquakeInputWidget.cpp \
             $$PWD/UIWidgets/EngDemandParameterWidget.cpp \
-            $$PWD/UIWidgets/GeneralInformationWidget.cpp \
+            $$PWD/UIWidgets/GeneralInformationWidgetR2D.cpp \
             $$PWD/UIWidgets/GroundMotionStation.cpp \
             $$PWD/UIWidgets/LoadResultsDialog.cpp \
             $$PWD/UIWidgets/SimCenterUnitsWidget.cpp \
@@ -208,7 +207,6 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Events/UI/Vs30Widget.h \
             $$PWD/Tools/AssetInputDelegate.h \
             $$PWD/Tools/AssetFilterDelegate.h \
-            $$PWD/Tools/SimCenterUnitsCombo.h \
             $$PWD/Tools/ComponentDatabase.h \
             $$PWD/Tools/CSVReaderWriter.h \
             $$PWD/Tools/ComponentDatabaseManager.h \
@@ -237,7 +235,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/DecisionVariableWidget.h \
             $$PWD/UIWidgets/EarthquakeInputWidget.h \
             $$PWD/UIWidgets/EngDemandParameterWidget.h \
-            $$PWD/UIWidgets/GeneralInformationWidget.h \
+            $$PWD/UIWidgets/GeneralInformationWidgetR2D.h \
             $$PWD/UIWidgets/GroundMotionStation.h \
             $$PWD/UIWidgets/LoadResultsDialog.h \
             $$PWD/UIWidgets/SimCenterUnitsWidget.h \

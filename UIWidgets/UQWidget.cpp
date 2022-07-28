@@ -63,12 +63,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-UQWidget::UQWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
-    : MultiComponentR2D(parent)
+UQWidget::UQWidget(QWidget *parent)
+  : MultiComponentR2D(parent)
 {
 
     buildingWidget = new SimCenterAppSelection(QString("UQ Application"), QString("UQ"), this);
-    SimCenterAppWidget *dakota = new DakotaInputSampling(theRVContainer, this);
+    SimCenterAppWidget *dakota = new DakotaInputSampling(this);
 
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
 

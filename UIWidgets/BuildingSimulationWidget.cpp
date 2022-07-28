@@ -46,8 +46,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 #include <QStackedWidget>
 
-BuildingSimulationWidget::BuildingSimulationWidget(QWidget *parent, RandomVariablesContainer* RVContainer)
-    : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
+BuildingSimulationWidget::BuildingSimulationWidget(QWidget *parent)
+    : SimCenterAppWidget(parent)
 {
     buildingSIMSelectCombo = new QComboBox(this);
     buildingSIMSelectCombo->addItem("OpenSees Simulation");
@@ -59,8 +59,8 @@ BuildingSimulationWidget::BuildingSimulationWidget(QWidget *parent, RandomVariab
 
     theStackedWidget = new QStackedWidget(this);
 
-    openSeesInputWidget = new InputWidgetOpenSeesAnalysis(theRandomVariablesContainer, this);
-    openSeesPyInputWidget = new InputWidgetOpenSeesPyAnalysis(theRandomVariablesContainer, this);
+    openSeesInputWidget = new InputWidgetOpenSeesAnalysis(this);
+    openSeesPyInputWidget = new InputWidgetOpenSeesPyAnalysis(this);
 
     theStackedWidget->addWidget(openSeesInputWidget);
     theStackedWidget->addWidget(openSeesPyInputWidget);

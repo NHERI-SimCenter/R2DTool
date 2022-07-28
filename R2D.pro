@@ -36,7 +36,8 @@
 
 # Written by: Stevan Gavrilovic, Frank McKenna
 
-QT += core gui charts concurrent network sql xml 3dcore 3drender 3dextras opengl
+QT += core gui charts concurrent network sql xml serialport
+QT += 3dcore 3drender 3dextras opengl positioning quickwidgets
 
 mac {
 QT += macextras
@@ -123,7 +124,10 @@ contains(DEFINES, ARC_GIS)  {
 # Simcenter dependencies
 include($$PATH_TO_COMMON/Common/Common.pri)
 include($$PATH_TO_COMMON/RandomVariables/RandomVariables.pri)
-include(R2DCommon.pri)
+include($$PATH_TO_COMMON/Workflow/Workflow.pri)
+include($$PATH_TO_COMMON/InputSheetBM/InputSheetBM.pri)   
+   
+#include(R2DCommon.pri)
 
 # R2D source and includes
 include(R2D.pri)

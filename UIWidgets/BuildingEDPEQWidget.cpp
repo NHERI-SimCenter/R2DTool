@@ -50,8 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QDebug>
 
-BuildingEDPEQWidget::BuildingEDPEQWidget(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), theCurrentWidget(0), theRandomVariablesContainer(theRandomVariableIW)
+BuildingEDPEQWidget::BuildingEDPEQWidget(QWidget *parent)
+    : SimCenterAppWidget(parent), theCurrentWidget(0)
 {
     QVBoxLayout *layout = new QVBoxLayout();
 
@@ -76,10 +76,10 @@ BuildingEDPEQWidget::BuildingEDPEQWidget(RandomVariablesContainer *theRandomVari
     theStackedWidget = new QStackedWidget();
 
     // Create the individual widgets add to stacked widget
-    theStandardEarthquakeEDPs = new StandardEarthquakeEDP(theRandomVariablesContainer);
+    theStandardEarthquakeEDPs = new StandardEarthquakeEDP();
     theStackedWidget->addWidget(theStandardEarthquakeEDPs);
 
-    theUserDefinedEDPs = new UserDefinedEDPR(theRandomVariablesContainer);
+    theUserDefinedEDPs = new UserDefinedEDPR();
     theStackedWidget->addWidget(theUserDefinedEDPs);
 
     layout->addWidget(theStackedWidget);

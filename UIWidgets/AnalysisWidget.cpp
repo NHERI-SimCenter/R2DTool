@@ -65,13 +65,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
+AnalysisWidget::AnalysisWidget(QWidget *parent)
     : MultiComponentR2D(parent)
 {
 
   buildingWidget = new SimCenterAppSelection(QString("Building Analysis Engine"), QString("Simulation"), this);
 
-  SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(theRVContainer);
+  SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);
   //SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);
   SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
   SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMasEDP"));
