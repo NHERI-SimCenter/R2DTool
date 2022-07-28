@@ -48,7 +48,7 @@ class LocalApplication;
 class AssetsWidget;
 class DLWidget;
 class EngDemandParameterWidget;
-class GeneralInformationWidget;
+class GeneralInformationWidgetR2D;
 class HazardToAssetWidget;
 class HazardsWidget;
 class InputWidgetUQ;
@@ -94,7 +94,7 @@ public:
 
     VisualizationWidget *getVisualizationWidget() const;
     AssetsWidget *getAssetsWidget() const;
-    GeneralInformationWidget *getGeneralInformationWidget() const;
+    GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
 
     LocalApplication *getLocalApp() const;
 
@@ -104,8 +104,8 @@ public slots:
     void clear(void);
     void loadResults(void);
     void setUpForApplicationRun(QString &, QString &);
-    void processResults(QString dakotaOut, QString dakotaTab, QString inputFile);
-    int loadFile(QString filename);
+    void processResults(QString &dirResults);
+    int loadFile(QString &filename);
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
 
@@ -125,7 +125,7 @@ private:
     //
 
     VisualizationWidget* theVisualizationWidget;
-    GeneralInformationWidget* theGeneralInformationWidget;
+    GeneralInformationWidgetR2D* theGeneralInformationWidgetR2D;
     HazardsWidget* theHazardsWidget;
     AssetsWidget* theAssetsWidget;
     HazardToAssetWidget* theHazardToAssetWidget;

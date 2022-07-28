@@ -41,14 +41,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "MultiComponentR2D.h"
 
 class BuildingModelingWidget;
-class RandomVariablesContainer;
 
 class AssetsModelWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
 public:
-    explicit AssetsModelWidget(QWidget *parent, RandomVariablesContainer * RVContainer);
+    explicit AssetsModelWidget(QWidget *parent);
     ~AssetsModelWidget();
 
     void clear(void);
@@ -56,7 +55,6 @@ public:
 private:
 
     BuildingModelingWidget *buildingWidget;
-    RandomVariablesContainer* theRandomVariablesContainer;
 };
 
 #endif // AssetsModelWidget_H

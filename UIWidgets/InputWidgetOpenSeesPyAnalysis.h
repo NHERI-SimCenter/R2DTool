@@ -40,8 +40,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
-class RandomVariablesContainer;
-
 class QLineEdit;
 class QComboBox;
 class QStackedWidget;
@@ -50,7 +48,7 @@ class InputWidgetOpenSeesPyAnalysis : public  SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit InputWidgetOpenSeesPyAnalysis(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    explicit InputWidgetOpenSeesPyAnalysis(QWidget *parent = 0);
     ~InputWidgetOpenSeesPyAnalysis();
 
     bool outputToJSON(QJsonObject &jsonObject) override;
@@ -77,9 +75,7 @@ private:
     QComboBox   *theAlgorithm;
     QLineEdit   *theIntegration;
     QLineEdit   *theSolver;
-
     QLineEdit *file;
-    RandomVariablesContainer *theRandomVariablesContainer;
 
     QString lastDampingRatio;
     QString lastTolerance;

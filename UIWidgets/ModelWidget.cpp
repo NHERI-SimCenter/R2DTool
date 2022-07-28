@@ -64,7 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
+ModelWidget::ModelWidget(QWidget *parent)
     : MultiComponentR2D(parent)
 {
 
@@ -73,8 +73,9 @@ ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContai
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("Modeling"), QString(), QString("WaterDistributionNetwork"), this);
 
     // Building widget apps
-    SimCenterAppWidget *mdofLU = new MDOF_LU(theRVContainer);
-    SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(theRVContainer,this);
+    SimCenterAppWidget *mdofLU = new MDOF_LU();
+    SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(this);
+
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
     buildingWidget->addComponent(QString("MDOF-LU"), QString("MDOF-LU"), mdofLU);

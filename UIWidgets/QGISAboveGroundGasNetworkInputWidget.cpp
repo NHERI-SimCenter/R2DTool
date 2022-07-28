@@ -49,10 +49,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-QGISAboveGroundGasNetworkInputWidget::QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
-{
-    theComponentDb = ComponentDatabaseManager::getInstance()->getAboveGroundGasInfrastructureComponentDb();
-
+QGISAboveGroundGasNetworkInputWidget::QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
+{    
     // Test to remove
 //    pathToComponentInputFile = "/Users/steve/Desktop/ExWellCaprock.csv";
 //    this->loadComponentData();

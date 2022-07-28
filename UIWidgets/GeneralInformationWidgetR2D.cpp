@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "GeneralInformationWidget.h"
+#include "GeneralInformationWidgetR2D.h"
 #include "sectiontitle.h"
 #include "SimCenterPreferences.h"
 #include "SimCenterUnitsCombo.h"
@@ -55,7 +55,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMetaEnum>
 #include <QPushButton>
 
-GeneralInformationWidget::GeneralInformationWidget(QWidget *parent)
+GeneralInformationWidgetR2D::GeneralInformationWidgetR2D(QWidget *parent)
     : SimCenterWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -81,13 +81,13 @@ GeneralInformationWidget::GeneralInformationWidget(QWidget *parent)
 }
 
 
-GeneralInformationWidget::~GeneralInformationWidget()
+GeneralInformationWidgetR2D::~GeneralInformationWidgetR2D()
 {
 
 }
 
 
-bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
+bool GeneralInformationWidgetR2D::outputToJSON(QJsonObject &jsonObj)
 {
     auto runDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
     // auto appDir = SimCenterPreferences::getInstance()->getAppDir();
@@ -130,7 +130,7 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
+bool GeneralInformationWidgetR2D::inputFromJSON(QJsonObject &jsonObject){
 
     if (jsonObject.contains("Name"))
         nameEdit->setText(jsonObject["Name"].toString());
@@ -183,13 +183,13 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
 }
 
 
-QString GeneralInformationWidget::getAnalysisName(void)
+QString GeneralInformationWidgetR2D::getAnalysisName(void)
 {
     return nameEdit->text();
 }
 
 
-QGridLayout* GeneralInformationWidget::getInfoLayout(void)
+QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
 {
     // Analysis information
     nameEdit = new QLineEdit();
@@ -320,7 +320,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
 }
 
 
-bool GeneralInformationWidget::setAssetTypeState(QString assetType, bool checkedStatus){
+bool GeneralInformationWidgetR2D::setAssetTypeState(QString assetType, bool checkedStatus){
     if (assetType == "Buildings")
         buildingsCheckBox->setChecked(checkedStatus);
     return true;
@@ -328,7 +328,7 @@ bool GeneralInformationWidget::setAssetTypeState(QString assetType, bool checked
 
 
 
-void GeneralInformationWidget::clear(void)
+void GeneralInformationWidgetR2D::clear(void)
 {
     nameEdit->clear();
 

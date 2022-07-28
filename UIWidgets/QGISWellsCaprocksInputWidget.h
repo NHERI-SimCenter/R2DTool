@@ -47,7 +47,7 @@ class QgsGeometry;
 class QGISWellsCaprocksInputWidget : public AssetInputWidget
 {
 public:
-    QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
     int loadAssetVisualization() override;
 

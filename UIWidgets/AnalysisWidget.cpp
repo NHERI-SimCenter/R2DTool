@@ -64,7 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
+AnalysisWidget::AnalysisWidget(QWidget *parent)
     : MultiComponentR2D(parent)
 {
 
@@ -73,7 +73,7 @@ AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRV
   WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("Simulation"), QString(), QString("WaterDistributionNetwork"), this);
 
   // Building widget apps
-  SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(theRVContainer);
+  SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);
   //SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);
   SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
   SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMasEDP"));

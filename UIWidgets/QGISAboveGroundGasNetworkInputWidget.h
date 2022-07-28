@@ -47,7 +47,7 @@ class QgsGeometry;
 class QGISAboveGroundGasNetworkInputWidget : public AssetInputWidget
 {
 public:
-    QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
     int loadAssetVisualization();
 

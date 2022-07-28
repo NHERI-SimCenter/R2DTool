@@ -41,14 +41,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "MultiComponentR2D.h"
 
 class SimCenterAppSelection;
-class RandomVariablesContainer;
 
 class AnalysisWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
 public:
-    explicit AnalysisWidget(QWidget *parent, RandomVariablesContainer * RVContainer);
+    explicit AnalysisWidget(QWidget *parent);
     ~AnalysisWidget();
 
     void clear(void);

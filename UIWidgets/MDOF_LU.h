@@ -46,13 +46,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QComboBox>
 
 class InputWidgetParameters;
-class RandomVariablesContainer;
 
 class MDOF_LU : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    explicit MDOF_LU(QWidget *parent = 0);
     ~MDOF_LU();
 
     bool outputToJSON(QJsonObject &rvObject) override;
@@ -73,7 +72,6 @@ private:
     QLineEdit *stdStiffness;
     QLineEdit *stdDamping;
     QLineEdit *storyHeight;
-    RandomVariablesContainer *theRandomVariablesContainer;
 };
 
 #endif // MDOF_LU_H

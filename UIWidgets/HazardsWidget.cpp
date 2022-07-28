@@ -67,10 +67,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 
 HazardsWidget::HazardsWidget(QWidget *parent,
-                             VisualizationWidget* visWidget,
-                             RandomVariablesContainer * RVContainer)
-  : SimCenterAppSelection(QString("Hazard Selection"), QString("RegionalEvent"), QString("Hazard"), QString(), parent),
-    theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
+                             VisualizationWidget* visWidget)
+  : SimCenterAppSelection(QString("Hazard Selection"),
+              QString("RegionalEvent"), QString("Hazard"), QString(), parent),
+    theVisualizationWidget(visWidget)
 {
     this->setContentsMargins(0,0,0,0);
 

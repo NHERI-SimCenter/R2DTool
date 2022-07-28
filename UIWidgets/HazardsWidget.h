@@ -41,7 +41,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppSelection.h"
 
 class GMWidget;
-class RandomVariablesContainer;
 class ShakeMapWidget;
 class HurricaneSelectionWidget;
 class OpenQuakeSelectionWidget;
@@ -57,7 +56,7 @@ class HazardsWidget : public  SimCenterAppSelection
     Q_OBJECT
 
 public:
-    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
+    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~HazardsWidget();
 
 #ifdef ARC_GIS
@@ -75,8 +74,6 @@ private slots:
     void eventTypeChangedSlot(QString eventType);
 
 private:
-
-    RandomVariablesContainer* theRandomVariablesContainer;
 
     VisualizationWidget* theVisualizationWidget;
 

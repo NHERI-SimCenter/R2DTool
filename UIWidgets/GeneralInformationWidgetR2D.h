@@ -1,5 +1,5 @@
-﻿#ifndef GENERALINFORMATIONWIDGET_H
-#define GENERALINFORMATIONWIDGET_H
+﻿#ifndef GENERAL_INFORMATION_WIDGET_R2D_H
+#define GENERAL_INFORMATION_WIDGET_R2D_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -46,13 +46,12 @@ class QComboBox;
 class SimCenterUnitsCombo;
 class QCheckBox;
 
-class GeneralInformationWidget : public SimCenterWidget
+class GeneralInformationWidgetR2D : public SimCenterWidget
 {
-
     Q_OBJECT
 public:
-    explicit GeneralInformationWidget(QWidget *parent);
-    ~GeneralInformationWidget();
+    explicit GeneralInformationWidgetR2D(QWidget *parent);
+    ~GeneralInformationWidgetR2D();
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
@@ -103,7 +102,6 @@ private:
     QCheckBox* realizationCheckBox;
     QCheckBox* BIMCheckBox;
     QCheckBox* IMCheckBox;
-
 };
 
 

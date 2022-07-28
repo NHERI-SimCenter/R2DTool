@@ -42,7 +42,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class BuildingModelGeneratorWidget;
 class BuildingSimulationWidget;
-class RandomVariablesContainer;
 class StructuralModelingWidget;
 
 class QComboBox;
@@ -54,13 +53,12 @@ class BuildingModelingWidget : public  SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit BuildingModelingWidget(QWidget *parent, RandomVariablesContainer* RVContainer);
+    explicit BuildingModelingWidget(QWidget *parent);
     virtual ~BuildingModelingWidget();
 
     bool outputToJSON(QJsonObject &rvObject);
 
 private:
-    RandomVariablesContainer* theRandomVariablesContainer;
     QTabWidget* theTabbedWidget;
     BuildingModelGeneratorWidget* theBuildingModelGenWidget;
     StructuralModelingWidget* theStructModelingWidget;

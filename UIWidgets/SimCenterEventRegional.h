@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QComboBox>
 
 class InputWidgetParameters;
-class RandomVariablesContainer;
 
 class SimCenterEventRegional : public SimCenterAppWidget
 {

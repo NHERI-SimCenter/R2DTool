@@ -46,7 +46,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QStackedWidget>
 
-StructuralModelingWidget::StructuralModelingWidget(QWidget *parent, RandomVariablesContainer* RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
+StructuralModelingWidget::StructuralModelingWidget(QWidget *parent)
+  : SimCenterAppWidget(parent)
 {
     buildingModelSelectCombo = new QComboBox(this);
     buildingModelSelectCombo->addItem("OpenSees Model");
@@ -58,8 +59,8 @@ StructuralModelingWidget::StructuralModelingWidget(QWidget *parent, RandomVariab
 
     theStackedWidget = new QStackedWidget(this);
 
-    theOpenSeesModelWidget = new OpenSeesBuildingModel(theRandomVariablesContainer,false,this);
-    theOpenSeesPyModelWidget = new OpenSeesPyBuildingModel(theRandomVariablesContainer,this);
+    theOpenSeesModelWidget = new OpenSeesBuildingModel(false,this);
+    theOpenSeesPyModelWidget = new OpenSeesPyBuildingModel(this);
 
     theStackedWidget->addWidget(theOpenSeesPyModelWidget);
     theStackedWidget->addWidget(theOpenSeesModelWidget);

@@ -47,13 +47,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class EDP;
 class InputWidgetParameters;
-class RandomVariablesContainer;
 
 class UserDefinedEDPR : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit UserDefinedEDPR(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    explicit UserDefinedEDPR(QWidget *parent = 0);
     ~UserDefinedEDPR();
 
     bool outputToJSON(QJsonObject &jsonObject) override;
@@ -72,7 +71,6 @@ public slots:
 private:
 
     QLineEdit* EDPSpecsLineEdit;
-    RandomVariablesContainer* theRandomVariablesContainer;
 };
 
 #endif // USER_DEFINED_EDP_H
