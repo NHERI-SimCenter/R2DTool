@@ -112,6 +112,8 @@ private:
     SimCenterUnitsWidget* unitsWidget = nullptr;
     CRSSelectionWidget* crsSelectorWidget = nullptr;
     QComboBox* eventTypeCombo = nullptr;
+
+    bool asHdf5 = false;
 };
 
 #endif // RasterHazardInputWidget_H

@@ -68,9 +68,9 @@ ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContai
     : MultiComponentR2D(parent)
 {
 
-    buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Modeling"), QString("Buildings"), this);
-    pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("Modeling"), QString("NaturalGasPipelines"), this);
-    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("Modeling"), QString("WaterDistributionNetwork"), this);
+    buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Modeling"), QString(), QString("Buildings"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("Modeling"), QString(), QString("NaturalGasPipelines"), this);
+    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("Modeling"), QString(), QString("WaterDistributionNetwork"), this);
 
     // Building widget apps
     SimCenterAppWidget *mdofLU = new MDOF_LU(theRVContainer);

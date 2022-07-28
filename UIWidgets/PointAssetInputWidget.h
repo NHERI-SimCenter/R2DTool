@@ -50,7 +50,7 @@ class QgsGeometry;
 class PointAssetInputWidget : public AssetInputWidget
 {
 public:
-    PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
     int loadAssetVisualization();
 

@@ -77,9 +77,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
-    buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Assets"), QString("Buildings"), this);
-    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("Assets"), QString("NaturalGasPipelines"), this);
-    waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("Assets"), QString("WaterDistributionNetwork"), this);
+    buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Assets"), QString(), QString("Buildings"), this);
+    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("Assets"), QString(), QString("NaturalGasPipelines"), this);
+    waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("Assets"), QString(), QString("WaterDistributionNetwork"), this);
 
 #ifdef ARC_GIS
     ArcGISBuildingInputWidget *csvBuildingInventory = new ArcGISBuildingInputWidget(this,"Buildings","CSV_to_BIM");

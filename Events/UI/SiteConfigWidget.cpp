@@ -82,9 +82,9 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
 
     //add a new one for site inventory
     if (soilResponse)
-        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Soils","RegionalSiteResponse");
+        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "SiteSoilColumn","RegionalSiteResponse");
     else
-        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Sites","regionalGroundMotion");
+        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "SiteSoilColumn","regionalGroundMotion");
 
     csvSiteInventory->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     auto sa = new VerticalScrollingWidget(csvSiteInventory);

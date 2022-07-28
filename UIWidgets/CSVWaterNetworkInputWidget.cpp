@@ -24,7 +24,7 @@ CSVWaterNetworkInputWidget::CSVWaterNetworkInputWidget(QWidget *parent, Visualiz
     assert(theVisualizationWidget);
 
 //    theNodesDb = ComponentDatabaseManager::getInstance()->getWaterNetworkNodeComponentDb();
-    thePipelinesDb = ComponentDatabaseManager::getInstance()->getWaterNetworkPipeComponentDb();
+    thePipelinesDb = ComponentDatabaseManager::getInstance()->createAssetDb("Water Network Pipelines");
 
     //    theNodesWidget = new NonselectableAssetInputWidget(this, theNodesDb, theVisualizationWidget, "Water Network Nodes");
     //QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString()
@@ -116,11 +116,29 @@ bool CSVWaterNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     QJsonObject data;
 
+    QJsonObject nodeData;
     // The file containing the network nodes
-    theNodesWidget->outputAppDataToJSON(data);
+    auto res = theNodesWidget->outputAppDataToJSON(nodeData);
 
+    if(!res)
+    {
+        this->errorMessage("Error, could not get the .json output from the nodes widget in CSV_to_WATERNETWORK");
+        return false;
+    }
+
+    data["WaterNetworkNodes"] = nodeData;
+
+    QJsonObject pipelineData;
     // The file containing the network pipelines
-    thePipelinesWidget->outputAppDataToJSON(data);
+    res = thePipelinesWidget->outputAppDataToJSON(pipelineData);
+
+    if(!res)
+    {
+        this->errorMessage("Error, could not get the .json output from the pipelines widget in CSV_to_WATERNETWORK");
+        return false;
+    }
+
+    data["WaterNetworkPipelines"] = pipelineData;
 
     jsonObject["ApplicationData"] = data;
 
@@ -273,7 +291,7 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
 
         int pipelineID =  pipelineIDStr.toInt();
 
-        // Create a unique ID for the building
+        // Create a unique ID for the pipeline
         //        auto uid = theVisualizationWidget->createUniqueID();
 
         // "ID"
@@ -351,7 +369,7 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
 
     theVisualizationWidget->registerLayerForSelection(layerId,thePipelinesWidget);
 
-    // Create the selected building layer
+    // Create the selected pipeline layer
     pipelinesSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Pipelines");
 
     if(pipelinesSelectedLayer == nullptr)
@@ -392,150 +410,6 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
     return 0;
 }
 
-
-/*
-int CSVWaterNetworkInputWidget::loadNodesVisualization()
-{
-
-    auto theNodesTableWidget = theNodesWidget->getTableWidget();
-
-    // Create the building attributes that are fixed
-    QgsFields featFields;
-    featFields.append(QgsField("ID", QVariant::Int));
-    featFields.append(QgsField("AssetType", QVariant::String));
-    featFields.append(QgsField("TabName", QVariant::String));
-
-    // Set the table headers as fields in the table
-    for(int i = 1; i<theNodesTableWidget->columnCount(); ++i)
-    {
-        auto fieldText = theNodesTableWidget->horizontalHeaderItemVariant(i);
-        featFields.append(QgsField(fieldText.toString(),fieldText.type()));
-    }
-
-    QList<QgsField> attribFields;
-    for(int i = 0; i<featFields.size(); ++i)
-        attribFields.push_back(featFields[i]);
-
-    auto headers = theNodesWidget->getTableHorizontalHeadings();
-
-    // First check if a footprint was provided
-    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, "latitude");
-    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, "longitude");
-
-    if(indexLongitude == -1 || indexLatitude == -1)
-    {
-        this->errorMessage("Could not find latitude and longitude in the header columns");
-        return -1;
-    }
-
-    // Get the number of rows
-    auto nRows = theNodesTableWidget->rowCount();
-
-    QString layerType = "point";
-
-    // Create the buildings layer
-    nodesMainLayer = theVisualizationWidget->addVectorLayer(layerType,"Water Network Nodes");
-
-    if(nodesMainLayer == nullptr)
-    {
-        this->errorMessage("Error adding a vector layer");
-        return -1;
-    }
-
-    auto pr = nodesMainLayer->dataProvider();
-
-    nodesMainLayer->startEditing();
-
-    auto res = pr->addAttributes(attribFields);
-
-    if(!res)
-        this->errorMessage("Error adding attributes to the layer" + nodesMainLayer->name());
-
-    nodesMainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
-
-    theNodesDb->setMainLayer(nodesMainLayer);
-
-    auto numAtrb = attribFields.size();
-
-    for(int i = 0; i<nRows; ++i)
-    {
-        // create the feature attributes
-        QgsAttributes featureAttributes(numAtrb);
-
-        // Create a new node
-        QString nodeIDStr = theNodesTableWidget->item(i,0).toString();
-
-        int nodeID = nodeIDStr.toInt();
-
-        // Create a unique ID for the building
-        //        auto uid = theVisualizationWidget->createUniqueID();
-
-        //  "ID"
-        //  "AssetType"
-        //  "TabName"
-
-        featureAttributes[0] = QVariant(nodeID);
-        featureAttributes[1] = QVariant("WATERNETWORKNODE");
-        featureAttributes[2] = QVariant(nodeIDStr);
-
-        // The feature attributes are the columns from the table
-        for(int j = 1; j<theNodesTableWidget->columnCount(); ++j)
-        {
-            auto attrbVal = theNodesTableWidget->item(i,j);
-            featureAttributes[2+j] = attrbVal;
-        }
-
-        auto latitude = theNodesTableWidget->item(i,indexLatitude).toDouble();
-        auto longitude = theNodesTableWidget->item(i,indexLongitude).toDouble();
-
-        QgsFeature feature;
-        feature.setFields(featFields);
-
-        QgsPointXY point(longitude,latitude);
-        auto geom = QgsGeometry::fromPointXY(point);
-        if(geom.isEmpty())
-        {
-            this->errorMessage("Error getting the water pipeline geometry");
-            return -1;
-        }
-
-        nodePointsMap.insert(nodeID,point);
-
-        feature.setGeometry(geom);
-
-        feature.setAttributes(featureAttributes);
-
-        if(!feature.isValid())
-            return -1;
-
-
-        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
-        if(!res)
-        {
-            this->errorMessage("Error adding the feature to the layer");
-            return -1;
-        }
-
-        //        auto id = feature.id();
-
-        //        qDebug()<<id;
-    }
-
-    nodesMainLayer->commitChanges(true);
-    nodesMainLayer->updateExtents();
-
-    QgsSymbol* markerSymbol = new QgsMarkerSymbol();
-
-    markerSymbol->setColor(Qt::blue);
-    theVisualizationWidget->createSimpleRenderer(markerSymbol,nodesMainLayer);
-
-    //    auto numFeat = mainLayer->featureCount();
-
-    theVisualizationWidget->zoomToLayer(nodesMainLayer);
-
-    return 0;
-}
-*/
 
 
 int CSVWaterNetworkInputWidget::getNodeMap()

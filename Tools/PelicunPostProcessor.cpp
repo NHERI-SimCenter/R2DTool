@@ -470,7 +470,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     REmpiricalProbabilityDistribution theProbDist;
 
     // Get the buildings database
-    auto theBuildingDB = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+    auto theBuildingDB = ComponentDatabaseManager::getInstance()->getAssetDb("Buildings");
 
     if(theBuildingDB == nullptr)
     {
@@ -1332,7 +1332,7 @@ int PelicunPostProcessor::processIMResults(const QVector<QStringList>& IMResults
     siteResponseTableWidget->setRowCount(IMResults.size()-numHeaderRows);
 
     // Get the site database
-    auto theSiteDB = ComponentDatabaseManager::getInstance()->getSiteComponentDb();
+    auto theSiteDB = ComponentDatabaseManager::getInstance()->getAssetDb("SiteSoilColumn");
     if(theSiteDB == nullptr)
     {
         QString msg = "Error getting the site database from the input widget!";

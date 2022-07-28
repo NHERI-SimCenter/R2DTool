@@ -14,36 +14,19 @@ public:
     static ComponentDatabaseManager *getInstance(void);
 
     // Returns the component database given the string type
-    ComponentDatabase* getComponentDb(const QString& type);
+    ComponentDatabase* getAssetDb(const QString& type);
 
-    // Buildings
-    ComponentDatabase* getBuildingComponentDb();
+    // Creates a new component database given the string type
+    ComponentDatabase* createAssetDb(const QString& type);
 
-    // Natural gas distribution network
-    ComponentDatabase* getGasPipelineComponentDb();
-    ComponentDatabase* getWellsandCaprocksComponentDb();
-    ComponentDatabase* getAboveGroundGasInfrastructureComponentDb();
-
-    // Water distribution network
-    ComponentDatabase* getWaterNetworkPipeComponentDb();
-    ComponentDatabase* getWaterNetworkNodeComponentDb();
-
-    // Site-specific information
-    ComponentDatabase* getCPTComponentDb();
-    ComponentDatabase* getSiteComponentDb();
+    // Returns all of the component databases that have been created, i.e., that are not null ptrs
+    QList<ComponentDatabase*> getAllAssetDatabases();
 
 private:
 
     static ComponentDatabaseManager *theInstance;
 
-    std::unique_ptr<ComponentDatabase> theBuildingComponentDb;
-    std::unique_ptr<ComponentDatabase> theGasNetworkPipelinesDb;
-    std::unique_ptr<ComponentDatabase> theGasNetworkWellsCaprockstDb;
-    std::unique_ptr<ComponentDatabase> theGasNetworkAboveGroundInfrastructureDb;
-    std::unique_ptr<ComponentDatabase> theWaterNetworkPipeComponentDb;
-    std::unique_ptr<ComponentDatabase> theWaterNetworkNodesDb;
-    std::unique_ptr<ComponentDatabase> theSiteSoilColumnDb;
-    std::unique_ptr<ComponentDatabase> theSiteCPTDataDb;
+    QMap<QString, ComponentDatabase*> dbMap;
 };
 
 #endif // COMPONENTDATABASEMANAGER_H

@@ -56,7 +56,7 @@ using namespace Esri::ArcGISRuntime;
 
 ArcGISBuildingInputWidget::ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : AssetInputWidget(parent, componentType, appType)
 {
-    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+
 }
 
 

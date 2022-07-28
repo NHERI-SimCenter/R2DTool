@@ -54,7 +54,7 @@ class JsonGroupBoxWidget;
 class LineAssetInputWidget : public AssetInputWidget
 {
 public:
-    LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
 #ifdef OpenSRA
     bool loadFileFromPath(const QString& filePath) override;

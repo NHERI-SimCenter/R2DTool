@@ -52,7 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
-    theComponentDb = ComponentDatabaseManager::getInstance()->getSiteComponentDb();
+
 }
 
 
@@ -62,7 +62,7 @@ int QGISSiteInputWidget::loadAssetVisualization()
     soilPropComplete = false;
     soilParamComplete = false;
     // check soil data
-    if (componentType.compare("Soil")==0)
+    if (assetType.compare("Soil")==0)
         this->checkSoilDataComplete();
 
     // Create the building attributes that are fixed
@@ -99,7 +99,7 @@ int QGISSiteInputWidget::loadAssetVisualization()
     }
 
     // soil model is required for componentType = Soil
-    if (componentType.compare("Soil")==0 && indexModelType==-1)
+    if (assetType.compare("Soil")==0 && indexModelType==-1)
     {
         this->statusMessage("Could not find Model in the header columns");
         //return -1;
@@ -118,7 +118,7 @@ int QGISSiteInputWidget::loadAssetVisualization()
         layerType = "point";
 
     // Create the buildings layer
-    mainLayer = theVisualizationWidget->addVectorLayer(layerType,"All "+componentType+"s");
+    mainLayer = theVisualizationWidget->addVectorLayer(layerType,"All "+assetType+"s");
 
     if(mainLayer == nullptr)
     {
@@ -253,7 +253,7 @@ int QGISSiteInputWidget::loadAssetVisualization()
 
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
-    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(layerType,"Selected "+componentType+"s");
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(layerType,"Selected "+assetType+"s");
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -286,14 +286,14 @@ int QGISSiteInputWidget::loadAssetVisualization()
     mapLayers.push_back(selectedFeaturesLayer);
     mapLayers.push_back(mainLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,componentType);
+    theVisualizationWidget->createLayerGroup(mapLayers,assetType);
 
     // check soil properties' completeness
-    if (componentType.compare("Soil")==0)
+    if (assetType.compare("Soil")==0)
         this->checkSoilPropComplete();
 
     // check soil modeling parameter completeness
-    if (componentType.compare("Soil")==0)
+    if (assetType.compare("Soil")==0)
     {
         int flag = this->checkSoilParamComplete();
         if (flag == 2)
@@ -310,7 +310,7 @@ int QGISSiteInputWidget::loadAssetVisualization()
     }
 
     // check soil data
-    if (componentType.compare("Soil")==0)
+    if (assetType.compare("Soil")==0)
         this->checkSoilDataComplete();
 
     return 0;

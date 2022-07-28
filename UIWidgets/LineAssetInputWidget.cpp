@@ -18,9 +18,9 @@
 #include <QFileInfo>
 
 
-LineAssetInputWidget::LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
+LineAssetInputWidget::LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
 {
-    theComponentDb = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
+
 }
 
 

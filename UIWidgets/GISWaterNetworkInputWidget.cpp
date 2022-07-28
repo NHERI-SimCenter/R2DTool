@@ -125,11 +125,29 @@ bool GISWaterNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     QJsonObject data;
 
+    QJsonObject nodeData;
     // The file containing the network nodes
-    theNodesWidget->outputAppDataToJSON(data);
+    auto res = theNodesWidget->outputAppDataToJSON(nodeData);
 
+    if(!res)
+    {
+        this->errorMessage("Error, could not get the .json output from the nodes widget in GIS_to_WATERNETWORK");
+        return false;
+    }
+
+    data["WaterNetworkNodes"] = nodeData;
+
+    QJsonObject pipelineData;
     // The file containing the network pipelines
-    thePipelinesWidget->outputAppDataToJSON(data);
+    res = thePipelinesWidget->outputAppDataToJSON(pipelineData);
+
+    if(!res)
+    {
+        this->errorMessage("Error, could not get the .json output from the pipelines widget in GIS_to_WATERNETWORK");
+        return false;
+    }
+
+    data["WaterNetworkPipelines"] = pipelineData;
 
     jsonObject["ApplicationData"] = data;
 

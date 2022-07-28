@@ -275,9 +275,9 @@ void WorkflowAppR2D::initialize(void)
 
     // Test to remove start
     // theComponentSelection->displayComponent("HAZ");
-     loadFile("/Users/steve/Desktop/E11SeasideWaterNetwork/input.json");
+//     loadFile("/Users/steve/Desktop/E11SeasideWaterNetwork/input.json");
 //     loadFile("/Users/steve/Desktop/E12EastBayWaterNetwork/input.json");
-     loadResults();
+//     loadResults();
     // Test to remove end
 
 }
@@ -604,6 +604,12 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     //    theAnalysisSelection->copyFiles(templateDirectory);
 
     bool res = false;
+
+    // Copy the files
+    this->statusMessage("Copying files");
+
+    QApplication::processEvents();
+
     res = theUQWidget->copyFiles(templateDirectory);
     if(!res)
     {
@@ -661,6 +667,11 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     }
     //    theEDP_Selection->copyFiles(templateDirectory);
 
+
+    // Generate the input file
+    this->statusMessage("Generating .json input file");
+
+    QApplication::processEvents();
     //
     // in new templatedir dir save the UI data into dakota.json file (same result as using saveAs)
     // NOTE: we append object workingDir to this which points to template dir
@@ -693,6 +704,8 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     file.close();
 
     statusMessage("Setup done. Now starting application.");
+
+    QApplication::processEvents();
 
     emit setUpForApplicationRunDone(tmpDirectory, inputFile);
 }

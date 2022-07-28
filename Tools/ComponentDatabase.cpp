@@ -141,9 +141,12 @@ bool ComponentDatabase::addFeaturesToSelectedLayer(const std::set<int> ids)
     QgsFeature feat;
     while (featIt.nextFeature(feat))
     {
-        //        auto id = feat.id();
+        auto id = feat.id();
         featList.push_back(feat);
     }
+
+    if(featList.size() != ids.size())
+        return false;
 
     auto res = selectedLayer->dataProvider()->addFeatures(featList, QgsFeatureSink::FastInsert);
 

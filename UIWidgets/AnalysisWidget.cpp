@@ -68,9 +68,9 @@ AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRV
     : MultiComponentR2D(parent)
 {
 
-  buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Simulation"), QString("Buildings"), this);
-  pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("Simulation"), QString("NaturalGasPipelines"), this);
-  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("Simulation"), QString("WaterDistributionNetwork"), this);
+  buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Simulation"), QString(), QString("Buildings"), this);
+  pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("Simulation"), QString(), QString("NaturalGasPipelines"), this);
+  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("Simulation"), QString(), QString("WaterDistributionNetwork"), this);
 
   // Building widget apps
   SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(theRVContainer);

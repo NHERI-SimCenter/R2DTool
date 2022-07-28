@@ -66,9 +66,9 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
 
-    buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("DL"), QString("Buildings"), this);
-    pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("DL"), QString("NaturalGasPipelines"), this);
-    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("DL"), QString("WaterDistributionNetwork"), this);
+    buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("DL"), QString(), QString("Buildings"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("DL"), QString(), QString("NaturalGasPipelines"), this);
+    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("DL"), QString(), QString("WaterDistributionNetwork"), this);
 
     // Building widget apps
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;

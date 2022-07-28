@@ -89,7 +89,7 @@ class AssetInputWidget : public  SimCenterAppWidget, public GISSelectable
     Q_OBJECT
 
 public:
-    explicit AssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    explicit AssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
     virtual ~AssetInputWidget();
 
     virtual int loadAssetVisualization() = 0;
@@ -198,7 +198,7 @@ protected:
     QLabel* label3 = nullptr;
 
     QString appType;
-    QString componentType;
+    QString assetType;
 
     QStringList tableHorizontalHeadings;
 

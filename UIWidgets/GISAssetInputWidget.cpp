@@ -81,13 +81,6 @@ GISAssetInputWidget::GISAssetInputWidget(QWidget *parent, VisualizationWidget* v
     QString txt3 = componentType + " Information";
     this->setLabel3(txt3);
 
-    // Remove the spaces
-    auto typeStr = componentType.remove(" ");
-
-    theComponentDb = ComponentDatabaseManager::getInstance()->getComponentDb(typeStr);
-
-    assert(theComponentDb);
-
     // The CRS selection
     crsSelectorWidget = new CRSSelectionWidget();
 
@@ -141,7 +134,7 @@ int GISAssetInputWidget::loadAssetVisualization()
         typeStr = "polygon";
 
     // Create the selected building layer
-    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(typeStr,"Selected "+componentType);
+    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(typeStr,"Selected "+assetType);
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -189,7 +182,7 @@ int GISAssetInputWidget::loadAssetVisualization()
     mapLayers.push_back(selectedFeaturesLayer);
     mapLayers.push_back(vectorLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,componentType);
+    theVisualizationWidget->createLayerGroup(mapLayers,assetType);
 
     theComponentDb->setMainLayer(vectorLayer);
 
@@ -329,9 +322,7 @@ bool GISAssetInputWidget::loadAssetData(void)
 
     this->loadAssetVisualization();
 
-    // Offset is 0 since QGIS always numbers components starting at 1
-    offset = 0;
-
+    offset = this->getOffset();
     theComponentDb->setOffset(offset);
 
     this->statusMessage("Done loading assets");
@@ -474,6 +465,7 @@ bool GISAssetInputWidget::isEmpty()
 
 bool GISAssetInputWidget::copyFiles(QString &destName)
 {
+    // Copy over the gis file
     auto compLineEditText = componentFileLineEdit->text();
 
     QFileInfo componentFile(compLineEditText);
@@ -484,66 +476,13 @@ bool GISAssetInputWidget::copyFiles(QString &destName)
     if (!QFile::copy(compLineEditText, destName + QDir::separator() + componentFile.fileName()))
         return false;
 
-    auto fileName = componentFile.baseName();
-
     // Do not copy the file, output a new csv which will have the changes that the user makes in the table
     //        if (componentFile.exists()) {
     //            return this->copyFile(componentFileLineEdit->text(), destName);
     //        }
 
-    auto pathToSaveFile = destName + QDir::separator() + fileName + ".csv";
-
-    auto nRows = componentTableWidget->rowCount();
-
-    if(nRows == 0)
-        return false;
-
-    auto data = componentTableWidget->getTableModel()->getTableData();
-
-    auto headerValues = componentTableWidget->getTableModel()->getHeaderStringList();
-
-    data.push_front(headerValues);
-
-    CSVReaderWriter csvTool;
-
-    QString err;
-    csvTool.saveCSVFile(data,pathToSaveFile,err);
-
-    if(!err.isEmpty())
-        return false;
-
-
-    // For testing, creates a csv file of only the selected components
-    //    qDebug()<<"Saving selected components to .csv";
-    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
-
-    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
-
-    //    selectedData[0] = headerValues;
-
-    //    auto nCols = componentTableWidget->columnCount();
-
-    //    int i = 0;
-    //    for(auto&& rowID : selectedIDs)
-    //    {
-    //        QStringList rowData;
-    //        rowData.reserve(nCols);
-
-    //        for(int j = 0; j<nCols; ++j)
-    //        {
-    //            auto item = componentTableWidget->item(rowID-1,j).toString();
-
-    //            rowData<<item;
-    //        }
-    //        selectedData[i+1] = rowData;
-
-    //        ++i;
-    //    }
-
-    //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
-    // For testing end
-
-    return true;
+    // Then create the csv file
+    return AssetInputWidget::copyFiles(destName);
 }
 
 
@@ -571,4 +510,34 @@ void GISAssetInputWidget::clear(void)
     crsSelectorWidget->clear();
 
     AssetInputWidget::clear();
+
+    vectorLayer = nullptr;
+}
+
+
+int GISAssetInputWidget::getOffset(void)
+{
+    auto delta = 0;
+
+    // Get the first id of the fid
+    auto firstIdLayer = 0;
+    auto features2 = vectorLayer->getFeatures();
+    QgsFeature feat2;
+    if (features2.nextFeature(feat2))
+        firstIdLayer = feat2.id();
+
+    // Get the ID of the first asset from the table
+    bool OK;
+    auto firstIDTable = componentTableWidget->item(0,0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return 0;
+    }
+
+    delta = firstIdLayer - firstIDTable;
+
+    return delta;
 }

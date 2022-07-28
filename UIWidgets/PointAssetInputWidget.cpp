@@ -39,7 +39,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PointAssetInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "ComponentTableView.h"
-#include "ComponentDatabaseManager.h"
 #include "AssetFilterDelegate.h"
 
 #include <qgsfield.h>
@@ -47,9 +46,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-PointAssetInputWidget::PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
+PointAssetInputWidget::PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
 {
-    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
 }
 
 
@@ -95,8 +93,8 @@ int PointAssetInputWidget::loadAssetVisualization()
     else
         layerType = "point";
 
-    // Create the buildings layer
-    mainLayer = theVisualizationWidget->addVectorLayer(layerType,"All Buildings");
+    // Create the asset layer
+    mainLayer = theVisualizationWidget->addVectorLayer(layerType,"All "+assetType);
 
     if(mainLayer == nullptr)
     {
@@ -126,21 +124,21 @@ int PointAssetInputWidget::loadAssetVisualization()
         // create the feature attributes
         QgsAttributes featureAttributes(numAtrb);
 
-        // Create a new building
-        QString buildingIDStr = componentTableWidget->item(i,0).toString();
+        // Create a new asset
+        QString assetIDStr = componentTableWidget->item(i,0).toString();
 
-        int buildingID = buildingIDStr.toInt();
+        int assetID = assetIDStr.toInt();
 
-        // Create a unique ID for the building
+        // Create a unique ID for the asset
 //        auto uid = theVisualizationWidget->createUniqueID();
 
         //  "ID"
         //  "AssetType"
         //  "TabName"
 
-        featureAttributes[0] = QVariant(buildingID);
-        featureAttributes[1] = QVariant("BUILDINGS");
-        featureAttributes[2] = QVariant(buildingID);
+        featureAttributes[0] = QVariant(assetID);
+        featureAttributes[1] = QVariant(assetType);
+        featureAttributes[2] = QVariant(assetID);
 
         // The feature attributes are the columns from the table
         for(int j = 1; j<componentTableWidget->columnCount(); ++j)
@@ -169,7 +167,7 @@ int PointAssetInputWidget::loadAssetVisualization()
                 auto geom = theVisualizationWidget->getPolygonGeometryFromJson(footprint);
                 if(geom.isEmpty())
                 {
-                    this->errorMessage("Error getting the building footprint geometry");
+                    this->errorMessage("Error getting the asset footprint geometry");
                     return -1;
                 }
 
@@ -182,7 +180,7 @@ int PointAssetInputWidget::loadAssetVisualization()
             auto geom = QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude));
             if(geom.isEmpty())
             {
-                this->errorMessage("Error getting the building footprint geometry");
+                this->errorMessage("Error getting the asset footprint geometry");
                 return -1;
             }
 
@@ -238,7 +236,7 @@ int PointAssetInputWidget::loadAssetVisualization()
 
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
-    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(layerType,"Selected Buildings");
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(layerType,"Selected "+assetType);
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -271,7 +269,7 @@ int PointAssetInputWidget::loadAssetVisualization()
     mapLayers.push_back(selectedFeaturesLayer);
     mapLayers.push_back(mainLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,"Buildings");
+    theVisualizationWidget->createLayerGroup(mapLayers,assetType);
 
     return 0;
 }

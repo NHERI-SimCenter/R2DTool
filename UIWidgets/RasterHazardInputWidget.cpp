@@ -550,122 +550,144 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
 
     emit outputDirectoryPathChanged(destDir, pathToEventFile);
 
-    auto theBuildingDB = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+    auto theAssetDBs = ComponentDatabaseManager::getInstance()->getAllAssetDatabases();
 
-    auto numPoints = theBuildingDB->getSelectedLayer()->featureCount();
+    if(theAssetDBs.empty())
+    {
+        this->errorMessage("Error in copy files could not find any asset databases. Did you upload any assets?");
+        return false;
+    }
+
 
     QVector<QStringList> pointDataVector;
-    pointDataVector.reserve(numPoints);
 
-    QgsFeatureIterator fit = theBuildingDB->getSelectedLayer()->getFeatures();
-
-    QgsFeature feature;
-    while (fit.nextFeature(feature))
+    // Iterate through the asset databases
+    for(auto&& theAssetDB :  theAssetDBs)
     {
 
-        // Get the latitude and lon of the asset
-        auto featAtrb = feature.attributes();
-        auto latIndx = feature.fieldNameIndex("Latitude");
-        auto lonIndx = feature.fieldNameIndex("Longitude");
+        auto selectedAssetsLayer = theAssetDB->getSelectedLayer();
 
-        double x = 0.0;
-        double y = 0.0;
+        if (selectedAssetsLayer == nullptr)
+            continue;
 
-        // First check if the lat/lon is explicitly provided
-        if(latIndx != -1 || lonIndx != -1)
+        auto numPoints = theAssetDB->getSelectedLayer()->featureCount();
+
+        pointDataVector.reserve(pointDataVector.size() + numPoints);
+
+        QgsFeatureIterator fit = theAssetDB->getSelectedLayer()->getFeatures();
+
+        QgsFeature feature;
+        while (fit.nextFeature(feature))
         {
 
-            bool OK = false;
-            x = featAtrb.at(lonIndx).toDouble(&OK);
-            if(!OK)
+            // Get the latitude and lon of the asset
+            auto featAtrb = feature.attributes();
+            auto latIndx = feature.fieldNameIndex("Latitude");
+            auto lonIndx = feature.fieldNameIndex("Longitude");
+
+            double x = 0.0;
+            double y = 0.0;
+
+            // First check if the lat/lon is explicitly provided
+            if(latIndx != -1 || lonIndx != -1)
             {
-                this->errorMessage("Could not get the latitude from the asset");
-                return false;
+
+                bool OK = false;
+                x = featAtrb.at(lonIndx).toDouble(&OK);
+                if(!OK)
+                {
+                    this->errorMessage("Could not get the latitude from the asset");
+                    return false;
+                }
+                y = featAtrb.at(latIndx).toDouble(&OK);
+                if(!OK)
+                {
+                    this->errorMessage("Could not get the latitude from the asset");
+                    return false;
+                }
             }
-            y = featAtrb.at(latIndx).toDouble(&OK);
-            if(!OK)
+            else // Get the centroid of the geometry and use that as asset location
             {
-                this->errorMessage("Could not get the latitude from the asset");
-                return false;
+                // Sample the raster at the centroid of the geometry
+                auto centroid = feature.geometry().centroid().asPoint();
+                x = centroid.x();
+                y = centroid.y();
             }
+
+            auto xstr = QString::number(x,'g', 10);
+            auto ystr = QString::number(y,'g', 10);
+
+            QStringList pointData;
+            pointData.append(xstr);
+            pointData.append(ystr);
+
+            for(int i = 0; i< bandNames.size(); ++i)
+            {
+                auto val = this->sampleRaster(x, y, i+1);
+                auto valStr = QString::number(val);
+
+                pointData.append(valStr);
+            }
+
+            pointDataVector.push_back(pointData);
         }
-        else // Get the centroid of the geometry and use that as asset location
-        {
-            // Sample the raster at the centroid of the geometry
-            auto centroid = feature.geometry().centroid().asPoint();
-            x = centroid.x();
-            y = centroid.y();
-        }
-
-        auto xstr = QString::number(x,'g', 10);
-        auto ystr = QString::number(y,'g', 10);
-
-        QStringList pointData;
-        pointData.append(xstr);
-        pointData.append(ystr);
-
-        for(int i = 0; i< bandNames.size(); ++i)
-        {
-            auto val = this->sampleRaster(x, y, i+1);
-            auto valStr = QString::number(val);
-
-            pointData.append(valStr);
-        }
-
-        pointDataVector.push_back(pointData);
     }
 
-    CSVReaderWriter csvTool;
-
-    // First create the event grid file
-    QVector<QStringList> gridData;
-
-    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
-    gridData.push_back(headerRow);
-
-    QStringList stationHeader = bandNames;
-
-    QApplication::processEvents();
-
-    for(int i = 0; i<pointDataVector.size(); ++i)
+    // Save the hazards as a bunch of csv files
+    if(!asHdf5)
     {
-        auto stationFile = "Site_"+QString::number(i)+".csv";
+        CSVReaderWriter csvTool;
 
-        auto point = pointDataVector.at(i);
+        // First create the event grid file
+        QVector<QStringList> gridData;
 
-        auto lon = point.at(0);
-        auto lat = point.at(1);
+        QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
+        gridData.push_back(headerRow);
 
-        // Get the grid row
-        QStringList gridRow = {stationFile, lat, lon};
-        gridData.push_back(gridRow);
+        QStringList stationHeader = bandNames;
 
-        QStringList stationRow = {point.begin()+2,point.end()};
+        QApplication::processEvents();
 
-        // Save the station data
-        QVector<QStringList> stationData = {stationHeader};
+        for(int i = 0; i<pointDataVector.size(); ++i)
+        {
+            auto stationFile = "Site_"+QString::number(i)+".csv";
 
-        stationData.push_back(stationRow);
+            auto point = pointDataVector.at(i);
 
-        QString pathToStationFile = destDir + QDir::separator() + stationFile;
+            auto lon = point.at(0);
+            auto lat = point.at(1);
 
-        QString err;
-        auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
+            // Get the grid row
+            QStringList gridRow = {stationFile, lat, lon};
+            gridData.push_back(gridRow);
+
+            QStringList stationRow = {point.begin()+2,point.end()};
+
+            // Save the station data
+            QVector<QStringList> stationData = {stationHeader};
+
+            stationData.push_back(stationRow);
+
+            QString pathToStationFile = destDir + QDir::separator() + stationFile;
+
+            QString err;
+            auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
+            if(res2 != 0)
+            {
+                this->errorMessage(err);
+                return false;
+            }
+
+        }
+
+        // Now save the site grid .csv file
+        QString err2;
+        auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
         if(res2 != 0)
         {
-            this->errorMessage(err);
+            this->errorMessage(err2);
             return false;
         }
-
-    }
-
-    // Now save the site grid .csv file
-    QString err2;
-    auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
-    if(res2 != 0)
-    {
-        this->errorMessage(err2);
-        return false;
     }
 
 

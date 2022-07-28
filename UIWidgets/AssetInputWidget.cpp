@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
+#include "ComponentDatabaseManager.h"
 
 // Test to remove
 //#include <chrono>
@@ -75,7 +76,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <string>
 #include <algorithm>
 
-AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), appType(appType), componentType(componentType)
+AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : SimCenterAppWidget(parent), appType(appType), assetType(assetType)
 {
 #ifdef ARC_GIS
     theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(visWidget);
@@ -99,15 +100,19 @@ AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidg
     AssetInputWidget::createComponentsBox();
 
     auto txt1 = "Load information from a CSV file";
-    auto txt2  = "Enter the IDs of one or more " + componentType.toLower() + " to analyze."
-                                                                             "\nDefine a range of " + componentType.toLower() + " with a dash and separate multiple " + componentType.toLower() + " with a comma.";
+    auto txt2  = "Enter the IDs of one or more " + assetType.toLower() + " to analyze."
+                                                                             "\nDefine a range of " + assetType.toLower() + " with a dash and separate multiple " + assetType.toLower() + " with a comma.";
 
-    auto txt3 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
+    auto txt3 = QStringRef(&assetType, 0, assetType.length()-1) + " Information";
 
     label1->setText(txt1);
     label2->setText(txt2);
     label3->setText(txt3);
 
+    theComponentDb = ComponentDatabaseManager::getInstance()->createAssetDb(assetType);
+
+    if(theComponentDb == nullptr)
+        this->errorMessage("Could not find the component database of the type "+assetType);
 }
 
 
@@ -266,7 +271,7 @@ ComponentTableView *AssetInputWidget::getTableWidget() const
 
 void AssetInputWidget::createComponentsBox(void)
 {
-    componentGroupBox = new QGroupBox(componentType);
+    componentGroupBox = new QGroupBox(assetType);
     componentGroupBox->setFlat(true);
     componentGroupBox->setContentsMargins(0,0,0,0);
     
@@ -527,17 +532,22 @@ void AssetInputWidget::handleComponentSelection(void)
         }
     }
 
-    auto numAssets = selectedComponentIDs.size();
-    QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
-    this->statusMessage(msg);
-
-
     theComponentDb->startEditing();
 
     // Test to remove
     //    auto start = high_resolution_clock::now();
 
-    theComponentDb->addFeaturesToSelectedLayer(selectedComponentIDs);
+    auto res = theComponentDb->addFeaturesToSelectedLayer(selectedComponentIDs);
+    if(res == false)
+    {
+        this->errorMessage("Error adding features to selected layer");
+        return;
+    }
+
+    auto numAssets = selectedComponentIDs.size();
+    QString msg = "A total of "+ QString::number(numAssets) + " " + assetType.toLower() + " are selected for analysis";
+    this->statusMessage(msg);
+
 
     // Test to remove
     //    auto stop = high_resolution_clock::now();
@@ -611,7 +621,7 @@ void AssetInputWidget::setGroupBoxText(const QString &value)
 
 void AssetInputWidget::setComponentType(const QString &value)
 {
-    componentType = value;
+    assetType = value;
 }
 
 
@@ -652,7 +662,7 @@ bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
             auto msgBox =  std::make_unique<QMessageBox>();
 
-            msgBox->setText("No IDs are selected for analysis in ASD "+componentType.toLower()+". Really run with all components?");
+            msgBox->setText("No IDs are selected for analysis in ASD "+assetType.toLower()+". Really run with all components?");
             msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
 
             auto res = msgBox->exec();
@@ -851,6 +861,33 @@ bool AssetInputWidget::copyFiles(QString &destName)
     if(!err.isEmpty())
         return false;
 
+    // Put this here because copy files gets called first and we need to select the components before we can create the input file
+    QString filterData = this->getFilterString();
+
+    if(filterData.isEmpty())
+    {
+
+        auto msgBox =  std::make_unique<QMessageBox>();
+
+        msgBox->setText("No IDs are selected for analysis in ASD "+assetType.toLower()+". Really run with all components?");
+        msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+
+        auto res = msgBox->exec();
+
+        if(res != QMessageBox::Yes)
+            return false;
+
+        this->selectAllComponents();
+
+        statusMessage("Selecting all components for analysis");
+        filterData = this->getFilterString();
+
+        if(filterData.isEmpty())
+        {
+            errorMessage("Error selecting components for analysis");
+            return false;
+        }
+    }
 
     // For testing, creates a csv file of only the selected components
     //    qDebug()<<"Saving selected components to .csv";
