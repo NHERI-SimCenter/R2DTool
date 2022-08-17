@@ -5,6 +5,7 @@
 #include "ComponentTableModel.h"
 #include "AssetFilterDelegate.h"
 #include "AssetInputDelegate.h"
+#include "PointAssetInputWidget.h"
 
 #ifdef OpenSRA
 #include "WorkflowAppOpenSRA.h"
@@ -38,9 +39,25 @@ int LineAssetInputWidget::loadAssetVisualization(void)
         //Check if nodes are provided in lieu of lat and lon coordinates for the start and end
         // If they are, the pipelines visualization should be handled separately
         if(headers.indexOf("node1") != -1 && headers.indexOf("node2") != -1)
-            return 0;
+        {
+            if(theNodesWidget != nullptr)
+            {
+                auto numAssets = theNodesWidget->getNumberOfAseets();
 
-        errorMessage("Could not find the required lat./lon. header labels in the input file");
+                if(numAssets == 0)
+                {
+                    this->errorMessage("The header columns 'node1' and 'node2' were found in the pipeline input file, but no nodes are found. Please input the nodes before the pipelines.");
+                    this->clear();
+                    return -1;
+                }
+
+                return 0;
+            }
+
+            return -1;
+        }
+
+        this->errorMessage("Could not find the required lat./lon. header labels in the input file. Alternatively, provide start and end nodes. In the pipeline input file, supply the node IDs under the headers 'node1' and 'node2'");
         return -1;
     }
 
@@ -300,6 +317,12 @@ void LineAssetInputWidget::createComponentsBox(void)
 void LineAssetInputWidget::clear()
 {
     AssetInputWidget::clear();
+}
+
+
+void LineAssetInputWidget::setTheNodesWidget(PointAssetInputWidget *newTheNodesWidget)
+{
+    theNodesWidget = newTheNodesWidget;
 }
 
 

@@ -48,7 +48,7 @@ class GISAssetInputWidget : public  AssetInputWidget
     Q_OBJECT
 
 public:
-    explicit GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = "GIS_to_ASSET");
+    explicit GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = "GIS_to_AIM");
     virtual ~GISAssetInputWidget();
 
     int loadAssetVisualization() override;

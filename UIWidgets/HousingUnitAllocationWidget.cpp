@@ -1083,7 +1083,7 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
     censusLayout->addWidget(mCensusCrsSelector,2,1);
 
 
-    QLabel* selectACSPathText = new QLabel("ACS Data GIS file (.gdb, .shp, etc.) for population demographics");
+    QLabel* selectACSPathText = new QLabel("ACS Data GIS file (.gdb, .shp, etc.) for household income and employment demographics");
     ACSPathLineEdit = new QLineEdit();
     QPushButton *browseACSFileButton = new QPushButton("Browse");
     connect(browseACSFileButton,SIGNAL(clicked()),this,SLOT(browseACSGISFile()));

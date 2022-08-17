@@ -86,7 +86,7 @@ CSVtoBIMModelingWidget::~CSVtoBIMModelingWidget()
 bool CSVtoBIMModelingWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
-    jsonObj.insert("Application", "CSV_to_BIM");
+    jsonObj.insert("Application", "CSV_to_AIM");
 
     QJsonObject appDataObj;
     appDataObj.insert("Min", 1);

@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PelicunDLWidget.h"
 #include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
+#include "NoArgSimCenterApp.h"
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
@@ -85,7 +86,10 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     // Water distribution network apps
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
 
+    SimCenterAppWidget *WDNDL = new NoArgSimCenterApp(QString("CBCitiesDL"));
+
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
+    WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);

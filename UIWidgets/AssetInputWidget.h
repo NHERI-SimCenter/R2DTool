@@ -110,6 +110,8 @@ public:
 
     ComponentTableView *getTableWidget() const;
 
+    int getNumberOfAseets(void);
+
     // Set the filter string and select the components
     void setFilterString(const QString& filter);
     QString getFilterString(void);

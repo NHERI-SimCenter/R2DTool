@@ -209,7 +209,10 @@ bool AssetInputWidget::loadAssetData(void)
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     
-    this->loadAssetVisualization();
+    auto res = this->loadAssetVisualization();
+
+    if(res != 0)
+        return false;
 
     // Get the ID of the first and last component
     bool OK;
@@ -652,7 +655,7 @@ bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     QJsonObject data;
     QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()) {
-        data["assetInputFile"]=componentFile.fileName();
+        data["assetSourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
 
         QString filterData = this->getFilterString();
@@ -716,8 +719,8 @@ bool AssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
-        if (appData.contains("assetInputFile"))
-            fileName = appData["assetInputFile"].toString();
+        if (appData.contains("assetSourceFile"))
+            fileName = appData["assetSourceFile"].toString();
 
         if (fileInfo.exists(fileName)) {
 
@@ -840,7 +843,9 @@ bool AssetInputWidget::copyFiles(QString &destName)
     //            return this->copyFile(componentFileLineEdit->text(), destName);
     //        }
 
-    auto pathToSaveFile = destName + QDir::separator() + componentFile.fileName();
+    auto pathToSaveFile = destName + QDir::separator() + componentFile.baseName();
+
+    pathToSaveFile += ".csv";
 
     auto nRows = componentTableWidget->rowCount();
 
@@ -889,35 +894,35 @@ bool AssetInputWidget::copyFiles(QString &destName)
         }
     }
 
-    // For testing, creates a csv file of only the selected components
-    //    qDebug()<<"Saving selected components to .csv";
-    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+//     For testing, creates a csv file of only the selected components
+//        qDebug()<<"Saving selected components to .csv";
+//        auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
+//        QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-    //    selectedData[0] = headerValues;
+//        selectedData[0] = headerValues;
 
-    //    auto nCols = componentTableWidget->columnCount();
+//        auto nCols = componentTableWidget->columnCount();
 
-    //    int i = 0;
-    //    for(auto&& rowID : selectedIDs)
-    //    {
-    //        QStringList rowData;
-    //        rowData.reserve(nCols);
+//        int i = 0;
+//        for(auto&& rowID : selectedIDs)
+//        {
+//            QStringList rowData;
+//            rowData.reserve(nCols);
 
-    //        for(int j = 0; j<nCols; ++j)
-    //        {
-    //            auto item = componentTableWidget->item(rowID-1,j).toString();
+//            for(int j = 0; j<nCols; ++j)
+//            {
+//                auto item = componentTableWidget->item(rowID-1,j).toString();
 
-    //            rowData<<item;
-    //        }
-    //        selectedData[i+1] = rowData;
+//                rowData<<item;
+//            }
+//            selectedData[i+1] = rowData;
 
-    //        ++i;
-    //    }
+//            ++i;
+//        }
 
-    //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
-    // For testing end
+//        csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+//     For testing end
 
     return true;
 }
@@ -1087,5 +1092,11 @@ bool AssetInputWidget::isEmpty()
         return true;
 
     return false;
+}
+
+
+int AssetInputWidget::getNumberOfAseets(void)
+{
+    return componentTableWidget->rowCount();
 }
 

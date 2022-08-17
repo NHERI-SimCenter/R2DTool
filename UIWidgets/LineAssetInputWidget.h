@@ -43,6 +43,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetInputWidget.h"
 
+class PointAssetInputWidget;
+
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
@@ -69,6 +71,8 @@ public:
 
     void clear() override;
 
+    void setTheNodesWidget(PointAssetInputWidget *newTheNodesWidget);
+
 private:
 
 #ifdef OpenSRA
@@ -77,6 +81,8 @@ private:
 
     QgsVectorLayer* mainLayer = nullptr;
     QgsVectorLayer* selectedFeaturesLayer = nullptr;
+
+    PointAssetInputWidget* theNodesWidget = nullptr;
 
 };
 
