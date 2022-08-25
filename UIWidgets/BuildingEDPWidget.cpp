@@ -54,7 +54,7 @@ BuildingEDPWidget::BuildingEDPWidget(QWidget *parent) : SimCenterAppWidget(paren
 
     theTabbedWidget = new QTabWidget(this);
 
-    theEDPEQWidget = new BuildingEDPEQWidget(nullptr,this);
+    theEDPEQWidget = new BuildingEDPEQWidget(this);
     theTabbedWidget->addTab(theEDPEQWidget,"Earthquake EDP");
 
     theTabbedWidget->setTabEnabled(1,true);

@@ -56,7 +56,7 @@ ComponentTableView::ComponentTableView(QWidget *parent) : QTableView(parent)
     this->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     this->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     this->setEditTriggers(EditTrigger::DoubleClicked);
     this->setSelectionMode(SelectionMode::SingleSelection);

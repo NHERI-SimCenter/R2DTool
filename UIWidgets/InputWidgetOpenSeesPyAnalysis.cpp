@@ -37,7 +37,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna, Stevan Gavrilovic
 
 #include "InputWidgetOpenSeesPyAnalysis.h"
-#include "RandomVariablesContainer.h"
 
 #include <QComboBox>
 #include <QDebug>
@@ -51,8 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QStackedWidget>
 
-InputWidgetOpenSeesPyAnalysis::InputWidgetOpenSeesPyAnalysis(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), theRandomVariablesContainer(theRandomVariableIW)
+InputWidgetOpenSeesPyAnalysis::InputWidgetOpenSeesPyAnalysis(QWidget *parent)
+    : SimCenterAppWidget(parent)
 {   
     //
     // create layout for all qLineEdits

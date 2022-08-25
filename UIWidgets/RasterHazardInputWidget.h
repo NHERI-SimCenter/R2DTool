@@ -52,6 +52,7 @@ class QgsRasterDataProvider;
 class QgsProjectionSelectionWidget;
 class QgsRasterLayer;
 class SimCenterUnitsWidget;
+class CRSSelectionWidget;
 
 class QLineEdit;
 class QProgressBar;
@@ -93,7 +94,7 @@ private:
 
     int loadRaster(void);
 
-    QGISVisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
     QString eventFile;
     QString pathToEventFile;
@@ -101,16 +102,18 @@ private:
     QStringList bandNames;
 
     QString rasterFilePath;
-    QLineEdit *rasterPathLineEdit;
+    QLineEdit* rasterPathLineEdit = nullptr;
 
-    QWidget* fileInputWidget;
+    QWidget* fileInputWidget = nullptr;
 
-    QgsRasterDataProvider* dataProvider;
-    QgsRasterLayer* rasterlayer;
+    QgsRasterDataProvider* dataProvider = nullptr;
+    QgsRasterLayer* rasterlayer = nullptr;
 
-    SimCenterUnitsWidget* unitsWidget;
-    QgsProjectionSelectionWidget* mCrsSelector;
-    QComboBox* eventTypeCombo;
+    SimCenterUnitsWidget* unitsWidget = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+    QComboBox* eventTypeCombo = nullptr;
+
+    bool asHdf5 = false;
 };
 
 #endif // RasterHazardInputWidget_H

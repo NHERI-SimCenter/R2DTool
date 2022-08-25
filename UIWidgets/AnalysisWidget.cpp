@@ -37,7 +37,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "AnalysisWidget.h"
-#include "ComponentInputWidget.h"
 #include "InputWidgetOpenSeesAnalysis.h"
 #include "InputWidgetOpenSeesPyAnalysis.h"
 #include "NoArgSimCenterApp.h"
@@ -65,13 +64,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
+AnalysisWidget::AnalysisWidget(QWidget *parent)
     : MultiComponentR2D(parent)
 {
 
-  buildingWidget = new SimCenterAppSelection(QString("Building Analysis Engine"), QString("Simulation"), this);
+  buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Simulation"), QString(), QString("Buildings"), this);
+  pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("Simulation"), QString(), QString("NaturalGasPipelines"), this);
+  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("Simulation"), QString(), QString("WaterDistributionNetwork"), this);
 
-  SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(theRVContainer);
+  // Building widget apps
+  SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);
   //SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);
   SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
   SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMasEDP"));
@@ -80,12 +82,25 @@ AnalysisWidget::AnalysisWidget(QWidget *parent, RandomVariablesContainer * theRV
   buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation_R"), openSees);
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
-  //buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
+  buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-  pipelineWidget = new SimCenterAppSelection(QString("Pipeline Analysis Engine"), QString("PipelineSimulation"), this);
+  // Natural gas pipeline apps
+  SimCenterAppWidget *noneWidget2 = new NoneWidget(this);
+  SimCenterAppWidget *imAsEDP2 = new NoArgSimCenterApp(QString("IMasEDP"));
+
+  pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget2);
+  pipelineWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP2);
+
+  // Water distribution network apps
+  SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
+  SimCenterAppWidget *imAsEDP3 = new NoArgSimCenterApp(QString("IMasEDP"));
+
+  WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
+  WDNWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP3);
 
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",pipelineWidget);
+  this->addComponent("Water Network", WDNWidget);
   this->hideAll();
 }
 
@@ -100,6 +115,7 @@ void AnalysisWidget::clear(void)
 {
     buildingWidget->clear();
     pipelineWidget->clear();
+    WDNWidget->clear();
 }
 
 

@@ -16,13 +16,13 @@
 
 using namespace Esri::ArcGISRuntime;
 
-ArcGISGasPipelineInputWidget::ArcGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
+ArcGISGasPipelineInputWidget::ArcGISGasPipelineInputWidget(QWidget *parent, QString componentType, QString appType) : AssetInputWidget(parent, componentType, appType)
 {
 
 }
 
 
-int ArcGISGasPipelineInputWidget::loadComponentVisualization()
+int ArcGISGasPipelineInputWidget::loadAssetVisualization()
 {
     // Select a column that will define the pipeline layers
     //    int columnToMapLayers = 0;
@@ -244,7 +244,7 @@ void ArcGISGasPipelineInputWidget::clear()
     selectedFeaturesLayer = nullptr;
     selectedFeaturesTable = nullptr;
 
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }
 
 

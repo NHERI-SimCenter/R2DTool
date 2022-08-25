@@ -37,15 +37,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "SimCenterEventRegional.h"
-#include "RandomVariablesContainer.h"
 
 #include <QVBoxLayout>
+#include <QJsonObject>
 
 SimCenterEventRegional::SimCenterEventRegional(QWidget *parent)
     :SimCenterAppWidget(parent)
 {
 
-    QVBoxLayout *Vlayout = new QVBoxLayout(this);
+    //QVBoxLayout *Vlayout = new QVBoxLayout(this);
 
 }
 
@@ -96,9 +96,6 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject)
 
 
 bool SimCenterEventRegional::inputAppDataFromJSON(QJsonObject &jsonObject) {
-
-
-
 
     return true;
 }

@@ -626,6 +626,9 @@ void HurricaneSelectionWidget::loadHurricaneButtonClicked(void)
     loadDbButton->setText("Database Loaded");
     loadDbButton->setEnabled(false);
 
+    // Enable selection
+    mapViewSubWidget->enableSelectionTool();
+
     return;
 }
 

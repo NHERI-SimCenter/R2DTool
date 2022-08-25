@@ -93,7 +93,7 @@ bool SimCenterUnitsWidget::outputToJSON(QJsonObject &jsonObject)
             if(unit.compare("UNDEFINED") == 0)
             {
                 PythonProgressDialog::getInstance()->appendErrorMessage("Warning unit undefined! Please set the unit");
-                return false;
+                continue;
             }
 
             unitsObj[name] = unit;
@@ -140,13 +140,18 @@ void SimCenterUnitsWidget::reset(void)
 }
 
 
-void SimCenterUnitsWidget::addNewUnitItem(const QString& name)
+void SimCenterUnitsWidget::addNewUnitItem(const QString& name, const QString& labelName)
 {
+    QString labelText = name;
+
+    if(!labelName.isEmpty())
+        labelText = labelName;
+
     auto i = this->getNumberOfUnits();
 
     SimCenterUnitsCombo* unitsCombo = new SimCenterUnitsCombo(SimCenter::Unit::ALL,name);
 
-    QLabel* unitLabel = new QLabel(name);
+    QLabel* unitLabel = new QLabel(labelText);
 
     unitsLayout->addWidget(unitLabel,i,0,1,1);
     unitsLayout->addWidget(unitsCombo,i,1,1,1);

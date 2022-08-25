@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class CustomListWidget;
 class VisualizationWidget;
 
+class QComboBox;
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
@@ -189,19 +190,20 @@ signals:
 
 private:
 
-    QStackedWidget* shakeMapStackedWidget;
+    QStackedWidget* shakeMapStackedWidget = nullptr;
 
     QStringList shakeMapList;
 
-    CustomListWidget *listWidget;
-    VisualizationWidget* theVisualizationWidget;
-    QLineEdit *shakeMapDirectoryLineEdit;
-    QLabel* progressLabel;
-    QWidget* progressBarWidget;
-    QWidget* directoryInputWidget;
-    QProgressBar* progressBar;
-    QString pathToShakeMapDirectory;
+    QComboBox* IMComboBox = nullptr;
+    CustomListWidget *listWidget = nullptr;
+    VisualizationWidget* theVisualizationWidget = nullptr;
+    QLineEdit *shakeMapDirectoryLineEdit = nullptr;
+    QLabel* progressLabel = nullptr;
+    QWidget* progressBarWidget = nullptr;
+    QWidget* directoryInputWidget = nullptr;
+    QProgressBar* progressBar = nullptr;
 
+    QString pathToShakeMapDirectory;
     QString motionDir;
     QString pathToEventFile;
 

@@ -517,6 +517,9 @@ void UserInputHurricaneWidget::loadUserWFData(void)
         return;
     }
 
+    // Clear the units widget
+    unitsWidget->clear();
+
     this->statusMessage("Loading wind field data");
     CSVReaderWriter csvTool;
 
@@ -585,8 +588,8 @@ void UserInputHurricaneWidget::loadUserWFData(void)
 
     auto headerInfo = data.front();
 
-    auto latIndex = headerInfo.indexOf("Latitude");
-    auto lonIndex = headerInfo.indexOf("Longitude");
+    int latIndex = theVisualizationWidget->getIndexOfVal(headerInfo, "latitude");
+    int lonIndex = theVisualizationWidget->getIndexOfVal(headerInfo, "longitude");
 
     if(latIndex == -1 || lonIndex == -1)
     {
@@ -730,7 +733,7 @@ void UserInputHurricaneWidget::loadUserWFData(void)
     dProvider->addFeatures(featureList);
     vectorLayer->updateExtents();
 
-    QGsVisWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+    QGsVisWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::black,2.0,vectorLayer);
 
     progressLabel->setVisible(false);
 

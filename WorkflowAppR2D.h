@@ -44,10 +44,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class AnalysisWidget;
 class Application;
+class LocalApplication;
 class AssetsWidget;
 class DLWidget;
 class EngDemandParameterWidget;
-class GeneralInformationWidget;
+class GeneralInformationWidgetR2D;
 class HazardToAssetWidget;
 class HazardsWidget;
 class InputWidgetUQ;
@@ -67,6 +68,7 @@ class UQOptions;
 class UQWidget;
 class UQ_Results;
 class VisualizationWidget;
+class PerformanceWidget;
 
 class WorkflowAppR2D : public WorkflowAppWidget
 {
@@ -92,7 +94,9 @@ public:
 
     VisualizationWidget *getVisualizationWidget() const;
     AssetsWidget *getAssetsWidget() const;
-    GeneralInformationWidget *getGeneralInformationWidget() const;
+    GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
+
+    LocalApplication *getLocalApp() const;
 
 signals:
 
@@ -100,8 +104,8 @@ public slots:
     void clear(void);
     void loadResults(void);
     void setUpForApplicationRun(QString &, QString &);
-    void processResults(QString dakotaOut, QString dakotaTab, QString inputFile);
-    int loadFile(QString filename);
+    void processResults(QString &dirResults);
+    int loadFile(QString &filename);
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
 
@@ -121,7 +125,7 @@ private:
     //
 
     VisualizationWidget* theVisualizationWidget;
-    GeneralInformationWidget* theGeneralInformationWidget;
+    GeneralInformationWidgetR2D* theGeneralInformationWidgetR2D;
     HazardsWidget* theHazardsWidget;
     AssetsWidget* theAssetsWidget;
     HazardToAssetWidget* theHazardToAssetWidget;
@@ -132,13 +136,14 @@ private:
     RandomVariablesContainer* theRVs;
     ResultsWidget* theResultsWidget;
     LoadResultsDialog* resultsDialog;
+    PerformanceWidget* thePerformanceWidget;
 
     //
     // Objects for running the workflow and obtaining results
     //
 
     RunWidget *theRunWidget;
-    Application *localApp;
+    LocalApplication *localApp;
     Application *remoteApp;
     RemoteJobManager *theJobManager;
 

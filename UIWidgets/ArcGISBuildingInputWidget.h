@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 
 namespace Esri
 {
@@ -53,12 +53,12 @@ class Geometry;
 }
 }
 
-class ArcGISBuildingInputWidget : public ComponentInputWidget
+class ArcGISBuildingInputWidget : public AssetInputWidget
 {
 public:
     ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType = QString());
 
-    int loadComponentVisualization();
+    int loadAssetVisualization();
 
     Esri::ArcGISRuntime::Feature* addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
     int removeFeaturesFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);

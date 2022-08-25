@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "MDOF_LU.h"
 #include "SimCenterPreferences.h"
-#include "RandomVariablesContainer.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -51,8 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QTextEdit>
 
-MDOF_LU::MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), theRandomVariablesContainer(theRandomVariableIW)
+MDOF_LU::MDOF_LU(QWidget *parent)
+  : SimCenterAppWidget(parent)
 {
     QGridLayout *layout = new QGridLayout();
 
@@ -151,8 +150,8 @@ bool MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "MDOF-LU";
     QJsonObject dataObj;
 
-    dataObj["stdStiffness"] = stdStiffness->text();
-    dataObj["stdDamping"] = stdDamping->text();
+    dataObj["stdStiffness"] = stdStiffness->text().toDouble();
+    dataObj["stdDamping"] = stdDamping->text().toDouble();
 
     if(storyHeight->text() != "") {
         dataObj["storyHeight"] = stdDamping->text();

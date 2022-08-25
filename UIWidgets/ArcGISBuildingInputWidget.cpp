@@ -54,13 +54,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace Esri::ArcGISRuntime;
 
-ArcGISBuildingInputWidget::ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : ComponentInputWidget(parent, componentType, appType)
+ArcGISBuildingInputWidget::ArcGISBuildingInputWidget(QWidget *parent, QString componentType, QString appType) : AssetInputWidget(parent, componentType, appType)
 {
-    theComponentDb = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+
 }
 
 
-int ArcGISBuildingInputWidget::loadComponentVisualization()
+int ArcGISBuildingInputWidget::loadAssetVisualization()
 {
     QList<Field> fields;
     fields.append(Field::createDouble("LossRatio", "0.0"));
@@ -144,9 +144,9 @@ int ArcGISBuildingInputWidget::loadComponentVisualization()
     auto headers = this->getTableHorizontalHeadings();
 
     // First check if a footprint was provided
-    auto indexFootprint = headers.indexOf("Footprint");
-    auto indexLatitude = headers.indexOf("Latitude");
-    auto indexLongitude = headers.indexOf("Longitude");
+    auto indexFootprint = theVisualizationWidget->getIndexOfVal(headers, "footprint");
+    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, "latitude");
+    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, "longitude");
 
     if(indexLongitude == -1 || indexLatitude == -1)
     {
@@ -309,7 +309,7 @@ void ArcGISBuildingInputWidget::clear()
     selectedBuildingsLayer = nullptr;
     selectedBuildingsTable = nullptr;
 
-    ComponentInputWidget::clear();
+    AssetInputWidget::clear();
 }
 
 

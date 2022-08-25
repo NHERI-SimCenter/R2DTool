@@ -53,7 +53,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace std;
 
-UserDefinedEDPR::UserDefinedEDPR(RandomVariablesContainer *theRandomVariableIW, QWidget *parent) : SimCenterAppWidget(parent), theRandomVariablesContainer(theRandomVariableIW)
+UserDefinedEDPR::UserDefinedEDPR(QWidget *parent)
+  : SimCenterAppWidget(parent)
 {
 
     QVBoxLayout *layout = new QVBoxLayout();

@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterUnitsWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentDatabase.h"
+#include "CRSSelectionWidget.h"
 
 #include <cstdlib>
 
@@ -68,9 +69,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "QGISVisualizationWidget.h"
 #include <qgsrasterlayer.h>
+#include <qgshuesaturationfilter.h>
 #include <qgsrasterdataprovider.h>
 #include <qgscollapsiblegroupbox.h>
-#include <qgsprojectionselectionwidget.h>
 #include <qgsproject.h>
 
 // Test to remove start
@@ -84,13 +85,6 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget != nullptr);
 
-    unitsWidget = nullptr;
-    dataProvider = nullptr;
-    rasterlayer = nullptr;
-    eventTypeCombo = nullptr;
-    mCrsSelector = nullptr;
-
-    fileInputWidget = nullptr;
     rasterFilePath = "";
 
     QVBoxLayout *layout = new QVBoxLayout;
@@ -125,7 +119,7 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     appData["rasterFile"] = rasterFile.fileName();
 
-    appData["CRS"] = mCrsSelector->crs().authid();
+    crsSelectorWidget->outputAppDataToJSON(appData);
 
     appData["eventClassification"] = eventTypeCombo->currentText();
 
@@ -228,36 +222,7 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         rasterPathLineEdit->setText(fullFilePath);
         rasterFilePath = fullFilePath;
 
-        auto res = this->loadRaster();
-
-        if(res !=0)
-        {
-            this->errorMessage("Failed to load the raster");
-            return false;
-        }
-
-        auto bandArray = appData["bands"].toArray();
-
-        auto numBands = rasterlayer->bandCount();
-
-        if(bandArray.size() != numBands)
-        {
-            this->errorMessage("Error in loading rasater. The number of provided bands in the json file should be equal to the number of bands in the raster");
-            return false;
-        }
-
-        for(int i = 0; i<numBands; ++i)
-        {
-            // Note that band numbers start from 1 and not 0!
-            //auto bandName = rasterlayer->bandName(i+1);
-
-            auto bandName = bandArray.at(i).toString();
-
-            bandNames.append(bandName);
-
-            unitsWidget->addNewUnitItem(bandName);
-        }
-
+        // Get the event type
         auto eventType = appData["eventClassification"].toString();
 
         if(eventType.isEmpty())
@@ -279,32 +244,43 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         }
 
 
-        auto crsValue = appData["CRS"].toString();
+        auto res = this->loadRaster();
 
-        if(crsValue.isEmpty())
+        if(res !=0)
         {
-            this->infoMessage("Warning: No coordinate reference system provided for raster layer, using project CRS. Check and change if necessary.");
-            QgsProject::instance()->crs();
-
-            auto projectCrs = QgsProject::instance()->crs();
-            mCrsSelector->setCrs(projectCrs);
-        }
-        else
-        {
-            QgsCoordinateReferenceSystem newCrs(crsValue);
-
-            if(!newCrs.isValid())
-            {
-                this->infoMessage("Warning: the provided coordinate reference system "+crsValue+" is not valid, using project crs. Check and change if necessary.");
-                auto projectCrs = QgsProject::instance()->crs();
-                mCrsSelector->setCrs(projectCrs);
-            }
-            else
-            {
-                mCrsSelector->setCrs(newCrs);
-            }
+            this->errorMessage("Failed to load the raster");
+            return false;
         }
 
+        auto bandArray = appData["bands"].toArray();
+
+        auto numBands = rasterlayer->bandCount();
+
+        if(bandArray.size() != numBands)
+        {
+            this->errorMessage("Error in loading raster. The number of provided bands in the json file should be equal to the number of bands in the raster");
+            return false;
+        }
+
+        for(int i = 0; i<numBands; ++i)
+        {
+            // Note that band numbers start from 1 and not 0!
+            //auto bandName = rasterlayer->bandName(i+1);
+
+            auto unitStr = bandArray.at(i).toString();
+
+            auto labelName = "Band No. " + QString::number(i+1) + ": " + unitStr;
+
+            bandNames.append(unitStr);
+
+            unitsWidget->addNewUnitItem(unitStr, labelName);
+        }
+
+
+        // Set the CRS
+        QString errMsg;
+        if(!crsSelectorWidget->inputAppDataFromJSON(appData,errMsg))
+            this->infoMessage(errMsg);
 
         return true;
     }
@@ -317,16 +293,13 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
 {
 
     // file  input
-    fileInputWidget = new QWidget(this);
+    fileInputWidget = new QWidget();
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
     fileInputWidget->setLayout(fileLayout);
 
-    mCrsSelector = new QgsProjectionSelectionWidget();
-    mCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-    mCrsSelector->setObjectName(QString::fromUtf8("mCrsSelector"));
-    mCrsSelector->setFocusPolicy(Qt::StrongFocus);
+    crsSelectorWidget = new CRSSelectionWidget();
 
-    connect(mCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,&RasterHazardInputWidget::handleLayerCrsChanged);
+    connect(crsSelectorWidget,&CRSSelectionWidget::crsChanged,this,&RasterHazardInputWidget::handleLayerCrsChanged);
 
 
     QLabel* selectComponentsText = new QLabel("Event Raster File");
@@ -343,6 +316,7 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     eventTypeCombo = new QComboBox(this);
     eventTypeCombo->addItem("Earthquake","Earthquake");
     eventTypeCombo->addItem("Hurricane","Hurricane");
+    eventTypeCombo->addItem("Tsunami","Tsunami");
     eventTypeCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     unitsWidget = new SimCenterUnitsWidget();
@@ -353,7 +327,7 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     fileLayout->addWidget(eventTypeCombo, 1,1,1,2);
 
     fileLayout->addWidget(crsTypeLabel,2,0);
-    fileLayout->addWidget(mCrsSelector,2,1,1,2);
+    fileLayout->addWidget(crsSelectorWidget,2,1,1,2);
 
     fileLayout->addWidget(unitsWidget, 3,0,1,3);
 
@@ -379,7 +353,29 @@ void RasterHazardInputWidget::chooseEventFileDialog(void)
 
     eventFile.clear();
 
-    this->loadRaster();
+    auto res = this->loadRaster();
+
+    if(res !=0)
+    {
+        this->errorMessage("Failed to load the raster");
+        return;
+    }
+
+    auto numBands = rasterlayer->bandCount();
+
+    unitsWidget->clear();
+
+    for(int i = 0; i<numBands; ++i)
+    {
+        // Note that band numbers start from 1 and not 0!
+        auto bandName = rasterlayer->bandName(i+1);
+
+        bandNames.append(bandName);
+
+        auto labelName = "Band No. " + QString::number(i+1) + ": " + bandName;
+
+        unitsWidget->addNewUnitItem(bandName,labelName);
+    }
 
     return;
 }
@@ -394,7 +390,7 @@ void RasterHazardInputWidget::clear(void)
     eventFile.clear();
     pathToEventFile.clear();
 
-    mCrsSelector->setCrs(QgsCoordinateReferenceSystem());
+    crsSelectorWidget->clear();
 
     eventTypeCombo->setCurrentIndex(0);
 
@@ -423,14 +419,16 @@ double RasterHazardInputWidget::sampleRaster(const double& x, const double& y, c
 
     // Use the sample method below as this is considerably more efficient than
     bool OK;
-    auto testVal = dataProvider->sample(point,bandNumber,&OK);
+    auto testVal = dataProvider->sample(point,bandNumber,&OK);  // Test val will be NAN at failure
 
     if(!OK)
-        this->errorMessage("Error, sampling the raster");
+    {
+        this->infoMessage("Warning, error sampling the raster, asset may be out of bounds. Setting raster value to zero");
+        testVal = 0.0;
+    }
 
     //this->statusMessage(QString::number(testVal));
 
-    // Test val will be NAN at failure
     return testVal;
 }
 
@@ -441,7 +439,9 @@ int RasterHazardInputWidget::loadRaster(void)
 
     QApplication::processEvents();
 
-    rasterlayer = theVisualizationWidget->addRasterLayer(rasterFilePath, "Raster Hazard", "gdal");
+    auto evtType = eventTypeCombo->currentText();
+
+    rasterlayer = theVisualizationWidget->addRasterLayer(rasterFilePath, evtType+" Raster Hazard", "gdal");
 
     if(rasterlayer == nullptr)
     {
@@ -450,6 +450,41 @@ int RasterHazardInputWidget::loadRaster(void)
     }
 
     rasterlayer->setOpacity(0.5);
+
+    // Color it differently for the various hazards
+    if(evtType.compare("Tsunami") == 0)
+    {
+        QgsHueSaturationFilter *hueSaturationFilter = rasterlayer->hueSaturationFilter();
+        hueSaturationFilter->setSaturation(100);
+        hueSaturationFilter->setGrayscaleMode(QgsHueSaturationFilter::GrayscaleMode::GrayscaleOff);
+        hueSaturationFilter->setColorizeOn(true);
+        QColor col(Qt::blue);
+        hueSaturationFilter->setColorizeColor(col);
+        hueSaturationFilter->setColorizeStrength(100);
+        rasterlayer->setBlendMode( QPainter::CompositionMode_SourceOver);
+    }
+    else if(evtType.compare("Earthquake") == 0)
+    {
+        QgsHueSaturationFilter *hueSaturationFilter = rasterlayer->hueSaturationFilter();
+        hueSaturationFilter->setSaturation(100);
+        hueSaturationFilter->setGrayscaleMode(QgsHueSaturationFilter::GrayscaleMode::GrayscaleOff);
+        hueSaturationFilter->setColorizeOn(true);
+        QColor col(Qt::darkRed);
+        hueSaturationFilter->setColorizeColor(col);
+        hueSaturationFilter->setColorizeStrength(100);
+        rasterlayer->setBlendMode( QPainter::CompositionMode_SourceOver);
+    }
+    else if(evtType.compare("Hurricane") == 0)
+    {
+        QgsHueSaturationFilter *hueSaturationFilter = rasterlayer->hueSaturationFilter();
+        hueSaturationFilter->setSaturation(100);
+        hueSaturationFilter->setGrayscaleMode(QgsHueSaturationFilter::GrayscaleMode::GrayscaleOff);
+        hueSaturationFilter->setColorizeOn(true);
+        QColor col(Qt::darkGray);
+        hueSaturationFilter->setColorizeColor(col);
+        hueSaturationFilter->setColorizeStrength(100);
+        rasterlayer->setBlendMode( QPainter::CompositionMode_SourceOver);
+    }
 
     dataProvider = rasterlayer->dataProvider();
 
@@ -478,7 +513,8 @@ int RasterHazardInputWidget::loadRaster(void)
 
 void RasterHazardInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
 {
-    rasterlayer->setCrs(val);
+    if(rasterlayer)
+        rasterlayer->setCrs(val);
 }
 
 
@@ -514,117 +550,144 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
 
     emit outputDirectoryPathChanged(destDir, pathToEventFile);
 
-    auto theBuildingDB = ComponentDatabaseManager::getInstance()->getBuildingComponentDb();
+    auto theAssetDBs = ComponentDatabaseManager::getInstance()->getAllAssetDatabases();
 
-    auto numPoints = theBuildingDB->getSelectedLayer()->featureCount();
+    if(theAssetDBs.empty())
+    {
+        this->errorMessage("Error in copy files could not find any asset databases. Did you upload any assets?");
+        return false;
+    }
+
 
     QVector<QStringList> pointDataVector;
-    pointDataVector.reserve(numPoints);
 
-    QgsFeatureIterator fit = theBuildingDB->getSelectedLayer()->getFeatures();
-
-    QgsFeature feature;
-    while (fit.nextFeature(feature))
+    // Iterate through the asset databases
+    for(auto&& theAssetDB :  theAssetDBs)
     {
-        // Sample the raster at the centroid of the geometry
-        //auto centroid = feature.geometry().centroid().asPoint();
-        //auto x = centroid.x();
-        //auto y = centroid.y();
 
-        // Get the latitude and lon of the builing
-        auto featAtrb = feature.attributes();
-        auto latIndx = feature.fieldNameIndex("Latitude");
-        auto lonIndx = feature.fieldNameIndex("Longitude");
+        auto selectedAssetsLayer = theAssetDB->getSelectedLayer();
 
-        if(latIndx == -1 || lonIndx == -1)
+        if (selectedAssetsLayer == nullptr)
+            continue;
+
+        auto numPoints = theAssetDB->getSelectedLayer()->featureCount();
+
+        pointDataVector.reserve(pointDataVector.size() + numPoints);
+
+        QgsFeatureIterator fit = theAssetDB->getSelectedLayer()->getFeatures();
+
+        QgsFeature feature;
+        while (fit.nextFeature(feature))
         {
-            this->errorMessage("Could not get the latitude or longitude from the building attributes");
-            return false;
+
+            // Get the latitude and lon of the asset
+            auto featAtrb = feature.attributes();
+            auto latIndx = feature.fieldNameIndex("Latitude");
+            auto lonIndx = feature.fieldNameIndex("Longitude");
+
+            double x = 0.0;
+            double y = 0.0;
+
+            // First check if the lat/lon is explicitly provided
+            if(latIndx != -1 || lonIndx != -1)
+            {
+
+                bool OK = false;
+                x = featAtrb.at(lonIndx).toDouble(&OK);
+                if(!OK)
+                {
+                    this->errorMessage("Could not get the latitude from the asset");
+                    return false;
+                }
+                y = featAtrb.at(latIndx).toDouble(&OK);
+                if(!OK)
+                {
+                    this->errorMessage("Could not get the latitude from the asset");
+                    return false;
+                }
+            }
+            else // Get the centroid of the geometry and use that as asset location
+            {
+                // Sample the raster at the centroid of the geometry
+                auto centroid = feature.geometry().centroid().asPoint();
+                x = centroid.x();
+                y = centroid.y();
+            }
+
+            auto xstr = QString::number(x,'g', 10);
+            auto ystr = QString::number(y,'g', 10);
+
+            QStringList pointData;
+            pointData.append(xstr);
+            pointData.append(ystr);
+
+            for(int i = 0; i< bandNames.size(); ++i)
+            {
+                auto val = this->sampleRaster(x, y, i+1);
+                auto valStr = QString::number(val);
+
+                pointData.append(valStr);
+            }
+
+            pointDataVector.push_back(pointData);
         }
-
-        bool OK = false;
-        auto x = featAtrb.at(lonIndx).toDouble(&OK);
-        if(!OK)
-        {
-            this->errorMessage("Could not get the latitude from the building");
-            return false;
-        }
-        auto y = featAtrb.at(latIndx).toDouble(&OK);
-        if(!OK)
-        {
-            this->errorMessage("Could not get the latitude from the building");
-            return false;
-        }
-
-        auto xstr = QString::number(x,'g', 10);
-        auto ystr = QString::number(y,'g', 10);
-
-        QStringList pointData;
-        pointData.append(xstr);
-        pointData.append(ystr);
-
-        for(int i = 0; i< bandNames.size(); ++i)
-        {
-            auto val = this->sampleRaster(x, y, i+1);
-            auto valStr = QString::number(val);
-
-            pointData.append(valStr);
-        }
-
-        pointDataVector.push_back(pointData);
     }
 
-    CSVReaderWriter csvTool;
-
-    // First create the event grid file
-    QVector<QStringList> gridData;
-
-    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
-    gridData.push_back(headerRow);
-
-    QStringList stationHeader = bandNames;
-
-    QApplication::processEvents();
-
-    for(int i = 0; i<pointDataVector.size(); ++i)
+    // Save the hazards as a bunch of csv files
+    if(!asHdf5)
     {
-        auto stationFile = "Site_"+QString::number(i)+".csv";
+        CSVReaderWriter csvTool;
 
-        auto point = pointDataVector.at(i);
+        // First create the event grid file
+        QVector<QStringList> gridData;
 
-        auto lon = point.at(0);
-        auto lat = point.at(1);
+        QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
+        gridData.push_back(headerRow);
 
-        // Get the grid row
-        QStringList gridRow = {stationFile, lat, lon};
-        gridData.push_back(gridRow);
+        QStringList stationHeader = bandNames;
 
-        QStringList stationRow = {point.begin()+2,point.end()};
+        QApplication::processEvents();
 
-        // Save the station data
-        QVector<QStringList> stationData = {stationHeader};
+        for(int i = 0; i<pointDataVector.size(); ++i)
+        {
+            auto stationFile = "Site_"+QString::number(i)+".csv";
 
-        stationData.push_back(stationRow);
+            auto point = pointDataVector.at(i);
 
-        QString pathToStationFile = destDir + QDir::separator() + stationFile;
+            auto lon = point.at(0);
+            auto lat = point.at(1);
 
-        QString err;
-        auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
+            // Get the grid row
+            QStringList gridRow = {stationFile, lat, lon};
+            gridData.push_back(gridRow);
+
+            QStringList stationRow = {point.begin()+2,point.end()};
+
+            // Save the station data
+            QVector<QStringList> stationData = {stationHeader};
+
+            stationData.push_back(stationRow);
+
+            QString pathToStationFile = destDir + QDir::separator() + stationFile;
+
+            QString err;
+            auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
+            if(res2 != 0)
+            {
+                this->errorMessage(err);
+                return false;
+            }
+
+        }
+
+        // Now save the site grid .csv file
+        QString err2;
+        auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
         if(res2 != 0)
         {
-            this->errorMessage(err);
+            this->errorMessage(err2);
             return false;
         }
-
-    }
-
-    // Now save the site grid .csv file
-    QString err2;
-    auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
-    if(res2 != 0)
-    {
-        this->errorMessage(err2);
-        return false;
     }
 
 

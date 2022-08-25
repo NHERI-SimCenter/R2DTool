@@ -376,11 +376,14 @@ void QGISHurricaneSelectionWidget::handleGridSelected(void)
     dProvider->addFeatures(featureList);
     gridLayer->updateExtents();
 
-    theVisualizationWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,gridLayer);
+    theVisualizationWidget->createSymbolRenderer(Qgis::MarkerShape::Cross,Qt::black,2.0,gridLayer);
 
     progressLabel->setVisible(false);
 
     userGrid->hide();
+
+    // Enable selection
+    mapViewSubWidget->enableSelectionTool();
 }
 
 
@@ -456,6 +459,9 @@ void QGISHurricaneSelectionWidget::handleTerrainImport(void)
     // Extract the features
     auto pathToFile = HurricaneSelectionWidget::getTerrainGeojsonPath();
 
+    if(pathToFile.isEmpty())
+        return;
+
     terrainRoughnessLayer = theVisualizationWidget->addVectorLayer(pathToFile,"Terrain Roughness", "ogr");
 
     terrainRoughnessLayer->setOpacity(0.4);
@@ -463,13 +469,18 @@ void QGISHurricaneSelectionWidget::handleTerrainImport(void)
     if(terrainRoughnessLayer == nullptr)
         this->errorMessage("Failed to load terrain roughness layer");
 
+    terrainRoughnessLayer->setOpacity(0.4);
+
 }
 
 
 void QGISHurricaneSelectionWidget::handleClearSelectAreaMap(void)
 {
     mapViewSubWidget->enableSelectionTool();
-    hurricaneTrackPointsLayer->removeSelection();
+
+    if(hurricaneTrackPointsLayer)
+        hurricaneTrackPointsLayer->removeSelection();
+
     mapViewSubWidget->mapCanvas()->setCurrentLayer(nullptr);
 }
 
@@ -486,6 +497,10 @@ void QGISHurricaneSelectionWidget::handleSelectAreaMap(void)
 
 void QGISHurricaneSelectionWidget::handleAreaSelected(void)
 {
+
+    if(selectedHurricaneObj.empty() || hurricaneTrackPointsLayer == nullptr)
+        return;
+
     HurricaneObject newHurricaneObj = selectedHurricaneObj;
 
     QVector<QStringList>& hurricaneData = newHurricaneObj.getHurricaneData();

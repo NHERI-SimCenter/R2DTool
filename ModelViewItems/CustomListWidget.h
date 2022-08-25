@@ -74,6 +74,11 @@ public:
 
     QMap<QString, QJsonObject> getModelsMap() const;
 
+    QStringList getListOfItems(void);
+
+signals:
+    void itemRemoved(QJsonObject item);
+
 public slots:
 
     TreeItem* addItem(const QJsonObject& obj, TreeItem* parent = nullptr);

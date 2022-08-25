@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 #include "HazardToAssetBuilding.h"
 #include "HazardToAssetWidget.h"
 #include "SecondaryComponentSelection.h"

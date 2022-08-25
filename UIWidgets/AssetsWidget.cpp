@@ -37,7 +37,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "AssetsWidget.h"
-#include "ComponentInputWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
@@ -49,10 +48,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endif
 
 #ifdef Q_GIS
-#include "QGISBuildingInputWidget.h"
-#include "QGISGasPipelineInputWidget.h"
-#include "GISBuildingInputWidget.h"
-//#include "HousingUnitAllocationWidget.h"
+#include "PointAssetInputWidget.h"
+#include "LineAssetInputWidget.h"
+#include "CSVWaterNetworkInputWidget.h"
+#include "GISAssetInputWidget.h"
+#include "GISWaterNetworkInputWidget.h"
+#include "HousingUnitAllocationWidget.h"
 #endif
 
 // Qt headers
@@ -76,8 +77,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
-    buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Building"), this);
-    pipelineWidget = new SimCenterAppSelection(QString("Regional Gas Inventory"), QString("GasPipelines"), this);
+    buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Assets"), QString(), QString("Buildings"), this);
+    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("Assets"), QString(), QString("NaturalGasPipelines"), this);
+    waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("Assets"), QString(), QString("WaterDistributionNetwork"), this);
 
 #ifdef ARC_GIS
     ArcGISBuildingInputWidget *csvBuildingInventory = new ArcGISBuildingInputWidget(this,"Buildings","CSV_to_BIM");
@@ -85,15 +87,14 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 #endif
 
 #ifdef Q_GIS
-    QGISBuildingInputWidget *csvBuildingInventory = new QGISBuildingInputWidget(this, visualizationWidget, "Buildings","CSV_to_BIM");
+    PointAssetInputWidget *csvBuildingInventory = new PointAssetInputWidget(this, visualizationWidget, "Buildings","CSV_to_BIM");
     buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
 
-    GISBuildingInputWidget *GISBuildingInventory = new GISBuildingInputWidget(this,visualizationWidget,"Buildings","GIS_to_BIM");
+    GISAssetInputWidget *GISBuildingInventory = new GISAssetInputWidget(this,visualizationWidget,"Buildings","GIS_to_BIM");
     buildingWidget->addComponent(QString("GIS File to BIM"), QString("GIS_to_BIM"), GISBuildingInventory);
 
-
-//    HousingUnitAllocationWidget *housingUnitAllocation = new HousingUnitAllocationWidget(this,visualizationWidget);
-//    buildingWidget->addComponent(QString("Housing Unit Allocation"), QString("CSV_to_BIM"), housingUnitAllocation);
+    HousingUnitAllocationWidget *housingUnitAllocation = new HousingUnitAllocationWidget(this,visualizationWidget);
+    buildingWidget->addComponent(QString("Housing Unit Allocation"), QString("CSV_to_BIM"), housingUnitAllocation);
 #endif
 
 #ifdef ARC_GIS
@@ -102,15 +103,24 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 #endif
 
 #ifdef Q_GIS
-    QGISGasPipelineInputWidget *csvPipelineInventory = new QGISGasPipelineInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
-    pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+    LineAssetInputWidget *csvPipelineInventory = new LineAssetInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
+    gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+
+
+    CSVWaterNetworkInputWidget *csvWaterNetworkInventory = new CSVWaterNetworkInputWidget(this, visualizationWidget);
+    waterNetworkWidget->addComponent(QString("CSV to Water Network"), QString("CSV_to_WATERNETWORK"), csvWaterNetworkInventory);
+
+
+    GISWaterNetworkInputWidget *gisWaterNetworkInventory = new GISWaterNetworkInputWidget(this, visualizationWidget);
+    waterNetworkWidget->addComponent(QString("GIS to Water Network"), QString("GIS_to_WATERNETWORK"), gisWaterNetworkInventory);
 #endif
 
     // QString pathToPipelineInfoFile = "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
     // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",pipelineWidget);
+    this->addComponent("Gas Network",gasPipelineWidget);
+    this->addComponent("Water Network",waterNetworkWidget);
     this->hideAll();
 }
 
@@ -124,7 +134,8 @@ AssetsWidget::~AssetsWidget()
 void AssetsWidget::clear(void)
 {
     buildingWidget->clear();
-    pipelineWidget->clear();
+    gasPipelineWidget->clear();
+    waterNetworkWidget->clear();
 }
 
 

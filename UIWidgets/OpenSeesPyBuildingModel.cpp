@@ -59,8 +59,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace std;
 
-OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), responseNodes(0), theRandomVariablesContainer(theRandomVariableIW)
+OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(QWidget *parent)
+    : SimCenterAppWidget(parent), responseNodes(0)
 {
     responseNodes = NULL;
     layout = new QGridLayout();
@@ -136,6 +136,7 @@ OpenSeesPyBuildingModel::~OpenSeesPyBuildingModel()
         names.append(varNamesAndValues.at(i));
     }
 
+    RandomVariablesContainer *theRandomVariablesContainer=RandomVariablesContainer::getInstance();
     theRandomVariablesContainer->removeRandomVariables(names);
 }
 
@@ -180,8 +181,6 @@ bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
     QJsonObject dataObj;
 
     QString fileName = filePathLineEdit->text();
-    QFileInfo fileInfo(fileName);
-
 
     dataObj["dofMap"]=responseNodes->text();
     dataObj["ndm"]=ndm->text().toInt();
@@ -291,6 +290,7 @@ void OpenSeesPyBuildingModel::setFilename1(QString name1){
         names.append(varNamesAndValues.at(i));
     }
 
+    RandomVariablesContainer *theRandomVariablesContainer=RandomVariablesContainer::getInstance();
     theRandomVariablesContainer->removeRandomVariables(names);
 
     // set file name & ebtry in qLine edit

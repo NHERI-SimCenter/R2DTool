@@ -1,5 +1,5 @@
 #include "LoadResultsDialog.h"
-#include "utils/PythonProgressDialog.h"
+#include "Utils/PythonProgressDialog.h"
 #include "WorkflowAppWidget.h"
 
 #include <QGridLayout>
@@ -131,7 +131,11 @@ void LoadResultsDialog::handleLoadResults(void)
     if(res != 0)
         return;
 
-    workflowWidget->processResults(resultsPath,QString(),QString());
+#ifdef OpenSRA
+    workflowWidget->postprocessResults(resultsPath,QString(),QString());
+#else
+    workflowWidget->processResults(resultsPath);
+#endif
 
     statusDialog->appendText("Done loading the results");
 }

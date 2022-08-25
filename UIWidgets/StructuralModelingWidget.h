@@ -42,7 +42,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class OpenSeesBuildingModel;
 class OpenSeesPyBuildingModel;
-class RandomVariablesContainer;
 
 class QComboBox;
 class QGroupBox;
@@ -53,7 +52,7 @@ class StructuralModelingWidget : public  SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit StructuralModelingWidget(QWidget *parent, RandomVariablesContainer* RVContainer);
+    explicit StructuralModelingWidget(QWidget *parent);
     virtual ~StructuralModelingWidget();
 
     bool outputToJSON(QJsonObject &rvObject);
@@ -68,7 +67,6 @@ private:
     QStackedWidget* theStackedWidget;
     OpenSeesPyBuildingModel* theOpenSeesPyModelWidget;
     OpenSeesBuildingModel* theOpenSeesModelWidget;
-    RandomVariablesContainer* theRandomVariablesContainer;
 };
 
 #endif // StructuralModelingWidget_H

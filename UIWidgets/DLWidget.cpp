@@ -36,9 +36,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna, Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
 #include "DLWidget.h"
 #include "PelicunDLWidget.h"
+#include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
@@ -66,15 +66,31 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     : MultiComponentR2D(parent), visualizationWidget(visWidget)
 {
 
-    buildingWidget = new SimCenterAppSelection(QString("Damage & Loss Application"), QString("DL"), this);
+    buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("DL"), QString(), QString("Buildings"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("DL"), QString(), QString("NaturalGasPipelines"), this);
+    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("DL"), QString(), QString("WaterDistributionNetwork"), this);
 
+    // Building widget apps
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
-    buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
+    SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
-    pipelineWidget = new SimCenterAppSelection(QString("Damage & Loss Application"), QString("DL"), this);
+    buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
+    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
+
+    // Natural gas pipeline apps
+    SimCenterAppWidget *noneWidget2 = new NoneWidget(this);
+
+    pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget2);
+
+    // Water distribution network apps
+    SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
+
+    WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
+    this->addComponent("Water Network",WDNWidget);
+
     this->hideAll();
 }
 
@@ -89,6 +105,7 @@ void DLWidget::clear(void)
 {
     buildingWidget->clear();
     pipelineWidget->clear();
+    WDNWidget->clear();
 }
 
 

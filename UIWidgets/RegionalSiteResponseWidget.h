@@ -40,19 +40,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "GroundMotionStation.h"
 #include "SimCenterAppWidget.h"
+#include "SiteConfig.h"
 
 #include <memory>
 
 #include <QMap>
+#include <QProcess>
 
 class VisualizationWidget;
 class SimCenterUnitsWidget;
 
-class ComponentInputWidget;
+class AssetInputWidget;
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
+class QProcess;
+class QPushButton;
 
 namespace Esri
 {
@@ -66,6 +70,17 @@ class Layer;
 }
 }
 
+class SiteConfig;
+class SiteConfigWidget;
+class MapViewWindow;
+class RectangleGrid;
+class Vs30; // vs30 info
+class Vs30Widget; // vs30 setup widget
+class BedrockDepth;
+class BedrockDepthWidget;
+class SoilModel;
+class SoilModelWidget;
+
 
 class RegionalSiteResponseWidget : public SimCenterAppWidget
 {
@@ -78,6 +93,8 @@ public:
     void showUserGMLayers(bool state);
 
     QStackedWidget* getRegionalSiteResponseWidget(void);
+    // get sites and fetch needed data
+    QStackedWidget* getSiteWidget(VisualizationWidget* visWidget);
 
     bool inputFromJSON(QJsonObject &jsonObj);  
     bool outputToJSON(QJsonObject &jsonObj);
@@ -88,9 +105,22 @@ public:
 
     void clear(void);
 
+#ifdef ARC_GIS
+    void setCurrentlyViewable(bool status);
+#endif
+
 public slots:
 
     void showUserGMSelectDialog(void);
+    void showGISWindow(void);
+
+    void handleProcessStarted(void);
+    void handleProcessTextOutput(void);
+    void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+    void setSiteDataFile(bool flag);
+    void setSoilModelWidget(SiteConfig::SiteType siteType);
+    void activateSoilModelWidget(bool flag);
 
 private slots:
 
@@ -100,24 +130,32 @@ private slots:
     void soilParamaterFileDialog(void);
     void soilScriptFileDialog(void);
 
-
 signals:
+    void eventTypeChangedSignal(QString eventType);
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
     void loadingComplete(const bool value);
+    void writeSiteDataCsv(bool);
+    void siteFilterSignal(QString filter);
 
 private:
 
   void showProgressBar(void);
   void hideProgressBar(void);
   void setFilterString(const QString& filter);
+  void getSiteData(void); // invoke regionalGroundMotion tool to fetch Vs30 and DepthToRock
+  void setDir(void); // set directories up
   QString getFilterString(void);
   
   QStackedWidget* theStackedWidget;
+  QStackedWidget* theSiteStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
     QString motionDir;
+
+    QString inputSiteDataDir; // the input site data dir (from user-specified or grid generator)
+    QString outputSiteDataDir; // the output site data dir with fetched vs30, depth to rock, and modeling parameters
 
     QLineEdit *eventFileLineEdit;
     QLineEdit *motionDirLineEdit;
@@ -133,8 +171,38 @@ private:
     QVector<GroundMotionStation> stationList;
 
     SimCenterUnitsWidget* unitsWidget;
+    SimCenterUnitsWidget* unitsSiteWidget;
   
-    ComponentInputWidget *theInputMotions;
+    AssetInputWidget *theInputMotions;
+
+    QWidget* inputSiteWidget;
+
+    SiteConfig* m_siteConfig;
+    SiteConfigWidget* m_siteConfigWidget;
+
+    Vs30* m_vs30;
+    Vs30Widget* m_vs30Widget;
+
+    BedrockDepth* m_bedrockDepth;
+    BedrockDepthWidget* m_bedrockDepthWidget;
+
+    SoilModel* m_soilModel;
+    SoilModelWidget* m_soilModelWidget;
+
+    QPushButton* m_runButton;
+    QProcess* processSiteData;
+
+    bool siteDataFlag;
+    bool soilModelFlag;
+
+#ifdef ARC_GIS
+    std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
+#endif
+
+#ifdef Q_GIS
+    MapViewWindow* mapViewSubWidget;
+    RectangleGrid* userGrid;
+#endif
 };
 
 #endif // RegionalSiteResponseWidget_H

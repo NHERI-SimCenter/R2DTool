@@ -36,7 +36,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "ComponentInputWidget.h"
 #include "MultiComponentR2D.h"
 #include "SecondaryComponentSelection.h"
 #include "sectiontitle.h"
@@ -81,6 +80,7 @@ MultiComponentR2D::MultiComponentR2D(QWidget *parent)
     //
     // leftside selection, VBoxLayout with PushButtons
     //
+    theMainLayout = new QVBoxLayout(this);
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     theSelectionWidget = new QFrame();
@@ -114,8 +114,14 @@ MultiComponentR2D::MultiComponentR2D(QWidget *parent)
     theStackedWidget = new QStackedWidget();
     horizontalLayout->addWidget(theStackedWidget);
 
-    // set this widgets layout
-    this->setLayout(horizontalLayout);
+    // SG add
+    connect(theStackedWidget,&QStackedWidget::currentChanged,this,[=](int idx){
+
+        if(idx<=theNames.size()-1)
+            emit selectionChangedSignal(theNames.at(idx));
+    });
+
+    theMainLayout->addLayout(horizontalLayout);
 
     // nothing yet added, do not display anything!
     theSelectionWidget->setHidden(true);
@@ -264,7 +270,23 @@ SimCenterAppWidget * MultiComponentR2D::getComponent(QString text)
 }
 
 
+SimCenterAppWidget* MultiComponentR2D::getCurrentComponent(void)
+{
+    if(currentIndex <= 0 && currentIndex <= theComponents.size()-1)
+        return theComponents.at(currentIndex);
+
+    return nullptr;
+}
+
+
 void MultiComponentR2D::hideAll()
+{
+    this->hideSelectionWidget();
+    theStackedWidget->setHidden(true);
+}
+
+
+void MultiComponentR2D::hideSelectionWidget(void)
 {
     int length = thePushButtons.length();
     numHidden = length;
@@ -273,7 +295,6 @@ void MultiComponentR2D::hideAll()
         theButton->hide();
     }
     theSelectionWidget->setHidden(true);
-    theStackedWidget->setHidden(true);
 }
 
 
@@ -364,6 +385,20 @@ bool MultiComponentR2D::displayComponent(QString text)
     }
 
     return false;
+}
+
+
+int MultiComponentR2D::getCurrentIndex(void) const
+{
+    return currentIndex;
+}
+
+
+int MultiComponentR2D::getIndexOfComponent(QString text) const
+{
+    int index = theNames.indexOf(text);
+
+    return index;
 }
 
 

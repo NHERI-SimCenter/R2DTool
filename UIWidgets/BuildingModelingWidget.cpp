@@ -48,16 +48,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGridLayout>
 #include <QJsonObject>
 
-BuildingModelingWidget::BuildingModelingWidget(QWidget *parent, RandomVariablesContainer* RVContainer)
-    : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer)
+BuildingModelingWidget::BuildingModelingWidget(QWidget *parent)
+    : SimCenterAppWidget(parent)
 {    
     QVBoxLayout* buildingModelLayout = new QVBoxLayout(this);
 
     theTabbedWidget = new QTabWidget(this);
 
     theBuildingModelGenWidget = new BuildingModelGeneratorWidget(this);
-    theStructModelingWidget = new StructuralModelingWidget(this,theRandomVariablesContainer);
-    theBuildingSIMWidget = new BuildingSimulationWidget(this, theRandomVariablesContainer);
+    theStructModelingWidget = new StructuralModelingWidget(this);
+    theBuildingSIMWidget = new BuildingSimulationWidget(this);
 
     theTabbedWidget->addTab(theBuildingModelGenWidget,"Building Information Model (BIM) Generator");
     theTabbedWidget->addTab(theStructModelingWidget,"Building Response Model");

@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QDirIterator>
 #include <QApplication>
+#include <QComboBox>
 #include <QDialog>
 #include <QJsonArray>
 #include <QFile>
@@ -180,6 +181,20 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
     directoryInputWidget = new QWidget();
     auto inputLayout = new QGridLayout(directoryInputWidget);
 
+    // The combobox to select the IM
+    IMComboBox = new QComboBox();
+    IMComboBox->addItem("PGA");
+    IMComboBox->addItem("PGV");
+    IMComboBox->setCurrentIndex(0); // PGA by default
+    IMComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+
+    QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM)");
+
+    QHBoxLayout* IMLayout = new QHBoxLayout();
+
+    IMLayout->addWidget(IMLabel);
+    IMLayout->addWidget(IMComboBox);
+
     auto vspacer3 = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
     inputLayout->addWidget(selectComponentsText,0,0,1,3);
     inputLayout->addWidget(shakeMapDirectoryLineEdit,1,0);
@@ -188,8 +203,8 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
     inputLayout->addWidget(shakeMapText1,2,0,1,3);
     inputLayout->addWidget(shakeMapText2,3,0,1,3);
     inputLayout->addWidget(shakeMapText3,4,0,1,3);
-    inputLayout->addItem(vspacer3,5,0);
-
+    inputLayout->addLayout(IMLayout,5,0,1,3);
+    inputLayout->addItem(vspacer3,6,0);
 
     shakeMapStackedWidget->addWidget(directoryInputWidget);
     shakeMapStackedWidget->addWidget(progressBarWidget);
@@ -233,7 +248,7 @@ int ShakeMapWidget::loadShakeMapData(void)
     {
         auto relPathToDir = QCoreApplication::applicationDirPath() + QDir::separator() + pathToShakeMapDirectory;
 
-        if (!QFileInfo(relPathToDir).exists())
+        if (!QFileInfo::exists(relPathToDir))
         {
             QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
             errorMessage(errMsg);
@@ -838,9 +853,23 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
         jsonObject["eventFilePath"]=QString("");
     }
 
+    auto IMtag = IMComboBox->currentText();
+
     QJsonObject unitsObj;
 
-    unitsObj["PGA"] = "g";
+    if(IMtag.compare("PGA") == 0)
+    {
+        unitsObj["PGA"] = "g";
+    }
+    else if(IMtag.compare("PGV") == 0)
+    {
+        unitsObj["PGV"] = "cmps";
+    }
+    else
+    {
+        this->errorMessage("Could not recognize the provided intensity measure "+IMtag);
+    }
+
 
     jsonObject["units"] = unitsObj;
 
@@ -860,6 +889,10 @@ bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     appData["Directory"] = pathToShakeMapDirectory;
 
+    auto IMType = IMComboBox->currentText();
+
+    appData["IntensityMeasureType"] = IMType;
+
     jsonObject["ApplicationData"]=appData;
 
     return true;
@@ -874,6 +907,17 @@ bool ShakeMapWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
 
+    auto IMType = appData.value("IntensityMeasureType").toString();
+
+    if(!IMType.isEmpty())
+    {
+        auto indexOfIm = IMComboBox->findText(IMType);
+
+        if(indexOfIm != -1)
+            IMComboBox->setCurrentIndex(indexOfIm);
+        else
+            this->errorMessage("Error, the intensity measure provided "+IMType+" is currently not supported");
+    }
 
     auto res = this->loadShakeMapData();
 
@@ -937,7 +981,7 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
     }
 
 #ifndef OpenSRA
-    QString IMtag = "PGA";
+    QString IMtag = IMComboBox->currentText();
 
     auto currentItem = listWidget->getCurrentItem();
 
@@ -967,7 +1011,7 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
     QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
     gridData.push_back(headerRow);
 
-    QStringList stationHeader = {"PGA"};
+    QStringList stationHeader = {IMtag};
 
     this->statusMessage("Creating ground motion station files from ShakeMap, this may take some time.");
 
@@ -1013,6 +1057,33 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
             auto PGAstr = QString::number(PGAval);
             IMstrList.append(PGAstr);
 
+        }
+        else if(IMtag.compare("PGV") == 0)
+        {
+            auto attribVal = station.getAttributeValue(IMtag);
+
+            if(attribVal.isNull())
+            {
+                this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
+                return false;
+            }
+
+            bool Ok = false;
+            auto IMVal = attribVal.toDouble(&Ok);
+
+            if(!Ok)
+            {
+                this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
+                return false;
+            }
+
+            // Units cmps
+            auto IMstr = QString::number(IMVal);
+            IMstrList.append(IMstr);
+        }
+        else
+        {
+            this->errorMessage("Could not recognize the provided intensity measure "+IMtag);
         }
 
         QVector<QStringList> stationData = {stationHeader,IMstrList};

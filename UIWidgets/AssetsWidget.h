@@ -54,9 +54,10 @@ public:
     void clear(void);
 
 private:
-    SimCenterAppSelection *buildingWidget;
-    SimCenterAppSelection *pipelineWidget;
-    VisualizationWidget* visualizationWidget;
+    SimCenterAppSelection* buildingWidget = nullptr;
+    SimCenterAppSelection* gasPipelineWidget = nullptr;
+    SimCenterAppSelection* waterNetworkWidget = nullptr;
+    VisualizationWidget* visualizationWidget = nullptr;
 };
 
 #endif // AssetsWidget_H
