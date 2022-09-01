@@ -45,6 +45,7 @@ class EarthquakeRuptureForecastWidget;
 class OpenQuakeScenarioWidget;
 class OpenQuakeClassicalWidget;
 class OpenQuakeUserSpecifiedWidget;
+class HazardOccurrenceWidget;
 
 class QGroupBox;
 class QComboBox;
@@ -59,6 +60,7 @@ public:
     QJsonObject getJson(void);
     QString getWidgetType(void) const;
     QString getGMPELogicTree(void) const;
+    QString getEQNum(void) const;
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
 
@@ -77,6 +79,7 @@ private:
     OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
     OpenQuakeClassicalWidget* oqcpWidget; // widget connecting OpenQuake classical PSHA
     OpenQuakeUserSpecifiedWidget* oqcpuWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
+    HazardOccurrenceWidget* hoWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
     QString widgetType = "OpenSHA ERF"; // widget type
 };
 

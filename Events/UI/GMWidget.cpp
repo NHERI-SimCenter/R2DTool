@@ -718,7 +718,12 @@ void GMWidget::runHazardSimulation(void)
     QJsonObject scenarioObj;
     scenarioObj.insert("Type", "Earthquake");
     // get scenario number
-    scenarioObj.insert("Number", 1);
+    QString numEQ = this->m_ruptureWidget->getEQNum();
+    if (numEQ.compare("All")==0) {
+        scenarioObj.insert("Number", "All");
+    } else {
+        scenarioObj.insert("Number", numEQ.toInt());
+    }
     scenarioObj.insert("Generator", "Selection");
 
     QJsonObject EqRupture;
