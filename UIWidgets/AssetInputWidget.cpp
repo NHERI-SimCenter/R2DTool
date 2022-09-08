@@ -208,6 +208,13 @@ bool AssetInputWidget::loadAssetData(void)
     label3->show();
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+
+    // Clear the old layers if any
+    if(mainLayer != nullptr)
+        theVisualizationWidget->removeLayer(mainLayer);
+
+    if(selectedFeaturesLayer != nullptr)
+        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
     
     auto res = this->loadAssetVisualization();
 
@@ -246,16 +253,18 @@ bool AssetInputWidget::loadAssetData(void)
 
 void AssetInputWidget::chooseComponentInfoFileDialog(void)
 {
-    this->clear();
-
-    pathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
+    auto newPathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
     
     // Return if the user cancels
-    if(pathToComponentInputFile.isEmpty())
+    if(newPathToComponentInputFile.isEmpty())
     {
         pathToComponentInputFile = "NULL";
         return;
     }
+
+    this->clearTableData();
+
+    pathToComponentInputFile = newPathToComponentInputFile;
 
     // Set file name & entry in qLine edit
     componentFileLineEdit->setText(pathToComponentInputFile);
@@ -355,6 +364,12 @@ void AssetInputWidget::createComponentsBox(void)
     mainWidgetLayout->addStretch();
 
     this->setLayout(mainWidgetLayout);
+}
+
+
+QgsVectorLayer *AssetInputWidget::getMainLayer() const
+{
+    return mainLayer;
 }
 
 
@@ -719,8 +734,14 @@ bool AssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
+
         if (appData.contains("assetSourceFile"))
             fileName = appData["assetSourceFile"].toString();
+        else
+        {
+            this->errorMessage("The input file " + fileName+ " is missing the 'assetSourceFile' field");
+            return false;
+        }
 
         if (fileInfo.exists(fileName)) {
 
@@ -836,7 +857,10 @@ bool AssetInputWidget::copyFiles(QString &destName)
     QFileInfo componentFile(compLineEditText);
 
     if (!componentFile.exists())
+    {
+        this->errorMessage("The asset file path does not exist. Did you load any assets?");
         return false;
+    }
 
     // Do not copy the file, output a new csv which will have the changes that the user makes in the table
     //        if (componentFile.exists()) {
@@ -928,7 +952,7 @@ bool AssetInputWidget::copyFiles(QString &destName)
 }
 
 
-void AssetInputWidget::clear(void)
+void AssetInputWidget::clearTableData(void)
 {
     theComponentDb->clear();
     pathToComponentInputFile.clear();
@@ -938,6 +962,16 @@ void AssetInputWidget::clear(void)
     componentTableWidget->clear();
     componentTableWidget->hide();
     tableHorizontalHeadings.clear();
+}
+
+
+
+void AssetInputWidget::clear(void)
+{
+    this->clearTableData();
+
+    mainLayer = nullptr;
+    selectedFeaturesLayer = nullptr;
 
     emit headingValuesChanged(QStringList{"N/A"});
 }
@@ -957,7 +991,9 @@ void AssetInputWidget::handleCellChanged(const int row, const int col)
 #endif
 
 #ifdef Q_GIS
-    theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
+    auto res = theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
+    if(res == false)
+        this->errorMessage("Error could not update asset "+QString::number(ID)+" after cell change");
 #endif
 
 }

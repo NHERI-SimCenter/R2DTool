@@ -145,6 +145,8 @@ public:
 
     bool isEmpty();
 
+    QgsVectorLayer *getMainLayer() const;
+
 signals:
     void headingValuesChanged(QStringList);
     void doneLoadingComponents(void);
@@ -205,6 +207,11 @@ protected:
     QStringList tableHorizontalHeadings;
 
     virtual void createComponentsBox(void);
+
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+
+    void clearTableData(void);
 
 #ifdef ARC_GIS
     // Map to store the selected features according to their UID

@@ -61,6 +61,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgslinesymbol.h>
 
 
+#ifdef OpenSRA
+#include "WorkflowAppOpenSRA.h"
+#include "WidgetFactory.h"
+#include "JsonGroupBoxWidget.h"
+#endif
+
+
 // Test to remove
 #include <chrono>
 using namespace std::chrono;
@@ -106,8 +113,41 @@ GISAssetInputWidget::~GISAssetInputWidget()
 #ifdef OpenSRA
 bool GISAssetInputWidget::loadFileFromPath(const QString& filePath)
 {
+    QFileInfo fileInfo;
+    if (!fileInfo.exists(filePath))
+        return false;
 
+    pathToComponentInputFile = filePath;
+    componentFileLineEdit->setText(filePath);
+
+    this->loadAssetData();
+
+    return true;
 }
+
+
+bool GISAssetInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+
+    return true;
+}
+
+
+bool GISAssetInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+    QJsonObject data;
+
+    QJsonObject appData;
+
+    appData["assetGISFile"] = rvObject["SiteDataFile"];
+
+    appData["CRS"] = rvObject["CRS"];
+
+    data["ApplicationData"] = appData;
+
+    return inputAppDataFromJSON(data);
+}
+
 #endif
 
 
@@ -123,7 +163,7 @@ int GISAssetInputWidget::loadAssetVisualization()
     //      NullGeometry
     //    };
     // , "linestring", "polygon","multipoint","multilinestring","multipolygon"
-    auto type = vectorLayer->geometryType();
+    auto type = mainLayer->geometryType();
 
     QString typeStr = "Null";
     if(type == QgsWkbTypes::PointGeometry)
@@ -134,7 +174,7 @@ int GISAssetInputWidget::loadAssetVisualization()
         typeStr = "polygon";
 
     // Create the selected building layer
-    auto selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(typeStr,"Selected "+assetType);
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(typeStr,"Selected "+assetType);
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -142,7 +182,7 @@ int GISAssetInputWidget::loadAssetVisualization()
         return -1;
     }
 
-    selectedFeaturesLayer->setCrs(vectorLayer->crs());
+    selectedFeaturesLayer->setCrs(mainLayer->crs());
 
     QgsSymbol* selectFeatSymbol = nullptr;
     if(type == QgsWkbTypes::PointGeometry)
@@ -169,7 +209,7 @@ int GISAssetInputWidget::loadAssetVisualization()
 
     auto pr2 = selectedFeaturesLayer->dataProvider();
 
-    auto fields = vectorLayer->dataProvider()->fields();
+    auto fields = mainLayer->dataProvider()->fields();
 
     auto res2 = pr2->addAttributes(fields.toList());
 
@@ -180,13 +220,13 @@ int GISAssetInputWidget::loadAssetVisualization()
 
     QVector<QgsMapLayer*> mapLayers;
     mapLayers.push_back(selectedFeaturesLayer);
-    mapLayers.push_back(vectorLayer);
+    mapLayers.push_back(mainLayer);
 
     theVisualizationWidget->createLayerGroup(mapLayers,assetType);
 
-    theComponentDb->setMainLayer(vectorLayer);
+    theComponentDb->setMainLayer(mainLayer);
 
-    filterDelegateWidget  = new AssetFilterDelegate(vectorLayer);
+    filterDelegateWidget  = new AssetFilterDelegate(mainLayer);
 
     theComponentDb->setSelectedLayer(selectedFeaturesLayer);
 
@@ -223,18 +263,25 @@ bool GISAssetInputWidget::loadAssetData(void)
         }
     }
 
+    // Clear the old layers if any
+    if(mainLayer != nullptr)
+        theVisualizationWidget->removeLayer(mainLayer);
+
+    if(selectedFeaturesLayer != nullptr)
+        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
+
     // Name the layer according to the filename
     auto fName = file.fileName();
 
-    vectorLayer = theVisualizationWidget->addVectorLayer(pathToComponentInputFile, fName, "ogr");
+    mainLayer = theVisualizationWidget->addVectorLayer(pathToComponentInputFile, fName, "ogr");
 
-    if(vectorLayer == nullptr)
+    if(mainLayer == nullptr)
     {
         this->errorMessage("Error, failed to add GIS layer");
         return false;
     }
 
-    auto numFeat = vectorLayer->featureCount();
+    auto numFeat = mainLayer->featureCount();
 
     if(numFeat == 0)
     {
@@ -246,12 +293,12 @@ bool GISAssetInputWidget::loadAssetData(void)
         QApplication::processEvents();
     }
 
-    auto layerId = vectorLayer->id();
+    auto layerId = mainLayer->id();
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
-    auto features = vectorLayer->getFeatures();
+    auto features = mainLayer->getFeatures();
 
-    auto fields = vectorLayer->fields();
+    auto fields = mainLayer->fields();
 
     if(fields.size() == 0)
     {
@@ -393,7 +440,9 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             componentFileLineEdit->setText(fileInfo.absoluteFilePath());
             pathToComponentInputFile = fileInfo.absoluteFilePath();
 
-            this->loadAssetData();
+            if(this->loadAssetData() == false)
+                return false;
+
             foundFile = true;
 
         } else {
@@ -408,7 +457,9 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             if (fileInfo.exists(pathToComponentInputFile)) {
                 componentFileLineEdit->setText(pathToComponentInputFile);
                 foundFile = true;
-                this->loadAssetData();
+
+                if(this->loadAssetData() == false)
+                    return false;
 
             } else {
                 // adam .. adam .. adam
@@ -417,11 +468,12 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 if (fileInfo.exists(pathToComponentInputFile)) {
                     componentFileLineEdit->setText(pathToComponentInputFile);
                     foundFile = true;
-                    this->loadAssetData();
-                }
+
+                    if(this->loadAssetData() == false)
+                        return false;                }
                 else
                 {
-                    QString errMessage = appType + " no file found at: " + fileName;
+                    QString errMessage = appType + " - The file " + fileName + " could not be found";
                     this->errorMessage(errMessage);
                     return false;
                 }
@@ -430,7 +482,7 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         if(foundFile == false)
         {
-            QString errMessage = appType + " no file found: " + fileName;
+            QString errMessage = appType + " - The file " + fileName + " could not be found";
             this->errorMessage(errMessage);
             return false;
         }
@@ -453,10 +505,10 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 bool GISAssetInputWidget::isEmpty()
 {
-    if(vectorLayer == nullptr)
+    if(mainLayer == nullptr)
         return true;
 
-    if(vectorLayer->featureCount() == 0)
+    if(mainLayer->featureCount() == 0)
         return true;
 
     return false;
@@ -494,14 +546,8 @@ void GISAssetInputWidget::setCRS(const QgsCoordinateReferenceSystem & val)
 
 void GISAssetInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
 {
-    if(vectorLayer)
-        vectorLayer->setCrs(val);
-}
-
-
-QgsVectorLayer *GISAssetInputWidget::getAssetLayer() const
-{
-    return vectorLayer;
+    if(mainLayer)
+        mainLayer->setCrs(val);
 }
 
 
@@ -510,8 +556,6 @@ void GISAssetInputWidget::clear(void)
     crsSelectorWidget->clear();
 
     AssetInputWidget::clear();
-
-    vectorLayer = nullptr;
 }
 
 
@@ -521,7 +565,7 @@ int GISAssetInputWidget::getOffset(void)
 
     // Get the first id of the fid
     auto firstIdLayer = 0;
-    auto features2 = vectorLayer->getFeatures();
+    auto features2 = mainLayer->getFeatures();
     QgsFeature feat2;
     if (features2.nextFeature(feat2))
         firstIdLayer = feat2.id();

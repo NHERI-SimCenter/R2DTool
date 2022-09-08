@@ -22,11 +22,16 @@
 LineAssetInputWidget::LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
 {
 
+#ifdef OpenSRA
+    LineAssetInputWidget::createComponentsBox();
+#endif
+
 }
 
 
 int LineAssetInputWidget::loadAssetVisualization(void)
 {
+
     auto headers = this->getTableHorizontalHeadings();
 
     auto indexLatStart = headers.indexOf("LAT_BEGIN");
@@ -123,7 +128,7 @@ int LineAssetInputWidget::loadAssetVisualization(void)
         // "Tabname"
 
         featureAttributes[0] = QVariant(pipelineID);
-        featureAttributes[1] = QVariant("GASPIPELINES");
+        featureAttributes[1] = QVariant(QString(assetType).remove(" "));
         featureAttributes[2] = QVariant("ID: "+QString::number(pipelineID));
 
         // The feature attributes are the columns from the table
@@ -183,7 +188,7 @@ int LineAssetInputWidget::loadAssetVisualization(void)
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
     // Create the selected building layer
-    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Pipelines");
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("linestring","Selected "+assetType);
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -212,7 +217,7 @@ int LineAssetInputWidget::loadAssetVisualization(void)
     mapLayers.push_back(selectedFeaturesLayer);
     mapLayers.push_back(mainLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,"Pipelines");
+    theVisualizationWidget->createLayerGroup(mapLayers, assetType);
 
     return 0;
 }
@@ -245,10 +250,7 @@ bool LineAssetInputWidget::outputToJSON(QJsonObject &rvObject)
 
 bool LineAssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
-
-    locationWidget->inputFromJSON(rvObject);
-
-    return true;
+    return locationWidget->inputFromJSON(rvObject);
 }
 
 
@@ -264,7 +266,7 @@ void LineAssetInputWidget::createComponentsBox(void)
         return;
     }
 
-    auto theWidgetFactory = WorkflowAppOpenSRA::getInstance()->getTheWidgetFactory();
+    auto theWidgetFactory = std::make_unique<WidgetFactory>(this);
 
     QJsonObject paramsObj = thisObj["Params"].toObject();
 
@@ -293,7 +295,6 @@ void LineAssetInputWidget::createComponentsBox(void)
     paramsLon["LonBegin"] = paramsObj.value("LonBegin");
     paramsLon["LonMid"] = paramsObj.value("LonMid");
     paramsLon["LonEnd"] = paramsObj.value("LonEnd");
-    paramsLon["Length"] = paramsObj.value("Length");
 
     auto latLayout = theWidgetFactory->getLayoutFromParams(paramsLat,nameStr,locationWidget, Qt::Horizontal);
     auto lonLayout = theWidgetFactory->getLayoutFromParams(paramsLon,nameStr,locationWidget, Qt::Horizontal);
@@ -309,9 +310,7 @@ void LineAssetInputWidget::createComponentsBox(void)
     mainWidgetLayout->insertWidget(insPoint-3,locationWidget);
 }
 
-
 #endif
-
 
 
 void LineAssetInputWidget::clear()

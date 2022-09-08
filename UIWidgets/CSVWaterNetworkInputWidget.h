@@ -56,7 +56,6 @@ public:
     CSVWaterNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
     virtual ~CSVWaterNetworkInputWidget();
 
-//    virtual int loadNodesVisualization();
     int getNodeMap();
     virtual int loadPipelinesVisualization();
 
@@ -75,13 +74,9 @@ protected:
     ComponentDatabase*  theNodesDb = nullptr;
     ComponentDatabase*  thePipelinesDb = nullptr;
 
-//    NonselectableAssetInputWidget* theNodesWidget = nullptr;
-//    NonselectableAssetInputWidget* thePipelinesWidget = nullptr;
-
     PointAssetInputWidget* theNodesWidget = nullptr;
     LineAssetInputWidget* thePipelinesWidget = nullptr;
 
-//    QgsVectorLayer* nodesMainLayer = nullptr;
     QgsVectorLayer* pipelinesMainLayer = nullptr;
     QgsVectorLayer* pipelinesSelectedLayer = nullptr;
 

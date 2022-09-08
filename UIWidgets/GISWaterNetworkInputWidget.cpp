@@ -169,7 +169,7 @@ bool GISWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     if (!jsonObject.contains("ApplicationData"))
     {
-        this->errorMessage("GISWaterNetworkInputWidget::inputFRommJSON app name conflict");
+        this->errorMessage("Could not find the 'ApplicationData' key in 'GISWaterNetworkInputWidget' input");
         return false;
     }
 
@@ -207,7 +207,7 @@ bool GISWaterNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 int GISWaterNetworkInputWidget::loadPipelinesVisualization()
 {
-    pipelinesMainLayer = thePipelinesWidget->getAssetLayer();
+    pipelinesMainLayer = thePipelinesWidget->getMainLayer();
 
     if(pipelinesMainLayer==nullptr)
         return -1;
@@ -229,7 +229,7 @@ int GISWaterNetworkInputWidget::loadPipelinesVisualization()
 
 int GISWaterNetworkInputWidget::loadNodesVisualization()
 {
-    nodesMainLayer = theNodesWidget->getAssetLayer();
+    nodesMainLayer = theNodesWidget->getMainLayer();
 
     if(nodesMainLayer==nullptr)
         return -1;
@@ -251,6 +251,9 @@ void GISWaterNetworkInputWidget::clear()
 {
     theNodesWidget->clear();
     thePipelinesWidget->clear();
+
+    nodesMainLayer = nullptr;
+    pipelinesMainLayer = nullptr;
 }
 
 

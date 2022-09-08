@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Dr. Stevan Gavrilovic
 
 // Use this class when your asset geometry is represented as a line, i.e., pipelines
+// The input file must be in .csv format
 // The loadAssetVisualization function is specialized for line geometry rendering
 
 #include "AssetInputWidget.h"
@@ -78,9 +79,6 @@ private:
 #ifdef OpenSRA
     JsonGroupBoxWidget* locationWidget = nullptr;
 #endif
-
-    QgsVectorLayer* mainLayer = nullptr;
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
 
     PointAssetInputWidget* theNodesWidget = nullptr;
 

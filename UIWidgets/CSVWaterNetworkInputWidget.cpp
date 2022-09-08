@@ -190,6 +190,12 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
         return -1;
     }
 
+    if(pipelinesMainLayer != nullptr)
+        theVisualizationWidget->removeLayer(pipelinesMainLayer);
+
+    if(pipelinesSelectedLayer != nullptr)
+        theVisualizationWidget->removeLayer(pipelinesSelectedLayer);
+
     auto pipelinesTableWidget = thePipelinesWidget->getTableWidget();
 
     QgsFields featFields;
@@ -226,7 +232,7 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
     }
 
     // Create the pipelines layer
-    pipelinesMainLayer = theVisualizationWidget->addVectorLayer("linestring","Water Network Pipelines");
+    pipelinesMainLayer = theVisualizationWidget->addVectorLayer("linestring","All Water Network Pipelines");
 
     if(pipelinesMainLayer == nullptr)
     {
@@ -342,7 +348,7 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
     theVisualizationWidget->registerLayerForSelection(layerId,thePipelinesWidget);
 
     // Create the selected pipeline layer
-    pipelinesSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Pipelines");
+    pipelinesSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Water Network Pipelines");
 
     if(pipelinesSelectedLayer == nullptr)
     {
@@ -371,13 +377,7 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
     mapLayers.push_back(pipelinesSelectedLayer);
     mapLayers.push_back(pipelinesMainLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,"Pipelines");
-
-//    QVector<QgsMapLayer*> mapLayers;
-//    mapLayers.push_back(nodesMainLayer);
-//    mapLayers.push_back(pipelinesMainLayer);
-
-//    theVisualizationWidget->createLayerGroup(mapLayers,"Water Network");
+    theVisualizationWidget->createLayerGroup(mapLayers,"Water Network Pipelines");
 
     return 0;
 }
@@ -439,11 +439,13 @@ int CSVWaterNetworkInputWidget::getNodeMap()
 
 void CSVWaterNetworkInputWidget::clear()
 {
-//    theNodesDb->clear();
     thePipelinesDb->clear();
     nodePointsMap.clear();
     theNodesWidget->clear();
     thePipelinesWidget->clear();
+
+    pipelinesMainLayer = nullptr;
+    pipelinesSelectedLayer = nullptr;
 }
 
 

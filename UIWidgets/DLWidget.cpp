@@ -105,6 +105,33 @@ DLWidget::~DLWidget()
 }
 
 
+QList<QString> DLWidget::getActiveDLApps(void)
+{
+    QList<QString> activeDLapps;
+    auto activeList = this->getActiveComponents();
+
+    for(auto&& it : activeList)
+    {
+        auto activeComp = dynamic_cast<SimCenterAppSelection*>(this->getComponent(it));
+
+        if(activeComp == nullptr)
+            return activeDLapps;
+
+        auto currComp = activeComp->getCurrentSelectionName();
+
+        if(currComp.isEmpty())
+        {
+            this->errorMessage("Could not get the active DL apps in DLWidget");
+            return activeDLapps;
+        }
+
+        activeDLapps.append(currComp);
+    }
+
+    return activeDLapps;
+}
+
+
 void DLWidget::clear(void)
 {
     buildingWidget->clear();

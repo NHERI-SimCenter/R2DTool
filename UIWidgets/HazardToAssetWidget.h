@@ -64,7 +64,7 @@ private slots:
 
 private:
     SimCenterAppWidget *buildingWidget;
-    SimCenterAppSelection *pipelineWidget;
+    SimCenterAppWidget *pipelineWidget;
 };
 
 #endif // HazardToAssetWidget_H
