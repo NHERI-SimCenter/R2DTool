@@ -110,6 +110,8 @@ public:
 
     ComponentTableView *getTableWidget() const;
 
+    int getNumberOfAseets(void);
+
     // Set the filter string and select the components
     void setFilterString(const QString& filter);
     QString getFilterString(void);
@@ -142,6 +144,8 @@ public:
     int applyFilterString(const QString& filter);
 
     bool isEmpty();
+
+    QgsVectorLayer *getMainLayer() const;
 
 signals:
     void headingValuesChanged(QStringList);
@@ -203,6 +207,11 @@ protected:
     QStringList tableHorizontalHeadings;
 
     virtual void createComponentsBox(void);
+
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+
+    void clearTableData(void);
 
 #ifdef ARC_GIS
     // Map to store the selected features according to their UID

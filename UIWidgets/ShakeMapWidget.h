@@ -48,7 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class CustomListWidget;
 class VisualizationWidget;
 
-class QComboBox;
+class QListWidget;
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
@@ -194,7 +194,7 @@ private:
 
     QStringList shakeMapList;
 
-    QComboBox* IMComboBox = nullptr;
+    QListWidget* IMListWidget = nullptr;
     CustomListWidget *listWidget = nullptr;
     VisualizationWidget* theVisualizationWidget = nullptr;
     QLineEdit *shakeMapDirectoryLineEdit = nullptr;

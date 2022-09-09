@@ -1360,6 +1360,9 @@ void RegionalSiteResponseWidget::clear(void)
     motionDirLineEdit->clear();
 
     stationList.clear();
+
+    m_siteConfigWidget->clear();
+
 }
 
 void RegionalSiteResponseWidget::showProgressBar(void)

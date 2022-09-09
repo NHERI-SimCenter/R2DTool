@@ -96,11 +96,11 @@ public:
     // get sites and fetch needed data
     QStackedWidget* getSiteWidget(VisualizationWidget* visWidget);
 
-    bool inputFromJSON(QJsonObject &jsonObj);  
+    bool inputFromJSON(QJsonObject &jsonObj);
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
-  
+
     bool copyFiles(QString &destDir);
 
     void clear(void);
@@ -139,15 +139,15 @@ signals:
 
 private:
 
-  void showProgressBar(void);
-  void hideProgressBar(void);
-  void setFilterString(const QString& filter);
-  void getSiteData(void); // invoke regionalGroundMotion tool to fetch Vs30 and DepthToRock
-  void setDir(void); // set directories up
-  QString getFilterString(void);
-  
-  QStackedWidget* theStackedWidget;
-  QStackedWidget* theSiteStackedWidget;
+    void showProgressBar(void);
+    void hideProgressBar(void);
+    void setFilterString(const QString& filter);
+    void getSiteData(void); // invoke regionalGroundMotion tool to fetch Vs30 and DepthToRock
+    void setDir(void); // set directories up
+    QString getFilterString(void);
+
+    QStackedWidget* theStackedWidget;
+    QStackedWidget* theSiteStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
@@ -172,7 +172,7 @@ private:
 
     SimCenterUnitsWidget* unitsWidget;
     SimCenterUnitsWidget* unitsSiteWidget;
-  
+
     AssetInputWidget *theInputMotions;
 
     QWidget* inputSiteWidget;

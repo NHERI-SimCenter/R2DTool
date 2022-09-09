@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PelicunDLWidget.h"
 #include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
+#include "NoArgSimCenterApp.h"
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
@@ -85,7 +86,10 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     // Water distribution network apps
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
 
+    SimCenterAppWidget *WDNDL = new NoArgSimCenterApp(QString("CBCitiesDL"));
+
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
+    WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
@@ -98,6 +102,33 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
 DLWidget::~DLWidget()
 {
 
+}
+
+
+QList<QString> DLWidget::getActiveDLApps(void)
+{
+    QList<QString> activeDLapps;
+    auto activeList = this->getActiveComponents();
+
+    for(auto&& it : activeList)
+    {
+        auto activeComp = dynamic_cast<SimCenterAppSelection*>(this->getComponent(it));
+
+        if(activeComp == nullptr)
+            return activeDLapps;
+
+        auto currComp = activeComp->getCurrentSelectionName();
+
+        if(currComp.isEmpty())
+        {
+            this->errorMessage("Could not get the active DL apps in DLWidget");
+            return activeDLapps;
+        }
+
+        activeDLapps.append(currComp);
+    }
+
+    return activeDLapps;
 }
 
 

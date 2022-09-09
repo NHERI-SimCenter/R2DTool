@@ -52,11 +52,12 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
 
     this->resize(width, height);
 
-    // Test to remove
-//     inputFileLineEdit->setText("/Users/steve/Documents/R2D/RemoteWorkDir/inputRWHALE.json");
-//     resultsFolderLineEdit->setText("/Users/steve/Documents/R2D/RemoteWorkDir");
+    // Test to remove start
+//     inputFileLineEdit->setText("/Users/steve/Documents/R2D/LocalWorkDir/tmp.SimCenter/inputRWHALE.json");
+//     resultsFolderLineEdit->setText("/Users/steve/Documents/R2D/LocalWorkDir/tmp.SimCenter/Results");
 
 //     this->handleLoadResults();
+     // Test to remove end
 }
 
 

@@ -280,10 +280,12 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
 {
     qDebug() << "PelicunPostProcessor: " << pathToResults;
 
-    // Remove old csv files in the output pathToResults
-    QDir resultsDir(pathToResults);
+    auto pathToBuildings = pathToResults + QDir::separator() + QString("Buildings");
 
-    const QFileInfo existingFilesInfo(pathToResults);
+    // Remove old csv files in the output pathToResults
+    QDir resultsDir(pathToBuildings);
+
+    const QFileInfo existingFilesInfo(pathToBuildings);
 
     // Get the existing files in the folder to see if we already have the record
 
@@ -297,7 +299,7 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
         QStringList acceptableFileExtensions = {"*.*"};
         QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
         qDebug() << "FILES IN FOLDER: " << existingFiles;
-        errMsg = "The results folder is empty";
+        errMsg = "The results folder "+pathToBuildings+" is empty";
         throw errMsg;
     }
 
@@ -321,21 +323,21 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
 
     CSVReaderWriter csvTool;
 
-    DMdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + DMResultsSheet,errMsg);
+    DMdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + DMResultsSheet,errMsg);
     if(!errMsg.isEmpty())
         throw errMsg;
 
-    DVdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + DVResultsSheet,errMsg);
+    DVdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + DVResultsSheet,errMsg);
     if(!errMsg.isEmpty())
         throw errMsg;
 
-    EDPdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + EDPreultsSheet,errMsg);
+    EDPdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + EDPreultsSheet,errMsg);
     if(!errMsg.isEmpty())
         throw errMsg;
 
     if(IMresultsSheet.size()) {
         for (auto&& curFile : IMresultsSheet) {
-            IMdata = csvTool.parseCSVFile(pathToResults + QDir::separator() + curFile,errMsg);
+            IMdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + curFile,errMsg);
             if(!errMsg.isEmpty())
                 throw errMsg;
             if(!IMdata.empty() && IMdata.size()>numHeaderRows)

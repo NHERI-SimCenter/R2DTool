@@ -133,7 +133,7 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
 
     if(buildingsLayer == nullptr)
     {
-        emit emitErrorMsg("The buildings layer does not exist, please import the buildings");
+        emit emitErrorMsg("The asset layer does not exist, please import the assets");
         return res;
     }
 
@@ -174,7 +174,7 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
         return res;
     }
 
-    emit emitStatusMsg("Getting counties containing the building inventory.");
+    emit emitStatusMsg("Getting counties containing the asset inventory.");
 
     //auto countiesLayer = theVisualizationWidget->addVectorLayer(pathToCountiesGIS, "Counties", "ogr");
 
@@ -205,7 +205,7 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
 
     countyFeatVec.reserve(countiesLayer->featureCount());
 
-    // Iterate through the building features
+    // Iterate through the asset features
     auto countyFeatures = countiesLayer->getFeatures();
 
     QgsFeature countyFeat;
@@ -329,7 +329,7 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
 
     }
 
-    emit emitStatusMsg("Done getting counties for the building inventory.");
+    emit emitStatusMsg("Done getting counties for the asset inventory.");
 
     return res;
 }
@@ -346,7 +346,7 @@ int HousingUnitAllocationWidget::createGISFiles(void)
 {
     if(buildingsLayer == nullptr)
     {
-        emit emitErrorMsg("The buildings layer does not exist, please import the buildings");
+        emit emitErrorMsg("The asset layer does not exist, please import assets");
 
         return -1;
     }
@@ -526,15 +526,15 @@ int HousingUnitAllocationWidget::handleRunJoinButtonPressed()
 
 int HousingUnitAllocationWidget::importBuidlingsLayer(void)
 {
-    this->statusMessage("Importing building layer.");
+    this->statusMessage("Importing asset layer.");
 
     auto path = buildingsPathLineEdit->text();
 
-    auto origBuildingLayer = theVisualizationWidget->addVectorLayer(path, "Buildings", "ogr");
+    auto origBuildingLayer = theVisualizationWidget->addVectorLayer(path, "Assets", "ogr");
 
     if(origBuildingLayer == nullptr)
     {
-        this->errorMessage("Error importing the building layer");
+        this->errorMessage("Error importing the asset layer");
         return -1;
     }
 
@@ -545,11 +545,11 @@ int HousingUnitAllocationWidget::importBuidlingsLayer(void)
 
     if(buildingsLayer == nullptr)
     {
-        this->errorMessage("Error copying the building layer");
+        this->errorMessage("Error copying the asset layer");
         return -1;
     }
 
-    this->statusMessage("Importing building layer complete.");
+    this->statusMessage("Importing asset layer complete.");
 
     return 0;
 }
@@ -645,7 +645,7 @@ int HousingUnitAllocationWidget::importJoinAssets()
 
     if(future3.get() != 0)
     {
-        emit emitErrorMsg("Error getting the building features");
+        emit emitErrorMsg("Error getting the asset features");
         return -1;
     }
 
@@ -702,13 +702,13 @@ bool HousingUnitAllocationWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 int HousingUnitAllocationWidget::getBuildingFeatures(void)
 {
-    emit emitStatusMsg("Parsing buildings.");
+    emit emitStatusMsg("Parsing assets.");
 
     buildingLayerSemaphore.lock();
 
     if(buildingsLayer == nullptr)
     {
-        emit emitErrorMsg("Error: no buildings layer");
+        emit emitErrorMsg("Error: no assets layer");
         buildingLayerSemaphore.unlock();
 
         return -1;
@@ -738,7 +738,7 @@ int HousingUnitAllocationWidget::getBuildingFeatures(void)
         // buildingsMap.push_back(newBuilding);
     }
 
-    emit emitStatusMsg("Loaded "+QString::number(buildingsLayer->featureCount())+" buildings");
+    emit emitStatusMsg("Loaded "+QString::number(buildingsLayer->featureCount())+" assets");
 
     buildingLayerSemaphore.unlock();
 
@@ -913,7 +913,7 @@ int HousingUnitAllocationWidget::extractACSData(void)
 
     if(ACSBlockGroupLayer == nullptr || buildingsLayer == nullptr)
     {
-        emit emitErrorMsg("Error in extracting ACS data. Either a ACS layer or buildings layer is missing.");
+        emit emitErrorMsg("Error in extracting ACS data. Either a ACS layer or assets layer is missing.");
         return -1;
     }
 
@@ -961,7 +961,7 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
     QGridLayout* mainLayout = new QGridLayout(mainWidget);
     mainWidget->setLayout(mainLayout);
 
-    QLabel* buildingPathText = new QLabel("Path to building GIS file (.gdb, .shp, etc.)");
+    QLabel* buildingPathText = new QLabel("Path to asset GIS file (.gdb, .shp, etc.)");
     buildingsPathLineEdit = new QLineEdit();
     QPushButton *browseBuidlingFileButton = new QPushButton("Browse");
 
@@ -1083,7 +1083,7 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
     censusLayout->addWidget(mCensusCrsSelector,2,1);
 
 
-    QLabel* selectACSPathText = new QLabel("ACS Data GIS file (.gdb, .shp, etc.) for population demographics");
+    QLabel* selectACSPathText = new QLabel("ACS Data GIS file (.gdb, .shp, etc.) for household income and employment demographics");
     ACSPathLineEdit = new QLineEdit();
     QPushButton *browseACSFileButton = new QPushButton("Browse");
     connect(browseACSFileButton,SIGNAL(clicked()),this,SLOT(browseACSGISFile()));
@@ -1280,7 +1280,7 @@ void HousingUnitAllocationWidget::browseBuildingGISFile(void)
 {
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::ExistingFile);
-    QString tmp = dialog.getOpenFileName(this,tr("GIS file of building"),QString(QDir(buildingsPathLineEdit->text()).absolutePath()));
+    QString tmp = dialog.getOpenFileName(this,tr("GIS file of asset"),QString(QDir(buildingsPathLineEdit->text()).absolutePath()));
     dialog.close();
     if(!tmp.isEmpty())
         buildingsPathLineEdit->setText(tmp);
@@ -1289,7 +1289,7 @@ void HousingUnitAllocationWidget::browseBuildingGISFile(void)
 
     auto res = this->importBuidlingsLayer();
     if(res != 0)
-        this->errorMessage("Error importing the building layer");
+        this->errorMessage("Error importing the asset layer");
 }
 
 

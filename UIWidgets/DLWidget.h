@@ -53,6 +53,8 @@ public:
 
     void clear(void);
 
+    QList<QString> getActiveDLApps(void);
+
 private:
     SimCenterAppSelection *buildingWidget = nullptr;
     SimCenterAppSelection *pipelineWidget = nullptr;

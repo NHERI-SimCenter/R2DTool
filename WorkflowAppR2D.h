@@ -95,6 +95,7 @@ public:
     VisualizationWidget *getVisualizationWidget() const;
     AssetsWidget *getAssetsWidget() const;
     GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
+    DLWidget *getTheDamageAndLossWidget() const;
 
     LocalApplication *getLocalApp() const;
 

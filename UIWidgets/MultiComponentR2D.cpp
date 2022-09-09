@@ -72,7 +72,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 MultiComponentR2D::MultiComponentR2D(QWidget *parent)
-    :SimCenterAppWidget(parent), currentIndex(-1), numHidden(0)
+    :SimCenterAppWidget(parent), numHidden(0)
 {
 
     // HBox Layout for widget
@@ -170,6 +170,21 @@ bool MultiComponentR2D::inputFromJSON(QJsonObject &jsonObject)
     }
     return res;
 
+}
+
+
+QList<QString> MultiComponentR2D::getActiveComponents(void)
+{
+    QList<QString> activeComponents;
+    int length = theNames.length();
+    for (int i =0; i<length; ++i) {
+        QPushButton *theButton = thePushButtons.at(i);
+        if (theButton->isHidden() == false) {
+            activeComponents.append(theNames.at(i));
+        }
+    }
+
+    return activeComponents;
 }
 
 
@@ -272,7 +287,8 @@ SimCenterAppWidget * MultiComponentR2D::getComponent(QString text)
 
 SimCenterAppWidget* MultiComponentR2D::getCurrentComponent(void)
 {
-    if(currentIndex <= 0 && currentIndex <= theComponents.size()-1)
+    auto currentIndex = theStackedWidget->currentIndex();
+    if(currentIndex >= 0 && currentIndex <= theComponents.size()-1)
         return theComponents.at(currentIndex);
 
     return nullptr;
@@ -314,7 +330,7 @@ bool MultiComponentR2D::hide(QString text) {
         int numButtons = thePushButtons.length();
 
         // if currently displayed, show something else or nothing if all hidden!
-        if (currentIndex == index) {
+        if (theStackedWidget->currentIndex() == index) {
             if (numHidden == thePushButtons.length()) {
                 theSelectionWidget->setHidden(true);
                 theStackedWidget->setHidden(true);
@@ -356,9 +372,11 @@ bool MultiComponentR2D::show(QString text) {
             theSelectionWidget->setHidden(false);
 
         this->displayComponent(text);
+
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 
@@ -370,17 +388,24 @@ bool MultiComponentR2D::displayComponent(QString text)
 
     int index = theNames.indexOf(text);
 
-    if (index != -1 && index != currentIndex) {
+    if (index != -1) {
+
+        auto currIndex = theStackedWidget->currentIndex();
+
+        if (index == currIndex)
+            return true;
+
         theStackedWidget->setCurrentIndex(index);
 
         QPushButton *theItem = thePushButtons.at(index);
         theItem->setStyleSheet("background-color: rgb(63, 147, 168);");
-        if (currentIndex != -1) {
 
-            QPushButton *theOldItem = thePushButtons.at(currentIndex);
+        if (theStackedWidget->currentIndex() != -1) {
+
+            QPushButton *theOldItem = thePushButtons.at(currIndex);
             theOldItem->setStyleSheet("background-color: rgb(79, 83, 89);");
         }
-        currentIndex = index;
+
         return true;
     }
 
@@ -390,7 +415,7 @@ bool MultiComponentR2D::displayComponent(QString text)
 
 int MultiComponentR2D::getCurrentIndex(void) const
 {
-    return currentIndex;
+    return theStackedWidget->currentIndex();
 }
 
 

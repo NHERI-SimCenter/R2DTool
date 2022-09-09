@@ -100,7 +100,7 @@ private:
     QCheckBox* DMCheckBox;
     QCheckBox* DVCheckBox;
     QCheckBox* realizationCheckBox;
-    QCheckBox* BIMCheckBox;
+    QCheckBox* AIMCheckBox;
     QCheckBox* IMCheckBox;
 };
 

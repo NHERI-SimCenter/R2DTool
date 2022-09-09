@@ -72,9 +72,6 @@ private:
     int checkSoilParamComplete(void);
     void checkSoilDataComplete(void);
 
-    QgsVectorLayer* mainLayer = nullptr;
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
-
     // minimum required attributes
     QStringList attrbMinReqSite = {"Latitude", "Longitude"}; // componentType = site
     QStringList attrbMinReqSoil = {"Latitude", "Longitude", "SoilModel"}; // componentType = soil

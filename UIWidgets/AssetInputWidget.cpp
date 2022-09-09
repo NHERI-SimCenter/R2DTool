@@ -208,8 +208,18 @@ bool AssetInputWidget::loadAssetData(void)
     label3->show();
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+
+    // Clear the old layers if any
+    if(mainLayer != nullptr)
+        theVisualizationWidget->removeLayer(mainLayer);
+
+    if(selectedFeaturesLayer != nullptr)
+        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
     
-    this->loadAssetVisualization();
+    auto res = this->loadAssetVisualization();
+
+    if(res != 0)
+        return false;
 
     // Get the ID of the first and last component
     bool OK;
@@ -243,16 +253,18 @@ bool AssetInputWidget::loadAssetData(void)
 
 void AssetInputWidget::chooseComponentInfoFileDialog(void)
 {
-    this->clear();
-
-    pathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
+    auto newPathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Component Information File"));
     
     // Return if the user cancels
-    if(pathToComponentInputFile.isEmpty())
+    if(newPathToComponentInputFile.isEmpty())
     {
         pathToComponentInputFile = "NULL";
         return;
     }
+
+    this->clearTableData();
+
+    pathToComponentInputFile = newPathToComponentInputFile;
 
     // Set file name & entry in qLine edit
     componentFileLineEdit->setText(pathToComponentInputFile);
@@ -352,6 +364,12 @@ void AssetInputWidget::createComponentsBox(void)
     mainWidgetLayout->addStretch();
 
     this->setLayout(mainWidgetLayout);
+}
+
+
+QgsVectorLayer *AssetInputWidget::getMainLayer() const
+{
+    return mainLayer;
 }
 
 
@@ -652,7 +670,7 @@ bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     QJsonObject data;
     QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()) {
-        data["assetInputFile"]=componentFile.fileName();
+        data["assetSourceFile"]=componentFile.fileName();
         data["pathToSource"]=componentFile.path();
 
         QString filterData = this->getFilterString();
@@ -716,8 +734,14 @@ bool AssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString fileName;
         QString pathToFile;
         bool foundFile = false;
-        if (appData.contains("assetInputFile"))
-            fileName = appData["assetInputFile"].toString();
+
+        if (appData.contains("assetSourceFile"))
+            fileName = appData["assetSourceFile"].toString();
+        else
+        {
+            this->errorMessage("The input file " + fileName+ " is missing the 'assetSourceFile' field");
+            return false;
+        }
 
         if (fileInfo.exists(fileName)) {
 
@@ -833,14 +857,19 @@ bool AssetInputWidget::copyFiles(QString &destName)
     QFileInfo componentFile(compLineEditText);
 
     if (!componentFile.exists())
+    {
+        this->errorMessage("The asset file path does not exist. Did you load any assets?");
         return false;
+    }
 
     // Do not copy the file, output a new csv which will have the changes that the user makes in the table
     //        if (componentFile.exists()) {
     //            return this->copyFile(componentFileLineEdit->text(), destName);
     //        }
 
-    auto pathToSaveFile = destName + QDir::separator() + componentFile.fileName();
+    auto pathToSaveFile = destName + QDir::separator() + componentFile.baseName();
+
+    pathToSaveFile += ".csv";
 
     auto nRows = componentTableWidget->rowCount();
 
@@ -889,41 +918,41 @@ bool AssetInputWidget::copyFiles(QString &destName)
         }
     }
 
-    // For testing, creates a csv file of only the selected components
-    //    qDebug()<<"Saving selected components to .csv";
-    //    auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+//     For testing, creates a csv file of only the selected components
+//        qDebug()<<"Saving selected components to .csv";
+//        auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-    //    QVector<QStringList> selectedData(selectedIDs.size()+1);
+//        QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-    //    selectedData[0] = headerValues;
+//        selectedData[0] = headerValues;
 
-    //    auto nCols = componentTableWidget->columnCount();
+//        auto nCols = componentTableWidget->columnCount();
 
-    //    int i = 0;
-    //    for(auto&& rowID : selectedIDs)
-    //    {
-    //        QStringList rowData;
-    //        rowData.reserve(nCols);
+//        int i = 0;
+//        for(auto&& rowID : selectedIDs)
+//        {
+//            QStringList rowData;
+//            rowData.reserve(nCols);
 
-    //        for(int j = 0; j<nCols; ++j)
-    //        {
-    //            auto item = componentTableWidget->item(rowID-1,j).toString();
+//            for(int j = 0; j<nCols; ++j)
+//            {
+//                auto item = componentTableWidget->item(rowID-1,j).toString();
 
-    //            rowData<<item;
-    //        }
-    //        selectedData[i+1] = rowData;
+//                rowData<<item;
+//            }
+//            selectedData[i+1] = rowData;
 
-    //        ++i;
-    //    }
+//            ++i;
+//        }
 
-    //    csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
-    // For testing end
+//        csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+//     For testing end
 
     return true;
 }
 
 
-void AssetInputWidget::clear(void)
+void AssetInputWidget::clearTableData(void)
 {
     theComponentDb->clear();
     pathToComponentInputFile.clear();
@@ -933,6 +962,16 @@ void AssetInputWidget::clear(void)
     componentTableWidget->clear();
     componentTableWidget->hide();
     tableHorizontalHeadings.clear();
+}
+
+
+
+void AssetInputWidget::clear(void)
+{
+    this->clearTableData();
+
+    mainLayer = nullptr;
+    selectedFeaturesLayer = nullptr;
 
     emit headingValuesChanged(QStringList{"N/A"});
 }
@@ -952,7 +991,9 @@ void AssetInputWidget::handleCellChanged(const int row, const int col)
 #endif
 
 #ifdef Q_GIS
-    theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
+    auto res = theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
+    if(res == false)
+        this->errorMessage("Error could not update asset "+QString::number(ID)+" after cell change");
 #endif
 
 }
@@ -1087,5 +1128,11 @@ bool AssetInputWidget::isEmpty()
         return true;
 
     return false;
+}
+
+
+int AssetInputWidget::getNumberOfAseets(void)
+{
+    return componentTableWidget->rowCount();
 }
 

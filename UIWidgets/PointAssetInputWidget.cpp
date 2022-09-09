@@ -53,6 +53,7 @@ PointAssetInputWidget::PointAssetInputWidget(QWidget *parent, VisualizationWidge
 
 int PointAssetInputWidget::loadAssetVisualization()
 {
+
     // Create the building attributes that are fixed
     QgsFields featFields;
     featFields.append(QgsField("ID", QVariant::Int));

@@ -82,19 +82,19 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("Assets"), QString(), QString("WaterDistributionNetwork"), this);
 
 #ifdef ARC_GIS
-    ArcGISBuildingInputWidget *csvBuildingInventory = new ArcGISBuildingInputWidget(this,"Buildings","CSV_to_BIM");
-    buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
+    ArcGISBuildingInputWidget *csvBuildingInventory = new ArcGISBuildingInputWidget(this,"Buildings","CSV_to_AIM");
+    buildingWidget->addComponent(QString("CSV to AIM"), QString("CSV_to_AIM"), csvBuildingInventory);
 #endif
 
 #ifdef Q_GIS
-    PointAssetInputWidget *csvBuildingInventory = new PointAssetInputWidget(this, visualizationWidget, "Buildings","CSV_to_BIM");
-    buildingWidget->addComponent(QString("CSV to BIM"), QString("CSV_to_BIM"), csvBuildingInventory);
+    PointAssetInputWidget *csvBuildingInventory = new PointAssetInputWidget(this, visualizationWidget, "Buildings","CSV_to_AIM");
+    buildingWidget->addComponent(QString("CSV to AIM"), QString("CSV_to_AIM"), csvBuildingInventory);
 
-    GISAssetInputWidget *GISBuildingInventory = new GISAssetInputWidget(this,visualizationWidget,"Buildings","GIS_to_BIM");
-    buildingWidget->addComponent(QString("GIS File to BIM"), QString("GIS_to_BIM"), GISBuildingInventory);
+    GISAssetInputWidget *GISBuildingInventory = new GISAssetInputWidget(this,visualizationWidget,"Buildings","GIS_to_AIM");
+    buildingWidget->addComponent(QString("GIS File to AIM"), QString("GIS_to_AIM"), GISBuildingInventory);
 
     HousingUnitAllocationWidget *housingUnitAllocation = new HousingUnitAllocationWidget(this,visualizationWidget);
-    buildingWidget->addComponent(QString("Housing Unit Allocation"), QString("CSV_to_BIM"), housingUnitAllocation);
+    buildingWidget->addComponent(QString("Housing Unit Allocation"), QString("CSV_to_AIM"), housingUnitAllocation);
 #endif
 
 #ifdef ARC_GIS

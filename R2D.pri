@@ -102,6 +102,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/Tools/ComponentDatabaseManager.cpp \
             $$PWD/Tools/NGAW2Converter.cpp \
             $$PWD/Tools/PelicunPostProcessor.cpp \
+            $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
@@ -215,6 +216,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Tools/ComponentDatabaseManager.h \
             $$PWD/Tools/NGAW2Converter.h \
             $$PWD/Tools/PelicunPostProcessor.h \
+            $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \

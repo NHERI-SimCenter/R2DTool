@@ -5,6 +5,7 @@
 #include "ComponentTableModel.h"
 #include "AssetFilterDelegate.h"
 #include "AssetInputDelegate.h"
+#include "PointAssetInputWidget.h"
 
 #ifdef OpenSRA
 #include "WorkflowAppOpenSRA.h"
@@ -21,11 +22,16 @@
 LineAssetInputWidget::LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
 {
 
+#ifdef OpenSRA
+    LineAssetInputWidget::createComponentsBox();
+#endif
+
 }
 
 
 int LineAssetInputWidget::loadAssetVisualization(void)
 {
+
     auto headers = this->getTableHorizontalHeadings();
 
     auto indexLatStart = headers.indexOf("LAT_BEGIN");
@@ -38,9 +44,25 @@ int LineAssetInputWidget::loadAssetVisualization(void)
         //Check if nodes are provided in lieu of lat and lon coordinates for the start and end
         // If they are, the pipelines visualization should be handled separately
         if(headers.indexOf("node1") != -1 && headers.indexOf("node2") != -1)
-            return 0;
+        {
+            if(theNodesWidget != nullptr)
+            {
+                auto numAssets = theNodesWidget->getNumberOfAseets();
 
-        errorMessage("Could not find the required lat./lon. header labels in the input file");
+                if(numAssets == 0)
+                {
+                    this->errorMessage("The header columns 'node1' and 'node2' were found in the pipeline input file, but no nodes are found. Please input the nodes before the pipelines.");
+                    this->clear();
+                    return -1;
+                }
+
+                return 0;
+            }
+
+            return -1;
+        }
+
+        this->errorMessage("Could not find the required lat./lon. header labels in the input file. Alternatively, provide start and end nodes. In the pipeline input file, supply the node IDs under the headers 'node1' and 'node2'");
         return -1;
     }
 
@@ -106,7 +128,7 @@ int LineAssetInputWidget::loadAssetVisualization(void)
         // "Tabname"
 
         featureAttributes[0] = QVariant(pipelineID);
-        featureAttributes[1] = QVariant("GASPIPELINES");
+        featureAttributes[1] = QVariant(QString(assetType).remove(" "));
         featureAttributes[2] = QVariant("ID: "+QString::number(pipelineID));
 
         // The feature attributes are the columns from the table
@@ -166,7 +188,7 @@ int LineAssetInputWidget::loadAssetVisualization(void)
     theVisualizationWidget->registerLayerForSelection(layerId,this);
 
     // Create the selected building layer
-    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Pipelines");
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("linestring","Selected "+assetType);
 
     if(selectedFeaturesLayer == nullptr)
     {
@@ -195,7 +217,7 @@ int LineAssetInputWidget::loadAssetVisualization(void)
     mapLayers.push_back(selectedFeaturesLayer);
     mapLayers.push_back(mainLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,"Pipelines");
+    theVisualizationWidget->createLayerGroup(mapLayers, assetType);
 
     return 0;
 }
@@ -228,10 +250,7 @@ bool LineAssetInputWidget::outputToJSON(QJsonObject &rvObject)
 
 bool LineAssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
-
-    locationWidget->inputFromJSON(rvObject);
-
-    return true;
+    return locationWidget->inputFromJSON(rvObject);
 }
 
 
@@ -247,7 +266,7 @@ void LineAssetInputWidget::createComponentsBox(void)
         return;
     }
 
-    auto theWidgetFactory = WorkflowAppOpenSRA::getInstance()->getTheWidgetFactory();
+    auto theWidgetFactory = std::make_unique<WidgetFactory>(this);
 
     QJsonObject paramsObj = thisObj["Params"].toObject();
 
@@ -276,7 +295,6 @@ void LineAssetInputWidget::createComponentsBox(void)
     paramsLon["LonBegin"] = paramsObj.value("LonBegin");
     paramsLon["LonMid"] = paramsObj.value("LonMid");
     paramsLon["LonEnd"] = paramsObj.value("LonEnd");
-    paramsLon["Length"] = paramsObj.value("Length");
 
     auto latLayout = theWidgetFactory->getLayoutFromParams(paramsLat,nameStr,locationWidget, Qt::Horizontal);
     auto lonLayout = theWidgetFactory->getLayoutFromParams(paramsLon,nameStr,locationWidget, Qt::Horizontal);
@@ -292,14 +310,18 @@ void LineAssetInputWidget::createComponentsBox(void)
     mainWidgetLayout->insertWidget(insPoint-3,locationWidget);
 }
 
-
 #endif
-
 
 
 void LineAssetInputWidget::clear()
 {
     AssetInputWidget::clear();
+}
+
+
+void LineAssetInputWidget::setTheNodesWidget(PointAssetInputWidget *newTheNodesWidget)
+{
+    theNodesWidget = newTheNodesWidget;
 }
 
 

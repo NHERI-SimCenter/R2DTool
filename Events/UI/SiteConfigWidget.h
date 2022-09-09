@@ -31,6 +31,8 @@ public:
     QString getFilter(void);
     void setSiteType(SiteConfig::SiteType siteType);
 
+    void clear();
+
 signals:
     void soilDataCompleteSignal(bool flag);
     void setSiteFilterSignal(QString filter);
