@@ -138,7 +138,6 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/HousingUnitAllocationWidget.cpp \
             $$PWD/UIWidgets/HurricaneParameterWidget.cpp \
             $$PWD/UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
-            $$PWD/UIWidgets/MDOF_LU.cpp \
             $$PWD/UIWidgets/ModelWidget.cpp \
             $$PWD/UIWidgets/MultiComponentR2D.cpp \
             $$PWD/UIWidgets/NearestNeighbourMapping.cpp \
@@ -254,7 +253,6 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/HousingUnitAllocationWidget.h \
             $$PWD/UIWidgets/HurricaneParameterWidget.h \
             $$PWD/UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
-            $$PWD/UIWidgets/MDOF_LU.h \
             $$PWD/UIWidgets/ModelWidget.h \
             $$PWD/UIWidgets/MultiComponentR2D.h \
             $$PWD/UIWidgets/NearestNeighbourMapping.h \
