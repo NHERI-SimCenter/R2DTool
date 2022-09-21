@@ -71,8 +71,8 @@ UQWidget::UQWidget(QWidget *parent)
 
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
+    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);    
     buildingWidget->addComponent(QString("Dakota"), QString("Dakota-UQ"), dakota);
-    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
     pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("PipelineUQ"), this);
 
