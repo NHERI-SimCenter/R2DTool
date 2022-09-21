@@ -97,6 +97,9 @@ EarthquakeRuptureForecastWidget::EarthquakeRuptureForecastWidget(QWidget *parent
     SamplingMethodCombo->addItem("Random");
     SamplingMethodCombo->addItem("MAF");
     SamplingMethodCombo->setCurrentIndex(0); // default at Random
+    // hide it for now (KZ-08/22)
+    SamplingLabel->hide();
+    SamplingMethodCombo->hide();
 
     // Add a horizontal
     auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -104,8 +107,8 @@ EarthquakeRuptureForecastWidget::EarthquakeRuptureForecastWidget(QWidget *parent
     layout->addWidget(NumScenarioLabel,0,0);
     layout->addWidget(NumScenarioLineEdit,0,1);
 
-    layout->addWidget(SamplingLabel,0,2);
-    layout->addWidget(SamplingMethodCombo,0,3);
+    //layout->addWidget(SamplingLabel,0,2);
+    //layout->addWidget(SamplingMethodCombo,0,3);
 
     layout->addWidget(magMinLabel,1,0);
     layout->addWidget(m_magnitudeMinBox,1,1);
