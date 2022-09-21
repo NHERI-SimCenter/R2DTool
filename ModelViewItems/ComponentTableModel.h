@@ -58,6 +58,7 @@ public:
     void populateData(const QVector<QStringList>& data, const QStringList& header);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 
     void clear(void);

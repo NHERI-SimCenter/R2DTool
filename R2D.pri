@@ -104,6 +104,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/Tools/ComponentDatabaseManager.cpp \
             $$PWD/Tools/NGAW2Converter.cpp \
             $$PWD/Tools/PelicunPostProcessor.cpp \
+            $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
@@ -139,7 +140,6 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/HousingUnitAllocationWidget.cpp \
             $$PWD/UIWidgets/HurricaneParameterWidget.cpp \
             $$PWD/UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
-            $$PWD/UIWidgets/MDOF_LU.cpp \
             $$PWD/UIWidgets/ModelWidget.cpp \
             $$PWD/UIWidgets/MultiComponentR2D.cpp \
             $$PWD/UIWidgets/NearestNeighbourMapping.cpp \
@@ -219,6 +219,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Tools/ComponentDatabaseManager.h \
             $$PWD/Tools/NGAW2Converter.h \
             $$PWD/Tools/PelicunPostProcessor.h \
+            $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
@@ -256,7 +257,6 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/HousingUnitAllocationWidget.h \
             $$PWD/UIWidgets/HurricaneParameterWidget.h \
             $$PWD/UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
-            $$PWD/UIWidgets/MDOF_LU.h \
             $$PWD/UIWidgets/ModelWidget.h \
             $$PWD/UIWidgets/MultiComponentR2D.h \
             $$PWD/UIWidgets/NearestNeighbourMapping.h \

@@ -37,8 +37,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "AssetInputDelegate.h"
+#include "DLWidget.h"
 #include "GeneralInformationWidget.h"
 #include "PelicunPostProcessor.h"
+#include "CBCitiesPostProcessor.h"
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include "VisualizationWidget.h"
@@ -47,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QCheckBox>
 #include <QApplication>
+#include <QTabWidget>
 #include <QDebug>
 #include <QDir>
 #include <QMenu>
@@ -71,6 +74,10 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     mainStackedWidget = new QStackedWidget(this);
 
+    mainStackedWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
     mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(5,0,0,0);
 
@@ -81,9 +88,9 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     label->setMinimumWidth(150);
 
     auto disclaimerLabel = new QLabel("Disclaimer: The presented simulation results are not representative of any individual building’s response. To understand the response of any individual building, "
-                                     "please consult with a professional structural engineer. The presented tool does not assert the known condition of the building. Just as it cannot be used to predict the negative outcome of an individual "
-                                     "building, prediction of safety or an undamaged state is not assured for an individual building. Any opinions, findings, and conclusions or recommendations expressed in this material are "
-                                     "those of the author(s) and do not necessarily reflect the views of the National Science Foundation.",this);
+                                      "please consult with a professional structural engineer. The presented tool does not assert the known condition of the building. Just as it cannot be used to predict the negative outcome of an individual "
+                                      "building, prediction of safety or an undamaged state is not assured for an individual building. Any opinions, findings, and conclusions or recommendations expressed in this material are "
+                                      "those of the author(s) and do not necessarily reflect the views of the National Science Foundation.",this);
     disclaimerLabel->setStyleSheet("font: 10pt;");
     disclaimerLabel->setWordWrap(true);
 
@@ -106,59 +113,66 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(parent,theVisualizationWidget);
 
-    mainStackedWidget->addWidget(thePelicunPostProcessor.get());
+    theCBCitiesPostProcessor = std::make_unique<CBCitiesPostProcessor>(parent,theVisualizationWidget);
 
-    // Export layout and objects
-    QGridLayout *theExportLayout = new QGridLayout();
+    resTabWidget = new QTabWidget();
 
-    exportLabel = new QLabel("Export folder:", this);
-    exportPathLineEdit = new QLineEdit(this);
-    //exportPathLineEdit->setMaximumWidth(1000);
-    // exportPathLineEdit->setMinimumWidth(400);
-    exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings");
+    resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Pipelines");
 
-    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
-    exportPathLineEdit->setText(defaultOutput);
+    mainStackedWidget->addWidget(resTabWidget);
 
-    exportBrowseFileButton = new QPushButton(this);
-    exportBrowseFileButton->setText(tr("Browse"));
-    exportBrowseFileButton->setMaximumWidth(150);
+    //    // Export layout and objects
+    //    QGridLayout *theExportLayout = new QGridLayout();
 
-    connect(exportBrowseFileButton,&QPushButton::clicked,this,&ResultsWidget::chooseResultsDirDialog);
+    //    exportLabel = new QLabel("Export folder:", this);
+    //    exportPathLineEdit = new QLineEdit(this);
+    //    //exportPathLineEdit->setMaximumWidth(1000);
+    //    // exportPathLineEdit->setMinimumWidth(400);
+    //    exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    exportPDFFileButton = new QPushButton(this);
-    exportPDFFileButton->setText(tr("Export to PDF"));
+    //    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
+    //    exportPathLineEdit->setText(defaultOutput);
 
-    connect(exportPDFFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
+    //    exportBrowseFileButton = new QPushButton(this);
+    //    exportBrowseFileButton->setText(tr("Browse"));
+    //    exportBrowseFileButton->setMaximumWidth(150);
 
-    selectComponentsText = new QLabel("Select a subset of buildings to display the results:",this);
-    selectComponentsLineEdit = new AssetInputDelegate();
+    //    connect(exportBrowseFileButton,&QPushButton::clicked,this,&ResultsWidget::chooseResultsDirDialog);
 
-    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);
+    //    exportPDFFileButton = new QPushButton(this);
+    //    exportPDFFileButton->setText(tr("Export to PDF"));
 
-    selectComponentsButton = new QPushButton();
-    selectComponentsButton->setText(tr("Select"));
-    selectComponentsButton->setMaximumWidth(150);
+    //    connect(exportPDFFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
-    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
+    //    selectComponentsText = new QLabel("Select a subset of buildings to display the results:",this);
+    //    selectComponentsLineEdit = new AssetInputDelegate();
+
+    //    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);
+
+    //    selectComponentsButton = new QPushButton();
+    //    selectComponentsButton->setText(tr("Select"));
+    //    selectComponentsButton->setMaximumWidth(150);
+
+    //    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
+
+    //    // theExportLayout->addStretch();
+    //    theExportLayout->addWidget(selectComponentsText,     0,0);
+    //    theExportLayout->addWidget(selectComponentsLineEdit, 0,1);
+    //    theExportLayout->addWidget(selectComponentsButton,   0,2);
+    //    // theExportLayout->addStretch();
+    //    theExportLayout->addWidget(exportLabel,            1,0);
+    //    theExportLayout->addWidget(exportPathLineEdit,     1,1);
+    //    theExportLayout->addWidget(exportBrowseFileButton, 1,2);
+    //    theExportLayout->addWidget(exportPDFFileButton,       2,0,1,3);
 
     // theExportLayout->addStretch();
-    theExportLayout->addWidget(selectComponentsText,     0,0);
-    theExportLayout->addWidget(selectComponentsLineEdit, 0,1);
-    theExportLayout->addWidget(selectComponentsButton,   0,2);
-    // theExportLayout->addStretch();
-    theExportLayout->addWidget(exportLabel,            1,0);
-    theExportLayout->addWidget(exportPathLineEdit,     1,1);
-    theExportLayout->addWidget(exportBrowseFileButton, 1,2);
-    theExportLayout->addWidget(exportPDFFileButton,       2,0,1,3);
-
-    // theExportLayout->addStretch();
-    theExportLayout->setRowStretch(3,1);
+    //    theExportLayout->setRowStretch(3,1);
 
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addWidget(mainStackedWidget);
-    mainLayout->addLayout(theExportLayout,1);
-    mainLayout->addStretch(1);
+    //    mainLayout->addLayout(theExportLayout,1);
+    //    mainLayout->addStretch(1);
 
     this->resultsShow(false);
 
@@ -176,27 +190,27 @@ void ResultsWidget::resultsShow(bool value)
 {
     if(!value)
     {
-        thePelicunPostProcessor->setIsVisible(false);
+//        resTabWidget->setVisible(false);
         mainStackedWidget->setCurrentWidget(resultsPageWidget);
-        selectComponentsButton->hide();
-        selectComponentsLineEdit->hide();
-        selectComponentsText->hide();
-        exportPDFFileButton->hide();
-        exportBrowseFileButton->hide();
-        exportPathLineEdit->hide();
-        exportLabel->hide();
+        //        selectComponentsButton->hide();
+        //        selectComponentsLineEdit->hide();
+        //        selectComponentsText->hide();
+        //        exportPDFFileButton->hide();
+        //        exportBrowseFileButton->hide();
+        //        exportPathLineEdit->hide();
+        //        exportLabel->hide();
     }
     else
     {
-        thePelicunPostProcessor->setIsVisible(true);
-        mainStackedWidget->setCurrentWidget(thePelicunPostProcessor.get());
-        selectComponentsButton->show();
-        selectComponentsLineEdit->show();
-        selectComponentsText->show();
-        exportPDFFileButton->show();
-        exportBrowseFileButton->show();
-        exportPathLineEdit->show();
-        exportLabel->show();
+//        resTabWidget->setVisible(true);
+        mainStackedWidget->setCurrentWidget(resTabWidget);
+        //        selectComponentsButton->show();
+        //        selectComponentsLineEdit->show();
+        //        selectComponentsText->show();
+        //        exportPDFFileButton->show();
+        //        exportBrowseFileButton->show();
+        //        exportPathLineEdit->show();
+        //        exportLabel->show();
     }
 }
 
@@ -228,15 +242,37 @@ int ResultsWidget::processResults(QString resultsDirectory)
 
     //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
 
+    auto activeComponents = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLApps();
+
+    if(activeComponents.isEmpty())
+        return -1;
+
     qDebug() << resultsDirectory;
     try
     {
-        if(DVApp.compare("Pelicun") == 0)
+        if(activeComponents.contains("pelicun"))
         {
             thePelicunPostProcessor->importResults(resultsDirectory);
+            resTabWidget->setTabVisible(0, true);
 
-            this->resultsShow(true);
         }
+        else
+        {
+            resTabWidget->setTabVisible(0, false);
+        }
+
+        if(activeComponents.contains("CBCitiesDL"))
+        {
+            theCBCitiesPostProcessor->importResults(resultsDirectory);
+            resTabWidget->setTabVisible(1, true);
+        }
+        else
+        {
+            resTabWidget->setTabVisible(1, false);
+        }
+
+        this->resultsShow(true);
+
     }
     catch (const QString msg)
     {
@@ -271,12 +307,12 @@ int ResultsWidget::printToPDF(void)
 
     QFile theFile(outputFileName);
     if (theFile.exists()) {
-     QMessageBox::StandardButton reply = QMessageBox::question(this,
-                                      "File Exists", "File Exists .. Do you want to overwrite?",
-                             QMessageBox::Yes | QMessageBox::No);
-       if(reply == QMessageBox::No) {
-           return 0;
-       }
+        QMessageBox::StandardButton reply = QMessageBox::question(this,
+                                                                  "File Exists", "File Exists .. Do you want to overwrite?",
+                                                                  QMessageBox::Yes | QMessageBox::No);
+        if(reply == QMessageBox::No) {
+            return 0;
+        }
     }
 
 
@@ -352,11 +388,12 @@ void ResultsWidget::chooseResultsDirDialog(void)
 
 void ResultsWidget::clear(void)
 {
-    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
-    exportPathLineEdit->setText(defaultOutput);
-    selectComponentsLineEdit->clear();
+    //    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
+    //    exportPathLineEdit->setText(defaultOutput);
+    //    selectComponentsLineEdit->clear();
 
     thePelicunPostProcessor->clear();
+    theCBCitiesPostProcessor->clear();
 
     resultsShow(false);
 }

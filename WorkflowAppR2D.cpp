@@ -842,6 +842,12 @@ void WorkflowAppR2D::runComplete()
 }
 
 
+DLWidget *WorkflowAppR2D::getTheDamageAndLossWidget() const
+{
+    return theDamageAndLossWidget;
+}
+
+
 LocalApplication *WorkflowAppR2D::getLocalApp() const
 {
     return localApp;

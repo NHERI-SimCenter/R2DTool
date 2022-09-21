@@ -110,7 +110,7 @@ bool GeneralInformationWidgetR2D::outputToJSON(QJsonObject &jsonObj)
     outputsObj.insert("DM", DMCheckBox->isChecked());
     outputsObj.insert("DV", DVCheckBox->isChecked());
     outputsObj.insert("every_realization", realizationCheckBox->isChecked());
-    outputsObj.insert("BIM", BIMCheckBox->isChecked());
+    outputsObj.insert("AIM", AIMCheckBox->isChecked());
     outputsObj.insert("IM", IMCheckBox->isChecked());
 
 
@@ -164,7 +164,7 @@ bool GeneralInformationWidgetR2D::inputFromJSON(QJsonObject &jsonObject){
         DMCheckBox->setChecked(outObj["DM"].toBool());
         DVCheckBox->setChecked(outObj["DV"].toBool());
         realizationCheckBox->setChecked(outObj["every_realization"].toBool());
-        BIMCheckBox->setChecked(outObj["BIM"].toBool());
+        AIMCheckBox->setChecked(outObj["AIM"].toBool());
         IMCheckBox->setChecked(outObj["IM"].toBool());
     }
 
@@ -272,14 +272,14 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
     DMCheckBox = new QCheckBox("Damage measures (DM)");
     DVCheckBox = new QCheckBox("Decision variables (DV)");
     realizationCheckBox = new QCheckBox("Output EDP, DM, and DV every sampling realization");
-    BIMCheckBox = new QCheckBox("Output building BIM");
+    AIMCheckBox = new QCheckBox("Output Asset Information Model (AIM)");
     IMCheckBox = new QCheckBox("Output site IM");
 
     EDPCheckBox->setChecked(true);
     DMCheckBox->setChecked(true);
     DVCheckBox->setChecked(true);
     realizationCheckBox->setChecked(false);
-    BIMCheckBox->setChecked(false);
+    AIMCheckBox->setChecked(false);
     IMCheckBox->setChecked(false);
 
     QGroupBox* outputGroupBox = new QGroupBox("Output Settings");
@@ -289,7 +289,7 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
     outputLayout->addWidget(DMCheckBox);
     outputLayout->addWidget(DVCheckBox);
     outputLayout->addWidget(realizationCheckBox);
-    outputLayout->addWidget(BIMCheckBox);
+    outputLayout->addWidget(AIMCheckBox);
     outputLayout->addWidget(IMCheckBox);
 
 
@@ -347,6 +347,6 @@ void GeneralInformationWidgetR2D::clear(void)
     DMCheckBox->setChecked(false);
     DVCheckBox->setChecked(false);
     realizationCheckBox->setChecked(false);
-    BIMCheckBox->setChecked(false);
+    AIMCheckBox->setChecked(false);
     IMCheckBox->setChecked(false);
 }

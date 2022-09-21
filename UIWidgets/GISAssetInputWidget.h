@@ -48,7 +48,7 @@ class GISAssetInputWidget : public  AssetInputWidget
     Q_OBJECT
 
 public:
-    explicit GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = "GIS_to_ASSET");
+    explicit GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = "GIS_to_AIM");
     virtual ~GISAssetInputWidget();
 
     int loadAssetVisualization() override;
@@ -62,15 +62,15 @@ public:
 
 #ifdef OpenSRA
     bool loadFileFromPath(const QString& filePath);
+
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
 #endif
 
     bool isEmpty();
 
     // Set the coordinate reference system for the layer
     void setCRS(const QgsCoordinateReferenceSystem & val);
-
-    // Get the asset layer
-    QgsVectorLayer *getAssetLayer() const;
 
     // All features in QGIS set/get by their feature id (id set internally by QGIS). e.g., layer->getFeature(feature_id)
     // Problem is that the feature id may be different than the id given by the user. Hence, need to calcualte the offset to reconcile the difference
@@ -84,7 +84,6 @@ private slots:
 
 private:
 
-    QgsVectorLayer* vectorLayer = nullptr;
     CRSSelectionWidget* crsSelectorWidget = nullptr;
 
 };

@@ -74,6 +74,9 @@ public:
     int getCurrentIndex(void) const;
     int getIndexOfComponent(QString text) const;
 
+    // Returns a list of all the components that are active or 'on', i.e., theButton->isHidden() == false
+    QList<QString> getActiveComponents(void);
+
 public slots:
     void selectionChangedSlot(const QString &);
 
@@ -85,7 +88,6 @@ protected:
     QVBoxLayout *theMainLayout = nullptr;
 
 private:
-    int currentIndex;
     int numHidden;
 
     QFrame *theSelectionWidget = nullptr;

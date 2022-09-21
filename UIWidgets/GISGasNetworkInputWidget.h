@@ -48,6 +48,10 @@ class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
 class GISGasNetworkInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
@@ -58,11 +62,16 @@ public:
 
     virtual int loadPipelinesVisualization();
 
-    void clear();
+    void clear() override;
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool copyFiles(QString &destName);
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+    bool copyFiles(QString &destName) override;
+
+#ifdef OpenSRA
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+#endif
 
 signals:
     void headingValuesChanged(QStringList);

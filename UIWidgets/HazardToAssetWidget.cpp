@@ -64,15 +64,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentR2D(parent)
+HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* /*visWidget*/) : MultiComponentR2D(parent)
 {
 
   buildingWidget = new HazardToAssetBuilding(this); 
-  pipelineWidget = new SimCenterAppSelection(QString("Hazard To Asset Application"), QString("HazardToAsset"), this);
+  pipelineWidget = new HazardToAssetBuilding(this);
   
   this->addComponent("Buildings", buildingWidget);
-  this->addComponent("Gas Network",pipelineWidget);
+  this->addComponent("Water Network",pipelineWidget);
 
   connect(this, SIGNAL(hazardGridFileChangedSignal(QString, QString)), buildingWidget, SLOT(hazardGridFileChangedSlot(QString, QString)));
   connect(this, SIGNAL(eventTypeChangedSignal(QString)), buildingWidget, SLOT(eventTypeChangedSlot(QString)));

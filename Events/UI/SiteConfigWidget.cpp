@@ -120,6 +120,11 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     setupConnections();
 }
 
+void SiteConfigWidget::clear()
+{
+    csvSiteInventory->clear();
+}
+
 SiteWidget *SiteConfigWidget::getSiteWidget()
 {
     return siteWidget;

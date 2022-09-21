@@ -420,7 +420,11 @@ bool ComponentDatabase::updateComponentAttribute(const qint64 id, const QString&
     if(FID_IS_NULL(fid) || field == -1)
         return false;
 
+    mainLayer->startEditing();
+
     auto res = mainLayer->changeAttributeValue(fid,field,value);
+
+    mainLayer->commitChanges(true);
 
     if(!res)
         return res;
@@ -430,8 +434,9 @@ bool ComponentDatabase::updateComponentAttribute(const qint64 id, const QString&
     {
         auto fidSel = selectedFeaturesSet.values().indexOf(id);
 
+        // Still return true if feature is not in the set
         if(fidSel == -1)
-            return false;
+            return true;
 
         auto res2 = selectedLayer->changeAttributeValue(fidSel,field,value);
 

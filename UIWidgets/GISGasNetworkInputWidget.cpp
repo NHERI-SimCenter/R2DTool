@@ -48,6 +48,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QVBoxLayout>
 
+#ifdef OpenSRA
+#include "WorkflowAppOpenSRA.h"
+#include "WidgetFactory.h"
+#include "JsonGroupBoxWidget.h"
+#endif
+
+
 GISGasNetworkInputWidget::GISGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
@@ -92,6 +99,22 @@ bool GISGasNetworkInputWidget::copyFiles(QString &destName)
 
     return res;
 }
+
+#ifdef OpenSRA
+
+bool GISGasNetworkInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+    return thePipelinesWidget->outputToJSON(rvObject);
+}
+
+
+bool GISGasNetworkInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+
+    return thePipelinesWidget->inputFromJSON(rvObject);
+}
+
+#endif
 
 
 bool GISGasNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
@@ -153,7 +176,7 @@ bool GISGasNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 int GISGasNetworkInputWidget::loadPipelinesVisualization()
 {
-    pipelinesMainLayer = thePipelinesWidget->getAssetLayer();
+    pipelinesMainLayer = thePipelinesWidget->getMainLayer();
 
     if(pipelinesMainLayer==nullptr)
         return -1;

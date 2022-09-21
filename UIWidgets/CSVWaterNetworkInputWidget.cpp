@@ -28,12 +28,12 @@ CSVWaterNetworkInputWidget::CSVWaterNetworkInputWidget(QWidget *parent, Visualiz
 
     //    theNodesWidget = new NonselectableAssetInputWidget(this, theNodesDb, theVisualizationWidget, "Water Network Nodes");
     //QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString()
-    theNodesWidget = new PointAssetInputWidget(this, theVisualizationWidget, "Water Network Nodes", "CSV_to_ASSET");
+    theNodesWidget = new PointAssetInputWidget(this, theVisualizationWidget, "Water Network Nodes", "CSV_to_AIM");
 
     theNodesWidget->setLabel1("Load water network node information from a CSV file");
 
     //    thePipelinesWidget = new NonselectableAssetInputWidget(this, thePipelinesDb, theVisualizationWidget, "Water Network Pipelines");
-    thePipelinesWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Water Network Pipelines", "CSV_to_ASSET");
+    thePipelinesWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Water Network Pipelines", "CSV_to_AIM");
 
     thePipelinesWidget->setLabel1("Load water network pipeline information from a CSV file");
 
@@ -42,6 +42,8 @@ CSVWaterNetworkInputWidget::CSVWaterNetworkInputWidget(QWidget *parent, Visualiz
 
     connect(theNodesWidget,&LineAssetInputWidget::doneLoadingComponents,this,&CSVWaterNetworkInputWidget::handleAssetsLoaded);
     connect(thePipelinesWidget,&LineAssetInputWidget::doneLoadingComponents,this,&CSVWaterNetworkInputWidget::handleAssetsLoaded);
+
+    thePipelinesWidget->setTheNodesWidget(theNodesWidget);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
@@ -70,42 +72,12 @@ CSVWaterNetworkInputWidget::~CSVWaterNetworkInputWidget()
 
 bool CSVWaterNetworkInputWidget::copyFiles(QString &destName)
 {
-    Q_UNUSED(destName);
+    auto res = theNodesWidget->copyFiles(destName);
 
-    //    auto compLineEditText = componentFileLineEdit->text();
+    if(!res)
+        return res;
 
-    //    QFileInfo componentFile(compLineEditText);
-
-    //    if (!componentFile.exists())
-    //        return false;
-
-    //    // Do not copy the file, output a new csv which will have the changes that the user makes in the table
-    //    //        if (componentFile.exists()) {
-    //    //            return this->copyFile(componentFileLineEdit->text(), destName);
-    //    //        }
-
-    //    auto pathToSaveFile = destName + QDir::separator() + componentFile.fileName();
-
-    //    auto nRows = componentTableWidget->rowCount();
-
-    //    if(nRows == 0)
-    //        return false;
-
-    //    auto data = componentTableWidget->getTableModel()->getTableData();
-
-    //    auto headerValues = componentTableWidget->getTableModel()->getHeaderStringList();
-
-    //    data.push_front(headerValues);
-
-    //    CSVReaderWriter csvTool;
-
-    //    QString err;
-    //    csvTool.saveCSVFile(data,pathToSaveFile,err);
-
-    //    if(!err.isEmpty())
-    //        return false;
-
-    return true;
+    return thePipelinesWidget->copyFiles(destName);
 }
 
 
@@ -218,6 +190,12 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
         return -1;
     }
 
+    if(pipelinesMainLayer != nullptr)
+        theVisualizationWidget->removeLayer(pipelinesMainLayer);
+
+    if(pipelinesSelectedLayer != nullptr)
+        theVisualizationWidget->removeLayer(pipelinesSelectedLayer);
+
     auto pipelinesTableWidget = thePipelinesWidget->getTableWidget();
 
     QgsFields featFields;
@@ -254,7 +232,7 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
     }
 
     // Create the pipelines layer
-    pipelinesMainLayer = theVisualizationWidget->addVectorLayer("linestring","Water Network Pipelines");
+    pipelinesMainLayer = theVisualizationWidget->addVectorLayer("linestring","All Water Network Pipelines");
 
     if(pipelinesMainLayer == nullptr)
     {
@@ -370,7 +348,7 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
     theVisualizationWidget->registerLayerForSelection(layerId,thePipelinesWidget);
 
     // Create the selected pipeline layer
-    pipelinesSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Pipelines");
+    pipelinesSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Water Network Pipelines");
 
     if(pipelinesSelectedLayer == nullptr)
     {
@@ -399,13 +377,7 @@ int CSVWaterNetworkInputWidget::loadPipelinesVisualization()
     mapLayers.push_back(pipelinesSelectedLayer);
     mapLayers.push_back(pipelinesMainLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,"Pipelines");
-
-//    QVector<QgsMapLayer*> mapLayers;
-//    mapLayers.push_back(nodesMainLayer);
-//    mapLayers.push_back(pipelinesMainLayer);
-
-//    theVisualizationWidget->createLayerGroup(mapLayers,"Water Network");
+    theVisualizationWidget->createLayerGroup(mapLayers,"Water Network Pipelines");
 
     return 0;
 }
@@ -467,11 +439,13 @@ int CSVWaterNetworkInputWidget::getNodeMap()
 
 void CSVWaterNetworkInputWidget::clear()
 {
-//    theNodesDb->clear();
     thePipelinesDb->clear();
     nodePointsMap.clear();
     theNodesWidget->clear();
     thePipelinesWidget->clear();
+
+    pipelinesMainLayer = nullptr;
+    pipelinesSelectedLayer = nullptr;
 }
 
 
