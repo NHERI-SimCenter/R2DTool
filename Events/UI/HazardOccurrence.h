@@ -1,7 +1,8 @@
-#ifndef RUPTUREWIDGET_H
-#define RUPTUREWIDGET_H
+#ifndef HazardOccurrence_H
+#define HazardOccurrence_H
+
 /* *****************************************************************************
-Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+Copyright (c) 2016-2022, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,51 +37,66 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "SimCenterAppWidget.h"
+#include <QObject>
+#include "JsonSerializable.h"
 
-class PointSourceRuptureWidget;
-class EarthquakeRuptureForecastWidget;
-class OpenQuakeScenarioWidget;
-class OpenQuakeClassicalWidget;
-class OpenQuakeUserSpecifiedWidget;
-class HazardOccurrenceWidget;
-
-class QGroupBox;
-class QComboBox;
-class QStackedWidget;
-
-class RuptureWidget : public SimCenterAppWidget
+class HazardOccurrence : public QObject, JsonSerializable
 {
     Q_OBJECT
-public:
-    explicit RuptureWidget(QWidget *parent = nullptr);
 
-    QJsonObject getJson(void);
-    QString getWidgetType(void) const;
-    QString getGMPELogicTree(void) const;
-    QString getEQNum(void) const;
+public:
+    HazardOccurrence(QString model, QString name, QString hoModel, QString numCandid, int numScen, int numGMMap, QString hcInput, QString hcEd, QString imt, double imp, QObject *parent = nullptr);
+
+    QString getEQName() const;
+    QString getEQModelType() const;
+    int getNumScen() const;
+    int getNumGMMap() const;
+    QString getHazardCurve() const;
+    QString getNSHMEdition() const;
+    QString getIMType() const;
+    double getPeriod() const;
+    QList<int> return_periods() const;
+    void setReturnPeriods(const QList<int> &return_periods);
+    void setReturnPeriods(const QString &return_periods);
+    void addReturnPeriod(int return_period);
+    QString getHOModelType() const;
+    QString getCandidateEQ() const;
+
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
 
-public slots:
-    void handleSelectionChanged(const QString& selection);
+    void reset(void);
 
 signals:
-    void widgetTypeChanged(QString newWidgetType);
+
+public slots:
+    void setEQName(const QString &value);
+    void setEQModelType(const QString &value);
+    void setHazardOccurrenceModel(const QString &value);
+    void setNumScen(const QString value);
+    void setNumGMMap(const QString value);
+    void setHazardCurve(const QString &value);
+    void setNSHMEdition(const QString &value);
+    void setIMType(const QString &value);
+    void setPeriod(const QString value);
+    void setCandidateEQ(const QString value);
 
 private:
-    QGroupBox* ruptureGroupBox;
-    QComboBox* ruptureSelectionCombo;
-    QStackedWidget* theRootStackedWidget;
-    PointSourceRuptureWidget* pointSourceWidget;
-    EarthquakeRuptureForecastWidget* erfWidget;
-    OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
-    OpenQuakeClassicalWidget* oqcpWidget; // widget connecting OpenQuake classical PSHA
-    OpenQuakeUserSpecifiedWidget* oqcpuWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
-    HazardOccurrenceWidget* hoWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
-    QString widgetType = "OpenSHA ERF"; // widget type
+
+    QString EQModelType;
+    QString EQName;
+    QString HOModel;
+    int NumScen;
+    int NumGMMap;
+    QString hazardCurveInput;
+    QString nshmEdition;
+    QString imType;
+    double imPeriod;
+    QList<int> m_return_periods {224, 475, 975, 2475};
+    QString returnPeriodsText;
+    QString numCandidateEQ;
 };
 
-#endif // RUPTUREWIDGET_H
+#endif // HazardOccurrence_H

@@ -47,13 +47,15 @@ class EarthquakeRuptureForecast : public QObject, JsonSerializable
     Q_OBJECT
 
 public:
-    EarthquakeRuptureForecast(double magMin, double magMax, double maxDist, QString model, QString name, QObject *parent = nullptr);
+    EarthquakeRuptureForecast(double magMin, double magMax, double maxDist, QString model, QString name, QString samplingMethod, int numScen, QObject *parent = nullptr);
 
     double getMagnitudeMin() const;
     double getMagnitudeMax() const;
     double getMaxDistance() const;
     QString getEQName() const;
     QString getEQModelType() const;
+    QString getSamplingMethod() const;
+    int getNumScen() const;
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
@@ -68,6 +70,8 @@ public slots:
     void setMaxDistance(double value);
     void setEQName(const QString &value);
     void setEQModelType(const QString &value);
+    void setSamplingMethod(const QString &value);
+    void setNumScen(const QString value);
 
 private:
     double magnitudeMin;
@@ -76,6 +80,8 @@ private:
 
     QString EQModelType;
     QString EQName;
+    QString SamplingMethod;
+    int NumScen;
 
 };
 

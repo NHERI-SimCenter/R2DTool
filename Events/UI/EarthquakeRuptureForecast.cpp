@@ -38,8 +38,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "EarthquakeRuptureForecast.h"
 
-EarthquakeRuptureForecast::EarthquakeRuptureForecast(double magMin, double magMax, double maxDist, QString model, QString name, QObject *parent) :
-    QObject(parent), magnitudeMin(magMin), magnitudeMax(magMax), maxDistance(maxDist), EQModelType(model), EQName(name)
+EarthquakeRuptureForecast::EarthquakeRuptureForecast(double magMin, double magMax, double maxDist, QString model, QString name, QString samplingMethod, int numScen, QObject *parent) :
+    QObject(parent), magnitudeMin(magMin), magnitudeMax(magMax), maxDistance(maxDist), EQModelType(model), EQName(name), SamplingMethod(samplingMethod), NumScen(numScen)
 {
 
 }
@@ -92,10 +92,19 @@ QString EarthquakeRuptureForecast::getEQName() const
     return EQName;
 }
 
-
 void EarthquakeRuptureForecast::setEQName(const QString &value)
 {
     EQName = value;
+}
+
+QString EarthquakeRuptureForecast::getSamplingMethod() const
+{
+    return SamplingMethod;
+}
+
+void EarthquakeRuptureForecast::setSamplingMethod(const QString &value)
+{
+    SamplingMethod = value;
 }
 
 
@@ -116,6 +125,20 @@ double EarthquakeRuptureForecast::getMaxDistance() const
     return maxDistance;
 }
 
+int EarthquakeRuptureForecast::getNumScen() const
+{
+    return NumScen;
+}
+
+
+void EarthquakeRuptureForecast::setNumScen(const QString value)
+{
+    if(this->NumScen != value.toInt())
+    {
+        NumScen = value.toInt();
+    }
+}
+
 
 bool EarthquakeRuptureForecast::outputToJSON(QJsonObject &jsonObject)
 {
@@ -125,6 +148,8 @@ bool EarthquakeRuptureForecast::outputToJSON(QJsonObject &jsonObject)
     jsonObject.insert("min_Mag", magnitudeMin);
     jsonObject.insert("max_Mag", magnitudeMax);
     jsonObject.insert("max_Dist", maxDistance);
+    //jsonObject.insert("Sampling", SamplingMethod);
+    //jsonObject.insert("Number", NumScen);
 
     return true;
 }

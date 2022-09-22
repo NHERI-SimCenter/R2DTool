@@ -61,6 +61,8 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/Events/UI/GmCommon.cpp \
             $$PWD/Events/UI/GridDivision.cpp \
             $$PWD/Events/UI/HBoxFormLayout.cpp \
+            $$PWD/Events/UI/HazardOccurrence.cpp \
+            $$PWD/Events/UI/HazardOccurrenceWidget.cpp \
             $$PWD/Events/UI/IntensityMeasure.cpp \
             $$PWD/Events/UI/IntensityMeasureWidget.cpp \
             $$PWD/Events/UI/Location.cpp \
@@ -178,6 +180,8 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Events/UI/GmCommon.h \
             $$PWD/Events/UI/GridDivision.h \
             $$PWD/Events/UI/HBoxFormLayout.h \
+            $$PWD/Events/UI/HazardOccurrence.h \
+            $$PWD/Events/UI/HazardOccurrenceWidget.h \
             $$PWD/Events/UI/IntensityMeasure.h \
             $$PWD/Events/UI/IntensityMeasureWidget.h \
             $$PWD/Events/UI/Location.h \

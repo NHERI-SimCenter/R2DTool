@@ -1,7 +1,7 @@
-#ifndef RUPTUREWIDGET_H
-#define RUPTUREWIDGET_H
+#ifndef HazardOccurrenceWidget_H
+#define HazardOccurrenceWidget_H
 /* *****************************************************************************
-Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+Copyright (c) 2016-2022, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,51 +36,72 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "SimCenterAppWidget.h"
+#include <QWidget>
 
-class PointSourceRuptureWidget;
-class EarthquakeRuptureForecastWidget;
-class OpenQuakeScenarioWidget;
-class OpenQuakeClassicalWidget;
-class OpenQuakeUserSpecifiedWidget;
-class HazardOccurrenceWidget;
+class HazardOccurrence;
 
-class QGroupBox;
 class QComboBox;
-class QStackedWidget;
+class QLineEdit;
+class QDoubleSpinBox;
+class QPushButton;
+class QRegExpValidator;
+class QLabel;
 
-class RuptureWidget : public SimCenterAppWidget
+class HazardOccurrenceWidget : public QWidget
 {
     Q_OBJECT
+
 public:
-    explicit RuptureWidget(QWidget *parent = nullptr);
+    explicit HazardOccurrenceWidget(QWidget *parent = nullptr);
 
-    QJsonObject getJson(void);
-    QString getWidgetType(void) const;
-    QString getGMPELogicTree(void) const;
-    QString getEQNum(void) const;
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
-
-public slots:
-    void handleSelectionChanged(const QString& selection);
+    HazardOccurrence* getRuptureSource() const;
 
 signals:
-    void widgetTypeChanged(QString newWidgetType);
+
+public slots:
+
+    void setHCType(const QString value);
+    void setIMType(const QString value);
+    void setHCFile(const QString value);
+    QString checkReturnPeriodsValid(const QString& input) const;
+    void commitReturnPeriods();
+    void handleTypeChanged(const QString &val);
+    void loadHazardCurveFile();
 
 private:
-    QGroupBox* ruptureGroupBox;
-    QComboBox* ruptureSelectionCombo;
-    QStackedWidget* theRootStackedWidget;
-    PointSourceRuptureWidget* pointSourceWidget;
-    EarthquakeRuptureForecastWidget* erfWidget;
-    OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
-    OpenQuakeClassicalWidget* oqcpWidget; // widget connecting OpenQuake classical PSHA
-    OpenQuakeUserSpecifiedWidget* oqcpuWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
-    HazardOccurrenceWidget* hoWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
-    QString widgetType = "OpenSHA ERF"; // widget type
+    HazardOccurrence* m_eqRupture;
+    QComboBox* ModelTypeCombo;
+    QLineEdit* candidEQLineEdit;
+    QDoubleSpinBox* m_magnitudeMinBox;
+    QDoubleSpinBox* m_magnitudeMaxBox;
+    QDoubleSpinBox* m_maxDistanceBox;
+
+    // number of scenarios
+    QLineEdit* NumScenarioLineEdit;
+    // number of ground motion maps
+    QLineEdit* NumGMMapLineEdit;
+    // Hazard occurrence model
+    QComboBox* HOModelTypeCombo;
+    // Hazard occurrence model
+    QComboBox* HCTypeCombo;
+    QLineEdit* FilenameLineEdit;
+    QString HazardCurveFile;
+    QPushButton* browseFileButton;
+    // Hazard curve edition
+    QComboBox* NSHM_Edition_Combo;
+    // intensity measure type
+    QComboBox* IMT_Combo;
+    // period lineedit
+    QLabel* IMT_period;
+    QLineEdit* PeriodEdit;
+    // return periods
+    QLineEdit* return_periods_lineEdit;
+    QRegExpValidator* LEValidator;
+
+    void setupConnections();
+
 };
 
-#endif // RUPTUREWIDGET_H
+#endif // HazardOccurrenceWidget_H
