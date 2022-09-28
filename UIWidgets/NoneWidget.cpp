@@ -47,5 +47,8 @@ NoneWidget::NoneWidget(QWidget *parent) : SimCenterAppWidget(parent)
 bool NoneWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     Q_UNUSED(jsonObject);
+    jsonObject["Application"] = "None";
+    QJsonObject dataObj;
+    jsonObject["ApplicationData"] = dataObj;    
     return true;
 }
