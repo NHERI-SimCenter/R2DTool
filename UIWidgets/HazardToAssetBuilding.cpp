@@ -59,6 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QList>
 #include <QMetaEnum>
 #include <QPushButton>
+#include <QJsonDocument>
 
 HazardToAssetBuilding::HazardToAssetBuilding(QString key, QWidget *parent)
   : SimCenterAppWidget(parent), jsonKey(key)
@@ -227,8 +228,9 @@ bool HazardToAssetBuilding::outputAppDataToJSON(QJsonObject &jsonObj)
 
 bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObj){
 
+  /*
   QJsonObject readObj;
-	
+ 	
     if (!jsonKey.isEmpty()) {
       if (!jsonObj.contains(jsonKey)) {      
 	QString errorMsg(QString("HazardToAssetBuilding keyWord: ") + jsonKey +
@@ -239,10 +241,14 @@ bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObj){
 	readObj = jsonObj[jsonKey].toObject();
     } else
       readObj = jsonObj;
+  */
   
     bool result = true;
-    if (theRegionalMapping->inputAppDataFromJSON(readObj) != true)
-        result = false;
+    result = theRegionalMapping->inputAppDataFromJSON(jsonObj);
+    if (result == false) {
+      errorMessage("HazardToAssetBuilding - inputAppDataFromJSON failed");
+      result = false;
+    }
     /*
     if (theLocalMapping->inputAppDataFromJSON(readObj) != true)
         result = false;
