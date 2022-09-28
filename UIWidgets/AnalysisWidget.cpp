@@ -65,12 +65,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 AnalysisWidget::AnalysisWidget(QWidget *parent)
-    : MultiComponentR2D(parent)
+  : MultiComponentR2D(QString("Simulation"), parent)
 {
 
-  buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Simulation"), QString(), QString("Buildings"), this);
-  pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("Simulation"), QString(), QString("NaturalGasPipelines"), this);
-  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("Simulation"), QString(), QString("WaterDistributionNetwork"), this);
+  buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Buildings"), this);
+  pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("NaturalGasPipelines"), this);
+  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("WaterDistributionNetwork"), this);
 
   // Building widget apps
   SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);

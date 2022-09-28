@@ -64,11 +64,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* /*visWidget*/) : MultiComponentR2D(parent)
+HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* /*visWidget*/) : MultiComponentR2D(QString("RegionalMapping"), parent)
 {
 
-  buildingWidget = new HazardToAssetBuilding(this); 
-  pipelineWidget = new HazardToAssetBuilding(this);
+  buildingWidget = new HazardToAssetBuilding(QString("Buildings"),this); 
+  pipelineWidget = new HazardToAssetBuilding(QString("WaterDistributionNetwork"),this);
   
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Water Network",pipelineWidget);

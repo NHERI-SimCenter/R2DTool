@@ -60,6 +60,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QTableWidget>
 #include <QVBoxLayout>
+#include <QJsonDocument>
 
 // A class acting for secondary level R2D menu items
 // whose display is dependent on the selection in GI
@@ -71,10 +72,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // That method calls each MultiComponentR2D with a show or a hide
 
 
-MultiComponentR2D::MultiComponentR2D(QWidget *parent)
-    :SimCenterAppWidget(parent), numHidden(0)
+MultiComponentR2D::MultiComponentR2D(QString key, QWidget *parent)
+:SimCenterAppWidget(parent), numHidden(0)
 {
 
+  jsonKeyword = key;
+  
     // HBox Layout for widget
 
     //
@@ -136,40 +139,50 @@ MultiComponentR2D::~MultiComponentR2D()
 
 
 bool MultiComponentR2D::outputToJSON(QJsonObject &jsonObject)
-{ 
+{
     bool res = true;
     int length = theNames.length();
+    QJsonObject dataObj;
     for (int i =0; i<length; i++) {
         QPushButton *theButton = thePushButtons.at(i);
         if (theButton->isHidden() == false) {
             SimCenterAppWidget *theWidget = theComponents.at(i);
-            bool res1 = theWidget->outputToJSON(jsonObject);
+            bool res1 = theWidget->outputToJSON(dataObj);
+            // qDebug() << __PRETTY_FUNCTION__ << jsonObject;
             if (res1 != true) {
                 res = false;
-            }
+            } 
         }
     }
+    jsonObject[jsonKeyword] = dataObj;
+    
     return res;
 }
 
 
 bool MultiComponentR2D::inputFromJSON(QJsonObject &jsonObject)
 {
-
-    bool res = true;
-    int length = theNames.length();
-    for (int i =0; i<length; i++) {
-        QPushButton *theButton = thePushButtons.at(i);
-        if (theButton->isHidden() == false) {
-            SimCenterAppWidget *theWidget = theComponents.at(i);
-            bool res1 = theWidget->inputFromJSON(jsonObject);
-            if (res1 != true) {
-                res = false;
-            }
-        }
+  if (!jsonObject.contains(jsonKeyword)) {
+    QString errorMsg(QString("MultiComponentR2D keyWord: ") + jsonKeyword +
+		     QString(" not in json"));
+    errorMessage(errorMsg);
+    return false;
+  }
+  
+  QJsonObject dataObj = jsonObject[jsonKeyword].toObject();  
+  bool res = true;
+  int length = theNames.length();
+  for (int i =0; i<length; i++) {
+    QPushButton *theButton = thePushButtons.at(i);
+    if (theButton->isHidden() == false) {
+      SimCenterAppWidget *theWidget = theComponents.at(i);
+      bool res1 = theWidget->inputFromJSON(dataObj);
+      if (res1 != true) {
+	res = false;
+      }
     }
-    return res;
-
+  }
+  return res;
 }
 
 
@@ -190,32 +203,47 @@ QList<QString> MultiComponentR2D::getActiveComponents(void)
 
 bool MultiComponentR2D::outputAppDataToJSON(QJsonObject &jsonObject)
 {
+  //    errorMessage(jsonKeyword);
+
     bool res = true;
     int length = theNames.length();
+    QJsonObject dataObj;
     for (int i =0; i<length; i++) {
         QPushButton *theButton = thePushButtons.at(i);
         if (theButton->isHidden() == false) {
             SimCenterAppWidget *theWidget = theComponents.at(i);
-            bool res1 = theWidget->outputAppDataToJSON(jsonObject);
+            bool res1 = theWidget->outputAppDataToJSON(dataObj);
             // qDebug() << __PRETTY_FUNCTION__ << jsonObject;
             if (res1 != true) {
                 res = false;
-            }
+            } 
         }
     }
+
+    jsonObject[jsonKeyword] = dataObj;
+
     return res;
 }
 
 
 bool MultiComponentR2D::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
+  if (!jsonObject.contains(jsonKeyword)) {
+    QString errorMsg(QString("MultiComponentR2D::inputAppData keyWord: ")
+		     + jsonKeyword + QString(" not in json"));
+    errorMessage(errorMsg);
+    return false;
+  }
+  
+    QJsonObject dataObj = jsonObject[jsonKeyword].toObject();
+    
     bool res = true;
     int length = theNames.length();
     for (int i =0; i<length; i++) {
         QPushButton *theButton = thePushButtons.at(i);
         if (theButton->isHidden() == false) {
             SimCenterAppWidget *theWidget = theComponents.at(i);
-            bool res1 = theWidget->inputAppDataFromJSON(jsonObject);
+            bool res1 = theWidget->inputAppDataFromJSON(dataObj);
             if (res1 != true) {
                 res = false;
             }

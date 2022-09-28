@@ -56,6 +56,7 @@ public:
 private:
     SimCenterAppSelection *buildingWidget;
     SimCenterAppSelection *pipelineWidget;
+    SimCenterAppSelection *WDNWidget;  
 };
 
 #endif // UQWidget_H
