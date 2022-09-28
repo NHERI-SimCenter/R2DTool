@@ -63,6 +63,7 @@ public:
 #ifdef OpenSRA
     bool loadFileFromPath(const QString& filePath);
 
+    // Map the OpenSRA inputs and outputs to the SimCenter inputs and outputs
     bool inputFromJSON(QJsonObject &rvObject) override;
     bool outputToJSON(QJsonObject &rvObject) override;
 #endif

@@ -81,7 +81,7 @@ TreeItem* CustomListWidget::addItem(const QString item, QString model, const dou
 TreeItem* CustomListWidget::addItem(const QJsonObject& obj, TreeItem* parent)
 {
 
-    if(!obj.contains("ModelName") || !obj.contains("Key") || !obj.contains("VarTypes"))
+    if(!obj.contains("ModelName") || !obj.contains("Key"))
     {
         qCritical()<<"Something went wrong in "<<__FUNCTION__;
         return nullptr;

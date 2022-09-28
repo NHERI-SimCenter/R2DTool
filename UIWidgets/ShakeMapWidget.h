@@ -211,8 +211,6 @@ private:
 
     QVector<QString> eventsVec;
 
-    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
-
 };
 
 #endif // SHAKEMAPWIDGET_H

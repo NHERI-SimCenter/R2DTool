@@ -93,8 +93,6 @@ private:
     // File name, file path
     QMap<QString,QString> GISMapContainer;
 
-    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
-
 };
 
 #endif // GISMapWidget_H

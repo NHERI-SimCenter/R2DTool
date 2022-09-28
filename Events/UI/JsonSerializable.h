@@ -71,13 +71,13 @@ public:
 #endif
 
    // Get and set the json obj for this parameter
-   inline const QJsonObject& getJsonObj() const
+   inline const QJsonObject& getMethodAndParamJsonObj() const
    {
        return jsonObj;
    }
 
 
-   inline void setJsonObj(const QJsonObject &newJsonObj)
+   inline void setMethodAndParamJsonObj(const QJsonObject &newJsonObj)
    {
        jsonObj = newJsonObj;
    }
