@@ -63,12 +63,14 @@ class ResultsWidget;
 class LoadResultsDialog;
 class RunWidget;
 class SimCenterAppWidget;
+class SimCenterAppEventSelection;
 class SimCenterComponentSelection;
 class UQOptions;
 class UQWidget;
 class UQ_Results;
 class VisualizationWidget;
 class PerformanceWidget;
+class LocalMappingWidget;
 
 class WorkflowAppR2D : public WorkflowAppWidget
 {
@@ -138,7 +140,8 @@ private:
     ResultsWidget* theResultsWidget;
     LoadResultsDialog* resultsDialog;
     PerformanceWidget* thePerformanceWidget;
-
+    //LocalMappingWidget* theLocalMappingWidget;  
+    SimCenterAppEventSelection* theLocalEvent;  
     //
     // Objects for running the workflow and obtaining results
     //
