@@ -46,6 +46,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PointSourceRupture.h"
 #include "PointSourceRuptureWidget.h"
 #include "RuptureWidget.h"
+#include "HazardOccurrence.h"
+#include "HazardOccurrenceWidget.h"
 
 #include <QVBoxLayout>
 #include <QStackedWidget>
@@ -66,12 +68,17 @@ RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
     oqcpWidget = new OpenQuakeClassicalWidget(parent);
     // OpenQuake classical PSHA User
     oqcpuWidget = new OpenQuakeUserSpecifiedWidget(parent);
+    // Hazard Occurrence (KZ-08/22)
+    hoWidget = new HazardOccurrenceWidget(parent);
+    hoWidget->setToolTip("Hazard occurrence models reduce the number of earthquake scenarios and/or \nground motion maps to be analyzed in regional risk assessment");
+    hoWidget->setToolTipDuration(5000);
 
     theRootStackedWidget->addWidget(pointSourceWidget);
     theRootStackedWidget->addWidget(erfWidget);
     theRootStackedWidget->addWidget(oqsbWidget);
     theRootStackedWidget->addWidget(oqcpWidget);
     theRootStackedWidget->addWidget(oqcpuWidget);
+    theRootStackedWidget->addWidget(hoWidget);
 
     theRootStackedWidget->setCurrentWidget(erfWidget);
 
@@ -85,6 +92,7 @@ RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
     ruptureSelectionCombo->addItem("OpenQuake Scenario-Based");
     ruptureSelectionCombo->addItem("OpenQuake Classifcal PSHA");
     ruptureSelectionCombo->addItem("OpenQuake User-Specified");
+    ruptureSelectionCombo->addItem("Hazard Occurrence");
 
     connect(ruptureSelectionCombo,&QComboBox::currentTextChanged,this,&RuptureWidget::handleSelectionChanged);
 
@@ -111,6 +119,8 @@ bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
         oqcpWidget->getRuptureSource()->outputToJSON(jsonObject);
     else if(ruptureSelectionCombo->currentText().compare("OpenQuake User-Specified") == 0)
         oqcpuWidget->getRuptureSource()->outputToJSON(jsonObject);
+    else if(ruptureSelectionCombo->currentText().compare("Hazard Occurrence") == 0)
+        hoWidget->getRuptureSource()->outputToJSON(jsonObject);
     
     return true;
 }
@@ -148,6 +158,11 @@ void RuptureWidget::handleSelectionChanged(const QString& selection)
         theRootStackedWidget->setCurrentWidget(oqcpuWidget);
         widgetType = "OpenQuake User-Specified";
     }
+    else if(selection.compare("Hazard Occurrence") == 0)
+    {
+        theRootStackedWidget->setCurrentWidget(hoWidget);
+        widgetType = "Hazard Occurrence";
+    }
     emit widgetTypeChanged(widgetType);
 
 }
@@ -156,6 +171,18 @@ void RuptureWidget::handleSelectionChanged(const QString& selection)
 QString RuptureWidget::getWidgetType() const
 {
     return widgetType;
+}
+
+
+QString RuptureWidget::getEQNum() const
+{
+    QString numEQ;
+    if (widgetType.compare("Hazard Occurrence")==0) {
+        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
+    } else {
+        numEQ = "1";
+    }
+    return numEQ;
 }
 
 

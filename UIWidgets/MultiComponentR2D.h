@@ -52,7 +52,7 @@ class MultiComponentR2D : public  SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit MultiComponentR2D(QWidget *parent);
+  explicit MultiComponentR2D(QString jsonKeyword, QWidget *parent);
     ~MultiComponentR2D();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -94,6 +94,7 @@ private:
     QVBoxLayout *theSelectionLayout = nullptr;
     QStackedWidget *theStackedWidget = nullptr;
 
+    QString jsonKeyword;
     QList<QString> theNames;
     QList<QPushButton *>thePushButtons;
     QList<SimCenterAppWidget *> theComponents;

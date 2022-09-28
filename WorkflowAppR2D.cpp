@@ -53,6 +53,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LocalApplication.h"
 #include "MainWindowWorkflowApp.h"
 #include "ModelWidget.h"
+//#include "LocalMappingWidget.h"
+#include  <SimCenterEventRegional.h>
+#include  <SimCenterAppEventSelection.h>
 #include "PerformanceWidget.h"
 #include "RandomVariablesContainer.h"
 #include "RemoteApplication.h"
@@ -226,12 +229,20 @@ void WorkflowAppR2D::initialize(void)
     theModelingWidget = new ModelWidget(this);
     theAnalysisWidget = new AnalysisWidget(this);
     theHazardsWidget = new HazardsWidget(this, theVisualizationWidget);
+    //theLocalEvent = new LocalMappingWidget(this);
+    
+    theLocalEvent = new SimCenterAppEventSelection(QString("Events"), QString("Events"),this);
+    SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
+    theLocalEvent->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);							
+    
     // theEngDemandParamWidget = new EngDemandParameterWidget(this);
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
     // theDecisionVariableWidget = new DecisionVariableWidget(this);
     theUQWidget = new UQWidget(this);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
     thePerformanceWidget = new PerformanceWidget(this,theRVs);
+
+
 
     connect(theGeneralInformationWidgetR2D, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
@@ -340,11 +351,16 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
         result = false;
     }
 
+    if (theLocalEvent->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing EVENT data to output");
+        result = false;
+    }    
+
     if (theHazardToAssetWidget->outputAppDataToJSON(apps) == false) {
         this->errorMessage("Error writing HTA data to output");
         result = false;
     }
-
+    
     if (theAnalysisWidget->outputAppDataToJSON(apps) == false) {
         this->errorMessage("Error writing ANA data to output");
         result = false;
@@ -367,7 +383,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     }
 
     //
-    // hard code for now .. EDP's coming out D&L in future to provide this .. really ugly 2 dynamic casts!!
+    // hard code for now ..
+    // EDP's coming out D&L in future to provide this ..
+    //    really ugly 2 dynamic casts!!
     //
 
     SimCenterAppWidget *theAnalysisBuildingComponent = theAnalysisWidget->getComponent("Buildings");
@@ -379,7 +397,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
             NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
             if (theNoArgWidget == nullptr || theNoArgWidget->getAppName() != "IMasEDP") {
                 QJsonObject edpData;
-                edpData["Application"]="StandardEarthquakeEDP_R";
+                edpData["Application"]="StandardEarthquakeEDP";
                 QJsonObject edpAppData;
                 edpData["ApplicationData"] = edpAppData;
                 apps["EDP"] = edpData;
@@ -391,14 +409,15 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     //  output regular data
 
     theRunWidget->outputToJSON(jsonObjectTop);
+    theAssetsWidget->outputToJSON(jsonObjectTop);
     theModelingWidget->outputToJSON(jsonObjectTop);
+    theLocalEvent->outputToJSON(jsonObjectTop);    
     theHazardsWidget->outputToJSON(jsonObjectTop);
     theAnalysisWidget->outputToJSON(jsonObjectTop);
     theDamageAndLossWidget->outputToJSON(jsonObjectTop);
     theHazardToAssetWidget->outputToJSON(jsonObjectTop);
     thePerformanceWidget->outputToJSON(jsonObjectTop);
-    //theUQWidget->outputToJSON(jsonObjectTop);
-    //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
+    theUQWidget->outputToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
 
     return result;
@@ -421,6 +440,7 @@ void WorkflowAppR2D::clear(void)
     theGeneralInformationWidgetR2D->clear();
     theUQWidget->clear();
     theModelingWidget->clear();
+    theLocalEvent->clear();    
     theAnalysisWidget->clear();
     theHazardToAssetWidget->clear();
     theAssetsWidget->clear();
@@ -462,6 +482,12 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
             theModelingWidget->clear();
             result = false;
         }
+
+        if (theLocalEvent->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("LocalModeling failed to read input data");
+            theLocalEvent->clear();
+            result = false;
+        }	
 
         if (theAnalysisWidget->inputAppDataFromJSON(apps) == false) {
             this->errorMessage("ANA failed to read input data");
@@ -505,17 +531,61 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    /*
-    ** Note to me - others
-    */
+    //
+    // now read app specific data
+    //
 
     if (theRunWidget->inputFromJSON(jsonObject) == false)
         return false;
-    if (theHazardsWidget->inputFromJSON(jsonObject) == false)
-        return false;
-    if (theRVs->inputFromJSON(jsonObject) == false)
-        return false;
 
+    if (theUQWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("UQ failed to read app specific data");
+      result = false;
+    }
+    
+    if (theRVs->inputFromJSON(jsonObject) == false)
+      return false;    
+    
+    if (theModelingWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("MOD failed to read app specific data");
+      result = false;
+    }
+
+    if (theLocalEvent->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("LocalModeling failed to read app specific data");
+      result = false;
+    }    
+    
+    if (theAnalysisWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("ANA failed to read app specific data");
+      result = false;
+    }
+
+    if (theHazardToAssetWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("HTA failed to read app specific data");
+      result = false;
+    }
+
+    if (theAssetsWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("ASD failed to read app specific data");
+      result = false;
+    }
+
+    if (theHazardsWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("HAZ failed to read app specific data");
+      result = false;
+    }
+
+    if (theDamageAndLossWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("DL failed to read app specific data");
+      result = false;
+    }
+    
+    if (thePerformanceWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("PRF failed to read app specific data");
+      result = false;
+    }
+    
     return result;
 }
 
@@ -792,6 +862,7 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         theAssetsWidget->show(text);
         theHazardToAssetWidget->show(text);
         theModelingWidget->show(text);
+	//        theLocalEvent->show(text);
         theAnalysisWidget->show(text);
         thePerformanceWidget->show(text);
         theDamageAndLossWidget->show(text);
@@ -802,6 +873,7 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         theAssetsWidget->hide(text);
         theHazardToAssetWidget->hide(text);
         theModelingWidget->hide(text);
+        //theLocalEvent->hide(text);	
         theAnalysisWidget->hide(text);
         thePerformanceWidget->hide(text);
         theDamageAndLossWidget->hide(text);

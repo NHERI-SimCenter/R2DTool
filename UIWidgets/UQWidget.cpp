@@ -63,22 +63,29 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 UQWidget::UQWidget(QWidget *parent)
-  : MultiComponentR2D(parent)
+  : MultiComponentR2D(QString("UQ"),parent)
 {
-
-    buildingWidget = new SimCenterAppSelection(QString("UQ Application"), QString("UQ"), this);
+    buildingWidget = new SimCenterAppSelection(QString("UQ Application"), QString("Buildings"), this);
     SimCenterAppWidget *dakota = new DakotaInputSampling(this);
 
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
+    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);    
     buildingWidget->addComponent(QString("Dakota"), QString("Dakota-UQ"), dakota);
-    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
+    SimCenterAppWidget *noneWidget1 = new NoneWidget(this);
     pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("PipelineUQ"), this);
+    pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget1);
 
+    SimCenterAppWidget *noneWidget2 = new NoneWidget(this);    
+    WDNWidget = new SimCenterAppSelection(QString("UQ Application"), QString("WaterDistributionNetwork"), this);
+    WDNWidget->addComponent(QString("None"), QString("None"), noneWidget2);    
+    
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
+    this->addComponent("Water Network", WDNWidget);
+    
     this->hideAll();
 }
 

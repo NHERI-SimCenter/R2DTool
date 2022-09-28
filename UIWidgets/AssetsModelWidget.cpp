@@ -61,7 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 AssetsModelWidget::AssetsModelWidget(QWidget *parent)
-    :MultiComponentR2D(parent)
+  :MultiComponentR2D(QString("Modeling",parent)
 {
     buildingWidget = new BuildingModelingWidget(this);
     SimCenterAppWidget* pipelineInfoBox = new SimCenterAppWidget(this);

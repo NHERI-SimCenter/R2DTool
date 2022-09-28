@@ -92,12 +92,6 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     layout->setSpacing(0);
     layout->addStretch();
     this->setLayout(layout);
-
-    // Test to remove start
-    //     eventFile = "/Users/steve/Desktop/GalvestonTestbed/Surge_Raster.tif";
-    //     eventFileLineEdit->setText(eventFile);
-    //     this->loadRaster();
-    // Test to remove end
 }
 
 
@@ -118,7 +112,7 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     QFileInfo rasterFile (rasterPathLineEdit->text());
 
     appData["rasterFile"] = rasterFile.fileName();
-
+    appData["pathToSource"]=rasterFile.path();
     crsSelectorWidget->outputAppDataToJSON(appData);
 
     appData["eventClassification"] = eventTypeCombo->currentText();
@@ -146,7 +140,7 @@ bool RasterHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
         jsonObj["eventFile"]= theFile.fileName();
         jsonObj["eventFilePath"]=theFile.path();
     } else {
-        jsonObj["eventFile"]=pathToEventFile; // may be valid on others computer
+        jsonObj["eventFile"]=eventFile; 
         jsonObj["eventFilePath"]=QString("");
     }
 
@@ -163,8 +157,6 @@ bool RasterHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     // Set the units
     auto res = unitsWidget->inputFromJSON(jsonObject);
-
-    //    auto list = unitsWidget->getParameterNames();
 
     // If setting of units failed, provide default units and issue a warning
     if(!res)
@@ -183,10 +175,10 @@ bool RasterHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
 
     if(eventFile.isEmpty())
     {
-        this->errorMessage("Raster hazard input widget -Error could not find the eventFile");
+        errorMessage("Raster hazard input widget -Error could not find the eventFile");
         return false;
     }
-
+    
     return res;
 }
 
@@ -201,13 +193,13 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         if (appData.contains("rasterFile"))
             fileName = appData["rasterFile"].toString();
-        if (appData.contains("eventFileDir"))
-            pathToFile = appData["eventFileDir"].toString();
+        if (appData.contains("pathToSource"))
+            pathToFile = appData["pathToSource"].toString();
         else
             pathToFile=QDir::currentPath();
 
         QString fullFilePath= pathToFile + QDir::separator() + fileName;
-
+	
         // adam .. adam .. adam
         if (!QFileInfo::exists(fullFilePath)){
             fullFilePath = pathToFile + QDir::separator()

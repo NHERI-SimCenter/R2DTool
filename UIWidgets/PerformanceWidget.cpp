@@ -64,7 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 PerformanceWidget::PerformanceWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
-    : MultiComponentR2D(parent)
+: MultiComponentR2D(QString("Performance"),parent)
 {
     waterNetworkWidget = new SimCenterAppSelection(QString("Water Network Modeling"), QString("WaterNetworkModeling"), this);
 

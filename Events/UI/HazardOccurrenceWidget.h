@@ -1,5 +1,7 @@
+#ifndef HazardOccurrenceWidget_H
+#define HazardOccurrenceWidget_H
 /* *****************************************************************************
-Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+Copyright (c) 2016-2022, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,21 +36,72 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Kuanshi Zhong
 
-#include "NoneWidget.h"
+#include <QWidget>
 
-NoneWidget::NoneWidget(QWidget *parent) : SimCenterAppWidget(parent)
+class HazardOccurrence;
+
+class QComboBox;
+class QLineEdit;
+class QDoubleSpinBox;
+class QPushButton;
+class QRegExpValidator;
+class QLabel;
+
+class HazardOccurrenceWidget : public QWidget
 {
+    Q_OBJECT
 
-}
+public:
+    explicit HazardOccurrenceWidget(QWidget *parent = nullptr);
 
+    HazardOccurrence* getRuptureSource() const;
 
-bool NoneWidget::outputAppDataToJSON(QJsonObject &jsonObject)
-{
-    Q_UNUSED(jsonObject);
-    jsonObject["Application"] = "None";
-    QJsonObject dataObj;
-    jsonObject["ApplicationData"] = dataObj;    
-    return true;
-}
+signals:
+
+public slots:
+
+    void setHCType(const QString value);
+    void setIMType(const QString value);
+    void setHCFile(const QString value);
+    QString checkReturnPeriodsValid(const QString& input) const;
+    void commitReturnPeriods();
+    void handleTypeChanged(const QString &val);
+    void loadHazardCurveFile();
+
+private:
+    HazardOccurrence* m_eqRupture;
+    QComboBox* ModelTypeCombo;
+    QLineEdit* candidEQLineEdit;
+    QDoubleSpinBox* m_magnitudeMinBox;
+    QDoubleSpinBox* m_magnitudeMaxBox;
+    QDoubleSpinBox* m_maxDistanceBox;
+
+    // number of scenarios
+    QLineEdit* NumScenarioLineEdit;
+    // number of ground motion maps
+    QLineEdit* NumGMMapLineEdit;
+    // Hazard occurrence model
+    QComboBox* HOModelTypeCombo;
+    // Hazard occurrence model
+    QComboBox* HCTypeCombo;
+    QLineEdit* FilenameLineEdit;
+    QString HazardCurveFile;
+    QPushButton* browseFileButton;
+    // Hazard curve edition
+    QComboBox* NSHM_Edition_Combo;
+    // intensity measure type
+    QComboBox* IMT_Combo;
+    // period lineedit
+    QLabel* IMT_period;
+    QLineEdit* PeriodEdit;
+    // return periods
+    QLineEdit* return_periods_lineEdit;
+    QRegExpValidator* LEValidator;
+
+    void setupConnections();
+
+};
+
+#endif // HazardOccurrenceWidget_H

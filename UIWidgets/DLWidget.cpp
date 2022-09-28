@@ -64,12 +64,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 
 DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentR2D(parent), visualizationWidget(visWidget)
+: MultiComponentR2D(QString("DL"), parent), visualizationWidget(visWidget)
 {
 
-    buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("DL"), QString(), QString("Buildings"), this);
-    pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("DL"), QString(), QString("NaturalGasPipelines"), this);
-    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("DL"), QString(), QString("WaterDistributionNetwork"), this);
+    buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("NaturalGasPipelines"), this);
+    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("WaterDistributionNetwork"), this);
 
     // Building widget apps
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
@@ -85,7 +85,6 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
 
     // Water distribution network apps
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
-
     SimCenterAppWidget *WDNDL = new NoArgSimCenterApp(QString("CBCitiesDL"));
 
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);

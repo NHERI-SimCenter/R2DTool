@@ -61,6 +61,8 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/Events/UI/GmCommon.cpp \
             $$PWD/Events/UI/GridDivision.cpp \
             $$PWD/Events/UI/HBoxFormLayout.cpp \
+            $$PWD/Events/UI/HazardOccurrence.cpp \
+            $$PWD/Events/UI/HazardOccurrenceWidget.cpp \
             $$PWD/Events/UI/IntensityMeasure.cpp \
             $$PWD/Events/UI/IntensityMeasureWidget.cpp \
             $$PWD/Events/UI/Location.cpp \
@@ -138,7 +140,6 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/HousingUnitAllocationWidget.cpp \
             $$PWD/UIWidgets/HurricaneParameterWidget.cpp \
             $$PWD/UIWidgets/InputWidgetOpenSeesPyAnalysis.cpp \
-            $$PWD/UIWidgets/MDOF_LU.cpp \
             $$PWD/UIWidgets/ModelWidget.cpp \
             $$PWD/UIWidgets/MultiComponentR2D.cpp \
             $$PWD/UIWidgets/NearestNeighbourMapping.cpp \
@@ -179,6 +180,8 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Events/UI/GmCommon.h \
             $$PWD/Events/UI/GridDivision.h \
             $$PWD/Events/UI/HBoxFormLayout.h \
+            $$PWD/Events/UI/HazardOccurrence.h \
+            $$PWD/Events/UI/HazardOccurrenceWidget.h \
             $$PWD/Events/UI/IntensityMeasure.h \
             $$PWD/Events/UI/IntensityMeasureWidget.h \
             $$PWD/Events/UI/Location.h \
@@ -254,7 +257,6 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/HousingUnitAllocationWidget.h \
             $$PWD/UIWidgets/HurricaneParameterWidget.h \
             $$PWD/UIWidgets/InputWidgetOpenSeesPyAnalysis.h \
-            $$PWD/UIWidgets/MDOF_LU.h \
             $$PWD/UIWidgets/ModelWidget.h \
             $$PWD/UIWidgets/MultiComponentR2D.h \
             $$PWD/UIWidgets/NearestNeighbourMapping.h \
