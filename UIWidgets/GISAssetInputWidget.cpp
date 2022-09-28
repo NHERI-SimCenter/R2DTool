@@ -403,9 +403,7 @@ bool GISAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     crsSelectorWidget->outputAppDataToJSON(appData);
 
     appData["assetSourceFile"] = baseNameCSV;
-
     appData["assetGISFile"] = componentFile.fileName();
-
     jsonObject["ApplicationData"] = appData;
 
     return true;
@@ -418,7 +416,7 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     //jsonObject["Application"]=appType;
     if (jsonObject.contains("Application")) {
         if (appType != jsonObject["Application"].toString()) {
-            this->errorMessage("GISAssetInputWidget::inputFRommJSON app name conflict");
+            this->errorMessage("GISAssetInputWidget::inputFomJSON app name conflict");
             return false;
         }
     }
@@ -433,6 +431,12 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (appData.contains("assetGISFile"))
             fileName = appData["assetGISFile"].toString();
 
+        if (appData.contains("pathToSource")) {
+            QJsonValue theName = appData["pathToSource"];
+            pathToFile = theName.toString();
+            fileName = pathToFile + QDir::separator() + fileName;
+	}
+	
         QFileInfo fileInfo(fileName);
 
         if (fileInfo.exists()) {
@@ -447,9 +451,7 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         } else {
 
-            if (appData.contains("pathToGIS"))
-                pathToFile = appData["pathToGIS"].toString();
-            else
+            if (!appData.contains("pathToSource"))
                 pathToFile=QDir::currentPath();
 
             pathToComponentInputFile = pathToFile + QDir::separator() + fileName;
