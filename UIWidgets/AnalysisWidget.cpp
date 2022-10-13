@@ -37,8 +37,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "AnalysisWidget.h"
-#include "InputWidgetOpenSeesAnalysis.h"
 #include "InputWidgetOpenSeesPyAnalysis.h"
+#include <InputWidgetOpenSeesAnalysis.h>
 #include "NoArgSimCenterApp.h"
 #include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
@@ -75,11 +75,12 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   // Building widget apps
   SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);
   //SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);
-  SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
+  //  SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
+  InputWidgetOpenSeesAnalysis *openSees = new InputWidgetOpenSeesAnalysis();
   SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMasEDP"));
   SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
-  buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation_R"), openSees);
+  buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation"), openSees);
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
   buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
