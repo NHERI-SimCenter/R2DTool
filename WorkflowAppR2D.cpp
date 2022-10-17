@@ -65,7 +65,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "Utils/PythonProgressDialog.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
-#include "UQWidget.h"
+//#include <UQ_EngineSelection.h>
+#include <UQWidget.h>
 #include "WorkflowAppR2D.h"
 #include "LoadResultsDialog.h"
 
@@ -420,6 +421,28 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     theUQWidget->outputToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
 
+    jsonObjectTop["commonFileDir"]=commonFilePath;
+    
+    QJsonObject defaultValues;
+    defaultValues["workflowInput"]=QString("scInput.json");    
+    //defaultValues["filenameAIM"]=QString("AIM.json");
+    defaultValues["filenameEVENT"] = QString("EVENT.json");
+    defaultValues["filenameSAM"]= QString("SAM.json");
+    defaultValues["filenameEDP"]= QString("EDP.json");
+    defaultValues["filenameSIM"]= QString("SIM.json");
+    defaultValues["driverFile"]= QString("driver");
+    defaultValues["filenameDL"]= QString("BIM.json");
+    defaultValues["workflowOutput"]= QString("EDP.json");
+    QJsonArray rvFiles, edpFiles;
+    //rvFiles.append(QString("AIM.json"));
+    rvFiles.append(QString("SAM.json"));
+    rvFiles.append(QString("EVENT.json"));
+    rvFiles.append(QString("SIM.json"));
+    edpFiles.append(QString("EDP.json"));
+    defaultValues["rvFiles"]= rvFiles;
+    defaultValues["edpFiles"]=edpFiles;
+    jsonObjectTop["DefaultValues"]=defaultValues;    
+    
     return result;
 }
 
@@ -545,7 +568,8 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     
     if (theRVs->inputFromJSON(jsonObject) == false)
       return false;    
-    
+
+    errorMessage("FMK - MODELING WIDGET");
     if (theModelingWidget->inputFromJSON(jsonObject) == false) {
       this->errorMessage("MOD failed to read app specific data");
       result = false;
@@ -669,6 +693,7 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     QString templateDirectory  = destinationDirectory.absoluteFilePath(subDir);
     destinationDirectory.mkpath(templateDirectory);
 
+    commonFilePath = templateDirectory;
     // copyPath(path, tmpDirectory, false);
     //    theSIM->copyFiles(templateDirectory);
     //    theEventSelection->copyFiles(templateDirectory);
