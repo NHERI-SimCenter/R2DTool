@@ -109,7 +109,6 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
-            $$PWD/UIWidgets/AssetsModelWidget.cpp \
             $$PWD/UIWidgets/AssetsWidget.cpp \
             $$PWD/UIWidgets/BuildingDMEQWidget.cpp \
             $$PWD/UIWidgets/BuildingDMWidget.cpp \
@@ -123,10 +122,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/AssetInputWidget.cpp \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.cpp \
             $$PWD/UIWidgets/DLWidget.cpp \
-            $$PWD/UIWidgets/DamageMeasureWidget.cpp \
-            $$PWD/UIWidgets/DecisionVariableWidget.cpp \
             $$PWD/UIWidgets/EarthquakeInputWidget.cpp \
-            $$PWD/UIWidgets/EngDemandParameterWidget.cpp \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.cpp \
             $$PWD/UIWidgets/GroundMotionStation.cpp \
             $$PWD/UIWidgets/LoadResultsDialog.cpp \
@@ -225,7 +221,6 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \
             $$PWD/UIWidgets/AnalysisWidget.h \
-            $$PWD/UIWidgets/AssetsModelWidget.h \
             $$PWD/UIWidgets/AssetsWidget.h \
             $$PWD/UIWidgets/BuildingDMEQWidget.h \
             $$PWD/UIWidgets/BuildingDMWidget.h \
@@ -240,10 +235,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/AssetInputWidget.h \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.h \
             $$PWD/UIWidgets/DLWidget.h \
-            $$PWD/UIWidgets/DamageMeasureWidget.h \
-            $$PWD/UIWidgets/DecisionVariableWidget.h \
             $$PWD/UIWidgets/EarthquakeInputWidget.h \
-            $$PWD/UIWidgets/EngDemandParameterWidget.h \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.h \
             $$PWD/UIWidgets/GroundMotionStation.h \
             $$PWD/UIWidgets/LoadResultsDialog.h \
