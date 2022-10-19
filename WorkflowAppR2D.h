@@ -51,7 +51,7 @@ class EngDemandParameterWidget;
 class GeneralInformationWidgetR2D;
 class HazardToAssetWidget;
 class HazardsWidget;
-class InputWidgetUQ;
+class UQWidget;
 class ModelWidget;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -153,7 +153,7 @@ private:
 
     QJsonObject *jsonObjOrig;
     QNetworkAccessManager *manager;
-
+  QString commonFilePath;
     static WorkflowAppR2D *theInstance;
 
 };

@@ -140,7 +140,6 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/MultiComponentR2D.cpp \
             $$PWD/UIWidgets/NearestNeighbourMapping.cpp \
             $$PWD/UIWidgets/SiteSpecifiedMapping.cpp \
-            $$PWD/UIWidgets/NoneWidget.cpp \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.cpp \
             $$PWD/UIWidgets/WaterNetworkPerformanceModel.cpp \
             $$PWD/UIWidgets/PelicunDLWidget.cpp \
@@ -253,7 +252,6 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/MultiComponentR2D.h \
             $$PWD/UIWidgets/NearestNeighbourMapping.h \
             $$PWD/UIWidgets/SiteSpecifiedMapping.h \
-            $$PWD/UIWidgets/NoneWidget.h \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.h \
             $$PWD/UIWidgets/WaterNetworkPerformanceModel.h \
             $$PWD/UIWidgets/PelicunDLWidget.h \
