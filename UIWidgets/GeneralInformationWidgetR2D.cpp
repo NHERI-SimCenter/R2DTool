@@ -232,7 +232,7 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
     transportationCheckBox->setCheckable(false);
 
     soilCheckBox->setEnabled(false);
-    gasCheckBox->setEnabled(true);
+    gasCheckBox->setEnabled(false);
     waterCheckBox->setEnabled(true);
     sewerCheckBox->setEnabled(false);
     transportationCheckBox->setEnabled(false);

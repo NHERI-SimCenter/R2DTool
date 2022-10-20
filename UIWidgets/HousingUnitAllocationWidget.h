@@ -64,6 +64,9 @@ class QLineEdit;
 class QComboBox;
 class QNetworkReply;
 class QNetworkAccessManager;
+class QButtonGroup;
+class QRadioButton;
+class QLabel;
 
 struct Building;
 struct CensusBlockGroup;
@@ -210,6 +213,10 @@ private slots:
 
     void handleDownloadError(QNetworkReply::NetworkError code);
 
+    void handleGetLayersFromMap(void);
+
+    void handleSelectLayerFromMap(const QString& selectedLayerName);
+
 private:
 
     QWidget* getHUAWidget(void);
@@ -226,7 +233,7 @@ private:
     // Mutex for the building layer
     std::mutex buildingLayerSemaphore;
 
-    QgsVectorLayer* buildingsLayer = nullptr;
+    QgsVectorLayer* assetLayer = nullptr;
     QgsVectorLayer* addressPointLayer = nullptr;
     QgsVectorLayer* censusBlockLayer = nullptr;
     QgsVectorLayer* ACSBlockGroupLayer = nullptr;
@@ -276,6 +283,13 @@ private:
 
     QNetworkAccessManager fileDownloadManager;
 
+    QButtonGroup* m_typeButtonsGroup = nullptr;
+
+    QRadioButton* fromPathButton = nullptr;
+    QRadioButton* fromMapRadioButton = nullptr;
+
+    QComboBox* layerNameCombo = nullptr;
+    QLabel* selectedLayerNameLabel = nullptr;
 
 };
 

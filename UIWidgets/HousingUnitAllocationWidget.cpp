@@ -58,6 +58,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QFileDialog>
 #include <QJsonArray>
+#include <QButtonGroup>
+#include <QRadioButton>
+#include <QStackedWidget>
 
 #include <qgsprojectionselectionwidget.h>
 #include <qgsfillsymbol.h>
@@ -65,6 +68,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgslinesymbol.h>
 #include <qgsgeometryengine.h>
 #include <qgsproject.h>
+#include <qgsmapcanvas.h>
 
 // Test to remove start
 #include <chrono>
@@ -106,14 +110,14 @@ HousingUnitAllocationWidget::HousingUnitAllocationWidget(QWidget *parent, Visual
     connect(this,&HousingUnitAllocationWidget::emitDownloadMainThread,this,&HousingUnitAllocationWidget::handleDownloadMainThread);
 
     // Test to remove start
-//    auto buildingsGISFile =  "/Users/steve/Desktop/SimCenter/Examples/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
+    //    auto buildingsGISFile =  "/Users/steve/Desktop/SimCenter/Examples/SanFranciscoTestbed/SanFranciscoBuildingFootprints/SanFrancisco_buildingfootprints_2014.shp";
 
-//    buildingsPathLineEdit->setText(buildingsGISFile);
-//    this->importBuidlingsLayer();
-//    buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
+    //    buildingsPathLineEdit->setText(buildingsGISFile);
+    //    this->importBuidlingsLayer();
+    //    buildingCrsSelector->setCrs(QgsCoordinateReferenceSystem("ESRI:102643"));
 
-//    censusVintageCombo->setCurrentText("2010");
-//    ACSVintageCombo->setCurrentText("2010");
+    //    censusVintageCombo->setCurrentText("2010");
+    //    ACSVintageCombo->setCurrentText("2010");
 
     // this->createGISFiles();
     // Test to remove end
@@ -131,7 +135,7 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
 
     std::set<QString> res;
 
-    if(buildingsLayer == nullptr)
+    if(assetLayer == nullptr)
     {
         emit emitErrorMsg("The asset layer does not exist, please import the assets");
         return res;
@@ -211,9 +215,9 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
     QgsFeature countyFeat;
 
     // Coordinate transformation to transform from the county layer crs to the building layer crs - in the case where they are different
-    if(buildingsLayer->crs() != countiesLayer->crs())
+    if(assetLayer->crs() != countiesLayer->crs())
     {
-        QgsCoordinateTransform coordTrans(countiesLayer->crs(), buildingsLayer->crs(), QgsProject::instance());
+        QgsCoordinateTransform coordTrans(countiesLayer->crs(), assetLayer->crs(), QgsProject::instance());
         while (countyFeatures.nextFeature(countyFeat))
         {
             auto geom = countyFeat.geometry();
@@ -234,7 +238,7 @@ std::set<QString> HousingUnitAllocationWidget::getCountiesFromBuildingInventory(
 
 
     // Iterate through the building features
-    auto features = buildingsLayer->getFeatures();
+    auto features = assetLayer->getFeatures();
 
     auto testInPolygon = [](const QgsGeometry& countyGeom, const QgsPointXY& buildCentroid, QgsGeometryEngine* polygonGeometryEngine) -> bool
     {
@@ -344,7 +348,7 @@ void HousingUnitAllocationWidget::handleCreateGISFilesButtonPressed(void)
 
 int HousingUnitAllocationWidget::createGISFiles(void)
 {
-    if(buildingsLayer == nullptr)
+    if(assetLayer == nullptr)
     {
         emit emitErrorMsg("The asset layer does not exist, please import assets");
 
@@ -541,9 +545,9 @@ int HousingUnitAllocationWidget::importBuidlingsLayer(void)
     origBuildingLayer->setCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
 
     // Create a duplicate layer since we will be modifying it
-    buildingsLayer = theVisualizationWidget->duplicateExistingLayer(origBuildingLayer);
+    assetLayer = theVisualizationWidget->duplicateExistingLayer(origBuildingLayer);
 
-    if(buildingsLayer == nullptr)
+    if(assetLayer == nullptr)
     {
         this->errorMessage("Error copying the asset layer");
         return -1;
@@ -706,7 +710,7 @@ int HousingUnitAllocationWidget::getBuildingFeatures(void)
 
     buildingLayerSemaphore.lock();
 
-    if(buildingsLayer == nullptr)
+    if(assetLayer == nullptr)
     {
         emit emitErrorMsg("Error: no assets layer");
         buildingLayerSemaphore.unlock();
@@ -714,7 +718,7 @@ int HousingUnitAllocationWidget::getBuildingFeatures(void)
         return -1;
     }
 
-    auto features = buildingsLayer->getFeatures();
+    auto features = assetLayer->getFeatures();
 
     //buildingsMap.reserve(buildingsLayer->featureCount());
 
@@ -738,7 +742,7 @@ int HousingUnitAllocationWidget::getBuildingFeatures(void)
         // buildingsMap.push_back(newBuilding);
     }
 
-    emit emitStatusMsg("Loaded "+QString::number(buildingsLayer->featureCount())+" assets");
+    emit emitStatusMsg("Loaded "+QString::number(assetLayer->featureCount())+" assets");
 
     buildingLayerSemaphore.unlock();
 
@@ -758,7 +762,7 @@ int HousingUnitAllocationWidget::getParcelFeatures(void)
 
     // Coordinate transform to transform parcel layer into the building layers coordinate system
     buildingLayerSemaphore.lock();
-    QgsCoordinateTransform ct(parcelsLayer->crs(), buildingsLayer->crs(), QgsProject::instance());
+    QgsCoordinateTransform ct(parcelsLayer->crs(), assetLayer->crs(), QgsProject::instance());
     buildingLayerSemaphore.unlock();
 
     auto features = parcelsLayer->getFeatures();
@@ -886,7 +890,7 @@ int HousingUnitAllocationWidget::extractCensusData(void)
     // Lock access to the building layer
     std::unique_lock<std::mutex> lck (buildingLayerSemaphore);
 
-    if(censusBlockLayer == nullptr || buildingsLayer == nullptr)
+    if(censusBlockLayer == nullptr || assetLayer == nullptr)
     {
         emit emitErrorMsg("Error in extracting census data. Either a census layer or buildings layer is missing.");
         return -1;
@@ -894,7 +898,7 @@ int HousingUnitAllocationWidget::extractCensusData(void)
 
     QString errMsg;
 
-    auto res = theVisualizationWidget->joinLayers(censusBlockLayer,buildingsLayer,"CENSUSLAYER_",errMsg);
+    auto res = theVisualizationWidget->joinLayers(censusBlockLayer,assetLayer,"CENSUSLAYER_",errMsg);
     if(res != 0)
         emit emitErrorMsg(errMsg);
 
@@ -911,7 +915,7 @@ int HousingUnitAllocationWidget::extractACSData(void)
     // Lock access to the building layer
     std::unique_lock<std::mutex> lck (buildingLayerSemaphore);
 
-    if(ACSBlockGroupLayer == nullptr || buildingsLayer == nullptr)
+    if(ACSBlockGroupLayer == nullptr || assetLayer == nullptr)
     {
         emit emitErrorMsg("Error in extracting ACS data. Either a ACS layer or assets layer is missing.");
         return -1;
@@ -919,7 +923,7 @@ int HousingUnitAllocationWidget::extractACSData(void)
 
     QString errMsg;
 
-    auto res = theVisualizationWidget->joinLayers(ACSBlockGroupLayer,buildingsLayer,"ACSLAYER_",errMsg);
+    auto res = theVisualizationWidget->joinLayers(ACSBlockGroupLayer,assetLayer,"ACSLAYER_",errMsg);
     if(res != 0)
         emit emitErrorMsg(errMsg);
 
@@ -932,6 +936,8 @@ int HousingUnitAllocationWidget::extractACSData(void)
 void HousingUnitAllocationWidget::clear()
 {
     Layermap.clear();
+    layerNameCombo->clear();
+    selectedLayerNameLabel->setText("None Selected");
 }
 
 
@@ -976,12 +982,79 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
 
     connect(buildingCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,&HousingUnitAllocationWidget::handleBuildingLayerCrsChanged);
 
-    auto buildingHBox = new QHBoxLayout();
-    buildingHBox->addWidget(buildingPathText);
-    buildingHBox->addWidget(buildingsPathLineEdit);
-    buildingHBox->addWidget(browseBuidlingFileButton);
-    buildingHBox->addWidget(buildCrsTypeLabel);
-    buildingHBox->addWidget(buildingCrsSelector);
+    auto assetPathInput = new QWidget();
+
+    auto buildingHBoxLayout = new QHBoxLayout(assetPathInput);
+    buildingHBoxLayout->addWidget(buildingPathText);
+    buildingHBoxLayout->addWidget(buildingsPathLineEdit);
+    buildingHBoxLayout->addWidget(browseBuidlingFileButton);
+    buildingHBoxLayout->addWidget(buildCrsTypeLabel);
+    buildingHBoxLayout->addWidget(buildingCrsSelector);
+
+    // Create button group
+    fromMapRadioButton = new QRadioButton(tr("Select From GIS Map"));
+    fromPathButton = new QRadioButton(tr("Provide File Path"));
+
+    //First we need to add type radio buttons
+    m_typeButtonsGroup = new QButtonGroup();
+
+    // Set the from map by default
+    fromMapRadioButton->setChecked(true);
+
+    m_typeButtonsGroup->addButton(fromMapRadioButton, 0);
+    m_typeButtonsGroup->addButton(fromPathButton, 1);
+
+    m_typeButtonsGroup->setExclusive(true);
+
+    // Layout to select the method of asset input
+    auto assetInputSelectionLayout = new QHBoxLayout();
+
+    assetInputSelectionLayout->addWidget(fromMapRadioButton);
+    assetInputSelectionLayout->addWidget(fromPathButton);
+    assetInputSelectionLayout->addStretch(0);
+
+    auto assetFromMapInput = new QWidget();
+
+    auto selectLayerLabel = new QLabel("Select a layer from the GIS map");
+    layerNameCombo = new QComboBox();
+    layerNameCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+
+    auto layerSelectedLabel = new QLabel("Current Selected Layer:");
+
+    selectedLayerNameLabel = new QLabel("None Selected");
+
+    connect(layerNameCombo,&QComboBox::currentTextChanged,this,&HousingUnitAllocationWidget::handleSelectLayerFromMap);
+
+    // Update the combobox whenever layers on the map change
+    auto canvas = theVisualizationWidget->getMainCanvas();
+    connect(canvas,&QgsMapCanvas::layersChanged,this,&HousingUnitAllocationWidget::handleGetLayersFromMap);
+
+    auto assetFromMapLayout = new QHBoxLayout(assetFromMapInput);
+    assetFromMapLayout->addWidget(selectLayerLabel);
+    assetFromMapLayout->addWidget(layerNameCombo);
+    assetFromMapLayout->addWidget(layerSelectedLabel);
+    assetFromMapLayout->addWidget(selectedLayerNameLabel);
+    assetFromMapLayout->addStretch(0);
+
+    // Create the stacked widget that will change depending on the selected way to input an asset
+    auto inputStackedWidget = new QStackedWidget();
+
+    inputStackedWidget->addWidget(assetFromMapInput);
+    inputStackedWidget->addWidget(assetPathInput);
+
+    connect(m_typeButtonsGroup, QOverload<int>::of(&QButtonGroup::idReleased), [=](int id)
+    {
+        if(id == 0)
+            inputStackedWidget->setCurrentIndex(0);
+        else if (id == 1)
+            inputStackedWidget->setCurrentIndex(1);
+    });
+
+    // The main layout containing the selection buttons and the stacked widget
+    auto assetInputLayout = new QVBoxLayout();
+
+    assetInputLayout->addLayout(assetInputSelectionLayout);
+    assetInputLayout->addWidget(inputStackedWidget);
 
     QGroupBox* censusDataGB = new QGroupBox("Download Census & ACS Data (create .gdb files from scratch)");
     QGridLayout* cdGBLayout = new QGridLayout(censusDataGB);
@@ -989,12 +1062,12 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
     QLabel* censusVintageLabel = new QLabel("Decennial Census date:");
     censusVintageCombo = new QComboBox();
     censusVintageCombo->addItems(QStringList({"2010","2020"}));
-    censusVintageCombo->setCurrentText("2020");
+    censusVintageCombo->setCurrentText("2010");
 
     QLabel* ACSVintageLabel = new QLabel("American Community Survey date:");
     ACSVintageCombo = new QComboBox();
     ACSVintageCombo->addItems(QStringList({"2010","2015","2020"}));
-    ACSVintageCombo->setCurrentText("2020");
+    ACSVintageCombo->setCurrentText("2010");
 
 
     // Output dir where the results will be stored
@@ -1106,7 +1179,7 @@ QWidget* HousingUnitAllocationWidget::getHUAWidget(void)
     ACSLayout->addWidget(ACScrsTypeLabel,2,0);
     ACSLayout->addWidget(mACSCrsSelector,2,1);
 
-    mainLayout->addLayout(buildingHBox,0,0,1,5);
+    mainLayout->addLayout(assetInputLayout,0,0,1,5);
     mainLayout->addWidget(censusDataGB, 1,0,1,5);
     mainLayout->addWidget(censusGroupBox, 2,0,1,5);
     mainLayout->addWidget(ACSGroupBox, 3,0,1,5);
@@ -1214,8 +1287,8 @@ void HousingUnitAllocationWidget::handleACSLayerCrsChanged(const QgsCoordinateRe
 
 void HousingUnitAllocationWidget::handleBuildingLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
 {
-    if(buildingsLayer)
-        buildingsLayer->setCrs(val);
+    if(assetLayer)
+        assetLayer->setCrs(val);
 }
 
 
@@ -1335,6 +1408,76 @@ void HousingUnitAllocationWidget::handleCreateLayerMainThread(const QString& pat
     Layermap.insert(name,layer);
 
     emit emitLayerCreationFinished();
+}
+
+
+
+void HousingUnitAllocationWidget::handleGetLayersFromMap(void)
+{
+    auto canvas = theVisualizationWidget->getMainCanvas();
+
+    QList<QgsMapLayer *> layers = canvas->layers();
+
+    layerNameCombo->clear();
+
+    // Need this to prevent layer from automatically selecting when combobox is updated
+    layerNameCombo->blockSignals(true);
+
+    for(auto&& it : layers)
+    {
+        auto layerName = it->name();
+        layerNameCombo->addItem(layerName);
+    }
+
+    layerNameCombo->blockSignals(false);
+}
+
+
+void HousingUnitAllocationWidget::handleSelectLayerFromMap(const QString& selectedLayerName)
+{
+
+    // Quick return if
+    if(selectedLayerName.compare(selectedLayerNameLabel->text()) == 0)
+        return;
+
+    auto canvas = theVisualizationWidget->getMainCanvas();
+
+    QList<QgsMapLayer *> layers = canvas->layers();
+
+    for(auto&& it : layers)
+    {
+        auto layerName = it->name();
+
+        if(selectedLayerName.compare(layerName) == 0)
+        {
+
+            // Need to check that it is a vector layer, i.e., that it has features we can add attributes to
+            auto origLayer = dynamic_cast<QgsVectorLayer*>(it);
+
+            if(origLayer == nullptr)
+            {
+                this->errorMessage("The layer "+layerName+ " must be a vector layer with features to be used in HousingUnitAllocationWidget");
+                selectedLayerNameLabel->setText("None Selected");
+
+                return;
+            }
+
+            this->infoMessage("Selected layer "+layerName+" in housing unit allocation widget. Creating a copy to modify.");
+
+            // Create a duplicate layer since we will be modifying it
+            assetLayer = theVisualizationWidget->duplicateExistingLayer(origLayer);
+
+            if(assetLayer == nullptr)
+            {
+                this->errorMessage("Error copying the asset layer");
+                return;
+            }
+
+            selectedLayerNameLabel->setText(layerName);
+
+            break;
+        }
+    }
 }
 
 
