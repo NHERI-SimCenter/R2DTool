@@ -48,6 +48,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "QGISVisualizationWidget.h"
 
+#include "Utils/FileOperations.h"
+
 #include <QDir>
 #include <QApplication>
 #include <QLineEdit>
@@ -82,7 +84,7 @@ GISAssetInputWidget::GISAssetInputWidget(QWidget *parent, VisualizationWidget* v
     this->setLabel1(txt1);
 
     QString txt2 = "Enter the IDs of one or more "+componentType.toLower()+" to analyze."
-                   "Define a range of "+componentType.toLower()+" with a dash and separate multiple "+componentType.toLower()+" with a comma.";
+                                                                           "Define a range of "+componentType.toLower()+" with a dash and separate multiple "+componentType.toLower()+" with a comma.";
     this->setLabel2(txt2);
 
     QString txt3 = componentType + " Information";
@@ -128,6 +130,44 @@ bool GISAssetInputWidget::loadFileFromPath(const QString& filePath)
 
 bool GISAssetInputWidget::outputToJSON(QJsonObject &rvObject)
 {
+    QJsonObject outJson;
+
+    auto res = this->outputAppDataToJSON(outJson);
+
+    if(!res)
+        return res;
+
+    QJsonObject appData = outJson["ApplicationData"].toObject();
+
+    if(!appData.contains("assetGISFile") || !appData.contains("pathToSource"))
+    {
+        this->errorMessage("Error, could not find the 'assetGISFile' or 'pathToSource' fields in 'ApplicationData' in "+this->objectName());
+        return false;
+    }
+
+    auto assetFileName = appData["assetGISFile"].toString();
+
+    auto assetFilePath = appData["pathToSource"].toString();
+
+    QDir dirInfo(assetFilePath);
+    auto assetDirName = dirInfo.dirName();
+    auto pathToFile = assetDirName + QDir::separator() + assetFileName;
+
+    //    auto pathToFile = assetFilePath + QDir::separator() + assetFileName;
+
+    //    auto pathToFile = assetFileName;
+
+    rvObject.insert("SiteDataFile", pathToFile);
+
+    if(!appData.contains("CRS"))
+    {
+        this->errorMessage("Error, could not find the 'CRS' field in 'ApplicationData' in "+this->objectName());
+        return false;
+    }
+
+    rvObject.insert("CRS",appData["CRS"]);
+
+    rvObject.insert("DataType", "Shapefile");
 
     return true;
 }
@@ -387,7 +427,7 @@ bool GISAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     // First get the default information and then modify
     AssetInputWidget::outputAppDataToJSON(jsonObject);
 
-    // Here we will export everything to a .csv
+    // Export everything to a .csv
     jsonObject["Application"] = appType;
 
     // It assumes the file name stays the same, but we need to modify the extension so that it is in csv and not .gdb, or .shp, or whatever
@@ -519,7 +559,7 @@ bool GISAssetInputWidget::isEmpty()
 
 bool GISAssetInputWidget::copyFiles(QString &destName)
 {
-    // Copy over the gis file
+    // Copy over the gis file(s), note that if it is a gdb or shapefile, it will have other supporting files with the main file
     auto compLineEditText = componentFileLineEdit->text();
 
     QFileInfo componentFile(compLineEditText);
@@ -527,16 +567,38 @@ bool GISAssetInputWidget::copyFiles(QString &destName)
     if (!componentFile.exists())
         return false;
 
-    if (!QFile::copy(compLineEditText, destName + QDir::separator() + componentFile.fileName()))
-        return false;
+    QDir dirInfo = componentFile.dir();
+    auto sourceDir = dirInfo.dirName();
 
-    // Do not copy the file, output a new csv which will have the changes that the user makes in the table
-    //        if (componentFile.exists()) {
-    //            return this->copyFile(componentFileLineEdit->text(), destName);
-    //        }
+    // Recursive copy everything in the folder containing the main file
+
+    auto destPath = destName + QDir::separator() + sourceDir;
+
+    QDir dirDest(destPath);
+
+    if (!dirDest.exists())
+    {
+        if (!dirDest.mkpath(destPath))
+        {
+            QString errMsg = QString("Could not create destination Dir: ") + destPath;
+            this->errorMessage(errMsg);
+
+            return false;
+        }
+    }
+
+    auto res = SCUtils::recursiveCopy(dirInfo.absolutePath(), destPath);
+
+    if(!res)
+    {
+        QString msg = "Error copying GIS files over to the directory " + destPath;
+        errorMessage(msg);
+
+        return res;
+    }
 
     // Then create the csv file
-    return AssetInputWidget::copyFiles(destName);
+    return AssetInputWidget::copyFiles(destPath);
 }
 
 
@@ -587,3 +649,4 @@ int GISAssetInputWidget::getOffset(void)
 
     return delta;
 }
+

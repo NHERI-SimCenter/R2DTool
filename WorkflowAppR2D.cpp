@@ -44,7 +44,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CustomizedItemModel.h"
 #include "DLWidget.h"
 #include "DakotaResultsSampling.h"
-#include "EngDemandParameterWidget.h"
 #include "GeneralInformationWidgetR2D.h"
 #include "GoogleAnalytics.h"
 #include "HazardToAssetWidget.h"
@@ -236,9 +235,7 @@ void WorkflowAppR2D::initialize(void)
     SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
     theLocalEvent->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);							
     
-    // theEngDemandParamWidget = new EngDemandParameterWidget(this);
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
-    // theDecisionVariableWidget = new DecisionVariableWidget(this);
     theUQWidget = new UQWidget(this);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
     thePerformanceWidget = new PerformanceWidget(this,theRVs);
@@ -271,12 +268,10 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("MOD"), theModelingWidget);
     theComponentSelection->addComponent(tr("ANA"), theAnalysisWidget);
     theComponentSelection->addComponent(tr("DL"),  theDamageAndLossWidget);
-    //theComponentSelection->addComponent(tr("EDP"), theEngDemandParamWidget);  // EDP from DL
-    //theComponentSelection->addComponent(tr("DV"), theDecisionVariableWidget); // removed
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
-    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
+//    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
 
 
     theComponentSelection->displayComponent("VIZ");

@@ -296,6 +296,8 @@ bool MultiComponentR2D::addComponent(QString text, SimCenterAppWidget *theCompon
             this->displayComponent(text);
         });
 
+        theComponent->setProperty("ComponentText",text);
+
         return true;
     } else
         qDebug() << "ComponentSelection: text: " << text << " option already exists";

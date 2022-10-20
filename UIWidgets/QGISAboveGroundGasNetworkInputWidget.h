@@ -49,7 +49,7 @@ class QGISAboveGroundGasNetworkInputWidget : public AssetInputWidget
 public:
     QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
-    int loadAssetVisualization();
+    int loadAssetVisualization() override;
 
 #ifdef OpenSRA
     bool loadFileFromPath(const QString& filePath) override;

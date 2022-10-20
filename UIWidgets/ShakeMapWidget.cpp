@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "XMLAdaptor.h"
 #include "CSVReaderWriter.h"
 #include "TreeItem.h"
+#include "Utils/FileOperations.h"
+
 
 #ifdef OpenSRA
 #include "OpenSRAPreferences.h"
@@ -990,6 +992,28 @@ bool ShakeMapWidget::inputFromJSON(QJsonObject &jsonObject)
 
     pathToShakeMapDirectory = thisObject.value("Directory").toString();
 
+
+    QFileInfo inputDirInfo(pathToShakeMapDirectory);
+
+    if(!inputDirInfo.exists())
+    {
+        auto relPathToDir = QCoreApplication::applicationDirPath() + QDir::separator() + pathToShakeMapDirectory;
+
+        if (!QFileInfo::exists(relPathToDir))
+        {
+            QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
+            errorMessage(errMsg);
+            return -1;
+        }
+        else
+        {
+            pathToShakeMapDirectory = relPathToDir;
+            shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
+        }
+
+    }
+
+    pathToShakeMapDirectory = inputDirInfo.absoluteFilePath();
     shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
 
     auto eventsArray = thisObject.value("Events").toArray().toVariantList();
@@ -1013,22 +1037,47 @@ bool ShakeMapWidget::inputFromJSON(QJsonObject &jsonObject)
 
 bool ShakeMapWidget::copyFiles(QString &destDir)
 {
-    auto destinationDirectory = destDir + QDir::separator();// + "ShakeMap";
 
-    motionDir = destinationDirectory + QDir::separator();
+
+    QFileInfo inputDirInfo(pathToShakeMapDirectory);
+
+    if(!inputDirInfo.exists())
+    {
+        QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
+        errorMessage(errMsg);
+    }
+
+
+    auto inputDir = inputDirInfo.absoluteFilePath();
+
+    QDir dirInfo = QDir(inputDir);
+    auto sourceDir = dirInfo.dirName();
+
+    auto destPath = destDir + QDir::separator() + sourceDir;
+
+    QDir dirDest(destPath);
+
+    if (!dirDest.exists())
+    {
+        if (!dirDest.mkpath(destPath))
+        {
+            QString errMsg = QString("Could not create destination Dir: ") + destPath;
+            this->errorMessage(errMsg);
+
+            return false;
+        }
+    }
+
+    emit outputDirectoryPathChanged(destPath, pathToEventFile);
+
+    motionDir = destPath + QDir::separator();
     pathToEventFile = motionDir + "EventGrid.csv";
 
-    emit outputDirectoryPathChanged(destinationDirectory, pathToEventFile);
-
-    const QFileInfo inputDirInfo(pathToShakeMapDirectory);
-
-    auto sourcePath = inputDirInfo.absoluteFilePath();
-
-    auto res = this->recursiveCopy(sourcePath, destinationDirectory);
+    auto res = SCUtils::recursiveCopy(inputDir, destPath);
 
     if(!res)
     {
-        QString msg = "Error copying ShakeMap files over to the directory " + destinationDirectory;
+        QString msg = "Error copying ShakeMap files over to the directory " + destPath;
         errorMessage(msg);
 
         return res;
@@ -1191,38 +1240,6 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
 int ShakeMapWidget::getNumShakeMapsLoaded()
 {
     return listWidget->getNumberOfItems();
-}
-
-
-bool ShakeMapWidget::recursiveCopy(const QString &sourcePath, const QString &destPath)
-{
-    QFileInfo srcFileInfo(sourcePath);
-
-    if (srcFileInfo.isDir())
-    {
-        QDir targetDir(destPath);
-
-        if (!targetDir.mkpath(destPath))
-            return false;
-
-        QDir sourceDir(sourcePath);
-
-        QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
-
-        foreach (const QString &fileName, fileNames)
-        {
-            const QString newSrcFilePath = sourcePath + QDir::separator() + fileName;
-            const QString newDestFilePath = destPath  + QDir::separator() + fileName;
-
-            if (!recursiveCopy(newSrcFilePath, newDestFilePath))
-                return false;
-        }
-    } else {
-        if (!QFile::copy(sourcePath, destPath))
-            return false;
-    }
-
-    return true;
 }
 
 
