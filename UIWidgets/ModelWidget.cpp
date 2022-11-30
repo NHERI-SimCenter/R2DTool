@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "NoArgSimCenterApp.h"
 #include "NoneWidget.h"
 #include "OpenSeesPyBuildingModel.h"
+#include <CustomPy.h>
 #include "SecondaryComponentSelection.h"
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
@@ -80,6 +81,10 @@ ModelWidget::ModelWidget(QWidget *parent)
     buildingWidget->addComponent(QString("MDOF-LU"), QString("MDOF-LU"), mdofLU);
     buildingWidget->addComponent(QString("OpenSeesPy Script Generator"), QString("OpenSeesPyInput"), openSeesPy);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
+
+    // KZ: adding CustomPy
+    SimCenterAppWidget *custom_py = new CustomPy();
+    buildingWidget->addComponent(QString("CustomPy"), QString("CustomPyInput"), custom_py);
 
     // Natural gas pipeline apps
     SimCenterAppWidget *noneWidget2 = new NoneWidget(this);
