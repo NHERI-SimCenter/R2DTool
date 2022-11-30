@@ -41,6 +41,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentTableView.h"
 #include "AssetFilterDelegate.h"
 
+#include <QDir>
+
 #include <qgsfield.h>
 #include <qgsfillsymbol.h>
 #include <qgsvectorlayer.h>
@@ -48,6 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 PointAssetInputWidget::PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
 {
+    latTag = "latitude";
+    lonTag = "longitude";
 }
 
 
@@ -75,8 +79,8 @@ int PointAssetInputWidget::loadAssetVisualization()
 
     // First check if a footprint was provided
     auto indexFootprint = headers.indexOf("Footprint");
-    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, "latitude");
-    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, "longitude");
+    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, latTag);
+    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, lonTag);
 
     if(indexLongitude == -1 || indexLatitude == -1)
     {
@@ -276,16 +280,76 @@ int PointAssetInputWidget::loadAssetVisualization()
 }
 
 
+#ifdef OpenSRA
+bool PointAssetInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+
+    QJsonObject appJsonObj;
+    auto res  = AssetInputWidget::outputAppDataToJSON(appJsonObj);
+
+    if(!res)
+    {
+        this->errorMessage("Error, could not output ");
+        return false;
+    }
+
+    auto appDataJson = appJsonObj.value("ApplicationData").toObject();
+
+    auto fileName = appDataJson.value("assetSourceFile").toString();
+    auto filePath = appDataJson.value("pathToSource").toString();
+
+    rvObject["DataType"] = "CSV";
+    rvObject["SiteDataFile"] = filePath + QDir::separator() + fileName;
+    rvObject["Filter"] = appDataJson.value("filter");
+
+    QJsonObject siteLocParams;
+    siteLocParams["Lat"] = latTag;
+    siteLocParams["Lon"] = lonTag;
+    rvObject["SiteLocationParams"] = siteLocParams;
+
+
+    return true;
+}
+
+
+bool PointAssetInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+    QJsonObject asR2DObj;
+    QJsonObject appData;
+
+    if(!rvObject.contains("SiteDataFile"))
+    {
+        this->errorMessage("Error, could not find the required field of 'SiteDataFile' in the infrastructure json");
+        return false;
+    }
+
+    appData["assetSourceFile"] = rvObject["SiteDataFile"];
+
+    if(rvObject.contains("Filter"))
+        appData["filter"] = rvObject["Filter"];
+
+    asR2DObj["ApplicationData"] = appData;
+
+    if(!rvObject.contains("SiteLocationParams"))
+    {
+        this->errorMessage("Error, could not find the required field of 'SiteLocationParams' in the infrastructure json");
+        return false;
+    }
+
+    auto siteLocParams = rvObject["SiteLocationParams"].toObject();
+
+    latTag = siteLocParams.value("Lat").toString();
+    lonTag = siteLocParams.value("Lon").toString();
+
+    return AssetInputWidget::inputAppDataFromJSON(asR2DObj);
+}
+#endif
+
 
 void PointAssetInputWidget::clear()
 {    
-//    if(selectedFeaturesLayer != nullptr)
-//    {
-//        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
-//        theVisualizationWidget->deregisterLayerForSelection(selectedFeaturesLayer->id());
-//    }
-//    if(mainLayer != nullptr)
-//        theVisualizationWidget->removeLayer(mainLayer);
+    latTag = "latitude";
+    lonTag = "longitude";
 
     AssetInputWidget::clear();
 }

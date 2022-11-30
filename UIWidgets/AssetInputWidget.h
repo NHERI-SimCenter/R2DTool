@@ -94,10 +94,6 @@ public:
 
     virtual int loadAssetVisualization() = 0;
 
-#ifdef OpenSRA
-    virtual bool loadFileFromPath(const QString& filePath) = 0;
-#endif
-
 #ifdef ARC_GIS
     virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
     virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);

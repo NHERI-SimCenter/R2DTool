@@ -224,21 +224,6 @@ int LineAssetInputWidget::loadAssetVisualization(void)
 
 
 #ifdef OpenSRA
-bool LineAssetInputWidget::loadFileFromPath(const QString& filePath)
-{
-    QFileInfo fileInfo;
-    if (!fileInfo.exists(filePath))
-        return false;
-
-    pathToComponentInputFile = filePath;
-    componentFileLineEdit->setText(filePath);
-
-    this->loadAssetData();
-
-    return true;
-}
-
-
 bool LineAssetInputWidget::outputToJSON(QJsonObject &rvObject)
 {
 

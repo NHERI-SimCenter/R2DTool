@@ -60,8 +60,6 @@ public:
     LineAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
 #ifdef OpenSRA
-    bool loadFileFromPath(const QString& filePath) override;
-
     bool inputFromJSON(QJsonObject &rvObject) override;
     bool outputToJSON(QJsonObject &rvObject) override;
 

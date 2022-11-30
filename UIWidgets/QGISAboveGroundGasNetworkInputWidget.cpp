@@ -224,22 +224,6 @@ int QGISAboveGroundGasNetworkInputWidget::loadAssetVisualization()
 }
 
 
-#ifdef OpenSRA
-bool QGISAboveGroundGasNetworkInputWidget::loadFileFromPath(const QString& filePath)
-{
-    QFileInfo fileInfo;
-    if (!fileInfo.exists(filePath))
-        return false;
-
-    pathToComponentInputFile = filePath;
-    componentFileLineEdit->setText(filePath);
-
-    this->loadAssetData();
-
-    return true;
-}
-#endif
-
 
 void QGISAboveGroundGasNetworkInputWidget::clear()
 {    

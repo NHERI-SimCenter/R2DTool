@@ -38,29 +38,38 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "AssetInputWidget.h"
+#include "PointAssetInputWidget.h"
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISWellsCaprocksInputWidget : public AssetInputWidget
+class QGISWellsCaprocksInputWidget : public PointAssetInputWidget
 {
 public:
     QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
-    int loadAssetVisualization() override;
+    void createComponentsBox(void) override;
 
-#ifdef OpenSRA
-    bool loadFileFromPath(const QString& filePath) override;
-#endif
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
 
     void clear() override;
 
+private slots:
+
+    void handleWellTracesDirDialog(void);
+
+    void handleCaprockDialog(void);
+
 private:
 
-    QgsVectorLayer* mainLayer = nullptr;
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+    void loadCaprocksLayer();
+
+    QLineEdit* pathWellTraceLE = nullptr;
+    QLineEdit* pathCaprockShpLE = nullptr;
+
+    QgsVectorLayer* caprocksLayer = nullptr;
 
 };
 

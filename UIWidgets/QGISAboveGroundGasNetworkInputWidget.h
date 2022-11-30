@@ -51,10 +51,6 @@ public:
 
     int loadAssetVisualization() override;
 
-#ifdef OpenSRA
-    bool loadFileFromPath(const QString& filePath) override;
-#endif
-
     void clear() override;
 
 private:

@@ -671,7 +671,7 @@ bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()) {
         data["assetSourceFile"]=componentFile.fileName();
-        data["pathToSource"]=componentFile.path();
+        data["pathToSource"]=componentFile.absoluteDir().path();
 
         QString filterData = this->getFilterString();
 

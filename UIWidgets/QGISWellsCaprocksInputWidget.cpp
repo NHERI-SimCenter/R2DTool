@@ -41,216 +41,215 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentTableView.h"
 #include "ComponentDatabaseManager.h"
 #include "AssetFilterDelegate.h"
+#include "LineAssetInputWidget.h"
 
 #include <QFileInfo>
+#include <QFileDialog>
+#include <QPushButton>
 
 #include <qgsfield.h>
 #include <qgsfillsymbol.h>
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
-QGISWellsCaprocksInputWidget::QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
+QGISWellsCaprocksInputWidget::QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : PointAssetInputWidget(parent, visWidget, assetType, appType)
 {
+    QGISWellsCaprocksInputWidget::createComponentsBox();
+}
+
+
+void QGISWellsCaprocksInputWidget::createComponentsBox(void)
+{
+    QVBoxLayout* inputLayout = new QVBoxLayout();
+
+    QHBoxLayout* welltraceLayout = new QHBoxLayout();
+
+    QLabel* pathWellTraceLabel = new QLabel("Directory containing well traces:");
+
+    QPushButton* pathWellTraceButton = new QPushButton();
+    pathWellTraceButton->setText(tr("Browse"));
+    pathWellTraceButton->setMaximumWidth(150);
+    connect(pathWellTraceButton,&QPushButton::clicked,this,&QGISWellsCaprocksInputWidget::handleWellTracesDirDialog);
+
+    pathWellTraceLE = new QLineEdit();
+
+    welltraceLayout->addWidget(pathWellTraceLabel);
+    welltraceLayout->addWidget(pathWellTraceLE);
+    welltraceLayout->addWidget(pathWellTraceButton);
+
+    inputLayout->addLayout(welltraceLayout);
+
+    QHBoxLayout* caprockLayout = new QHBoxLayout();
+
+    QLabel* pathCaprockShp = new QLabel("Caprock shapefile:");
+
+    QPushButton* pathCaprockShpButton = new QPushButton();
+    pathCaprockShpButton->setText(tr("Browse"));
+    pathCaprockShpButton->setMaximumWidth(150);
+    connect(pathCaprockShpButton,&QPushButton::clicked,this,&QGISWellsCaprocksInputWidget::handleCaprockDialog);
+
+    pathCaprockShpLE = new QLineEdit();
+
+    caprockLayout->addWidget(pathCaprockShp);
+    caprockLayout->addWidget(pathCaprockShpLE);
+    caprockLayout->addWidget(pathCaprockShpButton);
+
+    inputLayout->addLayout(caprockLayout);
+
+    auto insPoint = mainWidgetLayout->count();
+
+    mainWidgetLayout->insertLayout(insPoint-3,inputLayout);
+}
+
+
+
+void QGISWellsCaprocksInputWidget::handleWellTracesDirDialog(void)
+{
+    auto newPathToInputFile = QFileDialog::getExistingDirectory(this,tr("Directory containing well traces"));
+
+    // Return if the user cancels
+    if(newPathToInputFile.isEmpty())
+        return;
+
+    pathWellTraceLE->setText(newPathToInputFile);
 
 }
 
 
-#ifdef OpenSRA
-bool QGISWellsCaprocksInputWidget::loadFileFromPath(const QString& filePath)
+bool QGISWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
-    QFileInfo fileInfo;
-    if (!fileInfo.exists(filePath))
+    auto pathWellTraceDir = rvObject.value("WellTraceDir").toString();
+
+    if(pathWellTraceDir.isEmpty())
+    {
+        this->errorMessage("Error, the required input 'WellTraceDir' is missing in "+QString(__FUNCTION__));
         return false;
+    }
 
-    pathToComponentInputFile = filePath;
-    componentFileLineEdit->setText(filePath);
+    QFileInfo fileInfoWT(pathWellTraceDir);
 
-    this->loadAssetData();
+    if(!fileInfoWT.exists())
+        pathWellTraceDir = QDir::currentPath() + QDir::separator() + pathWellTraceDir;
 
-    return true;
+    fileInfoWT.setFile(pathWellTraceDir);
+
+    if(!fileInfoWT.exists())
+    {
+        this->errorMessage("Error, could not find the well trace directory at any one of the following paths: "+rvObject.value("WellTraceDir").toString()+","+ pathWellTraceDir+" in "+QString(__FUNCTION__));
+        return false;
+    }
+
+
+    pathWellTraceLE->setText(fileInfoWT.absoluteFilePath());
+
+    auto pathCaprockShpFile = rvObject.value("PathToCaprockShapefile").toString();
+
+    if(pathCaprockShpFile.isEmpty())
+    {
+        this->errorMessage("Error, the required input 'PathToCaprockShapefile' is missing in "+QString(__FUNCTION__));
+        return false;
+    }
+
+    QFileInfo fileInfo(pathCaprockShpFile);
+
+    if(!fileInfo.exists())
+        pathCaprockShpFile = QDir::currentPath() + QDir::separator() + pathCaprockShpFile;
+
+    fileInfo.setFile(pathCaprockShpFile);
+
+    if(!fileInfo.exists())
+    {
+        this->errorMessage("Error, could not find the caprock shapefile file at any one of the following paths: "+rvObject.value("PathToCaprockShapefile").toString()+","+ pathToComponentInputFile+" in "+QString(__FUNCTION__));
+        return false;
+    }
+
+
+    pathCaprockShpLE->setText(fileInfo.absoluteFilePath());
+
+    this->loadCaprocksLayer();
+
+    return PointAssetInputWidget::inputFromJSON(rvObject);
 }
-#endif
 
 
-int QGISWellsCaprocksInputWidget::loadAssetVisualization()
+bool QGISWellsCaprocksInputWidget::outputToJSON(QJsonObject &rvObject)
 {
-    // Create the building attributes that are fixed
-    QgsFields featFields;
-    featFields.append(QgsField("ID", QVariant::Int));
-    featFields.append(QgsField("AssetType", QVariant::String));
-    featFields.append(QgsField("TabName", QVariant::String));
+   auto res = PointAssetInputWidget::outputToJSON(rvObject);
 
-    // Set the table headers as fields in the table
-    for(int i = 1; i<componentTableWidget->columnCount(); ++i)
-    {
-        auto fieldText = componentTableWidget->horizontalHeaderItemVariant(i);
-        featFields.append(QgsField(fieldText.toString(),fieldText.type()));
-    }
-
-    QList<QgsField> attribFields;
-    for(int i = 0; i<featFields.size(); ++i)
-        attribFields.push_back(featFields[i]);
-
-    auto headers = this->getTableHorizontalHeadings();
-
-    // First check if a footprint was provided
-    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, "latitude");
-    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, "longitude");
-
-    if(indexLongitude == -1 || indexLatitude == -1)
-    {
-        this->errorMessage("Could not find latitude and longitude in the header columns");
-        return -1;
-    }
-
-    // Get the number of rows
-    auto nRows = componentTableWidget->rowCount();
-
-    QString layerType = "point";
-
-    // Create the buildings layer
-    mainLayer = theVisualizationWidget->addVectorLayer(layerType,"All Wells & Caprocks");
-
-    if(mainLayer == nullptr)
-    {
-        this->errorMessage("Error adding a vector layer");
-        return -1;
-    }
-
-    auto pr = mainLayer->dataProvider();
-
-    mainLayer->startEditing();
-
-    auto res = pr->addAttributes(attribFields);
-
-    if(!res)
-        this->errorMessage("Error adding attributes to the layer" + mainLayer->name());
-
-    mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
-
-    theComponentDb->setMainLayer(mainLayer);
-
-    filterDelegateWidget  = new AssetFilterDelegate(mainLayer);
-
-    auto numAtrb = attribFields.size();
-
-    for(int i = 0; i<nRows; ++i)
-    {
-        // create the feature attributes
-        QgsAttributes featureAttributes(numAtrb);
-
-        // Create a new building
-        QString assetIDStr = componentTableWidget->item(i,0).toString();
-
-        int assetID = assetIDStr.toInt();
-
-        //  "ID"
-        //  "AssetType"
-        //  "TabName"
-
-        featureAttributes[0] = QVariant(assetID);
-        featureAttributes[1] = QVariant("WELLSCAPROCKS");
-        featureAttributes[2] = QVariant(assetID);
-
-        // The feature attributes are the columns from the table
-        for(int j = 1; j<componentTableWidget->columnCount(); ++j)
-        {
-            auto attrbVal = componentTableWidget->item(i,j);
-            featureAttributes[2+j] = attrbVal;
-        }
-
-        auto latitude = componentTableWidget->item(i,indexLatitude).toDouble();
-        auto longitude = componentTableWidget->item(i,indexLongitude).toDouble();
-
-        QgsFeature feature;
-        feature.setFields(featFields);
-
-        QgsPointXY(longitude,latitude);
-        auto geom = QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude));
-        if(geom.isEmpty())
-        {
-            this->errorMessage("Error getting the building footprint geometry");
-            return -1;
-        }
-
-        feature.setGeometry(geom);
-        feature.setAttributes(featureAttributes);
-
-        if(!feature.isValid())
-            return -1;
+   if(!res)
+   {
+       this->errorMessage("Error output to json in "+QString(__FUNCTION__));
+       return false;
+   }
 
 
-        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
-        if(!res)
-        {
-            this->errorMessage("Error adding the feature to the layer");
-            return -1;
-        }
+   auto pathWellTraceDir = pathWellTraceLE->text();
 
-        //        auto id = feature.id();
-
-        //        qDebug()<<id;
-    }
-
-    mainLayer->commitChanges(true);
-    mainLayer->updateExtents();
+   if(pathWellTraceDir.isEmpty())
+   {
+       this->errorMessage("The path to well trace directory is empty in "+QString(__FUNCTION__));
+       return false;
+   }
 
 
-    //Qgis::MarkerShape symbolShape, QColor color, double size, QgsVectorLayer * layer
-    theVisualizationWidget->createSymbolRenderer(Qgis::MarkerShape::Triangle,Qt::gray,4.0,mainLayer);
+   rvObject.insert("WellTraceDir",pathWellTraceDir);
 
-//    auto numFeat = mainLayer->featureCount();
 
-    theVisualizationWidget->zoomToLayer(mainLayer);
+   auto pathCaprockShp = pathCaprockShpLE->text();
 
-    auto layerId = mainLayer->id();
+   if(pathCaprockShp.isEmpty())
+   {
+       this->errorMessage("The path to caprock shapefile is empty in "+QString(__FUNCTION__));
+       return false;
+   }
 
-    theVisualizationWidget->registerLayerForSelection(layerId,this);
+   rvObject.insert("PathToCaprockShapefile",pathCaprockShp);
 
-    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(layerType,"Selected Wells & Caprocks");
-
-    if(selectedFeaturesLayer == nullptr)
-    {
-        this->errorMessage("Error adding the selected assets vector layer");
-        return -1;
-    }
-
-    theVisualizationWidget->createSymbolRenderer(Qgis::MarkerShape::Triangle,Qt::yellow,4.0,selectedFeaturesLayer);
-
-    auto pr2 = selectedFeaturesLayer->dataProvider();
-
-    auto res2 = pr2->addAttributes(attribFields);
-
-    if(!res2)
-        this->errorMessage("Error adding attributes to the layer");
-
-    selectedFeaturesLayer->updateFields(); // tell the vector layer to fetch changes from the provider
-
-    theComponentDb->setSelectedLayer(selectedFeaturesLayer);
-
-    QVector<QgsMapLayer*> mapLayers;
-    mapLayers.push_back(selectedFeaturesLayer);
-    mapLayers.push_back(mainLayer);
-
-    theVisualizationWidget->createLayerGroup(mapLayers,"Wells & Caprocks");
-
-    return 0;
+   return true;
 }
 
+
+void QGISWellsCaprocksInputWidget::handleCaprockDialog(void)
+{
+    auto newPathToInputFile = QFileDialog::getOpenFileName(this,tr("Caprock shapefile"));
+
+    // Return if the user cancels
+    if(newPathToInputFile.isEmpty())
+        return;
+
+    pathCaprockShpLE->setText(newPathToInputFile);
+
+    this->loadCaprocksLayer();
+}
 
 
 void QGISWellsCaprocksInputWidget::clear()
 {    
-//    if(selectedFeaturesLayer != nullptr)
-//    {
-//        theVisualizationWidget->removeLayer(selectedFeaturesLayer);
-//        theVisualizationWidget->deregisterLayerForSelection(selectedFeaturesLayer->id());
-//    }
-//    if(mainLayer != nullptr)
-//        theVisualizationWidget->removeLayer(mainLayer);
-
-    AssetInputWidget::clear();
+    caprocksLayer = nullptr;
+    pathCaprockShpLE->clear();
+    pathWellTraceLE->clear();
+    PointAssetInputWidget::clear();
 }
 
+
+void QGISWellsCaprocksInputWidget::loadCaprocksLayer()
+{
+    auto pathToCaprockFile = pathCaprockShpLE->text();
+
+    if(!QFileInfo::exists(pathToCaprockFile))
+    {
+        this->errorMessage("Error, the caprock file :"+pathToCaprockFile+ "does not exist");
+    }
+
+    if(caprocksLayer)
+        theVisualizationWidget->removeLayer(caprocksLayer);
+
+    caprocksLayer = theVisualizationWidget->addVectorLayer(pathToCaprockFile,"Caprocks","ogr");
+
+    if(!caprocksLayer)
+    {
+        this->errorMessage("Error creating the caprock layer in "+QString(__FUNCTION__));
+    }
+}
 
 
