@@ -50,8 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 PointAssetInputWidget::PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
 {
-    latTag = "latitude";
-    lonTag = "longitude";
+    latTag = "Latitude";
+    lonTag = "Longitude";
 }
 
 
@@ -348,8 +348,8 @@ bool PointAssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 
 void PointAssetInputWidget::clear()
 {    
-    latTag = "latitude";
-    lonTag = "longitude";
+    latTag = "Latitude";
+    lonTag = "Longitude";
 
     AssetInputWidget::clear();
 }
