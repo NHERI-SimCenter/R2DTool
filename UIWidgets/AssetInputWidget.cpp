@@ -101,7 +101,7 @@ AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidg
 
     auto txt1 = "Load information from a CSV file";
     auto txt2  = "Enter the IDs of one or more " + assetType.toLower() + " to analyze."
-                                                                             "\nDefine a range of " + assetType.toLower() + " with a dash and separate multiple " + assetType.toLower() + " with a comma.";
+                                                                         "\nDefine a range of " + assetType.toLower() + " with a dash and separate multiple " + assetType.toLower() + " with a comma.";
 
     auto txt3 = QStringRef(&assetType, 0, assetType.length()-1) + " Information";
 
@@ -305,7 +305,7 @@ void AssetInputWidget::createComponentsBox(void)
     componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
 
-    QPushButton *browseFileButton = new QPushButton();
+    browseFileButton = new QPushButton();
     browseFileButton->setText(tr("Browse"));
     browseFileButton->setMaximumWidth(150);
     
@@ -350,13 +350,14 @@ void AssetInputWidget::createComponentsBox(void)
     mainWidgetLayout->addWidget(label1);
     mainWidgetLayout->addLayout(pathLayout);
 
-    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
+    filterWidget = new QWidget();
+    QHBoxLayout* selectComponentsLayout = new QHBoxLayout(filterWidget);
     selectComponentsLayout->addWidget(label2);
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
     
-    mainWidgetLayout->addLayout(selectComponentsLayout);
+    mainWidgetLayout->addWidget(filterWidget);
 
     mainWidgetLayout->addWidget(label3,0,Qt::AlignCenter);
     mainWidgetLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
@@ -918,35 +919,35 @@ bool AssetInputWidget::copyFiles(QString &destName)
         }
     }
 
-//     For testing, creates a csv file of only the selected components
-//        qDebug()<<"Saving selected components to .csv";
-//        auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+    //     For testing, creates a csv file of only the selected components
+    //        qDebug()<<"Saving selected components to .csv";
+    //        auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-//        QVector<QStringList> selectedData(selectedIDs.size()+1);
+    //        QVector<QStringList> selectedData(selectedIDs.size()+1);
 
-//        selectedData[0] = headerValues;
+    //        selectedData[0] = headerValues;
 
-//        auto nCols = componentTableWidget->columnCount();
+    //        auto nCols = componentTableWidget->columnCount();
 
-//        int i = 0;
-//        for(auto&& rowID : selectedIDs)
-//        {
-//            QStringList rowData;
-//            rowData.reserve(nCols);
+    //        int i = 0;
+    //        for(auto&& rowID : selectedIDs)
+    //        {
+    //            QStringList rowData;
+    //            rowData.reserve(nCols);
 
-//            for(int j = 0; j<nCols; ++j)
-//            {
-//                auto item = componentTableWidget->item(rowID-1,j).toString();
+    //            for(int j = 0; j<nCols; ++j)
+    //            {
+    //                auto item = componentTableWidget->item(rowID-1,j).toString();
 
-//                rowData<<item;
-//            }
-//            selectedData[i+1] = rowData;
+    //                rowData<<item;
+    //            }
+    //            selectedData[i+1] = rowData;
 
-//            ++i;
-//        }
+    //            ++i;
+    //        }
 
-//        csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
-//     For testing end
+    //        csvTool.saveCSVFile(selectedData,"/Users/steve/Desktop/Selected.csv",err);
+    //     For testing end
 
     return true;
 }
@@ -1134,5 +1135,11 @@ bool AssetInputWidget::isEmpty()
 int AssetInputWidget::getNumberOfAseets(void)
 {
     return componentTableWidget->rowCount();
+}
+
+
+void AssetInputWidget::setFilterVisibility(const bool value)
+{
+    filterWidget->setVisible(value);
 }
 
