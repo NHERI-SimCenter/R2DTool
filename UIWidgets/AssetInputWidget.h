@@ -83,6 +83,7 @@ class QLineEdit;
 class QTableWidget;
 class QLabel;
 class QVBoxLayout;
+class QPushButton;
 
 class AssetInputWidget : public  SimCenterAppWidget, public GISSelectable
 {
@@ -143,6 +144,8 @@ public:
 
     QgsVectorLayer *getMainLayer() const;
 
+    void setFilterVisibility(const bool value);
+
 signals:
     void headingValuesChanged(QStringList);
     void doneLoadingComponents(void);
@@ -184,6 +187,9 @@ protected:
 
     AssetInputDelegate* selectComponentsLineEdit = nullptr;
     AssetFilterDelegate* filterDelegateWidget = nullptr;
+    QPushButton* browseFileButton = nullptr;
+
+    QWidget* filterWidget = nullptr;
 
     int offset;
 
