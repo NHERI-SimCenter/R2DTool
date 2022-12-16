@@ -319,6 +319,7 @@ void AssetInputWidget::createComponentsBox(void)
     selectComponentsLineEdit = new AssetInputDelegate();
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&AssetInputWidget::handleComponentSelection);
     connect(selectComponentsLineEdit,&QLineEdit::editingFinished,this,&AssetInputWidget::selectComponents);
+    selectComponentsLineEdit->hide();
     
     QPushButton *clearSelectionButton = new QPushButton();
     clearSelectionButton->setText(tr("Clear Selection"));
@@ -330,6 +331,12 @@ void AssetInputWidget::createComponentsBox(void)
     filterExpressionButton->setText(tr("Advanced Filter"));
     filterExpressionButton->setMaximumWidth(150);
     connect(filterExpressionButton,SIGNAL(clicked()),this,SLOT(handleComponentFilter()));
+
+    // hide selection part
+    selectComponentsLineEdit->hide();
+    clearSelectionButton->hide();
+    filterExpressionButton->hide();
+
     
     // Text label for Component information
     label3 = new QLabel();
@@ -357,7 +364,7 @@ void AssetInputWidget::createComponentsBox(void)
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
     
-    mainWidgetLayout->addWidget(filterWidget);
+//    mainWidgetLayout->addWidget(filterWidget);
 
     mainWidgetLayout->addWidget(label3,0,Qt::AlignCenter);
     mainWidgetLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);

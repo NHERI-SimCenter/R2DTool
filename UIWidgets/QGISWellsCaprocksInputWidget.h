@@ -44,6 +44,10 @@ class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
 class QGISWellsCaprocksInputWidget : public PointAssetInputWidget
 {
 public:
@@ -65,6 +69,10 @@ private slots:
 private:
 
     void loadCaprocksLayer();
+
+//#ifdef OpenSRA
+//    JsonGroupBoxWidget* locationWidget = nullptr;
+//#endif
 
     QLineEdit* pathWellTraceLE = nullptr;
     QLineEdit* pathCaprockShpLE = nullptr;

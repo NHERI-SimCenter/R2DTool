@@ -50,8 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 PointAssetInputWidget::PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : AssetInputWidget(parent, visWidget, assetType, appType)
 {
-    latTag = "Latitude";
-    lonTag = "Longitude";
+    latTag = "LAT";
+    lonTag = "LON";
 }
 
 
@@ -335,7 +335,6 @@ bool PointAssetInputWidget::inputFromJSON(QJsonObject &rvObject)
         this->errorMessage("Error, could not find the required field of 'SiteLocationParams' in the infrastructure json");
         return false;
     }
-
     auto siteLocParams = rvObject["SiteLocationParams"].toObject();
 
     latTag = siteLocParams.value("Lat").toString();
@@ -348,8 +347,8 @@ bool PointAssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 
 void PointAssetInputWidget::clear()
 {    
-    latTag = "Latitude";
-    lonTag = "Longitude";
+    latTag = "LAT";
+    lonTag = "LON";
 
     AssetInputWidget::clear();
 }

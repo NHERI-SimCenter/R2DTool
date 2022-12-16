@@ -52,6 +52,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsmarkersymbol.h>
 
+//#ifdef OpenSRA
+//#include "WorkflowAppOpenSRA.h"
+//#include "WidgetFactory.h"
+//#include "JsonGroupBoxWidget.h"
+//#endif
+
+
 QGISWellsCaprocksInputWidget::QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : PointAssetInputWidget(parent, visWidget, assetType, appType)
 {
     QGISWellsCaprocksInputWidget::createComponentsBox();
@@ -62,6 +69,70 @@ void QGISWellsCaprocksInputWidget::createComponentsBox(void)
 {
     QVBoxLayout* inputLayout = new QVBoxLayout();
 
+    // top of well lat lon headers
+//    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
+
+//    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["PointAsset"].toObject()["SiteLocationParams"].toObject();
+
+//    if(thisObj.isEmpty())
+//    {
+//        this->errorMessage("Json object is empty in " + QString(__FUNCTION__));
+//        return;
+//    }
+
+//    auto theWidgetFactory = std::make_unique<WidgetFactory>(this);
+
+//    QJsonObject paramsObj = thisObj["Params"].toObject();
+
+//    // The string given in the Methods and params json file
+//    QString nameStr = "SiteLocationParams";
+
+//    auto widgetLabelText = thisObj["NameToDisplay"].toString();
+
+//    if(widgetLabelText.isEmpty())
+//    {
+//        this->errorMessage("Could not find the *NameToDisplay* key in object json for " + nameStr);
+//        return;
+//    }
+
+//    locationWidget = new JsonGroupBoxWidget(this);
+//    locationWidget->setObjectName(nameStr);
+
+//    locationWidget->setTitle(widgetLabelText);
+
+//    QJsonObject paramsLat;
+//    paramsLat["Lat"] = paramsObj.value("Lat");
+
+//    QJsonObject paramsLon;
+//    paramsLon["Lon"] = paramsObj.value("Lon");
+
+//    auto latLayout = theWidgetFactory->getLayoutFromParams(paramsLat,nameStr,locationWidget, Qt::Horizontal);
+//    auto lonLayout = theWidgetFactory->getLayoutFromParams(paramsLon,nameStr,locationWidget, Qt::Horizontal);
+
+//    QHBoxLayout* latLonLayout = new QHBoxLayout();
+//    latLonLayout->addLayout(latLayout);
+//    latLonLayout->addLayout(lonLayout);
+
+//    locationWidget->setLayout(latLonLayout);
+
+//    inputLayout->addWidget(locationWidget);
+
+    // box for LON and LAT headers in file
+    // CPT data columns
+    QGroupBox* locationWidget = new QGroupBox("Note: Headers to use for 'Latitude' and 'Longitude' in CSV files");
+    QGridLayout* vboxLayout = new QGridLayout(locationWidget);
+    QLabel* lonLabel = new QLabel("1. Header to use for longitude: LON");
+    QLabel* latLabel = new QLabel("2. Header to use for latitude: LAT");
+    vboxLayout->addWidget(lonLabel,0,0,Qt::AlignLeft);
+    vboxLayout->addWidget(latLabel,1,0,Qt::AlignLeft);
+    inputLayout->addWidget(locationWidget);
+
+
+//    QLabel* locationLabel = new QLabel("Note: headers to use for latitude and longitude: LAT and LON");
+//    inputLayout->addWidget(locationLabel, Qt::AlignLeft);
+
+
+    // well traces
     QHBoxLayout* welltraceLayout = new QHBoxLayout();
 
     QLabel* pathWellTraceLabel = new QLabel("Directory containing well traces:");
@@ -79,6 +150,8 @@ void QGISWellsCaprocksInputWidget::createComponentsBox(void)
 
     inputLayout->addLayout(welltraceLayout);
 
+
+    // caprock input
     QHBoxLayout* caprockLayout = new QHBoxLayout();
 
     QLabel* pathCaprockShp = new QLabel("Caprock shapefile:");
@@ -120,6 +193,7 @@ bool QGISWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
     auto pathWellTraceDir = rvObject.value("WellTraceDir").toString();
 
+    // well trace
     if(pathWellTraceDir.isEmpty())
     {
         this->errorMessage("Error, the required input 'WellTraceDir' is missing in "+QString(__FUNCTION__));
@@ -139,9 +213,9 @@ bool QGISWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
         return false;
     }
 
-
     pathWellTraceLE->setText(fileInfoWT.absoluteFilePath());
 
+    // caprock shapefile path
     auto pathCaprockShpFile = rvObject.value("PathToCaprockShapefile").toString();
 
     if(pathCaprockShpFile.isEmpty())
@@ -163,10 +237,12 @@ bool QGISWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
         return false;
     }
 
-
     pathCaprockShpLE->setText(fileInfo.absoluteFilePath());
 
     this->loadCaprocksLayer();
+
+    // locations
+//    locationWidget->inputFromJSON(rvObject);
 
     return PointAssetInputWidget::inputFromJSON(rvObject);
 }
@@ -182,7 +258,10 @@ bool QGISWellsCaprocksInputWidget::outputToJSON(QJsonObject &rvObject)
        return false;
    }
 
+   // locations
+//   locationWidget->outputToJSON(rvObject);
 
+   // well trace
    auto pathWellTraceDir = pathWellTraceLE->text();
 
    if(pathWellTraceDir.isEmpty())
@@ -191,10 +270,10 @@ bool QGISWellsCaprocksInputWidget::outputToJSON(QJsonObject &rvObject)
        return false;
    }
 
-
    rvObject.insert("WellTraceDir",pathWellTraceDir);
 
 
+   // caprock shapefile path
    auto pathCaprockShp = pathCaprockShpLE->text();
 
    if(pathCaprockShp.isEmpty())

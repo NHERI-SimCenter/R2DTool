@@ -38,25 +38,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "AssetInputWidget.h"
+#include "PointAssetInputWidget.h"
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISAboveGroundGasNetworkInputWidget : public AssetInputWidget
+class QGISAboveGroundGasNetworkInputWidget : public PointAssetInputWidget
 {
 public:
     QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
-    int loadAssetVisualization() override;
+    void createComponentsBox(void) override;
+
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
 
     void clear() override;
 
-private:
+private slots:
 
-    QgsVectorLayer* mainLayer = nullptr;
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+private:
 
 };
 
