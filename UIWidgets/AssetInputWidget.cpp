@@ -319,7 +319,6 @@ void AssetInputWidget::createComponentsBox(void)
     selectComponentsLineEdit = new AssetInputDelegate();
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&AssetInputWidget::handleComponentSelection);
     connect(selectComponentsLineEdit,&QLineEdit::editingFinished,this,&AssetInputWidget::selectComponents);
-    selectComponentsLineEdit->hide();
     
     QPushButton *clearSelectionButton = new QPushButton();
     clearSelectionButton->setText(tr("Clear Selection"));
@@ -331,12 +330,6 @@ void AssetInputWidget::createComponentsBox(void)
     filterExpressionButton->setText(tr("Advanced Filter"));
     filterExpressionButton->setMaximumWidth(150);
     connect(filterExpressionButton,SIGNAL(clicked()),this,SLOT(handleComponentFilter()));
-
-    // hide selection part
-    selectComponentsLineEdit->hide();
-    clearSelectionButton->hide();
-    filterExpressionButton->hide();
-
     
     // Text label for Component information
     label3 = new QLabel();
@@ -363,8 +356,16 @@ void AssetInputWidget::createComponentsBox(void)
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
-    
-//    mainWidgetLayout->addWidget(filterWidget);
+
+#ifdef OpenSRA
+    // hide selection part
+    selectComponentsLineEdit->setText("1");
+    selectComponentsLineEdit->hide();
+    clearSelectionButton->hide();
+    filterExpressionButton->hide();
+#else
+    mainWidgetLayout->addWidget(filterWidget);
+#endif
 
     mainWidgetLayout->addWidget(label3,0,Qt::AlignCenter);
     mainWidgetLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
@@ -683,6 +684,10 @@ bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
         QString filterData = this->getFilterString();
 
+#ifdef OpenSRA
+        filterData = "1";
+#endif
+
         if(filterData.isEmpty())
         {
 
@@ -900,6 +905,10 @@ bool AssetInputWidget::copyFiles(QString &destName)
 
     // Put this here because copy files gets called first and we need to select the components before we can create the input file
     QString filterData = this->getFilterString();
+
+#ifdef OpenSRA
+    filterData = "1";
+#endif
 
     if(filterData.isEmpty())
     {

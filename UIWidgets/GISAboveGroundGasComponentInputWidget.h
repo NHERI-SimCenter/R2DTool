@@ -1,3 +1,5 @@
+#ifndef GISAboveGroundGasComponentInputWidget_H
+#define GISAboveGroundGasComponentInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -34,69 +36,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
 
-#include "QGISAboveGroundGasNetworkInputWidget.h"
-#include "QGISVisualizationWidget.h"
-#include "ComponentTableView.h"
-#include "ComponentDatabaseManager.h"
-#include "AssetFilterDelegate.h"
-#include "LineAssetInputWidget.h"
+#include "SimCenterAppWidget.h"
 
-#include "QFileInfo"
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class GISAssetInputWidget;
 
-#include <qgsfield.h>
-#include <qgsfillsymbol.h>
-#include <qgsvectorlayer.h>
-#include <qgsmarkersymbol.h>
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
 
-QGISAboveGroundGasNetworkInputWidget::QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : PointAssetInputWidget(parent, visWidget, assetType, appType)
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
+class GISAboveGroundGasComponentInputWidget : public SimCenterAppWidget
 {
-    QGISAboveGroundGasNetworkInputWidget::createComponentsBox();
-}
+    Q_OBJECT
 
-void QGISAboveGroundGasNetworkInputWidget::createComponentsBox(void)
-{
-    QVBoxLayout* inputLayout = new QVBoxLayout();
+public:
+    GISAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~GISAboveGroundGasComponentInputWidget();
 
-    // box for LON and LAT headers in file
-    // CPT data columns
-    QGroupBox* locationWidget = new QGroupBox("Note: Headers to use for 'Latitude' and 'Longitude' in CSV files");
-    QGridLayout* vboxLayout = new QGridLayout(locationWidget);
-    QLabel* lonLabel = new QLabel("1. Header to use for longitude: LON");
-    QLabel* latLabel = new QLabel("2. Header to use for latitude: LAT");
-    vboxLayout->addWidget(lonLabel,0,0,Qt::AlignLeft);
-    vboxLayout->addWidget(latLabel,1,0,Qt::AlignLeft);
-    inputLayout->addWidget(locationWidget);
+    virtual int loadAboveGroundVisualization();
 
-    auto insPoint = mainWidgetLayout->count();
+    void clear() override;
 
-    mainWidgetLayout->insertLayout(insPoint-3,inputLayout);
-}
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+    bool copyFiles(QString &destName) override;
 
+#ifdef OpenSRA
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+#endif
 
-bool QGISAboveGroundGasNetworkInputWidget::inputFromJSON(QJsonObject &rvObject)
-{
-    return PointAssetInputWidget::inputFromJSON(rvObject);
-}
+signals:
+    void headingValuesChanged(QStringList);
 
+protected slots:
+    void handleAssetsLoaded();
 
-bool QGISAboveGroundGasNetworkInputWidget::outputToJSON(QJsonObject &rvObject)
-{
-   auto res = PointAssetInputWidget::outputToJSON(rvObject);
+protected:
 
-   if(!res)
-   {
-       this->errorMessage("Error output to json in "+QString(__FUNCTION__));
-       return false;
-   }
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-   return true;
-}
+    GISAssetInputWidget* theAboveGroundWidget = nullptr;
 
+    QgsVectorLayer* aboveGroundMainLayer = nullptr;
 
-void QGISAboveGroundGasNetworkInputWidget::clear()
-{
-    PointAssetInputWidget::clear();
-}
+};
 
+#endif // GISAboveGroundGasComponentInputWidget_H

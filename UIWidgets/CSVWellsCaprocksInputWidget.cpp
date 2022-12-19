@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "QGISWellsCaprocksInputWidget.h"
+#include "CSVWellsCaprocksInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "ComponentTableView.h"
 #include "ComponentDatabaseManager.h"
@@ -59,13 +59,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 //#endif
 
 
-QGISWellsCaprocksInputWidget::QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : PointAssetInputWidget(parent, visWidget, assetType, appType)
+CSVWellsCaprocksInputWidget::CSVWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : PointAssetInputWidget(parent, visWidget, assetType, appType)
 {
-    QGISWellsCaprocksInputWidget::createComponentsBox();
+    CSVWellsCaprocksInputWidget::createComponentsBox();
 }
 
 
-void QGISWellsCaprocksInputWidget::createComponentsBox(void)
+void CSVWellsCaprocksInputWidget::createComponentsBox(void)
 {
     QVBoxLayout* inputLayout = new QVBoxLayout();
 
@@ -128,10 +128,6 @@ void QGISWellsCaprocksInputWidget::createComponentsBox(void)
     inputLayout->addWidget(locationWidget);
 
 
-//    QLabel* locationLabel = new QLabel("Note: headers to use for latitude and longitude: LAT and LON");
-//    inputLayout->addWidget(locationLabel, Qt::AlignLeft);
-
-
     // well traces
     QHBoxLayout* welltraceLayout = new QHBoxLayout();
 
@@ -140,7 +136,7 @@ void QGISWellsCaprocksInputWidget::createComponentsBox(void)
     QPushButton* pathWellTraceButton = new QPushButton();
     pathWellTraceButton->setText(tr("Browse"));
     pathWellTraceButton->setMaximumWidth(150);
-    connect(pathWellTraceButton,&QPushButton::clicked,this,&QGISWellsCaprocksInputWidget::handleWellTracesDirDialog);
+    connect(pathWellTraceButton,&QPushButton::clicked,this,&CSVWellsCaprocksInputWidget::handleWellTracesDirDialog);
 
     pathWellTraceLE = new QLineEdit();
 
@@ -154,12 +150,12 @@ void QGISWellsCaprocksInputWidget::createComponentsBox(void)
     // caprock input
     QHBoxLayout* caprockLayout = new QHBoxLayout();
 
-    QLabel* pathCaprockShp = new QLabel("Caprock shapefile:");
+    QLabel* pathCaprockShp = new QLabel("Path to caprock shapefile or folder with shapefile:");
 
     QPushButton* pathCaprockShpButton = new QPushButton();
     pathCaprockShpButton->setText(tr("Browse"));
     pathCaprockShpButton->setMaximumWidth(150);
-    connect(pathCaprockShpButton,&QPushButton::clicked,this,&QGISWellsCaprocksInputWidget::handleCaprockDialog);
+    connect(pathCaprockShpButton,&QPushButton::clicked,this,&CSVWellsCaprocksInputWidget::handleCaprockDialog);
 
     pathCaprockShpLE = new QLineEdit();
 
@@ -176,7 +172,7 @@ void QGISWellsCaprocksInputWidget::createComponentsBox(void)
 
 
 
-void QGISWellsCaprocksInputWidget::handleWellTracesDirDialog(void)
+void CSVWellsCaprocksInputWidget::handleWellTracesDirDialog(void)
 {
     auto newPathToInputFile = QFileDialog::getExistingDirectory(this,tr("Directory containing well traces"));
 
@@ -189,7 +185,7 @@ void QGISWellsCaprocksInputWidget::handleWellTracesDirDialog(void)
 }
 
 
-bool QGISWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
+bool CSVWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
     auto pathWellTraceDir = rvObject.value("WellTraceDir").toString();
 
@@ -233,7 +229,7 @@ bool QGISWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
 
     if(!fileInfo.exists())
     {
-        this->errorMessage("Error, could not find the caprock shapefile file at any one of the following paths: "+rvObject.value("PathToCaprockShapefile").toString()+","+ pathToComponentInputFile+" in "+QString(__FUNCTION__));
+        this->errorMessage("Error, could not find the caprock shapefile file at any one of the following paths: "+rvObject.value("PathToCaprockShapefile").toString()+","+ pathCaprockShpFile+" in "+QString(__FUNCTION__));
         return false;
     }
 
@@ -244,11 +240,12 @@ bool QGISWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
     // locations
 //    locationWidget->inputFromJSON(rvObject);
 
+    // rest of input
     return PointAssetInputWidget::inputFromJSON(rvObject);
 }
 
 
-bool QGISWellsCaprocksInputWidget::outputToJSON(QJsonObject &rvObject)
+bool CSVWellsCaprocksInputWidget::outputToJSON(QJsonObject &rvObject)
 {
    auto res = PointAssetInputWidget::outputToJSON(rvObject);
 
@@ -288,9 +285,9 @@ bool QGISWellsCaprocksInputWidget::outputToJSON(QJsonObject &rvObject)
 }
 
 
-void QGISWellsCaprocksInputWidget::handleCaprockDialog(void)
+void CSVWellsCaprocksInputWidget::handleCaprockDialog(void)
 {
-    auto newPathToInputFile = QFileDialog::getOpenFileName(this,tr("Caprock shapefile"));
+    auto newPathToInputFile = QFileDialog::getOpenFileName(this,tr("Path to caprock shapefile or folder with shapefile"));
 
     // Return if the user cancels
     if(newPathToInputFile.isEmpty())
@@ -302,7 +299,7 @@ void QGISWellsCaprocksInputWidget::handleCaprockDialog(void)
 }
 
 
-void QGISWellsCaprocksInputWidget::clear()
+void CSVWellsCaprocksInputWidget::clear()
 {    
     caprocksLayer = nullptr;
     pathCaprockShpLE->clear();
@@ -311,7 +308,7 @@ void QGISWellsCaprocksInputWidget::clear()
 }
 
 
-void QGISWellsCaprocksInputWidget::loadCaprocksLayer()
+void CSVWellsCaprocksInputWidget::loadCaprocksLayer()
 {
     auto pathToCaprockFile = pathCaprockShpLE->text();
 

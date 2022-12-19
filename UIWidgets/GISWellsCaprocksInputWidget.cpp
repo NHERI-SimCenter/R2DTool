@@ -1,0 +1,365 @@
+/* *****************************************************************************
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Stevan Gavrilovic
+
+#include "GISWellsCaprocksInputWidget.h"
+#include "QGISVisualizationWidget.h"
+#include "GISAssetInputWidget.h"
+
+#include <qgslinesymbol.h>
+#include <qgsmarkersymbol.h>
+
+#include <QFileDialog>
+#include <QSplitter>
+#include <QGroupBox>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QLineEdit>
+
+//#ifdef OpenSRA
+//#include "WorkflowAppOpenSRA.h"
+//#include "WidgetFactory.h"
+//#include "JsonGroupBoxWidget.h"
+//#endif
+
+
+GISWellsCaprocksInputWidget::GISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
+{
+    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
+    assert(theVisualizationWidget);
+
+    theWellsWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Wells and Caprocks");
+
+    theWellsWidget->setLabel1("Load wells information from a GIS file");
+
+    connect(theWellsWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISWellsCaprocksInputWidget::handleAssetsLoaded);
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+
+    mainLayout->addWidget(theWellsWidget);
+
+    // well traces
+    QHBoxLayout* welltraceLayout = new QHBoxLayout();
+
+    QLabel* pathWellTraceLabel = new QLabel("Directory containing well traces:");
+
+    QPushButton* pathWellTraceButton = new QPushButton();
+    pathWellTraceButton->setText(tr("Browse"));
+    pathWellTraceButton->setMaximumWidth(150);
+    connect(pathWellTraceButton,&QPushButton::clicked,this,&GISWellsCaprocksInputWidget::handleWellTracesDirDialog);
+
+    pathWellTraceLE = new QLineEdit();
+
+    welltraceLayout->addWidget(pathWellTraceLabel);
+    welltraceLayout->addWidget(pathWellTraceLE);
+    welltraceLayout->addWidget(pathWellTraceButton);
+
+    mainLayout->addLayout(welltraceLayout);
+
+
+    // caprock input
+    QHBoxLayout* caprockLayout = new QHBoxLayout();
+
+    QLabel* pathCaprockShp = new QLabel("Path to caprock shapefile or folder with shapefile:");
+
+    QPushButton* pathCaprockShpButton = new QPushButton();
+    pathCaprockShpButton->setText(tr("Browse"));
+    pathCaprockShpButton->setMaximumWidth(150);
+    connect(pathCaprockShpButton,&QPushButton::clicked,this,&GISWellsCaprocksInputWidget::handleCaprockDialog);
+
+    pathCaprockShpLE = new QLineEdit();
+
+    caprockLayout->addWidget(pathCaprockShp);
+    caprockLayout->addWidget(pathCaprockShpLE);
+    caprockLayout->addWidget(pathCaprockShpButton);
+
+    mainLayout->addLayout(caprockLayout);
+
+//    auto insPoint = mainLayout->count();
+
+//    mainLayout->insertLayout(insPoint-3,inputLayout);
+
+}
+
+
+GISWellsCaprocksInputWidget::~GISWellsCaprocksInputWidget()
+{
+
+}
+
+
+void GISWellsCaprocksInputWidget::handleWellTracesDirDialog(void)
+{
+    auto newPathToInputFile = QFileDialog::getExistingDirectory(this,tr("Directory containing well traces"));
+
+    // Return if the user cancels
+    if(newPathToInputFile.isEmpty())
+        return;
+
+    pathWellTraceLE->setText(newPathToInputFile);
+
+}
+
+
+void GISWellsCaprocksInputWidget::handleCaprockDialog(void)
+{
+    auto newPathToInputFile = QFileDialog::getOpenFileName(this,tr("Path to caprock shapefile or folder with shapefile"));
+
+    // Return if the user cancels
+    if(newPathToInputFile.isEmpty())
+        return;
+
+    pathCaprockShpLE->setText(newPathToInputFile);
+
+    this->loadCaprocksLayer();
+}
+
+
+
+bool GISWellsCaprocksInputWidget::copyFiles(QString &destName)
+{
+
+    // The file containing the wells info
+    auto res = theWellsWidget->copyFiles(destName);
+
+    return res;
+}
+
+#ifdef OpenSRA
+
+bool GISWellsCaprocksInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+    // well trace
+    auto pathWellTraceDir = pathWellTraceLE->text();
+
+    if(pathWellTraceDir.isEmpty())
+    {
+        this->errorMessage("The path to well trace directory is empty in "+QString(__FUNCTION__));
+        return false;
+    }
+
+    rvObject.insert("WellTraceDir",pathWellTraceDir);
+
+
+    // caprock shapefile path
+    auto pathCaprockShp = pathCaprockShpLE->text();
+
+    if(pathCaprockShp.isEmpty())
+    {
+        this->errorMessage("The path to caprock shapefile is empty in "+QString(__FUNCTION__));
+        return false;
+    }
+
+    rvObject.insert("PathToCaprockShapefile",pathCaprockShp);
+
+
+    // rest to outputs
+    return theWellsWidget->outputToJSON(rvObject);
+}
+
+
+bool GISWellsCaprocksInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+    auto pathWellTraceDir = rvObject.value("WellTraceDir").toString();
+
+    // well trace
+    if(pathWellTraceDir.isEmpty())
+    {
+        this->errorMessage("Error, the required input 'WellTraceDir' is missing in "+QString(__FUNCTION__));
+        return false;
+    }
+
+    QFileInfo fileInfoWT(pathWellTraceDir);
+
+    if(!fileInfoWT.exists())
+        pathWellTraceDir = QDir::currentPath() + QDir::separator() + pathWellTraceDir;
+
+    fileInfoWT.setFile(pathWellTraceDir);
+
+    if(!fileInfoWT.exists())
+    {
+        this->errorMessage("Error, could not find the well trace directory at any one of the following paths: "+rvObject.value("WellTraceDir").toString()+","+ pathWellTraceDir+" in "+QString(__FUNCTION__));
+        return false;
+    }
+
+    pathWellTraceLE->setText(fileInfoWT.absoluteFilePath());
+
+    // caprock shapefile path
+    auto pathCaprockShpFile = rvObject.value("PathToCaprockShapefile").toString();
+
+    if(pathCaprockShpFile.isEmpty())
+    {
+        this->errorMessage("Error, the required input 'PathToCaprockShapefile' is missing in "+QString(__FUNCTION__));
+        return false;
+    }
+
+    QFileInfo fileInfo(pathCaprockShpFile);
+
+    if(!fileInfo.exists())
+        pathCaprockShpFile = QDir::currentPath() + QDir::separator() + pathCaprockShpFile;
+
+    fileInfo.setFile(pathCaprockShpFile);
+
+    if(!fileInfo.exists())
+    {
+        this->errorMessage("Error, could not find the caprock shapefile file at any one of the following paths: "+rvObject.value("PathToCaprockShapefile").toString()+","+ pathCaprockShpFile+" in "+QString(__FUNCTION__));
+        return false;
+    }
+
+    pathCaprockShpLE->setText(fileInfo.absoluteFilePath());
+
+    this->loadCaprocksLayer();
+
+    // rest of input
+    return theWellsWidget->inputFromJSON(rvObject);
+}
+
+#endif
+
+
+bool GISWellsCaprocksInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+{
+    jsonObject["Application"]="GIS_to_WELLS_CAPROCKS";
+
+    QJsonObject data;
+
+    // The file containing the network pipelines
+    theWellsWidget->outputAppDataToJSON(data);
+
+    jsonObject["ApplicationData"] = data;
+
+    return true;
+}
+
+
+bool GISWellsCaprocksInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+{
+
+    // Check the app type
+    if (jsonObject.contains("Application")) {
+        if ("GIS_to_WELLS_CAPROCKS" != jsonObject["Application"].toString()) {
+            this->errorMessage("GISWellsCaprocksInputWidget::inputFromJSON app name conflict");
+            return false;
+        }
+    }
+
+
+    if (!jsonObject.contains("ApplicationData"))
+    {
+        this->errorMessage("GISWellsCaprocksInputWidget::inputFromJSON app name conflict");
+        return false;
+    }
+
+    return true;
+}
+
+
+int GISWellsCaprocksInputWidget::loadWellsVisualization()
+{
+    wellsMainLayer = theWellsWidget->getMainLayer();
+
+    if(wellsMainLayer==nullptr)
+        return -1;
+
+
+    QgsMarkerSymbol* markerSymbol = new QgsMarkerSymbol();
+
+    markerSymbol->setColor(Qt::darkBlue);
+    theVisualizationWidget->createSimpleRenderer(markerSymbol,wellsMainLayer);
+
+    //    auto numFeat = mainLayer->featureCount();
+
+    theVisualizationWidget->zoomToLayer(wellsMainLayer);
+
+    auto tableHeadings = wellsMainLayer->fields().names();
+
+    emit headingValuesChanged(tableHeadings);
+
+    return 0;
+}
+
+
+void GISWellsCaprocksInputWidget::clear()
+{
+
+    caprocksLayer = nullptr;
+    pathCaprockShpLE->clear();
+    pathWellTraceLE->clear();
+
+    theWellsWidget->clear();
+
+    emit headingValuesChanged(QStringList{"N/A"});
+}
+
+
+void GISWellsCaprocksInputWidget::handleAssetsLoaded()
+{
+    if(theWellsWidget->isEmpty())
+        return;
+
+    auto res = this->loadWellsVisualization();
+
+    if(res != 0)
+    {
+        this->errorMessage("Error, failed to load the wells and caprocks visualization");
+        return;
+    }
+
+}
+
+void GISWellsCaprocksInputWidget::loadCaprocksLayer()
+{
+    auto pathToCaprockFile = pathCaprockShpLE->text();
+
+    if(!QFileInfo::exists(pathToCaprockFile))
+    {
+        this->errorMessage("Error, the caprock file :"+pathToCaprockFile+ "does not exist");
+    }
+
+    if(caprocksLayer)
+        theVisualizationWidget->removeLayer(caprocksLayer);
+
+    caprocksLayer = theVisualizationWidget->addVectorLayer(pathToCaprockFile,"Caprocks","ogr");
+
+    if(!caprocksLayer)
+    {
+        this->errorMessage("Error creating the caprock layer in "+QString(__FUNCTION__));
+    }
+}
+

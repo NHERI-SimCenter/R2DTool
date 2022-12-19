@@ -1,5 +1,3 @@
-#ifndef QGISWellsCaprocksInputWidget_H
-#define QGISWellsCaprocksInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,47 +36,67 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "PointAssetInputWidget.h"
+#include "CSVAboveGroundGasComponentInputWidget.h"
+#include "QGISVisualizationWidget.h"
+#include "ComponentTableView.h"
+#include "ComponentDatabaseManager.h"
+#include "AssetFilterDelegate.h"
+#include "LineAssetInputWidget.h"
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
+#include "QFileInfo"
 
-#ifdef OpenSRA
-class JsonGroupBoxWidget;
-#endif
+#include <qgsfield.h>
+#include <qgsfillsymbol.h>
+#include <qgsvectorlayer.h>
+#include <qgsmarkersymbol.h>
 
-class QGISWellsCaprocksInputWidget : public PointAssetInputWidget
+CSVAboveGroundGasComponentInputWidget::CSVAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : PointAssetInputWidget(parent, visWidget, assetType, appType)
 {
-public:
-    QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
+    CSVAboveGroundGasComponentInputWidget::createComponentsBox();
+}
 
-    void createComponentsBox(void) override;
+void CSVAboveGroundGasComponentInputWidget::createComponentsBox(void)
+{
+    QVBoxLayout* inputLayout = new QVBoxLayout();
 
-    bool inputFromJSON(QJsonObject &rvObject) override;
-    bool outputToJSON(QJsonObject &rvObject) override;
+    // box for LON and LAT headers in file
+    // CPT data columns
+    QGroupBox* locationWidget = new QGroupBox("Note: Headers to use for 'Latitude' and 'Longitude' in CSV files");
+    QGridLayout* vboxLayout = new QGridLayout(locationWidget);
+    QLabel* lonLabel = new QLabel("1. Header to use for longitude: LON");
+    QLabel* latLabel = new QLabel("2. Header to use for latitude: LAT");
+    vboxLayout->addWidget(lonLabel,0,0,Qt::AlignLeft);
+    vboxLayout->addWidget(latLabel,1,0,Qt::AlignLeft);
+    inputLayout->addWidget(locationWidget);
 
-    void clear() override;
+    auto insPoint = mainWidgetLayout->count();
 
-private slots:
+    mainWidgetLayout->insertLayout(insPoint-3,inputLayout);
+}
 
-    void handleWellTracesDirDialog(void);
 
-    void handleCaprockDialog(void);
+bool CSVAboveGroundGasComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+    return PointAssetInputWidget::inputFromJSON(rvObject);
+}
 
-private:
 
-    void loadCaprocksLayer();
+bool CSVAboveGroundGasComponentInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+   auto res = PointAssetInputWidget::outputToJSON(rvObject);
 
-//#ifdef OpenSRA
-//    JsonGroupBoxWidget* locationWidget = nullptr;
-//#endif
+   if(!res)
+   {
+       this->errorMessage("Error output to json in "+QString(__FUNCTION__));
+       return false;
+   }
 
-    QLineEdit* pathWellTraceLE = nullptr;
-    QLineEdit* pathCaprockShpLE = nullptr;
+   return true;
+}
 
-    QgsVectorLayer* caprocksLayer = nullptr;
 
-};
+void CSVAboveGroundGasComponentInputWidget::clear()
+{
+    PointAssetInputWidget::clear();
+}
 
-#endif // QGISWellsCaprocksInputWidget_H

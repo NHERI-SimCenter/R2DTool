@@ -1,5 +1,5 @@
-#ifndef QGISAboveGroundGasNetworkInputWidget_H
-#define QGISAboveGroundGasNetworkInputWidget_H
+#ifndef CSVAboveGroundGasComponentInputWidget_H
+#define CSVAboveGroundGasComponentInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -44,10 +44,10 @@ class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISAboveGroundGasNetworkInputWidget : public PointAssetInputWidget
+class CSVAboveGroundGasComponentInputWidget : public PointAssetInputWidget
 {
 public:
-    QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
+    CSVAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
     void createComponentsBox(void) override;
 
@@ -62,4 +62,4 @@ private:
 
 };
 
-#endif // QGISAboveGroundGasNetworkInputWidget_H
+#endif // CSVAboveGroundGasComponentInputWidget_H
