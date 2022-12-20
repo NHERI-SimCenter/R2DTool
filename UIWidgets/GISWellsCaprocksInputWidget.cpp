@@ -66,11 +66,12 @@ GISWellsCaprocksInputWidget::GISWellsCaprocksInputWidget(QWidget *parent, Visual
 
     theWellsWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Wells and Caprocks");
 
-    theWellsWidget->setLabel1("Load wells information from a GIS file");
+    theWellsWidget->setLabel1("Load wells information from a GIS file (.shp, .gpkg, .gdb)");
 
     connect(theWellsWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISWellsCaprocksInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
 
     mainLayout->addWidget(theWellsWidget);
 
