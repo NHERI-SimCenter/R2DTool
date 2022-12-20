@@ -243,7 +243,7 @@ void LineAssetInputWidget::createComponentsBox(void)
 {
     auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
 
-    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["SiteLocationParams"].toObject();
+    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["LineAsset"].toObject()["SiteLocationParams"].toObject();
 
     if(thisObj.isEmpty())
     {

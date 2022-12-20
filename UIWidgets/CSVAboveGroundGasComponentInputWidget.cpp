@@ -1,5 +1,3 @@
-#ifndef QGISAboveGroundGasNetworkInputWidget_H
-#define QGISAboveGroundGasNetworkInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,26 +36,67 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "AssetInputWidget.h"
+#include "CSVAboveGroundGasComponentInputWidget.h"
+#include "QGISVisualizationWidget.h"
+#include "ComponentTableView.h"
+#include "ComponentDatabaseManager.h"
+#include "AssetFilterDelegate.h"
+#include "LineAssetInputWidget.h"
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
+#include "QFileInfo"
 
-class QGISAboveGroundGasNetworkInputWidget : public AssetInputWidget
+#include <qgsfield.h>
+#include <qgsfillsymbol.h>
+#include <qgsvectorlayer.h>
+#include <qgsmarkersymbol.h>
+
+CSVAboveGroundGasComponentInputWidget::CSVAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : PointAssetInputWidget(parent, visWidget, assetType, appType)
 {
-public:
-    QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
+    CSVAboveGroundGasComponentInputWidget::createComponentsBox();
+}
 
-    int loadAssetVisualization() override;
+void CSVAboveGroundGasComponentInputWidget::createComponentsBox(void)
+{
+    QVBoxLayout* inputLayout = new QVBoxLayout();
 
-    void clear() override;
+    // box for LON and LAT headers in file
+    // CPT data columns
+    QGroupBox* locationWidget = new QGroupBox("Note: Headers to use for 'Latitude' and 'Longitude' in CSV files");
+    QGridLayout* vboxLayout = new QGridLayout(locationWidget);
+    QLabel* lonLabel = new QLabel("1. Header to use for longitude: LON");
+    QLabel* latLabel = new QLabel("2. Header to use for latitude: LAT");
+    vboxLayout->addWidget(lonLabel,0,0,Qt::AlignLeft);
+    vboxLayout->addWidget(latLabel,1,0,Qt::AlignLeft);
+    inputLayout->addWidget(locationWidget);
 
-private:
+    auto insPoint = mainWidgetLayout->count();
 
-    QgsVectorLayer* mainLayer = nullptr;
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+    mainWidgetLayout->insertLayout(insPoint-3,inputLayout);
+}
 
-};
 
-#endif // QGISAboveGroundGasNetworkInputWidget_H
+bool CSVAboveGroundGasComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+    return PointAssetInputWidget::inputFromJSON(rvObject);
+}
+
+
+bool CSVAboveGroundGasComponentInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+   auto res = PointAssetInputWidget::outputToJSON(rvObject);
+
+   if(!res)
+   {
+       this->errorMessage("Error output to json in "+QString(__FUNCTION__));
+       return false;
+   }
+
+   return true;
+}
+
+
+void CSVAboveGroundGasComponentInputWidget::clear()
+{
+    PointAssetInputWidget::clear();
+}
+

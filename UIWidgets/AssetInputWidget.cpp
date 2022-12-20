@@ -356,8 +356,16 @@ void AssetInputWidget::createComponentsBox(void)
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
-    
+
+#ifdef OpenSRA
+    // hide selection part
+    selectComponentsLineEdit->setText("1");
+    selectComponentsLineEdit->hide();
+    clearSelectionButton->hide();
+    filterExpressionButton->hide();
+#else
     mainWidgetLayout->addWidget(filterWidget);
+#endif
 
     mainWidgetLayout->addWidget(label3,0,Qt::AlignCenter);
     mainWidgetLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
@@ -676,6 +684,10 @@ bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
         QString filterData = this->getFilterString();
 
+#ifdef OpenSRA
+        filterData = "1";
+#endif
+
         if(filterData.isEmpty())
         {
 
@@ -893,6 +905,10 @@ bool AssetInputWidget::copyFiles(QString &destName)
 
     // Put this here because copy files gets called first and we need to select the components before we can create the input file
     QString filterData = this->getFilterString();
+
+#ifdef OpenSRA
+    filterData = "1";
+#endif
 
     if(filterData.isEmpty())
     {
