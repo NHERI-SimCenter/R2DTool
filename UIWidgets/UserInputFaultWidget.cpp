@@ -80,9 +80,10 @@ UserInputFaultWidget::UserInputFaultWidget(VisualizationWidget* visWidget, QWidg
     this->setLayout(layout);
 
 
-    // Test to remove
-    eventFile = "/Users/steve/Downloads/New\ folder/Task4C_run_Shaking_m5/Input/virtual_fault.csv";
-    this->loadUserGMData();
+    // Test to remove start
+    //    eventFile = "/Users/steve/Downloads/New\ folder/Task4C_run_Shaking_m5/Input/virtual_fault.csv";
+    //    this->loadUserGMData();
+    // Test to remove end
 }
 
 

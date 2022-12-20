@@ -53,8 +53,8 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
     this->resize(width, height);
 
     // Test to remove start
-//     inputFileLineEdit->setText("/Users/steve/Documents/R2D/LocalWorkDir/tmp.SimCenter/inputRWHALE.json");
-//     resultsFolderLineEdit->setText("/Users/steve/Documents/R2D/LocalWorkDir/tmp.SimCenter/Results");
+//     inputFileLineEdit->setText("/Users/steve/Documents/OpenSRA/LocalWorkDir/analysis/Input/SetupConfig.json");
+//     resultsFolderLineEdit->setText("/Users/steve/Documents/OpenSRA/LocalWorkDir/analysis/Results");
 
 //     this->handleLoadResults();
      // Test to remove end
