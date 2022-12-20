@@ -67,7 +67,13 @@ CRSSelectionWidget::CRSSelectionWidget(QWidget* parent) : QWidget(parent)
 bool CRSSelectionWidget::inputAppDataFromJSON(const QJsonObject &jsonObj, QString& errMsg)
 {
     // Set the CRS
+#ifdef OpenSRA
+    // hard code CRS to 4326 until Steve updates this
+    auto crsValue = QString::fromUtf8("EPSG:4326");
+    //
+#else
     auto crsValue = jsonObj["CRS"].toString();
+#endif
 
     if(crsValue.isEmpty())
     {

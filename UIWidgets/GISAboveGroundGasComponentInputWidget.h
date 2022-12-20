@@ -1,5 +1,5 @@
-#ifndef QGISWellsCaprocksInputWidget_H
-#define QGISWellsCaprocksInputWidget_H
+#ifndef GISAboveGroundGasComponentInputWidget_H
+#define GISAboveGroundGasComponentInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,41 +36,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
 
-#include "PointAssetInputWidget.h"
+#include "SimCenterAppWidget.h"
+
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class GISAssetInputWidget;
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISWellsCaprocksInputWidget : public PointAssetInputWidget
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
+class GISAboveGroundGasComponentInputWidget : public SimCenterAppWidget
 {
+    Q_OBJECT
+
 public:
-    QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
+    GISAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~GISAboveGroundGasComponentInputWidget();
 
-    void createComponentsBox(void) override;
-
-    bool inputFromJSON(QJsonObject &rvObject) override;
-    bool outputToJSON(QJsonObject &rvObject) override;
+    virtual int loadAboveGroundVisualization();
 
     void clear() override;
 
-private slots:
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+    bool copyFiles(QString &destName) override;
 
-    void handleWellTracesDirDialog(void);
+#ifdef OpenSRA
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+#endif
 
-    void handleCaprockDialog(void);
+signals:
+    void headingValuesChanged(QStringList);
 
-private:
+protected slots:
+    void handleAssetsLoaded();
 
-    void loadCaprocksLayer();
+protected:
 
-    QLineEdit* pathWellTraceLE = nullptr;
-    QLineEdit* pathCaprockShpLE = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    QgsVectorLayer* caprocksLayer = nullptr;
+    GISAssetInputWidget* theAboveGroundWidget = nullptr;
+
+    QgsVectorLayer* aboveGroundMainLayer = nullptr;
 
 };
 
-#endif // QGISWellsCaprocksInputWidget_H
+#endif // GISAboveGroundGasComponentInputWidget_H

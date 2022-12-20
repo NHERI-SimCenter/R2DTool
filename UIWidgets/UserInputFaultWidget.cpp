@@ -80,10 +80,9 @@ UserInputFaultWidget::UserInputFaultWidget(VisualizationWidget* visWidget, QWidg
     this->setLayout(layout);
 
 
-    // Test to remove start
-    //    eventFile = "/Users/steve/Downloads/New\ folder/Task4C_run_Shaking_m5/Input/virtual_fault.csv";
-    //    this->loadUserGMData();
-    // Test to remove end
+    // Test to remove
+//    eventFile = "/Users/steve/Downloads/New\ folder/Task4C_run_Shaking_m5/Input/virtual_fault.csv";
+//    this->loadUserGMData();
 }
 
 
@@ -111,7 +110,8 @@ bool UserInputFaultWidget::outputToJSON(QJsonObject &jsonObj)
 
     QFileInfo theFile(eventFile);
     if (theFile.exists()) {
-        jsonObj["ruptureFilePath"]=theFile.path();
+        //jsonObj["FaultFile"]=theFile.path();
+        jsonObj["FaultFile"]=theFile.absoluteFilePath();
     } else {
 
         this->errorMessage("Error, the fault rupture file provided "+eventFile+" does not exist, please check the path and try again");
@@ -131,21 +131,25 @@ bool UserInputFaultWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 bool UserInputFaultWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    QString fileName;
-    QString pathToFile;
+    //QString fileName;
+    //QString pathToFile;
 
-    if (jsonObject.contains("ruptureFilePath"))
+    auto thisObject = jsonObject.value("UserDefinedRupture").toObject();
+
+    if (thisObject.contains("FaultFile"))
     {
-        fileName = jsonObject["ruptureFilePath"].toString();
+        eventFile = thisObject["FaultFile"].toString();
     }
     else
     {
-        this->infoMessage("Error: The 'ruptureFilePath' key is missing from the json object");
+        this->infoMessage("Error: The 'FaultFile' key is missing from the json object");
         return false;
     }
 
 
-    QString fullFilePath= pathToFile + QDir::separator() + fileName;
+    //QString fullFilePath= pathToFile + QDir::separator() + fileName;
+    //QString fullFilePath = fileName;
+    //eventFile = fileName;
 
 
     // load the motions

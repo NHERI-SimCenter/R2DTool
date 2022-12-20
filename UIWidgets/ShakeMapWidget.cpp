@@ -382,31 +382,31 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
         auto inFilePath = dir + QDir::separator() + filename;
 
         // Create the XML grid
-        if(filename.compare("grid.xml") == 0) // XML grid
-        {
-            progressLabel->setText("Loading Grid Layer");
-            this->statusMessage("Loading Grid Layer");
-            progressLabel->setVisible(true);
-            QApplication::processEvents();
+//        if(filename.compare("grid.xml") == 0) // XML grid
+//        {
+//            progressLabel->setText("Loading Grid Layer");
+//            this->statusMessage("Loading Grid Layer");
+//            progressLabel->setVisible(true);
+//            QApplication::processEvents();
 
-            XMLAdaptor XMLImportAdaptor;
+//            XMLAdaptor XMLImportAdaptor;
 
-            QString errMess;
-            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, qGsVisWidget);
+//            QString errMess;
+//            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, qGsVisWidget);
 
-            if(XMLlayer == nullptr)
-            {
-                this->errorMessage(errMess);
-                return -1;
-            }
+//            if(XMLlayer == nullptr)
+//            {
+//                this->errorMessage(errMess);
+//                return -1;
+//            }
 
-            XMLlayer->setName("Grid");
+//            XMLlayer->setName("Grid");
 
-            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
+//            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
 
-            inputShakeMap->gridLayer = XMLlayer;
-            layerGroup.push_back(XMLlayer);
-        }
+//            inputShakeMap->gridLayer = XMLlayer;
+//            layerGroup.push_back(XMLlayer);
+//        }
 
         if(filename.compare("cont_pga.json") == 0) // PGA contours layer
         {

@@ -95,13 +95,19 @@ GISAssetInputWidget::GISAssetInputWidget(QWidget *parent, VisualizationWidget* v
 
     connect(crsSelectorWidget,&CRSSelectionWidget::crsChanged,this,&GISAssetInputWidget::handleLayerCrsChanged);
 
+#ifdef OpenSRA
+    // open this feature when CRS is fully implemented in OpenSRA backend
+    auto insPoint = mainWidgetLayout->count();
+    // mainWidgetLayout->insertWidget(insPoint-3,crsSelectorWidget);
+    //
+#else
     auto insPoint = mainWidgetLayout->count();
     mainWidgetLayout->insertWidget(insPoint-3,crsSelectorWidget);
+#endif
 
     //    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonGIS/GalvestonBuildings/galveston-bldg-v7.shp";
     //    componentFileLineEdit->setText(pathToComponentInputFile);
     //    this->loadComponentData();
-
 
 }
 
