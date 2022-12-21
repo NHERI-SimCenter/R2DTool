@@ -437,7 +437,7 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
             QApplication::processEvents();
 
-            auto rupLayer = qGsVisWidget->addVectorLayer(inFilePath, "Rupture", "ogr");
+            auto rupLayer = qGsVisWidget->addVectorLayer(inFilePath, "Rupture Plane", "ogr");
 
             if(rupLayer == nullptr)
             {

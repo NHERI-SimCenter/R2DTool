@@ -19,11 +19,13 @@ private slots:
     void handleGetPathToInputFile(void);
     void handleGetPathToResultsFolder(void);
     void handleLoadResults(void);
+    void handleGetPathToWorkFolder(void);
 
 private:
 
     QLineEdit* inputFileLineEdit;
     QLineEdit* resultsFolderLineEdit;
+    QLineEdit* workFolderLineEdit;
 
     WorkflowAppWidget* workflowWidget;
 };
