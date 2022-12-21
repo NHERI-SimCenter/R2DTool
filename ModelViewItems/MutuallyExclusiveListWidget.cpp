@@ -197,6 +197,45 @@ void MutuallyExclusiveListWidget::showPopup(const QPoint &position)
 }
 
 
+void MutuallyExclusiveListWidget::checkItem(const int row_num)
+{
+    auto numRows = treeModel->rowCount();
+
+    if(row_num < 0 || row_num > numRows-1)
+    {
+        qDebug()<<"Dev error, row number out of bounds";
+        return;
+    }
+
+    auto item = treeModel->item(row_num);
+
+    if(item == nullptr)
+    {
+        qDebug()<<"Dev error, tree item does not exist in "+QString(__FUNCTION__);
+        return;
+    }
+
+    item->setState(2);
+}
+
+
+void MutuallyExclusiveListWidget::selectItem(const int row_num)
+{
+
+    auto layerIndex = treeModel->index(row_num);
+
+    if(!layerIndex.isValid())
+    {
+        qDebug()<<"Dev error, layer index does not exist in "+QString(__FUNCTION__);
+        return;
+    }
+
+    auto selectModel = this->selectionModel();
+
+    selectModel->select(layerIndex , QItemSelectionModel::Select);
+}
+
+
 void MutuallyExclusiveListWidget::runAction()
 {
     QObject *senderObject = sender();

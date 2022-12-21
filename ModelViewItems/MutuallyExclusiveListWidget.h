@@ -68,6 +68,10 @@ public slots:
     // Shows the "right-click" menu
     void showPopup(const QPoint &position);
 
+    void checkItem(const int row_num);
+
+    void selectItem(const int row_num);
+
 private slots:
     // Runs the action that the user selects on the right-click menu
     void runAction();
