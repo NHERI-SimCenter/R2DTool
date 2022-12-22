@@ -17,7 +17,7 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
     QGridLayout* mainLayout = new QGridLayout(this);
 
 #ifdef OpenSRA
-    auto pathWorkFolder = new QLabel("OpenSRA working/analysis folder: ", this);
+    auto pathWorkFolder = new QLabel("OpenSRA analysis folder (under the working directory): ", this);
     pathWorkFolder->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     workFolderLineEdit = new QLineEdit(this);
@@ -135,7 +135,7 @@ void LoadResultsDialog::handleLoadResults(void)
 
     if(workDirPath.isEmpty())
     {
-        statusDialog->appendText("Please select the working/analysis folder before loading the results");
+        statusDialog->appendText("Please select the analysis folder before loading the results (should be under the working directory)");
         return;
     }
 
