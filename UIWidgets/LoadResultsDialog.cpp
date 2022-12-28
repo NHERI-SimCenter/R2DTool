@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QStandardPaths>
 
 LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent), workflowWidget(parent)
 {
@@ -182,7 +183,8 @@ void LoadResultsDialog::handleLoadResults(void)
 void LoadResultsDialog::handleGetPathToWorkFolder(void)
 {
 
-    QString existingDir = QCoreApplication::applicationDirPath();
+//    QString existingDir = QCoreApplication::applicationDirPath();
+    QString existingDir = QStandardPaths::DocumentsLocation;
 
     QString existingWorkDir = QFileDialog::getExistingDirectory(this,
                                                                    tr("Select Results Folder"),
