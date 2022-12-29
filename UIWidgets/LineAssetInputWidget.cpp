@@ -34,10 +34,17 @@ int LineAssetInputWidget::loadAssetVisualization(void)
 
     auto headers = this->getTableHorizontalHeadings();
 
+#ifdef OpenSRA
+    auto indexLatStart = headers.indexOf("LAT_BEGIN");
+    auto indexLonStart = headers.indexOf("LON_BEGIN");
+    auto indexLatEnd = headers.indexOf("LAT_END");
+    auto indexLonEnd = headers.indexOf("LON_END");
+#else
     auto indexLatStart = headers.indexOf("LAT_BEGIN");
     auto indexLonStart = headers.indexOf("LONG_BEGIN");
     auto indexLatEnd = headers.indexOf("LAT_END");
     auto indexLonEnd = headers.indexOf("LONG_END");
+#endif
 
     if(indexLatStart == -1 || indexLonStart == -1 || indexLatEnd == -1 || indexLonEnd == -1)
     {

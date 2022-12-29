@@ -299,28 +299,31 @@ bool GISMapWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     pathToGISMapDirectory = jsonObject.value("Directory").toString();
 
-    QFileInfo fileInfo(pathToGISMapDirectory);
-    if (fileInfo.exists())
-        pathToGISMapDirectory = fileInfo.absoluteFilePath();
-    else
+    if (!pathToGISMapDirectory.isEmpty())
     {
-        pathToGISMapDirectory = QDir::currentPath() + QDir::separator() + pathToGISMapDirectory;
-        QFileInfo fileInfo2(pathToGISMapDirectory);
-        if (!fileInfo2.exists())
+        QFileInfo fileInfo(pathToGISMapDirectory);
+        if (fileInfo.exists())
+            pathToGISMapDirectory = fileInfo.absoluteFilePath();
+        else
         {
-            this->errorMessage("Path the GIS data directory does not exist");
-            return false;
+            pathToGISMapDirectory = QDir::currentPath() + QDir::separator() + pathToGISMapDirectory;
+            QFileInfo fileInfo2(pathToGISMapDirectory);
+            if (!fileInfo2.exists())
+            {
+                this->errorMessage("Path the GIS data directory does not exist");
+                return false;
+            }
         }
+
+        GISMapDirectoryLineEdit->setText(pathToGISMapDirectory);
+
+        auto res = this->loadGISMapData();
+
+        if(res != 0)
+            return false;
+        else
+            return true;
     }
-
-    GISMapDirectoryLineEdit->setText(pathToGISMapDirectory);
-
-    auto res = this->loadGISMapData();
-
-    if(res != 0)
-        return false;
-    else
-        return true;
 }
 
 
