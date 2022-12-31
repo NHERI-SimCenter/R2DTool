@@ -6,6 +6,7 @@
 #include "AssetFilterDelegate.h"
 #include "AssetInputDelegate.h"
 #include "PointAssetInputWidget.h"
+#include "qjsonarray.h"
 
 #ifdef OpenSRA
 #include "WorkflowAppOpenSRA.h"
@@ -278,6 +279,28 @@ void LineAssetInputWidget::createComponentsBox(void)
 
     locationWidget->setTitle(widgetLabelText);
 
+#ifdef OpenSRA
+    QJsonObject paramsLocs;
+    paramsLocs["LatBegin"] = paramsObj.value("LatBegin");
+    paramsLocs["LonBegin"] = paramsObj.value("LonBegin");
+    paramsLocs["LatEnd"] = paramsObj.value("LatEnd");
+    paramsLocs["LonEnd"] = paramsObj.value("LonEnd");
+
+    auto displayOrderArray = thisObj["DisplayOrder"].toArray();
+    auto displayOrderVarList = displayOrderArray.toVariantList();
+
+    QStringList displayOrder;
+    for(auto&& varnt : displayOrderVarList)
+        displayOrder.append(varnt.toString());
+
+    auto locsLayout = theWidgetFactory->getLayoutFromParams(paramsLocs,nameStr,locationWidget, Qt::Horizontal, displayOrder);
+
+//    QVBoxLayout* latLonLayout = new QVBoxLayout();
+//    latLonLayout->addLayout(latLayout);
+//    latLonLayout->addLayout(lonLayout);
+
+    locationWidget->setLayout(locsLayout);
+#else
     QJsonObject paramsLat;
     paramsLat["LatBegin"] = paramsObj.value("LatBegin");
     paramsLat["LatMid"] = paramsObj.value("LatMid");
@@ -296,7 +319,7 @@ void LineAssetInputWidget::createComponentsBox(void)
     latLonLayout->addLayout(lonLayout);
 
     locationWidget->setLayout(latLonLayout);
-
+#endif
     auto insPoint = mainWidgetLayout->count();
 
     mainWidgetLayout->insertWidget(insPoint-3,locationWidget);
