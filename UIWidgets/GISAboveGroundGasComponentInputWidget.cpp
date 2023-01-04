@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GISAboveGroundGasComponentInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "GISAssetInputWidget.h"
+#include "AssetInputWidget.h"
 
 #include <qgslinesymbol.h>
 #include <qgsmarkersymbol.h>
@@ -62,11 +63,12 @@ GISAboveGroundGasComponentInputWidget::GISAboveGroundGasComponentInputWidget(QWi
 
     theAboveGroundWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Above Ground Gas Infrastructure");
 
-    theAboveGroundWidget->setLabel1("Load above ground component information from a GIS file");
+    theAboveGroundWidget->setLabel1("Load above ground component information from a GIS file (.shp, .gpkg, .gdb)");
 
     connect(theAboveGroundWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISAboveGroundGasComponentInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
 
     mainLayout->addWidget(theAboveGroundWidget);
 }

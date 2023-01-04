@@ -63,7 +63,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 GISMapWidget::GISMapWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    pathToGISMapDirectory = "NULL";
+    pathToGISMapDirectory = "";
 
     auto mainLayout = new QVBoxLayout(this);
     auto mainWidget = this->getMainWidget();
@@ -123,10 +123,10 @@ QWidget* GISMapWidget::getGISInputWidget(void)
 
     connect(loadButton,SIGNAL(clicked()),this,SLOT(loadGISMapData()));
 
-    QLabel* shakeMapText1 = new QLabel("Files must be in a valid GIS format (*.geojson, *.gpkg,*.tif, or *.shp) and in the WGS 84 (EPSG:4326) coordinate reference system.");
-    shakeMapText1->setWordWrap(true);
-    QLabel* shakeMapText3 = new QLabel("The list of loaded GIS maps will appear on the right.");
-    shakeMapText3->setWordWrap(true);
+    QLabel* GISMapText1 = new QLabel("Files must be in a valid GIS format (*.geojson, *.gpkg, *.tif, or *.shp) and in the WGS 84 (EPSG:4326) coordinate reference system.");
+    GISMapText1->setWordWrap(true);
+    QLabel* GISMapText3 = new QLabel("The list of loaded GIS maps will appear on the right.");
+    GISMapText3->setWordWrap(true);
 
     auto inputLayout = new QGridLayout(mainWidget);
 
@@ -135,8 +135,8 @@ QWidget* GISMapWidget::getGISInputWidget(void)
     inputLayout->addWidget(GISMapDirectoryLineEdit,1,0);
     inputLayout->addWidget(browseFileButton,1,1);
 //    inputLayout->addWidget(loadButton,1,2);
-    inputLayout->addWidget(shakeMapText1,2,0,1,2);
-    inputLayout->addWidget(shakeMapText3,3,0,1,2);
+    inputLayout->addWidget(GISMapText1,2,0,1,2);
+    inputLayout->addWidget(GISMapText3,3,0,1,2);
     inputLayout->addItem(vspacer3,5,0);
 
 
@@ -154,7 +154,7 @@ int GISMapWidget::loadGISMapData(void)
     // Return if the user cancels
     if(pathToGISMapDirectory.isEmpty() || pathToGISMapDirectory == QDir::currentPath())
     {
-        pathToGISMapDirectory = "NULL";
+        pathToGISMapDirectory = "";
         return -1;
     }
 
@@ -184,7 +184,7 @@ int GISMapWidget::loadGISMapData(void)
 
     auto inputDir = inputDirInfo.absoluteFilePath();
 
-    QDirIterator iter(inputDir, {"*.geojson", "*.gpkg","*.tif","*.shp"}, QDir::Files);
+    QDirIterator iter(inputDir, {"*.geojson", "*.gpkg", "*.tif", "*.shp"}, QDir::Files|QDir::Dirs, QDirIterator::Subdirectories);
 
     while(iter.hasNext() )
     {
@@ -246,15 +246,18 @@ void GISMapWidget::chooseGISMapDirectoryDialog(void)
 
 bool GISMapWidget::outputToJSON(QJsonObject &jsonObject)
 {
+    QJsonObject nestedObject;
 
-    jsonObject["Directory"] = pathToGISMapDirectory;
+    nestedObject["Directory"] = pathToGISMapDirectory;
 
     QJsonArray eventsArray;
 
     for(auto&& it : GISMapContainer)
         eventsArray.append(it);
 
-    jsonObject["Events"] = eventsArray;
+    nestedObject["Datasets"] = eventsArray;
+
+    jsonObject["GISDatasets"] = nestedObject;
 
     return true;
 }
@@ -294,19 +297,33 @@ bool GISMapWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 bool GISMapWidget::inputFromJSON(QJsonObject &jsonObject)
 {
+    pathToGISMapDirectory = jsonObject.value("Directory").toString();
 
-    auto thisObject = jsonObject.value("GISMap").toObject();
+    if (!pathToGISMapDirectory.isEmpty())
+    {
+        QFileInfo fileInfo(pathToGISMapDirectory);
+        if (fileInfo.exists())
+            pathToGISMapDirectory = fileInfo.absoluteFilePath();
+        else
+        {
+            pathToGISMapDirectory = QDir::currentPath() + QDir::separator() + pathToGISMapDirectory;
+            QFileInfo fileInfo2(pathToGISMapDirectory);
+            if (!fileInfo2.exists())
+            {
+                this->errorMessage("Path the GIS data directory does not exist");
+                return false;
+            }
+        }
 
-    pathToGISMapDirectory = thisObject.value("Directory").toString();
+        GISMapDirectoryLineEdit->setText(pathToGISMapDirectory);
 
-    GISMapDirectoryLineEdit->setText(pathToGISMapDirectory);
+        auto res = this->loadGISMapData();
 
-    auto res = this->loadGISMapData();
-
-    if(res != 0)
-        return false;
-    else
-        return true;
+        if(res != 0)
+            return false;
+        else
+            return true;
+    }
 }
 
 
@@ -329,6 +346,6 @@ void GISMapWidget::clear()
 {
     listWidget->clear();
     GISMapDirectoryLineEdit->clear();
-    pathToGISMapDirectory = "NULL";
+    pathToGISMapDirectory = "";
     GISMapContainer.clear();
 }

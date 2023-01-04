@@ -202,7 +202,7 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
     IMListWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     IMListWidget->setFixedSize(100,50);
 
-    QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM)");
+    QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM) to visualize");
 
     QHBoxLayout* IMLayout = new QHBoxLayout();
 
@@ -437,7 +437,7 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
             QApplication::processEvents();
 
-            auto rupLayer = qGsVisWidget->addVectorLayer(inFilePath, "Rupture", "ogr");
+            auto rupLayer = qGsVisWidget->addVectorLayer(inFilePath, "Rupture Plane", "ogr");
 
             if(rupLayer == nullptr)
             {

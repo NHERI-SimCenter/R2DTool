@@ -60,13 +60,14 @@ GISGasNetworkInputWidget::GISGasNetworkInputWidget(QWidget *parent, Visualizatio
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-    thePipelinesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Gas Network Pipelines");
+    thePipelinesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Pipeline Network");
 
-    thePipelinesWidget->setLabel1("Load gas network pipeline information from a GIS file");
+    thePipelinesWidget->setLabel1("Load pipeline network information from a GIS file (.shp, .gpkg, .gdb)");
 
     connect(thePipelinesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISGasNetworkInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
 
     mainLayout->addWidget(thePipelinesWidget);
 

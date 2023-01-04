@@ -60,6 +60,8 @@ public:
     GISAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget);
     virtual ~GISAboveGroundGasComponentInputWidget();
 
+//    void createComponentsBox(void) override;
+
     virtual int loadAboveGroundVisualization();
 
     void clear() override;

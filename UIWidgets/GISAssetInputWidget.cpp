@@ -97,7 +97,7 @@ GISAssetInputWidget::GISAssetInputWidget(QWidget *parent, VisualizationWidget* v
 
 #ifdef OpenSRA
     // open this feature when CRS is fully implemented in OpenSRA backend
-    auto insPoint = mainWidgetLayout->count();
+    // auto insPoint = mainWidgetLayout->count();
     // mainWidgetLayout->insertWidget(insPoint-3,crsSelectorWidget);
     //
 #else
