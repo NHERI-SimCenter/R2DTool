@@ -415,7 +415,10 @@ bool GISAssetInputWidget::loadAssetData(void)
 
     this->loadAssetVisualization();
 
+#ifndef OpenSRA
     offset = this->getOffset();
+#endif
+
     theComponentDb->setOffset(offset);
 
     this->statusMessage("Done loading assets");

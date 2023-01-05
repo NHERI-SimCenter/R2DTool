@@ -184,7 +184,7 @@ void LoadResultsDialog::handleGetPathToWorkFolder(void)
 {
 
 //    QString existingDir = QCoreApplication::applicationDirPath();
-    QString existingDir = QStandardPaths::DocumentsLocation;
+    QString existingDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 
     QString existingWorkDir = QFileDialog::getExistingDirectory(this,
                                                                    tr("Select Results Folder"),

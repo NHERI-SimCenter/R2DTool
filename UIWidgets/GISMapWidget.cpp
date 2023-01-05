@@ -324,6 +324,8 @@ bool GISMapWidget::inputFromJSON(QJsonObject &jsonObject)
         else
             return true;
     }
+
+    return true;
 }
 
 
