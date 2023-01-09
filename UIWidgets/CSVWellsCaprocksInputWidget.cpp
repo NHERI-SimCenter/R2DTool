@@ -118,14 +118,13 @@ void CSVWellsCaprocksInputWidget::createComponentsBox(void)
 //    inputLayout->addWidget(locationWidget);
 
     // box for LON and LAT headers in file
-    // CPT data columns
-    QGroupBox* locationWidget = new QGroupBox("Note: Headers to use for 'Latitude' and 'Longitude' in CSV files");
-    QGridLayout* vboxLayout = new QGridLayout(locationWidget);
-    QLabel* lonLabel = new QLabel("1. Header to use for longitude: LON");
-    QLabel* latLabel = new QLabel("2. Header to use for latitude: LAT");
-    vboxLayout->addWidget(lonLabel,0,0,Qt::AlignLeft);
-    vboxLayout->addWidget(latLabel,1,0,Qt::AlignLeft);
-    inputLayout->addWidget(locationWidget);
+//    QGroupBox* locationWidget = new QGroupBox("Note: Headers to use for 'Latitude' and 'Longitude' in CSV files");
+//    QGridLayout* vboxLayout = new QGridLayout(locationWidget);
+//    QLabel* lonLabel = new QLabel("1. Header to use for longitude: LON");
+//    QLabel* latLabel = new QLabel("2. Header to use for latitude: LAT");
+//    vboxLayout->addWidget(lonLabel,0,0,Qt::AlignLeft);
+//    vboxLayout->addWidget(latLabel,1,0,Qt::AlignLeft);
+//    inputLayout->addWidget(locationWidget);
 
 
     // well traces
@@ -164,6 +163,22 @@ void CSVWellsCaprocksInputWidget::createComponentsBox(void)
     caprockLayout->addWidget(pathCaprockShpButton);
 
     inputLayout->addLayout(caprockLayout);
+
+
+    // notes
+    QLabel* notesLabel = new QLabel(
+        "Instructions:\n"
+        "\t1. In the CSV file:\n"
+        "\t\t- Required header to use for longitude: LON\n"
+        "\t\t- Required header to use for latitude: LAT\n"
+        "\t\t- File must contain a column called \"FILE_NAME\" that links to the well trace files\n"
+        "\t2. For the directory with well traces:\n"
+        "\t\t- The folder must contain a list of \".txt\" files with file names consistent with the \"FILE_NAME\" column in the CSV file.\n"
+        "\t\t- Each text file should contain 3 columns with the following header names: lon lat depth_m\n"
+        "\t3. For the caprock shapefile:\n"
+        "\t\t- The shapefile must contain the attribute \"depth_m\" (average depth to caprock)"
+    );
+    inputLayout->addWidget(notesLabel);
 
     auto insPoint = mainWidgetLayout->count();
 
