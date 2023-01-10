@@ -122,7 +122,8 @@ GISWellsCaprocksInputWidget::GISWellsCaprocksInputWidget(QWidget *parent, Visual
         "\t\t- The shapefile must contain an attribute/column called \"FILE_NAME\" that links to the well trace files\n"
         "\t2. For the directory with well traces:\n"
         "\t\t- The folder must contain a list of \".txt\" files with file names consistent with the \"FILE_NAME\" column in the CSV file.\n"
-        "\t\t- Each text file should contain 3 columns with the following header names: lon lat depth_m\n"
+        "\t\t- Each text file should contain 3 columns with the following header names delimited by tabs (not commas): lon lat depth_m\n"
+        "\t\t- Each trace file should contain at the minimum two points (top and bottom). If the actual trace is not known, then assign the lat/lon at the top of the well to the bottom node and assume a vertical well.\n"
         "\t3. For the caprock shapefile:\n"
         "\t\t- The shapefile must contain the attribute \"depth_m\" (average depth to caprock)"
     );

@@ -139,6 +139,13 @@ bool UserInputFaultWidget::inputFromJSON(QJsonObject &jsonObject)
     if (thisObject.contains("FaultFile"))
     {
         eventFile = thisObject["FaultFile"].toString();
+        QFileInfo theFile(eventFile);
+        if (theFile.exists()) {
+            eventFileLineEdit->setText(theFile.absoluteFilePath());
+        } else {
+            this->errorMessage("Error, the fault rupture file provided "+eventFile+" does not exist, please check the path and try again");
+            return false;
+        }
     }
     else
     {
