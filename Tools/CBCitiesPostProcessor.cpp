@@ -46,7 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "TableNumberItem.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
@@ -114,7 +114,7 @@ CBCitiesPostProcessor::CBCitiesPostProcessor(QWidget *parent, VisualizationWidge
     }
     else
     {
-        PythonProgressDialog::getInstance()->appendErrorMessage("Could not find the results menu bar in CBCitiesPostProcessor::");
+        ProgramOutputDialog::getInstance()->appendErrorMessage("Could not find the results menu bar in CBCitiesPostProcessor::");
         return;
     }
 
@@ -386,7 +386,7 @@ int CBCitiesPostProcessor::processDVResults(const QVector<QStringList>& DVResult
     // auto duration = duration_cast<milliseconds>(stop - start);
     // Test to remove end
 
-    PythonProgressDialog::getInstance()->appendText("Done processing "+assetType+" results "/*+QString::number(duration.count())*/);
+    ProgramOutputDialog::getInstance()->appendText("Done processing "+assetType+" results "/*+QString::number(duration.count())*/);
 
     //QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
     QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);

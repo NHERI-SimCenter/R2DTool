@@ -1,5 +1,5 @@
 #include "LoadResultsDialog.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 #include "WorkflowAppWidget.h"
 
 #include <QGridLayout>
@@ -129,7 +129,7 @@ void LoadResultsDialog::handleLoadResults(void)
 {
     this->hide();
 
-    auto statusDialog = PythonProgressDialog::getInstance();
+    auto statusDialog = ProgramOutputDialog::getInstance();
 
 #ifdef OpenSRA
     auto workDirPath = workFolderLineEdit->text();

@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // This class is used when we need to have Json input/output functionality but we cannot derive from a class with a QWidget baseclass
 
 #include <QJsonObject>
-#include <Utils/PythonProgressDialog.h>
+#include <Utils/ProgramOutputDialog.h>
 
 class JsonSerializable
 {
@@ -58,7 +58,7 @@ public:
        if(message.isEmpty())
            return;
 
-       PythonProgressDialog::getInstance()->appendErrorMessage(message);
+       ProgramOutputDialog::getInstance()->appendErrorMessage(message);
    }
 
    inline void statusMessage(const QString& message)
@@ -66,7 +66,7 @@ public:
        if(message.isEmpty())
            return;
 
-       PythonProgressDialog::getInstance()->appendText(message);
+       ProgramOutputDialog::getInstance()->appendText(message);
    }
 #endif
 

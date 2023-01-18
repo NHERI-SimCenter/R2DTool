@@ -37,14 +37,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ComponentDatabase.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <qgsfeature.h>
 #include <qgsfeaturerequest.h>
 
 ComponentDatabase::ComponentDatabase(QString type) : offset(0), componentType(type)
 {
-    messageHandler = PythonProgressDialog::getInstance();
+    messageHandler = ProgramOutputDialog::getInstance();
 }
 
 

@@ -51,7 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeItem.h"
 #include "PolygonBoundary.h"
 #include "CSVReaderWriter.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include "GroupLayer.h"
 #include "Feature.h"

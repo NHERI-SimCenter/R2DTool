@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "NodeHandle.h"
 #include "LayerTreeItem.h"
 #include "CSVReaderWriter.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 //Test
 #include <qgisapp.h>

@@ -61,7 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
 #include "ResultsWidget.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
 //#include <UQ_EngineSelection.h>

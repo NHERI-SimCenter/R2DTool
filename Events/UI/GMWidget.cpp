@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GmCommon.h"
 #include "GridNode.h"
 #include "IntensityMeasureWidget.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 #include "MapViewSubWidget.h"
 #include "NGAW2Converter.h"
 #include "RecordSelectionWidget.h"
