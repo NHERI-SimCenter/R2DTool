@@ -39,19 +39,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterAppWidget.h"
-#include "ResultsMapViewWidget.h"
 
 #include <memory>
 
 #include <QMap>
 
 class VisualizationWidget;
+class SimCenterUnitsWidget;
 
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
 
+#ifdef Arc_GIS
 namespace Esri
 {
 namespace ArcGISRuntime
@@ -63,7 +64,7 @@ class KmlLayer;
 class Layer;
 }
 }
-
+#endif
 
 class UserInputHurricaneWidget : public SimCenterAppWidget
 {
@@ -73,49 +74,52 @@ public:
     UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputHurricaneWidget();
 
-    void showUserGMLayers(bool state);
-
     QStackedWidget* getUserInputHurricaneWidget(void);
 
+    bool inputFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
-
+    bool copyFiles(QString &destDir);
     void clear(void);
-
-    void setCurrentlyViewable(bool status);
 
 public slots:
 
-    void showUserGMSelectDialog(void);
+    void showEventSelectDialog(void);
 
 private slots:
 
-    void handleHurricaneSelect(void);
-    void loadUserHurricaneData(void);
+    void loadUserWFData(void);
+    void loadHurricaneTrackData(void);
     void chooseEventFileDialog(void);
+    void chooseEventDirDialog(void);
 
 signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void outputDirectoryPathChanged(QString eventDir, QString eventFile);
     void loadingComplete(const bool value);
+    void eventTypeChangedSignal(QString eventType);
 
 private:
 
-    std::unique_ptr<QStackedWidget> theStackedWidget;
-    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
+    void showProgressBar(void);
+    void hideProgressBar(void);
+
+    QStackedWidget* theStackedWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
-    QLineEdit *eventFileLineEdit;
+    QString eventDir;
 
-    QLabel* selectedHurricaneName;
-    QLabel* selectedHurricaneSID;
+    QLineEdit *eventFileLineEdit;
+    QLineEdit *eventDirLineEdit;
 
     QLabel* progressLabel;
     QWidget* progressBarWidget;
     QWidget* fileInputWidget;
     QProgressBar* progressBar;
+
+    SimCenterUnitsWidget* unitsWidget;
 
 };
 

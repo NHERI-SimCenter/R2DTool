@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "HazardToAssetBuilding.h"
 #include "NearestNeighbourMapping.h"
+#include "SiteSpecifiedMapping.h"
 #include "NoArgSimCenterApp.h"
 #include "SimCenterAppEventSelection.h"
 #include "SimCenterAppSelection.h"
@@ -58,18 +59,21 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QList>
 #include <QMetaEnum>
 #include <QPushButton>
+#include <QJsonDocument>
 
-HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
-    : SimCenterAppWidget(parent)
+HazardToAssetBuilding::HazardToAssetBuilding(QString key, QWidget *parent)
+  : SimCenterAppWidget(parent), jsonKey(key)
 {
+  
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Hazard to Local Asset Event"));
     label->setMinimumWidth(150);
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
@@ -78,7 +82,7 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     // regional mapping to building box
     //
 
-    theRegionalMapping = new SimCenterAppSelection(QString("Mapping Application"), QString("RegionalMapping"),this);
+    theRegionalMapping = new SimCenterAppSelection(QString("Mapping Application"), jsonKey, this);
     QGroupBox* regionalMappingGroupBox = new QGroupBox("Regional Mapping", this);
     regionalMappingGroupBox->setContentsMargins(0,5,0,0);
     regionalMappingGroupBox->setLayout(theRegionalMapping->layout());
@@ -87,28 +91,35 @@ HazardToAssetBuilding::HazardToAssetBuilding(QWidget *parent)
     NearestNeighbourMapping *theNNMap = new NearestNeighbourMapping();
     theRegionalMapping->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMap);
 
+    SiteSpecifiedMapping *theSSMap = new SiteSpecifiedMapping();
+    theRegionalMapping->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMap);
+
     // NOTE: if adding something new, need to redo as only want to call this on currently selected item in appSelection
     connect(this,SIGNAL(hazardGridFileChangedSIGNAL(QString, QString)), theNNMap, SLOT(handleFileNameChanged(QString, QString)));
 
+
+    /* **************************************************
     //
     // local mapping hazard to building
     //
 
     theLocalMapping = new SimCenterAppEventSelection(QString("Local Event Type"), QString("Events"), this);
     SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
-    //SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
+    connect(this,SIGNAL(eventTypeChangedSignal(QString&)), theLocalMapping, SLOT(currentEventTypeChanged(QString&)));
 
     theLocalMapping->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
+    
+    //SimCenterAppWidget *siteResponse = new NoArgSimCenterApp(QString("SiteResponse"));
     //theLocalMapping->addComponent(QString("Site Response"), QString("SiteResponse"), siteResponse);
 
     QGroupBox* localMappingGroupBox = new QGroupBox("Local Mapping", this);
     localMappingGroupBox->setContentsMargins(0,5,0,0);
     localMappingGroupBox->setLayout(theLocalMapping->layout());
     mainLayout->addWidget(localMappingGroupBox);
-
+    ****************************************************** */
+      
     mainLayout->addStretch();
     this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
     this->setMaximumWidth(750);
 }
 
@@ -121,35 +132,94 @@ HazardToAssetBuilding::~HazardToAssetBuilding()
 
 bool HazardToAssetBuilding::outputToJSON(QJsonObject &jsonObj)
 {
+  /*
     bool result = true;
-    if (theRegionalMapping->outputToJSON(jsonObj)  != true)
-        result = false;
-    if (theLocalMapping->outputToJSON(jsonObj)  != true)
-        result = false;
+    QJsonObject data;
+    QJsonObject writeObj;
+    
+    if (!jsonKey.isEmpty())
+      writeObj = data;
+    else
+      writeObj = jsonObj;
+      
+    if (theRegionalMapping->outputToJSON(writeObj)  != true) {
+      errorMessage(QString("Regional Mapping Widget returned failure in outputToJSON"));
+      result = false;
+    }
+    
+    //if (theLocalMapping->outputToJSON(writeObj)  != true) {
+    //      errorMessage(QString("Local Mapping Widget returned failure in outputToJSON"));      
+    //  result = false;
+    // }
 
+    
+    if (!jsonKey.isEmpty())
+      jsonObj[jsonKey] = data;
+    */
+
+    bool result = true;
+      
+    if (theRegionalMapping->outputToJSON(jsonObj)  != true) {
+      errorMessage(QString("Regional Mapping Widget returned failure in outputToJSON"));
+      result = false;
+    }
+      
     return result;
 }
 
 
 bool HazardToAssetBuilding::inputFromJSON(QJsonObject &jsonObj){
 
+  /*
+    QJsonObject &readObj = jsonObj;
+  
+    if (!jsonKey.isEmpty()) {
+      if (!jsonObj.contains(jsonKey)) {      
+	QString errorMsg(QString("HazardToAssetBuilding keyWord: ") + jsonKey +
+			 QString(" not in json"));
+	errorMessage(errorMsg);
+      } else
+	readObj = jsonObj[jsonKey].toObject();
+    }
+    
+    bool result = true;
+    if (theRegionalMapping->inputFromJSON(readObj) != true)
+        result = false;
+  */
+  /*
+    if (theLocalMapping->inputFromJSON(readObj) != true)
+        result = false;
+    */
     bool result = true;
     if (theRegionalMapping->inputFromJSON(jsonObj) != true)
-        result = false;
-
-    if (theLocalMapping->inputFromJSON(jsonObj) != true)
-        result = false;
-    
+        result = false;    
     return result;
 }
 
 
 bool HazardToAssetBuilding::outputAppDataToJSON(QJsonObject &jsonObj)
 {
+  /*
+    QJsonObject data;
+    QJsonObject *writeObj = &jsonObj;
+    
+    if (!jsonKey.isEmpty())
+      writeObj = &data;
+    
+    bool result = true;
+    if (theRegionalMapping->outputAppDataToJSON(*writeObj) != true)
+        result = false;
+
+	// if (theLocalMapping->outputAppDataToJSON(*writeObj) != true)
+	//   result = false;
+
+    
+    if (!jsonKey.isEmpty())
+      jsonObj[jsonKey] = *writeObj;
+    */
+
     bool result = true;
     if (theRegionalMapping->outputAppDataToJSON(jsonObj) != true)
-        result = false;
-    if (theLocalMapping->outputAppDataToJSON(jsonObj) != true)
         result = false;
 
     return result;
@@ -158,11 +228,31 @@ bool HazardToAssetBuilding::outputAppDataToJSON(QJsonObject &jsonObj)
 
 bool HazardToAssetBuilding::inputAppDataFromJSON(QJsonObject &jsonObj){
 
+  /*
+  QJsonObject readObj;
+ 	
+    if (!jsonKey.isEmpty()) {
+      if (!jsonObj.contains(jsonKey)) {      
+	QString errorMsg(QString("HazardToAssetBuilding keyWord: ") + jsonKey +
+			 QString(" not in json"));
+	errorMessage(errorMsg);
+	return false;
+      } else
+	readObj = jsonObj[jsonKey].toObject();
+    } else
+      readObj = jsonObj;
+  */
+  
     bool result = true;
-    if (theRegionalMapping->inputAppDataFromJSON(jsonObj) != true)
+    result = theRegionalMapping->inputAppDataFromJSON(jsonObj);
+    if (result == false) {
+      errorMessage("HazardToAssetBuilding - inputAppDataFromJSON failed");
+      result = false;
+    }
+    /*
+    if (theLocalMapping->inputAppDataFromJSON(readObj) != true)
         result = false;
-    if (theLocalMapping->inputAppDataFromJSON(jsonObj) != true)
-        result = false;
+    */
     
     return result;
 }
@@ -174,14 +264,26 @@ void HazardToAssetBuilding::hazardGridFileChangedSlot(QString motionDir, QString
 }
 
 
+void HazardToAssetBuilding::eventTypeChangedSlot(QString eventType)
+{
+    emit eventTypeChangedSignal(eventType);
+}
+
+
 bool HazardToAssetBuilding::copyFiles(QString &destName)
 {
     bool result = true;
 
-    if (theRegionalMapping->copyFiles(destName) != true)
+    if (theRegionalMapping->copyFiles(destName) != true) {
         result = false;
-    if (theLocalMapping->copyFiles(destName) != true)
+	
+	return result;
+    }
+    /*
+    if (theLocalMapping->copyFiles(destName) != true) {
         result = false;
+    }
+    */
 
     return result;
 }
@@ -190,5 +292,5 @@ bool HazardToAssetBuilding::copyFiles(QString &destName)
 void HazardToAssetBuilding::clear(void)
 {
     theRegionalMapping->clear();
-    theLocalMapping->clear();
+    // theLocalMapping->clear();
 }

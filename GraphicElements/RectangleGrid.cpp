@@ -39,10 +39,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GridNode.h"
 #include "NodeHandle.h"
 #include "RectangleGrid.h"
-#include "RuptureWidget.h"
-#include "Site.h"
 #include "SiteConfig.h"
 #include "VisualizationWidget.h"
+
+#include <qgsmapcanvas.h>
+#include <qgsmapmouseevent.h>
 
 #include <QApplication>
 #include <QBitmap>
@@ -57,9 +58,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QRandomGenerator>
 #include <QWidget>
 
-RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
+RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanvas(parent)
 {
-    GMSiteConfig = nullptr;
+    gridSiteConfig = nullptr;
 
     setCacheMode(DeviceCoordinateCache);
     setZValue(-1);
@@ -85,11 +86,11 @@ RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
     rectangleGeometry.setWidth(width);
     rectangleGeometry.setHeight(height);
 
-    bottomLeftNode = new NodeHandle(this);
-    bottomRightNode = new NodeHandle(this);
-    topRightNode = new NodeHandle(this);
-    topLeftNode = new NodeHandle(this);
-    centerNode = new NodeHandle(this);
+    bottomLeftNode = new NodeHandle(this, mapCanvas);
+    bottomRightNode = new NodeHandle(this, mapCanvas);
+    topRightNode = new NodeHandle(this, mapCanvas);
+    topLeftNode = new NodeHandle(this, mapCanvas);
+    centerNode = new NodeHandle(this, mapCanvas);
 
     centerNode->setColor(QColor(255,0,0,100));
     centerNode->setToolTip("Rupture Location");
@@ -102,12 +103,136 @@ RectangleGrid::RectangleGrid(QObject* parent) : QObject(parent)
     connect(centerNode,&NodeHandle::positionChanged,this,&RectangleGrid::handleCenterNodeChanged);
 
     this->updateGeometry();
+
+    // Important! Otherwise events will not get passed down to scene
+    mapCanvas->setEnabled(true);
+
+    QgsMapTool::setCursor(Qt::CrossCursor);
 }
 
 
 RectangleGrid::~RectangleGrid()
 {
 
+}
+
+
+void RectangleGrid::show()
+{
+    QGraphicsScene* mapCanvasScene = mapCanvas->scene();
+
+    auto sceneRect = mapCanvasScene->sceneRect();
+
+    auto centerScene = sceneRect.center();
+
+    auto sceneWidth = sceneRect.width();
+    auto sceneHeight = sceneRect.height();
+
+    // Set the initial grid size if it has not already been set
+    if(this->getBottomLeftNode()->pos().isNull() || this->getTopRightNode()->pos().isNull() || this->getTopLeftNode()->pos().isNull() || this->getBottomRightNode()->pos().isNull() )
+    {
+        this->setWidth(0.5*sceneWidth);
+        this->setHeight(0.5*sceneHeight);
+        this->setPos(centerScene.toPoint());
+
+        mapCanvasScene->addItem(this);
+    }
+
+    this->setVisible(true);
+}
+
+
+void RectangleGrid::removeGridFromScene(void)
+{
+    QGraphicsScene* mapCanvasScene = mapCanvas->scene();
+
+    mapCanvasScene->removeItem(this);
+}
+
+void RectangleGrid::canvasPressEvent( QgsMapMouseEvent *event )
+{
+    // Store some of the event's button-down data.
+    auto mousePressViewPoint = event->pos();
+    auto mousePressScenePoint = mapCanvas->mapToScene(mousePressViewPoint);
+    auto mousePressScreenPoint = event->globalPos();
+    auto lastMouseMoveScenePoint = mousePressScenePoint;
+    auto lastMouseMoveScreenPoint = mousePressScreenPoint;
+    auto mousePressButton = event->button();
+
+    // Convert and deliver the mouse event to the scene.
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMousePress);
+    mouseEvent.setWidget(mapCanvas->viewport());
+    mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
+    mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
+    mouseEvent.setScenePos(mousePressScenePoint);
+    mouseEvent.setScreenPos(mousePressScreenPoint);
+    mouseEvent.setLastScenePos(lastMouseMoveScenePoint);
+    mouseEvent.setLastScreenPos(lastMouseMoveScreenPoint);
+    mouseEvent.setButtons(event->buttons());
+    mouseEvent.setButton(event->button());
+    mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(mapCanvas->scene(), &mouseEvent);
+
+    // Update the original mouse event accepted state.
+    bool isAccepted = mouseEvent.isAccepted();
+    event->setAccepted(isAccepted);
+}
+
+
+void RectangleGrid::canvasMoveEvent( QgsMapMouseEvent *event )
+{
+    // Store some of the event's button-down data.
+    auto mousePressViewPoint = event->pos();
+    auto mousePressScenePoint = mapCanvas->mapToScene(mousePressViewPoint);
+    auto mousePressScreenPoint = event->globalPos();
+    auto lastMouseMoveScenePoint = mousePressScenePoint;
+    auto lastMouseMoveScreenPoint = mousePressScreenPoint;
+    auto mousePressButton = event->button();
+
+    // Convert and deliver the mouse event to the scene.
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
+    mouseEvent.setWidget(mapCanvas->viewport());
+    mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
+    mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
+    mouseEvent.setScenePos(mousePressScenePoint);
+    mouseEvent.setScreenPos(mousePressScreenPoint);
+    mouseEvent.setLastScenePos(lastMouseMoveScenePoint);
+    mouseEvent.setLastScreenPos(lastMouseMoveScreenPoint);
+    mouseEvent.setButtons(event->buttons());
+    mouseEvent.setButton(event->button());
+    mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(mapCanvas->scene(), &mouseEvent);
+}
+
+void RectangleGrid::canvasReleaseEvent( QgsMapMouseEvent *event )
+{
+    // Store some of the event's button-down data.
+    auto mousePressViewPoint = event->pos();
+    auto mousePressScenePoint = mapCanvas->mapToScene(mousePressViewPoint);
+    auto mousePressScreenPoint = event->globalPos();
+    auto lastMouseMoveScenePoint = mousePressScenePoint;
+    auto lastMouseMoveScreenPoint = mousePressScreenPoint;
+    auto mousePressButton = event->button();
+
+    // Convert and deliver the mouse event to the scene.
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseRelease);
+    mouseEvent.setWidget(mapCanvas->viewport());
+    mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
+    mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
+    mouseEvent.setScenePos(mousePressScenePoint);
+    mouseEvent.setScreenPos(mousePressScreenPoint);
+    mouseEvent.setLastScenePos(lastMouseMoveScenePoint);
+    mouseEvent.setLastScreenPos(lastMouseMoveScreenPoint);
+    mouseEvent.setButtons(event->buttons());
+    mouseEvent.setButton(event->button());
+    mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(mapCanvas->scene(), &mouseEvent);
 }
 
 
@@ -149,16 +274,16 @@ void RectangleGrid::updateGeometry(void)
     topLeftNode->setPos(rectangleGeometry.topLeft());
     centerNode->setPos(centerPnt);
 
-    if(GMSiteConfig && updateConnectedWidgets)
+    if(gridSiteConfig && updateConnectedWidgets)
     {
-        latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt);
-        latMax = theVisWidget->getLatFromScreenPoint(topRightPnt);
+        latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt,mapCanvas);
+        latMax = theVisWidget->getLatFromScreenPoint(topRightPnt,mapCanvas);
 
-        lonMin = theVisWidget->getLongFromScreenPoint(bottomLeftPnt);
-        lonMax = theVisWidget->getLongFromScreenPoint(topRightPnt);
+        lonMin = theVisWidget->getLongFromScreenPoint(topRightPnt,mapCanvas);
+        lonMax = theVisWidget->getLongFromScreenPoint(bottomLeftPnt,mapCanvas);
 
-        GMSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
-        GMSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
+        gridSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
+        gridSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
 
         //        auto centerPointLat = theVisWidget->getLatFromScreenPoint(centerPnt);
         //        auto centerPointLong = theVisWidget->getLongFromScreenPoint(centerPnt);
@@ -206,21 +331,21 @@ void RectangleGrid::setVisualizationWidget(VisualizationWidget *value)
 }
 
 
-void RectangleGrid::setGMSiteConfig(SiteConfig *value)
+void RectangleGrid::setSiteGridConfig(SiteConfig *value)
 {
-    GMSiteConfig = value;
+    gridSiteConfig = value;
 
     // Connect grid latitude
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
 
     // Connect grid longitude
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
+    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
 
     // Connect the grid discretization
-    connect(&GMSiteConfig->siteGrid().latitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
-    connect(&GMSiteConfig->siteGrid().longitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
+    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
+    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
 }
 
 
@@ -259,13 +384,15 @@ QVariant RectangleGrid::itemChange(GraphicsItemChange change, const QVariant &va
 }
 
 
-void RectangleGrid::mousePressEvent(QGraphicsSceneMouseEvent *)
+void RectangleGrid::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    QGraphicsItem::mousePressEvent(event);
 }
 
 
-void RectangleGrid::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void RectangleGrid::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    QGraphicsItem::mouseReleaseEvent(event);
 }
 
 
@@ -313,7 +440,7 @@ void RectangleGrid::setTopRightNode(NodeHandle *value)
 
 void RectangleGrid::setTopRightNode(const double latitude, const double longitude)
 {
-    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude);
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
     this->handleTopRightCornerChanged(scrnPnt);
 }
@@ -321,7 +448,7 @@ void RectangleGrid::setTopRightNode(const double latitude, const double longitud
 
 void RectangleGrid::setCenterNode(const double latitude, const double longitude)
 {
-    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude);
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
     this->handleCenterNodeChanged(scrnPnt);
 }
@@ -341,7 +468,7 @@ void RectangleGrid::setBottomLeftNode(NodeHandle *value)
 
 void RectangleGrid::setBottomLeftNode(const double latitude, const double longitude)
 {
-    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude);
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
     this->handleBottomLeftCornerChanged(scrnPnt);
 }
@@ -475,8 +602,8 @@ void RectangleGrid::createGrid()
 
 void RectangleGrid::handleGridDivisionsChanged(void)
 {
-    auto numDivH = static_cast<size_t>(GMSiteConfig->siteGrid().longitude().divisions());
-    auto numDivV = static_cast<size_t>(GMSiteConfig->siteGrid().latitude().divisions());
+    auto numDivH = static_cast<size_t>(gridSiteConfig->siteGrid().longitude().divisions());
+    auto numDivV = static_cast<size_t>(gridSiteConfig->siteGrid().latitude().divisions());
 
     if(numDivV == this->numDivisionsVertical && numDivH == this->numDivisionsHoriz)
         return;
@@ -494,11 +621,11 @@ void RectangleGrid::handleLatLonChanged(void)
     if(changingDimensions == true)
         return;
 
-    auto lat_Min = GMSiteConfig->siteGrid().latitude().min();
-    auto lat_Max = GMSiteConfig->siteGrid().latitude().max();
+    auto lat_Min = gridSiteConfig->siteGrid().latitude().min();
+    auto lat_Max = gridSiteConfig->siteGrid().latitude().max();
 
-    auto lon_Min = GMSiteConfig->siteGrid().longitude().min();
-    auto lon_Max = GMSiteConfig->siteGrid().longitude().max();
+    auto lon_Min = gridSiteConfig->siteGrid().longitude().min();
+    auto lon_Max = gridSiteConfig->siteGrid().longitude().max();
 
     if(lat_Min != latMin || lon_Min != lonMin)
     {

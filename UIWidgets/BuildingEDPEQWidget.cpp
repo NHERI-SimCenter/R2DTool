@@ -50,8 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QDebug>
 
-BuildingEDPEQWidget::BuildingEDPEQWidget(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), theCurrentWidget(0), theRandomVariablesContainer(theRandomVariableIW)
+BuildingEDPEQWidget::BuildingEDPEQWidget(QWidget *parent)
+    : SimCenterAppWidget(parent), theCurrentWidget(0)
 {
     QVBoxLayout *layout = new QVBoxLayout();
 
@@ -76,10 +76,10 @@ BuildingEDPEQWidget::BuildingEDPEQWidget(RandomVariablesContainer *theRandomVari
     theStackedWidget = new QStackedWidget();
 
     // Create the individual widgets add to stacked widget
-    theStandardEarthquakeEDPs = new StandardEarthquakeEDP(theRandomVariablesContainer);
+    theStandardEarthquakeEDPs = new StandardEarthquakeEDP();
     theStackedWidget->addWidget(theStandardEarthquakeEDPs);
 
-    theUserDefinedEDPs = new UserDefinedEDPR(theRandomVariablesContainer);
+    theUserDefinedEDPs = new UserDefinedEDPR();
     theStackedWidget->addWidget(theUserDefinedEDPs);
 
     layout->addWidget(theStackedWidget);
@@ -116,7 +116,7 @@ bool BuildingEDPEQWidget::inputFromJSON(QJsonObject &jsonObject)
     }
     else
     {
-        emit sendErrorMessage("EDP_SElection no current EDP selected");
+        this->errorMessage("EDP_SElection no current EDP selected");
     }
 
     return false;
@@ -167,7 +167,7 @@ bool BuildingEDPEQWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     }
     else
     {
-        emit sendErrorMessage(" BuildingEDPEQWidget - no Application key found");
+        this->errorMessage(" BuildingEDPEQWidget - no Application key found");
         return false;
     }
 
@@ -184,7 +184,7 @@ bool BuildingEDPEQWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     }
     else
     {
-        emit sendErrorMessage(" BuildingEDPEQWidget - no valid type found");
+        this->errorMessage(" BuildingEDPEQWidget - no valid type found");
         return false;
     }
 

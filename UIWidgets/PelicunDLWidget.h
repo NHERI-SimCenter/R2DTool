@@ -43,6 +43,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class QComboBox;
 class QCheckBox;
 class QLineEdit;
+class QHBoxLayout;
+class QWidget;
 
 class PelicunDLWidget : public SimCenterAppWidget
 {
@@ -57,7 +59,19 @@ public:
 
     void clear(void);
 
+    bool copyFiles(QString &destName);
+
+    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
+
+public slots:
+
+    void handleComboBoxChanged(const QString &text);
+    void handleBrowseButton1Pressed(void);
+    void handleBrowseButton2Pressed(void);
+
 private:
+    QWidget* autoPopulateScriptWidget;
+    QWidget* fragDirWidget;
 
     QComboBox* DLTypeComboBox;
     QLineEdit* realizationsLineEdit;
@@ -66,7 +80,8 @@ private:
     QCheckBox* logFileCheckBox;
     QCheckBox* coupledEDPCheckBox;
     QCheckBox* groundFailureCheckBox;
-
+    QLineEdit* autoPopulationScriptLineEdit;
+    QLineEdit* fragilityDirLineEdit;
 };
 
 #endif // PelicunDLWidget_H

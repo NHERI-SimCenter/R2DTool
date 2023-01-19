@@ -37,30 +37,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "SimCenterEventRegional.h"
-#include "RandomVariablesContainer.h"
 
 #include <QVBoxLayout>
+#include <QJsonObject>
 
 SimCenterEventRegional::SimCenterEventRegional(QWidget *parent)
-    :SimCenterAppWidget(parent), eventType("Earthquake")
+    :SimCenterAppWidget(parent)
 {
 
-    unitsCombo = new QComboBox(this);
-    unitsCombo->addItem("Gravitational constant (g)","g");
-    unitsCombo->addItem("Meter per second squared","mps2");
-    unitsCombo->addItem("Feet per second squared","ftps2");
-    unitsCombo->addItem("Inches per second squared","inchps2");
-    unitsCombo->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
+    //QVBoxLayout *Vlayout = new QVBoxLayout(this);
 
-    QVBoxLayout *Vlayout = new QVBoxLayout(this);
-    QHBoxLayout *Hlayout = new QHBoxLayout();
-
-    QLabel* unitsLabel = new QLabel("Event Units:",this);
-
-    Hlayout->addWidget(unitsLabel);
-    Hlayout->addWidget(unitsCombo,Qt::AlignLeft);
-
-    Vlayout->addLayout(Hlayout);
 }
 
 
@@ -79,7 +65,7 @@ void SimCenterEventRegional::clear(void)
 bool SimCenterEventRegional::outputToJSON(QJsonObject &jsonObject)
 {
     // just need to send the class type here.. type needed in object in case user screws up
-    jsonObject["type"]= eventType;
+//    jsonObject["type"]= eventTypeCombo->currentText();
 
     return true;
 }
@@ -101,13 +87,8 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject)
     //
 
     jsonObject["Application"] = "SimCenterEvent";
-    jsonObject["EventClassification"] = eventType;
+
     QJsonObject dataObj;
-
-    auto units = unitsCombo->currentData().toString();
-
-    dataObj["inputUnit"]=units;
-
     jsonObject["ApplicationData"] = dataObj;
 
     return true;
@@ -116,42 +97,7 @@ bool SimCenterEventRegional::outputAppDataToJSON(QJsonObject &jsonObject)
 
 bool SimCenterEventRegional::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
-    if (jsonObject.contains("ApplicationData"))
-    {
-        QJsonObject appData = jsonObject["ApplicationData"].toObject();
-
-        if (appData.contains("inputUnit"))
-        {
-            auto unit = appData["inputUnit"].toString();
-
-            if(unit.compare("mps2") == 0)
-            {
-                unitsCombo->setCurrentText("Meter per second squared");
-            }
-            else if(unit.compare("ftps2") == 0)
-            {
-                unitsCombo->setCurrentText("Feet per second squared");
-            }
-            else if(unit.compare("inchps2") == 0)
-            {
-                unitsCombo->setCurrentText("Inches per second squared");
-            }
-            else
-            {
-                qDebug()<<" The unit type "<<unit<<" is not recognized";
-                return false;
-            }
-        }
-        else
-        {
-            // Default is g
-            unitsCombo->setCurrentText("Gravitational constant (g)");
-        }
-
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 
@@ -160,9 +106,4 @@ bool SimCenterEventRegional::copyFiles(QString &dirName) {
     return true;
 }
 
-
-void SimCenterEventRegional::setEventType(QString newType) {
-    eventType = newType;
-
-}
 

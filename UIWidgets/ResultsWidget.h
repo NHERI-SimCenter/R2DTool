@@ -43,7 +43,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class AssetInputDelegate;
 class PelicunPostProcessor;
 class VisualizationWidget;
+class CBCitiesPostProcessor;
 
+class QTabWidget;
 class QStackedWidget;
 class QVBoxLayout;
 class QLabel;
@@ -64,7 +66,9 @@ public:
 
     virtual int processResults(QString resultsDir);
 
+#ifdef ARC_GIS
     void setCurrentlyViewable(bool status);
+#endif
 
     void clear(void);
 
@@ -79,24 +83,26 @@ private slots:
 
 private:
 
-    QStackedWidget* mainStackedWidget;
-    QLabel* resultsMainLabel;
+    QStackedWidget* mainStackedWidget = nullptr;
+    QTabWidget* resTabWidget = nullptr;
+    QLabel* resultsMainLabel = nullptr;
 
-    QLabel* selectComponentsText;
-    QPushButton *selectComponentsButton;
-    QPushButton *exportPDFFileButton;
-    QPushButton *exportBrowseFileButton;
-    QLabel* exportLabel;
+    QLabel* selectComponentsText = nullptr;
+    QPushButton *selectComponentsButton = nullptr;
+    QPushButton *exportPDFFileButton = nullptr;
+    QPushButton *exportBrowseFileButton = nullptr;
+    QLabel* exportLabel = nullptr;
 
     QString DVApp;
-    QLineEdit* exportPathLineEdit;
-    QVBoxLayout* mainLayout;
-    QWidget* resultsPageWidget;
+    QLineEdit* exportPathLineEdit = nullptr;
+    QVBoxLayout* mainLayout = nullptr;
+    QWidget* resultsPageWidget = nullptr;
 
-    AssetInputDelegate* selectComponentsLineEdit;
-    VisualizationWidget* theVisualizationWidget;
+    AssetInputDelegate* selectComponentsLineEdit = nullptr;
+    VisualizationWidget* theVisualizationWidget = nullptr;
 
     std::unique_ptr<PelicunPostProcessor> thePelicunPostProcessor;
+    std::unique_ptr<CBCitiesPostProcessor> theCBCitiesPostProcessor;
 
 };
 

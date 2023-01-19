@@ -42,7 +42,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class InputWidgetOpenSeesAnalysis;
 class InputWidgetOpenSeesPyAnalysis;
-class RandomVariablesContainer;
 
 class QComboBox;
 class QGroupBox;
@@ -53,7 +52,7 @@ class BuildingSimulationWidget : public  SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit BuildingSimulationWidget(QWidget *parent, RandomVariablesContainer* RVContainer);
+    explicit BuildingSimulationWidget(QWidget *parent);
     virtual ~BuildingSimulationWidget();
 
     bool outputToJSON(QJsonObject &rvObject);
@@ -68,7 +67,6 @@ private:
     QStackedWidget* theStackedWidget;
     InputWidgetOpenSeesAnalysis* openSeesInputWidget;
     InputWidgetOpenSeesPyAnalysis* openSeesPyInputWidget;
-    RandomVariablesContainer* theRandomVariablesContainer;
 };
 
 #endif // BuildingSimulationWidget_H

@@ -44,13 +44,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class AnalysisWidget;
 class Application;
+class LocalApplication;
 class AssetsWidget;
 class DLWidget;
 class EngDemandParameterWidget;
-class GeneralInformationWidget;
+class GeneralInformationWidgetR2D;
 class HazardToAssetWidget;
 class HazardsWidget;
-class InputWidgetUQ;
+class UQWidget;
 class ModelWidget;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -59,14 +60,17 @@ class RandomVariablesContainer;
 class RemoteJobManager;
 class RemoteService;
 class ResultsWidget;
-//class RunLocalWidget;
+class LoadResultsDialog;
 class RunWidget;
 class SimCenterAppWidget;
+class SimCenterAppEventSelection;
 class SimCenterComponentSelection;
 class UQOptions;
 class UQWidget;
 class UQ_Results;
 class VisualizationWidget;
+class PerformanceWidget;
+class LocalMappingWidget;
 
 class WorkflowAppR2D : public WorkflowAppWidget
 {
@@ -92,17 +96,19 @@ public:
 
     VisualizationWidget *getVisualizationWidget() const;
     AssetsWidget *getAssetsWidget() const;
-    GeneralInformationWidget *getGeneralInformationWidget() const;
+    GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
+    DLWidget *getTheDamageAndLossWidget() const;
+
+    LocalApplication *getLocalApp() const;
 
 signals:
-    void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
-    void sendLoadFile(QString filename);
 
 public slots:  
     void clear(void);
+    void loadResults(void);
     void setUpForApplicationRun(QString &, QString &);
-    void processResults(QString dakotaOut, QString dakotaTab, QString inputFile);
-    void loadFile(QString filename);
+    void processResults(QString &dirResults);
+    int loadFile(QString &filename);
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
 
@@ -122,7 +128,7 @@ private:
     //
 
     VisualizationWidget* theVisualizationWidget;
-    GeneralInformationWidget* theGeneralInformationWidget;
+    GeneralInformationWidgetR2D* theGeneralInformationWidgetR2D;
     HazardsWidget* theHazardsWidget;
     AssetsWidget* theAssetsWidget;
     HazardToAssetWidget* theHazardToAssetWidget;
@@ -132,19 +138,22 @@ private:
     UQWidget* theUQWidget;
     RandomVariablesContainer* theRVs;
     ResultsWidget* theResultsWidget;
-
+    LoadResultsDialog* resultsDialog;
+    PerformanceWidget* thePerformanceWidget;
+    //LocalMappingWidget* theLocalMappingWidget;  
+    SimCenterAppEventSelection* theLocalEvent;  
     //
     // Objects for running the workflow and obtaining results
     //
 
     RunWidget *theRunWidget;
-    Application *localApp;
+    LocalApplication *localApp;
     Application *remoteApp;
     RemoteJobManager *theJobManager;
 
     QJsonObject *jsonObjOrig;
     QNetworkAccessManager *manager;
-
+  QString commonFilePath;
     static WorkflowAppR2D *theInstance;
 
 };

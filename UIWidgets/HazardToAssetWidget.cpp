@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 #include "HazardToAssetBuilding.h"
 #include "HazardToAssetWidget.h"
 #include "SecondaryComponentSelection.h"
@@ -64,17 +64,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentR2D(parent)
+HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* /*visWidget*/) : MultiComponentR2D(QString("RegionalMapping"), parent)
 {
 
-  buildingWidget = new HazardToAssetBuilding(this); 
-  pipelineWidget = new SimCenterAppSelection(QString("Hazard To Asset Application"), QString("HazardToAsset"), this);
+  buildingWidget = new HazardToAssetBuilding(QString("Buildings"),this); 
+  pipelineWidget = new HazardToAssetBuilding(QString("WaterDistributionNetwork"),this);
   
   this->addComponent("Buildings", buildingWidget);
-  this->addComponent("Gas Network",pipelineWidget);
+  this->addComponent("Water Network",pipelineWidget);
 
   connect(this, SIGNAL(hazardGridFileChangedSignal(QString, QString)), buildingWidget, SLOT(hazardGridFileChangedSlot(QString, QString)));
+  connect(this, SIGNAL(eventTypeChangedSignal(QString)), buildingWidget, SLOT(eventTypeChangedSlot(QString)));
+
   this->hideAll();
 }
 
@@ -87,6 +88,12 @@ HazardToAssetWidget::~HazardToAssetWidget()
 
 void HazardToAssetWidget::hazardGridFileChangedSlot(QString motionDir, QString eventFile){
     emit hazardGridFileChangedSignal(motionDir, eventFile);
+}
+
+
+void HazardToAssetWidget::eventTypeChangedSlot(QString eventType)
+{
+    emit eventTypeChangedSignal(eventType);
 }
 
 

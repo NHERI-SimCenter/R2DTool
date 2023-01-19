@@ -59,8 +59,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace std;
 
-OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), responseNodes(0), theRandomVariablesContainer(theRandomVariableIW)
+OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(QWidget *parent)
+    : SimCenterAppWidget(parent), responseNodes(0)
 {
     responseNodes = NULL;
     layout = new QGridLayout();
@@ -136,6 +136,7 @@ OpenSeesPyBuildingModel::~OpenSeesPyBuildingModel()
         names.append(varNamesAndValues.at(i));
     }
 
+    RandomVariablesContainer *theRandomVariablesContainer=RandomVariablesContainer::getInstance();
     theRandomVariablesContainer->removeRandomVariables(names);
 }
 
@@ -180,8 +181,6 @@ bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
     QJsonObject dataObj;
 
     QString fileName = filePathLineEdit->text();
-    QFileInfo fileInfo(fileName);
-
 
     dataObj["dofMap"]=responseNodes->text();
     dataObj["ndm"]=ndm->text().toInt();
@@ -194,7 +193,7 @@ bool OpenSeesPyBuildingModel::outputAppDataToJSON(QJsonObject &jsonObject) {
         dataObj["filePath"] = theModelFile.absolutePath();
     } else {
         QString errorMessage("OpenSeesPyBuilding Model Generator - no modeling script set");
-        emit sendErrorMessage(errorMessage);
+        this->errorMessage(errorMessage);
         dataObj["mainScript"] = "None";
         dataObj["filePath"] = "";
         res = false;
@@ -220,6 +219,11 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
             responseNodes->setText(appData["dofMap"].toString());
         if (appData.contains("ndm"))
             ndm->setText(QString::number(appData["ndm"].toInt()));
+        if (appData.contains("ndf"))
+            ndf->setText(QString::number(appData["ndf"].toInt()));
+        else
+            ndf->setText("6");
+
         // FMK if (appData.contains("columnLine"))
         //        columnLine->setText(appData["columnLine"].toString());
 
@@ -269,11 +273,11 @@ bool OpenSeesPyBuildingModel::inputAppDataFromJSON(QJsonObject &jsonObject) {
                 }
             }
         }
-        emit sendErrorMessage("OpenSeesPyBuilder could not find script file");
+        this->errorMessage("OpenSeesPyBuilder could not find script file");
         return false;
     }
 
-    emit sendErrorMessage("OpenSeesPyBuilder no ApplicationData");
+    this->errorMessage("OpenSeesPyBuilder no ApplicationData");
     return true;
 }
 
@@ -286,6 +290,7 @@ void OpenSeesPyBuildingModel::setFilename1(QString name1){
         names.append(varNamesAndValues.at(i));
     }
 
+    RandomVariablesContainer *theRandomVariablesContainer=RandomVariablesContainer::getInstance();
     theRandomVariablesContainer->removeRandomVariables(names);
 
     // set file name & ebtry in qLine edit

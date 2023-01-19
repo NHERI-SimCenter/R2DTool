@@ -51,7 +51,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QStackedWidget>
 
-EarthquakeInputWidget::EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer) : SimCenterAppWidget(parent), theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
+EarthquakeInputWidget::EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget)
+  : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     theEQWidget = nullptr;
     theRootStackedWidget = nullptr;
@@ -123,16 +124,16 @@ bool EarthquakeInputWidget::inputFromJSON(QJsonObject &jsonObject){
 
 void EarthquakeInputWidget::createEarthquakesWidget(void)
 {
-    theEQWidget = new QWidget(this);
+    theEQWidget = new QWidget();
 
     QGridLayout* gridLayout = new QGridLayout(theEQWidget);
 
     auto smallVSpacer = new QSpacerItem(0,10);
 
-    QLabel* selectionText = new QLabel(theEQWidget);
+    QLabel* selectionText = new QLabel();
     selectionText->setText("Earthquake Hazard Type:");
 
-    includeHazardCheckBox = new QCheckBox("Include earthquake hazard in analysis",theEQWidget);
+    includeHazardCheckBox = new QCheckBox("Include earthquake hazard in analysis");
     includeHazardCheckBox->setChecked(true);
 
     earthquakeSelectionCombo = new QComboBox();
@@ -157,7 +158,7 @@ void EarthquakeInputWidget::createEarthquakesWidget(void)
     gridLayout->addWidget(theRootStackedWidget,2,0,1,3);
     gridLayout->addItem(vspacer, 3, 0,1,3);
 
-    theEQSSWidget = new GMWidget(this, theVisualizationWidget);
+    theEQSSWidget = new GMWidget(theVisualizationWidget);
     theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
 

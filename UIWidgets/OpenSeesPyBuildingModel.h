@@ -46,13 +46,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVector>
 
 class InputWidgetParameters;
-class RandomVariablesContainer;
 
 class OpenSeesPyBuildingModel : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit OpenSeesPyBuildingModel(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    explicit OpenSeesPyBuildingModel(QWidget *parent = 0);
     ~OpenSeesPyBuildingModel();
 
     bool outputToJSON(QJsonObject &rvObject) override;
@@ -70,7 +69,7 @@ public:
 signals:
 
 public slots:
-   void clear(void);
+   void clear(void) override;
    void chooseFileName1(void);
 
 private:
@@ -82,7 +81,6 @@ private:
     QLineEdit *ndm;
     QLineEdit *ndf;
     QLineEdit *columnLine;
-    RandomVariablesContainer *theRandomVariablesContainer;
     QStringList varNamesAndValues;
 };
 

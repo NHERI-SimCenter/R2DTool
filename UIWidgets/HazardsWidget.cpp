@@ -39,10 +39,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GMWidget.h"
 #include "HazardsWidget.h"
 #include "ShakeMapWidget.h"
+#include "HurricaneSelectionWidget.h"
+#include "OpenQuakeSelectionWidget.h"
 #include "UserInputHurricaneWidget.h"
+#include "RasterHazardInputWidget.h"
 #include "UserInputGMWidget.h"
+#include "RegionalSiteResponseWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
+
+#ifdef ARC_GIS
+#include "ArcGISHurricaneSelectionWidget.h"
+#endif
+
+#ifdef Q_GIS
+#include "QGISHurricaneSelectionWidget.h"
+#include "RasterHazardInputWidget.h"
+#endif
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -54,32 +67,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 
 HazardsWidget::HazardsWidget(QWidget *parent,
-                             VisualizationWidget* visWidget,
-                             RandomVariablesContainer * RVContainer)
-    : SimCenterAppSelection(QString("Hazard Selection"),QString("Hazard"), parent),
-      theRandomVariablesContainer(RVContainer), theVisualizationWidget(visWidget)
+                             VisualizationWidget* visWidget)
+  : SimCenterAppSelection(QString("Hazard Selection"),
+              QString("RegionalEvent"), QString("Hazard"), QString(), parent),
+    theVisualizationWidget(visWidget)
 {
-    theShakeMapWidget = nullptr;
-    theEQSSWidget = nullptr;
-    theUserInputGMWidget = nullptr;
-    theUserInputHurricaneWidget = nullptr;
-
     this->setContentsMargins(0,0,0,0);
 
-    theEQSSWidget = new GMWidget(this, theVisualizationWidget);
-    // theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget);
-    theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget);
-    // theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget);
+    theEQSSWidget = new GMWidget(theVisualizationWidget, this);
+    theShakeMapWidget = new ShakeMapWidget(theVisualizationWidget,this);
+    theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget,this);
+    theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget,this);
 
+#ifdef ARC_GIS
+    theHurricaneSelectionWidget = new ArcGISHurricaneSelectionWidget(theVisualizationWidget);
+#endif
+
+#ifdef Q_GIS
+    theHurricaneSelectionWidget = new QGISHurricaneSelectionWidget(theVisualizationWidget,this);
+    theRasterHazardWidget = new RasterHazardInputWidget(theVisualizationWidget,this);
+    theOpenQuakeSelectionWidget = new OpenQuakeSelectionWidget(theVisualizationWidget);
+#endif
+
+    theRegionalSiteResponseWidget = new RegionalSiteResponseWidget(theVisualizationWidget);
+    
     this->addComponent("Earthquake Scenario Simulation", "EQSS", theEQSSWidget);
     this->addComponent("User Specified Ground Motions", "UserInputGM", theUserInputGMWidget);
-    // this->addComponent("User Specified Hurricanes", "UserInputHurricane", theUserInputHurricaneWidget);
+    this->addComponent("Regional Site Response", "RegionalSiteResponse", theRegionalSiteResponseWidget);
+
+    this->addComponent("User Specified Hurricane", "UserInputHurricane", theUserInputHurricaneWidget);
+    this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
+    this->addComponent("Hurricane Scenario Simulation", "HurricaneSelection", theHurricaneSelectionWidget);
+    this->addComponent("OpenQuake Selection Widget", "OQSelectionWidget", theOpenQuakeSelectionWidget);
+    this->addComponent("Raster Defined Hazard", "UserInputRasterHazard", theRasterHazardWidget);
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
-    connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
-    connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));    
 
-//    selectionChangedSlot("User Specified Hurricanes");
+    connect(theShakeMapWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theEQSSWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theUserInputGMWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theUserInputHurricaneWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theHurricaneSelectionWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theRegionalSiteResponseWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+    connect(theRasterHazardWidget, SIGNAL(outputDirectoryPathChanged(QString, QString)), this,  SLOT(gridFileChangedSlot(QString, QString)));
+
+    connect(theShakeMapWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theEQSSWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theUserInputGMWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theRegionalSiteResponseWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theUserInputHurricaneWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theHurricaneSelectionWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
+    connect(theRasterHazardWidget, SIGNAL(eventTypeChangedSignal(QString)), this,  SLOT(eventTypeChangedSlot(QString)));
 }
 
 
@@ -111,6 +149,14 @@ void HazardsWidget::gridFileChangedSlot(QString motionD, QString eventF)
 }
 
 
+void HazardsWidget::eventTypeChangedSlot(QString eventType)
+{
+    emit eventTypeChangedSignal(eventType);
+}
+
+
+#ifdef ARC_GIS
 void HazardsWidget::setCurrentlyViewable(bool status) {
     this->SimCenterAppSelection::setCurrentlyViewable(status);
 }
+#endif

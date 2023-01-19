@@ -36,50 +36,35 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "ComponentInputWidget.h"
 #include "DakotaInputSampling.h"
 #include "NoneWidget.h"
+
 #include "SecondaryComponentSelection.h"
 #include "SimCenterAppSelection.h"
 #include "UQWidget.h"
+#include <UQ_EngineSelection.h>
 #include "VisualizationWidget.h"
-#include "sectiontitle.h"
-
-// Qt headers
-#include <QCheckBox>
-#include <QColorTransform>
 #include <QDebug>
-#include <QFileDialog>
-#include <QGroupBox>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QVBoxLayout>
 
-UQWidget::UQWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
-    : MultiComponentR2D(parent)
+UQWidget::UQWidget(QWidget *parent)
+  : MultiComponentR2D(QString("UQ"),parent)
 {
 
-    buildingWidget = new SimCenterAppSelection(QString("UQ Application"), QString("UQ"), this);
-    SimCenterAppWidget *dakota = new DakotaInputSampling(theRVContainer, this);
-
-    SimCenterAppWidget *noneWidget = new NoneWidget(this);
-
-    buildingWidget->addComponent(QString("Dakota"), QString("Dakota-UQ"), dakota);
-    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
-
+    buildingWidget = new UQ_EngineSelection(true, QString("Buildings"), ForwardOnly, this);
+  
+    SimCenterAppWidget *noneWidget1 = new NoneWidget(this);
     pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("PipelineUQ"), this);
+    pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget1);
 
+    SimCenterAppWidget *noneWidget2 = new NoneWidget(this);    
+    WDNWidget = new SimCenterAppSelection(QString("UQ Application"), QString("WaterDistributionNetwork"), this);
+    WDNWidget->addComponent(QString("None"), QString("None"), noneWidget2);    
+    
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
+    this->addComponent("Water Network", WDNWidget);
+    
     this->hideAll();
 }
 

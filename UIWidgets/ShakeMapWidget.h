@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "GroundMotionStation.h"
 
 #include <QMap>
 
@@ -47,11 +48,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class CustomListWidget;
 class VisualizationWidget;
 
+class QListWidget;
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
+class QSplitter;
 
+#ifdef ARC_GIS
 namespace Esri
 {
 namespace ArcGISRuntime
@@ -99,7 +103,53 @@ struct ShakeMap{
         return layers;
     }
 
+    QVector<GroundMotionStation> stationList;
 };
+#endif
+
+#ifdef Q_GIS
+
+class QgsVectorLayer;
+
+struct ShakeMap{
+
+    QString eventName;
+
+    QgsVectorLayer* eventLayer = nullptr;
+    QgsVectorLayer* gridLayer = nullptr;
+    QgsVectorLayer* faultLayer = nullptr;
+    QgsVectorLayer* eventKMZLayer = nullptr;
+    QgsVectorLayer* pgaPolygonLayer = nullptr;
+    QgsVectorLayer* pgaOverlayLayer = nullptr;
+    QgsVectorLayer* pgaContourLayer = nullptr;
+    QgsVectorLayer* epicenterLayer = nullptr;
+
+    inline std::vector<QgsVectorLayer*> getAllActiveSubLayers(void)
+    {
+        std::vector<QgsVectorLayer*> layers;
+
+        if(gridLayer)
+            layers.push_back(gridLayer);
+        if(faultLayer)
+            layers.push_back(faultLayer);
+        if(eventKMZLayer)
+            layers.push_back(eventKMZLayer);
+        if(pgaPolygonLayer)
+            layers.push_back(pgaPolygonLayer);
+        if(pgaOverlayLayer)
+            layers.push_back(pgaOverlayLayer);
+        if(pgaContourLayer)
+            layers.push_back(pgaContourLayer);
+        if(epicenterLayer)
+            layers.push_back(epicenterLayer);
+
+        return layers;
+    }
+
+    QVector<GroundMotionStation> stationList;
+};
+#endif
+
 
 class ShakeMapWidget : public SimCenterAppWidget
 {
@@ -109,18 +159,17 @@ public:
     ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~ShakeMapWidget();
 
-    void showShakeMapLayers(bool state);
-
     QWidget* getShakeMapWidget(void);
 
     QStackedWidget* getStackedWidget(void);
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
-
-    void clear();
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool copyFiles(QString &destDir);
-
+  
+    void clear();
     int getNumShakeMapsLoaded();
 
 public slots:
@@ -129,32 +178,38 @@ public slots:
 
 private slots:
 
-    void loadShakeMapData(void);
-    void loadDataFromDirectory(const QString& dir);
+    int loadShakeMapData(void);
+    int loadDataFromDirectory(const QString& dir);
     void chooseShakeMapDirectoryDialog(void);
 
 signals:
 
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
     void loadingComplete(const bool value);
 
 private:
 
-    std::unique_ptr<QStackedWidget> shakeMapStackedWidget;
+    QStackedWidget* shakeMapStackedWidget = nullptr;
 
-    CustomListWidget *listWidget;
-    VisualizationWidget* theVisualizationWidget;
-    QLineEdit *shakeMapDirectoryLineEdit;
-    QLabel* progressLabel;
-    QWidget* progressBarWidget;
-    QWidget* directoryInputWidget;
-    QProgressBar* progressBar;
+    QStringList shakeMapList;
+
+    QListWidget* IMListWidget = nullptr;
+    CustomListWidget *listWidget = nullptr;
+    VisualizationWidget* theVisualizationWidget = nullptr;
+    QLineEdit *shakeMapDirectoryLineEdit = nullptr;
+    QLabel* progressLabel = nullptr;
+    QWidget* progressBarWidget = nullptr;
+    QWidget* directoryInputWidget = nullptr;
+    QProgressBar* progressBar = nullptr;
+
     QString pathToShakeMapDirectory;
+    QString motionDir;
+    QString pathToEventFile;
 
     QMap<QString,ShakeMap*> shakeMapContainer;
 
     QVector<QString> eventsVec;
-
-    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
 
 };
 

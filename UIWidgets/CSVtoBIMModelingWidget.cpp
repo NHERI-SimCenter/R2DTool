@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetsWidget.h"
 #include "CSVReaderWriter.h"
 #include "CSVtoBIMModelingWidget.h"
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 #include "WorkflowAppR2D.h"
 
 #include <QGridLayout>
@@ -86,13 +86,7 @@ CSVtoBIMModelingWidget::~CSVtoBIMModelingWidget()
 bool CSVtoBIMModelingWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
-    jsonObj.insert("Application", "CSV_to_BIM");
-
-    auto mainWindowWidget = WorkflowAppR2D::getInstance();
-
-    auto assetsWidget = mainWindowWidget->getAssetsWidget();
-
-    //auto buildingSourceFile = assetsWidget->getBuildingWidget()->getPathToComponentFile();
+    jsonObj.insert("Application", "CSV_to_AIM");
 
     QJsonObject appDataObj;
     appDataObj.insert("Min", 1);

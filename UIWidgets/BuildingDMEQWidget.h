@@ -47,14 +47,12 @@ class QComboBox;
 class QStackedWidget;
 class PelicunDLWidget;
 
-class RandomVariablesContainer;
-
 class BuildingDMEQWidget : public  SimCenterAppWidget
 {
 
     Q_OBJECT
 public:
-    explicit BuildingDMEQWidget(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    explicit BuildingDMEQWidget(QWidget *parent = 0);
     ~BuildingDMEQWidget();
 
     bool outputToJSON(QJsonObject &jsonObject) override;
@@ -75,8 +73,6 @@ private:
     QStackedWidget* theStackedWidget;
     SimCenterAppWidget* theCurrentWidget;
     PelicunDLWidget* thePelicunDLWidget;
-
-    RandomVariablesContainer* theRandomVariablesContainer;
 };
 
 #endif // BuildingDMEQWidget_H

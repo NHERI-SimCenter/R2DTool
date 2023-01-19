@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "MDOF_LU.h"
 #include "SimCenterPreferences.h"
-#include "RandomVariablesContainer.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -51,8 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QTextEdit>
 
-MDOF_LU::MDOF_LU(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), theRandomVariablesContainer(theRandomVariableIW)
+MDOF_LU::MDOF_LU(QWidget *parent)
+  : SimCenterAppWidget(parent)
 {
     QGridLayout *layout = new QGridLayout();
 
@@ -132,13 +131,13 @@ void MDOF_LU::clear(void)
 }
 
 
-bool MDOF_LU::outputToJSON(QJsonObject &jsonObject)
+bool MDOF_LU::outputToJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
 
 
-bool MDOF_LU::inputFromJSON(QJsonObject &jsonObject)
+bool MDOF_LU::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
@@ -151,8 +150,8 @@ bool MDOF_LU::outputAppDataToJSON(QJsonObject &jsonObject) {
     jsonObject["Application"] = "MDOF-LU";
     QJsonObject dataObj;
 
-    dataObj["stdStiffness"] = stdStiffness->text();
-    dataObj["stdDamping"] = stdDamping->text();
+    dataObj["stdStiffness"] = stdStiffness->text().toDouble();
+    dataObj["stdDamping"] = stdDamping->text().toDouble();
 
     if(storyHeight->text() != "") {
         dataObj["storyHeight"] = stdDamping->text();
@@ -238,10 +237,10 @@ bool MDOF_LU::inputAppDataFromJSON(QJsonObject &jsonObject) {
                 }
             }
         }
-        emit sendErrorMessage("MDOF-LU could not find HazusData file");
+        this->errorMessage("MDOF-LU could not find HazusData file");
         return false;
     }
-    emit sendErrorMessage("MDOF-LU no ApplicationData section");
+    this->errorMessage("MDOF-LU no ApplicationData section");
     return false;
 }
 

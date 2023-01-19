@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Frank McKenna, Stevan Gavrilovic
 
 #include "MapGraphicsView.h"
 
@@ -52,7 +52,7 @@ public:
     static SimCenterMapGraphicsView *getInstance();
     ~SimCenterMapGraphicsView();
 
-    void setCurrentLayout(QVBoxLayout *layout);
+    void setCurrentLayout(QLayout *layout);
 
     GISLegendView *getLegendView() const;
 

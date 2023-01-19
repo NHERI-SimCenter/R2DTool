@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QComboBox>
 
 class InputWidgetParameters;
-class RandomVariablesContainer;
 
 class SimCenterEventRegional : public SimCenterAppWidget
 {
@@ -64,12 +63,9 @@ public:
     void clear(void);
 
 public slots:
-    void setEventType(QString);
 
 private:
-    QString eventType;
 
-    QComboBox* unitsCombo;
 };
 
 #endif // SIM_CENTER_EVENT_REGIONAL_APP_H

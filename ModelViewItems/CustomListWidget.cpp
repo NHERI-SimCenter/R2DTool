@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CustomListWidget.h"
 #include "ListTreeModel.h"
 #include "TreeItem.h"
+#include <Utils/PythonProgressDialog.h>
 
 #include <QList>
 #include <QDebug>
@@ -48,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QVBoxLayout>
 
-CustomListWidget::CustomListWidget(QWidget *parent, QString headerText) : QTreeView(parent)
+CustomListWidget::CustomListWidget(QString headerText, QWidget *parent) : QTreeView(parent)
 {
     treeModel = new ListTreeModel(headerText, this);
     this->setModel(treeModel);
@@ -62,8 +63,6 @@ CustomListWidget::CustomListWidget(QWidget *parent, QString headerText) : QTreeV
 
 TreeItem* CustomListWidget::addItem(const QString item, QString model, const double weight, TreeItem* parent)
 {
-    auto num = treeModel->rowCount();
-
     QString newItemText = item + " - weight="+ QString::number(weight);
 
     auto newItem = treeModel->addItemToTree(newItemText, parent);
@@ -79,14 +78,54 @@ TreeItem* CustomListWidget::addItem(const QString item, QString model, const dou
 }
 
 
-TreeItem* CustomListWidget::addItem(const QString item, TreeItem* parent)
+TreeItem* CustomListWidget::addItem(const QJsonObject& obj, TreeItem* parent)
 {
-    auto num = treeModel->rowCount();
 
-    QString newItemText = QString::number(num+1) + ". " + item;
+    if(!obj.contains("ModelName") || !obj.contains("Key"))
+    {
+        qCritical()<<"Something went wrong in "<<__FUNCTION__;
+        return nullptr;
+    }
+
+    auto key = obj.value("Key").toString();
+    auto item = obj.value("ModelName").toString();
+
+    auto modelObj = obj.value(key).toObject();
+
+    if(modelObj.empty())
+    {
+        qCritical()<<"Something went wrong in "<<__FUNCTION__;
+        return nullptr;
+    }
+
+    auto weight = obj.value("ModelWeight").toDouble();
+
+    QString newItemText = item + " - weight="+ QString::number(weight);
 
     auto newItem = treeModel->addItemToTree(newItemText, parent);
 
+    auto itemID = newItem->getItemID();
+
+    modelsMap.insert(itemID,obj);
+
+    connect(newItem, &TreeItem::removeThisItem, this, &CustomListWidget::removeItem);
+
+    this->update();
+
+    return newItem;
+}
+
+
+TreeItem* CustomListWidget::addItem(const QString item, TreeItem* parent)
+{
+    //    auto num = treeModel->rowCount();
+
+    //    QString newItemText = QString::number(num+1) + ". " + item;
+    QString newItemText = item;
+
+    auto newItem = treeModel->addItemToTree(newItemText, parent);
+
+    connect(newItem, &TreeItem::removeThisItem, this, &CustomListWidget::removeItem);
 
     return newItem;
 }
@@ -94,7 +133,16 @@ TreeItem* CustomListWidget::addItem(const QString item, TreeItem* parent)
 
 void CustomListWidget::removeItem(const QString& itemID)
 {
-    treeModel->removeItemFromTree(itemID);
+    auto res = treeModel->removeItemFromTree(itemID);
+
+    if(res == false)
+        return;
+
+    auto thisItem = this->getItemJsonObject(itemID);
+
+    modelsMap.remove(itemID);
+
+    emit itemRemoved(thisItem);
 
     this->update();
 }
@@ -103,6 +151,7 @@ void CustomListWidget::removeItem(const QString& itemID)
 void CustomListWidget::clear(void)
 {
     treeModel->clear();
+    modelsMap.clear();
 }
 
 
@@ -119,15 +168,29 @@ QVariantList CustomListWidget::getListOfWeights(TreeItem* parentItem) const
 
     for(auto&& it : childVec)
     {
-       auto weightObj = it->property("Weight");
+        auto weightObj = it->property("Weight");
 
-       if(!weightObj.isValid())
-           continue;
+        if(!weightObj.isValid())
+            continue;
 
-       ListOfWeights << weightObj;
+        ListOfWeights << weightObj;
     }
 
     return ListOfWeights;
+}
+
+
+QJsonObject CustomListWidget::getMethods()
+{
+    QJsonObject modelsObj;
+    for(auto&& e : modelsMap)
+    {
+        auto key = e["Key"].toString();
+
+        modelsObj[key] = e[key];
+    }
+
+    return modelsObj;
 }
 
 
@@ -144,12 +207,12 @@ QVariantList CustomListWidget::getListOfModels(TreeItem* parentItem) const
 
     for(auto&& it : childVec)
     {
-       auto modelObj = it->property("Model");
+        auto modelObj = it->property("Model");
 
-       if(!modelObj.isValid())
-           continue;
+        if(!modelObj.isValid())
+            continue;
 
-       ListOfModels << modelObj;
+        ListOfModels << modelObj;
     }
 
     return ListOfModels;
@@ -209,14 +272,14 @@ void CustomListWidget::showPopup(const QPoint &position)
 
     objectMenu.exec(this->mapToGlobal(position));
 
-    disconnect(this, SLOT(runAction()));
-
     if (item)
     {
         for (int i = 0; i < actionList.count(); ++i)
         {
-            objectMenu.removeAction(actionList[i]);
-            delete actionList[i];
+            QAction *action = actionList[i];
+            disconnect(action, &QAction::triggered, this, &CustomListWidget::runAction);
+            objectMenu.removeAction(action);
+            delete action;
         }
     }
 
@@ -234,22 +297,22 @@ void CustomListWidget::update()
 
         for(auto&& it : childItems)
         {
-           auto modelObj = it->property("Model");
+            auto modelObj = it->property("Model");
 
-           if(!modelObj.isValid())
-               continue;
+            if(!modelObj.isValid())
+                continue;
 
-           auto modelStr = modelObj.toString();
+            auto modelStr = modelObj.toString();
 
-           auto rowNum = it->row();
+            auto rowNum = it->row();
 
-           auto weightObj = it->property("Weight");
+            auto weightObj = it->property("Weight");
 
-           auto weightStr = weightObj.toString();
+            auto weightStr = weightObj.toString();
 
-           QString newItemText = QString::number(rowNum+1) + ". " + modelStr + " - weight="+ weightStr;
+            QString newItemText = QString::number(rowNum+1) + ". " + modelStr + " - weight="+ weightStr;
 
-           it->setData(newItemText,0);
+            it->setData(newItemText,0);
         }
     };
 
@@ -285,4 +348,88 @@ void CustomListWidget::runAction()
         qCritical()<<"Something went wrong in "<<__FUNCTION__;
     }
 }
+
+QMap<QString, QJsonObject> CustomListWidget::getModelsMap() const
+{
+    return modelsMap;
+}
+
+
+TreeItem* CustomListWidget::getItem(const QModelIndex& index)
+{
+    if(!index.isValid())
+        return nullptr;
+
+    auto selectedItemUID = treeModel->uidItem(index);
+
+    auto currItem = treeModel->getItem(selectedItemUID);
+
+    return currItem;
+}
+
+
+TreeItem* CustomListWidget::getCurrentItem()
+{
+    auto index = this->currentIndex();
+
+    if(!index.isValid())
+        return nullptr;
+
+    auto selectedItemUID = treeModel->uidItem(index);
+
+    auto currItem = treeModel->getItem(selectedItemUID);
+
+    return currItem;
+}
+
+
+int CustomListWidget::setCurrentItem(const QString& itemID)
+{
+    auto currItem = treeModel->getItem(itemID);
+
+    if(currItem == nullptr)
+        return -1;
+
+    auto row = currItem->row();
+
+    this->selectRow(row);
+
+    return 0;
+}
+
+
+void CustomListWidget::selectRow(int i)
+{
+    auto rowIndex = treeModel->index(i);
+
+    if(!rowIndex.isValid())
+        return;
+
+    this->setCurrentIndex(rowIndex);
+
+    emit clicked(rowIndex);
+}
+
+
+QStringList CustomListWidget::getListOfItems(void)
+{
+    QStringList items;
+
+    QVector<TreeItem *> allItems = treeModel->getAllChildren();
+
+    for(auto&& it : allItems)
+    {
+        auto name = it->getName();
+        items.append(name);
+    }
+
+    return items;
+}
+
+
+QJsonObject CustomListWidget::getItemJsonObject(const QString& itemID)
+{
+    return modelsMap.value(itemID, QJsonObject());
+}
+
 

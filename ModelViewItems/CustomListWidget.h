@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include <QTreeView>
+#include <QJsonObject>
 
 class QLabel;
 class ListTreeModel;
@@ -46,8 +47,10 @@ class TreeItem;
 
 class CustomListWidget : public QTreeView
 {
+    Q_OBJECT
+
 public:
-    CustomListWidget(QWidget *parent = nullptr, QString headerText = QString());
+    CustomListWidget(QString headerText = QString(), QWidget *parent = nullptr);
 
     void clear(void);
 
@@ -55,10 +58,30 @@ public:
 
     QVariantList getListOfWeights(TreeItem* parentItem = nullptr) const;
 
+    QJsonObject getMethods();
+
+    QJsonObject getItemJsonObject(const QString& itemID);
+
     int getNumberOfItems();
+
+    TreeItem* getCurrentItem();
+
+    TreeItem* getItem(const QModelIndex& index);
+
+    int setCurrentItem(const QString& itemID);
+
+    void selectRow(int i);
+
+    QMap<QString, QJsonObject> getModelsMap() const;
+
+    QStringList getListOfItems(void);
+
+signals:
+    void itemRemoved(QJsonObject item);
 
 public slots:
 
+    TreeItem* addItem(const QJsonObject& obj, TreeItem* parent = nullptr);
     TreeItem* addItem(const QString item, QString model, const double weight, TreeItem* parent = nullptr);
     TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
 
@@ -76,6 +99,8 @@ private slots:
 private:
 
     ListTreeModel* treeModel;
+
+    QMap<QString, QJsonObject> modelsMap;    
 };
 
 #endif // CustomListWidget_H

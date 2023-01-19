@@ -1,23 +1,22 @@
 from conans import ConanFile
 
-class quoFEM(ConanFile):
+class R2DTool(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    version = "0.0.9"
+    version = "1.1.1"
     license = "BSD"
     author = "NHERI SimCenter"
-    url = "https://github.com/NHERI-SimCenter/R2D"
+    url = "https://github.com/NHERI-SimCenter/R2DTool"
     description = "NHERI SimCenter R2D Tool"
     settings = "os", "compiler", "build_type", "arch"
     generators = "qmake"
-    requires = "jansson/2.11@bincrafters/stable", \
+    requires = "jansson/2.13.1", \
                "zlib/1.2.11", \
-               "libcurl/7.64.1"
+               "libcurl/7.72.0"
+               
     build_policy = "missing"
 
     def configure(self):
         if self.settings.os == "Windows":
-            self.options["libcurl"].with_winssl = True
-            self.options["libcurl"].with_openssl = False
             self.options["lapack"].visual_studio = True
             self.options["lapack"].shared = True
 

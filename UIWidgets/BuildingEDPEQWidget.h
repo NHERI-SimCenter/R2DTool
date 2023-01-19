@@ -47,13 +47,12 @@ class QComboBox;
 class QStackedWidget;
 class StandardEarthquakeEDP;
 class UserDefinedEDPR;
-class RandomVariablesContainer;
 
 class BuildingEDPEQWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit BuildingEDPEQWidget(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    explicit BuildingEDPEQWidget(QWidget *parent = 0);
     ~BuildingEDPEQWidget();
 
     bool outputToJSON(QJsonObject &jsonObject) override;
@@ -73,7 +72,6 @@ private:
     SimCenterAppWidget* theCurrentWidget;
     StandardEarthquakeEDP* theStandardEarthquakeEDPs;
     UserDefinedEDPR* theUserDefinedEDPs;
-    RandomVariablesContainer* theRandomVariablesContainer;
 };
 
 #endif // BUILDINGEDPEQWIDGET_H

@@ -63,8 +63,6 @@ public:
     int getState() const;
     void setState(int state);
 
-    void setChecked(bool val);
-
     TreeItem* child(int row);
 
     virtual QStringList getActionList();
@@ -85,8 +83,10 @@ public:
 
     TreeItem *findChild(QString name);
 
+    // The item text
     QString getName() const;
 
+    // The uid of the item
     QString getItemID() const;
 
     bool getIsCheckable() const;
@@ -103,6 +103,7 @@ signals:
     void itemChecked(const QString& itemID);
     void itemUnchecked(const QString& itemID);
     void removeThisItem(const QString& itemID);
+    void removingChildItem(const QString& itemID);
 
 protected:
     QVector<TreeItem*> vecChildItems;

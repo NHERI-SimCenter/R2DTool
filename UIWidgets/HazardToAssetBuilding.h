@@ -48,7 +48,8 @@ class HazardToAssetBuilding : public SimCenterAppWidget
 
     Q_OBJECT
 public:
-    explicit HazardToAssetBuilding(QWidget *parent);
+  explicit
+    HazardToAssetBuilding(QString jsonKey, QWidget *parent);
     ~HazardToAssetBuilding();
 
     bool outputToJSON(QJsonObject &jsonObject);
@@ -64,11 +65,14 @@ public:
 
 public slots:
     void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
+    void eventTypeChangedSlot(QString eventType);
 
 signals:
     void hazardGridFileChangedSIGNAL(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString& eventType);
 
 private:
+    QString jsonKey;
     SimCenterAppSelection *theRegionalMapping;
     SimCenterAppEventSelection *theLocalMapping;
 };

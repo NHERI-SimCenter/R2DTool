@@ -41,14 +41,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "MultiComponentR2D.h"
 
 class SimCenterAppSelection;
-class RandomVariablesContainer;
 
 class UQWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
 public:
-    explicit UQWidget(QWidget *parent, RandomVariablesContainer * RVContainer);
+    explicit UQWidget(QWidget *parent);
     ~UQWidget();
 
     void clear(void);
@@ -57,6 +56,7 @@ public:
 private:
     SimCenterAppSelection *buildingWidget;
     SimCenterAppSelection *pipelineWidget;
+    SimCenterAppSelection *WDNWidget;  
 };
 
 #endif // UQWidget_H

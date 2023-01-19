@@ -43,33 +43,34 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class LayerTreeModel;
 class LayerTreeItem;
-class VisualizationWidget;
+class ArcGISVisualizationWidget;
 
 class LayerTreeView : public QTreeView
 {
     Q_OBJECT
 
 public:
-    LayerTreeView(QWidget *parent, VisualizationWidget* visWidget);
+    LayerTreeView(QWidget *parent, ArcGISVisualizationWidget* visWidget);
 
     LayerTreeModel *getLayersModel() const;
-
-    bool removeItemFromTree(const QString& itemID);
 
     LayerTreeItem* addItemToTree(const QString itemText, QString layerID, LayerTreeItem* parent = nullptr);
 
     LayerTreeItem* getTreeItem(const QString& itemName, const QString& parentName) const;
+    LayerTreeItem* getTreeItem(const QString& itemID) const;
 
     void clear(void);
 
     void selectRow(int i);
+
+    int setCurrentItem(const QString& itemID);
 
 public slots:
     // Shows the "right-click" menu
     void showPopup(const QPoint &position);
 
     // Removes a layer from the tree and map
-    void removeLayer(const QString& layerID);
+    bool removeItemFromTree(const QString& itemID);
 
     void itemSelected(const QModelIndex &index);
 
@@ -80,9 +81,12 @@ private slots:
 
 private:
 
+    // Keep this function private
+    void removeLayer(const QString& layerID);
+
     LayerTreeModel* layersModel;
 
-    VisualizationWidget* theVisualizationWidget;
+    ArcGISVisualizationWidget* theVisualizationWidget;
 };
 
 #endif // LayerTreeView_H

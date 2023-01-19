@@ -41,7 +41,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 
 class GMWidget;
-class RandomVariablesContainer;
 class ShakeMapWidget;
 class UserInputGMWidget;
 class VisualizationWidget;
@@ -56,7 +55,7 @@ class EarthquakeInputWidget : public  SimCenterAppWidget
 
     Q_OBJECT
 public:
-    EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget, RandomVariablesContainer * RVContainer);
+    EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~EarthquakeInputWidget();
 
     QWidget* getEarthquakesWidget(void);
@@ -78,7 +77,6 @@ private:
     QStackedWidget* theRootStackedWidget;
     QCheckBox* includeHazardCheckBox;
     QComboBox* earthquakeSelectionCombo;
-    RandomVariablesContainer* theRandomVariablesContainer;
     VisualizationWidget* theVisualizationWidget;
     GMWidget* theEQSSWidget;
     ShakeMapWidget* theShakeMapWidget;

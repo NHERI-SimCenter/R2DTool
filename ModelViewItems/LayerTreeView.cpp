@@ -40,13 +40,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeModel.h"
 #include "LayerTreeView.h"
 #include "TreeViewStyle.h"
-#include "VisualizationWidget.h"
+#include "ArcGISVisualizationWidget.h"
 
 #include <QDebug>
 #include <QMenu>
 #include <QPointer>
 
-LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : QTreeView(parent), theVisualizationWidget(visWidget)
+LayerTreeView::LayerTreeView(QWidget *parent, ArcGISVisualizationWidget* visWidget) : QTreeView(parent), theVisualizationWidget(visWidget)
 {
     layersModel = new LayerTreeModel(this);
     this->setModel(layersModel);
@@ -66,10 +66,10 @@ LayerTreeView::LayerTreeView(QWidget *parent, VisualizationWidget* visWidget) : 
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(layersModel, &LayerTreeModel::rowPositionChanged, visWidget, &VisualizationWidget::changeLayerOrder);
+    connect(layersModel, &LayerTreeModel::rowPositionChanged, visWidget, &ArcGISVisualizationWidget::changeLayerOrder);
 
     // Connect the layers tree with the function that turns the layers visibility on/off in the GIS map
-    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &VisualizationWidget::handleLayerSelection);
+    connect(layersModel, &LayerTreeModel::itemValueChanged, visWidget, &ArcGISVisualizationWidget::handleLayerChecked);
 
     connect(this, &QWidget::customContextMenuRequested, this, &LayerTreeView::showPopup);
 
@@ -82,9 +82,11 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
 {
     auto newItem = layersModel->addItemToTree(itemText, layerID, parent);
 
-    connect(newItem, &LayerTreeItem::opacityChanged, theVisualizationWidget, &VisualizationWidget::handleOpacityChange);
-    connect(newItem, &LayerTreeItem::zoomLayerExtents, theVisualizationWidget, &VisualizationWidget::zoomToLayer);
-    connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeLayer);
+    connect(newItem, &LayerTreeItem::opacityChanged, theVisualizationWidget, &ArcGISVisualizationWidget::handleOpacityChange);
+    connect(newItem, &LayerTreeItem::plotColorChanged, theVisualizationWidget, &ArcGISVisualizationWidget::handlePlotColorChange);
+    connect(newItem, &LayerTreeItem::zoomLayerExtents, theVisualizationWidget, &ArcGISVisualizationWidget::zoomToLayer);
+    connect(newItem, &TreeItem::removeThisItem, this, &LayerTreeView::removeItemFromTree);
+    connect(newItem, &TreeItem::removingChildItem, this, &LayerTreeView::removeLayer);
 
     return newItem;
 }
@@ -93,6 +95,12 @@ LayerTreeItem* LayerTreeView::addItemToTree(const QString itemText, const QStrin
 LayerTreeItem* LayerTreeView::getTreeItem(const QString& itemName, const QString& parentName) const
 {
     return layersModel->getLayerTreeItem(itemName, parentName);
+}
+
+
+LayerTreeItem* LayerTreeView::getTreeItem(const QString& itemID) const
+{
+    return layersModel->getLayerTreeItem(itemID);
 }
 
 
@@ -186,14 +194,15 @@ void LayerTreeView::runAction()
 
 void LayerTreeView::removeLayer(const QString& layerID)
 {
-    theVisualizationWidget->removeLayerFromMap(layerID);
-
-    this->removeItemFromTree(layerID);
+    if(!layerID.isEmpty())
+        theVisualizationWidget->removeLayerFromMap(layerID);
 }
 
 
 bool LayerTreeView::removeItemFromTree(const QString& itemID)
 {
+//    this->removeLayer(itemID);
+
     return layersModel->removeItemFromTree(itemID);
 }
 
@@ -226,3 +235,17 @@ void LayerTreeView::selectRow(int i)
     auto rowIndex = layersModel->index(i);
     this->setCurrentIndex(rowIndex);
 }
+
+
+int LayerTreeView::setCurrentItem(const QString& itemID)
+{
+    auto currItem = layersModel->getLayerTreeItem(itemID);
+
+    if(currItem == nullptr)
+        return -1;
+
+    auto row = currItem->row();
+
+    this->selectRow(row);
+}
+

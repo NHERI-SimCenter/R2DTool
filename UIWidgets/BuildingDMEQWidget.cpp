@@ -49,8 +49,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QDebug>
 
-BuildingDMEQWidget::BuildingDMEQWidget(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
-    : SimCenterAppWidget(parent), theCurrentWidget(0), theRandomVariablesContainer(theRandomVariableIW)
+BuildingDMEQWidget::BuildingDMEQWidget(QWidget *parent)
+    : SimCenterAppWidget(parent), theCurrentWidget(0)
 {
     QVBoxLayout *layout = new QVBoxLayout();
 
@@ -110,7 +110,7 @@ bool BuildingDMEQWidget::inputFromJSON(QJsonObject &jsonObject) {
     }
     else
     {
-        emit sendErrorMessage("EDP_SElection no current EDP selected");
+        this->errorMessage("EDP_SElection no current EDP selected");
     }
 
     return false;
@@ -157,7 +157,7 @@ bool BuildingDMEQWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     }
     else
     {
-        emit sendErrorMessage(" BuildingDMEQWidget - no Application key found");
+        this->errorMessage(" BuildingDMEQWidget - no Application key found");
         return false;
     }
 
@@ -174,7 +174,7 @@ bool BuildingDMEQWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     }
     else
     {
-        emit sendErrorMessage("BuildingDMEQWidget - no valid type found");
+        this->errorMessage("BuildingDMEQWidget - no valid type found");
         return false;
     }
 

@@ -59,9 +59,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QThread>
 #include <QTime>
 
+#ifdef ARC_GIS
 #include "ArcGISRuntimeEnvironment.h"
 
 using namespace Esri::ArcGISRuntime;
+#endif
+
+#ifdef Q_GIS
+#include "qgsapplication.h"
+#endif
 
 static QString logFilePath;
 static bool logToFile = false;
@@ -92,7 +98,10 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
     }
 
     if (type == QtFatalMsg)
+    {
+        qDebug()<<msg;
         abort();
+    }
 }
 
 
@@ -104,15 +113,15 @@ int main(int argc, char *argv[])
 #endif
 
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setAttribute( Qt::AA_UseHighDpiPixmaps );
 
     // Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("1.0.0");
-
-    //GoogleAnalytics::SetTrackingId("UA-186298856-1");
-    //GoogleAnalytics::StartSession();
-    //GoogleAnalytics::ReportStart();
+    QCoreApplication::setApplicationVersion("2.1.0");
+    // GoogleAnalytics::SetTrackingId("UA-186298856-1");
+    GoogleAnalytics::StartSession();
+    GoogleAnalytics::ReportStart();
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -139,9 +148,6 @@ int main(int argc, char *argv[])
 
     qInstallMessageHandler(customMessageOutput);
 
-    // window scaling
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
     /******************code to reset openGL version .. keep around in case need again
     QSurfaceFormat glFormat;
     glFormat.setVersion(3, 3);
@@ -149,11 +155,20 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(glFormat);
     *********************************************************************************/
 
+#ifdef ARC_GIS
     // Regular Qt startup
     QApplication a(argc, argv);
 
     // Set the key for the ArcGIS interface
     ArcGISRuntimeEnvironment::setLicense(getArcGISKey());
+#endif
+
+#ifdef Q_GIS
+
+    // Start the Application
+    QgsApplication a( argc, argv, true );
+
+#endif
 
     // create a remote interface
     QString tenant("designsafe");
@@ -175,10 +190,10 @@ int main(int argc, char *argv[])
 
     w.setAbout(aboutTitle, aboutSource);
 
-    QString version("Version 1.0.0");
+    QString version("Version 2.1.0");
     w.setVersion(version);
 
-    QString citeText("Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Wael Elhaddad, & Kuanshi Zhong. (2021, January 31). NHERI-SimCenter/R2DTool: Version 1.0.0 (Version v1.0.0). Zenodo. http://doi.org/10.5281/zenodo.4483615");
+    QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Kuanshi Zhong, Wael Elhaddad, & Pedro Arduino. (2022). NHERI-SimCenter/R2DTool: Version 2.1.0 (v2.1.0). Zenodo. https://doi.org/10.5281/zenodo.6404528 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matt J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
@@ -239,7 +254,7 @@ int main(int argc, char *argv[])
     theRemoteService->logout();
     thread->quit();
 
-    //GoogleAnalytics::EndSession();
+    GoogleAnalytics::EndSession();
 
     return res;
 }

@@ -40,6 +40,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "GroundMotionTimeHistory.h"
 
+#ifdef Q_GIS
+#include <qgsfeature.h>
+#endif
+
 #include <QMap>
 #include <QVariant>
 
@@ -53,10 +57,24 @@ public:
     double getLongitude() const;
 
     QString getStationFilePath() const;
-
     void importGroundMotions(void);
 
     QVector<GroundMotionTimeHistory> getStationGroundMotions() const;
+
+#ifdef ARC_GIS
+    QVariant getAttributeValue(const QString& key)
+    {
+        return stationAttributes.value(key,QVariant());
+    }
+#endif
+
+#ifdef Q_GIS
+    QVariant getAttributeValue(const QString& key)
+    {
+        return stationFeature.attribute(key);
+    }
+#endif
+
 
     // Function to convert a QString and QVariant to double
     // Throws an error exception if conversion fails
@@ -76,6 +94,19 @@ public:
         return val;
     }
 
+#ifdef ARC_GIS
+    // Map to store the attributes of a given station
+    QMap<QString, QVariant> getStationAttributes() const;
+    void setStationAttributes(const QMap<QString, QVariant> &value);
+#endif
+
+#ifdef Q_GIS
+    QgsFeature getStationFeature() const;
+    void setStationFeature(const QgsFeature &value);
+#endif
+
+    QVector<QStringList> getStationData() const;
+
 private:
 
     void importGroundMotionTimeHistory(const QString& filePath, const double scalingFactor);
@@ -86,9 +117,19 @@ private:
 
     double longitude;
 
-    QVector<GroundMotionTimeHistory> stationGroundMotions;
+    // Vector to store time histories at a given station
+    QVector<GroundMotionTimeHistory> groundMotionTimeHistories;
 
-    QMap<QString,QVariant> attributes;
+    QVector<QStringList> stationData;
+
+#ifdef ARC_GIS
+    // Map to store potential PGA, PGV, etc., values
+    QMap<QString, QVariant> stationAttributes;
+#endif
+
+#ifdef Q_GIS
+    QgsFeature stationFeature;
+#endif
 
 };
 

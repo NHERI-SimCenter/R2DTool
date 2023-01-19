@@ -37,32 +37,47 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterPreferences.h"
+#include "Utils/RelativePathResolver.h"
+
 #include "AnalysisWidget.h"
 #include "AssetsWidget.h"
 #include "CustomizedItemModel.h"
 #include "DLWidget.h"
 #include "DakotaResultsSampling.h"
-#include "EngDemandParameterWidget.h"
-#include "GeneralInformationWidget.h"
+#include "GeneralInformationWidgetR2D.h"
 #include "GoogleAnalytics.h"
 #include "HazardToAssetWidget.h"
 #include "HazardsWidget.h"
-#include "InputWidgetSampling.h"
+//#include "InputWidgetSampling.h"
 #include "LocalApplication.h"
 #include "MainWindowWorkflowApp.h"
 #include "ModelWidget.h"
+//#include "LocalMappingWidget.h"
+#include  <SimCenterEventRegional.h>
+#include  <SimCenterAppEventSelection.h>
+#include "PerformanceWidget.h"
 #include "RandomVariablesContainer.h"
 #include "RemoteApplication.h"
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
 #include "ResultsWidget.h"
 #include "Utils/PythonProgressDialog.h"
-//#include "RunLocalWidget.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
-#include "UQWidget.h"
-#include "VisualizationWidget.h"
+//#include <UQ_EngineSelection.h>
+#include <UQWidget.h>
 #include "WorkflowAppR2D.h"
+#include "LoadResultsDialog.h"
+
+#include "VisualizationWidget.h"
+
+#ifdef ARC_GIS
+#include "ArcGISVisualizationWidget.h"
+#endif
+
+#ifdef Q_GIS
+#include "QGISVisualizationWidget.h"
+#endif
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -112,13 +127,15 @@ WorkflowAppR2D *WorkflowAppR2D::theInstance = nullptr;
 WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     : WorkflowAppWidget(theService, parent)
 {
+    resultsDialog = nullptr;
+
     // Set static pointer for global procedure
     theApp = this;
 
     theInstance = this;
 
-    localApp = new LocalApplication("R2DTool_workflow.py");
-    remoteApp = new RemoteApplication("R2DTool_workflow.py", theService);
+    localApp = new LocalApplication("rWHALE.py");
+    remoteApp = new RemoteApplication("rWHALE.py", theService);
 
     theJobManager = new RemoteJobManager(theService);
 
@@ -126,14 +143,6 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
 
     // connect signals and slots - error messages and signals
-    //    connect(theGI,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    //    connect(theGI,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    //    connect(theGI,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
-    connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    connect(theRunWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theRunWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-
     connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
@@ -145,11 +154,13 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
-    connect(localApp,SIGNAL(processResults(QString, QString, QString)), this, SLOT(processResults(QString, QString, QString)));
+    connect(localApp,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
 
     connect(remoteApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
-    connect(theJobManager,SIGNAL(processResults(QString , QString, QString)), this, SLOT(processResults(QString, QString, QString)));
-    connect(theJobManager,SIGNAL(loadFile(QString)), this, SLOT(loadFile(QString)));
+    connect(theJobManager,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
+    connect(theJobManager,SIGNAL(loadFile(QString&)), this, SLOT(loadFile(QString&)));
+    connect(theJobManager,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
+    connect(theJobManager,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
 
@@ -162,7 +173,6 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
             this, SLOT(replyFinished(QNetworkReply*)));
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
-
 }
 
 
@@ -174,31 +184,67 @@ WorkflowAppR2D::~WorkflowAppR2D()
 
 void WorkflowAppR2D::initialize(void)
 {
-    // Clear action
-    QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
+
+    // Add the edit menu to the menu bar, make sure it comes before help
+    auto menuBar = theMainWindow->menuBar();
+
+    QAction* menuAfter = nullptr;
+    foreach (QAction *action, menuBar->actions()) {
+
+        // First check for an examples menu and if that does not exist put it before the help menu
+        auto actionText = action->text();
+        if(actionText.compare("&Examples") == 0)
+        {
+            menuAfter = action;
+            break;
+        }
+        else if(actionText.compare("&Help") == 0)
+        {
+            menuAfter = action;
+            break;
+        }
+    }
+
+    // Edit menu for the clear action
+    QMenu *resultsMenu = new QMenu(tr("&Results"),menuBar);
+
     // Set the path to the input file
-    editMenu->addAction("Clear", this, &WorkflowAppR2D::clear);
+    resultsMenu->addAction("&Load Results", this, &WorkflowAppR2D::loadResults);
+    menuBar->insertMenu(menuAfter, resultsMenu);
+
 
     // Create the various widgets
-    theGeneralInformationWidget = new GeneralInformationWidget(this);
-    theRVs = new RandomVariablesContainer();
-    theVisualizationWidget = new VisualizationWidget(this);
+    theGeneralInformationWidgetR2D = new GeneralInformationWidgetR2D(this);
+    theRVs = RandomVariablesContainer::getInstance();
+    
+#ifdef ARC_GIS
+    theVisualizationWidget = new ArcGISVisualizationWidget(this);
+#endif
+
+#ifdef Q_GIS
+    theVisualizationWidget = new QGISVisualizationWidget(theMainWindow);
+#endif
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
     theHazardToAssetWidget = new HazardToAssetWidget(this, theVisualizationWidget);
-    theModelingWidget = new ModelWidget(this, theRVs);
-    theAnalysisWidget = new AnalysisWidget(this, theRVs);
-    theHazardsWidget = new HazardsWidget(this, theVisualizationWidget, theRVs);
-    // theEngDemandParamWidget = new EngDemandParameterWidget(this);
+    theModelingWidget = new ModelWidget(this);
+    theAnalysisWidget = new AnalysisWidget(this);
+    theHazardsWidget = new HazardsWidget(this, theVisualizationWidget);
+    //theLocalEvent = new LocalMappingWidget(this);
+    
+    theLocalEvent = new SimCenterAppEventSelection(QString("Events"), QString("Events"),this);
+    SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
+    theLocalEvent->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);							
+    
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
-    // theDecisionVariableWidget = new DecisionVariableWidget(this);
-    theUQWidget = new UQWidget(this, theRVs);
+    theUQWidget = new UQWidget(this);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
+    thePerformanceWidget = new PerformanceWidget(this,theRVs);
 
-    connect(theVisualizationWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    connect(theVisualizationWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theVisualizationWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-    connect(theGeneralInformationWidget, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
+
+
+    connect(theGeneralInformationWidgetR2D, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
+    connect(theHazardsWidget,SIGNAL(eventTypeChangedSignal(QString)), theHazardToAssetWidget, SLOT(eventTypeChangedSlot(QString)));
 
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
@@ -215,23 +261,33 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->layout()->setSpacing(0);
 
     theComponentSelection->addComponent(tr("VIZ"), theVisualizationWidget);
-    theComponentSelection->addComponent(tr("GI"),  theGeneralInformationWidget);
+    theComponentSelection->addComponent(tr("GI"),  theGeneralInformationWidgetR2D);
     theComponentSelection->addComponent(tr("HAZ"), theHazardsWidget);
     theComponentSelection->addComponent(tr("ASD"), theAssetsWidget);
     theComponentSelection->addComponent(tr("HTA"), theHazardToAssetWidget);
     theComponentSelection->addComponent(tr("MOD"), theModelingWidget);
     theComponentSelection->addComponent(tr("ANA"), theAnalysisWidget);
     theComponentSelection->addComponent(tr("DL"),  theDamageAndLossWidget);
-    //theComponentSelection->addComponent(tr("EDP"), theEngDemandParamWidget);  // EDP from DL
-    //theComponentSelection->addComponent(tr("DV"), theDecisionVariableWidget); // removed
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
+//    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
+
 
     theComponentSelection->displayComponent("VIZ");
 
+    theComponentSelection->setItemWidthHeight(100,55);
+
     // for RDT select Buildings in GeneralInformation by default
-    theGeneralInformationWidget->setAssetTypeState("Buildings", true);
+    theGeneralInformationWidgetR2D->setAssetTypeState("Buildings", true);
+
+    // Test to remove start
+    // theComponentSelection->displayComponent("HAZ");
+//     loadFile("/Users/steve/Desktop/E11SeasideWaterNetwork/input.json");
+//     loadFile("/Users/steve/Desktop/E12EastBayWaterNetwork/input.json");
+//     loadResults();
+    // Test to remove end
+
 }
 
 
@@ -241,9 +297,9 @@ void WorkflowAppR2D::replyFinished(QNetworkReply */*pReply*/)
 }
 
 
-GeneralInformationWidget *WorkflowAppR2D::getGeneralInformationWidget() const
+GeneralInformationWidgetR2D *WorkflowAppR2D::getGeneralInformationWidget() const
 {
-    return theGeneralInformationWidget;
+    return theGeneralInformationWidgetR2D;
 }
 
 
@@ -270,22 +326,62 @@ void WorkflowAppR2D::setActiveWidget(SimCenterAppWidget* widget)
 bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 {
     // get each of the main widgets to output themselves
-    theGeneralInformationWidget->outputToJSON(jsonObjectTop);
+    theGeneralInformationWidgetR2D->outputToJSON(jsonObjectTop);
 
     // ouput application data
     QJsonObject apps;
 
-    theHazardsWidget->outputAppDataToJSON(apps);
-    theAssetsWidget->outputAppDataToJSON(apps);
-    theModelingWidget->outputAppDataToJSON(apps);
-    theHazardToAssetWidget->outputAppDataToJSON(apps);
-    theModelingWidget->outputAppDataToJSON(apps);
-    theAnalysisWidget->outputAppDataToJSON(apps);
-    theDamageAndLossWidget->outputAppDataToJSON(apps);
-    theUQWidget->outputAppDataToJSON(apps);
+    bool result = true;
+    if (theHazardsWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing HAZ data to output");
+        result = false;
+    }
+
+    if (theAssetsWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing ASD data to output");
+        result = false;
+    }
+
+    if (theModelingWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing MOD data to output");
+        result = false;
+    }
+
+    if (theLocalEvent->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing EVENT data to output");
+        result = false;
+    }    
+
+    if (theHazardToAssetWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing HTA data to output");
+        result = false;
+    }
+    
+    if (theAnalysisWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing ANA data to output");
+        result = false;
+    }
+
+    if (theDamageAndLossWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing DL data to output");
+        result = false;
+    }
+
+    if (thePerformanceWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing PRF data to output");
+        thePerformanceWidget->clear();
+        result = false;
+    }
+    
+    if (theUQWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing UQ data to output");
+        result = false;
+    }
 
     //
-    // hard code for now .. EDP's coming out D&L in future to provide this .. really ugly 2 dynamic casts!!
+    // hard code for now ..
+    // EDP's coming out D&L in future to provide this ..
+    //    really ugly 2 dynamic casts!!
     //
 
     SimCenterAppWidget *theAnalysisBuildingComponent = theAnalysisWidget->getComponent("Buildings");
@@ -297,7 +393,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
             NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
             if (theNoArgWidget == nullptr || theNoArgWidget->getAppName() != "IMasEDP") {
                 QJsonObject edpData;
-                edpData["Application"]="StandardEarthquakeEDP_R";
+                edpData["Application"]="StandardEarthquakeEDP";
                 QJsonObject edpAppData;
                 edpData["ApplicationData"] = edpAppData;
                 apps["EDP"] = edpData;
@@ -306,27 +402,51 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     }
 
     jsonObjectTop.insert("Applications",apps);
-
     //  output regular data
 
-
     theRunWidget->outputToJSON(jsonObjectTop);
-
+    theAssetsWidget->outputToJSON(jsonObjectTop);
     theModelingWidget->outputToJSON(jsonObjectTop);
+    theLocalEvent->outputToJSON(jsonObjectTop);    
     theHazardsWidget->outputToJSON(jsonObjectTop);
     theAnalysisWidget->outputToJSON(jsonObjectTop);
     theDamageAndLossWidget->outputToJSON(jsonObjectTop);
     theHazardToAssetWidget->outputToJSON(jsonObjectTop);
-    //theUQWidget->outputToJSON(jsonObjectTop);
-    //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
+    thePerformanceWidget->outputToJSON(jsonObjectTop);
+    theUQWidget->outputToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
 
-    return true;
+    jsonObjectTop["commonFileDir"]=commonFilePath;
+    
+    QJsonObject defaultValues;
+    defaultValues["workflowInput"]=QString("scInput.json");    
+    //defaultValues["filenameAIM"]=QString("AIM.json");
+    defaultValues["filenameEVENT"] = QString("EVENT.json");
+    defaultValues["filenameSAM"]= QString("SAM.json");
+    defaultValues["filenameEDP"]= QString("EDP.json");
+    defaultValues["filenameSIM"]= QString("SIM.json");
+    defaultValues["driverFile"]= QString("driver");
+    defaultValues["filenameDL"]= QString("BIM.json");
+    defaultValues["workflowOutput"]= QString("EDP.json");
+    QJsonArray rvFiles, edpFiles;
+    //rvFiles.append(QString("AIM.json"));
+    rvFiles.append(QString("SAM.json"));
+    rvFiles.append(QString("EVENT.json"));
+    rvFiles.append(QString("SIM.json"));
+    edpFiles.append(QString("EDP.json"));
+    defaultValues["rvFiles"]= rvFiles;
+    defaultValues["edpFiles"]=edpFiles;
+    jsonObjectTop["DefaultValues"]=defaultValues;    
+    
+    return result;
 }
 
 
-void WorkflowAppR2D::processResults(QString resultsDir, QString /*dakotaTab*/, QString /*inputFile*/)
+void WorkflowAppR2D::processResults(QString &resultsDir)
 {
+    this->statusMessage("Importing results");
+    QApplication::processEvents();
+
     theResultsWidget->processResults(resultsDir);
     theRunWidget->hide();
     theComponentSelection->displayComponent("RES");
@@ -335,17 +455,20 @@ void WorkflowAppR2D::processResults(QString resultsDir, QString /*dakotaTab*/, Q
 
 void WorkflowAppR2D::clear(void)
 {
-    theGeneralInformationWidget->clear();
+    theGeneralInformationWidgetR2D->clear();
     theUQWidget->clear();
     theModelingWidget->clear();
+    theLocalEvent->clear();    
     theAnalysisWidget->clear();
     theHazardToAssetWidget->clear();
     theAssetsWidget->clear();
     theHazardsWidget->clear();
     theDamageAndLossWidget->clear();
+    thePerformanceWidget->clear();
     theResultsWidget->clear();
     theVisualizationWidget->clear();
-    progressDialog->clear();
+    // progressDialog->clear();
+    theComponentSelection->displayComponent("VIZ");
 }
 
 
@@ -355,43 +478,134 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     // get each of the main widgets to input themselves
     //
 
-    if (theGeneralInformationWidget->inputFromJSON(jsonObject) == false) {
-        emit errorMessage("R2D: failed to read GeneralInformation");
+    if (theGeneralInformationWidgetR2D->inputFromJSON(jsonObject) == false) {
+        this->errorMessage("R2D: failed to read GeneralInformation");
+        return false;
     }
 
-
+    bool result = true;
+    
     if (jsonObject.contains("Applications")) {
 
         QJsonObject apps = jsonObject["Applications"].toObject();
 
-        theUQWidget->inputAppDataFromJSON(apps);
-        theModelingWidget->inputAppDataFromJSON(apps);
-        theAnalysisWidget->inputAppDataFromJSON(apps);
-        theHazardToAssetWidget->inputAppDataFromJSON(apps);
-        theAssetsWidget->inputAppDataFromJSON(apps);
-        theHazardsWidget->inputAppDataFromJSON(apps);
-        theDamageAndLossWidget->inputAppDataFromJSON(apps);
+        if (theUQWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("UQ failed to read input data");
+            theUQWidget->clear();
+            result = false;
+        }
+
+        if (theModelingWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("MOD failed to read input data");
+            theModelingWidget->clear();
+            result = false;
+        }
+
+        if (theLocalEvent->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("LocalModeling failed to read input data");
+            theLocalEvent->clear();
+            result = false;
+        }	
+
+        if (theAnalysisWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("ANA failed to read input data");
+            theAnalysisWidget->clear();
+            result = false;
+        }
+
+        if (theHazardToAssetWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("HTA failed to read input data");
+            theHazardToAssetWidget->clear();
+            result = false;
+        }
+
+        if (theAssetsWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("ASD failed to read input data");
+            theAssetsWidget->clear();
+            result = false;
+        }
+
+        if (theHazardsWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("HAZ failed to read input data");
+            theHazardsWidget->clear();
+            result = false;
+        }
+
+        if (theDamageAndLossWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("DL failed to read input data");
+            theDamageAndLossWidget->clear();
+            result = false;
+        }
+
+        if (thePerformanceWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("PRF failed to read input data");
+            thePerformanceWidget->clear();
+            result = false;
+        }
 
     } else
+    {
+        this->errorMessage("Error, no Applications field in input file");
+        return false;
+    }
+
+    //
+    // now read app specific data
+    //
+
+    if (theRunWidget->inputFromJSON(jsonObject) == false)
         return false;
 
-    /*
-    ** Note to me - others
-    */
+    if (theUQWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("UQ failed to read app specific data");
+      result = false;
+    }
+    
+    if (theRVs->inputFromJSON(jsonObject) == false)
+      return false;    
 
-    theRunWidget->inputFromJSON(jsonObject);
-    //theModelingWidget->outputToJSON(jsonObjectTop);
-    theHazardsWidget->inputFromJSON(jsonObject);
-    //theAnalysisWidget->outputToJSON(jsonObjectTop);
-    //theDamageAndLossWidget->outputToJSON(jsonObjectTop);
-    //theHazardToAssetWidget->outputToJSON(jsonObjectTop);
-    //theUQWidget->outputToJSON(jsonObjectTop);
-    //theDamageAndLossWidget->outputAppDataToJSON(jsonObjectTop);
-    theRVs->inputFromJSON(jsonObject);
+    errorMessage("FMK - MODELING WIDGET");
+    if (theModelingWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("MOD failed to read app specific data");
+      result = false;
+    }
 
+    if (theLocalEvent->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("LocalModeling failed to read app specific data");
+      result = false;
+    }    
+    
+    if (theAnalysisWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("ANA failed to read app specific data");
+      result = false;
+    }
 
+    if (theHazardToAssetWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("HTA failed to read app specific data");
+      result = false;
+    }
 
-    return true;
+    if (theAssetsWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("ASD failed to read app specific data");
+      result = false;
+    }
+
+    if (theHazardsWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("HAZ failed to read app specific data");
+      result = false;
+    }
+
+    if (theDamageAndLossWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("DL failed to read app specific data");
+      result = false;
+    }
+    
+    if (thePerformanceWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("PRF failed to read app specific data");
+      result = false;
+    }
+    
+    return result;
 }
 
 
@@ -399,15 +613,15 @@ void WorkflowAppR2D::onRunButtonClicked() {
     theRunWidget->hide();
     theRunWidget->setMinimumWidth(this->width()*0.5);
 
-    progressDialog->showDialog(true);
     progressDialog->showProgressBar();
+    progressDialog->setProgressBarValue(0);
+
     theRunWidget->showLocalApplication();
     GoogleAnalytics::ReportLocalRun();
 }
 
 
 void WorkflowAppR2D::onRemoteRunButtonClicked(){
-    //    emit errorMessage("");
 
     bool loggedIn = theRemoteService->isLoggedIn();
 
@@ -426,8 +640,6 @@ void WorkflowAppR2D::onRemoteRunButtonClicked(){
 
 void WorkflowAppR2D::onRemoteGetButtonClicked(){
 
-    // emit errorMessage("");
-
     bool loggedIn = theRemoteService->isLoggedIn();
 
     if (loggedIn == true) {
@@ -437,7 +649,7 @@ void WorkflowAppR2D::onRemoteGetButtonClicked(){
         theJobManager->show();
 
     } else {
-        errorMessage("ERROR - You need to Login");
+        this->errorMessage("ERROR - You need to Login");
     }
 }
 
@@ -476,20 +688,81 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     QString templateDirectory  = destinationDirectory.absoluteFilePath(subDir);
     destinationDirectory.mkpath(templateDirectory);
 
+    commonFilePath = templateDirectory;
     // copyPath(path, tmpDirectory, false);
     //    theSIM->copyFiles(templateDirectory);
     //    theEventSelection->copyFiles(templateDirectory);
     //    theAnalysisSelection->copyFiles(templateDirectory);
-    theUQWidget->copyFiles(templateDirectory);
-    theModelingWidget->copyFiles(templateDirectory);
-    theAssetsWidget->copyFiles(templateDirectory);
-    //theHazardsWidget->outputAppDataToJSON(apps);
-    theAnalysisWidget->copyFiles(templateDirectory);
-    theDamageAndLossWidget->copyFiles(templateDirectory);
-    theHazardToAssetWidget->copyFiles(templateDirectory);
-    theDamageAndLossWidget->copyFiles(templateDirectory);
+
+    bool res = false;
+
+    // Copy the files
+    this->statusMessage("Copying files");
+
+    QApplication::processEvents();
+
+    res = theUQWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theUQWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theModelingWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theModelingWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theAssetsWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theAssetsWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+    res = theHazardsWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        theComponentSelection->displayComponent("HAZ");
+        errorMessage("Error in copy files in "+theHazardsWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theAnalysisWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theAnalysisWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theHazardToAssetWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theHazardToAssetWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
+
+    res = theDamageAndLossWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theDamageAndLossWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
     //    theEDP_Selection->copyFiles(templateDirectory);
 
+
+    // Generate the input file
+    this->statusMessage("Generating .json input file");
+
+    QApplication::processEvents();
     //
     // in new templatedir dir save the UI data into dakota.json file (same result as using saveAs)
     // NOTE: we append object workingDir to this which points to template dir
@@ -501,10 +774,18 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     QFile file(inputFile);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         //errorMessage();
+        progressDialog->hideProgressBar();
         return;
     }
+
     QJsonObject json;
-    this->outputToJSON(json);
+    res = this->outputToJSON(json);
+    if(!res)
+    {
+        errorMessage("Error in creating .json input file");
+        progressDialog->hideProgressBar();
+        return;
+    }
 
     json["runDir"]=tmpDirectory;
     json["WorkflowType"]="Regional Simulation";
@@ -513,20 +794,21 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     file.write(doc.toJson());
     file.close();
 
-
     statusMessage("Setup done. Now starting application.");
+
+    QApplication::processEvents();
 
     emit setUpForApplicationRunDone(tmpDirectory, inputFile);
 }
 
 
-void WorkflowAppR2D::loadFile(const QString fileName){
+int WorkflowAppR2D::loadFile(QString &fileName){
 
     // check file exists & set apps current dir of it does
     QFileInfo fileInfo(fileName);
     if (!fileInfo.exists()){
-        emit errorMessage(QString("File foes not exist: ") + fileName);
-        return;
+        this->errorMessage(QString("File does not exist: ") + fileName);
+        return -1;
     }
 
     QString dirPath = fileInfo.absoluteDir().absolutePath();
@@ -539,8 +821,8 @@ void WorkflowAppR2D::loadFile(const QString fileName){
 
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        emit errorMessage(QString("Could Not Open File: ") + fileName);
-        return;
+        this->errorMessage(QString("Could Not Open File: ") + fileName);
+        return -1;
     }
 
     //
@@ -558,14 +840,33 @@ void WorkflowAppR2D::loadFile(const QString fileName){
     progressDialog->showProgressBar();
     QApplication::processEvents();
 
-    this->inputFromJSON(jsonObj);
+    // Clear this before loading a new file
+    this->clear();
+
+    // Clean up and find the relative paths if the paths are wrong
+    SCUtils::ResolveAbsolutePaths(jsonObj, fileInfo.dir());
+    SCUtils::PathFinder(jsonObj,dirPath);
+
+    auto res = this->inputFromJSON(jsonObj);
+    if(res == false)
+    {
+        this->errorMessage("Failed to load the input file: " + fileName);
+        progressDialog->hideProgressBar();
+        return -1;
+    }
+
     progressDialog->hideProgressBar();
 
-    if(qobject_cast<RemoteJobManager*>(QObject::sender()) == nullptr)
-        this->statusMessage("Done loading. Click on the 'RUN' button to run an analysis.");
+    auto fileSender = qobject_cast<RemoteJobManager*>(QObject::sender());
+    if(fileSender == nullptr)
+        this->statusMessage("Done loading input file.  Click on the 'RUN' button to run an analysis.");
+    else
+        this->statusMessage("Done loading from remote.");
 
     // Automatically hide after n seconds
     // progressDialog->hideAfterElapsedTime(4);
+
+    return 0;
 }
 
 
@@ -581,22 +882,22 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         theAssetsWidget->show(text);
         theHazardToAssetWidget->show(text);
         theModelingWidget->show(text);
+	//        theLocalEvent->show(text);
         theAnalysisWidget->show(text);
-        // theEngDemandParamWidget->show(text);
+        thePerformanceWidget->show(text);
         theDamageAndLossWidget->show(text);
         theUQWidget->show(text);
-        //theDecisionVariableWidget->show(text);
     }
     else
     {
         theAssetsWidget->hide(text);
         theHazardToAssetWidget->hide(text);
         theModelingWidget->hide(text);
+        //theLocalEvent->hide(text);	
         theAnalysisWidget->hide(text);
-        // theEngDemandParamWidget->hide(text);
+        thePerformanceWidget->hide(text);
         theDamageAndLossWidget->hide(text);
         theUQWidget->hide(text);
-        //theDecisionVariableWidget->hide(text);
     }
 
 }
@@ -628,6 +929,28 @@ void WorkflowAppR2D::fatalMessage(QString message)
 
 void WorkflowAppR2D::runComplete()
 {
-    progressDialog->hideAfterElapsedTime(2);
+    //    progressDialog->hideAfterElapsedTime(2);
+    progressDialog->hideProgressBar();
+}
+
+
+DLWidget *WorkflowAppR2D::getTheDamageAndLossWidget() const
+{
+    return theDamageAndLossWidget;
+}
+
+
+LocalApplication *WorkflowAppR2D::getLocalApp() const
+{
+    return localApp;
+}
+
+
+void WorkflowAppR2D::loadResults(void)
+{
+    if(resultsDialog == nullptr)
+        resultsDialog= new LoadResultsDialog(this);
+
+    resultsDialog->show();
 }
 

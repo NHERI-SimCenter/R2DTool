@@ -36,7 +36,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "ComponentInputWidget.h"
 #include "MultiComponentR2D.h"
 #include "SecondaryComponentSelection.h"
 #include "sectiontitle.h"
@@ -61,6 +60,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QTableWidget>
 #include <QVBoxLayout>
+#include <QJsonDocument>
 
 // A class acting for secondary level R2D menu items
 // whose display is dependent on the selection in GI
@@ -72,15 +72,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // That method calls each MultiComponentR2D with a show or a hide
 
 
-MultiComponentR2D::MultiComponentR2D(QWidget *parent)
-    :SimCenterAppWidget(parent), currentIndex(-1), numHidden(0)
+MultiComponentR2D::MultiComponentR2D(QString key, QWidget *parent)
+:SimCenterAppWidget(parent), numHidden(0)
 {
 
+  jsonKeyword = key;
+  
     // HBox Layout for widget
 
     //
     // leftside selection, VBoxLayout with PushButtons
     //
+    theMainLayout = new QVBoxLayout(this);
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     theSelectionWidget = new QFrame();
@@ -114,8 +117,14 @@ MultiComponentR2D::MultiComponentR2D(QWidget *parent)
     theStackedWidget = new QStackedWidget();
     horizontalLayout->addWidget(theStackedWidget);
 
-    // set this widgets layout
-    this->setLayout(horizontalLayout);
+    // SG add
+    connect(theStackedWidget,&QStackedWidget::currentChanged,this,[=](int idx){
+
+        if(idx<=theNames.size()-1)
+            emit selectionChangedSignal(theNames.at(idx));
+    });
+
+    theMainLayout->addLayout(horizontalLayout);
 
     // nothing yet added, do not display anything!
     theSelectionWidget->setHidden(true);
@@ -130,71 +139,111 @@ MultiComponentR2D::~MultiComponentR2D()
 
 
 bool MultiComponentR2D::outputToJSON(QJsonObject &jsonObject)
-{ 
+{
     bool res = true;
     int length = theNames.length();
+    QJsonObject dataObj;
     for (int i =0; i<length; i++) {
         QPushButton *theButton = thePushButtons.at(i);
         if (theButton->isHidden() == false) {
             SimCenterAppWidget *theWidget = theComponents.at(i);
-            bool res1 = theWidget->outputToJSON(jsonObject);
+            bool res1 = theWidget->outputToJSON(dataObj);
+            // qDebug() << __PRETTY_FUNCTION__ << jsonObject;
             if (res1 != true) {
                 res = false;
-            }
+            } 
         }
     }
+    jsonObject[jsonKeyword] = dataObj;
+    
     return res;
 }
 
 
 bool MultiComponentR2D::inputFromJSON(QJsonObject &jsonObject)
 {
+  if (!jsonObject.contains(jsonKeyword)) {
+    QString errorMsg(QString("MultiComponentR2D keyWord: ") + jsonKeyword +
+		     QString(" not in json"));
+    errorMessage(errorMsg);
+    return false;
+  }
+  
+  QJsonObject dataObj = jsonObject[jsonKeyword].toObject();  
+  bool res = true;
+  int length = theNames.length();
+  for (int i =0; i<length; i++) {
+    QPushButton *theButton = thePushButtons.at(i);
+    if (theButton->isHidden() == false) {
+      SimCenterAppWidget *theWidget = theComponents.at(i);
+      bool res1 = theWidget->inputFromJSON(dataObj);
+      if (res1 != true) {
+	res = false;
+      }
+    }
+  }
+  return res;
+}
 
-    bool res = true;
+
+QList<QString> MultiComponentR2D::getActiveComponents(void)
+{
+    QList<QString> activeComponents;
     int length = theNames.length();
-    for (int i =0; i<length; i++) {
+    for (int i =0; i<length; ++i) {
         QPushButton *theButton = thePushButtons.at(i);
         if (theButton->isHidden() == false) {
-            SimCenterAppWidget *theWidget = theComponents.at(i);
-            bool res1 = theWidget->inputFromJSON(jsonObject);
-            if (res1 != true) {
-                res = false;
-            }
+            activeComponents.append(theNames.at(i));
         }
     }
-    return res;
 
+    return activeComponents;
 }
 
 
 bool MultiComponentR2D::outputAppDataToJSON(QJsonObject &jsonObject)
 {
+  //    errorMessage(jsonKeyword);
+
     bool res = true;
     int length = theNames.length();
+    QJsonObject dataObj;
     for (int i =0; i<length; i++) {
         QPushButton *theButton = thePushButtons.at(i);
         if (theButton->isHidden() == false) {
             SimCenterAppWidget *theWidget = theComponents.at(i);
-            bool res1 = theWidget->outputAppDataToJSON(jsonObject);
+            bool res1 = theWidget->outputAppDataToJSON(dataObj);
             // qDebug() << __PRETTY_FUNCTION__ << jsonObject;
             if (res1 != true) {
                 res = false;
-            }
+            } 
         }
     }
+
+    jsonObject[jsonKeyword] = dataObj;
+
     return res;
 }
 
 
 bool MultiComponentR2D::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
+  if (!jsonObject.contains(jsonKeyword)) {
+    QString errorMsg(QString("MultiComponentR2D::inputAppData keyWord: ")
+		     + jsonKeyword + QString(" not in json"));
+    errorMessage(errorMsg);
+    return false;
+  }
+  
+    QJsonObject dataObj = jsonObject[jsonKeyword].toObject();
+    
     bool res = true;
     int length = theNames.length();
     for (int i =0; i<length; i++) {
         QPushButton *theButton = thePushButtons.at(i);
         if (theButton->isHidden() == false) {
             SimCenterAppWidget *theWidget = theComponents.at(i);
-            bool res1 = theWidget->inputAppDataFromJSON(jsonObject);
+            bool res1 = theWidget->inputAppDataFromJSON(dataObj);
             if (res1 != true) {
                 res = false;
             }
@@ -247,6 +296,8 @@ bool MultiComponentR2D::addComponent(QString text, SimCenterAppWidget *theCompon
             this->displayComponent(text);
         });
 
+        theComponent->setProperty("ComponentText",text);
+
         return true;
     } else
         qDebug() << "ComponentSelection: text: " << text << " option already exists";
@@ -264,7 +315,24 @@ SimCenterAppWidget * MultiComponentR2D::getComponent(QString text)
 }
 
 
+SimCenterAppWidget* MultiComponentR2D::getCurrentComponent(void)
+{
+    auto currentIndex = theStackedWidget->currentIndex();
+    if(currentIndex >= 0 && currentIndex <= theComponents.size()-1)
+        return theComponents.at(currentIndex);
+
+    return nullptr;
+}
+
+
 void MultiComponentR2D::hideAll()
+{
+    this->hideSelectionWidget();
+    theStackedWidget->setHidden(true);
+}
+
+
+void MultiComponentR2D::hideSelectionWidget(void)
 {
     int length = thePushButtons.length();
     numHidden = length;
@@ -273,7 +341,6 @@ void MultiComponentR2D::hideAll()
         theButton->hide();
     }
     theSelectionWidget->setHidden(true);
-    theStackedWidget->setHidden(true);
 }
 
 
@@ -293,7 +360,7 @@ bool MultiComponentR2D::hide(QString text) {
         int numButtons = thePushButtons.length();
 
         // if currently displayed, show something else or nothing if all hidden!
-        if (currentIndex == index) {
+        if (theStackedWidget->currentIndex() == index) {
             if (numHidden == thePushButtons.length()) {
                 theSelectionWidget->setHidden(true);
                 theStackedWidget->setHidden(true);
@@ -335,9 +402,11 @@ bool MultiComponentR2D::show(QString text) {
             theSelectionWidget->setHidden(false);
 
         this->displayComponent(text);
+
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 
@@ -349,21 +418,42 @@ bool MultiComponentR2D::displayComponent(QString text)
 
     int index = theNames.indexOf(text);
 
-    if (index != -1 && index != currentIndex) {
+    if (index != -1) {
+
+        auto currIndex = theStackedWidget->currentIndex();
+
+        if (index == currIndex)
+            return true;
+
         theStackedWidget->setCurrentIndex(index);
 
         QPushButton *theItem = thePushButtons.at(index);
         theItem->setStyleSheet("background-color: rgb(63, 147, 168);");
-        if (currentIndex != -1) {
 
-            QPushButton *theOldItem = thePushButtons.at(currentIndex);
+        if (theStackedWidget->currentIndex() != -1) {
+
+            QPushButton *theOldItem = thePushButtons.at(currIndex);
             theOldItem->setStyleSheet("background-color: rgb(79, 83, 89);");
         }
-        currentIndex = index;
+
         return true;
     }
 
     return false;
+}
+
+
+int MultiComponentR2D::getCurrentIndex(void) const
+{
+    return theStackedWidget->currentIndex();
+}
+
+
+int MultiComponentR2D::getIndexOfComponent(QString text) const
+{
+    int index = theNames.indexOf(text);
+
+    return index;
 }
 
 

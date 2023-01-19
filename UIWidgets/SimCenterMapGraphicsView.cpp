@@ -34,10 +34,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Frank McKenna, Stevan Gavrilovic
 
 #include "SimCenterMapGraphicsView.h"
 #include "GISLegendView.h"
+
+#include "ArcGISLegendView.h"
 
 // Qt headers
 #include <QApplication>
@@ -62,7 +64,9 @@ SimCenterMapGraphicsView::SimCenterMapGraphicsView(QObject *obj) :theCurrentLayo
 {
     theCurrentLayout = nullptr;
 
-    legendView = new GISLegendView(this);
+    legendView = new ArcGISLegendView(this);
+
+    this->setContentsMargins(0,0,0,0);
 }
 
 
@@ -78,7 +82,7 @@ SimCenterMapGraphicsView::~SimCenterMapGraphicsView()
 }
 
 
-void SimCenterMapGraphicsView::setCurrentLayout(QVBoxLayout *layout)
+void SimCenterMapGraphicsView::setCurrentLayout(QLayout *layout)
 {
     if (theCurrentLayout != 0) {
         theCurrentLayout->removeWidget(theInstance);

@@ -45,13 +45,14 @@ class QFrame;
 class QStackedWidget;
 class QPushButton;
 class QVBoxLayout;
+class QHBoxLayout;
 
 class MultiComponentR2D : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit MultiComponentR2D(QWidget *parent);
+  explicit MultiComponentR2D(QString jsonKeyword, QWidget *parent);
     ~MultiComponentR2D();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -67,20 +68,33 @@ public:
     bool addComponent(QString text, SimCenterAppWidget *);
     SimCenterAppWidget *getComponent(QString text);
 
+    // SG add
+    SimCenterAppWidget* getCurrentComponent(void);
+    void hideSelectionWidget(void);
+    int getCurrentIndex(void) const;
+    int getIndexOfComponent(QString text) const;
+
+    // Returns a list of all the components that are active or 'on', i.e., theButton->isHidden() == false
+    QList<QString> getActiveComponents(void);
+
 public slots:
     void selectionChangedSlot(const QString &);
 
+signals:
+    void selectionChangedSignal(const QString &);
+
+protected:
+    virtual bool displayComponent(QString text);
+    QVBoxLayout *theMainLayout = nullptr;
 
 private:
-    virtual bool displayComponent(QString text);
-
-    int currentIndex;
     int numHidden;
 
-    QFrame *theSelectionWidget;
-    QVBoxLayout *theSelectionLayout;
-    QStackedWidget *theStackedWidget;
+    QFrame *theSelectionWidget = nullptr;
+    QVBoxLayout *theSelectionLayout = nullptr;
+    QStackedWidget *theStackedWidget = nullptr;
 
+    QString jsonKeyword;
     QList<QString> theNames;
     QList<QPushButton *>thePushButtons;
     QList<SimCenterAppWidget *> theComponents;

@@ -39,6 +39,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "VisualizationWidget.h"
 #include "CustomListWidget.h"
+#include "XMLAdaptor.h"
+#include "CSVReaderWriter.h"
+#include "TreeItem.h"
+#include "Utils/FileOperations.h"
+
 
 #ifdef OpenSRA
 #include "OpenSRAPreferences.h"
@@ -46,16 +51,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #endif
 
-// GIS Layers
-#include "FeatureCollectionLayer.h"
-#include "GroupLayer.h"
-#include "KmlLayer.h"
-#include "Layer.h"
-#include "LayerTreeView.h"
-#include "LayerListModel.h"
-
 #include <QDirIterator>
 #include <QApplication>
+#include <QListWidget>
 #include <QDialog>
 #include <QJsonArray>
 #include <QFile>
@@ -68,82 +66,64 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSpacerItem>
 #include <QSplitter>
 #include <QStackedWidget>
+#include <QStandardPaths>
 #include <QVBoxLayout>
 
+// GIS Stuff
+#ifdef ARC_GIS
+#include "ArcGISVisualizationWidget.h"
+
+#include "FeatureCollectionLayer.h"
+#include "GroupLayer.h"
+#include "KmlLayer.h"
+#include "Layer.h"
+#include "LayerTreeView.h"
+#include "LayerListModel.h"
+#include "SimpleRenderer.h"
+
 using namespace Esri::ArcGISRuntime;
+#endif
+
+#ifdef Q_GIS
+#include "QGISVisualizationWidget.h"
+
+#include <qgslinesymbol.h>
+#include <qgsvectorlayer.h>
+#include <qgsfillsymbol.h>
+#endif
 
 ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    shakeMapStackedWidget = nullptr;
     progressBar = nullptr;
     directoryInputWidget = nullptr;
     progressBarWidget = nullptr;
-    shakeMapStackedWidget = nullptr;
     progressLabel = nullptr;
+    listWidget = nullptr;
     pathToShakeMapDirectory = "NULL";
 
+    auto mainLayout = new QVBoxLayout(this);
+    auto mainWidget = this->getShakeMapWidget();
+
+    mainLayout->addWidget(mainWidget);
 }
 
 
 ShakeMapWidget::~ShakeMapWidget()
 {
-    qDeleteAll(shakeMapContainer);
-}
-
-
-void ShakeMapWidget::showShakeMapLayers(bool state)
-{
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
-
-
-    if(state == false)
-    {
-        layersTreeView->removeItemFromTree("Shake Map");
-
-        for(auto&& it : shakeMapContainer)
-        {
-            auto eventName = it->eventLayer->name();
-            //            it->eventKMZLayer->name();
-            layersTreeView->removeItemFromTree(eventName);
-        }
-
-        return;
-    }
-
-
-    // Check if there is a 'Shake Map' root item in the tree
-    auto shakeMapLayerTreeItem = layersTreeView->getTreeItem("Shake Map",nullptr);
-
-    // If there is no item, create one
-    if(shakeMapLayerTreeItem == nullptr)
-//        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map",QString());
-
-
-    for(auto&& it : shakeMapContainer)
-    {
-        auto eventName = it->eventLayer->name();
-        auto eventID = it->eventLayer->layerId();
-        auto eventItem = layersTreeView->addItemToTree(eventName, eventID, shakeMapLayerTreeItem);
-
-        auto layers = it->getAllActiveSubLayers();
-        for(auto&& layer : layers)
-        {
-            auto layerName = layer->name();
-            auto layerID = layer->layerId();
-
-            layersTreeView->addItemToTree(layerName, layerID, eventItem);
-        }
-    }
 }
 
 
 QWidget* ShakeMapWidget::getShakeMapWidget(void)
 {
-    QSplitter *splitter = new QSplitter(this);
+    QSplitter *splitter = new QSplitter(Qt::Horizontal);
 
-    listWidget = new CustomListWidget(this, "List of Imported ShakeMaps");
+    listWidget = new CustomListWidget("List of Imported ShakeMaps");
 
     splitter->addWidget(this->getStackedWidget());
     splitter->addWidget(listWidget);
+
+    splitter->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     return splitter;
 }
@@ -152,47 +132,40 @@ QWidget* ShakeMapWidget::getShakeMapWidget(void)
 QStackedWidget* ShakeMapWidget::getStackedWidget(void)
 {
     if (shakeMapStackedWidget)
-        return shakeMapStackedWidget.get();
+        return shakeMapStackedWidget;
 
-    shakeMapStackedWidget = std::make_unique<QStackedWidget>();
+    shakeMapStackedWidget = new QStackedWidget();
+    shakeMapStackedWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    directoryInputWidget = new QWidget(this);
-    auto inputLayout = new QGridLayout(directoryInputWidget);
-
-    progressBarWidget = new QWidget(this);
-    auto progressBarLayout = new QVBoxLayout(progressBarWidget);
+    progressBarWidget = new QWidget();
+    auto progressBarLayout = new QVBoxLayout();
     progressBarWidget->setLayout(progressBarLayout);
 
-    auto progressText = new QLabel("Loading ShakeMap data. This may take a while.",progressBarWidget);
-    progressLabel =  new QLabel(" ",this);
-    progressBar = new QProgressBar(progressBarWidget);
+    auto progressText = new QLabel("Loading ShakeMap data. This may take a while.");
+    progressLabel =  new QLabel(" ");
+    progressBar = new QProgressBar();
 
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
+    auto vspacer2 = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
     progressBarLayout->addItem(vspacer);
     progressBarLayout->addWidget(progressText,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
     progressBarLayout->addWidget(progressBar);
-    progressBarLayout->addItem(vspacer);
+    progressBarLayout->addItem(vspacer2);
     progressBarLayout->addStretch(1);
 
-    shakeMapStackedWidget->addWidget(directoryInputWidget);
-    shakeMapStackedWidget->addWidget(progressBarWidget);
-
-    shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
-
-    QLabel* selectComponentsText = new QLabel("To import ShakeMap files, please download the files from the ShakeMap website and place them in the folder specified below:", this);
+    QLabel* selectComponentsText = new QLabel("To import ShakeMap files, please download the files from the ShakeMap website and place them in the folder specified below:");
     selectComponentsText->setWordWrap(true);
 
-    shakeMapDirectoryLineEdit = new QLineEdit(this);
-    shakeMapDirectoryLineEdit->setMaximumWidth(750);
+    shakeMapDirectoryLineEdit = new QLineEdit();
     shakeMapDirectoryLineEdit->setMinimumWidth(400);
     shakeMapDirectoryLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    QPushButton *browseFileButton = new QPushButton(this);
+    QPushButton *browseFileButton = new QPushButton();
     browseFileButton->setText(tr("Browse"));
     browseFileButton->setMaximumWidth(150);
 
-    QPushButton *loadButton = new QPushButton(this);
+    QPushButton *loadButton = new QPushButton();
     loadButton->setText(tr("Load"));
     loadButton->setMaximumWidth(150);
 
@@ -200,27 +173,62 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
 
     connect(loadButton,SIGNAL(clicked()),this,SLOT(loadShakeMapData()));
 
-    QLabel* shakeMapText1 = new QLabel("At a minimum, the folder must contain the following files: 1) grid.xml, 2) uncertainty.xml, and 3) rupture.json", this);
+    QLabel* shakeMapText1 = new QLabel("At a minimum, the folder must contain the 'grid.xml' file.");
     shakeMapText1->setWordWrap(true);
-    QLabel* shakeMapText2 = new QLabel("Click 'Load' to load the ShakeMap. Multiple ShakeMaps can be added by selecting another folder containing a ShakeMap, and clicking 'Load' again.", this);
+    QLabel* shakeMapText2 = new QLabel("Click 'Load' to load the ShakeMap. Multiple ShakeMaps can be added by selecting another folder containing a ShakeMap, and clicking 'Load' again.");
     shakeMapText2->setWordWrap(true);
-    QLabel* shakeMapText3 = new QLabel("The list of loaded ShakeMaps will appear on the right.", this);
+    QLabel* shakeMapText3 = new QLabel("The list of loaded ShakeMaps will appear on the right.");
     shakeMapText3->setWordWrap(true);
 
-    inputLayout->addItem(vspacer,0,0);
-    inputLayout->addWidget(selectComponentsText,1,0,1,3);
-    inputLayout->addWidget(shakeMapDirectoryLineEdit,2,0);
-    inputLayout->addWidget(browseFileButton,2,1);
-    inputLayout->addWidget(loadButton,2,2);
-    inputLayout->addWidget(shakeMapText1,3,0,1,3);
-    inputLayout->addWidget(shakeMapText2,4,0,1,3);
-    inputLayout->addWidget(shakeMapText3,5,0,1,3);
-    inputLayout->addItem(vspacer,6,0);
+    directoryInputWidget = new QWidget();
+    auto inputLayout = new QGridLayout(directoryInputWidget);
+
+    // The combobox to select the IM
+    IMListWidget = new QListWidget();
+
+    QListWidgetItem* PGAItem= new QListWidgetItem("PGA");
+    PGAItem->setFlags(PGAItem->flags() & (~Qt::ItemIsSelectable));
+    PGAItem->setCheckState(Qt::Checked);
+    IMListWidget->addItem(PGAItem);
+
+    QListWidgetItem* PGVItem= new QListWidgetItem("PGV");
+    PGVItem->setFlags(PGVItem->flags() & (~Qt::ItemIsSelectable));
+    PGVItem->setCheckState(Qt::Unchecked);
+    IMListWidget->addItem(PGVItem);
+
+    IMListWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+
+    IMListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    IMListWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    IMListWidget->setFixedSize(100,50);
+
+    QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM)");
+
+    QHBoxLayout* IMLayout = new QHBoxLayout();
+
+    IMLayout->addWidget(IMLabel);
+    IMLayout->addWidget(IMListWidget);
+    IMLayout->addStretch();
+
+    auto vspacer3 = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
+    inputLayout->addWidget(selectComponentsText,0,0,1,3);
+    inputLayout->addWidget(shakeMapDirectoryLineEdit,1,0);
+    inputLayout->addWidget(browseFileButton,1,1);
+    inputLayout->addWidget(loadButton,1,2);
+    inputLayout->addWidget(shakeMapText1,2,0,1,3);
+    inputLayout->addWidget(shakeMapText2,3,0,1,3);
+    inputLayout->addWidget(shakeMapText3,4,0,1,3);
+    inputLayout->addLayout(IMLayout,5,0,1,3);
+    inputLayout->addItem(vspacer3,6,0);
+
+    shakeMapStackedWidget->addWidget(directoryInputWidget);
+    shakeMapStackedWidget->addWidget(progressBarWidget);
+    shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
 
     //    pathToShakeMapDirectory="/Users/steve/Desktop/SimCenter/Examples/ShakeMaps/SanAndreas/";
     //    this->loadShakeMapData();
 
-    return shakeMapStackedWidget.get();
+    return shakeMapStackedWidget;
 }
 
 
@@ -238,14 +246,14 @@ void ShakeMapWidget::showLoadShakeMapDialog(void)
 }
 
 
-void ShakeMapWidget::loadShakeMapData(void)
+int ShakeMapWidget::loadShakeMapData(void)
 {
 
     // Return if the user cancels
     if(pathToShakeMapDirectory.isEmpty() || pathToShakeMapDirectory == QDir::currentPath())
     {
         pathToShakeMapDirectory = "NULL";
-        return;
+        return -1;
     }
 
 
@@ -255,12 +263,11 @@ void ShakeMapWidget::loadShakeMapData(void)
     {
         auto relPathToDir = QCoreApplication::applicationDirPath() + QDir::separator() + pathToShakeMapDirectory;
 
-        if (!QFileInfo(relPathToDir).exists())
+        if (!QFileInfo::exists(relPathToDir))
         {
             QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
-            qDebug() << errMsg;
-            this->userMessageDialog(errMsg);
-            return;
+            errorMessage(errMsg);
+            return -1;
         }
         else
         {
@@ -270,55 +277,85 @@ void ShakeMapWidget::loadShakeMapData(void)
 
     }
 
+
     inputDirInfo = QFileInfo(pathToShakeMapDirectory);
 
     auto inputDir = inputDirInfo.absoluteFilePath();
 
-    QDirIterator iter(inputDir, QDirIterator::Subdirectories);
+    // First load files from the current directory
+    this->loadDataFromDirectory(inputDir);
 
-    while(iter.hasNext() )
+    // Then check to see if an array of events was provided
+    if(!shakeMapList.empty())
     {
-        auto dir = iter.next();
+        for(auto&& event : shakeMapList)
+        {
+            auto dir = pathToShakeMapDirectory + QDir::separator() + event;
+            this->loadDataFromDirectory(dir);
+        }
+    }
+    else // If no list provided iterate through sub-dirs to try to find additional shakemap dirs
+    {
+        QDirIterator iter(inputDir, QDir::Dirs | QDir::NoDotAndDotDot/*, QDirIterator::Subdirectories*/);
 
-        this->loadDataFromDirectory(dir);
+        while(iter.hasNext() )
+        {
+            auto dir = iter.next();
+
+            this->loadDataFromDirectory(dir);
+        }
     }
 
     emit loadingComplete(true);
 
-    return;
+    if(this->getNumShakeMapsLoaded() == 0)
+    {
+        this->errorMessage("Failed to load the ShakeMaps. Check the folder and try again.");
+        return -1;
+    }
+
+    return 0;
 }
 
-
-void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
+#if Q_GIS
+int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 {
 
+    auto qGsVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(qGsVisWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return -1;
+    }
+
+
+    const QFileInfo inputDirInfo(dir);
+
     // Return if the directory does not exist
-    if(!QDir(dir).exists())
-        return;
-
-    const QFileInfo inputDir(dir);
-
-    if (!inputDir.exists() || !inputDir.isDir())
+    if (!inputDirInfo.exists() || !inputDirInfo.isDir())
     {
         QString errMsg ="A directory does not exist at the path: " + dir;
-        this->userMessageDialog(errMsg);
-        return;
+        this->errorMessage(errMsg);
+        return -1;
     }
 
-    QStringList acceptableFileExtensions = {"*.kmz", "*.xml", "*.shp"};
+    QStringList acceptableFileExtensions = {"*.kmz", "*.xml", "*.shp", "*.json"};
 
-    QStringList inputFiles = inputDir.dir().entryList(acceptableFileExtensions,QDir::Files);
+    QDir inputDir(dir);
+
+    QStringList inputFiles = inputDir.entryList(acceptableFileExtensions, QDir::Files);
 
     if(inputFiles.empty())
-    {
-        return;
-    }
+        return 0;
 
-    QString eventName = inputDir.dir().dirName();
+    QString eventName = inputDir.dirName();
 
     // Check if the shake map already exists
     if(shakeMapContainer.contains(eventName))
-        return;
+        return 0;
+
+    this->statusMessage("Loading ShakeMap "+eventName);
 
     eventsVec.push_back(eventName);
 
@@ -327,18 +364,240 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
 
     inputShakeMap->eventName = eventName;
 
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
+    shakeMapStackedWidget->setCurrentWidget(progressBarWidget);
+
+    progressBarWidget->setVisible(true);
+
+    QApplication::processEvents();
+
+    progressBar->setRange(0,inputFiles.size());
+
+    progressBar->setValue(0);
+
+    QVector<QgsMapLayer*> layerGroup;
+
+    int count = 0;
+    foreach(QString filename, inputFiles)
+    {
+        auto inFilePath = dir + QDir::separator() + filename;
+
+        // Create the XML grid
+        if(filename.compare("grid.xml") == 0) // XML grid
+        {
+            progressLabel->setText("Loading Grid Layer");
+            this->statusMessage("Loading Grid Layer");
+            progressLabel->setVisible(true);
+            QApplication::processEvents();
+
+            XMLAdaptor XMLImportAdaptor;
+
+            QString errMess;
+            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, qGsVisWidget);
+
+            if(XMLlayer == nullptr)
+            {
+                this->errorMessage(errMess);
+                return -1;
+            }
+
+            XMLlayer->setName("Grid");
+
+            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
+
+            inputShakeMap->gridLayer = XMLlayer;
+            layerGroup.push_back(XMLlayer);
+        }
+
+        if(filename.compare("cont_pga.json") == 0) // PGA contours layer
+        {
+            progressLabel->setText("Loading PGA Contour Layer");
+            this->statusMessage("Loading PGA Contour Layer");
+
+            QApplication::processEvents();
+            auto contPGAlayer = qGsVisWidget->addVectorLayer(inFilePath, "PGA Contours", "ogr");
+
+            if(contPGAlayer == nullptr)
+            {
+                errorMessage("Failed to create the PGA contour layer");
+                continue;
+            }
+
+            // Set the category renderer
+            QgsLineSymbol* lineSymbol = new QgsLineSymbol();
+            lineSymbol->setWidth(1.0);
+            qGsVisWidget->createCategoryRenderer("value",contPGAlayer,lineSymbol);
+
+            inputShakeMap->pgaContourLayer = contPGAlayer;
+            layerGroup.push_back(contPGAlayer);
+        }
+        else if(filename.compare("rupture.json") == 0) // Rupture layer
+        {
+            progressLabel->setText("Loading Rupture Layer");
+            this->statusMessage("Loading Rupture Layer");
+
+            QApplication::processEvents();
+
+            auto rupLayer = qGsVisWidget->addVectorLayer(inFilePath, "Rupture", "ogr");
+
+            if(rupLayer == nullptr)
+            {
+                errorMessage("Failed to create the rupture layer");
+                continue;
+            }
+
+            inputShakeMap->faultLayer = rupLayer;
+
+            // Set the simple fill renderer
+            QgsFillSymbol* fillSymbol = new QgsFillSymbol();
+            QColor color(0,0,255,40);
+            fillSymbol->setColor(color);
+            qGsVisWidget->createSimpleRenderer(fillSymbol,rupLayer);
+
+            layerGroup.push_back(rupLayer);
+        }
+        //        else if(filename.contains("_se.kmz")) // Event layer
+        //        {
+        //            progressLabel->setText("Loading Event Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->eventKMZLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Event", eventItem);
+        //            eventLayer->layers()->append(inputShakeMap->eventKMZLayer);
+        //        }
+        //        else if(filename.compare("polygons_mi.kmz") == 0)
+        //        {
+        //            progressLabel->setText("Loading PGA Polygon Layer");
+        //            progressLabel->setVisible(true);
+        //            QApplication::processEvents();
+
+        //            inputShakeMap->pgaPolygonLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Polygons", eventItem, 0.3);
+        //            eventLayer->layers()->append(inputShakeMap->pgaPolygonLayer);
+        //        }
+        //        else if(filename.compare("epicenter.kmz") == 0)
+        //        {
+        //            progressLabel->setText("Loading Epicenter Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->epicenterLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Epicenter", eventItem);
+        //            eventLayer->layers()->append(inputShakeMap->epicenterLayer);
+        //        }
+        //        else if(filename.compare("cont_pga.kmz") == 0)
+        //        {
+        //            progressLabel->setText("Loading PGA Contour Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->pgaContourLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Contours", eventItem);
+        //            eventLayer->layers()->append(inputShakeMap->pgaContourLayer);
+        //        }
+        //        else if(filename.compare("overlay.kmz") == 0)
+        //        {
+        //            progressLabel->setText("Loading PGA Overlay Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->pgaOverlayLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Intensity Overlay", eventItem, 0.3);
+        //            eventLayer->layers()->append(inputShakeMap->pgaOverlayLayer);
+        //        }
+        //        else if(filename.contains("_se.kmz")) // Fault layer
+        //        {
+        //            progressLabel->setText("Loading Fault Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->faultLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Fault", eventItem);
+        //            eventLayer->layers()->append(inputShakeMap->faultLayer);
+        //        }
+        else
+        {
+            continue;
+        }
+
+        ++count;
+        progressLabel->clear();
+        progressBar->setValue(count);
+
+        QApplication::processEvents();
+    }
+
+    qGsVisWidget->createLayerGroup(layerGroup,eventName);
+
+    progressLabel->setVisible(false);
+
+    // Insert the ShakeMap into its container
+    shakeMapContainer.insert(eventName,inputShakeMap);
+
+    auto addedItem = listWidget->addItem(eventName);
+
+    if(addedItem == nullptr)
+        return -1;
+
+    auto itemID = addedItem->getItemID();
+
+    listWidget->setCurrentItem(itemID);
+
+    // Reset the widget back to the input pane and close
+    shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
+    directoryInputWidget->setVisible(true);
+
+    if(shakeMapStackedWidget->isModal())
+        shakeMapStackedWidget->close();
+
+    this->statusMessage("ShakeMap "+eventName+" loading complete.");
+
+    return 0;
+}
+#endif
+
+
+
+#ifdef ARC_GIS
+int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
+{
+    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
+
+    if(arcVizWidget == nullptr)
+    {
+        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+        return -1;
+    }
+
+    const QFileInfo inputDirInfo(dir);
+
+    // Return if the directory does not exist
+    if (!inputDirInfo.exists() || !inputDirInfo.isDir())
+    {
+        QString errMsg ="A directory does not exist at the path: " + dir;
+        this->errorMessage(errMsg);
+        return -1;
+    }
+
+    QStringList acceptableFileExtensions = {"*.kmz", "*.xml", "*.shp", "*.json"};
+
+    QDir inputDir(dir);
+
+    QStringList inputFiles = inputDir.entryList(acceptableFileExtensions, QDir::Files);
+
+    if(inputFiles.empty())
+        return 0;
+
+    QString eventName = inputDir.dirName();
+
+    // Check if the shake map already exists
+    if(shakeMapContainer.contains(eventName))
+        return 0;
+
+    this->statusMessage("Loading ShakeMap "+eventName);
+
+    eventsVec.push_back(eventName);
+
+    // Create a new shakemap
+    auto inputShakeMap = new ShakeMap();
+
+    inputShakeMap->eventName = eventName;
+
+    auto layersTreeView = arcVizWidget->getLayersTree();
 
     // Check if there is a 'Shake Map' root item in the tree
     auto shakeMapLayerTreeItem = layersTreeView->getTreeItem("Shake Map", nullptr);
 
     // If there is no item, create one
-//    if(shakeMapLayerTreeItem == nullptr)
-//        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map", QString());
-
+    if(shakeMapLayerTreeItem == nullptr)
+        shakeMapLayerTreeItem = layersTreeView->addItemToTree("Shake Map", theVisualizationWidget->createUniqueID());
 
     // Add the event layer to the layer tree
-//    auto eventItem = layersTreeView->addItemToTree(eventName, QString(), shakeMapLayerTreeItem);
+    auto eventItem = layersTreeView->addItemToTree(eventName, theVisualizationWidget->createUniqueID(), shakeMapLayerTreeItem);
 
     // Create the root event group layer
     inputShakeMap->eventLayer = new GroupLayer(QList<Layer*>{});
@@ -362,65 +621,160 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     {
         auto inFilePath = dir + QDir::separator() + filename;
 
+#ifndef OpenSRA
         // Create the XML grid
         if(filename.compare("grid.xml") == 0) // XML grid
         {
             progressLabel->setText("Loading Grid Layer");
+            this->statusMessage("Loading Grid Layer");
             progressLabel->setVisible(true);
             QApplication::processEvents();
 
-            // inputShakeMap->gridLayer = theVisualizationWidget->createAndAddXMLShakeMapLayer(inFilePath, "Grid", eventItem);
-            // eventLayer->layers()->append(inputShakeMap->gridLayer);
-        }
-        else if(filename.contains("_se.kmz")) // Event layer
-        {
-            progressLabel->setText("Loading Event Layer");
-            QApplication::processEvents();
+            XMLAdaptor XMLImportAdaptor;
 
-//            inputShakeMap->eventKMZLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Event", eventItem);
-            eventLayer->layers()->append(inputShakeMap->eventKMZLayer);
-        }
-        else if(filename.compare("polygons_mi.kmz") == 0)
-        {
-            progressLabel->setText("Loading PGA Polygon Layer");
-            progressLabel->setVisible(true);
-            QApplication::processEvents();
+            QString errMess;
+            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, this);
 
-//            inputShakeMap->pgaPolygonLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Polygons", eventItem, 0.3);
-            eventLayer->layers()->append(inputShakeMap->pgaPolygonLayer);
-        }
-        else if(filename.compare("epicenter.kmz") == 0)
-        {
-            progressLabel->setText("Loading Epicenter Layer");
-            QApplication::processEvents();
+            if(XMLlayer == nullptr)
+            {
+                this->errorMessage(errMess);
+                return -1;
+            }
 
-//            inputShakeMap->epicenterLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Epicenter", eventItem);
-            eventLayer->layers()->append(inputShakeMap->epicenterLayer);
+            XMLlayer->setName("Grid");
+
+            XMLlayer->setAutoFetchLegendInfos(true);
+
+            arcVizWidget->addLayerToMap(XMLlayer,eventItem);
+
+            inputShakeMap->gridLayer = XMLlayer;
+            eventLayer->layers()->append(inputShakeMap->gridLayer);
+
+            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
         }
-        else if(filename.compare("cont_pga.kmz") == 0)
+#endif
+        if(filename.compare("cont_pga.json") == 0) // PGA contours layer
         {
             progressLabel->setText("Loading PGA Contour Layer");
-            QApplication::processEvents();
+            this->statusMessage("Loading PGA Contour Layer");
 
-//            inputShakeMap->pgaContourLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Contours", eventItem);
+            QApplication::processEvents();
+            auto layer = arcVizWidget->createAndAddJsonLayer(inFilePath, "PGA Contours", eventItem);
+
+            if(layer == nullptr)
+            {
+                errorMessage("Failed to create the PGA contour layer");
+                continue;
+            }
+
+            auto featCollection = layer->featureCollection();
+
+            auto tables = featCollection->tables();
+
+            for(int i = 0;i<tables->size(); ++i)
+            {
+                auto table = tables->at(i);
+
+                // Get the renderer
+                Renderer* tableRenderer = table->renderer();
+
+                auto simpleRenderer = dynamic_cast<SimpleRenderer*>(tableRenderer);
+
+                if(simpleRenderer == nullptr)
+                    continue;
+
+                auto labelVal = simpleRenderer->label();
+
+                QString labelStr = "PGA (%g) " + labelVal;
+                simpleRenderer->setLabel(labelStr);
+            }
+
+            inputShakeMap->pgaContourLayer = layer;
             eventLayer->layers()->append(inputShakeMap->pgaContourLayer);
         }
-        else if(filename.compare("overlay.kmz") == 0)
+        else if(filename.compare("rupture.json") == 0) // Rupture layer
         {
-            progressLabel->setText("Loading PGA Overlay Layer");
+            progressLabel->setText("Loading Rupture Layer");
+            this->statusMessage("Loading Rupture Layer");
+
             QApplication::processEvents();
 
-//            inputShakeMap->pgaOverlayLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Intensity Overlay", eventItem, 0.3);
-            eventLayer->layers()->append(inputShakeMap->pgaOverlayLayer);
-        }
-        else if(filename.contains("_se.kmz")) // Fault layer
-        {
-            progressLabel->setText("Loading Fault Layer");
-            QApplication::processEvents();
+            QColor color(0,0,255,40);
+            auto layer = arcVizWidget->createAndAddJsonLayer(inFilePath, "Rupture", eventItem,color);
 
-//            inputShakeMap->faultLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Fault", eventItem);
+            if(layer == nullptr)
+            {
+                errorMessage("Failed to create the rupture layer");
+                continue;
+            }
+
+            auto featCollection = layer->featureCollection();
+
+            auto tables = featCollection->tables();
+
+            for(int i = 0;i<tables->size(); ++i)
+            {
+                auto table = tables->at(i);
+
+                // Get the renderer
+                Renderer* tableRenderer = table->renderer();
+
+                auto simpleRenderer = dynamic_cast<SimpleRenderer*>(tableRenderer);
+
+                if(simpleRenderer == nullptr)
+                    continue;
+
+                auto labelStr = "Rupture";
+                simpleRenderer->setLabel(labelStr);
+            }
+
+            inputShakeMap->faultLayer = layer;
             eventLayer->layers()->append(inputShakeMap->faultLayer);
         }
+        //        else if(filename.contains("_se.kmz")) // Event layer
+        //        {
+        //            progressLabel->setText("Loading Event Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->eventKMZLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Event", eventItem);
+        //            eventLayer->layers()->append(inputShakeMap->eventKMZLayer);
+        //        }
+        //        else if(filename.compare("polygons_mi.kmz") == 0)
+        //        {
+        //            progressLabel->setText("Loading PGA Polygon Layer");
+        //            progressLabel->setVisible(true);
+        //            QApplication::processEvents();
+
+        //            inputShakeMap->pgaPolygonLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Polygons", eventItem, 0.3);
+        //            eventLayer->layers()->append(inputShakeMap->pgaPolygonLayer);
+        //        }
+        //        else if(filename.compare("epicenter.kmz") == 0)
+        //        {
+        //            progressLabel->setText("Loading Epicenter Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->epicenterLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Epicenter", eventItem);
+        //            eventLayer->layers()->append(inputShakeMap->epicenterLayer);
+        //        }
+        //        else if(filename.compare("cont_pga.kmz") == 0)
+        //        {
+        //            progressLabel->setText("Loading PGA Contour Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->pgaContourLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Contours", eventItem);
+        //            eventLayer->layers()->append(inputShakeMap->pgaContourLayer);
+        //        }
+        //        else if(filename.compare("overlay.kmz") == 0)
+        //        {
+        //            progressLabel->setText("Loading PGA Overlay Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->pgaOverlayLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "PGA Intensity Overlay", eventItem, 0.3);
+        //            eventLayer->layers()->append(inputShakeMap->pgaOverlayLayer);
+        //        }
+        //        else if(filename.contains("_se.kmz")) // Fault layer
+        //        {
+        //            progressLabel->setText("Loading Fault Layer");
+        //            QApplication::processEvents();
+        //            inputShakeMap->faultLayer = theVisualizationWidget->createAndAddKMLLayer(inFilePath, "Fault", eventItem);
+        //            eventLayer->layers()->append(inputShakeMap->faultLayer);
+        //        }
         else
         {
             continue;
@@ -440,10 +794,17 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     // Insert the ShakeMap into its container
     shakeMapContainer.insert(eventName,inputShakeMap);
 
-    listWidget->addItem(eventName);
+    auto addedItem = listWidget->addItem(eventName);
+
+    if(addedItem == nullptr)
+        return -1;
+
+    auto itemID = addedItem->getItemID();
+
+    listWidget->setCurrentItem(itemID);
 
     // Add the event layer to the map
-//    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
+    //    arcVizWidget->addLayerToMap(eventLayer,eventItem);
 
     // Reset the widget back to the input pane and close
     shakeMapStackedWidget->setCurrentWidget(directoryInputWidget);
@@ -452,8 +813,11 @@ void ShakeMapWidget::loadDataFromDirectory(const QString& dir)
     if(shakeMapStackedWidget->isModal())
         shakeMapStackedWidget->close();
 
-    return;
+    this->statusMessage("ShakeMap "+eventName+" loading complete.");
+
+    return 0;
 }
+#endif
 
 
 void ShakeMapWidget::chooseShakeMapDirectoryDialog(void)
@@ -463,7 +827,14 @@ void ShakeMapWidget::chooseShakeMapDirectoryDialog(void)
 
     dialog.setFileMode(QFileDialog::Directory);
 
-    pathToShakeMapDirectory = dialog.getExistingDirectory(this, tr("Folder with ShakeMap files")) + QDir::separator();
+    QString oldPath;
+
+    if(!shakeMapDirectoryLineEdit->text().isEmpty())
+        oldPath = shakeMapDirectoryLineEdit->text();
+    else
+        oldPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+
+    pathToShakeMapDirectory = dialog.getExistingDirectory(this, tr("Folder with ShakeMap files"), oldPath) + QDir::separator();
 
     dialog.close();
 
@@ -476,64 +847,391 @@ void ShakeMapWidget::chooseShakeMapDirectoryDialog(void)
 
 bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 {
-    jsonObject.insert("SourceForIM","ShakeMap");
-
-    QJsonObject sourceParamObj;
-
-    sourceParamObj.insert("SourceForVs30", "Wills et al. (2015)");
 
 #ifdef OpenSRA
-    auto tempWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "Input"  + QDir::separator() + "ShakeMap";
-#else
-    auto tempWorkDir = SimCenterPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "Input"  + QDir::separator() + "ShakeMap";
-#endif
+    jsonObject["Directory"] = pathToShakeMapDirectory;
 
-    sourceParamObj.insert("Directory",tempWorkDir);
-
-    QJsonArray eventsList;
+    QJsonArray eventsArray;
 
     for(auto&& it : eventsVec)
-    {
-        eventsList.append(it);
+        eventsArray.append(it);
+
+    jsonObject["Events"] = eventsArray;
+#else
+
+    QFileInfo theFile(pathToEventFile);
+    if (theFile.exists()) {
+        jsonObject["eventFile"]=theFile.fileName();
+        jsonObject["eventFilePath"]=theFile.path();
+    } else {
+        jsonObject["eventFile"]=pathToEventFile; // may be valid on others computer
+        jsonObject["eventFilePath"]=QString("");
     }
 
-    sourceParamObj.insert("Events",eventsList);
 
-    jsonObject.insert("SourceParameters",sourceParamObj);
+    QJsonObject unitsObj;
+
+    for(int i = 0; i < IMListWidget->count(); ++i)
+    {
+        auto item = IMListWidget->item(i);
+
+        if(item->checkState() == Qt::Unchecked)
+            continue;
+
+        auto IMtag = item->text();
+
+        if(IMtag.compare("PGA") == 0)
+        {
+            unitsObj["PGA"] = "g";
+        }
+        else if(IMtag.compare("PGV") == 0)
+        {
+            unitsObj["PGV"] = "cmps";
+        }
+        else
+        {
+            this->errorMessage("Could not recognize the provided intensity measure "+IMtag);
+        }
+    }
+
+
+    jsonObject["units"] = unitsObj;
+
+#endif
 
     return true;
 }
 
 
-bool ShakeMapWidget::inputFromJSON(QJsonObject &jsonObject)
+bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    pathToShakeMapDirectory = jsonObject["Directory"].toString();
+    emit eventTypeChangedSignal("Earthquake");
+
+    jsonObject["Application"] = "UserInputShakeMap";
+
+    QJsonObject appData;
+
+    appData["Directory"] = pathToShakeMapDirectory;
+
+
+    QJsonArray IMType;
+
+    for(int i = 0; i < IMListWidget->count(); ++i)
+    {
+        auto item = IMListWidget->item(i);
+
+        if(item->checkState() == Qt::Unchecked)
+            continue;
+
+        auto IMtag = item->text();
+
+        IMType.append(IMtag);
+    }
+
+    appData["IntensityMeasureType"] = IMType;
+
+    jsonObject["ApplicationData"]=appData;
+
+    return true;
+}
+
+
+bool ShakeMapWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+{
+    auto appData = jsonObject.value("ApplicationData").toObject();
+
+    pathToShakeMapDirectory = appData.value("Directory").toString();
 
     shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
 
-    this->loadShakeMapData();
+    auto IMType = appData.value("IntensityMeasureType").toArray();
 
-    return false;
+    if(!IMType.isEmpty())
+    {
+
+        for (auto&& v : IMType)
+        {
+            QString IMVal = v.toString();
+
+            bool found = false;
+            for(int i = 0; i < IMListWidget->count(); ++i)
+            {
+                auto item = IMListWidget->item(i);
+
+                auto IMtag = item->text();
+
+                if(IMVal.compare(IMtag) == 0)
+                {
+                    item->setCheckState(Qt::Checked);
+                    found = true;
+                    break;
+                }
+
+            }
+
+            if(!found)
+                this->errorMessage("Error, the intensity measure provided "+IMVal+" is currently not supported");
+
+        }
+    }
+
+    auto res = this->loadShakeMapData();
+
+    if(res != 0)
+        return false;
+    else
+        return true;
+}
+
+
+bool ShakeMapWidget::inputFromJSON(QJsonObject &jsonObject)
+{
+
+#ifdef OpenSRA
+    auto thisObject = jsonObject.value("ShakeMap").toObject();
+
+    pathToShakeMapDirectory = thisObject.value("Directory").toString();
+
+
+    QFileInfo inputDirInfo(pathToShakeMapDirectory);
+
+    if(!inputDirInfo.exists())
+    {
+        auto relPathToDir = QCoreApplication::applicationDirPath() + QDir::separator() + pathToShakeMapDirectory;
+
+        if (!QFileInfo::exists(relPathToDir))
+        {
+            QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
+            errorMessage(errMsg);
+            return -1;
+        }
+        else
+        {
+            pathToShakeMapDirectory = relPathToDir;
+            shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
+        }
+
+    }
+
+    pathToShakeMapDirectory = inputDirInfo.absoluteFilePath();
+    shakeMapDirectoryLineEdit->setText(pathToShakeMapDirectory);
+
+    auto eventsArray = thisObject.value("Events").toArray().toVariantList();
+
+    for(auto&& event : eventsArray)
+        shakeMapList<<event.toString();
+
+    auto res = this->loadShakeMapData();
+
+    if(res != 0)
+        return false;
+    else
+        return true;
+#else
+    Q_UNUSED(jsonObject);
+    return true;
+#endif
+
 }
 
 
 bool ShakeMapWidget::copyFiles(QString &destDir)
 {
-    const QFileInfo inputDirInfo(pathToShakeMapDirectory);
 
-    auto sourcePath = inputDirInfo.absoluteFilePath();
 
-    auto targetPath = destDir + QDir::separator() + "ShakeMap";
+    QFileInfo inputDirInfo(pathToShakeMapDirectory);
 
-    auto res = this->recursiveCopy(sourcePath, targetPath);
+    if(!inputDirInfo.exists())
+    {
+        QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
+        errorMessage(errMsg);
+    }
+
+
+    auto inputDir = inputDirInfo.absoluteFilePath();
+
+    QDir dirInfo = QDir(inputDir);
+    auto sourceDir = dirInfo.dirName();
+
+    auto destPath = destDir + QDir::separator() + sourceDir;
+
+    QDir dirDest(destPath);
+
+    if (!dirDest.exists())
+    {
+        if (!dirDest.mkpath(destPath))
+        {
+            QString errMsg = QString("Could not create destination Dir: ") + destPath;
+            this->errorMessage(errMsg);
+
+            return false;
+        }
+    }
+
+    emit outputDirectoryPathChanged(destPath, pathToEventFile);
+
+    motionDir = destPath + QDir::separator();
+    pathToEventFile = motionDir + "EventGrid.csv";
+
+    auto res = SCUtils::recursiveCopy(inputDir, destPath);
 
     if(!res)
     {
-        QString msg = "Error copying ShakeMap files over to the directory " + destDir;
-        qDebug()<<msg;
+        QString msg = "Error copying ShakeMap files over to the directory " + destPath;
+        errorMessage(msg);
 
         return res;
     }
+
+#ifndef OpenSRA
+
+    auto currentItem = listWidget->getCurrentItem();
+
+    auto currItemName = currentItem->getName();
+
+    auto selectedShakeMap = shakeMapContainer.value(currItemName,nullptr);
+
+    if(selectedShakeMap == nullptr)
+    {
+        this->errorMessage("Could not find the ShakeMap "+currItemName);
+        return false;
+    }
+
+    CSVReaderWriter csvTool;
+
+    auto stationList = selectedShakeMap->stationList;
+
+    if(stationList.empty())
+    {
+        this->errorMessage("Error, the station list is empty for "+currItemName);
+        return false;
+    }
+
+    // First create the event grid file
+    QVector<QStringList> gridData;
+
+    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
+    gridData.push_back(headerRow);
+
+    QStringList stationHeader;
+    for(int i = 0; i < IMListWidget->count(); ++i)
+    {
+        auto item = IMListWidget->item(i);
+
+        if(item->checkState() == Qt::Unchecked)
+            continue;
+
+        auto IMtag = item->text();
+
+        stationHeader.append(IMtag);
+    }
+
+    this->statusMessage("Creating ground motion station files from ShakeMap, this may take some time.");
+
+    QApplication::processEvents();
+
+    for(int i = 0; i<stationList.size(); ++i)
+    {
+        auto stationFile = "Site_"+QString::number(i)+".csv";
+
+        auto station = stationList.at(i);
+
+        auto lat = QString::number(station.getLatitude());
+        auto lon = QString::number(station.getLongitude());
+
+        QStringList stationRow = {stationFile, lat, lon};
+
+        gridData.push_back(stationRow);
+
+        QStringList IMstrList;
+
+        for(int i = 0; i < IMListWidget->count(); ++i)
+        {
+            auto item = IMListWidget->item(i);
+
+            if(item->checkState() == Qt::Unchecked)
+                continue;
+
+            auto IMtag = item->text();
+
+            if(IMtag.compare("PGA") == 0)
+            {
+                auto attribVal = station.getAttributeValue(IMtag);
+
+                if(attribVal.isNull())
+                {
+                    this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
+                    return false;
+                }
+
+                bool Ok = false;
+                auto PGAval = attribVal.toDouble(&Ok);
+
+                if(!Ok)
+                {
+                    this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
+                    return false;
+                }
+
+                // Convert from pct g into g
+                PGAval /= 100.0;
+
+                auto PGAstr = QString::number(PGAval);
+                IMstrList.append(PGAstr);
+
+            }
+            else if(IMtag.compare("PGV") == 0)
+            {
+                auto attribVal = station.getAttributeValue(IMtag);
+
+                if(attribVal.isNull())
+                {
+                    this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
+                    return false;
+                }
+
+                bool Ok = false;
+                auto IMVal = attribVal.toDouble(&Ok);
+
+                if(!Ok)
+                {
+                    this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
+                    return false;
+                }
+
+                // Units cmps
+                auto IMstr = QString::number(IMVal);
+                IMstrList.append(IMstr);
+            }
+            else
+            {
+                this->errorMessage("Could not recognize the provided intensity measure "+IMtag);
+            }
+        }
+
+        QVector<QStringList> stationData = {stationHeader,IMstrList};
+
+        QString pathToStationFile = motionDir + QDir::separator() + stationFile;
+
+        QString err;
+        auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
+        if(res2 != 0)
+        {
+            this->errorMessage(err);
+            return false;
+        }
+
+    }
+
+    // Now save the site grid .csv file
+    QString err2;
+    auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
+    if(res2 != 0)
+    {
+        this->errorMessage(err2);
+        return false;
+    }
+#endif
 
     return true;
 }
@@ -545,43 +1243,15 @@ int ShakeMapWidget::getNumShakeMapsLoaded()
 }
 
 
-bool ShakeMapWidget::recursiveCopy(const QString &sourcePath, const QString &destPath)
-{
-    QFileInfo srcFileInfo(sourcePath);
-
-    if (srcFileInfo.isDir())
-    {
-        QDir targetDir(destPath);
-
-        if (!targetDir.mkdir(destPath))
-            return false;
-
-        QDir sourceDir(sourcePath);
-
-        QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
-
-        foreach (const QString &fileName, fileNames)
-        {
-            const QString newSrcFilePath = sourcePath + QDir::separator() + fileName;
-            const QString newDestFilePath = destPath  + QDir::separator() + fileName;
-
-            if (!recursiveCopy(newSrcFilePath, newDestFilePath))
-                return false;
-        }
-    } else {
-        if (!QFile::copy(sourcePath, destPath))
-            return false;
-    }
-
-    return true;
-}
-
-
 void ShakeMapWidget::clear()
 {
     listWidget->clear();
     shakeMapDirectoryLineEdit->clear();
     pathToShakeMapDirectory = "NULL";
+    qDeleteAll(shakeMapContainer);
     shakeMapContainer.clear();
     eventsVec.clear();
+    motionDir.clear();
+    pathToEventFile.clear();
+    shakeMapList.clear();
 }

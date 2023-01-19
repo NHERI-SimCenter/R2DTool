@@ -36,7 +36,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "ComponentInputWidget.h"
 #include "MDOF_LU.h"
 #include "ModelWidget.h"
 #include "NoArgSimCenterApp.h"
@@ -65,23 +64,36 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-ModelWidget::ModelWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
-    : MultiComponentR2D(parent)
+ModelWidget::ModelWidget(QWidget *parent)
+  : MultiComponentR2D(QString("Modeling"), parent)
 {
+    buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Buildings"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("NaturalGasPipelines"), this);
+    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("WaterDistributionNetwork"), this);
 
-    buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Modeling"), this);
-    SimCenterAppWidget *mdofLU = new MDOF_LU(theRVContainer);
-    SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(theRVContainer,this);
+    // Building widget apps
+    SimCenterAppWidget *mdofLU = new MDOF_LU();
+    SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(this);
+
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
     buildingWidget->addComponent(QString("MDOF-LU"), QString("MDOF-LU"), mdofLU);
     buildingWidget->addComponent(QString("OpenSeesPy Script Generator"), QString("OpenSeesPyInput"), openSeesPy);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-    pipelineWidget = new SimCenterAppSelection(QString("Pipeline Modeling"), QString("PipelineModeling"), this);
+    // Natural gas pipeline apps
+    SimCenterAppWidget *noneWidget2 = new NoneWidget(this);
+
+    pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget2);
+
+    // Water distribution network apps
+    SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
+
+    WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
 
     this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",pipelineWidget);
+    this->addComponent("Gas Network", pipelineWidget);
+    this->addComponent("Water Network", WDNWidget);
     this->hideAll();
 }
 
@@ -96,6 +108,7 @@ void ModelWidget::clear(void)
 {
     buildingWidget->clear();
     pipelineWidget->clear();
+    WDNWidget->clear();
 }
 
 

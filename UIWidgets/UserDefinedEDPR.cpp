@@ -53,7 +53,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace std;
 
-UserDefinedEDPR::UserDefinedEDPR(RandomVariablesContainer *theRandomVariableIW, QWidget *parent) : SimCenterAppWidget(parent), theRandomVariablesContainer(theRandomVariableIW)
+UserDefinedEDPR::UserDefinedEDPR(QWidget *parent)
+  : SimCenterAppWidget(parent)
 {
 
     QVBoxLayout *layout = new QVBoxLayout();
@@ -143,7 +144,7 @@ void UserDefinedEDPR::setEDPSpecsFile(const QString& filename)
     else
     {
         QString msg = "Error could not find the file: "+filename;
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
     }
 
 }
@@ -155,7 +156,7 @@ bool UserDefinedEDPR::copyFiles(QString &dirName)
      if (!filename.isEmpty()) {
 
          if (this->copyFile(filename, dirName) ==  false) {
-             emit sendErrorMessage(QString("ERROR: copyFiles: failed to copy") + filename);
+             this->errorMessage(QString("ERROR: copyFiles: failed to copy") + filename);
              return false;
          }
      }
