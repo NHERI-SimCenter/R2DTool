@@ -1,5 +1,5 @@
-#ifndef HAZARDS_WIDGET_H
-#define HAZARDS_WIDGET_H
+#ifndef GISHazardInputWidget_H
+#define GISHazardInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,54 +36,79 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "SimCenterAppSelection.h"
+#include "SimCenterAppWidget.h"
 
-class GMWidget;
-class ShakeMapWidget;
-class HurricaneSelectionWidget;
-class OpenQuakeSelectionWidget;
-class UserInputHurricaneWidget;
-class UserInputGMWidget;
-class RegionalSiteResponseWidget;
+#include <qgscoordinatereferencesystem.h>
+
+#include <memory>
+
+#include <QMap>
+
 class VisualizationWidget;
+class QGISVisualizationWidget;
+class QgsVectorDataProvider;
+class QgsProjectionSelectionWidget;
+class QgsVectorLayer;
+class SimCenterUnitsWidget;
+class CRSSelectionWidget;
 
-class QGroupBox;
+class QLineEdit;
+class QProgressBar;
+class QLabel;
+class QComboBox;
+class QGridLayout;
 
-class HazardsWidget : public  SimCenterAppSelection
+class GISHazardInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~HazardsWidget();
+    GISHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~GISHazardInputWidget();
 
-#ifdef ARC_GIS
-    void setCurrentlyViewable(bool status);
-#endif
+    QWidget* getGISHazardInputWidget(void);
 
-signals:
-    void gridFileChangedSignal(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
+    bool inputFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
+    bool copyFiles(QString &destDir);
+    void clear(void);
 
 private slots:
+    void chooseEventFileDialog(void);
+    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
-    void shakeMapLoadingFinished(const bool value);
-    void gridFileChangedSlot(QString motionDir, QString eventFile);
-    void eventTypeChangedSlot(QString eventType);
+signals:
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
+    void loadingComplete(const bool value);
 
 private:
 
-    VisualizationWidget* theVisualizationWidget;
+    int loadGISFile(void);
 
-    ShakeMapWidget* theShakeMapWidget = nullptr;
-    UserInputGMWidget* theUserInputGMWidget = nullptr;
-    RegionalSiteResponseWidget* theRegionalSiteResponseWidget = nullptr;
-    UserInputHurricaneWidget* theUserInputHurricaneWidget = nullptr;
-    OpenQuakeSelectionWidget* theOpenQuakeSelectionWidget = nullptr;
-    SimCenterAppWidget* theRasterHazardWidget = nullptr;
-    SimCenterAppWidget* theGISHazardWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    QString eventFile;
+    QString pathToEventFile;
+
+    QStringList attributeNames;
+
+    QString GISFilePath;
+    QLineEdit* GISPathLineEdit = nullptr;
+
+    QWidget* fileInputWidget = nullptr;
+
+    QgsVectorDataProvider* dataProvider = nullptr;
+    QgsVectorLayer* vectorLayer = nullptr;
+
+    SimCenterUnitsWidget* unitsWidget = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+    QComboBox* eventTypeCombo = nullptr;
+
 };
 
-#endif // HAZARDS_WIDGET_H
+#endif // GISHazardInputWidget_H
