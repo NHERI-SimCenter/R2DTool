@@ -61,13 +61,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
 #include "ResultsWidget.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 #include "RunWidget.h"
 #include "SimCenterComponentSelection.h"
 //#include <UQ_EngineSelection.h>
 #include <UQWidget.h>
 #include "WorkflowAppR2D.h"
 #include "LoadResultsDialog.h"
+#include "ToolDialog.h"
 
 #include "VisualizationWidget.h"
 
@@ -173,6 +174,7 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
             this, SLOT(replyFinished(QNetworkReply*)));
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
+
 }
 
 
@@ -205,25 +207,31 @@ void WorkflowAppR2D::initialize(void)
         }
     }
 
-    // Edit menu for the clear action
+    // Results menu
     QMenu *resultsMenu = new QMenu(tr("&Results"),menuBar);
 
     // Set the path to the input file
     resultsMenu->addAction("&Load Results", this, &WorkflowAppR2D::loadResults);
     menuBar->insertMenu(menuAfter, resultsMenu);
 
-
     // Create the various widgets
     theGeneralInformationWidgetR2D = new GeneralInformationWidgetR2D(this);
     theRVs = RandomVariablesContainer::getInstance();
     
-#ifdef ARC_GIS
-    theVisualizationWidget = new ArcGISVisualizationWidget(this);
-#endif
-
-#ifdef Q_GIS
     theVisualizationWidget = new QGISVisualizationWidget(theMainWindow);
-#endif
+
+    theToolDialog = new ToolDialog(this, theVisualizationWidget);
+
+    // Tools menu
+    QMenu *toolsMenu = new QMenu(tr("&Tools"),menuBar);
+
+    // Set the path to the input file
+    toolsMenu->addAction("&Earthquake Scenario Simulation", theToolDialog, &ToolDialog::handleShowEQGMSimTool);
+    toolsMenu->addAction("&Hurricane Scenario Simulation", theToolDialog, &ToolDialog::handleShowHurricaneSimTool);
+    toolsMenu->addAction("&Census Data Allocation", theToolDialog, &ToolDialog::handleShowCensusAppTool);
+    menuBar->insertMenu(menuAfter, toolsMenu);
+
+
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
     theHazardToAssetWidget = new HazardToAssetWidget(this, theVisualizationWidget);
     theModelingWidget = new ModelWidget(this);
@@ -309,7 +317,7 @@ AssetsWidget *WorkflowAppR2D::getAssetsWidget() const
 }
 
 
-VisualizationWidget *WorkflowAppR2D::getVisualizationWidget() const
+QGISVisualizationWidget *WorkflowAppR2D::getVisualizationWidget() const
 {
     return theVisualizationWidget;
 }
@@ -469,6 +477,7 @@ void WorkflowAppR2D::clear(void)
     theVisualizationWidget->clear();
     // progressDialog->clear();
     theComponentSelection->displayComponent("VIZ");
+    theToolDialog->clear();
 }
 
 

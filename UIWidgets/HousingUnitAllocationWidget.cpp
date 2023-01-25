@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentTableModel.h"
 #include "ComponentDatabaseManager.h"
 #include "QGISVisualizationWidget.h"
-#include <Utils/PythonProgressDialog.h>
+#include <Utils/ProgramOutputDialog.h>
 #include "NetworkDownloadManager.h"
 #include "ZipUtils.h"
 

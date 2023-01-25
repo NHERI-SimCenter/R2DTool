@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CustomListWidget.h"
 #include "ListTreeModel.h"
 #include "TreeItem.h"
-#include <Utils/PythonProgressDialog.h>
+#include <Utils/ProgramOutputDialog.h>
 
 #include <QList>
 #include <QDebug>

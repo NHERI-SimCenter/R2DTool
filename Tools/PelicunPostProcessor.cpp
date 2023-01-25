@@ -46,7 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "TableNumberItem.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
@@ -128,7 +128,7 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     }
     else
     {
-        PythonProgressDialog::getInstance()->appendErrorMessage("Could not find the results menu bar in PelicunPostProcessor::");
+        ProgramOutputDialog::getInstance()->appendErrorMessage("Could not find the results menu bar in PelicunPostProcessor::");
         return;
     }
 
@@ -635,7 +635,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     // auto stop = high_resolution_clock::now();
     // auto duration = duration_cast<milliseconds>(stop - start);
     // Test to remove end
-    PythonProgressDialog::getInstance()->appendText("Done processing results "/*+QString::number(duration.count())*/);
+    ProgramOutputDialog::getInstance()->appendText("Done processing results "/*+QString::number(duration.count())*/);
 
     //QGISVisualizationWidget* QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
     QGISVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
@@ -1385,7 +1385,7 @@ int PelicunPostProcessor::processIMResults(const QVector<QStringList>& IMResults
     // Commit the changes
     theSiteDB->commitChanges();
 
-    PythonProgressDialog::getInstance()->appendText("Done processing site response results "/*+QString::number(duration.count())*/);
+    ProgramOutputDialog::getInstance()->appendText("Done processing site response results "/*+QString::number(duration.count())*/);
     // Apply the default renderer
     QGISVisWidget->createPrettyGraduatedRenderer("PGA-1-median",Qt::yellow,Qt::red,5,theSiteDB->getSelectedLayer());
     theSiteDB->getSelectedLayer()->setName("Site Response (PGA in Dir.1, g)");

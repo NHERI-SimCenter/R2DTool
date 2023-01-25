@@ -1,5 +1,5 @@
-#ifndef JSONSERIALIZABLE_H
-#define JSONSERIALIZABLE_H
+#ifndef GISHazardInputWidget_H
+#define GISHazardInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,53 +38,77 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-// This class is used when we need to have Json input/output functionality but we cannot derive from a class with a QWidget baseclass
+#include "SimCenterAppWidget.h"
 
-#include <QJsonObject>
-#include <Utils/ProgramOutputDialog.h>
+#include <qgscoordinatereferencesystem.h>
 
-class JsonSerializable
+#include <memory>
+
+#include <QMap>
+
+class VisualizationWidget;
+class QGISVisualizationWidget;
+class QgsVectorDataProvider;
+class QgsProjectionSelectionWidget;
+class QgsVectorLayer;
+class SimCenterUnitsWidget;
+class CRSSelectionWidget;
+
+class QLineEdit;
+class QProgressBar;
+class QLabel;
+class QComboBox;
+class QGridLayout;
+
+class GISHazardInputWidget : public SimCenterAppWidget
 {
+    Q_OBJECT
+
 public:
-    virtual bool outputToJSON(QJsonObject &jsonObject) = 0;
+    GISHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~GISHazardInputWidget();
 
-    virtual bool inputFromJSON(QJsonObject &jsonObject) = 0;
+    QWidget* getGISHazardInputWidget(void);
 
-    virtual void reset(void) = 0;
+    bool inputFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
+    bool copyFiles(QString &destDir);
+    void clear(void);
 
-#ifdef OpenSRA
-   inline void errorMessage(const QString& message)
-   {
-       if(message.isEmpty())
-           return;
+private slots:
+    void chooseEventFileDialog(void);
+    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
-       ProgramOutputDialog::getInstance()->appendErrorMessage(message);
-   }
+signals:
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
+    void loadingComplete(const bool value);
 
-   inline void statusMessage(const QString& message)
-   {
-       if(message.isEmpty())
-           return;
+private:
 
-       ProgramOutputDialog::getInstance()->appendText(message);
-   }
-#endif
+    int loadGISFile(void);
 
-   // Get and set the json obj for this parameter
-   inline const QJsonObject& getMethodAndParamJsonObj() const
-   {
-       return jsonObj;
-   }
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
+    QString eventFile;
+    QString pathToEventFile;
 
-   inline void setMethodAndParamJsonObj(const QJsonObject &newJsonObj)
-   {
-       jsonObj = newJsonObj;
-   }
+    QStringList attributeNames;
 
-protected:
+    QString GISFilePath;
+    QLineEdit* GISPathLineEdit = nullptr;
 
-   QJsonObject jsonObj;
+    QWidget* fileInputWidget = nullptr;
+
+    QgsVectorDataProvider* dataProvider = nullptr;
+    QgsVectorLayer* vectorLayer = nullptr;
+
+    SimCenterUnitsWidget* unitsWidget = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+    QComboBox* eventTypeCombo = nullptr;
+
 };
 
-#endif // JSONSERIALIZABLE_H
+#endif // GISHazardInputWidget_H
