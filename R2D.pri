@@ -126,6 +126,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.cpp \
             $$PWD/UIWidgets/GroundMotionStation.cpp \
             $$PWD/UIWidgets/LoadResultsDialog.cpp \
+            $$PWD/UIWidgets/ToolDialog.cpp \
             $$PWD/UIWidgets/SimCenterUnitsWidget.cpp \
             $$PWD/UIWidgets/VerticalScrollingWidget.cpp \
             $$PWD/UIWidgets/WindFieldStation.cpp \
@@ -238,6 +239,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.h \
             $$PWD/UIWidgets/GroundMotionStation.h \
             $$PWD/UIWidgets/LoadResultsDialog.h \
+            $$PWD/UIWidgets/ToolDialog.h \
             $$PWD/UIWidgets/SimCenterUnitsWidget.h \
             $$PWD/UIWidgets/VerticalScrollingWidget.h \
             $$PWD/UIWidgets/WindFieldStation.h \
@@ -330,6 +332,7 @@ SOURCES +=  $$PWD/Tools/QGISHurricanePreprocessor.cpp \
             $$PWD/UIWidgets/PointAssetInputWidget.cpp \
             $$PWD/UIWidgets/CSVWaterNetworkInputWidget.cpp \
             $$PWD/UIWidgets/RasterHazardInputWidget.cpp \
+            $$PWD/UIWidgets/GISHazardInputWidget.cpp \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.cpp \
             $$PWD/UIWidgets/GISAssetInputWidget.cpp \
             $$PWD/UIWidgets/GISWaterNetworkInputWidget.cpp \
@@ -341,6 +344,7 @@ HEADERS +=  $$PWD/Tools/QGISHurricanePreprocessor.h \
             $$PWD/UIWidgets/PointAssetInputWidget.h \
             $$PWD/UIWidgets/CSVWaterNetworkInputWidget.h \
             $$PWD/UIWidgets/RasterHazardInputWidget.h \
+            $$PWD/UIWidgets/GISHazardInputWidget.h \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.h \
             $$PWD/UIWidgets/GISAssetInputWidget.h \
             $$PWD/UIWidgets/GISWaterNetworkInputWidget.h \

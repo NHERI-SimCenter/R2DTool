@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <set>
 
-class PythonProgressDialog;
+class ProgramOutputDialog;
 
 class QgsFeature;
 
@@ -98,7 +98,7 @@ public:
     void setOffset(int value);
 
 private:
-    PythonProgressDialog* messageHandler;
+    ProgramOutputDialog* messageHandler;
 
     bool addFeatureToSelectedLayer(QgsFeature& feature);
 

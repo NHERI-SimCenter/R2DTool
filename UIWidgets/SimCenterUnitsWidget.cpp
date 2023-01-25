@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterUnitsWidget.h"
 #include "SimCenterUnitsCombo.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <QGridLayout>
 #include <QLabel>
@@ -92,7 +92,7 @@ bool SimCenterUnitsWidget::outputToJSON(QJsonObject &jsonObject)
             // Return false if unit undefined
             if(unit.compare("UNDEFINED") == 0)
             {
-                PythonProgressDialog::getInstance()->appendErrorMessage("Warning unit undefined! Please set the unit");
+                ProgramOutputDialog::getInstance()->appendErrorMessage("Warning unit undefined! Please set the unit");
                 continue;
             }
 

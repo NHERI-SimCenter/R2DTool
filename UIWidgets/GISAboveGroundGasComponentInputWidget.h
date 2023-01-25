@@ -1,5 +1,5 @@
-#ifndef QGISWellsCaprocksInputWidget_H
-#define QGISWellsCaprocksInputWidget_H
+#ifndef GISAboveGroundGasComponentInputWidget_H
+#define GISAboveGroundGasComponentInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,32 +36,59 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
 
-#include "AssetInputWidget.h"
+#include "SimCenterAppWidget.h"
+
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class GISAssetInputWidget;
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 
-class QGISWellsCaprocksInputWidget : public AssetInputWidget
-{
-public:
-    QGISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
-
-    int loadAssetVisualization() override;
-
 #ifdef OpenSRA
-    bool loadFileFromPath(const QString& filePath) override;
+class JsonGroupBoxWidget;
 #endif
+
+class GISAboveGroundGasComponentInputWidget : public SimCenterAppWidget
+{
+    Q_OBJECT
+
+public:
+    GISAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~GISAboveGroundGasComponentInputWidget();
+
+//    void createComponentsBox(void) override;
+
+    virtual int loadAboveGroundVisualization();
 
     void clear() override;
 
-private:
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+    bool copyFiles(QString &destName) override;
 
-    QgsVectorLayer* mainLayer = nullptr;
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+#ifdef OpenSRA
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+#endif
+
+signals:
+    void headingValuesChanged(QStringList);
+
+protected slots:
+    void handleAssetsLoaded();
+
+protected:
+
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    GISAssetInputWidget* theAboveGroundWidget = nullptr;
+
+    QgsVectorLayer* aboveGroundMainLayer = nullptr;
 
 };
 
-#endif // QGISWellsCaprocksInputWidget_H
+#endif // GISAboveGroundGasComponentInputWidget_H

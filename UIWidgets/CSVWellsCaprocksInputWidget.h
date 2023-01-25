@@ -1,5 +1,5 @@
-#ifndef MutuallyExclusiveListWidget_H
-#define MutuallyExclusiveListWidget_H
+#ifndef CSVWellsCaprocksInputWidget_H
+#define CSVWellsCaprocksInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,54 +38,47 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QTreeView>
+#include "PointAssetInputWidget.h"
 
-class QLabel;
-class CheckableTreeModel;
-class TreeItem;
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
 
-class MutuallyExclusiveListWidget : public QTreeView
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
+class CSVWellsCaprocksInputWidget : public PointAssetInputWidget
 {
-    Q_OBJECT
-
 public:
-    MutuallyExclusiveListWidget(QWidget *parent = nullptr, QString headerText = QString());
-    ~MutuallyExclusiveListWidget();
+    CSVWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
-    void clear(void);
+    void createComponentsBox(void) override;
 
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
 
-public slots:
-
-    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
-
-    void removeItem(const QString& itemID);
-
-    void handleItemChecked(const QString& itemID);
-
-    void handleItemUnchecked(const QString& itemID);
-
-    // Shows the "right-click" menu
-    void showPopup(const QPoint &position);
-
-    void checkItem(const int row_num);
-
-    void selectItem(const int row_num);
+    void clear() override;
 
 private slots:
-    // Runs the action that the user selects on the right-click menu
-    void runAction();
 
-signals:
+    void handleWellTracesDirDialog(void);
 
-    void itemChecked(TreeItem* item);
-    void clearAll();
+    void handleCaprockDialog(void);
 
 private:
 
-    CheckableTreeModel* treeModel;
+    void loadCaprocksLayer();
 
-    TreeItem* checkedItem;
+//#ifdef OpenSRA
+//    JsonGroupBoxWidget* locationWidget = nullptr;
+//#endif
+
+    QLineEdit* pathWellTraceLE = nullptr;
+    QLineEdit* pathCaprockShpLE = nullptr;
+
+    QgsVectorLayer* caprocksLayer = nullptr;
+
 };
 
-#endif // MutuallyExclusiveListWidget_H
+#endif // CSVWellsCaprocksInputWidget_H

@@ -1,5 +1,5 @@
 #include "LoadResultsDialog.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 #include "WorkflowAppWidget.h"
 
 #include <QGridLayout>
@@ -10,12 +10,31 @@
 #include <QPushButton>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QStandardPaths>
 
 LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent), workflowWidget(parent)
 {
 
     QGridLayout* mainLayout = new QGridLayout(this);
 
+#ifdef OpenSRA
+    auto pathWorkFolder = new QLabel("OpenSRA analysis folder (under the working directory): ", this);
+    pathWorkFolder->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    workFolderLineEdit = new QLineEdit(this);
+    workFolderLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+    auto browseWorkFolderButton = new QPushButton("Browse",this);
+    connect(browseWorkFolderButton,&QPushButton::clicked, this, &LoadResultsDialog::handleGetPathToWorkFolder);
+
+    mainLayout->addWidget(pathWorkFolder,0,0,Qt::AlignBottom);
+    mainLayout->addWidget(workFolderLineEdit,1,0);
+    mainLayout->addWidget(browseWorkFolderButton,1,1);
+
+    // adding empty label to push the row with lineEdit widget up (temp fix over adjusting the stretch)
+    auto emptyLabel = new QLabel("", this);
+    mainLayout->addWidget(emptyLabel,2,0);
+#else
     auto pathInputFileLabel = new QLabel("Input file: ", this);
     auto pathResultsFolder = new QLabel("Results folder: ", this);
 
@@ -38,13 +57,16 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
     mainLayout->addWidget(pathResultsFolder,1,0);
     mainLayout->addWidget(resultsFolderLineEdit,1,1);
     mainLayout->addWidget(browseResultsFolderButton,1,2);
+#endif
 
     auto loadResultsButton = new QPushButton("Load Results",this);
-
     connect(loadResultsButton,&QPushButton::clicked, this, &LoadResultsDialog::handleLoadResults);
 
+#ifdef OpenSRA
+    mainLayout->addWidget(loadResultsButton,3,0,1,2);
+#else
     mainLayout->addWidget(loadResultsButton,2,0,1,3);
-
+#endif
 
     QRect rec = QGuiApplication::primaryScreen()->geometry();
     int height = this->height()<int(0.20*rec.height())?int(0.20*rec.height()):this->height();
@@ -53,8 +75,8 @@ LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent
     this->resize(width, height);
 
     // Test to remove start
-//     inputFileLineEdit->setText("/Users/steve/Documents/R2D/LocalWorkDir/tmp.SimCenter/inputRWHALE.json");
-//     resultsFolderLineEdit->setText("/Users/steve/Documents/R2D/LocalWorkDir/tmp.SimCenter/Results");
+//     inputFileLineEdit->setText("/Users/steve/Documents/OpenSRA/LocalWorkDir/analysis/Input/SetupConfig.json");
+//     resultsFolderLineEdit->setText("/Users/steve/Documents/OpenSRA/LocalWorkDir/analysis/Results");
 
 //     this->handleLoadResults();
      // Test to remove end
@@ -107,8 +129,24 @@ void LoadResultsDialog::handleLoadResults(void)
 {
     this->hide();
 
-    auto statusDialog = PythonProgressDialog::getInstance();
+    auto statusDialog = ProgramOutputDialog::getInstance();
 
+#ifdef OpenSRA
+    auto workDirPath = workFolderLineEdit->text();
+
+    if(workDirPath.isEmpty())
+    {
+        statusDialog->appendText("Please select the analysis folder before loading the results (should be under the working directory)");
+        return;
+    }
+
+    auto filePath = workDirPath +
+            QDir::separator() + QString("Input") +
+            QDir::separator() + QString("SetupConfig.json");
+
+    auto resultsPath = workDirPath +
+            QDir::separator() + QString("Results");
+#else
     auto filePath = inputFileLineEdit->text();
     auto resultsPath = resultsFolderLineEdit->text();
 
@@ -123,7 +161,7 @@ void LoadResultsDialog::handleLoadResults(void)
         statusDialog->appendText("Please select the results folder before loading the results");
         return;
     }
-
+#endif
     // First clear the workflow widget in case old results are there
     workflowWidget->clear();
 
@@ -141,3 +179,22 @@ void LoadResultsDialog::handleLoadResults(void)
     statusDialog->appendText("Done loading the results");
 }
 
+
+void LoadResultsDialog::handleGetPathToWorkFolder(void)
+{
+
+//    QString existingDir = QCoreApplication::applicationDirPath();
+    QString existingDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+
+    QString existingWorkDir = QFileDialog::getExistingDirectory(this,
+                                                                   tr("Select Results Folder"),
+                                                                   existingDir);
+    if(!existingWorkDir.isEmpty()) {
+
+        QDir workDir(existingWorkDir);
+
+        if(workDir.exists())
+            workFolderLineEdit->setText(existingWorkDir);
+    }
+
+}

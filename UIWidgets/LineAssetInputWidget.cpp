@@ -6,6 +6,7 @@
 #include "AssetFilterDelegate.h"
 #include "AssetInputDelegate.h"
 #include "PointAssetInputWidget.h"
+#include "qjsonarray.h"
 
 #ifdef OpenSRA
 #include "WorkflowAppOpenSRA.h"
@@ -34,10 +35,17 @@ int LineAssetInputWidget::loadAssetVisualization(void)
 
     auto headers = this->getTableHorizontalHeadings();
 
+#ifdef OpenSRA
+    auto indexLatStart = headers.indexOf("LAT_BEGIN");
+    auto indexLonStart = headers.indexOf("LON_BEGIN");
+    auto indexLatEnd = headers.indexOf("LAT_END");
+    auto indexLonEnd = headers.indexOf("LON_END");
+#else
     auto indexLatStart = headers.indexOf("LAT_BEGIN");
     auto indexLonStart = headers.indexOf("LONG_BEGIN");
     auto indexLatEnd = headers.indexOf("LAT_END");
     auto indexLonEnd = headers.indexOf("LONG_END");
+#endif
 
     if(indexLatStart == -1 || indexLonStart == -1 || indexLatEnd == -1 || indexLonEnd == -1)
     {
@@ -224,21 +232,6 @@ int LineAssetInputWidget::loadAssetVisualization(void)
 
 
 #ifdef OpenSRA
-bool LineAssetInputWidget::loadFileFromPath(const QString& filePath)
-{
-    QFileInfo fileInfo;
-    if (!fileInfo.exists(filePath))
-        return false;
-
-    pathToComponentInputFile = filePath;
-    componentFileLineEdit->setText(filePath);
-
-    this->loadAssetData();
-
-    return true;
-}
-
-
 bool LineAssetInputWidget::outputToJSON(QJsonObject &rvObject)
 {
 
@@ -258,7 +251,7 @@ void LineAssetInputWidget::createComponentsBox(void)
 {
     auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
 
-    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["SiteLocationParams"].toObject();
+    QJsonObject thisObj = methodsAndParams["Infrastructure"].toObject()["LineAsset"].toObject()["SiteLocationParams"].toObject();
 
     if(thisObj.isEmpty())
     {
@@ -286,6 +279,28 @@ void LineAssetInputWidget::createComponentsBox(void)
 
     locationWidget->setTitle(widgetLabelText);
 
+#ifdef OpenSRA
+    QJsonObject paramsLocs;
+    paramsLocs["LatBegin"] = paramsObj.value("LatBegin");
+    paramsLocs["LonBegin"] = paramsObj.value("LonBegin");
+    paramsLocs["LatEnd"] = paramsObj.value("LatEnd");
+    paramsLocs["LonEnd"] = paramsObj.value("LonEnd");
+
+    auto displayOrderArray = thisObj["DisplayOrder"].toArray();
+    auto displayOrderVarList = displayOrderArray.toVariantList();
+
+    QStringList displayOrder;
+    for(auto&& varnt : displayOrderVarList)
+        displayOrder.append(varnt.toString());
+
+    auto locsLayout = theWidgetFactory->getLayoutFromParams(paramsLocs,nameStr,locationWidget, Qt::Horizontal, displayOrder);
+
+//    QVBoxLayout* latLonLayout = new QVBoxLayout();
+//    latLonLayout->addLayout(latLayout);
+//    latLonLayout->addLayout(lonLayout);
+
+    locationWidget->setLayout(locsLayout);
+#else
     QJsonObject paramsLat;
     paramsLat["LatBegin"] = paramsObj.value("LatBegin");
     paramsLat["LatMid"] = paramsObj.value("LatMid");
@@ -304,7 +319,7 @@ void LineAssetInputWidget::createComponentsBox(void)
     latLonLayout->addLayout(lonLayout);
 
     locationWidget->setLayout(latLonLayout);
-
+#endif
     auto insPoint = mainWidgetLayout->count();
 
     mainWidgetLayout->insertWidget(insPoint-3,locationWidget);

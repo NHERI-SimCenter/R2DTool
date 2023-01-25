@@ -1,5 +1,5 @@
-#ifndef QGISAboveGroundGasNetworkInputWidget_H
-#define QGISAboveGroundGasNetworkInputWidget_H
+#ifndef GISHazardInputWidget_H
+#define GISHazardInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,30 +38,77 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "AssetInputWidget.h"
+#include "SimCenterAppWidget.h"
 
+#include <qgscoordinatereferencesystem.h>
+
+#include <memory>
+
+#include <QMap>
+
+class VisualizationWidget;
+class QGISVisualizationWidget;
+class QgsVectorDataProvider;
+class QgsProjectionSelectionWidget;
 class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
+class SimCenterUnitsWidget;
+class CRSSelectionWidget;
 
-class QGISAboveGroundGasNetworkInputWidget : public AssetInputWidget
+class QLineEdit;
+class QProgressBar;
+class QLabel;
+class QComboBox;
+class QGridLayout;
+
+class GISHazardInputWidget : public SimCenterAppWidget
 {
+    Q_OBJECT
+
 public:
-    QGISAboveGroundGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
+    GISHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~GISHazardInputWidget();
 
-    int loadAssetVisualization() override;
+    QWidget* getGISHazardInputWidget(void);
 
-#ifdef OpenSRA
-    bool loadFileFromPath(const QString& filePath) override;
-#endif
+    bool inputFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
+    bool copyFiles(QString &destDir);
+    void clear(void);
 
-    void clear() override;
+private slots:
+    void chooseEventFileDialog(void);
+    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+
+signals:
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
+    void loadingComplete(const bool value);
 
 private:
 
-    QgsVectorLayer* mainLayer = nullptr;
-    QgsVectorLayer* selectedFeaturesLayer = nullptr;
+    int loadGISFile(void);
+
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    QString eventFile;
+    QString pathToEventFile;
+
+    QStringList attributeNames;
+
+    QString GISFilePath;
+    QLineEdit* GISPathLineEdit = nullptr;
+
+    QWidget* fileInputWidget = nullptr;
+
+    QgsVectorDataProvider* dataProvider = nullptr;
+    QgsVectorLayer* vectorLayer = nullptr;
+
+    SimCenterUnitsWidget* unitsWidget = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+    QComboBox* eventTypeCombo = nullptr;
 
 };
 
-#endif // QGISAboveGroundGasNetworkInputWidget_H
+#endif // GISHazardInputWidget_H

@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 #include "SimCenterUnitsCombo.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <QStandardItem>
 #include <QMetaEnum>
@@ -64,7 +64,7 @@ bool SimCenterUnitsCombo::setCurrentUnitString(const QString& unit)
     auto res = setCurrentUnit(unitType);
 
     if(!res)
-        PythonProgressDialog::getInstance()->appendErrorMessage("Could not find index of unit " + unit);
+        ProgramOutputDialog::getInstance()->appendErrorMessage("Could not find index of unit " + unit);
 
     return res;
 }
