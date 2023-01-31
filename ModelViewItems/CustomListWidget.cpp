@@ -102,7 +102,11 @@ TreeItem* CustomListWidget::addItem(const QJsonObject& obj, TreeItem* parent)
 
 #ifdef OpenSRA
     auto aleVal = obj.value("Aleatory").toString();
+    if (aleVal.length()==0)
+        aleVal = "Preferred";
     auto epiVal = obj.value("Epistemic").toString();
+    if (epiVal.length()==0)
+        epiVal = "Preferred";
     QString newItemText = item
             + "\n - weight="+ QString::number(weight)
             + "\n - aleatory="+ aleVal
