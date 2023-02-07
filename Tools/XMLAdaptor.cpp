@@ -511,8 +511,12 @@ QgsVectorLayer* XMLAdaptor::parseXMLFile(const QString& filePath, QString& errMe
         if(gp.isEmpty())
             continue;
 
-        auto pointData = gp.split(" ");
+        QStringList pointData;
 
+        if(gp.contains("\t"))
+            pointData = gp.split("\t");
+        else
+            pointData = gp.split(" ");
 
         if(pointData.size() != numFields)
         {

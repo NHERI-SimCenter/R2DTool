@@ -36,9 +36,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "GISGasNetworkInputWidget.h"
+#include "GISAboveGroundGasComponentInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "GISAssetInputWidget.h"
+#include "AssetInputWidget.h"
 
 #include <qgslinesymbol.h>
 #include <qgsmarkersymbol.h>
@@ -55,77 +56,64 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endif
 
 
-GISGasNetworkInputWidget::GISGasNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
+GISAboveGroundGasComponentInputWidget::GISAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-    thePipelinesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Pipeline Network");
+    theAboveGroundWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Above Ground Gas Infrastructure");
 
-    thePipelinesWidget->setLabel1("Load pipeline network information from a GIS file (.shp, .gpkg, .gdb)");
+    theAboveGroundWidget->setLabel1("Load above ground component information from a GIS file (.shp, .gpkg, .gdb)");
 
-    connect(thePipelinesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISGasNetworkInputWidget::handleAssetsLoaded);
+    connect(theAboveGroundWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISAboveGroundGasComponentInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
 
-    mainLayout->addWidget(thePipelinesWidget);
-
-    // Testing to remove start
-    // theNodesWidget->setPathToComponentFile("/Users/steve/Desktop/SimCenter/Examples/SeasideGas/Nodes/Seaside_wter_nodes.shp");
-    // theNodesWidget->loadAssetData();
-    // theNodesWidget->setCRS(QgsCoordinateReferenceSystem("EPSG:4326"));
-
-
-    // thePipelinesWidget->setPathToComponentFile("/Users/steve/Desktop/SimCenter/Examples/SeasideGas/Pipelines/Seaside_Gas_pipelines_wgs84.shp");
-    // thePipelinesWidget->loadAssetData();
-    // thePipelinesWidget->setCRS(QgsCoordinateReferenceSystem("EPSG:4326"));
-
-    // inpFileLineEdit->setText("/Users/steve/Desktop/SogaExample/central.inp");
-    // Testing to remove end
+    mainLayout->addWidget(theAboveGroundWidget);
 }
 
 
-GISGasNetworkInputWidget::~GISGasNetworkInputWidget()
+GISAboveGroundGasComponentInputWidget::~GISAboveGroundGasComponentInputWidget()
 {
 
 }
 
 
-bool GISGasNetworkInputWidget::copyFiles(QString &destName)
+bool GISAboveGroundGasComponentInputWidget::copyFiles(QString &destName)
 {
 
-    // The file containing the network pipelines
-    auto res = thePipelinesWidget->copyFiles(destName);
+    // The file containing the above ground infrastructure
+    auto res = theAboveGroundWidget->copyFiles(destName);
 
     return res;
 }
 
 #ifdef OpenSRA
 
-bool GISGasNetworkInputWidget::outputToJSON(QJsonObject &rvObject)
+bool GISAboveGroundGasComponentInputWidget::outputToJSON(QJsonObject &rvObject)
 {
-    return thePipelinesWidget->outputToJSON(rvObject);
+    return theAboveGroundWidget->outputToJSON(rvObject);
 }
 
 
-bool GISGasNetworkInputWidget::inputFromJSON(QJsonObject &rvObject)
+bool GISAboveGroundGasComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
 {
 
-    return thePipelinesWidget->inputFromJSON(rvObject);
+    return theAboveGroundWidget->inputFromJSON(rvObject);
 }
 
 #endif
 
 
-bool GISGasNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool GISAboveGroundGasComponentInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    jsonObject["Application"]="GIS_to_GasNETWORK";
+    jsonObject["Application"]="GIS_to_ABOVE_GROUND";
 
     QJsonObject data;
 
     // The file containing the network pipelines
-    thePipelinesWidget->outputAppDataToJSON(data);
+    theAboveGroundWidget->outputAppDataToJSON(data);
 
     jsonObject["ApplicationData"] = data;
 
@@ -133,13 +121,13 @@ bool GISGasNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 }
 
 
-bool GISGasNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool GISAboveGroundGasComponentInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
     // Check the app type
     if (jsonObject.contains("Application")) {
-        if ("GIS_to_GasNETWORK" != jsonObject["Application"].toString()) {
-            this->errorMessage("GISGasNetworkInputWidget::inputFRommJSON app name conflict");
+        if ("GIS_to_ABOVE_GROUND" != jsonObject["Application"].toString()) {
+            this->errorMessage("GISAboveGroundGasComponentInputWidget::inputFromJSON app name conflict");
             return false;
         }
     }
@@ -147,53 +135,32 @@ bool GISGasNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     if (!jsonObject.contains("ApplicationData"))
     {
-        this->errorMessage("GISGasNetworkInputWidget::inputFRommJSON app name conflict");
+        this->errorMessage("GISAboveGroundGasComponentInputWidget::inputFromJSON app name conflict");
         return false;
     }
-
-    QJsonObject appData = jsonObject["ApplicationData"].toObject();
-
-
-    if (!appData.contains("GasNetworkPipelines"))
-    {
-        this->errorMessage("GISGasNetworkInputWidget needs GasNetworkPipelines");
-        return false;
-    }
-
-
-    QJsonObject pipelinesData = appData["GasNetworkPipelines"].toObject();
-
-
-    // Input the pipes
-    auto res = thePipelinesWidget->inputAppDataFromJSON(pipelinesData);
-
-    if(!res)
-        return res;
-
 
     return true;
 }
 
 
-int GISGasNetworkInputWidget::loadPipelinesVisualization()
+int GISAboveGroundGasComponentInputWidget::loadAboveGroundVisualization()
 {
-    pipelinesMainLayer = thePipelinesWidget->getMainLayer();
+    aboveGroundMainLayer = theAboveGroundWidget->getMainLayer();
 
-    if(pipelinesMainLayer==nullptr)
+    if(aboveGroundMainLayer==nullptr)
         return -1;
 
 
-    QgsLineSymbol* markerSymbol = new QgsLineSymbol();
+    QgsMarkerSymbol* markerSymbol = new QgsMarkerSymbol();
 
-    markerSymbol->setWidth(0.8);
     markerSymbol->setColor(Qt::darkBlue);
-    theVisualizationWidget->createSimpleRenderer(markerSymbol,pipelinesMainLayer);
+    theVisualizationWidget->createSimpleRenderer(markerSymbol,aboveGroundMainLayer);
 
     //    auto numFeat = mainLayer->featureCount();
 
-    theVisualizationWidget->zoomToLayer(pipelinesMainLayer);
+    theVisualizationWidget->zoomToLayer(aboveGroundMainLayer);
 
-    auto tableHeadings = pipelinesMainLayer->fields().names();
+    auto tableHeadings = aboveGroundMainLayer->fields().names();
 
     emit headingValuesChanged(tableHeadings);
 
@@ -201,24 +168,24 @@ int GISGasNetworkInputWidget::loadPipelinesVisualization()
 }
 
 
-void GISGasNetworkInputWidget::clear()
+void GISAboveGroundGasComponentInputWidget::clear()
 {
-    thePipelinesWidget->clear();
+    theAboveGroundWidget->clear();
 
     emit headingValuesChanged(QStringList{"N/A"});
 }
 
 
-void GISGasNetworkInputWidget::handleAssetsLoaded()
+void GISAboveGroundGasComponentInputWidget::handleAssetsLoaded()
 {
-    if(thePipelinesWidget->isEmpty())
+    if(theAboveGroundWidget->isEmpty())
         return;
 
-    auto res = this->loadPipelinesVisualization();
+    auto res = this->loadAboveGroundVisualization();
 
     if(res != 0)
     {
-        this->errorMessage("Error, failed to load the Gas network pipelines visualization");
+        this->errorMessage("Error, failed to load the wells and caprocks visualization");
         return;
     }
 

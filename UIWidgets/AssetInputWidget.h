@@ -83,6 +83,7 @@ class QLineEdit;
 class QTableWidget;
 class QLabel;
 class QVBoxLayout;
+class QPushButton;
 
 class AssetInputWidget : public  SimCenterAppWidget, public GISSelectable
 {
@@ -93,10 +94,6 @@ public:
     virtual ~AssetInputWidget();
 
     virtual int loadAssetVisualization() = 0;
-
-#ifdef OpenSRA
-    virtual bool loadFileFromPath(const QString& filePath) = 0;
-#endif
 
 #ifdef ARC_GIS
     virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
@@ -147,6 +144,8 @@ public:
 
     QgsVectorLayer *getMainLayer() const;
 
+    void setFilterVisibility(const bool value);
+
 signals:
     void headingValuesChanged(QStringList);
     void doneLoadingComponents(void);
@@ -188,6 +187,9 @@ protected:
 
     AssetInputDelegate* selectComponentsLineEdit = nullptr;
     AssetFilterDelegate* filterDelegateWidget = nullptr;
+    QPushButton* browseFileButton = nullptr;
+
+    QWidget* filterWidget = nullptr;
 
     int offset;
 

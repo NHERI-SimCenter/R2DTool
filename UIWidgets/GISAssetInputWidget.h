@@ -83,7 +83,7 @@ public slots:
 private slots:
     void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
-private:
+protected:
 
     CRSSelectionWidget* crsSelectorWidget = nullptr;
 

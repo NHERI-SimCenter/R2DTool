@@ -81,8 +81,8 @@ UserInputFaultWidget::UserInputFaultWidget(VisualizationWidget* visWidget, QWidg
 
 
     // Test to remove
-    eventFile = "/Users/steve/Downloads/New\ folder/Task4C_run_Shaking_m5/Input/virtual_fault.csv";
-    this->loadUserGMData();
+//    eventFile = "/Users/steve/Downloads/New\ folder/Task4C_run_Shaking_m5/Input/virtual_fault.csv";
+//    this->loadUserGMData();
 }
 
 
@@ -110,7 +110,8 @@ bool UserInputFaultWidget::outputToJSON(QJsonObject &jsonObj)
 
     QFileInfo theFile(eventFile);
     if (theFile.exists()) {
-        jsonObj["ruptureFilePath"]=theFile.path();
+        //jsonObj["FaultFile"]=theFile.path();
+        jsonObj["FaultFile"]=theFile.absoluteFilePath();
     } else {
 
         this->errorMessage("Error, the fault rupture file provided "+eventFile+" does not exist, please check the path and try again");
@@ -130,21 +131,25 @@ bool UserInputFaultWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 bool UserInputFaultWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    QString fileName;
-    QString pathToFile;
+    //QString fileName;
+    //QString pathToFile;
 
-    if (jsonObject.contains("ruptureFilePath"))
+    auto thisObject = jsonObject.value("UserDefinedRupture").toObject();
+
+    if (thisObject.contains("FaultFile"))
     {
-        fileName = jsonObject["ruptureFilePath"].toString();
+        eventFile = thisObject["FaultFile"].toString();
     }
     else
     {
-        this->infoMessage("Error: The 'ruptureFilePath' key is missing from the json object");
+        this->infoMessage("Error: The 'FaultFile' key is missing from the json object");
         return false;
     }
 
 
-    QString fullFilePath= pathToFile + QDir::separator() + fileName;
+    //QString fullFilePath= pathToFile + QDir::separator() + fileName;
+    //QString fullFilePath = fileName;
+    //eventFile = fileName;
 
 
     // load the motions
@@ -172,15 +177,140 @@ QStackedWidget* UserInputFaultWidget::getUserInputFaultWidget(void)
     fileInputWidget->setLayout(fileLayout);
 
 
-    QLabel* selectComponentsText = new QLabel("File Listing Fault Ruptures");
+    // File main message
+    QLabel* mainText = new QLabel(
+        "This tab allows you to provide the user-defined CSV file. Please see the example \"Userdef_Rupture_GIS_Input\" under \"Wells and Caprocks\" for a pre-built user-defined CSV file."
+    );
+    QFont fontMainText = mainText->font();
+    fontMainText.setWeight(QFont::Bold);
+    mainText->setFont(fontMainText);
+
+    QHBoxLayout* headerTextBox = new QHBoxLayout();
+    headerTextBox->addWidget(mainText,0,Qt::AlignLeft);
+    headerTextBox->addStretch(1);
+    fileLayout->addLayout(headerTextBox,0,0,1,3);
+
+
+    // getting component file
+    QLabel* selectComponentsText = new QLabel("CSV file with user-defined fault ruptures");
     eventFileLineEdit = new QLineEdit();
     QPushButton *browseFileButton = new QPushButton("Browse");
 
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
 
-    fileLayout->addWidget(selectComponentsText, 0,0);
-    fileLayout->addWidget(eventFileLineEdit,    0,1);
-    fileLayout->addWidget(browseFileButton,     0,2);
+    fileLayout->addWidget(selectComponentsText, 1,0);
+    fileLayout->addWidget(eventFileLineEdit,    1,1);
+    fileLayout->addWidget(browseFileButton,     1,2);
+
+
+    // file columns
+    QGroupBox* columnsWidget = new QGroupBox("Note: the user-defined rupture CSV file must contain the following columns");
+    QGridLayout* vboxLayout = new QGridLayout(columnsWidget);
+
+    QLabel* col1Label = new QLabel("Column 1 label: EventID");
+    QFont fontCol1Label = col1Label->font();
+    fontCol1Label.setWeight(QFont::Bold);
+    col1Label->setFont(fontCol1Label);
+    QLabel* col1Desc = new QLabel("Desc: User-specified IDs (e.g., 1, 2, 3)");
+
+    QLabel* col2Label = new QLabel("Column 2 label: EventName");
+    QFont fontCol2Label = col2Label->font();
+    fontCol2Label.setWeight(QFont::Bold);
+    col2Label->setFont(fontCol2Label);
+    QLabel* col2Desc = new QLabel("Desc: User-specified event names");
+
+    QLabel* col3Label = new QLabel("Column 3 label: Magnitude");
+    QFont fontCol3Label = col3Label->font();
+    fontCol3Label.setWeight(QFont::Bold);
+    col3Label->setFont(fontCol3Label);
+    QLabel* col3Desc = new QLabel("Desc: Moment magnitude");
+
+    QLabel* col4Label = new QLabel("Column 4 label: AnnualRate");
+    QFont fontCol4Label = col4Label->font();
+    fontCol4Label.setWeight(QFont::Bold);
+    col4Label->setFont(fontCol4Label);
+    QLabel* col4Desc = new QLabel("Desc: Mean annual rate");
+
+    QLabel* col5Label = new QLabel("Column 5 label: Dip");
+    QFont fontCol5Label = col5Label->font();
+    fontCol5Label.setWeight(QFont::Bold);
+    col5Label->setFont(fontCol5Label);
+    QLabel* col5Desc = new QLabel("Desc: Dip angle (deg)");
+
+    QLabel* col6Label = new QLabel("Column 6 label: Rake");
+    QFont fontCol6Label = col6Label->font();
+    fontCol6Label.setWeight(QFont::Bold);
+    col6Label->setFont(fontCol6Label);
+    QLabel* col6Desc = new QLabel("Desc: Rake angle (deg)");
+
+    QLabel* col7Label = new QLabel("Column 7 label: DipDir");
+    QFont fontCol7Label = col7Label->font();
+    fontCol7Label.setWeight(QFont::Bold);
+    col7Label->setFont(fontCol7Label);
+    QLabel* col7Desc = new QLabel("Desc: Dip direction (deg)");
+
+    QLabel* col8Label = new QLabel("Column 8 label: UpperDepth");
+    QFont fontCol8Label = col8Label->font();
+    fontCol8Label.setWeight(QFont::Bold);
+    col8Label->setFont(fontCol8Label);
+    QLabel* col8Desc = new QLabel("Desc: Upper seismogenic depth (km)");
+
+    QLabel* col9Label = new QLabel("Column 8 label: LowerDepth");
+    QFont fontCol9Label = col9Label->font();
+    fontCol9Label.setWeight(QFont::Bold);
+    col9Label->setFont(fontCol9Label);
+    QLabel* col9Desc = new QLabel("Desc: Lower seismogenic depth (km)");
+
+    QLabel* col10Label = new QLabel("Column 8 label: FaultTrace");
+    QFont fontCol10Label = col10Label->font();
+    fontCol10Label.setWeight(QFont::Bold);
+    col10Label->setFont(fontCol10Label);
+    QLabel* col10Desc = new QLabel("Desc: List of fault traces (lat/lon,z), with commas (,) as delimiters and brackets ([])to enclose each trace and the entire list (e.g., [[-122,38,0],[-123,38.1,0]]");
+
+    int count = 0;
+    vboxLayout->addWidget(col1Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col1Desc,count,1,Qt::AlignLeft);
+    count ++;
+    \
+    vboxLayout->addWidget(col2Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col2Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->addWidget(col3Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col3Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->addWidget(col4Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col4Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->addWidget(col5Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col5Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->addWidget(col6Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col6Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->addWidget(col7Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col7Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->addWidget(col8Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col8Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->addWidget(col9Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col9Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->addWidget(col10Label,count,0,Qt::AlignLeft);
+    vboxLayout->addWidget(col10Desc,count,1,Qt::AlignLeft);
+    count ++;
+
+    vboxLayout->setColumnStretch(2,1);
+
+    fileLayout->addWidget(columnsWidget,2,0,1,3);
 
 
     fileLayout->setRowStretch(3,1);

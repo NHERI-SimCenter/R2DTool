@@ -53,7 +53,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVWaterNetworkInputWidget.h"
 #include "GISAssetInputWidget.h"
 #include "GISWaterNetworkInputWidget.h"
-#include "HousingUnitAllocationWidget.h"
 #endif
 
 // Qt headers
@@ -92,9 +91,6 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
     GISAssetInputWidget *GISBuildingInventory = new GISAssetInputWidget(this,visualizationWidget,"Buildings","GIS_to_AIM");
     buildingWidget->addComponent(QString("GIS File to AIM"), QString("GIS_to_AIM"), GISBuildingInventory);
-
-    HousingUnitAllocationWidget *housingUnitAllocation = new HousingUnitAllocationWidget(this,visualizationWidget);
-    buildingWidget->addComponent(QString("Housing Unit Allocation"), QString("CSV_to_AIM"), housingUnitAllocation);
 #endif
 
 #ifdef ARC_GIS

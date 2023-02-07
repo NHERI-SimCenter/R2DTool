@@ -1,5 +1,5 @@
-#ifndef MutuallyExclusiveListWidget_H
-#define MutuallyExclusiveListWidget_H
+#ifndef GISWellsCaprocksInputWidget_H
+#define GISWellsCaprocksInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,56 +36,73 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
 
-#include <QTreeView>
+#include "SimCenterAppWidget.h"
 
-class QLabel;
-class CheckableTreeModel;
-class TreeItem;
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class GISAssetInputWidget;
 
-class MutuallyExclusiveListWidget : public QTreeView
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
+class QLineEdit;
+
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
+class GISWellsCaprocksInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    MutuallyExclusiveListWidget(QWidget *parent = nullptr, QString headerText = QString());
-    ~MutuallyExclusiveListWidget();
+    GISWellsCaprocksInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~GISWellsCaprocksInputWidget();
 
-    void clear(void);
+    virtual int loadWellsVisualization();
 
+    void clear() override;
 
-public slots:
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+    bool copyFiles(QString &destName) override;
 
-    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
-
-    void removeItem(const QString& itemID);
-
-    void handleItemChecked(const QString& itemID);
-
-    void handleItemUnchecked(const QString& itemID);
-
-    // Shows the "right-click" menu
-    void showPopup(const QPoint &position);
-
-    void checkItem(const int row_num);
-
-    void selectItem(const int row_num);
-
-private slots:
-    // Runs the action that the user selects on the right-click menu
-    void runAction();
+#ifdef OpenSRA
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+#endif
 
 signals:
+    void headingValuesChanged(QStringList);
 
-    void itemChecked(TreeItem* item);
-    void clearAll();
+protected slots:
+    void handleAssetsLoaded();
+
+protected:
+
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    GISAssetInputWidget* theWellsWidget = nullptr;
+
+    QgsVectorLayer* wellsMainLayer = nullptr;
+
+private slots:
+
+    void handleWellTracesDirDialog(void);
+
+    void handleCaprockDialog(void);
 
 private:
 
-    CheckableTreeModel* treeModel;
+    void loadCaprocksLayer();
 
-    TreeItem* checkedItem;
+    QLineEdit* pathWellTraceLE = nullptr;
+    QLineEdit* pathCaprockShpLE = nullptr;
+
+    QgsVectorLayer* caprocksLayer = nullptr;
+
 };
 
-#endif // MutuallyExclusiveListWidget_H
+#endif // GISWellsCaprocksInputWidget_H

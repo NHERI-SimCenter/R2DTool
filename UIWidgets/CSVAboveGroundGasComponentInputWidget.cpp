@@ -1,5 +1,3 @@
-#ifndef MutuallyExclusiveListWidget_H
-#define MutuallyExclusiveListWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,54 +36,67 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QTreeView>
+#include "CSVAboveGroundGasComponentInputWidget.h"
+#include "QGISVisualizationWidget.h"
+#include "ComponentTableView.h"
+#include "ComponentDatabaseManager.h"
+#include "AssetFilterDelegate.h"
+#include "LineAssetInputWidget.h"
 
-class QLabel;
-class CheckableTreeModel;
-class TreeItem;
+#include "QFileInfo"
 
-class MutuallyExclusiveListWidget : public QTreeView
+#include <qgsfield.h>
+#include <qgsfillsymbol.h>
+#include <qgsvectorlayer.h>
+#include <qgsmarkersymbol.h>
+
+CSVAboveGroundGasComponentInputWidget::CSVAboveGroundGasComponentInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : PointAssetInputWidget(parent, visWidget, assetType, appType)
 {
-    Q_OBJECT
+    CSVAboveGroundGasComponentInputWidget::createComponentsBox();
+}
 
-public:
-    MutuallyExclusiveListWidget(QWidget *parent = nullptr, QString headerText = QString());
-    ~MutuallyExclusiveListWidget();
+void CSVAboveGroundGasComponentInputWidget::createComponentsBox(void)
+{
+    QVBoxLayout* inputLayout = new QVBoxLayout();
 
-    void clear(void);
+    // box for LON and LAT headers in file
+    // CPT data columns
+    QGroupBox* locationWidget = new QGroupBox("Note: Headers to use for 'Latitude' and 'Longitude' in CSV files");
+    QGridLayout* vboxLayout = new QGridLayout(locationWidget);
+    QLabel* lonLabel = new QLabel("1. Header to use for longitude: LON");
+    QLabel* latLabel = new QLabel("2. Header to use for latitude: LAT");
+    vboxLayout->addWidget(lonLabel,0,0,Qt::AlignLeft);
+    vboxLayout->addWidget(latLabel,1,0,Qt::AlignLeft);
+    inputLayout->addWidget(locationWidget);
+
+    auto insPoint = mainWidgetLayout->count();
+
+    mainWidgetLayout->insertLayout(insPoint-3,inputLayout);
+}
 
 
-public slots:
+bool CSVAboveGroundGasComponentInputWidget::inputFromJSON(QJsonObject &rvObject)
+{
+    return PointAssetInputWidget::inputFromJSON(rvObject);
+}
 
-    TreeItem* addItem(const QString item, TreeItem* parent = nullptr);
 
-    void removeItem(const QString& itemID);
+bool CSVAboveGroundGasComponentInputWidget::outputToJSON(QJsonObject &rvObject)
+{
+   auto res = PointAssetInputWidget::outputToJSON(rvObject);
 
-    void handleItemChecked(const QString& itemID);
+   if(!res)
+   {
+       this->errorMessage("Error output to json in "+QString(__FUNCTION__));
+       return false;
+   }
 
-    void handleItemUnchecked(const QString& itemID);
+   return true;
+}
 
-    // Shows the "right-click" menu
-    void showPopup(const QPoint &position);
 
-    void checkItem(const int row_num);
+void CSVAboveGroundGasComponentInputWidget::clear()
+{
+    PointAssetInputWidget::clear();
+}
 
-    void selectItem(const int row_num);
-
-private slots:
-    // Runs the action that the user selects on the right-click menu
-    void runAction();
-
-signals:
-
-    void itemChecked(TreeItem* item);
-    void clearAll();
-
-private:
-
-    CheckableTreeModel* treeModel;
-
-    TreeItem* checkedItem;
-};
-
-#endif // MutuallyExclusiveListWidget_H

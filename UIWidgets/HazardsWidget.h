@@ -77,14 +77,13 @@ private:
 
     VisualizationWidget* theVisualizationWidget;
 
-    GMWidget* theEQSSWidget;
-    ShakeMapWidget* theShakeMapWidget;
-    UserInputGMWidget* theUserInputGMWidget;
-    RegionalSiteResponseWidget* theRegionalSiteResponseWidget;  
-    UserInputHurricaneWidget* theUserInputHurricaneWidget;
-    HurricaneSelectionWidget* theHurricaneSelectionWidget;
-    OpenQuakeSelectionWidget* theOpenQuakeSelectionWidget;
-    SimCenterAppWidget* theRasterHazardWidget;
+    ShakeMapWidget* theShakeMapWidget = nullptr;
+    UserInputGMWidget* theUserInputGMWidget = nullptr;
+    RegionalSiteResponseWidget* theRegionalSiteResponseWidget = nullptr;
+    UserInputHurricaneWidget* theUserInputHurricaneWidget = nullptr;
+    OpenQuakeSelectionWidget* theOpenQuakeSelectionWidget = nullptr;
+    SimCenterAppWidget* theRasterHazardWidget = nullptr;
+    SimCenterAppWidget* theGISHazardWidget = nullptr;
 };
 
 #endif // HAZARDS_WIDGET_H

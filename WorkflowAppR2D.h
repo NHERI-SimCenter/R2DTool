@@ -68,9 +68,10 @@ class SimCenterComponentSelection;
 class UQOptions;
 class UQWidget;
 class UQ_Results;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 class PerformanceWidget;
 class LocalMappingWidget;
+class ToolDialog;
 
 class WorkflowAppR2D : public WorkflowAppWidget
 {
@@ -94,7 +95,7 @@ public:
     
     void setActiveWidget(SimCenterAppWidget* widget);
 
-    VisualizationWidget *getVisualizationWidget() const;
+    QGISVisualizationWidget *getVisualizationWidget() const;
     AssetsWidget *getAssetsWidget() const;
     GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
     DLWidget *getTheDamageAndLossWidget() const;
@@ -127,7 +128,8 @@ private:
     // Widgets that go in sidebar
     //
 
-    VisualizationWidget* theVisualizationWidget;
+    ToolDialog* theToolDialog = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget;
     GeneralInformationWidgetR2D* theGeneralInformationWidgetR2D;
     HazardsWidget* theHazardsWidget;
     AssetsWidget* theAssetsWidget;
@@ -153,7 +155,7 @@ private:
 
     QJsonObject *jsonObjOrig;
     QNetworkAccessManager *manager;
-  QString commonFilePath;
+    QString commonFilePath;
     static WorkflowAppR2D *theInstance;
 
 };

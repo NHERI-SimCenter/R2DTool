@@ -52,12 +52,20 @@ class PointAssetInputWidget : public AssetInputWidget
 public:
     PointAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
 
-    int loadAssetVisualization();
+#ifdef OpenSRA
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+#endif
 
-    void clear();
+    int loadAssetVisualization() override;
+
+    void clear() override;
 
 private:
 
+    // Column names that signify the lat and long values
+    QString latTag;
+    QString lonTag;
 
 };
 
