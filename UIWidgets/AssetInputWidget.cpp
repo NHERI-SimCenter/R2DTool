@@ -679,8 +679,28 @@ bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     QJsonObject data;
     QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()) {
-        data["assetSourceFile"]=componentFile.fileName();
-        data["pathToSource"]=componentFile.absoluteDir().path();
+        // if componentFile is a dir, then it is likely a folder containing shapefile and its dependencies
+        if (componentFile.isDir())
+        {
+            // look for shp, gdb, gpkg
+            QDir gisDir = componentFile.absoluteFilePath();
+            QStringList acceptableFileExtensions = {"*.shp", "*.gdb", "*.gpkg"};
+            QStringList inputFiles = gisDir.entryList(acceptableFileExtensions, QDir::Files);
+            if(inputFiles.empty())
+            {
+                this->errorMessage("Cannot find GIS file in input site data directory.");
+                return 0;
+            }
+            data["assetSourceFile"]=componentFile.absoluteFilePath() + QDir::separator() + inputFiles.value(0);
+            data["pathToSource"]=componentFile.absoluteFilePath();
+            data["inputIsGIS"]=true;
+        }
+        else
+        {
+            data["assetSourceFile"]=componentFile.fileName();
+            data["pathToSource"]=componentFile.absoluteDir().path();
+            data["inputIsGIS"]=false;
+        }
 
         QString filterData = this->getFilterString();
 

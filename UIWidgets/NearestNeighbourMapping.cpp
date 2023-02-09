@@ -144,12 +144,6 @@ void NearestNeighbourMapping::clear(void)
 }
 
 
-void NearestNeighbourMapping::handleFileNameChanged(QString motionDir, QString eventFile)
-{
-  
-}
-
-
 bool NearestNeighbourMapping::copyFiles(QString &destName)
 {
   return true;

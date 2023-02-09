@@ -1,5 +1,5 @@
-#ifndef NearestNeighbourMapping_H
-#define NearestNeighbourMapping_H
+#ifndef SimCenterIMWidget_H
+#define SimCenterIMWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,33 +36,46 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, Frank McKenna
 
-#include <SimCenterAppWidget.h>
+class QGridLayout;
+class QComboBox;
 
-class QLineEdit;
+#include <QGroupBox>
+#include "JsonSerializable.h"
 
-class NearestNeighbourMapping : public SimCenterAppWidget
+using EDPdict = QMap<QString, QString>;
+
+class SimCenterIMWidget : public QGroupBox, public JsonSerializable
 {
-    Q_OBJECT
-
 public:
-    explicit NearestNeighbourMapping(QWidget *parent = nullptr);
-    ~NearestNeighbourMapping();
+    SimCenterIMWidget(QString title = "Intensity Measurses of Event Input File",QWidget* parent = nullptr);
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool copyFiles(QString &destName);
+    bool outputToJSON(QJsonObject &jsonObject);
+
+    bool inputFromJSON(QJsonObject &jsonObject);
+
+    void reset(void);
 
     void clear(void);
 
-signals:
+    void addNewIMItem(const QString& labelText, const QString& IMName);
+
+    int getNumberOfIMs(void);
+
+    int setIM(const QString& parameterName, const QString& IM);
+
+    QList<QString> getParameterNames();
+
+public slots:
+    void handleHazardChange(const QString hazard);
 
 private:
-    QLineEdit *samplesLineEdit;
-    QLineEdit *neighborsLineEdit;
-    QLineEdit *randomSeed;
+    QGridLayout *mainLayout = nullptr;
+
+    QComboBox* findChild(const QString& name);
+
+    QMap<QString, EDPdict> hazardDict;
 };
 
-
-#endif // NearestNeighbourMapping_H
+#endif // SimCenterIMWidget_H

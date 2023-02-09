@@ -43,10 +43,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppR2D.h"
 #include "SimCenterUnitsCombo.h"
 #include "SimCenterUnitsWidget.h"
+#include "SimCenterIMWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentDatabase.h"
 #include "CRSSelectionWidget.h"
 #include "QGISVisualizationWidget.h"
+
+#include "Utils/FileOperations.h"
 
 #include <cstdlib>
 
@@ -80,6 +83,7 @@ using namespace std::chrono;
 // Test to remove end
 
 
+
 GISHazardInputWidget::GISHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
@@ -92,6 +96,7 @@ GISHazardInputWidget::GISHazardInputWidget(VisualizationWidget* visWidget, QWidg
     layout->setSpacing(0);
     layout->addStretch();
     this->setLayout(layout);
+
 }
 
 
@@ -117,12 +122,14 @@ bool GISHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     appData["eventClassification"] = eventTypeCombo->currentText();
 
-    QJsonArray bandArray;
+    QJsonObject imObj;
+    if(!IMsWidget->outputToJSON(imObj))
+    {
+        this->errorMessage("Error output to json");
+        return false;
+    }
 
-    for(auto&& it : attributeNames)
-        bandArray.append(it);
-
-    appData["bands"] = bandArray;
+    appData["attributes"] = imObj["intensityMeasures"];
 
     jsonObject["ApplicationData"]=appData;
 
@@ -134,15 +141,15 @@ bool GISHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 bool GISHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
-    QFileInfo theFile(pathToEventFile);
+//    QFileInfo theFile(pathToEventFile);
 
-    if (theFile.exists()) {
-        jsonObj["eventFile"]= theFile.fileName();
-        jsonObj["eventFilePath"]=theFile.path();
-    } else {
-        jsonObj["eventFile"]=eventFile; 
-        jsonObj["eventFilePath"]=QString("");
-    }
+//    if (theFile.exists()) {
+//        jsonObj["eventFile"]= theFile.fileName();
+//        jsonObj["eventFilePath"]=theFile.path();
+//    } else {
+//        jsonObj["eventFile"]=eventFile;
+//        jsonObj["eventFilePath"]=QString("");
+//    }
 
     auto res = unitsWidget->outputToJSON(jsonObj);
 
@@ -170,15 +177,7 @@ bool GISHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
 
     }
 
-    if (jsonObject.contains("eventFile"))
-        eventFile = jsonObject["eventFile"].toString();
 
-    if(eventFile.isEmpty())
-    {
-        errorMessage("GIS hazard input widget - Error could not find the eventFile");
-        return false;
-    }
-    
     return res;
 }
 
@@ -199,7 +198,7 @@ bool GISHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             pathToFile=QDir::currentPath();
 
         QString fullFilePath= pathToFile + QDir::separator() + fileName;
-	
+
         // adam .. adam .. adam
         if (!QFileInfo::exists(fullFilePath)){
             fullFilePath = pathToFile + QDir::separator()
@@ -244,30 +243,51 @@ bool GISHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             return false;
         }
 
-        auto attributeArray = appData["Attributes"].toObject();
+        auto attributeArray = appData["attributes"].toObject();
 
-        auto numAttributes = vectorLayer->attributeList().size();
+        auto layerAttributes = vectorLayer->attributeList();
 
         auto keys = attributeArray.keys();
-
-        if(keys.size() != numAttributes)
-        {
-            this->errorMessage("Error in loading GIS input. The number of provided attributes in the json file should be equal to the number of attributes in the layer");
-            return false;
-        }
-
-        for(int i = 0; i<numAttributes; ++i)
+        for(int i = 0; i<keys.size(); ++i)
         {
             // Note that band numbers start from 1 and not 0!
             auto attrName = keys.at(i);
 
             auto unitStr = attributeArray.value(attrName).toString();
 
-            auto labelName = "Attribute: " + attrName + ": " + unitStr;
+            auto labelName = "Attribute: " + attrName;
 
             attributeNames.append(unitStr);
 
             unitsWidget->addNewUnitItem(unitStr, labelName);
+        }
+
+
+        for(int i = 0; i<layerAttributes.size(); ++i)
+        {
+            // Note that band numbers start from 1 and not 0!
+            auto attrIdx = layerAttributes.at(i);
+
+            auto attrName = vectorLayer->attributeDisplayName(attrIdx);
+
+            auto labelName = "Attribute: " + attrName;
+
+            IMsWidget->addNewIMItem(labelName,attrName);
+        }
+
+
+        // Set the hazard type
+        IMsWidget->handleHazardChange(eventType);
+
+        // Set the IM type
+
+        QJsonObject imObject;
+        imObject["intensityMeasures"]=attributeArray;
+
+        if(!IMsWidget->inputFromJSON(imObject))
+        {
+            this->errorMessage("Error setting the attributes");
+            return false;
         }
 
 
@@ -284,7 +304,6 @@ bool GISHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 QWidget* GISHazardInputWidget::getGISHazardInputWidget(void)
 {
-
     // file  input
     fileInputWidget = new QWidget();
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
@@ -314,17 +333,19 @@ QWidget* GISHazardInputWidget::getGISHazardInputWidget(void)
 
     unitsWidget = new SimCenterUnitsWidget();
 
-    QLabel* crsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
+    IMsWidget = new SimCenterIMWidget();
+
+    connect(eventTypeCombo,&QComboBox::currentTextChanged,IMsWidget,&SimCenterIMWidget::handleHazardChange);
 
     fileLayout->addWidget(eventTypeLabel, 1,0);
     fileLayout->addWidget(eventTypeCombo, 1,1,1,2);
 
-    fileLayout->addWidget(crsTypeLabel,2,0);
-    fileLayout->addWidget(crsSelectorWidget,2,1,1,2);
+    fileLayout->addWidget(crsSelectorWidget,2,0,1,3);
 
     fileLayout->addWidget(unitsWidget, 3,0,1,3);
+    fileLayout->addWidget(IMsWidget, 4,0,1,3);
 
-    fileLayout->setRowStretch(4,1);
+    fileLayout->setRowStretch(5,1);
 
     return fileInputWidget;
 }
@@ -344,7 +365,7 @@ void GISHazardInputWidget::chooseEventFileDialog(void)
     GISFilePath = newEventFile;
     GISPathLineEdit->setText(GISFilePath);
 
-    eventFile.clear();
+//    eventFile.clear();
 
     auto res = this->loadGISFile();
 
@@ -357,6 +378,7 @@ void GISHazardInputWidget::chooseEventFileDialog(void)
     auto attributeList = vectorLayer->fields();
 
     unitsWidget->clear();
+    IMsWidget->clear();
 
     for(int i = 0; i<attributeList.size(); ++i)
     {
@@ -368,10 +390,14 @@ void GISHazardInputWidget::chooseEventFileDialog(void)
         auto labelName = "Attribute: " + attributeName;
 
         unitsWidget->addNewUnitItem(attributeName,labelName);
+        IMsWidget->addNewIMItem(labelName,attributeName);
     }
 
     auto layerCrs = vectorLayer->crs();
     crsSelectorWidget->setCRS(layerCrs);
+
+    auto hazType = eventTypeCombo->currentText();
+    IMsWidget->handleHazardChange(hazType);
 
     return;
 }
@@ -383,14 +409,15 @@ void GISHazardInputWidget::clear(void)
     GISPathLineEdit->clear();
     attributeNames.clear();
 
-    eventFile.clear();
-    pathToEventFile.clear();
+//    eventFile.clear();
+//    pathToEventFile.clear();
 
     crsSelectorWidget->clear();
 
     eventTypeCombo->setCurrentIndex(0);
 
     unitsWidget->clear();
+    IMsWidget->clear();
 }
 
 
@@ -441,22 +468,51 @@ void GISHazardInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSys
 
 bool GISHazardInputWidget::copyFiles(QString &destDir)
 {
-    if(eventFile.isEmpty())
-    {
-        this->errorMessage("In raster hazard input widget, no eventFile given in copy files");
+//    if(eventFile.isEmpty())
+//    {
+//        this->errorMessage("In raster hazard input widget, no eventFile given in copy files");
+//        return false;
+//    }
+
+//    pathToEventFile = destDir + QDir::separator() + eventFile;
+
+    QFileInfo gisFileNameInfo(GISFilePath);
+
+    if (!gisFileNameInfo.exists())
         return false;
+
+    QDir dirInfo = gisFileNameInfo.dir();
+
+    auto sourceDir = dirInfo.dirName();
+
+    // Recursive copy everything in the folder containing the main file
+
+    auto destPath = destDir + QDir::separator() + sourceDir;
+
+    QDir dirDest(destPath);
+
+    if (!dirDest.exists())
+    {
+        if (!dirDest.mkpath(destPath))
+        {
+            QString errMsg = QString("Could not create destination Dir: ") + destPath;
+            this->errorMessage(errMsg);
+
+            return false;
+        }
     }
 
-    pathToEventFile = destDir + QDir::separator() + eventFile;
+    auto res = SCUtils::recursiveCopy(dirInfo.absolutePath(), destPath);
 
-    QFileInfo rasterFileNameInfo(GISFilePath);
+    if(!res)
+    {
+        QString msg = "Error copying GIS files over to the directory " + destPath;
+        errorMessage(msg);
 
-    auto rasterFileName = rasterFileNameInfo.fileName();
+        return res;
+    }
 
-    if (!QFile::copy(GISFilePath, destDir + QDir::separator() + rasterFileName))
-        return false;
-
-    emit outputDirectoryPathChanged(destDir, pathToEventFile);
+    emit outputDirectoryPathChanged(destDir, GISFilePath);
 
     return true;
 }

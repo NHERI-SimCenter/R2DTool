@@ -228,17 +228,24 @@ void GISMapWidget::chooseGISMapDirectoryDialog(void)
     else
         oldPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 
-    pathToGISMapDirectory = dialog.getExistingDirectory(this, tr("Folder with GIS files"), oldPath) + QDir::separator();
+    pathToGISMapDirectory = dialog.getExistingDirectory(this, tr("Folder with GIS files"), oldPath);
 
     dialog.close();
 
-    // Set file name & entry in line edit
-    GISMapDirectoryLineEdit->setText(pathToGISMapDirectory);
+    if (pathToGISMapDirectory.isEmpty() || pathToGISMapDirectory.isNull())
+        this->errorMessage("User did not select a folder");
+    else
+    {
+        pathToGISMapDirectory = pathToGISMapDirectory + QDir::separator();
 
-    auto res = this->loadGISMapData();
+        // Set file name & entry in line edit
+        GISMapDirectoryLineEdit->setText(pathToGISMapDirectory);
 
-    if(res != 0)
-        this->errorMessage("Error, could not load GIS data from the directory "+pathToGISMapDirectory);
+        auto res = this->loadGISMapData();
+
+        if(res != 0)
+            this->errorMessage("Error, could not load GIS data from the directory "+pathToGISMapDirectory);
+    }
 
     return;
 }
