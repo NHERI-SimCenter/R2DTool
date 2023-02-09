@@ -451,7 +451,12 @@ bool GISAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     crsSelectorWidget->outputAppDataToJSON(appData);
 
-    appData["assetSourceFile"] = baseNameCSV;
+    QDir dirInfo = componentFile.dir();
+
+    auto sourceDir = dirInfo.dirName();
+
+
+    appData["assetSourceFile"] = sourceDir+QDir::separator()+baseNameCSV;
     appData["assetGISFile"] = componentFile.fileName();
     jsonObject["ApplicationData"] = appData;
 

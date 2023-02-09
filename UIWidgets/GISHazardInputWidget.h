@@ -52,6 +52,7 @@ class QgsVectorDataProvider;
 class QgsProjectionSelectionWidget;
 class QgsVectorLayer;
 class SimCenterUnitsWidget;
+class SimCenterIMWidget;
 class CRSSelectionWidget;
 
 class QLineEdit;
@@ -92,9 +93,6 @@ private:
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    QString eventFile;
-    QString pathToEventFile;
-
     QStringList attributeNames;
 
     QString GISFilePath;
@@ -106,8 +104,11 @@ private:
     QgsVectorLayer* vectorLayer = nullptr;
 
     SimCenterUnitsWidget* unitsWidget = nullptr;
+    SimCenterIMWidget* IMsWidget = nullptr;
+
     CRSSelectionWidget* crsSelectorWidget = nullptr;
     QComboBox* eventTypeCombo = nullptr;
+
 
 };
 

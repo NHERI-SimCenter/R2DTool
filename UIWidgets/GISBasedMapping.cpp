@@ -1,5 +1,3 @@
-#ifndef NearestNeighbourMapping_H
-#define NearestNeighbourMapping_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,31 +36,61 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <SimCenterAppWidget.h>
+#include "GISBasedMapping.h"
+#include "SimCenterPreferences.h"
 
-class QLineEdit;
+#include <QComboBox>
+#include <QDebug>
+#include <QDir>
+#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QIntValidator>
+#include <QJsonObject>
+#include <QLabel>
+#include <QLineEdit>
 
-class NearestNeighbourMapping : public SimCenterAppWidget
+GISBasedMapping::GISBasedMapping(QWidget *parent) : SimCenterAppWidget(parent)
 {
-    Q_OBJECT
+    QVBoxLayout* regionalMapLayout = new QVBoxLayout(this);
 
-public:
-    explicit NearestNeighbourMapping(QWidget *parent = nullptr);
-    ~NearestNeighbourMapping();
+    // create label and entry for seed to layout
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool copyFiles(QString &destName);
+    infoLabel = new QLabel(this);
+    infoLabel->setText("Hazard values are sampled from a GIS file at the asset location.");
 
-    void clear(void);
-
-signals:
-
-private:
-    QLineEdit *samplesLineEdit;
-    QLineEdit *neighborsLineEdit;
-    QLineEdit *randomSeed;
-};
+    regionalMapLayout->addWidget(infoLabel);
+    regionalMapLayout->addStretch();
+}
 
 
-#endif // NearestNeighbourMapping_H
+GISBasedMapping::~GISBasedMapping()
+{
+
+}
+
+
+bool GISBasedMapping::outputAppDataToJSON(QJsonObject &jsonObj)
+{
+    jsonObj["Application"] = QString("GISSpecifiedEvents");
+
+    QJsonObject nearestNeigborObj;
+
+    jsonObj.insert("ApplicationData",nearestNeigborObj);
+
+    return true;
+}
+
+
+bool GISBasedMapping::inputAppDataFromJSON(QJsonObject &jsonObject)
+{
+    return true;
+}
+
+
+void GISBasedMapping::clear(void)
+{
+
+}
+
+
+

@@ -1,5 +1,5 @@
-#ifndef NearestNeighbourMapping_H
-#define NearestNeighbourMapping_H
+#ifndef GISBasedMapping_H
+#define GISBasedMapping_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -40,29 +40,29 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterAppWidget.h>
 
-class QLineEdit;
+class QLabel;
 
-class NearestNeighbourMapping : public SimCenterAppWidget
+class GISBasedMapping : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit NearestNeighbourMapping(QWidget *parent = nullptr);
-    ~NearestNeighbourMapping();
+    explicit GISBasedMapping(QWidget *parent = nullptr);
+    ~GISBasedMapping();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool copyFiles(QString &destName);
 
     void clear(void);
+
+public slots:
 
 signals:
 
 private:
-    QLineEdit *samplesLineEdit;
-    QLineEdit *neighborsLineEdit;
-    QLineEdit *randomSeed;
+    QLabel *infoLabel;
+
 };
 
 
-#endif // NearestNeighbourMapping_H
+#endif // GISBasedMapping_H

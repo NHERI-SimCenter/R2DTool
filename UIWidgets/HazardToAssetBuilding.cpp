@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "HazardToAssetBuilding.h"
 #include "NearestNeighbourMapping.h"
 #include "SiteSpecifiedMapping.h"
+#include "GISBasedMapping.h"
 #include "NoArgSimCenterApp.h"
 #include "SimCenterAppEventSelection.h"
 #include "SimCenterAppSelection.h"
@@ -94,8 +95,8 @@ HazardToAssetBuilding::HazardToAssetBuilding(QString key, QWidget *parent)
     SiteSpecifiedMapping *theSSMap = new SiteSpecifiedMapping();
     theRegionalMapping->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMap);
 
-    // NOTE: if adding something new, need to redo as only want to call this on currently selected item in appSelection
-    connect(this,SIGNAL(hazardGridFileChangedSIGNAL(QString, QString)), theNNMap, SLOT(handleFileNameChanged(QString, QString)));
+    GISBasedMapping *theGISMap = new GISBasedMapping();
+    theRegionalMapping->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMap);
 
 
     /* **************************************************
