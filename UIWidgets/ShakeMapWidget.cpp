@@ -1073,6 +1073,22 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
     motionDir = destPath + QDir::separator();
     pathToEventFile = motionDir + "EventGrid.csv";
 
+#ifdef OpenSRA
+    // only copy over events in shakemap list
+    for(auto&& event : this->shakeMapList)
+    {
+        auto currShakeMapInputPath = inputDir + QDir::separator() + event;
+        auto currShakeMapDestPath = destPath + QDir::separator() + event;
+        auto res = SCUtils::recursiveCopy(currShakeMapInputPath, currShakeMapDestPath);
+        if(!res)
+        {
+            QString msg = "Error copying files over to the directory for event " + event;
+            errorMessage(msg);
+
+            return res;
+        }
+    }
+#else
     auto res = SCUtils::recursiveCopy(inputDir, destPath);
 
     if(!res)
@@ -1082,6 +1098,7 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
 
         return res;
     }
+#endif
 
 #ifndef OpenSRA
 

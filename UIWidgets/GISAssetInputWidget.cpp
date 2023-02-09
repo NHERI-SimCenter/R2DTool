@@ -456,8 +456,16 @@ bool GISAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     auto sourceDir = dirInfo.dirName();
 
 
-    appData["assetSourceFile"] = sourceDir+QDir::separator()+baseNameCSV;
-    appData["assetGISFile"] = componentFile.fileName();
+    if (appData["inputIsGIS"].toBool())
+    {
+        appData["assetGISFile"] = appData["assetSourceFile"];
+    }
+    else
+    {
+        appData["assetSourceFile"] = sourceDir+QDir::separator()+baseNameCSV;
+        appData["assetGISFile"] = componentFile.fileName();
+    }
+
     jsonObject["ApplicationData"] = appData;
 
     return true;
@@ -581,8 +589,22 @@ bool GISAssetInputWidget::copyFiles(QString &destName)
     if (!componentFile.exists())
         return false;
 
-    QDir dirInfo = componentFile.dir();
-    auto sourceDir = dirInfo.dirName();
+    // if compLineEditText is a folder, then set it as sourceDir, if shp or gdb, get dirName as set as sourceDir
+
+    QString sourceDir;
+    QString srcPath;
+    QDir dirInfo;
+    if (componentFile.isDir())
+    {
+        sourceDir = componentFile.baseName();
+        srcPath = componentFile.absoluteFilePath();
+    }
+    else
+    {
+        dirInfo = componentFile.dir();
+        sourceDir = dirInfo.dirName();
+        srcPath = dirInfo.absolutePath();
+    }
 
     // Recursive copy everything in the folder containing the main file
 
@@ -601,7 +623,7 @@ bool GISAssetInputWidget::copyFiles(QString &destName)
         }
     }
 
-    auto res = SCUtils::recursiveCopy(dirInfo.absolutePath(), destPath);
+    auto res = SCUtils::recursiveCopy(srcPath, destPath);
 
     if(!res)
     {

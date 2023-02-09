@@ -75,6 +75,9 @@ GISWellsCaprocksInputWidget::GISWellsCaprocksInputWidget(QWidget *parent, Visual
 
     mainLayout->addWidget(theWellsWidget);
 
+    // other inputs (trace dir, caprock shapefile, notes)
+    QVBoxLayout* otherInputLayout = new QVBoxLayout(this);
+
     // well traces
     QHBoxLayout* welltraceLayout = new QHBoxLayout();
 
@@ -91,7 +94,7 @@ GISWellsCaprocksInputWidget::GISWellsCaprocksInputWidget(QWidget *parent, Visual
     welltraceLayout->addWidget(pathWellTraceLE);
     welltraceLayout->addWidget(pathWellTraceButton);
 
-    mainLayout->addLayout(welltraceLayout);
+    otherInputLayout->addLayout(welltraceLayout);
 
 
     // caprock input
@@ -110,11 +113,25 @@ GISWellsCaprocksInputWidget::GISWellsCaprocksInputWidget(QWidget *parent, Visual
     caprockLayout->addWidget(pathCaprockShpLE);
     caprockLayout->addWidget(pathCaprockShpButton);
 
-    mainLayout->addLayout(caprockLayout);
+    otherInputLayout->addLayout(caprockLayout);
 
-//    auto insPoint = mainLayout->count();
+    // notes
+    QLabel* notesLabel = new QLabel(
+        "Instructions:\n"
+        "\t1. In the GIS shapefile:\n"
+        "\t\t- The shapefile must contain an attribute/column called \"FILE_NAME\" that links to the well trace files\n"
+        "\t2. For the directory with well traces:\n"
+        "\t\t- The folder must contain a list of \".txt\" files with file names consistent with the \"FILE_NAME\" column in the CSV file.\n"
+        "\t\t- Each text file should contain 3 columns with the following header names delimited by tabs (not commas): lon lat depth_m\n"
+        "\t\t- Each trace file should contain at the minimum two points (top and bottom). If the actual trace is not known, then assign the lat/lon at the top of the well to the bottom node and assume a vertical well.\n"
+        "\t3. For the caprock shapefile:\n"
+        "\t\t- The shapefile must contain the attribute \"depth_m\" (average depth to caprock)"
+    );
+    otherInputLayout->addWidget(notesLabel);
 
-//    mainLayout->insertLayout(insPoint-3,inputLayout);
+    auto insPoint = theWellsWidget->mainWidgetLayout->count();
+
+    theWellsWidget->mainWidgetLayout->insertLayout(insPoint-3,otherInputLayout);
 
 }
 
