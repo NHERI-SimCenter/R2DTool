@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "NoArgSimCenterApp.h"
 #include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
+#include <CustomPySimulation.h>
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
@@ -84,6 +85,10 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
   buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
+
+  // KZ: adding customPy
+  SimCenterAppWidget *custom_py_simulation= new CustomPySimulation();
+  buildingWidget->addComponent(QString("CustomPy-Simulation"), QString("CustomPy-Simulation"), custom_py_simulation);
 
   // Natural gas pipeline apps
   SimCenterAppWidget *noneWidget2 = new NoneWidget(this);

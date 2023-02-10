@@ -128,6 +128,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/LoadResultsDialog.cpp \
             $$PWD/UIWidgets/ToolDialog.cpp \
             $$PWD/UIWidgets/SimCenterUnitsWidget.cpp \
+            $$PWD/UIWidgets/SimCenterIMWidget.cpp \
             $$PWD/UIWidgets/VerticalScrollingWidget.cpp \
             $$PWD/UIWidgets/WindFieldStation.cpp \
             $$PWD/UIWidgets/GroundMotionTimeHistory.cpp \
@@ -141,6 +142,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/MultiComponentR2D.cpp \
             $$PWD/UIWidgets/NearestNeighbourMapping.cpp \
             $$PWD/UIWidgets/SiteSpecifiedMapping.cpp \
+            $$PWD/UIWidgets/GISBasedMapping.cpp \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.cpp \
             $$PWD/UIWidgets/WaterNetworkPerformanceModel.cpp \
             $$PWD/UIWidgets/PelicunDLWidget.cpp \
@@ -241,6 +243,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/LoadResultsDialog.h \
             $$PWD/UIWidgets/ToolDialog.h \
             $$PWD/UIWidgets/SimCenterUnitsWidget.h \
+            $$PWD/UIWidgets/SimCenterIMWidget.h \
             $$PWD/UIWidgets/VerticalScrollingWidget.h \
             $$PWD/UIWidgets/WindFieldStation.h \
             $$PWD/UIWidgets/GroundMotionTimeHistory.h \
@@ -254,6 +257,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/MultiComponentR2D.h \
             $$PWD/UIWidgets/NearestNeighbourMapping.h \
             $$PWD/UIWidgets/SiteSpecifiedMapping.h \
+            $$PWD/UIWidgets/GISBasedMapping.h \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.h \
             $$PWD/UIWidgets/WaterNetworkPerformanceModel.h \
             $$PWD/UIWidgets/PelicunDLWidget.h \

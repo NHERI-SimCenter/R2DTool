@@ -146,6 +146,10 @@ public:
 
     void setFilterVisibility(const bool value);
 
+#ifdef OpenSRA
+    QVBoxLayout* mainWidgetLayout = nullptr;
+#endif
+
 signals:
     void headingValuesChanged(QStringList);
     void doneLoadingComponents(void);
@@ -197,7 +201,10 @@ protected:
     QLineEdit* componentFileLineEdit = nullptr;
 
     QGroupBox* componentGroupBox = nullptr;
+
+#ifndef OpenSRA
     QVBoxLayout* mainWidgetLayout = nullptr;
+#endif
 
     QLabel* label1 = nullptr;
     QLabel* label2 = nullptr;

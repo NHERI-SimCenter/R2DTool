@@ -140,7 +140,7 @@ void SimCenterUnitsWidget::reset(void)
 }
 
 
-void SimCenterUnitsWidget::addNewUnitItem(const QString& name, const QString& labelName)
+int SimCenterUnitsWidget::addNewUnitItem(const QString& name, const QString& labelName)
 {
     QString labelText = name;
 
@@ -149,12 +149,14 @@ void SimCenterUnitsWidget::addNewUnitItem(const QString& name, const QString& la
 
     auto i = this->getNumberOfUnits();
 
-    SimCenterUnitsCombo* unitsCombo = new SimCenterUnitsCombo(SimCenter::Unit::ALL,name);
+    SimCenterUnitsCombo* unitsCombo = new SimCenterUnitsCombo(SimCenter::Unit::ALL,name, this);
 
     QLabel* unitLabel = new QLabel(labelText);
 
     unitsLayout->addWidget(unitLabel,i,0,1,1);
     unitsLayout->addWidget(unitsCombo,i,1,1,1);
+
+    return 0;
 }
 
 
