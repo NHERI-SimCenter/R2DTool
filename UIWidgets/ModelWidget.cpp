@@ -68,9 +68,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 ModelWidget::ModelWidget(QWidget *parent)
   : MultiComponentR2D(QString("Modeling"), parent)
 {
+
+  QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");  
     buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Buildings"), this);
     pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("NaturalGasPipelines"), this);
-    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("WaterDistributionNetwork"), this);
+    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("WaterDistributionNetwork"), waterExtraKeys);
 
     // Building widget apps
     SimCenterAppWidget *mdofLU = new MDOF_LU();

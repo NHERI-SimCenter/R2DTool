@@ -132,7 +132,6 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/VerticalScrollingWidget.cpp \
             $$PWD/UIWidgets/WindFieldStation.cpp \
             $$PWD/UIWidgets/GroundMotionTimeHistory.cpp \
-            $$PWD/UIWidgets/HazardToAssetBuilding.cpp \
             $$PWD/UIWidgets/HazardToAssetWidget.cpp \
             $$PWD/UIWidgets/HazardsWidget.cpp \
             $$PWD/UIWidgets/HousingUnitAllocationWidget.cpp \
@@ -247,7 +246,6 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/VerticalScrollingWidget.h \
             $$PWD/UIWidgets/WindFieldStation.h \
             $$PWD/UIWidgets/GroundMotionTimeHistory.h \
-            $$PWD/UIWidgets/HazardToAssetBuilding.h \
             $$PWD/UIWidgets/HazardToAssetWidget.h \
             $$PWD/UIWidgets/HazardsWidget.h \
             $$PWD/UIWidgets/HousingUnitAllocationWidget.h \

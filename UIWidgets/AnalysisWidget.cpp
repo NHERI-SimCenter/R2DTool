@@ -69,10 +69,13 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   : MultiComponentR2D(QString("Simulation"), parent)
 {
 
+  QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNetworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
+  
   buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Buildings"), this);
   pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("NaturalGasPipelines"), this);
-  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("WaterDistributionNetwork"), this);
+  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("WaterDistributionNetwork"), waterExtraKeys);
 
+  
   // Building widget apps
   SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);
   //SimCenterAppWidget *openSees = new InputWidgetOpenSeesAnalysis(theRVContainer,this);

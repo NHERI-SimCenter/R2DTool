@@ -36,47 +36,55 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "AssetInputWidget.h"
-#include "HazardToAssetBuilding.h"
+#include "NearestNeighbourMapping.h"
+#include "SiteSpecifiedMapping.h"
+#include "GISBasedMapping.h"
+#include "NoArgSimCenterApp.h"
+
 #include "HazardToAssetWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
-#include "sectiontitle.h"
 
-// Qt headers
-#include <QCheckBox>
-#include <QColorTransform>
-#include <QDebug>
-#include <QFileDialog>
-#include <QGroupBox>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QPushButton>
-#include <QString>
-#include <QTableWidget>
-#include <QVBoxLayout>
 
-HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* /*visWidget*/) : MultiComponentR2D(QString("RegionalMapping"), parent)
+HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* visWidget)
+: MultiComponentR2D(QString("RegionalMapping"), parent)
 {
 
-  buildingWidget = new HazardToAssetBuilding(QString("Buildings"),this); 
-  pipelineWidget = new HazardToAssetBuilding(QString("WaterDistributionNetwork"),this);
+  QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNetworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
   
+  buildingWidget = new SimCenterAppSelection(QString("Building Mapping"), QString("Buildings"), this);
+  gasWidget = new SimCenterAppSelection(QString("Gas Network Mapping"), QString("NaturalGasPipelines"), this);
+  wdnWidget = new SimCenterAppSelection(QString("Water Distribution Network Mapping"), QString("WaterDistributionNetwork"), waterExtraKeys);
+  
+  NearestNeighbourMapping *theNNMapB = new NearestNeighbourMapping();
+  SiteSpecifiedMapping *theSSMapB = new SiteSpecifiedMapping();
+  GISBasedMapping *theGISMapB = new GISBasedMapping();
+  
+  buildingWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapB);
+  buildingWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapB);
+  buildingWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapB);
+
+  NearestNeighbourMapping *theNNMapG = new NearestNeighbourMapping();
+  SiteSpecifiedMapping *theSSMapG = new SiteSpecifiedMapping();
+  GISBasedMapping *theGISMapG = new GISBasedMapping();
+  
+  gasWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapG);
+  gasWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapG);
+  gasWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapG);      
+
+  NearestNeighbourMapping *theNNMapWDN = new NearestNeighbourMapping();
+  SiteSpecifiedMapping *theSSMapWDN = new SiteSpecifiedMapping();
+  GISBasedMapping *theGISMapWDN = new GISBasedMapping();
+  
+  wdnWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapWDN);
+  wdnWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapWDN);
+  wdnWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapWDN);      
+
   this->addComponent("Buildings", buildingWidget);
-  this->addComponent("Water Network",pipelineWidget);
-
-  connect(this, SIGNAL(hazardGridFileChangedSignal(QString, QString)), buildingWidget, SLOT(hazardGridFileChangedSlot(QString, QString)));
-  connect(this, SIGNAL(eventTypeChangedSignal(QString)), buildingWidget, SLOT(eventTypeChangedSlot(QString)));
-
-  this->hideAll();
+  this->addComponent("Gas Network",gasWidget);
+  this->addComponent("Water Network", wdnWidget);
+  this->hideAll();  
 }
 
 
@@ -86,19 +94,9 @@ HazardToAssetWidget::~HazardToAssetWidget()
 }
 
 
-void HazardToAssetWidget::hazardGridFileChangedSlot(QString motionDir, QString eventFile){
-    emit hazardGridFileChangedSignal(motionDir, eventFile);
-}
-
-
-void HazardToAssetWidget::eventTypeChangedSlot(QString eventType)
-{
-    emit eventTypeChangedSignal(eventType);
-}
-
-
 void HazardToAssetWidget::clear(void)
 {
     buildingWidget->clear();
-    pipelineWidget->clear();
+    gasWidget->clear();
+    wdnWidget->clear();    
 }
