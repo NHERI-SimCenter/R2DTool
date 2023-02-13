@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class VisualizationWidget;
 class SimCenterAppSelection;
-class SimCenterAppWidget;
+
 
 class HazardToAssetWidget : public  MultiComponentR2D
 {
@@ -55,16 +55,13 @@ public:
     void clear(void);
 
 signals:
-    void hazardGridFileChangedSignal(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
 
 private slots:
-    void hazardGridFileChangedSlot(QString motionDir, QString eventFile);
-    void eventTypeChangedSlot(QString eventType);
 
 private:
-    SimCenterAppWidget *buildingWidget;
-    SimCenterAppWidget *pipelineWidget;
+    SimCenterAppSelection *buildingWidget;
+    SimCenterAppSelection *gasWidget;
+    SimCenterAppSelection *wdnWidget;  
 };
 
 #endif // HazardToAssetWidget_H
