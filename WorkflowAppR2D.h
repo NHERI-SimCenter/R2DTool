@@ -109,7 +109,7 @@ public slots:
     void loadResults(void);
     void setUpForApplicationRun(QString &, QString &);
     void processResults(QString &dirResults);
-    int loadFile(const QString &filename);
+    int loadFile(QString &filename);
     void replyFinished(QNetworkReply*);
     void assetSelectionChanged(QString, bool);
 

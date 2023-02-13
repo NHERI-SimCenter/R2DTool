@@ -573,7 +573,6 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     if (theRVs->inputFromJSON(jsonObject) == false)
       return false;    
 
-    errorMessage("FMK - MODELING WIDGET");
     if (theModelingWidget->inputFromJSON(jsonObject) == false) {
       this->errorMessage("MOD failed to read app specific data");
       result = false;
@@ -811,7 +810,7 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
 }
 
 
-int WorkflowAppR2D::loadFile(const QString &fileName){
+int WorkflowAppR2D::loadFile(QString &fileName){
 
     // check file exists & set apps current dir of it does
     QFileInfo fileInfo(fileName);
