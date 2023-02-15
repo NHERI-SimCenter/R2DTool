@@ -56,8 +56,10 @@ UQWidget::UQWidget(QWidget *parent)
     pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("PipelineUQ"), this);
     pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget1);
 
-    SimCenterAppWidget *noneWidget2 = new NoneWidget(this);    
-    WDNWidget = new SimCenterAppSelection(QString("UQ Application"), QString("WaterDistributionNetwork"), this);
+    SimCenterAppWidget *noneWidget2 = new NoneWidget(this);
+
+    QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
+    WDNWidget = new SimCenterAppSelection(QString("UQ Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget2);    
     
 
