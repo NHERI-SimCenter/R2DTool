@@ -863,8 +863,16 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 
     QFileInfo theFile(pathToEventFile);
     if (theFile.exists()) {
-        jsonObject["eventFile"]=theFile.fileName();
-        jsonObject["eventFilePath"]=theFile.path();
+
+      QString fileName = theFile.fileName();
+      QString dirPath = theFile.path();            
+      QDir filePath = theFile.dir();
+      QString dirName = filePath.dirName();
+      filePath.cdUp();
+      QString dirdirPath = filePath.absolutePath();      
+      
+      jsonObject["eventFile"]=dirName + QString("/") + fileName;
+      jsonObject["eventFilePath"]=dirdirPath;
     } else {
         jsonObject["eventFile"]=pathToEventFile; // may be valid on others computer
         jsonObject["eventFilePath"]=QString("");

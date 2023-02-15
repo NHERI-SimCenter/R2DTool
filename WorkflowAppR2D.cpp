@@ -411,7 +411,8 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 
     jsonObjectTop.insert("Applications",apps);
     //  output regular data
-
+    jsonObjectTop["commonFileDir"]=commonFilePath;
+    
     theRunWidget->outputToJSON(jsonObjectTop);
     theAssetsWidget->outputToJSON(jsonObjectTop);
     theModelingWidget->outputToJSON(jsonObjectTop);
@@ -424,8 +425,6 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     theUQWidget->outputToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
 
-    jsonObjectTop["commonFileDir"]=commonFilePath;
-    
     QJsonObject defaultValues;
     defaultValues["workflowInput"]=QString("scInput.json");    
     //defaultValues["filenameAIM"]=QString("AIM.json");
@@ -795,13 +794,19 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
         return;
     }
 
+    /* FMK THINKING ABOUT THIS ONE ****************************
+    // rel paths in input file for loading later
+    QFileInfo fileInfo(inputFile);
+    SCUtils::ResolveRelativePaths(json, fileInfo.dir());
+    * ******************************************************* */
+    
     json["runDir"]=tmpDirectory;
     json["WorkflowType"]="Regional Simulation";
-
+    
     QJsonDocument doc(json);
     file.write(doc.toJson());
     file.close();
-
+    
     statusMessage("Setup done. Now starting application.");
 
     QApplication::processEvents();
