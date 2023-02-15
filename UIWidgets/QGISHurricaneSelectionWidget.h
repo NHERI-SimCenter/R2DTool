@@ -99,15 +99,15 @@ signals:
 private:
 
     std::unique_ptr<QGISHurricanePreprocessor> hurricaneImportTool;
-    QGISVisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
     QgsFeature selectedHurricaneFeature;
 
-    QgsVectorLayer* gridLayer;
-    QgsVectorLayer* landfallLayer;
-    QgsVectorLayer* terrainRoughnessLayer;
-    QgsVectorLayer* hurricaneTrackLayer;
-    QgsVectorLayer* hurricaneTrackPointsLayer;
+    QgsVectorLayer* gridLayer = nullptr;
+    QgsVectorLayer* landfallLayer = nullptr;
+    QgsVectorLayer* terrainRoughnessLayer = nullptr;
+    QgsVectorLayer* hurricaneTrackLayer = nullptr;
+    QgsVectorLayer* hurricaneTrackPointsLayer = nullptr;
 
 };
 

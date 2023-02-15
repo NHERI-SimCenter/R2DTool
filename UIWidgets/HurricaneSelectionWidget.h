@@ -148,9 +148,9 @@ protected:
     QPushButton* truncTrackClearButton = nullptr;
     QPushButton* browseTerrainButton = nullptr;
 
-    QLabel* selectedHurricaneName;
-    QLabel* selectedHurricaneSID;
-    QLabel* selectedHurricaneSeason;
+    QLabel* selectedHurricaneName = nullptr;
+    QLabel* selectedHurricaneSID = nullptr;
+    QLabel* selectedHurricaneSeason = nullptr;
 
     QVector<QStringList> gridData;
 
@@ -165,31 +165,31 @@ protected:
     std::unique_ptr<NodeHandle> userPoint;
 #endif
 
-    HurricaneParameterWidget* hurricaneParamsWidget;
+    HurricaneParameterWidget* hurricaneParamsWidget = nullptr;
 
-    QProgressBar* progressBar;
+    QProgressBar* progressBar = nullptr;
 
 protected:
 
-    QStackedWidget* theStackedWidget;
+    QStackedWidget* theStackedWidget = nullptr;
 
-    QString eventDatabaseFile;
+    QString eventDatabaseFile = nullptr;
 
-    QLabel* progressLabel;
-    QWidget* progressBarWidget;
-    QWidget* fileInputWidget;
-    SiteConfig* siteConfig;
-    SiteGrid* siteGrid;
-    QLineEdit* numIMsLineEdit;
-    QLineEdit* trackLineEdit;
-    QSpinBox* divLatSpinBox;
-    QSpinBox* divLonSpinBox;
+    QLabel* progressLabel = nullptr;
+    QWidget* progressBarWidget = nullptr;
+    QWidget* fileInputWidget = nullptr;
+    SiteConfig* siteConfig = nullptr;
+    SiteGrid* siteGrid = nullptr;
+    QLineEdit* numIMsLineEdit = nullptr;
+    QLineEdit* trackLineEdit = nullptr;
+    QSpinBox* divLatSpinBox = nullptr;
+    QSpinBox* divLonSpinBox = nullptr;
 
-    QStackedWidget* typeOfScenarioWidget;
-    QWidget* selectHurricaneWidget;
-    QWidget* specifyHurricaneWidget;
-    QPushButton* loadDbButton;
-    QLineEdit* terrainLineEdit;
+    QStackedWidget* typeOfScenarioWidget = nullptr;
+    QWidget* selectHurricaneWidget = nullptr;
+    QWidget* specifyHurricaneWidget = nullptr;
+    QPushButton* loadDbButton = nullptr;
+    QLineEdit* terrainLineEdit = nullptr;
 
     QMap<QString,WindFieldStation> stationMap;
 
