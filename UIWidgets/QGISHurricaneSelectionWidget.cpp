@@ -393,6 +393,11 @@ void QGISHurricaneSelectionWidget::handleLandfallPointSelected(void)
     if(!userPoint->isVisible())
         return;
 
+    if(landfallLayer)
+    {
+        this->clearLandfallFromMap();
+    }
+
     // Get the vector of grid nodes
     auto posNodeVec = userPoint->pos();
 

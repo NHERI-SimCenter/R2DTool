@@ -573,7 +573,6 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     if (theRVs->inputFromJSON(jsonObject) == false)
       return false;    
 
-    errorMessage("FMK - MODELING WIDGET");
     if (theModelingWidget->inputFromJSON(jsonObject) == false) {
       this->errorMessage("MOD failed to read app specific data");
       result = false;
