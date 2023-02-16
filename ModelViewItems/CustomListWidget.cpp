@@ -129,6 +129,17 @@ TreeItem* CustomListWidget::addItem(const QJsonObject& obj, TreeItem* parent)
 }
 
 
+bool CustomListWidget::updateItemJsonObject(const QString& itemID, const QJsonObject& obj)
+{
+    if(!modelsMap.contains(itemID))
+        return false;
+
+    modelsMap.insert(itemID,obj);
+
+    return true;
+}
+
+
 TreeItem* CustomListWidget::addItem(const QString item, TreeItem* parent)
 {
     //    auto num = treeModel->rowCount();

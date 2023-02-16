@@ -62,6 +62,8 @@ public:
 
     QJsonObject getItemJsonObject(const QString& itemID);
 
+    bool updateItemJsonObject(const QString& itemID, const QJsonObject& obj);
+
     int getNumberOfItems();
 
     TreeItem* getCurrentItem();
