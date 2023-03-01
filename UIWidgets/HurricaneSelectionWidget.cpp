@@ -843,27 +843,14 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
 
         stormObj.insert("Name",hurrName);
         stormObj.insert("Year",hurrSeason);
-
         stormObj.insert("Track", pathTrackFile);
     }
     else if(currHurrType == specifyHurricaneWidget)
     {
         scenarioObj.insert("Generator", "Simulation");
-
         stormObj.insert("Track", pathTrackFile);
 
-        QJsonObject landfallObj = hurricaneParamsWidget->getLandfallParamsJson();
-
-        if(landfallObj.empty())
-        {
-            this->statusMessage("Some landfall parameters are not specified");
-            return;
-        }
-
-        stormObj.insert("Landfall",landfallObj);
-
         auto pathTerrainFile = terrainLineEdit->text();
-
         if(pathTerrainFile.isEmpty())
         {
             this->statusMessage("No terrain.geojson file provided. Using default values");
@@ -871,6 +858,17 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
         }
     }
 
+    // fmk - moving landfall outside of SimulationGenerator, uses whatever is in input
+    QJsonObject landfallObj = hurricaneParamsWidget->getLandfallParamsJson();
+    if(landfallObj.empty())
+      {
+	this->statusMessage("Some landfall parameters are not specified");
+	return;
+      }
+    stormObj.insert("Landfall",landfallObj);
+	
+
+    
     // stormObject.insert("TrackSimu",);
 
     scenarioObj.insert("Storm",stormObj);
