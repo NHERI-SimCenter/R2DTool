@@ -202,13 +202,18 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
     IMListWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     IMListWidget->setFixedSize(100,50);
 
-    QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM) to visualize");
+    QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM):");
 
     QHBoxLayout* IMLayout = new QHBoxLayout();
 
     IMLayout->addWidget(IMLabel);
     IMLayout->addWidget(IMListWidget);
     IMLayout->addStretch();
+
+#ifdef OpenSRA
+    IMLabel->setHidden(true);
+    IMListWidget->setHidden(true);
+#endif
 
     auto vspacer3 = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
     inputLayout->addWidget(selectComponentsText,0,0,1,3);
