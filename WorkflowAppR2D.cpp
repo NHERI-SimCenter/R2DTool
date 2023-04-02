@@ -689,13 +689,16 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
         destinationDirectory.mkpath(tmpDirectory);
 
 
-    qDebug() << "WorkflowAppR2D is changinging subDir to input_data";
+    //qDebug() << "WorkflowAppR2D is changinging subDir to input_data";
     subDir = "input_data";
 
     QString templateDirectory  = destinationDirectory.absoluteFilePath(subDir);
     destinationDirectory.mkpath(templateDirectory);
 
-    commonFilePath = templateDirectory;
+    commonFilePath = subDir;
+    
+    // FMK
+    
     // copyPath(path, tmpDirectory, false);
     //    theSIM->copyFiles(templateDirectory);
     //    theEventSelection->copyFiles(templateDirectory);
