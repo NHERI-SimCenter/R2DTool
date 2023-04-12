@@ -80,7 +80,6 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 
 #ifdef Q_GIS
     theRasterHazardWidget = new RasterHazardInputWidget(theVisualizationWidget,this);
-    theOpenQuakeSelectionWidget = new OpenQuakeSelectionWidget(theVisualizationWidget);
     theGISHazardWidget = new GISHazardInputWidget(theVisualizationWidget,this);
 #endif
 
@@ -91,7 +90,6 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 
     this->addComponent("User Specified Hurricane", "UserInputHurricane", theUserInputHurricaneWidget);
     this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
-    this->addComponent("OpenQuake Selection Widget", "OQSelectionWidget", theOpenQuakeSelectionWidget);
     this->addComponent("Raster Defined Hazard", "UserInputRasterHazard", theRasterHazardWidget);
     this->addComponent("GIS Defined Hazard", "UserInputGISHazard", theGISHazardWidget);
 

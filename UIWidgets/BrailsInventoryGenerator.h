@@ -1,5 +1,5 @@
-#ifndef HAZARDS_WIDGET_H
-#define HAZARDS_WIDGET_H
+#ifndef BrailsInventoryGenerator_H
+#define BrailsInventoryGenerator_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,52 +36,76 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
-#include "SimCenterAppSelection.h"
+#include "SimCenterAppWidget.h"
 
-class GMWidget;
-class ShakeMapWidget;
-class HurricaneSelectionWidget;
-class UserInputHurricaneWidget;
-class UserInputGMWidget;
-class RegionalSiteResponseWidget;
+
+class SimCenterMapcanvasWidget;
+class QGISVisualizationWidget;
 class VisualizationWidget;
 
-class QGroupBox;
+class QgsMapLayer;
+class QgsVectorLayer;
+class QgsLayerTreeGroup;
+class QgsMapToolExtent;
+class QgsRectangle;
+class QDomNodeList;
+class QStackedWidget;
+class QProgressBar;
+class QLabel;
+class QLineEdit;
 
-class HazardsWidget : public  SimCenterAppSelection
+class BrailsInventoryGenerator : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~HazardsWidget();
+    BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~BrailsInventoryGenerator();
 
-#ifdef ARC_GIS
-    void setCurrentlyViewable(bool status);
-#endif
+    QStackedWidget* getBrailsInventoryGenerator(void);
+
+
+public slots:
+    void clear(void);
 
 signals:
-    void gridFileChangedSignal(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
+    void loadingComplete(const bool value);
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+
+protected:
+
+    void showEvent(QShowEvent *e);
 
 private slots:
+    void clearSelection(void);
+    void chooseExportFileDialog(void);
 
-    void shakeMapLoadingFinished(const bool value);
-    void gridFileChangedSlot(QString motionDir, QString eventFile);
-    void eventTypeChangedSlot(QString eventType);
+    void handleRectangleSelect(void);
+
+    void handleSelectionDone(void);
+
+    void selectRectangle( const QgsRectangle &extent );
 
 private:
 
-    VisualizationWidget* theVisualizationWidget;
+    QWidget* fileInputWidget = nullptr;
+    QProgressBar* progressBar = nullptr;
+    QLabel* progressLabel = nullptr;
+    QWidget* progressBarWidget = nullptr;
+    QStackedWidget* theStackedWidget = nullptr;
+    QgsMapToolExtent* extentTool = nullptr;
+    QLineEdit* exportPathLineEdit = nullptr;
 
-    ShakeMapWidget* theShakeMapWidget = nullptr;
-    UserInputGMWidget* theUserInputGMWidget = nullptr;
-    RegionalSiteResponseWidget* theRegionalSiteResponseWidget = nullptr;
-    UserInputHurricaneWidget* theUserInputHurricaneWidget = nullptr;
-    SimCenterAppWidget* theRasterHazardWidget = nullptr;
-    SimCenterAppWidget* theGISHazardWidget = nullptr;
+    QgsRectangle rectToLatLonCoordinates(QgsRectangle rect);
+
+    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    // Gives the bottom-left and top-right points in string format
+    QString boundingPoints;
 };
 
-#endif // HAZARDS_WIDGET_H
+#endif // BrailsInventoryGenerator_H
