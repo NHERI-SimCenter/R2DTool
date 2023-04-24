@@ -230,7 +230,7 @@ void WorkflowAppR2D::initialize(void)
     toolsMenu->addAction("&Hurricane Scenario Simulation", theToolDialog, &ToolDialog::handleShowHurricaneSimTool);
     toolsMenu->addAction("&Census Data Allocation", theToolDialog, &ToolDialog::handleShowCensusAppTool);
     toolsMenu->addAction("&OpenQuake Source Selection", theToolDialog, &ToolDialog::handleShowOpenquakeSelectionTool);
-    toolsMenu->addAction("&BRAILS", theToolDialog, &ToolDialog::handleBrailsInventoryTool);
+    // toolsMenu->addAction("&BRAILS", theToolDialog, &ToolDialog::handleBrailsInventoryTool);
     menuBar->insertMenu(menuAfter, toolsMenu);
 
 
