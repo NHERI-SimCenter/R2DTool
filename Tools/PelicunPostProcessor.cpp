@@ -310,14 +310,14 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
     QStringList IMresultsSheet;
 
     for(auto&& it : existingCSVFiles)
-    {
-        if(it.startsWith("DM_"))
+      {
+        if(it.startsWith("DM."))
             DMResultsSheet = it;
-        else if(it.startsWith("DV_"))
+        else if(it.startsWith("DV."))
             DVResultsSheet = it;
-        else if(it.startsWith("EDP_"))
+        else if(it.startsWith("EDP."))
             EDPreultsSheet = it;
-        else if(it.startsWith("IM_"))
+        else if(it.startsWith("IM."))
             IMresultsSheet.append(it);
     }
 

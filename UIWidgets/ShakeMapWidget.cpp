@@ -202,13 +202,18 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
     IMListWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     IMListWidget->setFixedSize(100,50);
 
-    QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM) to visualize");
+    QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM):");
 
     QHBoxLayout* IMLayout = new QHBoxLayout();
 
     IMLayout->addWidget(IMLabel);
     IMLayout->addWidget(IMListWidget);
     IMLayout->addStretch();
+
+#ifdef OpenSRA
+    IMLabel->setHidden(true);
+    IMListWidget->setHidden(true);
+#endif
 
     auto vspacer3 = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding);
     inputLayout->addWidget(selectComponentsText,0,0,1,3);
@@ -382,31 +387,33 @@ int ShakeMapWidget::loadDataFromDirectory(const QString& dir)
         auto inFilePath = dir + QDir::separator() + filename;
 
         // Create the XML grid
-//        if(filename.compare("grid.xml") == 0) // XML grid
-//        {
-//            progressLabel->setText("Loading Grid Layer");
-//            this->statusMessage("Loading Grid Layer");
-//            progressLabel->setVisible(true);
-//            QApplication::processEvents();
+#ifndef OpenSRA
+        if(filename.compare("grid.xml") == 0) // XML grid
+        {
+            progressLabel->setText("Loading Grid Layer");
+            this->statusMessage("Loading Grid Layer");
+            progressLabel->setVisible(true);
+            QApplication::processEvents();
 
-//            XMLAdaptor XMLImportAdaptor;
+            XMLAdaptor XMLImportAdaptor;
 
-//            QString errMess;
-//            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, qGsVisWidget);
+            QString errMess;
+            auto XMLlayer = XMLImportAdaptor.parseXMLFile(inFilePath, errMess, qGsVisWidget);
 
-//            if(XMLlayer == nullptr)
-//            {
-//                this->errorMessage(errMess);
-//                return -1;
-//            }
+            if(XMLlayer == nullptr)
+            {
+                this->errorMessage(errMess);
+                return -1;
+            }
 
-//            XMLlayer->setName("Grid");
+            XMLlayer->setName("Grid");
 
-//            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
+            inputShakeMap->stationList = XMLImportAdaptor.getStationList();
 
-//            inputShakeMap->gridLayer = XMLlayer;
-//            layerGroup.push_back(XMLlayer);
-//        }
+            inputShakeMap->gridLayer = XMLlayer;
+            layerGroup.push_back(XMLlayer);
+        }
+#endif
 
         if(filename.compare("cont_pga.json") == 0) // PGA contours layer
         {
@@ -861,8 +868,16 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
 
     QFileInfo theFile(pathToEventFile);
     if (theFile.exists()) {
-        jsonObject["eventFile"]=theFile.fileName();
-        jsonObject["eventFilePath"]=theFile.path();
+
+      QString fileName = theFile.fileName();
+      QString dirPath = theFile.path();            
+      QDir filePath = theFile.dir();
+      QString dirName = filePath.dirName();
+      filePath.cdUp();
+      QString dirdirPath = filePath.absolutePath();      
+      
+      jsonObject["eventFile"]=dirName + QString("/") + fileName;
+      jsonObject["eventFilePath"]=dirdirPath;
     } else {
         jsonObject["eventFile"]=pathToEventFile; // may be valid on others computer
         jsonObject["eventFilePath"]=QString("");

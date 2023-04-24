@@ -157,6 +157,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/RegionalSiteResponseWidget.cpp \
             $$PWD/UIWidgets/HurricaneSelectionWidget.cpp \
             $$PWD/UIWidgets/OpenQuakeSelectionWidget.cpp \
+            $$PWD/UIWidgets/BrailsInventoryGenerator.cpp \
             $$PWD/UIWidgets/UserInputHurricaneWidget.cpp \
             $$PWD/GraphicElements/NodeHandle.cpp \
             $$PWD/GraphicElements/RectangleGrid.cpp \
@@ -271,6 +272,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/RegionalSiteResponseWidget.h \
             $$PWD/UIWidgets/HurricaneSelectionWidget.h \
             $$PWD/UIWidgets/OpenQuakeSelectionWidget.h \
+            $$PWD/UIWidgets/BrailsInventoryGenerator.h \
             $$PWD/UIWidgets/UserInputHurricaneWidget.h \
             $$PWD/UIWidgets/HurricaneObject.h \
             $$PWD/ModelViewItems/CustomListWidget.h \

@@ -6,6 +6,8 @@
 class WorkflowAppWidget;
 class QVBoxLayout;
 class QGISVisualizationWidget;
+class OpenQuakeSelectionWidget;
+class BrailsInventoryGenerator;
 class HousingUnitAllocationWidget;
 class QGISHurricaneSelectionWidget;
 class GMWidget;
@@ -26,6 +28,8 @@ public slots:
      void handleShowCensusAppTool(void);
      void handleShowEQGMSimTool(void);
      void handleShowHurricaneSimTool(void);
+     void handleShowOpenquakeSelectionTool(void);
+     void handleBrailsInventoryTool(void);
 
 private:
 
@@ -37,6 +41,8 @@ private:
     HousingUnitAllocationWidget* housingUnitAllocation = nullptr;
     QGISHurricaneSelectionWidget* theHurricaneSimWidget = nullptr;
     GMWidget* theEQSSWidget = nullptr;
+    OpenQuakeSelectionWidget* theOpenQuakeSelectionWidget = nullptr;
+    BrailsInventoryGenerator* theBrailsInventoryGeneratorWidget = nullptr;
 
 };
 
