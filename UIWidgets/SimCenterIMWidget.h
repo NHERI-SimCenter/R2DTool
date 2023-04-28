@@ -50,7 +50,7 @@ using EDPdict = QMap<QString, QString>;
 class SimCenterIMWidget : public QGroupBox, public JsonSerializable
 {
 public:
-    SimCenterIMWidget(QString title = "Intensity Measurses of Event Input File",QWidget* parent = nullptr);
+    SimCenterIMWidget(QString title = "Intensity Measures of Event File",QWidget* parent = nullptr);
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
