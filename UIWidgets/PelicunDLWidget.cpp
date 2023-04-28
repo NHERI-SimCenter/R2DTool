@@ -274,35 +274,40 @@ bool PelicunDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         if (appData.contains("custom_fragility_dir"))
         {
-            auto pathToScript = appData["custom_fragility_dir"].toString();
+            QString fragilityDir = appData["custom_fragility_dir"].toString();
 
             QDir fileInfo;
 
-            if (fileInfo.exists(pathToScript))
+            if (fileInfo.exists(fragilityDir))
             {
-                fragilityDirLineEdit->setText(pathToScript);
+                fragilityDirLineEdit->setText(fragilityDir);
             }
             else
             {
                 // Try the current path
                 QString currPath = QDir::currentPath();
 
-                auto pathToComponentInfoFile = currPath + QDir::separator() + pathToScript;
+                QString fullPathToFragilityDir = currPath + QDir::separator() + fragilityDir;
 
-                if (fileInfo.exists(pathToComponentInfoFile))
+                if (fileInfo.exists(fullPathToFragilityDir))
                 {
-                    fragilityDirLineEdit->setText(pathToComponentInfoFile);
+                    fragilityDirLineEdit->setText(fullPathToFragilityDir);
                 }
                 else
                 {
                     // adam .. adam .. adam
-                    pathToComponentInfoFile = currPath + QDir::separator()
-                            + "input_data" + QDir::separator() + pathToScript;
+                    fullPathToFragilityDir = currPath + QDir::separator()
+                            + "input_data" + QDir::separator() + fragilityDir;
 
-                    if (fileInfo.exists(pathToComponentInfoFile))
-                        fragilityDirLineEdit->setText(pathToComponentInfoFile);
-                    else
-                        this->infoMessage("Warning: the script file "+pathToScript+ " does not exist");
+                    if (fileInfo.exists(fullPathToFragilityDir))
+                        fragilityDirLineEdit->setText(fullPathToFragilityDir);
+                    else {
+                        errorMessage("Warning: the fargility dir does not seem to exist: " + fragilityDir);
+                        errorMessage("Warning: the fargility dir does not seem to exist: " + fragilityDir);
+			errorMessage("tried: " + fullPathToFragilityDir);
+			fullPathToFragilityDir = currPath + QDir::separator() + fragilityDir;
+			errorMessage("and: " + fullPathToFragilityDir);			
+		    }
                 }
             }
         }
