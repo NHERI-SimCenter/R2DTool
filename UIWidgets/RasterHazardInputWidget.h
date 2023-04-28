@@ -51,7 +51,7 @@ class QGISVisualizationWidget;
 class QgsRasterDataProvider;
 class QgsProjectionSelectionWidget;
 class QgsRasterLayer;
-class SimCenterUnitsWidget;
+class SimCenterIMWidget;
 class CRSSelectionWidget;
 
 class QLineEdit;
@@ -97,19 +97,17 @@ private:
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
     QString eventFile;
-    QString pathToEventFile;
-
-    QStringList bandNames;
-
     QString rasterFilePath;
     QLineEdit* rasterPathLineEdit = nullptr;
+
+    QString pathToEventFile;
 
     QWidget* fileInputWidget = nullptr;
 
     QgsRasterDataProvider* dataProvider = nullptr;
     QgsRasterLayer* rasterlayer = nullptr;
 
-    SimCenterUnitsWidget* unitsWidget = nullptr;
+    SimCenterIMWidget* theIMs = nullptr;  
     CRSSelectionWidget* crsSelectorWidget = nullptr;
     QComboBox* eventTypeCombo = nullptr;
 

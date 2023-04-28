@@ -37,15 +37,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterIMWidget.h"
+#include "SimCenterUnitsCombo.h"
 #include "Utils/ProgramOutputDialog.h"
 
 #include <QGridLayout>
 #include <QLabel>
 #include <QComboBox>
+#include <QJsonArray>
 
-SimCenterIMWidget::SimCenterIMWidget(QString title, QWidget* parent) : QGroupBox(title, parent)
+SimCenterIMWidget::SimCenterIMWidget(QString title, QWidget* parent)
+    : QGroupBox(title, parent)
 {
     mainLayout = new QGridLayout(this);
+    numIMs = 0;
 
     // Create the dictionaries containing the EDPs according to each hazard
     EDPdict EQ;
@@ -83,6 +87,7 @@ SimCenterIMWidget::SimCenterIMWidget(QString title, QWidget* parent) : QGroupBox
 
 void SimCenterIMWidget::clear(void)
 {
+    // qDebug() << "Layout count after clearing it: " << mainLayout->count();
     QLayoutItem *child;
     while ((child = mainLayout->takeAt(0)) != nullptr)
     {
@@ -93,45 +98,43 @@ void SimCenterIMWidget::clear(void)
 
         delete child;
     }
+    //qDebug() << "Layout count after clearing it: " << mainLayout->count();
+    //qDebug() << "Layout count after clearing it numROWS: " << mainLayout->rowCount() << " " << mainLayout->columnCount();
+    numIMs = 0;
 }
 
 
 bool SimCenterIMWidget::outputToJSON(QJsonObject &jsonObject)
 {
-    auto count = mainLayout->rowCount();
+    // we have to put into 2 objects as units is not an array and if JsonObject the bands could get interleaved
+    QJsonObject unitObject; // im and unit
+    QJsonArray imArray;     // ordered array of im
+    
+    for(int i = 0; i<numIMs; ++i) {
+        QLayoutItem *imItem = mainLayout->itemAtPosition(i,1);
+        QLayoutItem *unitItem = mainLayout->itemAtPosition(i,2);
 
-    if(count<1)
-        return false;
+        QComboBox *imWidget = dynamic_cast<QComboBox*>(imItem->widget());
+        SimCenterUnitsCombo *unitWidget = dynamic_cast<SimCenterUnitsCombo*>(unitItem->widget());
 
-    QJsonObject imsObj;
+        if (imWidget && unitWidget) {
 
-    auto numItems = mainLayout->count();
-    for(int i = 0; i<numItems; ++i)
-    {
-        QLayoutItem *child = mainLayout->itemAt(i);
+            QString currIM = imWidget->currentData().toString();
 
-        auto widget = dynamic_cast<QComboBox*>(child->widget());
+            QString currUnit = unitWidget->getCurrentUnitString();
 
-        if (widget)
-        {
-            auto currText = widget->currentText();
-
-            auto name = widget->objectName();
-
-            // Return false if IM undefined
-            if(currText.compare("N/A") == 0)
-            {
-                ProgramOutputDialog::getInstance()->appendInfoMessage("Note: attribute "+name+" is not linked to an intensity measure.");
+            if(currUnit.compare("UNDEFINED") == 0) {
+                ProgramOutputDialog::getInstance()->appendErrorMessage("Warning unit undefined! Please set the unit");
                 continue;
             }
 
-            auto currData = widget->currentData().toString();
-
-            imsObj[name] = currData;
+            unitObject[currIM] = currUnit;
+            imArray.append(currIM);
         }
     }
 
-    jsonObject["intensityMeasures"] = imsObj;
+    jsonObject["intensityMeasures"] = imArray;
+    jsonObject["units"]=unitObject;
 
     return true;
 }
@@ -139,28 +142,66 @@ bool SimCenterIMWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool SimCenterIMWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    auto appsObj = jsonObject.value("intensityMeasures").toObject();
+    this->clear();
 
-    if(appsObj.isEmpty())
+    QJsonArray imArray;
+    QJsonObject  unitsObject;
+
+    if (jsonObject.contains("intensityMeasures")) {
+        QJsonValue theValue = jsonObject["intensityMeasures"];
+        if (theValue.isArray())
+            imArray = theValue.toArray();
+    }
+
+    if (jsonObject.contains("units")) {
+        QJsonValue theValue = jsonObject["units"];
+        if (theValue.isObject())
+            unitsObject = theValue.toObject();
+    }
+
+    if(imArray.isEmpty())
         return false;
 
-    foreach(const QString& key, appsObj.keys())
-    {
-        auto im = appsObj.value(key).toString();
+    for (auto im : imArray) {
+        // get im text and unit text
+        QString imString = im.toString();
+        QString unitString = unitsObject[imString].toString();
 
-        auto imCombo = this->findChild(key);
+        // create the combo boxes
+        QComboBox* IMCombo = new QComboBox(this);
+        SimCenterUnitsCombo *unitsCombo = new SimCenterUnitsCombo(SimCenter::Unit::ALL,"unit", this);
 
-        if(imCombo == nullptr)
-            return false;
-        else
-        {
-            auto indx = imCombo->findData(im);
+        IMCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-            if(indx == -1)
-                return false;
+        if (hazardDict.contains(hazard)) {
+            EDPdict edpd = hazardDict[hazard];
+            auto keys = edpd.keys();
+            auto values = edpd.values();
+            qDebug() << keys;
+            for (int j=0; j<keys.size(); ++j) {
+                auto key = keys.at(j);
+                auto value = values.at(j);
 
-            imCombo->setCurrentIndex(indx);
+                IMCombo->addItem(value,key);
+            }
         }
+
+        IMCombo->addItem("N/A",QVariant());
+
+        // set the combo boxes correct values from the input
+        unitsCombo->setCurrentUnitString(unitString);
+
+        auto indx = IMCombo->findData(imString);
+        if(indx != -1)
+            IMCombo->setCurrentIndex(indx);
+        else
+            qDebug() << "ERROR: Hazard Intensity Measue Not Found:" <<  imString;
+
+        QString IMLabel("Layer " + QString::number(numIMs+1));
+        mainLayout->addWidget(new QLabel(IMLabel),numIMs,0,1,1);
+        mainLayout->addWidget(IMCombo,numIMs,1,1,1);
+        mainLayout->addWidget(unitsCombo,numIMs,2,1,1);
+        numIMs++;
     }
 
     return true;
@@ -175,29 +216,42 @@ void SimCenterIMWidget::reset(void)
 
 void SimCenterIMWidget::addNewIMItem(const QString& labelText, const QString& IMName)
 {
-
-    auto i = this->getNumberOfIMs();
-
     QComboBox* IMCombo = new QComboBox(this);
     IMCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-    IMCombo->addItem("N/A - Select a hazard",QVariant());
 
-    IMCombo->setObjectName(IMName);
+    if (hazardDict.contains(hazard)) {
+        EDPdict edpd = hazardDict[hazard];
+        auto keys = edpd.keys();
+        auto values = edpd.values();
+
+        for (int j=0; j<keys.size(); ++j) {
+            auto key = keys.at(j);
+            auto value = values.at(j);
+
+            IMCombo->addItem(value,key);
+        }
+    }
+    
+    IMCombo->addItem("N/A",QVariant());
+    IMCombo->setCurrentText("N/A");
+    IMCombo->setObjectName(IMName);    
+
+    SimCenterUnitsCombo *unitsCombo = new SimCenterUnitsCombo(SimCenter::Unit::ALL,"unit", this);
 
     QLabel* IMLabel = new QLabel(labelText);
 
-    mainLayout->addWidget(IMLabel,i,0,1,1);
-    mainLayout->addWidget(IMCombo,i,1,1,1);
-
+    mainLayout->addWidget(IMLabel,numIMs,0,1,1);
+    mainLayout->addWidget(IMCombo,numIMs,1,1,1);
+    mainLayout->addWidget(unitsCombo,numIMs,2,1,1);
+    numIMs++;
 }
-
 
 QComboBox* SimCenterIMWidget::findChild(const QString& name)
 {
-    auto numItems = mainLayout->count();
+    auto numItems = numIMs;
     for(int i = 0; i<numItems; ++i)
     {
-        QLayoutItem *child = mainLayout->itemAt(i);
+      QLayoutItem *child = mainLayout->itemAtPosition(i,1);
 
         auto widget = dynamic_cast<QComboBox*>(child->widget());
 
@@ -216,7 +270,7 @@ QComboBox* SimCenterIMWidget::findChild(const QString& name)
 
 int SimCenterIMWidget::getNumberOfIMs(void)
 {
-    return mainLayout->count()/mainLayout->columnCount();
+    return numIMs; // mainLayout->rowCount();
 }
 
 
@@ -240,14 +294,25 @@ int SimCenterIMWidget::setIM(const QString& parameterName, const QString& IM)
     return 0;
 }
 
+QStringList
+SimCenterIMWidget::getSelectedIMs() {
 
+    QStringList selectedParam;
+    for(int i = 0; i<numIMs; ++i) {
+        QLayoutItem *imItem = mainLayout->itemAtPosition(i,1);
+        QComboBox *imWidget = dynamic_cast<QComboBox*>(imItem->widget());    
+	QString currIM = imWidget->currentData().toString();	
+	selectedParam.append(currIM);
+    }
+    return selectedParam;
+}
+
+/*
 QList<QString> SimCenterIMWidget::getParameterNames()
 {
     QList<QString> paramList;
-    auto numItems = mainLayout->count();
-    for(int i = 0; i<numItems; ++i)
-    {
-        QLayoutItem *child = mainLayout->itemAt(i);
+    for(int i = 0; i<numIMs; ++i) {
+      QLayoutItem *child = mainLayout->itemAtPosition(i,1);
 
         auto widget = dynamic_cast<QComboBox*>(child->widget());
         if (widget)
@@ -259,28 +324,28 @@ QList<QString> SimCenterIMWidget::getParameterNames()
 
     return paramList;
 }
+*/
 
-
-void SimCenterIMWidget::handleHazardChange(const QString hazard)
-{
-    if (!hazardDict.contains(hazard))
+void SimCenterIMWidget::handleHazardChange(const QString hazardType)
+{    
+    if (!hazardDict.contains(hazardType))
     {
         qDebug()<<"Error, hazard not supported "<<hazard;
         return;
     }
 
+    hazard = hazardType;
     EDPdict edpd = hazardDict[hazard];
 
     auto keys = edpd.keys();
     auto values = edpd.values();
-    auto numItems = mainLayout->count();
 
     // Swap out the
-    for(int i = 0; i<numItems; ++i)
+    for(int i = 0; i<numIMs; ++i)
     {
-        QLayoutItem *child = mainLayout->itemAt(i);
-
-        QComboBox* widget = dynamic_cast<QComboBox*>(child->widget());
+      QLayoutItem *child = mainLayout->itemAtPosition(i,1);
+      
+      QComboBox* widget = dynamic_cast<QComboBox*>(child->widget());
 
         if (widget)
         {
@@ -299,5 +364,4 @@ void SimCenterIMWidget::handleHazardChange(const QString hazard)
             widget->setCurrentText("N/A");
         }
     }
-
 }

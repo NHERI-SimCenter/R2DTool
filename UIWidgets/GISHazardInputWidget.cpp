@@ -41,8 +41,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GISHazardInputWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
-#include "SimCenterUnitsCombo.h"
-#include "SimCenterUnitsWidget.h"
+//#include "SimCenterUnitsCombo.h"
+//#include "SimCenterUnitsWidget.h"
 #include "SimCenterIMWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentDatabase.h"
@@ -120,19 +120,7 @@ bool GISHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
     appData["pathToSource"]=GISFile.path();
     crsSelectorWidget->outputAppDataToJSON(appData);
 
-    appData["eventClassification"] = eventTypeCombo->currentText();
-
-    QJsonObject imObj;
-    if(!IMsWidget->outputToJSON(imObj))
-    {
-        this->errorMessage("Error output to json");
-        return false;
-    }
-
-    appData["attributes"] = imObj["intensityMeasures"];
-
     jsonObject["ApplicationData"]=appData;
-
 
     return true;
 }
@@ -140,43 +128,30 @@ bool GISHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
 bool GISHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 {
+  /*
+    if (theFile.exists()) {
+        jsonObj["eventFile"]= theFile.fileName();
+        jsonObj["eventFilePath"]=theFile.path();
+    } else {
+        jsonObj["eventFile"]=eventFile;
+        jsonObj["eventFilePath"]=QString("");
+    }
+  */
+  
+  return theIMs->outputToJSON(jsonObj);
 
-//    QFileInfo theFile(pathToEventFile);
-
-//    if (theFile.exists()) {
-//        jsonObj["eventFile"]= theFile.fileName();
-//        jsonObj["eventFilePath"]=theFile.path();
-//    } else {
-//        jsonObj["eventFile"]=eventFile;
-//        jsonObj["eventFilePath"]=QString("");
-//    }
-
-    auto res = unitsWidget->outputToJSON(jsonObj);
-
-    if(!res)
-        this->errorMessage("Could not get the units in 'GIS Defined Hazard'");
-
-    return res;
 }
 
 
 bool GISHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     // Set the units
-    auto res = unitsWidget->inputFromJSON(jsonObject);
+    bool res = theIMs->inputFromJSON(jsonObject);
 
     // If setting of units failed, provide default units and issue a warning
-    if(!res)
-    {
-        auto paramNames = unitsWidget->getParameterNames();
-
-        this->infoMessage("Warning \\!/: Failed to find/import the units in 'GIS Defined Hazard' widget. Please set the units for the following parameters:");
-
-        for(auto&& it : paramNames)
-            this->infoMessage("For parameter: "+it);
-
+    if(!res) {
+      errorMessage("GIS Hazard INput - failed to load intensity measures");
     }
-
 
     return res;
 }
@@ -234,7 +209,6 @@ bool GISHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             eventTypeCombo->setCurrentIndex(eventIndex);
         }
 
-
         auto res = this->loadGISFile();
 
         if(res !=0)
@@ -243,53 +217,8 @@ bool GISHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             return false;
         }
 
-        auto attributeArray = appData["attributes"].toObject();
-
-        auto layerAttributes = vectorLayer->attributeList();
-
-        auto keys = attributeArray.keys();
-        for(int i = 0; i<keys.size(); ++i)
-        {
-            // Note that band numbers start from 1 and not 0!
-            auto attrName = keys.at(i);
-
-            auto unitStr = attributeArray.value(attrName).toString();
-
-            auto labelName = "Attribute: " + attrName;
-
-            attributeNames.append(unitStr);
-
-            unitsWidget->addNewUnitItem(unitStr, labelName);
-        }
-
-
-        for(int i = 0; i<layerAttributes.size(); ++i)
-        {
-            // Note that band numbers start from 1 and not 0!
-            auto attrIdx = layerAttributes.at(i);
-
-            auto attrName = vectorLayer->attributeDisplayName(attrIdx);
-
-            auto labelName = "Attribute: " + attrName;
-
-            IMsWidget->addNewIMItem(labelName,attrName);
-        }
-
-
         // Set the hazard type
-        IMsWidget->handleHazardChange(eventType);
-
-        // Set the IM type
-
-        QJsonObject imObject;
-        imObject["intensityMeasures"]=attributeArray;
-
-        if(!IMsWidget->inputFromJSON(imObject))
-        {
-            this->errorMessage("Error setting the attributes");
-            return false;
-        }
-
+        theIMs->handleHazardChange(eventType);
 
         // Set the CRS
         auto layerCrs = vectorLayer->crs();
@@ -331,21 +260,21 @@ QWidget* GISHazardInputWidget::getGISHazardInputWidget(void)
     eventTypeCombo->addItem("Tsunami","Tsunami");
     eventTypeCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    unitsWidget = new SimCenterUnitsWidget();
+    // unitsWidget = new SimCenterUnitsWidget();
 
-    IMsWidget = new SimCenterIMWidget();
+    theIMs = new SimCenterIMWidget();
 
-    connect(eventTypeCombo,&QComboBox::currentTextChanged,IMsWidget,&SimCenterIMWidget::handleHazardChange);
+    connect(eventTypeCombo,&QComboBox::currentTextChanged,theIMs,&SimCenterIMWidget::handleHazardChange);
 
     fileLayout->addWidget(eventTypeLabel, 1,0);
     fileLayout->addWidget(eventTypeCombo, 1,1,1,2);
 
     fileLayout->addWidget(crsSelectorWidget,2,0,1,3);
 
-    fileLayout->addWidget(unitsWidget, 3,0,1,3);
-    fileLayout->addWidget(IMsWidget, 4,0,1,3);
+    // fileLayout->addWidget(unitsWidget, 3,0,1,3);
+    fileLayout->addWidget(theIMs, 3,0,1,3);
 
-    fileLayout->setRowStretch(5,1);
+    fileLayout->setRowStretch(4,1);
 
     return fileInputWidget;
 }
@@ -365,7 +294,7 @@ void GISHazardInputWidget::chooseEventFileDialog(void)
     GISFilePath = newEventFile;
     GISPathLineEdit->setText(GISFilePath);
 
-//    eventFile.clear();
+    //    eventFile.clear();
 
     auto res = this->loadGISFile();
 
@@ -377,8 +306,8 @@ void GISHazardInputWidget::chooseEventFileDialog(void)
 
     auto attributeList = vectorLayer->fields();
 
-    unitsWidget->clear();
-    IMsWidget->clear();
+    // unitsWidget->clear();
+    theIMs->clear();
 
     for(int i = 0; i<attributeList.size(); ++i)
     {
@@ -387,17 +316,17 @@ void GISHazardInputWidget::chooseEventFileDialog(void)
 
         attributeNames.append(attributeName);
 
-        auto labelName = "Attribute: " + attributeName;
+        // auto labelName = "Attribute: " + attributeName;
 
-        unitsWidget->addNewUnitItem(attributeName,labelName);
-        IMsWidget->addNewIMItem(labelName,attributeName);
+        // unitsWidget->addNewUnitItem(attributeName,labelName);
+        theIMs->addNewIMItem(attributeName, "drivel");
     }
 
     auto layerCrs = vectorLayer->crs();
     crsSelectorWidget->setCRS(layerCrs);
 
     auto hazType = eventTypeCombo->currentText();
-    IMsWidget->handleHazardChange(hazType);
+    theIMs->handleHazardChange(hazType);
 
     return;
 }
@@ -409,15 +338,10 @@ void GISHazardInputWidget::clear(void)
     GISPathLineEdit->clear();
     attributeNames.clear();
 
-//    eventFile.clear();
-//    pathToEventFile.clear();
-
     crsSelectorWidget->clear();
 
     eventTypeCombo->setCurrentIndex(0);
-
-    unitsWidget->clear();
-    IMsWidget->clear();
+    theIMs->clear();
 }
 
 
