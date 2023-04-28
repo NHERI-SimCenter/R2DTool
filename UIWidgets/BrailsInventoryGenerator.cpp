@@ -39,38 +39,63 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "BrailsInventoryGenerator.h"
 #include "QGISVisualizationWidget.h"
 #include "SimCenterMapcanvasWidget.h"
-
+#include "GIS_Selection.h"
 #include <qgsmapcanvas.h>
-#include <qgsvectorlayer.h>
-#include <qgslinesymbol.h>
-#include <qgsfillsymbol.h>
-#include <qgsrenderer.h>
-#include <qgslayertreegroup.h>
-#include <qgsmaptool.h>
-#include <qgsmaptoolselectionhandler.h>
-#include <qgsmaptoolextent.h>
 
 #include <QLabel>
-#include <QLineEdit>
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QProgressBar>
 #include <QPushButton>
-#include <QFileDialog>
 #include <QStandardPaths>
 #include <QGroupBox>
+#include <QGridLayout>
+#include <SC_DoubleLineEdit.h>
+#include <SC_FileEdit.h>
 
 BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
     assert(visWidget);
-
+    
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(5,0,0,0);
+    minLat  = new SC_DoubleLineEdit("minLat",0.0);
+    maxLat  = new SC_DoubleLineEdit("maxLat",0.0);
+    minLong = new SC_DoubleLineEdit("minLong",0.0);
+    maxLong = new SC_DoubleLineEdit("maxLong",0.0);    
+    theOutputFile = new SC_FileEdit("outputFile");
+    
+    QGridLayout *mainLayout = new QGridLayout(this);
+    mainLayout->addWidget(new QLabel("Latitude:"),0,0);
+    mainLayout->addWidget(new QLabel("min:"),1,0);
+    mainLayout->addWidget(minLat,1,1);    
+    mainLayout->addWidget(new QLabel("max:"),1,2);
+    mainLayout->addWidget(maxLat,1,3);
+    mainLayout->addWidget(new QLabel("Longitude:"),0,4);
+    mainLayout->addWidget(new QLabel("min:"),1,4);
+    mainLayout->addWidget(minLong,1,5);    
+    mainLayout->addWidget(new QLabel("max:"),1,6);
+    mainLayout->addWidget(maxLong,1,7);
+    
+    mainLayout->addWidget(new QLabel("Export BRAILS file"),2,0);
+    mainLayout->addWidget(theOutputFile,2,1,1,7);
+    
+    QPushButton *runButton = new QPushButton(tr("Run BRAILS"));
+    mainLayout->addWidget(runButton, 3,4,1,2);
+    //    runButton->setMaximumWidth(150);
+    
+    connect(runButton,SIGNAL(clicked()),this,SLOT(runBRAILS()));
+    
+    theSelectionWidget = new GIS_Selection(theVisualizationWidget);
+    mainLayout->addWidget(theSelectionWidget,4,0,1,8);
 
-    layout->addWidget(this->getBrailsInventoryGenerator());
+    connect(theSelectionWidget,SIGNAL(selectionGeometryChanged()), this, SLOT(coordsChanged()));
+
+    /* some connection for editing by user of selection .. coming later
+    connect(minLat, &QLineEdit::textChanged, this, [=](QString text){
+            minLatNumber = QString(text).toDouble();
+
+    });	    
+    */
+
 
 
 }
@@ -81,226 +106,28 @@ BrailsInventoryGenerator::~BrailsInventoryGenerator()
 
 }
 
-
-QStackedWidget* BrailsInventoryGenerator::getBrailsInventoryGenerator(void)
-{
-    theStackedWidget = new QStackedWidget();
-    theStackedWidget->setContentsMargins(0,0,0,0);
-
-    theStackedWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
-    //
-    // file and dir input
-    //
-
-    fileInputWidget = new QWidget();
-    fileInputWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    fileInputWidget->setContentsMargins(0,0,0,0);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout(fileInputWidget);
-    mainLayout->setContentsMargins(0,0,0,0);
-    mainLayout->setSpacing(4);
-
-    QHBoxLayout* exportLayout = new QHBoxLayout();
-
-    auto exportText = new QLabel("Export BRAILS file");
-
-    exportPathLineEdit = new QLineEdit();
-    exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-    QPushButton *exportBrowseFileButton = new QPushButton();
-    exportBrowseFileButton->setText(tr("Browse"));
-    exportBrowseFileButton->setMaximumWidth(150);
-
-    exportLayout->addWidget(exportText);
-    exportLayout->addWidget(exportPathLineEdit);
-    exportLayout->addWidget(exportBrowseFileButton);
-
-    mainLayout->addLayout(exportLayout);
-
-    connect(exportBrowseFileButton,SIGNAL(clicked()),this,SLOT(chooseExportFileDialog()));
-
-    QGroupBox* selectionGB = new QGroupBox("Selection Method");
-    QHBoxLayout* selectionLayout = new QHBoxLayout(selectionGB);
-
-    selectionGB->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-
-    QPushButton *rectangleSelectButton = new QPushButton(tr("Click to Select"));
-
-    connect(rectangleSelectButton,SIGNAL(clicked()),this,SLOT(handleRectangleSelect()));
-
-    selectionLayout->addWidget(rectangleSelectButton);
-
-    QPushButton *clearSelection = new QPushButton(tr("Clear Selection"));
-    clearSelection->setMaximumWidth(250);
-    connect(clearSelection,SIGNAL(clicked()),this,SLOT(clearSelection()));
-    selectionLayout->addWidget(clearSelection);
-
-
-    QWidget* selectionWidget = new QWidget();
-    QHBoxLayout* selectionWidgetLayout = new QHBoxLayout(selectionWidget);
-
-    QPushButton *clearAllButton = new QPushButton(tr("Run BRAILS"));
-    clearAllButton->setMaximumWidth(150);
-    connect(clearAllButton,SIGNAL(clicked()),this,SLOT(handleSelectionDone()));
-
-    selectionWidgetLayout->addWidget(clearAllButton);
-
-    QHBoxLayout* topLayout = new QHBoxLayout();
-
-    topLayout->addWidget(selectionGB);
-    topLayout->addWidget(selectionWidget);
-
-    mainLayout->addLayout(topLayout);
-
-    auto mapView = theVisualizationWidget->getMapViewWidget("BrailsInventoryGenerator");
-    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
-    auto canvas = mapViewSubWidget->mapCanvas();
-    extentTool = new QgsMapToolExtent(canvas);
-    QObject::connect(extentTool,&QgsMapToolExtent::extentChanged,this,&BrailsInventoryGenerator::selectRectangle);
-
-
-    // Enable the selection tool
-    mapViewSubWidget->setShowPopUpOnSelection(false); // Do not show popup
-
-    mainLayout->addWidget(mapViewSubWidget.get());
-
-    //
-    // progress bar
-    //
-
-    progressBarWidget = new QWidget();
-    auto progressBarLayout = new QVBoxLayout(progressBarWidget);
-
-    auto progressText = new QLabel("Running BRAILS. This may take a while.");
-    progressLabel =  new QLabel("");
-    progressBar = new QProgressBar();
-
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-    auto vspacer2 = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-    progressBarLayout->addItem(vspacer);
-    progressBarLayout->addWidget(progressText,1, Qt::AlignCenter);
-    progressBarLayout->addWidget(progressLabel,1, Qt::AlignCenter);
-    progressBarLayout->addWidget(progressBar);
-    progressBarLayout->addItem(vspacer2);
-    //    progressBarLayout->addStretch(1);
-
-    //
-    // add file and progress widgets to stacked widgets, then set defaults
-    //
-
-    theStackedWidget->addWidget(fileInputWidget);
-    theStackedWidget->addWidget(progressBarWidget);
-
-    theStackedWidget->setCurrentWidget(fileInputWidget);
-
-    return theStackedWidget;
-}
-
-
-void BrailsInventoryGenerator::showEvent(QShowEvent *e)
-{
-    auto mainCanvas = mapViewSubWidget->getMainCanvas();
-
-    auto mainExtent = mainCanvas->extent();
-
-    mapViewSubWidget->mapCanvas()->zoomToFeatureExtent(mainExtent);
-    SimCenterAppWidget::showEvent(e);
-}
-
-
-void BrailsInventoryGenerator::chooseExportFileDialog(void)
-{
-    QFileDialog dialog(this);
-    dialog.setFileMode(QFileDialog::AnyFile);
-
-    QString oldPath;
-
-    if(!exportPathLineEdit->text().isEmpty())
-        oldPath = exportPathLineEdit->text();
-    else
-        oldPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-
-    auto exportPathfile = dialog.getSaveFileName(this, tr("Where to export new .xml file"), oldPath,".xml");
-
-    if(!exportPathfile.endsWith(".xml"))
-        exportPathfile += ".xml";
-
-    dialog.close();
-
-    // Set file name & entry in line edit
-    exportPathLineEdit->setText(exportPathfile);
-
-    return;
-}
-
-
 void BrailsInventoryGenerator::clear(void)
 {
-    exportPathLineEdit->clear();
-    boundingPoints.clear();
-}
-
-
-void BrailsInventoryGenerator::clearSelection(void)
-{
-    boundingPoints.clear();
-    auto mainCanvas = mapViewSubWidget->mapCanvas();
-    mainCanvas->unsetMapTool(extentTool);
-}
-
-
-QgsRectangle BrailsInventoryGenerator::rectToLatLonCoordinates(QgsRectangle rect)
-{
-    try
-    {
-        auto canvas = mapViewSubWidget->mapCanvas();
-        auto mapcrs = canvas->mapSettings().destinationCrs();
-
-        const QgsCoordinateTransform coordTrans(mapcrs, QgsCoordinateReferenceSystem("EPSG:4326"), QgsProject::instance());
-        if (coordTrans.isValid())
-            rect = coordTrans.transform(rect);
-    }
-    catch (QgsCsException &cse)
-    {
-        errorMessage(QObject::tr("Transform error: %1").arg( cse.what() )+QObject::tr("CRS") );
-    }
-
-    return rect;
-}
-
-
-void BrailsInventoryGenerator::selectRectangle(const QgsRectangle &extent)
-{
-    auto transformedRect = this->rectToLatLonCoordinates(extent);
-
-    // Gives the bottom-left and top-right points in string format
-    boundingPoints = transformedRect.asWktCoordinates();
 
 }
 
 
-void BrailsInventoryGenerator::handleRectangleSelect(void)
+void BrailsInventoryGenerator::runBRAILS(void)
 {
-    auto mainCanvas = mapViewSubWidget->mapCanvas();
-    mainCanvas->setMapTool(extentTool);
+
 }
 
 
 
-void BrailsInventoryGenerator::handleSelectionDone(void)
+void BrailsInventoryGenerator::coordsChanged(void)
 {
-
-    auto filePathToSave = exportPathLineEdit->text();
-
-    if(filePathToSave.isEmpty())
-    {
-        this->statusMessage("Please select a file name/location to save new .xml file");
-        return;
-    }
-
-
-
+  QVector<double> points = theSelectionWidget->getSelectedPoints();
+  qDebug() << "BRAILS_INVENTORY::coordsChanged " << points;
+  minLat->setText(QString::number(points.at(0)));
+  minLong->setText(QString::number(points.at(1)));
+  maxLat->setText(QString::number(points.at(6)));
+  maxLong->setText(QString::number(points.at(7)));  
+  
 }
 
 

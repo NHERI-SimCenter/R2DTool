@@ -1,5 +1,5 @@
-#ifndef BrailsInventoryGenerator_H
-#define BrailsInventoryGenerator_H
+#ifndef GIS_Selection_H
+#define GIS_Selection_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,47 +36,66 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: fmk using cut & paste of existing code created by Stevan Gavrilovic
+
+
 
 #include "SimCenterAppWidget.h"
-
+class PlainRectangle;
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
 class VisualizationWidget;
 
-class GIS_Selection;
-class SC_DoubleLineEdit;
-class SC_FileEdit;
+class QgsMapLayer;
+class QgsVectorLayer;
+class QgsLayerTreeGroup;
 
-class BrailsInventoryGenerator : public SimCenterAppWidget
+class QStackedWidget;
+class QProgressBar;
+class QLabel;
+class QLineEdit;
+
+class GIS_Selection : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~BrailsInventoryGenerator();
-
+  GIS_Selection(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+  ~GIS_Selection();
+  QVector<double> getSelectedPoints(void);
+		  
 public slots:
-    void clear(void);
-
+  
+  void clear(void);
+  void handleSelectionGeometryChange();
+  
 signals:
+  void selectionGeometryChanged();
 
 protected:
 
+  void showEvent(QShowEvent *e);
+
 private slots:
-    void runBRAILS(void);
-    void coordsChanged(void);
+    void clearSelection(void);
+
+  void handleRectangleSelect(void);
+  //  void handlePolygonSelect(void);
+  //  void handleRadiusSelect(void);
+  //  void handleFreehandSelect(void);
+  //  void handleNoneSelect(void);
+
+    void handleSelectionDone(void);
 
 private:
-    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+  std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+  QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-  
-    SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
-    SC_FileEdit *theOutputFile;
-    GIS_Selection *theSelectionWidget;  
-    double minLatNumber, maxLatNumber, minLongNumber, maxLongNumber;
+  PlainRectangle *userGrid = 0;
+
+  QVector<double> selectedPoints;
 };
 
-#endif // BrailsInventoryGenerator_H
+
+#endif // GIS_Selection_H
