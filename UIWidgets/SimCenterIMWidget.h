@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QGridLayout;
 class QComboBox;
+class QSignalMapper;
 
 #include <QGroupBox>
 #include "JsonSerializable.h"
@@ -80,6 +81,7 @@ private:
 
     int numIMs = 0; // add this as rowCount does not return 0 for some reason
     QString hazard;
+    QSignalMapper *theSignalMapper;
 };
 
 #endif // SimCenterIMWidget_H

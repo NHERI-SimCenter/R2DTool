@@ -44,6 +44,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QComboBox>
 #include <QJsonArray>
+#include <QSignalMapper>
+#include <QPushButton>
 
 SimCenterIMWidget::SimCenterIMWidget(QString title, QWidget* parent)
     : QGroupBox(title, parent)
@@ -82,6 +84,8 @@ SimCenterIMWidget::SimCenterIMWidget(QString title, QWidget* parent)
     hazardDict["Earthquake"] = EQ;
     hazardDict["Hurricane"] = Hurricane;
     hazardDict["Tsunami"] = Tsunami;
+
+    theSignalMapper = new QSignalMapper();
 }
 
 
@@ -262,13 +266,39 @@ void SimCenterIMWidget::addNewIMItem(const QString& labelText, const QString& IM
 
     QLabel* IMLabel = new QLabel(labelText);
 
-    mainLayout->addWidget(IMLabel,numIMs,0,1,1);
-    mainLayout->addWidget(IMCombo,numIMs,1,1,1);
-    mainLayout->addWidget(unitsCombo,numIMs,2,1,1);
+    mainLayout->addWidget(IMLabel,numIMs,0);
+    mainLayout->addWidget(IMCombo,numIMs,1);
+    mainLayout->addWidget(unitsCombo,numIMs,2);
+
+    QPushButton *removeButton = new QPushButton("Remove");
+    mainLayout->addWidget(removeButton,numIMs,3);
+    connect(removeButton, &QPushButton::clicked, [this, labelText] {
+      // remove(labelText);
+      for (int i=0; i<numIMs; i++) {
+        QLayoutItem *labelItem = mainLayout->itemAtPosition(i,0);      
+        QLabel *labelWidget = dynamic_cast<QLabel*>(labelItem->widget());	
+	QString currLabel = labelWidget->text();
+	if (currLabel == labelText) {
+	  // remove row
+	  for (int j=0; j<4; j++) {
+	    QLayoutItem* item = mainLayout->itemAtPosition(i,j);
+	    QWidget* widget = item->widget();
+	    mainLayout->removeItem(item);
+	    if (widget)
+	      delete widget;
+	  }
+	  // reduce numberIMs and break out
+	  i=numIMs;	  
+	  numIMs--;
+	}
+      }
+    });
+    
     numIMs++;
 }
 
-QComboBox* SimCenterIMWidget::findChild(const QString& name)
+QComboBox*
+SimCenterIMWidget::findChild(const QString& name)
 {
     auto numItems = numIMs;
     for(int i = 0; i<numItems; ++i)
