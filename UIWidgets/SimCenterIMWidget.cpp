@@ -109,18 +109,21 @@ bool SimCenterIMWidget::outputToJSON(QJsonObject &jsonObject)
     // we have to put into 2 objects as units is not an array and if JsonObject the bands could get interleaved
     QJsonObject unitObject; // im and unit
     QJsonArray imArray;     // ordered array of im
+    QJsonArray labelArray;     // ordered array of labels for IM
     
     for(int i = 0; i<numIMs; ++i) {
+        QLayoutItem *labelItem = mainLayout->itemAtPosition(i,0);      
         QLayoutItem *imItem = mainLayout->itemAtPosition(i,1);
         QLayoutItem *unitItem = mainLayout->itemAtPosition(i,2);
 
+        QLabel *labelWidget = dynamic_cast<QLabel*>(labelItem->widget());	
         QComboBox *imWidget = dynamic_cast<QComboBox*>(imItem->widget());
         SimCenterUnitsCombo *unitWidget = dynamic_cast<SimCenterUnitsCombo*>(unitItem->widget());
 
         if (imWidget && unitWidget) {
 
+            QString currLabel = labelWidget->text();	  
             QString currIM = imWidget->currentData().toString();
-
             QString currUnit = unitWidget->getCurrentUnitString();
 
             if(currUnit.compare("UNDEFINED") == 0) {
@@ -130,10 +133,12 @@ bool SimCenterIMWidget::outputToJSON(QJsonObject &jsonObject)
 
             unitObject[currIM] = currUnit;
             imArray.append(currIM);
+            labelArray.append(currIM);	    
         }
     }
 
     jsonObject["intensityMeasures"] = imArray;
+    jsonObject["intensityLabels"]=labelArray;
     jsonObject["units"]=unitObject;
 
     return true;
@@ -144,6 +149,7 @@ bool SimCenterIMWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     this->clear();
 
+    QJsonArray labelArray;    
     QJsonArray imArray;
     QJsonObject  unitsObject;
 
@@ -152,6 +158,12 @@ bool SimCenterIMWidget::inputFromJSON(QJsonObject &jsonObject)
         if (theValue.isArray())
             imArray = theValue.toArray();
     }
+
+    if (jsonObject.contains("intensityLabels")) {
+        QJsonValue theValue = jsonObject["intensityLabels"];
+        if (theValue.isArray())
+            labelArray = theValue.toArray();
+    }    
 
     if (jsonObject.contains("units")) {
         QJsonValue theValue = jsonObject["units"];
@@ -165,7 +177,19 @@ bool SimCenterIMWidget::inputFromJSON(QJsonObject &jsonObject)
     for (auto im : imArray) {
         // get im text and unit text
         QString imString = im.toString();
+	
+        QString labelString;
+
+	qDebug() << "FOUND LABEL: " << labelArray.isEmpty();
+	
+	if (!labelArray.isEmpty())
+	  labelString= labelArray.at(numIMs).toString();
+	else
+	  labelString = "Layer " + QString::number(numIMs);
+	
+	    
         QString unitString = unitsObject[imString].toString();
+	
 
         // create the combo boxes
         QComboBox* IMCombo = new QComboBox(this);
@@ -177,7 +201,6 @@ bool SimCenterIMWidget::inputFromJSON(QJsonObject &jsonObject)
             EDPdict edpd = hazardDict[hazard];
             auto keys = edpd.keys();
             auto values = edpd.values();
-            qDebug() << keys;
             for (int j=0; j<keys.size(); ++j) {
                 auto key = keys.at(j);
                 auto value = values.at(j);
@@ -197,10 +220,9 @@ bool SimCenterIMWidget::inputFromJSON(QJsonObject &jsonObject)
         else
             qDebug() << "ERROR: Hazard Intensity Measue Not Found:" <<  imString;
 
-        QString IMLabel("Layer " + QString::number(numIMs+1));
-        mainLayout->addWidget(new QLabel(IMLabel),numIMs,0,1,1);
-        mainLayout->addWidget(IMCombo,numIMs,1,1,1);
-        mainLayout->addWidget(unitsCombo,numIMs,2,1,1);
+        mainLayout->addWidget(new QLabel(labelString),numIMs,0);
+        mainLayout->addWidget(IMCombo,numIMs,1);
+        mainLayout->addWidget(unitsCombo,numIMs,2);
         numIMs++;
     }
 
