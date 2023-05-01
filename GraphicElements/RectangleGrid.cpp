@@ -34,7 +34,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+
+// Written: Stevan Gavrilovic
 
 #include "GridNode.h"
 #include "NodeHandle.h"
@@ -145,7 +146,6 @@ void RectangleGrid::show()
 void RectangleGrid::removeGridFromScene(void)
 {
     QGraphicsScene* mapCanvasScene = mapCanvas->scene();
-
     mapCanvasScene->removeItem(this);
 }
 
@@ -239,7 +239,8 @@ void RectangleGrid::canvasReleaseEvent( QgsMapMouseEvent *event )
 QRectF RectangleGrid::boundingRect() const
 {
     qreal adjust = 5;
-    return QRectF(rectangleGeometry.x() - adjust, rectangleGeometry.y() - adjust, rectangleGeometry.width() + 5 + adjust, rectangleGeometry.height() + 5 + adjust);
+    return QRectF(rectangleGeometry.x() - adjust, rectangleGeometry.y() - adjust,
+		  rectangleGeometry.width() + 5 + adjust, rectangleGeometry.height() + 5 + adjust);
 }
 
 
@@ -284,13 +285,11 @@ void RectangleGrid::updateGeometry(void)
 
         gridSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
         gridSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
-
-        //        auto centerPointLat = theVisWidget->getLatFromScreenPoint(centerPnt);
-        //        auto centerPointLong = theVisWidget->getLongFromScreenPoint(centerPnt);
-
-        //        theRuptureWidget->setLocation(centerPointLat,centerPointLong);
     }
 
+    // qDebug() << "RectangleRrid - emitting geometryChanged()";
+    // qDebug() << mapCanvas->extent().toRectF();
+    
     emit geometryChanged();
 }
 
@@ -310,6 +309,7 @@ size_t RectangleGrid::getNumDivisionsVertical() const
 void RectangleGrid::setNumDivisionsVertical(const size_t &value)
 {
     numDivisionsVertical = value;
+    handleGridDivisionsChanged();
 }
 
 
@@ -322,6 +322,7 @@ size_t RectangleGrid::getNumDivisionsHoriz() const
 void RectangleGrid::setNumDivisionsHoriz(const size_t &value)
 {
     numDivisionsHoriz = value;
+    handleGridDivisionsChanged();    
 }
 
 
@@ -602,15 +603,16 @@ void RectangleGrid::createGrid()
 
 void RectangleGrid::handleGridDivisionsChanged(void)
 {
-    auto numDivH = static_cast<size_t>(gridSiteConfig->siteGrid().longitude().divisions());
-    auto numDivV = static_cast<size_t>(gridSiteConfig->siteGrid().latitude().divisions());
+    if (gridSiteConfig) {
+        auto numDivH = static_cast<size_t>(gridSiteConfig->siteGrid().longitude().divisions());
+        auto numDivV = static_cast<size_t>(gridSiteConfig->siteGrid().latitude().divisions());
 
-    if(numDivV == this->numDivisionsVertical && numDivH == this->numDivisionsHoriz)
-        return;
+        if(numDivV == this->numDivisionsVertical && numDivH == this->numDivisionsHoriz)
+            return;
 
-    this->numDivisionsVertical = numDivV;
-    this->numDivisionsHoriz = numDivH;
-
+        this->numDivisionsVertical = numDivV;
+        this->numDivisionsHoriz = numDivH;
+    }
     this->clearGrid();
     this->createGrid();
 }

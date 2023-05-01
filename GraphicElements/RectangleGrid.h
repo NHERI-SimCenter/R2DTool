@@ -53,10 +53,27 @@ class RectangleGrid : public QgsMapTool, public QGraphicsItem
 {
     Q_OBJECT
     Q_INTERFACES(QGraphicsItem)
-public:
+    
+    public:
+
     RectangleGrid(QgsMapCanvas* parent);
     ~RectangleGrid();
 
+    QVector<GridNode *> getGridNodeVec() const;
+    void setVisualizationWidget(VisualizationWidget *value);
+    void clearGrid();
+    void createGrid();
+    void show();
+    void removeGridFromScene(void);
+
+    void setSiteGridConfig(SiteConfig *value);
+    size_t getNumDivisionsHoriz() const;
+    void setNumDivisionsHoriz(const size_t &value);
+    size_t getNumDivisionsVertical() const;
+    void setNumDivisionsVertical(const size_t &value);
+
+  
+private:  
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -80,19 +97,6 @@ public:
     NodeHandle *getTopLeftNode() const;
     NodeHandle *getCenterNode() const;
 
-    void setSiteGridConfig(SiteConfig *value);
-    void setVisualizationWidget(VisualizationWidget *value);
-
-    size_t getNumDivisionsHoriz() const;
-    void setNumDivisionsHoriz(const size_t &value);
-
-    size_t getNumDivisionsVertical() const;
-    void setNumDivisionsVertical(const size_t &value);
-
-    void clearGrid();
-    void createGrid();
-
-    QVector<GridNode *> getGridNodeVec() const;
 
     void canvasPressEvent( QgsMapMouseEvent *e ) override;
     void canvasMoveEvent( QgsMapMouseEvent *e ) override;
@@ -101,12 +105,9 @@ public:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
-    void show();
-
-    void removeGridFromScene(void);
 
 signals:
-
+    void selectionChanged(void);
 
 private slots:
     void handleBottomLeftCornerChanged(const QPointF& pos);

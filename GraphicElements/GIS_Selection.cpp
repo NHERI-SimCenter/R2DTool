@@ -69,6 +69,7 @@ GIS_Selection::GIS_Selection(VisualizationWidget* visWidget, QWidget *parent) : 
     mainLayout->setContentsMargins(0,0,0,0);
     mainLayout->setSpacing(4);
 
+    /* SELECTION OF SelectionTool
     QGroupBox* selectionGB = new QGroupBox("Selection Method");
     QHBoxLayout* selectionLayout = new QHBoxLayout(selectionGB);
 
@@ -107,7 +108,8 @@ GIS_Selection::GIS_Selection(VisualizationWidget* visWidget, QWidget *parent) : 
     selectionLayout->addWidget(clearAllButton);
 
     mainLayout->addWidget(selectionGB);
-
+    */
+    
     auto mapView = theVisualizationWidget->getMapViewWidget("GIS_Selection");
     mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
     mainLayout->addWidget(mapViewSubWidget.get());
@@ -127,7 +129,30 @@ void GIS_Selection::showEvent(QShowEvent *e)
     auto mainExtent = mainCanvas->extent();
 
     mapViewSubWidget->mapCanvas()->zoomToFeatureExtent(mainExtent);
+
+    QgsMapCanvas *mapCanvas = mapViewSubWidget->mapCanvas();
+
+    if (userGrid == 0) {
+      userGrid = new PlainRectangle(mapCanvas);
+      
+      mapCanvas->setMapTool(userGrid);
+      userGrid->createGrid();
+      
+      userGrid->setVisualizationWidget(theVisualizationWidget);
+      
+      // if we change userGrid or map changes location (can only seem to capture a refresh!) redo geometry
+      connect(userGrid, &PlainRectangle::geometryChanged, this, &GIS_Selection::handleSelectionGeometryChange);
+      connect(mapCanvas, &QgsMapCanvas::mapCanvasRefreshed, this, &GIS_Selection::handleSelectionGeometryChange);
+
+    }
+    
+    userGrid->show();
+    handleSelectionGeometryChange();
+    
     SimCenterAppWidget::showEvent(e);
+
+
+    
 }
 
 
