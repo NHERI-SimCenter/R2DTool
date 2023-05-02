@@ -77,6 +77,9 @@ private:
     SC_FileEdit *theOutputFile;
     GIS_Selection *theSelectionWidget;  
     double minLatNumber, maxLatNumber, minLongNumber, maxLongNumber;
+
+  QString imageSource;
+  QString fillAlgorithm;
 };
 
 #endif // BrailsInventoryGenerator_H

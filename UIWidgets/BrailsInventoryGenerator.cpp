@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterMapcanvasWidget.h"
 #include "GIS_Selection.h"
 #include <qgsmapcanvas.h>
+#include <PlainRectangle.h>
 
 #include <QLabel>
 #include <QPushButton>
@@ -48,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QGridLayout>
 #include <SC_DoubleLineEdit.h>
+#include <QComboBox>
 #include <SC_FileEdit.h>
 
 BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
@@ -69,6 +71,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     mainLayout->addWidget(minLat,1,1);    
     mainLayout->addWidget(new QLabel("max:"),1,2);
     mainLayout->addWidget(maxLat,1,3);
+
     mainLayout->addWidget(new QLabel("Longitude:"),0,4);
     mainLayout->addWidget(new QLabel("min:"),1,4);
     mainLayout->addWidget(minLong,1,5);    
@@ -77,27 +80,46 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     
     mainLayout->addWidget(new QLabel("Export BRAILS file"),2,0);
     mainLayout->addWidget(theOutputFile,2,1,1,7);
+
+    mainLayout->addWidget(new QLabel("Image Source"),3,0);
+    QComboBox *imageSourceCombo = new QComboBox();
+    imageSourceCombo->addItem("Google");
+    imageSourceCombo->addItem("Local");
+    imageSourceCombo->addItem("NHERI DesignSafe");
+    imageSourceCombo->addItem("NHERI Rapid");
+    mainLayout->addWidget(imageSourceCombo,3,1,1,3);
+
+    connect(imageSourceCombo, &QComboBox::currentTextChanged, this, [=](QString text) {
+      imageSource = text;
+    });
+    
+    mainLayout->addWidget(new QLabel("Imputation Algorithm"),4,0);
+    QComboBox *fillUndefined = new QComboBox();
+    fillUndefined->addItem("None");    
+    fillUndefined->addItem("Sang-ri");
+    fillUndefined->addItem("Aakash");
+    fillUndefined->addItem("Dimitrios");
+    mainLayout->addWidget(fillUndefined,4,1,1,3);    
     
     QPushButton *runButton = new QPushButton(tr("Run BRAILS"));
-    mainLayout->addWidget(runButton, 3,4,1,2);
-    //    runButton->setMaximumWidth(150);
-    
+    mainLayout->addWidget(runButton, 5,0,1,8);
     connect(runButton,SIGNAL(clicked()),this,SLOT(runBRAILS()));
+
+    connect(fillUndefined, &QComboBox::currentTextChanged, this, [=](QString text) {
+      fillAlgorithm = text;
+    });
     
-    theSelectionWidget = new GIS_Selection(theVisualizationWidget);
-    mainLayout->addWidget(theSelectionWidget,4,0,1,8);
-
-    connect(theSelectionWidget,SIGNAL(selectionGeometryChanged()), this, SLOT(coordsChanged()));
-
-    /* some connection for editing by user of selection .. coming later
-    connect(minLat, &QLineEdit::textChanged, this, [=](QString text){
-            minLatNumber = QString(text).toDouble();
-
-    });	    
+    /*
+    auto mapView = theVisualizationWidget->getMapViewWidget("GIS_Selection");
+    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
+    QgsMapCanvas *mapCanvas = mapViewSubWidget->mapCanvas();
     */
 
-
-
+    theSelectionWidget = new GIS_Selection(theVisualizationWidget);
+    mainLayout->addWidget(theSelectionWidget,6,0,1,8);
+    
+    // connect(theTool, &PlainRectangle::geometryChanged, this, &GIS_Selection::handleSelectionGeometryChange);
+    connect(theSelectionWidget,SIGNAL(selectionGeometryChanged()), this, SLOT(coordsChanged()));
 }
 
 
