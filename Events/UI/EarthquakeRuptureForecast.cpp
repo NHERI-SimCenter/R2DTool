@@ -149,7 +149,7 @@ bool EarthquakeRuptureForecast::outputToJSON(QJsonObject &jsonObject)
     jsonObject.insert("max_Mag", magnitudeMax);
     jsonObject.insert("max_Dist", maxDistance);
     //jsonObject.insert("Sampling", SamplingMethod);
-    //jsonObject.insert("Number", NumScen);
+    jsonObject.insert("Number", NumScen);
 
     return true;
 }
