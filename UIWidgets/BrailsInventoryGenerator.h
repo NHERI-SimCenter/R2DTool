@@ -1,5 +1,6 @@
 #ifndef BrailsInventoryGenerator_H
 #define BrailsInventoryGenerator_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,18 +37,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-
+// Written by: fmk, Stevan Gavrilovic
 #include "SimCenterAppWidget.h"
-
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
 class VisualizationWidget;
-
 class GIS_Selection;
 class SC_DoubleLineEdit;
 class SC_FileEdit;
+class BrailsGoogleDialog;
+
+typedef struct BrailsDataStruct {
+  double minLat;
+  double maxLat;
+  double minLong;
+  double maxLong;
+  QString outputFile;
+  QString imageSource;
+  QString imputationAlgo;    
+} BrailsData;
+
 
 class BrailsInventoryGenerator : public SimCenterAppWidget
 {
@@ -65,21 +75,22 @@ signals:
 protected:
 
 private slots:
-    void runBRAILS(void);
-    void coordsChanged(void);
-
-private:
-    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
-
+  void runBRAILS(void);
+  void coordsChanged(void);
   
-    SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
-    SC_FileEdit *theOutputFile;
-    GIS_Selection *theSelectionWidget;  
-    double minLatNumber, maxLatNumber, minLongNumber, maxLongNumber;
+private:
+  std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+  QGISVisualizationWidget* theVisualizationWidget = nullptr;
+  
+  
+  SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
+  SC_FileEdit *theOutputFile;
+  GIS_Selection *theSelectionWidget;  
 
   QString imageSource;
-  QString fillAlgorithm;
+  QString imputationAlgo;
+
+  BrailsGoogleDialog *theGoogleDialog = 0;
 };
 
 #endif // BrailsInventoryGenerator_H
