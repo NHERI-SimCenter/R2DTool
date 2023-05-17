@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 
     w.setAbout(aboutTitle, aboutSource);
 
-    QString version("Version 2.1.0");
+    QString version("Version 3.0.0");
     w.setVersion(version);
 
     QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Kuanshi Zhong, Wael Elhaddad, & Pedro Arduino. (2022). NHERI-SimCenter/R2DTool: Version 2.1.0 (v2.1.0). Zenodo. https://doi.org/10.5281/zenodo.6404528 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matt J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");

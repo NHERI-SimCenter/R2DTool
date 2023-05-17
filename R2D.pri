@@ -166,7 +166,6 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/GraphicElements/PlainRectangle.cpp \	    
             $$PWD/GraphicElements/GridNode.cpp \
             $$PWD/GraphicElements/GIS_Selection.cpp \
-            $$PWD/GraphicElements/GIS_SelectionTool.cpp \	    	    
             $$PWD/RunWidget.cpp \
             $$PWD/WorkflowAppR2D.cpp \
 
@@ -291,7 +290,6 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/GraphicElements/RectangleGrid.h \
             $$PWD/GraphicElements/PlainRectangle.h \	    
             $$PWD/GraphicElements/GIS_Selection.h \
-            $$PWD/GraphicElements/GIS_SelectionTool.h \	    	    	    
             $$PWD/WorkflowAppR2D.h \
             $$PWD/RunWidget.h \
 
