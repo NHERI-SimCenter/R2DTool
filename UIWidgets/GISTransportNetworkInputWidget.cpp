@@ -57,7 +57,7 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
 
     theNodesWidget->setLabel1("Load Transportation network node information from a GIS file");
 
-    thePipelinesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Transport Network Pipelines");
+    thePipelinesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Transport Network Links");
 
     thePipelinesWidget->setLabel1("Load Transportation network link information from a GIS file");
 
@@ -73,7 +73,7 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     QVBoxLayout* nodesGBlayout = new QVBoxLayout(nodesGB);
     nodesGBlayout->addWidget(theNodesWidget);
 
-    QGroupBox* pipelinesGB = new QGroupBox("Transport Network Pipelines");
+    QGroupBox* pipelinesGB = new QGroupBox("Transport Network Links");
     pipelinesGB->setFlat(true);
     QVBoxLayout* pipesGBlayout = new QVBoxLayout(pipelinesGB);
     pipesGBlayout->addWidget(thePipelinesWidget);
@@ -274,7 +274,7 @@ void GISTransportNetworkInputWidget::handleAssetsLoaded()
 
     if(res != 0)
     {
-        this->errorMessage("Error, failed to load the Transport network pipelines visualization");
+        this->errorMessage("Error, failed to load the Transport network links visualization");
         return;
     }
 

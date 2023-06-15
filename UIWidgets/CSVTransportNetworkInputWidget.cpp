@@ -24,7 +24,7 @@ CSVTransportNetworkInputWidget::CSVTransportNetworkInputWidget(QWidget *parent, 
     assert(theVisualizationWidget);
 
 //    theNodesDb = ComponentDatabaseManager::getInstance()->getTransportNetworkNodeComponentDb();
-    theLinksDb = ComponentDatabaseManager::getInstance()->createAssetDb("Transport Network Pipelines");
+    theLinksDb = ComponentDatabaseManager::getInstance()->createAssetDb("Transport Network Links");
 
     //    theNodesWidget = new NonselectableAssetInputWidget(this, theNodesDb, theVisualizationWidget, "Transport Network Nodes");
     //QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString()
@@ -32,8 +32,8 @@ CSVTransportNetworkInputWidget::CSVTransportNetworkInputWidget(QWidget *parent, 
 
     theNodesWidget->setLabel1("Load Transport network node information from a CSV file");
 
-    //    thePipelinesWidget = new NonselectableAssetInputWidget(this, thePipelinesDb, theVisualizationWidget, "Transport Network Pipelines");
-    theLinksWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Transport Network Pipelines", "CSV_to_AIM");
+    //    thePipelinesWidget = new NonselectableAssetInputWidget(this, thePipelinesDb, theVisualizationWidget, "Transport Network Links");
+    theLinksWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Transport Network Links", "CSV_to_AIM");
 
     theLinksWidget->setLabel1("Load Transport network links information from a CSV file");
 
@@ -232,7 +232,7 @@ int CSVTransportNetworkInputWidget::loadPipelinesVisualization()
     }
 
     // Create the pipelines layer
-    transportNetworkMainLayer = theVisualizationWidget->addVectorLayer("linestring","All Transport Network Pipelines");
+    transportNetworkMainLayer = theVisualizationWidget->addVectorLayer("linestring","All Transport Network Links");
 
     if(transportNetworkMainLayer == nullptr)
     {
@@ -348,7 +348,7 @@ int CSVTransportNetworkInputWidget::loadPipelinesVisualization()
     theVisualizationWidget->registerLayerForSelection(layerId,theLinksWidget);
 
     // Create the selected pipeline layer
-    transportNetworkSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Transport Network Pipelines");
+    transportNetworkSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Transport Network Links");
 
     if(transportNetworkSelectedLayer == nullptr)
     {
@@ -377,7 +377,7 @@ int CSVTransportNetworkInputWidget::loadPipelinesVisualization()
     mapLayers.push_back(transportNetworkSelectedLayer);
     mapLayers.push_back(transportNetworkMainLayer);
 
-    theVisualizationWidget->createLayerGroup(mapLayers,"Transport Network Pipelines");
+    theVisualizationWidget->createLayerGroup(mapLayers,"Transport Network Links");
 
     return 0;
 }
@@ -472,7 +472,7 @@ void CSVTransportNetworkInputWidget::handleAssetsLoaded()
 
     if(res != 0)
     {
-        this->errorMessage("Error, failed to load the Transport network pipelines visualization");
+        this->errorMessage("Error, failed to load the Transport network links visualization");
         return;
     }
 
