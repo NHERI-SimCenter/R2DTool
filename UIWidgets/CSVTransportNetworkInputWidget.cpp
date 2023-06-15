@@ -35,7 +35,7 @@ CSVTransportNetworkInputWidget::CSVTransportNetworkInputWidget(QWidget *parent, 
     //    thePipelinesWidget = new NonselectableAssetInputWidget(this, thePipelinesDb, theVisualizationWidget, "Transport Network Pipelines");
     theLinksWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Transport Network Pipelines", "CSV_to_AIM");
 
-    theLinksWidget->setLabel1("Load Transport network pipeline information from a CSV file");
+    theLinksWidget->setLabel1("Load Transport network links information from a CSV file");
 
     //    connect(theNodesWidget,&NonselectableAssetInputWidget::doneLoadingComponents,this,&CSVTransportNetworkInputWidget::handleAssetsLoaded);
     //    connect(thePipelinesWidget,&NonselectableAssetInputWidget::doneLoadingComponents,this,&CSVTransportNetworkInputWidget::handleAssetsLoaded);

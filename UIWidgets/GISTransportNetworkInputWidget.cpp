@@ -55,11 +55,11 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
 
     theNodesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Transport Network Nodes");
 
-    theNodesWidget->setLabel1("Load Transport network node information from a GIS file");
+    theNodesWidget->setLabel1("Load Transportation network node information from a GIS file");
 
     thePipelinesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Transport Network Pipelines");
 
-    thePipelinesWidget->setLabel1("Load Transport network pipeline information from a GIS file");
+    thePipelinesWidget->setLabel1("Load Transportation network link information from a GIS file");
 
     connect(theNodesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
     connect(thePipelinesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
