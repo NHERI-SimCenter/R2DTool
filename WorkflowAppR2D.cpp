@@ -281,7 +281,7 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
-//    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
+    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
 
 
     theComponentSelection->displayComponent("VIZ");
