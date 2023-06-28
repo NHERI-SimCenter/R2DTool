@@ -180,7 +180,13 @@ QString RuptureWidget::getEQNum() const
     if (widgetType.compare("Hazard Occurrence")==0) {
         numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
     } else {
-        numEQ = "1";
+        //KZ: update the scenario number for OpenSHA ERF
+        //numEQ = "1";
+        if (widgetType.compare("OpenSHA ERF")==0) {
+            numEQ = erfWidget->getNumScen();
+        } else {
+            numEQ = "1";
+        }
     }
     return numEQ;
 }
