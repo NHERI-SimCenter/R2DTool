@@ -114,12 +114,14 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/BuildingDMWidget.cpp \
             $$PWD/UIWidgets/BuildingEDPEQWidget.cpp \
             $$PWD/UIWidgets/BuildingEDPWidget.cpp \
+            $$PWD/UIWidgets/CSVTransportNetworkInputWidget.cpp \
             $$PWD/UIWidgets/ColorDialogDelegate.cpp \
             $$PWD/UIWidgets/BuildingModelGeneratorWidget.cpp \
             $$PWD/UIWidgets/BuildingModelingWidget.cpp \
             $$PWD/UIWidgets/BuildingSimulationWidget.cpp \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.cpp \
             $$PWD/UIWidgets/AssetInputWidget.cpp \
+            $$PWD/UIWidgets/GISTransportNetworkInputWidget.cpp \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.cpp \
             $$PWD/UIWidgets/DLWidget.cpp \
             $$PWD/UIWidgets/EarthquakeInputWidget.cpp \
@@ -159,6 +161,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/HurricaneSelectionWidget.cpp \
             $$PWD/UIWidgets/OpenQuakeSelectionWidget.cpp \
             $$PWD/UIWidgets/BrailsInventoryGenerator.cpp \
+            $$PWD/UIWidgets/BrailsTranspInventoryGenerator.cpp \	
             $$PWD/UIWidgets/BrailsGoogleDialog.cpp \	    
             $$PWD/UIWidgets/UserInputHurricaneWidget.cpp \
             $$PWD/GraphicElements/NodeHandle.cpp \
@@ -232,6 +235,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/BuildingDMWidget.h \
             $$PWD/UIWidgets/BuildingEDPEQWidget.h \
             $$PWD/UIWidgets/BuildingEDPWidget.h \
+            $$PWD/UIWidgets/CSVTransportNetworkInputWidget.h \
             $$PWD/UIWidgets/ColorDialogDelegate.h \
             $$PWD/UIWidgets/GISObjectTypeMapping.h \
             $$PWD/UIWidgets/BuildingModelGeneratorWidget.h \
@@ -239,6 +243,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/BuildingSimulationWidget.h \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.h \
             $$PWD/UIWidgets/AssetInputWidget.h \
+            $$PWD/UIWidgets/GISTransportNetworkInputWidget.h \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.h \
             $$PWD/UIWidgets/DLWidget.h \
             $$PWD/UIWidgets/EarthquakeInputWidget.h \
@@ -278,6 +283,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/HurricaneSelectionWidget.h \
             $$PWD/UIWidgets/OpenQuakeSelectionWidget.h \
             $$PWD/UIWidgets/BrailsInventoryGenerator.h \
+            $$PWD/UIWidgets/BrailsTranspInventoryGenerator.h \            
             $$PWD/UIWidgets/BrailsGoogleDialog.h \	    
             $$PWD/UIWidgets/UserInputHurricaneWidget.h \
             $$PWD/UIWidgets/HurricaneObject.h \
