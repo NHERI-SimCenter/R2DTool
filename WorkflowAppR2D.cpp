@@ -230,7 +230,8 @@ void WorkflowAppR2D::initialize(void)
     toolsMenu->addAction("&Hurricane Scenario Simulation", theToolDialog, &ToolDialog::handleShowHurricaneSimTool);
     toolsMenu->addAction("&Census Data Allocation", theToolDialog, &ToolDialog::handleShowCensusAppTool);
     toolsMenu->addAction("&OpenQuake Source Selection", theToolDialog, &ToolDialog::handleShowOpenquakeSelectionTool);
-    toolsMenu->addAction("&BRAILS", theToolDialog, &ToolDialog::handleBrailsInventoryTool);
+    toolsMenu->addAction("&BRAILS-Buildings", theToolDialog, &ToolDialog::handleBrailsInventoryTool);
+	toolsMenu->addAction("&BRAILS-Transportation", theToolDialog, &ToolDialog::handleBrailsTranspInventoryTool);
     menuBar->insertMenu(menuAfter, toolsMenu);
 
 
@@ -281,7 +282,7 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
-    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
+//    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
 
 
     theComponentSelection->displayComponent("VIZ");
