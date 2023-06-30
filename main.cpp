@@ -115,13 +115,10 @@ int main(int argc, char *argv[])
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setAttribute( Qt::AA_UseHighDpiPixmaps );
 
-    // Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
+    // Setting Core Application Name, Organization, and Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("3.0.0");
-    // GoogleAnalytics::SetTrackingId("UA-186298856-1");
-    GoogleAnalytics::StartSession();
-    GoogleAnalytics::ReportStart();
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -169,6 +166,12 @@ int main(int argc, char *argv[])
     QgsApplication a( argc, argv, true );
 
 #endif
+    //Setting Google Analytics Tracking Information
+    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
+    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
+    GoogleAnalytics::CreateSessionId();
+    GoogleAnalytics::StartSession();
+
 
     // create a remote interface
     QString tenant("designsafe");
