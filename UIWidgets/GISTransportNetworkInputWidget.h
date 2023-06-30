@@ -56,8 +56,8 @@ public:
     GISTransportNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
     virtual ~GISTransportNetworkInputWidget();
 
-    virtual int loadNodesVisualization();
-    virtual int loadPipelinesVisualization();
+    virtual int loadBridgesVisualization();
+    virtual int loadRoadwaysVisualization();
 
     void clear();
 
@@ -72,11 +72,11 @@ protected:
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    GISAssetInputWidget* theNodesWidget = nullptr;
-    GISAssetInputWidget* thePipelinesWidget = nullptr;
+    GISAssetInputWidget* theBridgesWidget = nullptr;
+    GISAssetInputWidget* theRoadwaysWidget = nullptr;
 
-    QgsVectorLayer* nodesMainLayer = nullptr;
-    QgsVectorLayer* pipelinesMainLayer = nullptr;
+    QgsVectorLayer* bridgesMainLayer = nullptr;
+    QgsVectorLayer* roadwaysMainLayer = nullptr;
 
 };
 

@@ -53,45 +53,45 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-    theNodesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Transport Network Nodes");
+    theBridgesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Bridge Network");
 
-    theNodesWidget->setLabel1("Load Transportation network node information from a GIS file");
+    theBridgesWidget->setLabel1("Load Bridge Data from a GIS file");
 
-    thePipelinesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Transport Network Links");
+    theRoadwaysWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Roadway Network");
 
-    thePipelinesWidget->setLabel1("Load Transportation network link information from a GIS file");
+    theRoadwaysWidget->setLabel1("Load Roadway Data from a GIS file");
 
-    connect(theNodesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
-    connect(thePipelinesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
+    connect(theBridgesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
+    connect(theRoadwaysWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
     QSplitter* verticalSplitter = new QSplitter(Qt::Vertical);
 
-    QGroupBox* nodesGB = new QGroupBox("Transport Network Nodes");
-    nodesGB->setFlat(true);
-    QVBoxLayout* nodesGBlayout = new QVBoxLayout(nodesGB);
-    nodesGBlayout->addWidget(theNodesWidget);
+    QGroupBox* roadwaysGB = new QGroupBox("Roadways");
+    roadwaysGB->setFlat(true);
+    QVBoxLayout* roadwaysGBlayout = new QVBoxLayout(roadwaysGB);
+    roadwaysGBlayout->addWidget(theRoadwaysWidget);
+    
+    QGroupBox* bridgesGB = new QGroupBox("Bridges");
+    bridgesGB->setFlat(true);
+    QVBoxLayout* bridgesGBlayout = new QVBoxLayout(bridgesGB);
+    bridgesGBlayout->addWidget(theBridgesWidget);
 
-    QGroupBox* pipelinesGB = new QGroupBox("Transport Network Links");
-    pipelinesGB->setFlat(true);
-    QVBoxLayout* pipesGBlayout = new QVBoxLayout(pipelinesGB);
-    pipesGBlayout->addWidget(thePipelinesWidget);
-
-    verticalSplitter->addWidget(nodesGB);
-    verticalSplitter->addWidget(pipelinesGB);
+    verticalSplitter->addWidget(roadwaysGB);    
+    verticalSplitter->addWidget(bridgesGB);
 
     mainLayout->addWidget(verticalSplitter);
 
     // Testing to remove start
-    // theNodesWidget->setPathToComponentFile("/Users/steve/Desktop/SimCenter/Examples/SeasideTransport/Nodes/Seaside_wter_nodes.shp");
-    // theNodesWidget->loadAssetData();
-    // theNodesWidget->setCRS(QgsCoordinateReferenceSystem("EPSG:4326"));
+    // theBridgesWidget->setPathToComponentFile("/Users/steve/Desktop/SimCenter/Examples/SeasideTransport/Bridges/Seaside_wter_bridges.shp");
+    // theBridgesWidget->loadAssetData();
+    // theBridgesWidget->setCRS(QgsCoordinateReferenceSystem("EPSG:4326"));
 
 
-    // thePipelinesWidget->setPathToComponentFile("/Users/steve/Desktop/SimCenter/Examples/SeasideTransport/Pipelines/Seaside_Transport_pipelines_wgs84.shp");
-    // thePipelinesWidget->loadAssetData();
-    // thePipelinesWidget->setCRS(QgsCoordinateReferenceSystem("EPSG:4326"));
+    // theRoadwaysWidget->setPathToComponentFile("/Users/steve/Desktop/SimCenter/Examples/SeasideTransport/Roadways/Seaside_Transport_roadways_wgs84.shp");
+    // theRoadwaysWidget->loadAssetData();
+    // theRoadwaysWidget->setCRS(QgsCoordinateReferenceSystem("EPSG:4326"));
 
     // inpFileLineEdit->setText("/Users/steve/Desktop/SogaExample/central.inp");
     // Testing to remove end
@@ -107,13 +107,13 @@ GISTransportNetworkInputWidget::~GISTransportNetworkInputWidget()
 bool GISTransportNetworkInputWidget::copyFiles(QString &destName)
 {
 
-    auto res = theNodesWidget->copyFiles(destName);
+    auto res = theBridgesWidget->copyFiles(destName);
 
     if(!res)
         return res;
 
-    // The file containing the network pipelines
-    res = thePipelinesWidget->copyFiles(destName);
+    // The file containing the network roadways
+    res = theRoadwaysWidget->copyFiles(destName);
 
     return res;
 }
@@ -126,28 +126,28 @@ bool GISTransportNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject
     QJsonObject data;
 
     QJsonObject nodeData;
-    // The file containing the network nodes
-    auto res = theNodesWidget->outputAppDataToJSON(nodeData);
+    // The file containing the network bridges
+    auto res = theBridgesWidget->outputAppDataToJSON(nodeData);
 
     if(!res)
     {
-        this->errorMessage("Error, could not get the .json output from the nodes widget in GIS_to_TransportNETWORK");
+        this->errorMessage("Error, could not get the .json output from the bridges widget in GIS_to_TransportNETWORK");
         return false;
     }
 
-    data["TransportNetworkNodes"] = nodeData;
+    data["TransportNetworkBridges"] = nodeData;
 
     QJsonObject pipelineData;
-    // The file containing the network pipelines
-    res = thePipelinesWidget->outputAppDataToJSON(pipelineData);
+    // The file containing the network roadways
+    res = theRoadwaysWidget->outputAppDataToJSON(pipelineData);
 
     if(!res)
     {
-        this->errorMessage("Error, could not get the .json output from the pipelines widget in GIS_to_TransportNETWORK");
+        this->errorMessage("Error, could not get the .json output from the roadways widget in GIS_to_TransportNETWORK");
         return false;
     }
 
-    data["TransportNetworkPipelines"] = pipelineData;
+    data["TransportNetworkRoadways"] = pipelineData;
 
     jsonObject["ApplicationData"] = data;
 
@@ -176,26 +176,26 @@ bool GISTransportNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObjec
     QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
 
-    if (!appData.contains("TransportNetworkNodes") && !appData.contains("TransportNetworkPipelines"))
+    if (!appData.contains("TransportNetworkBridges") && !appData.contains("TransportNetworkRoadways"))
     {
-        this->errorMessage("GISTransportNetworkInputWidget needs TransportNetworkNodes and TransportNetworkPipelines");
+        this->errorMessage("GISTransportNetworkInputWidget needs TransportNetworkBridges and TransportNetworkRoadways");
         return false;
     }
 
-    QJsonObject nodesData = appData["TransportNetworkNodes"].toObject();
+    QJsonObject bridgesData = appData["TransportNetworkBridges"].toObject();
 
-    // Input the nodes
-    auto res = theNodesWidget->inputAppDataFromJSON(nodesData);
+    // Input the bridges
+    auto res = theBridgesWidget->inputAppDataFromJSON(bridgesData);
 
     if(!res)
         return res;
 
 
-    QJsonObject pipelinesData = appData["TransportNetworkPipelines"].toObject();
+    QJsonObject roadwaysData = appData["TransportNetworkRoadways"].toObject();
 
 
-    // Input the pipes
-    res = thePipelinesWidget->inputAppDataFromJSON(pipelinesData);
+    // Input the roadways
+    res = theRoadwaysWidget->inputAppDataFromJSON(roadwaysData);
 
     if(!res)
         return res;
@@ -205,11 +205,11 @@ bool GISTransportNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObjec
 }
 
 
-int GISTransportNetworkInputWidget::loadPipelinesVisualization()
+int GISTransportNetworkInputWidget::loadRoadwaysVisualization()
 {
-    pipelinesMainLayer = thePipelinesWidget->getMainLayer();
+    roadwaysMainLayer = theRoadwaysWidget->getMainLayer();
 
-    if(pipelinesMainLayer==nullptr)
+    if(roadwaysMainLayer==nullptr)
         return -1;
 
 
@@ -217,31 +217,31 @@ int GISTransportNetworkInputWidget::loadPipelinesVisualization()
 
     markerSymbol->setWidth(0.8);
     markerSymbol->setColor(Qt::darkBlue);
-    theVisualizationWidget->createSimpleRenderer(markerSymbol,pipelinesMainLayer);
+    theVisualizationWidget->createSimpleRenderer(markerSymbol,roadwaysMainLayer);
 
     //    auto numFeat = mainLayer->featureCount();
 
-    theVisualizationWidget->zoomToLayer(pipelinesMainLayer);
+    theVisualizationWidget->zoomToLayer(roadwaysMainLayer);
 
     return 0;
 }
 
 
-int GISTransportNetworkInputWidget::loadNodesVisualization()
+int GISTransportNetworkInputWidget::loadBridgesVisualization()
 {
-    nodesMainLayer = theNodesWidget->getMainLayer();
+    bridgesMainLayer = theBridgesWidget->getMainLayer();
 
-    if(nodesMainLayer==nullptr)
+    if(bridgesMainLayer==nullptr)
         return -1;
 
     QgsSymbol* markerSymbol = new QgsMarkerSymbol();
 
     markerSymbol->setColor(Qt::blue);
-    theVisualizationWidget->createSimpleRenderer(markerSymbol,nodesMainLayer);
+    theVisualizationWidget->createSimpleRenderer(markerSymbol,bridgesMainLayer);
 
     //    auto numFeat = mainLayer->featureCount();
 
-    theVisualizationWidget->zoomToLayer(nodesMainLayer);
+    theVisualizationWidget->zoomToLayer(bridgesMainLayer);
 
     return 0;
 }
@@ -249,32 +249,32 @@ int GISTransportNetworkInputWidget::loadNodesVisualization()
 
 void GISTransportNetworkInputWidget::clear()
 {
-    theNodesWidget->clear();
-    thePipelinesWidget->clear();
+    theBridgesWidget->clear();
+    theRoadwaysWidget->clear();
 
-    nodesMainLayer = nullptr;
-    pipelinesMainLayer = nullptr;
+    bridgesMainLayer = nullptr;
+    roadwaysMainLayer = nullptr;
 }
 
 
 void GISTransportNetworkInputWidget::handleAssetsLoaded()
 {
-    if(theNodesWidget->isEmpty() || thePipelinesWidget->isEmpty())
+    if(theBridgesWidget->isEmpty() || theRoadwaysWidget->isEmpty())
         return;
 
-    auto res = this->loadNodesVisualization();
+    auto res = this->loadBridgesVisualization();
 
     if(res != 0)
     {
-        this->errorMessage("Error, failed to load the Transport network nodes visualization");
+        this->errorMessage("Error, failed to load the Bridges visualization");
         return;
     }
 
-    res = this->loadPipelinesVisualization();
+    res = this->loadRoadwaysVisualization();
 
     if(res != 0)
     {
-        this->errorMessage("Error, failed to load the Transport network links visualization");
+        this->errorMessage("Error, failed to load the Roadways visualization");
         return;
     }
 
