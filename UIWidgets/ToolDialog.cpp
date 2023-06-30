@@ -6,6 +6,7 @@
 #include "QGISHurricaneSelectionWidget.h"
 #include "OpenQuakeSelectionWidget.h"
 #include "BrailsInventoryGenerator.h"
+#include "BrailsTranspInventoryGenerator.h"
 #include "GMWidget.h"
 
 #include <QVBoxLayout>
@@ -92,6 +93,19 @@ void ToolDialog::handleBrailsInventoryTool(void)
     }
 
     mainWidget->setCurrentWidget(theBrailsInventoryGeneratorWidget);
+
+    this->showMaximized();
+}
+
+void ToolDialog::handleBrailsTranspInventoryTool(void)
+{
+    if(theBrailsTranspInventoryGeneratorWidget == nullptr)
+    {
+        theBrailsTranspInventoryGeneratorWidget = new BrailsTranspInventoryGenerator(visualizationWidget,this);
+        mainWidget->addWidget(theBrailsTranspInventoryGeneratorWidget);
+    }
+
+    mainWidget->setCurrentWidget(theBrailsTranspInventoryGeneratorWidget);
 
     this->showMaximized();
 }
