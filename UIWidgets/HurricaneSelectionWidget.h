@@ -47,16 +47,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QProcess>
 #include <QMap>
 
-#ifdef ARC_GIS
-#include "EmbeddedMapViewWidget.h"
-#endif
+//#ifdef ARC_GIS
+//#include "EmbeddedMapViewWidget.h"
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 class SimCenterMapcanvasWidget;
 class RectangleGrid;
 class NodeHandle;
 class QgsVectorLayer;
-#endif
+//#endif
 
 class VisualizationWidget;
 class HurricaneParameterWidget;
@@ -87,22 +87,22 @@ public:
     bool copyFiles(QString &destDir);
     void clear(void);
 
-#ifdef ARC_GIS
-    void setCurrentlyViewable(bool status);
-#endif
+//#ifdef ARC_GIS
+//    void setCurrentlyViewable(bool status);
+//#endif
 
     int loadResults(const QString& outputDir);
 
     virtual int createHurricaneVisuals(HurricaneObject* hurricane) = 0;
 
-#ifdef ARC_GIS
-    virtual int importHurricaneTrackData(const QString &eventFile, QString &err) = 0;
-#endif
+//#ifdef ARC_GIS
+//    virtual int importHurricaneTrackData(const QString &eventFile, QString &err) = 0;
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     virtual QgsVectorLayer* importHurricaneTrackData(const QString &eventFile, QString &err) = 0;
     virtual int updateGridLayerFeatures(QgsFeatureList& featList) = 0;
-#endif
+//#endif
 
     QString getTerrainGeojsonPath();
 
@@ -155,15 +155,15 @@ protected:
     QVector<QStringList> gridData;
 
     HurricaneObject selectedHurricaneObj;
-#ifdef ARC_GIS
-    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
-#endif
+//#ifdef ARC_GIS
+//    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
     std::unique_ptr<RectangleGrid> userGrid;
     std::unique_ptr<NodeHandle> userPoint;
-#endif
+//#endif
 
     HurricaneParameterWidget* hurricaneParamsWidget = nullptr;
 

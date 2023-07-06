@@ -53,19 +53,19 @@ class QLineEdit;
 class QProgressBar;
 class QLabel;
 
-#ifdef ARC_GIS
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ArcGISMapImageLayer;
-class GroupLayer;
-class FeatureCollectionLayer;
-class KmlLayer;
-class Layer;
-}
-}
-#endif
+//#ifdef ARC_GIS
+//namespace Esri
+//{
+//namespace ArcGISRuntime
+//{
+//class ArcGISMapImageLayer;
+//class GroupLayer;
+//class FeatureCollectionLayer;
+//class KmlLayer;
+//class Layer;
+//}
+//}
+//#endif
 
 
 class UserInputGMWidget : public SimCenterAppWidget

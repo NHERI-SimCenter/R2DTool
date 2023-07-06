@@ -61,23 +61,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDir>
 #include <QString>
 
-#ifdef ARC_GIS
-#include "ArcGISVisualizationWidget.h"
-#include "FeatureCollectionLayer.h"
-#include "GroupLayer.h"
-#include "Layer.h"
-#include "LayerListModel.h"
-#include "SimpleMarkerSymbol.h"
-#include "SimpleRenderer.h"
+//#ifdef ARC_GIS
+//#include "ArcGISVisualizationWidget.h"
+//#include "FeatureCollectionLayer.h"
+//#include "GroupLayer.h"
+//#include "Layer.h"
+//#include "LayerListModel.h"
+//#include "SimpleMarkerSymbol.h"
+//#include "SimpleRenderer.h"
 
-using namespace Esri::ArcGISRuntime;
-#endif
+//using namespace Esri::ArcGISRuntime;
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
 
 #include <qgsvectorlayer.h>
-#endif
+//#endif
 
 
 UserInputGMWidget::UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
@@ -456,7 +456,7 @@ void UserInputGMWidget::clear(void)
     unitsWidget->clear();
 }
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 void UserInputGMWidget::loadUserGMData(void)
 {
     auto qgisVizWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
@@ -710,225 +710,225 @@ void UserInputGMWidget::loadUserGMData(void)
 
     return;
 }
-#endif
+//#endif
 
-#ifdef ARC_GIS
-void UserInputGMWidget::loadUserGMData(void)
-{
+//#ifdef ARC_GIS
+//void UserInputGMWidget::loadUserGMData(void)
+//{
 
-    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
+//    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
 
-    if(arcVizWidget == nullptr)
-    {
-        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
-        return;
-    }
+//    if(arcVizWidget == nullptr)
+//    {
+//        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
+//        return;
+//    }
 
-    CSVReaderWriter csvTool;
+//    CSVReaderWriter csvTool;
 
-    QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
+//    QString err;
+//    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
 
-    if(!err.isEmpty())
-    {
-        this->errorMessage(err);
-        return;
-    }
+//    if(!err.isEmpty())
+//    {
+//        this->errorMessage(err);
+//        return;
+//    }
 
-    if(data.empty())
-        return;
+//    if(data.empty())
+//        return;
 
-    userGMStackedWidget->setCurrentWidget(progressBarWidget);
-    progressBarWidget->setVisible(true);
+//    userGMStackedWidget->setCurrentWidget(progressBarWidget);
+//    progressBarWidget->setVisible(true);
 
-    QApplication::processEvents();
+//    QApplication::processEvents();
 
-    //progressBar->setRange(0,inputFiles.size());
-    progressBar->setRange(0, data.count());
+//    //progressBar->setRange(0,inputFiles.size());
+//    progressBar->setRange(0, data.count());
 
-    progressBar->setValue(0);
+//    progressBar->setValue(0);
 
-    // Create the table to store the fields
-    QList<Field> tableFields;
-    tableFields.append(Field::createText("AssetType", "NULL",4));
-    tableFields.append(Field::createText("TabName", "NULL",4));
-    tableFields.append(Field::createText("Station Name", "NULL",4));
-    tableFields.append(Field::createText("Latitude", "NULL",8));
-    tableFields.append(Field::createText("Longitude", "NULL",9));
-    tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
-    tableFields.append(Field::createText("Ground Motions","",1));
+//    // Create the table to store the fields
+//    QList<Field> tableFields;
+//    tableFields.append(Field::createText("AssetType", "NULL",4));
+//    tableFields.append(Field::createText("TabName", "NULL",4));
+//    tableFields.append(Field::createText("Station Name", "NULL",4));
+//    tableFields.append(Field::createText("Latitude", "NULL",8));
+//    tableFields.append(Field::createText("Longitude", "NULL",9));
+//    tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
+//    tableFields.append(Field::createText("Ground Motions","",1));
 
-    auto gridFeatureCollection = new FeatureCollection(this);
+//    auto gridFeatureCollection = new FeatureCollection(this);
 
-    // Create the feature collection table/layers
-    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
-    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
+//    // Create the feature collection table/layers
+//    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
+//    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
 
-    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
+//    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
 
-    gridLayer->setName("Ground Motion Grid Points");
-    gridLayer->setAutoFetchLegendInfos(true);
+//    gridLayer->setName("Ground Motion Grid Points");
+//    gridLayer->setAutoFetchLegendInfos(true);
 
-    // Create red cross SimpleMarkerSymbol
-    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
+//    // Create red cross SimpleMarkerSymbol
+//    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
 
-    // Create renderer and set symbol to crossSymbol
-    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
-    renderer->setLabel("Ground motion grid points");
+//    // Create renderer and set symbol to crossSymbol
+//    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
+//    renderer->setLabel("Ground motion grid points");
 
-    // Set the renderer for the feature layer
-    gridFeatureCollectionTable->setRenderer(renderer);
+//    // Set the renderer for the feature layer
+//    gridFeatureCollectionTable->setRenderer(renderer);
 
-    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
-    // gridLayer->setMinScale(80000);
+//    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
+//    // gridLayer->setMinScale(80000);
 
-    // Pop off the row that contains the header information
-    data.pop_front();
+//    // Pop off the row that contains the header information
+//    data.pop_front();
 
-    auto numRows = data.size();
+//    auto numRows = data.size();
 
-    int count = 0;
+//    int count = 0;
 
-    // Get the data
-    for(int i = 0; i<numRows; ++i)
-    {
-        auto rowStr = data.at(i);
+//    // Get the data
+//    for(int i = 0; i<numRows; ++i)
+//    {
+//        auto rowStr = data.at(i);
 
-        auto stationName = rowStr[0];
+//        auto stationName = rowStr[0];
 
-        // Path to station files, e.g., site0.csv
-        auto stationPath = motionDir + QDir::separator() + stationName;
+//        // Path to station files, e.g., site0.csv
+//        auto stationPath = motionDir + QDir::separator() + stationName;
 
-        bool ok;
-        auto lon = rowStr[1].toDouble(&ok);
+//        bool ok;
+//        auto lon = rowStr[1].toDouble(&ok);
 
-        if(!ok)
-        {
-            QString errMsg = "Error longitude to a double, check the value";
-            this->errorMessage(errMsg);
+//        if(!ok)
+//        {
+//            QString errMsg = "Error longitude to a double, check the value";
+//            this->errorMessage(errMsg);
 
-            userGMStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
+//            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+//            progressBarWidget->setVisible(false);
 
-            return;
-        }
+//            return;
+//        }
 
-        auto lat = rowStr[2].toDouble(&ok);
+//        auto lat = rowStr[2].toDouble(&ok);
 
-        if(!ok)
-        {
-            QString errMsg = "Error latitude to a double, check the value";
-            this->errorMessage(errMsg);
+//        if(!ok)
+//        {
+//            QString errMsg = "Error latitude to a double, check the value";
+//            this->errorMessage(errMsg);
 
-            userGMStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
+//            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+//            progressBarWidget->setVisible(false);
 
-            return;
-        }
+//            return;
+//        }
 
-        GroundMotionStation GMStation(stationPath,lat,lon);
+//        GroundMotionStation GMStation(stationPath,lat,lon);
 
-        try
-        {
-            GMStation.importGroundMotions();
-        }
-        catch(QString msg)
-        {
+//        try
+//        {
+//            GMStation.importGroundMotions();
+//        }
+//        catch(QString msg)
+//        {
 
-            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
+//            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
 
-            this->errorMessage(errorMessage);
+//            this->errorMessage(errorMessage);
 
-            userGMStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
+//            userGMStackedWidget->setCurrentWidget(fileInputWidget);
+//            progressBarWidget->setVisible(false);
 
-            return;
-        }
+//            return;
+//        }
 
-        // create the feature attributes
-        QMap<QString, QVariant> featureAttributes;
+//        // create the feature attributes
+//        QMap<QString, QVariant> featureAttributes;
 
-        //  auto attrbText = GMStation.
-        //  auto attrbVal = pointData[i];
-        //  featureAttributes.insert(attrbText,attrbVal);
+//        //  auto attrbText = GMStation.
+//        //  auto attrbVal = pointData[i];
+//        //  featureAttributes.insert(attrbText,attrbVal);
 
-        auto vecGMs = GMStation.getStationGroundMotions();
-        featureAttributes.insert("Number of Ground Motions", vecGMs.size());
+//        auto vecGMs = GMStation.getStationGroundMotions();
+//        featureAttributes.insert("Number of Ground Motions", vecGMs.size());
 
 
-        QString GMNames;
-        for(int i = 0; i<vecGMs.size(); ++i)
-        {
-            auto GMName = vecGMs.at(i).getName();
+//        QString GMNames;
+//        for(int i = 0; i<vecGMs.size(); ++i)
+//        {
+//            auto GMName = vecGMs.at(i).getName();
 
-            GMNames.append(GMName);
+//            GMNames.append(GMName);
 
-            if(i != vecGMs.size()-1)
-                GMNames.append(", ");
+//            if(i != vecGMs.size()-1)
+//                GMNames.append(", ");
 
-        }
+//        }
 
-        featureAttributes.insert("Station Name", stationName);
-        featureAttributes.insert("Ground Motions", GMNames);
-        featureAttributes.insert("AssetType", "GroundMotionGridPoint");
-        featureAttributes.insert("TabName", "Ground Motion Grid Point");
+//        featureAttributes.insert("Station Name", stationName);
+//        featureAttributes.insert("Ground Motions", GMNames);
+//        featureAttributes.insert("AssetType", "GroundMotionGridPoint");
+//        featureAttributes.insert("TabName", "Ground Motion Grid Point");
 
-        auto latitude = GMStation.getLatitude();
-        auto longitude = GMStation.getLongitude();
+//        auto latitude = GMStation.getLatitude();
+//        auto longitude = GMStation.getLongitude();
 
-        featureAttributes.insert("Latitude", latitude);
-        featureAttributes.insert("Longitude", longitude);
+//        featureAttributes.insert("Latitude", latitude);
+//        featureAttributes.insert("Longitude", longitude);
 
-        // Create the point and add it to the feature table
-        Point point(longitude,latitude);
-        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
+//        // Create the point and add it to the feature table
+//        Point point(longitude,latitude);
+//        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
 
-        gridFeatureCollectionTable->addFeature(feature);
+//        gridFeatureCollectionTable->addFeature(feature);
 
 
-        ++count;
-        progressLabel->clear();
-        progressBar->setValue(count);
+//        ++count;
+//        progressLabel->clear();
+//        progressBar->setValue(count);
 
-        QApplication::processEvents();
-    }
+//        QApplication::processEvents();
+//    }
 
-    // Create a new layer
-    auto layersTreeView = arcVizWidget->getLayersTree();
+//    // Create a new layer
+//    auto layersTreeView = arcVizWidget->getLayersTree();
 
-    // Check if there is a 'User Ground Motions' root item in the tree
-    auto userInputTreeItem = layersTreeView->getTreeItem("User Ground Motions", nullptr);
+//    // Check if there is a 'User Ground Motions' root item in the tree
+//    auto userInputTreeItem = layersTreeView->getTreeItem("User Ground Motions", nullptr);
 
-    // If there is no item, create one
-    if(userInputTreeItem == nullptr)
-    {
-        auto itemUID = theVisualizationWidget->createUniqueID();
-        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", itemUID);
-    }
+//    // If there is no item, create one
+//    if(userInputTreeItem == nullptr)
+//    {
+//        auto itemUID = theVisualizationWidget->createUniqueID();
+//        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", itemUID);
+//    }
 
 
-    // Add the event layer to the layer tree
-    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
+//    // Add the event layer to the layer tree
+//    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
 
-    progressLabel->setVisible(false);
+//    progressLabel->setVisible(false);
 
-    // Add the event layer to the map
-    arcVizWidget->addLayerToMap(gridLayer,userInputTreeItem);
+//    // Add the event layer to the map
+//    arcVizWidget->addLayerToMap(gridLayer,userInputTreeItem);
 
-    // Reset the widget back to the input pane and close
-    userGMStackedWidget->setCurrentWidget(fileInputWidget);
-    fileInputWidget->setVisible(true);
+//    // Reset the widget back to the input pane and close
+//    userGMStackedWidget->setCurrentWidget(fileInputWidget);
+//    fileInputWidget->setVisible(true);
 
-    if(userGMStackedWidget->isModal())
-        userGMStackedWidget->close();
+//    if(userGMStackedWidget->isModal())
+//        userGMStackedWidget->close();
 
-    emit loadingComplete(true);
+//    emit loadingComplete(true);
 
-    emit outputDirectoryPathChanged(motionDir, eventFile);
+//    emit outputDirectoryPathChanged(motionDir, eventFile);
 
-    return;
-}
-#endif
+//    return;
+//}
+//#endif
 
 
 void UserInputGMWidget::showProgressBar(void)

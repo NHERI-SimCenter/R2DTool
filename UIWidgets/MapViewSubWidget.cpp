@@ -43,12 +43,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGraphicsView>
 #include <QMouseEvent>
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 MapViewSubWidget::MapViewSubWidget(SimCenterMapcanvasWidget* parent) : EmbeddedMapViewWidget(parent)
-#endif
-#ifdef ARC_GIS
-MapViewSubWidget::MapViewSubWidget(QGraphicsView* parent) : EmbeddedMapViewWidget(parent)
-#endif
+//#endif
+//#ifdef ARC_GIS
+//MapViewSubWidget::MapViewSubWidget(QGraphicsView* parent) : EmbeddedMapViewWidget(parent)
+//#endif
 {
     closeButton = new QPushButton("Close",this);
     connect(closeButton,&QPushButton::pressed,this,&EmbeddedMapViewWidget::close);
@@ -69,19 +69,19 @@ void MapViewSubWidget::closeEvent(QCloseEvent *event)
 }
 
 
-#ifdef ARC_GIS
-void MapViewSubWidget::setCurrentlyViewable(bool status)
-{
-    if (status == true)
-    {
-        theNewView->setCurrentLayout(theViewLayout);
+//#ifdef ARC_GIS
+//void MapViewSubWidget::setCurrentlyViewable(bool status)
+//{
+//    if (status == true)
+//    {
+//        theNewView->setCurrentLayout(theViewLayout);
 
-        theViewLayout->addWidget(closeButton,Qt::AlignBottom);
-    }
-    else {
+//        theViewLayout->addWidget(closeButton,Qt::AlignBottom);
+//    }
+//    else {
 
-        theViewLayout->removeWidget(closeButton);
-        this->hide();
-    }
-}
-#endif
+//        theViewLayout->removeWidget(closeButton);
+//        this->hide();
+//    }
+//}
+//#endif

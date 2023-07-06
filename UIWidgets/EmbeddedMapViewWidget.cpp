@@ -38,9 +38,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "EmbeddedMapViewWidget.h"
 
-#ifdef ARC_GIS
-#include "SimCenterMapGraphicsView.h"
-#endif
+//#ifdef ARC_GIS
+//#include "SimCenterMapGraphicsView.h"
+//#endif
 
 #include <QGraphicsSimpleTextItem>
 #include <QGraphicsView>
@@ -51,19 +51,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QApplication>
 #include <QGraphicsItemGroup>
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 #include "SimCenterMapcanvasWidget.h"
 #include <qgsmapcanvas.h>
 #include <qgsmapcanvasdockwidget.h>
-#endif
+//#endif
 
-#ifdef ARC_GIS
-EmbeddedMapViewWidget::EmbeddedMapViewWidget(QGraphicsView* parent)
-#endif
+//#ifdef ARC_GIS
+//EmbeddedMapViewWidget::EmbeddedMapViewWidget(QGraphicsView* parent)
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 EmbeddedMapViewWidget::EmbeddedMapViewWidget(SimCenterMapcanvasWidget* mapCanvasWidget)
-#endif
+//#endif
 {
     mapCanvas = mapCanvasWidget->mapCanvas();
 
@@ -73,52 +73,52 @@ EmbeddedMapViewWidget::EmbeddedMapViewWidget(SimCenterMapcanvasWidget* mapCanvas
 
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-#ifdef ARC_GIS
-    theNewView = SimCenterMapGraphicsView::getInstance();
-    theNewView->setAcceptDrops(true);
-    //theNewView->setObjectName("MapSubwindow");
+//#ifdef ARC_GIS
+//    theNewView = SimCenterMapGraphicsView::getInstance();
+//    theNewView->setAcceptDrops(true);
+//    //theNewView->setObjectName("MapSubwindow");
 
-    theNewView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    theNewView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+//    theNewView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+//    theNewView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    theNewView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    theNewView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+//    theNewView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
-    grid = std::make_unique<RectangleGrid>(theNewView);
-#endif
+//    grid = std::make_unique<RectangleGrid>(theNewView);
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     theViewLayout->addWidget(mapCanvasWidget);
 
     grid = std::make_unique<RectangleGrid>(mapCanvas);
-#endif
+//#endif
 
     point = std::make_unique<NodeHandle>();
 }
 
 
-#ifdef ARC_GIS
-void EmbeddedMapViewWidget::setCurrentlyViewable(bool status)
-{
-    if (status == true)
-        theNewView->setCurrentLayout(theViewLayout);
-    else {
-        this->hide();
-    }
-}
-#endif
+//#ifdef ARC_GIS
+//void EmbeddedMapViewWidget::setCurrentlyViewable(bool status)
+//{
+//    if (status == true)
+//        theNewView->setCurrentLayout(theViewLayout);
+//    else {
+//        this->hide();
+//    }
+//}
+//#endif
 
 
 void EmbeddedMapViewWidget::addGridToScene(void)
 {
 
-#ifdef ARC_GIS
-    auto scene = theNewView->scene();
-#endif
+//#ifdef ARC_GIS
+//    auto scene = theNewView->scene();
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     QGraphicsScene* mapCanvasScene = mapCanvas->scene();
-#endif
+//#endif
 
     auto sceneRect = mapCanvasScene->sceneRect();
 

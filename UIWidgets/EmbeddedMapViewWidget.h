@@ -41,17 +41,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RectangleGrid.h"
 #include "NodeHandle.h"
 
-#ifdef ARC_GIS
-class SimCenterMapGraphicsView;
-#endif
+//#ifdef ARC_GIS
+//class SimCenterMapGraphicsView;
+//#endif
 
 #include <QObject>
 #include <QWidget>
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 class QgsMapCanvas;
 class SimCenterMapcanvasWidget;
-#endif
+//#endif
 
 class RectangleGrid;
 class QGraphicsSimpleTextItem;
@@ -62,20 +62,20 @@ class EmbeddedMapViewWidget : public QWidget
 {
     Q_OBJECT
 public:
-#ifdef ARC_GIS
-    EmbeddedMapViewWidget(QGraphicsView* parent);
-#endif
+//#ifdef ARC_GIS
+//    EmbeddedMapViewWidget(QGraphicsView* parent);
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     EmbeddedMapViewWidget(SimCenterMapcanvasWidget* mapCanvasWidget);
-#endif
+//#endif
 
     RectangleGrid* getGrid(void);
     NodeHandle* getPoint(void);
 
-#ifdef ARC_GIS
-    virtual void setCurrentlyViewable(bool status);
-#endif
+//#ifdef ARC_GIS
+//    virtual void setCurrentlyViewable(bool status);
+//#endif
 
 public slots:
 
@@ -96,14 +96,14 @@ protected:
     std::unique_ptr<RectangleGrid> grid;
     std::unique_ptr<NodeHandle> point;
 
-#ifdef ARC_GIS
-    SimCenterMapGraphicsView *theNewView;
-#endif
+//#ifdef ARC_GIS
+//    SimCenterMapGraphicsView *theNewView;
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     QgsMapCanvas* mapCanvas;
     SimCenterMapcanvasWidget* mapCanvasWidget;
-#endif
+//#endif
 
 };
 

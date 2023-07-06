@@ -101,24 +101,26 @@ win32 {
 
 
 # GIS library
-contains(DEFINES, ARC_GIS)  {
+#contains(DEFINES, ARC_GIS)  {
 
-    message("Building with ArcGIS library")
+#    message("Building with ArcGIS library")
 
-    ARCGIS_RUNTIME_VERSION = 100.9
-    include(./arcgisruntime.pri)
+#    ARCGIS_RUNTIME_VERSION = 100.9
+#    include(./arcgisruntime.pri)
 
-} contains(DEFINES, Q_GIS)  {
+#} contains(DEFINES, Q_GIS)  {
 
-    PATH_TO_QGIS_PLUGIN=../QGISPlugin
 
-    message("Building with QGIS library")
 
-    include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
+#} else {
+#    message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS at line 50 in the .pro file")
+#}
 
-} else {
-    message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS at line 50 in the .pro file")
-}
+PATH_TO_QGIS_PLUGIN=../QGISPlugin
+
+message("Building with QGIS library")
+
+include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 
 # Simcenter dependencies

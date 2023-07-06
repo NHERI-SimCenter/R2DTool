@@ -54,29 +54,29 @@ class AssetFilterDelegate;
 class ComponentTableView;
 class VisualizationWidget;
 
-#ifdef ARC_GIS
+//#ifdef ARC_GIS
 
-class ArcGISVisualizationWidget;
+//class ArcGISVisualizationWidget;
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ClassBreaksRenderer;
-class FeatureCollectionLayer;
-class SimpleRenderer;
-class Feature;
-class Geometry;
-}
-}
-#endif
+//namespace Esri
+//{
+//namespace ArcGISRuntime
+//{
+//class ClassBreaksRenderer;
+//class FeatureCollectionLayer;
+//class SimpleRenderer;
+//class Feature;
+//class Geometry;
+//}
+//}
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 class QgsFeature;
 class QGISVisualizationWidget;
 class QgsVectorLayer;
 class QgsGeometry;
-#endif
+//#endif
 
 class QGroupBox;
 class QLineEdit;
@@ -95,12 +95,12 @@ public:
 
     virtual int loadAssetVisualization() = 0;
 
-#ifdef ARC_GIS
-    virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
-    virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
-    virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
-    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
-#endif
+//#ifdef ARC_GIS
+//    virtual Esri::ArcGISRuntime::Feature*  addFeatureToSelectedLayer(QMap<QString, QVariant>& featureAttributes, Esri::ArcGISRuntime::Geometry& geom);
+//    virtual int removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* feat);
+//    virtual Esri::ArcGISRuntime::FeatureCollectionLayer* getSelectedFeatureLayer(void);
+//    void updateSelectedComponentAttribute(const QString& uid, const QString& attribute, const QVariant& value);
+//#endif
 
     void insertSelectedAssets(QgsFeatureIds& featureIds);
     void clearSelectedAssets(void);
@@ -167,9 +167,9 @@ protected slots:
 
 protected:
 
-#ifdef ARC_GIS
-    ArcGISVisualizationWidget* theVisualizationWidget;
-#endif
+//#ifdef ARC_GIS
+//    ArcGISVisualizationWidget* theVisualizationWidget;
+//#endif
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
@@ -222,10 +222,10 @@ protected:
 
     void clearTableData(void);
 
-#ifdef ARC_GIS
-    // Map to store the selected features according to their UID
-    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
-#endif
+//#ifdef ARC_GIS
+//    // Map to store the selected features according to their UID
+//    QMap<QString, Esri::ArcGISRuntime::Feature*> selectedFeaturesForAnalysis;
+//#endif
 
 };
 

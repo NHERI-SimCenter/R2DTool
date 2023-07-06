@@ -40,13 +40,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "ComponentDatabase.h"
 
-#ifdef ARC_GIS
-#include "EmbeddedMapViewWidget.h"
-#endif
+//#ifdef ARC_GIS
+//#include "EmbeddedMapViewWidget.h"
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 #include "SimCenterMapcanvasWidget.h"
-#endif
+//#endif
 
 #include <QString>
 #include <QMainWindow>

@@ -73,16 +73,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QDir>
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 #include "SimCenterMapcanvasWidget.h"
 #include "RectangleGrid.h"
 #include <qgsmapcanvas.h>
-#endif
+//#endif
 
-#ifdef ARC_GIS
-using namespace Esri::ArcGISRuntime;
-#include "PolygonBoundary.h"
-#endif
+//#ifdef ARC_GIS
+//using namespace Esri::ArcGISRuntime;
+//#include "PolygonBoundary.h"
+//#endif
 
 HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidget, QWidget *parent) : theVizWidget(visWidget), SimCenterAppWidget(parent)
 {
@@ -124,15 +124,15 @@ HurricaneSelectionWidget::HurricaneSelectionWidget(VisualizationWidget* visWidge
 
     layout->addWidget(this->getHurricaneSelectionWidget());
 
-#ifdef ARC_GIS
-    auto userGrid = mapViewSubWidget->getGrid();
-#endif
+//#ifdef ARC_GIS
+//    auto userGrid = mapViewSubWidget->getGrid();
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     auto mapCanvas = mapViewSubWidget->mapCanvas();
     userGrid = std::make_unique<RectangleGrid>(mapCanvas);
     userPoint = std::make_unique<NodeHandle>(nullptr,mapCanvas);
-#endif
+//#endif
 
     userGrid->createGrid();
     userGrid->setSiteGridConfig(siteConfig);
@@ -266,18 +266,18 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
     mainLayout->setContentsMargins(0,0,0,0);
     mainLayout->setSpacing(0);
 
-#ifdef ARC_GIS
-    auto mapView = theVizWidget->getMapViewWidget("HurricaneSelectionWidget");
-    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(mapView);
-#endif
+//#ifdef ARC_GIS
+//    auto mapView = theVizWidget->getMapViewWidget("HurricaneSelectionWidget");
+//    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(mapView);
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     auto mapView = theVizWidget->getMapViewWidget("HurricaneSelectionWidget");
     mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
 
     // Enable the selection tool
     mapViewSubWidget->enableSelectionTool();
-#endif
+//#endif
 
     QComboBox* simulationTypeComboBox = new QComboBox();
     simulationTypeComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -592,15 +592,15 @@ void HurricaneSelectionWidget::loadHurricaneTrackData(void)
 }
 
 
-#ifdef ARC_GIS
-void HurricaneSelectionWidget::setCurrentlyViewable(bool status){
+//#ifdef ARC_GIS
+//void HurricaneSelectionWidget::setCurrentlyViewable(bool status){
 
-    if (status == true)
-        mapViewSubWidget->setCurrentlyViewable(status);
-    else
-        mapViewSubWidget->removeGridFromScene();
-}
-#endif
+//    if (status == true)
+//        mapViewSubWidget->setCurrentlyViewable(status);
+//    else
+//        mapViewSubWidget->removeGridFromScene();
+//}
+//#endif
 
 
 void HurricaneSelectionWidget::loadHurricaneButtonClicked(void)
@@ -665,29 +665,29 @@ void HurricaneSelectionWidget::clear(void)
 
 void HurricaneSelectionWidget::showGridOnMap(void)
 {
-#ifdef ARC_GIS
-    mapViewSubWidget->addGridToScene();
-#endif
+//#ifdef ARC_GIS
+//    mapViewSubWidget->addGridToScene();
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     // Also important to get events from QGIS
     mapViewSubWidget->setMapTool(userGrid.get());
     userGrid->show();
-#endif
+//#endif
 
 }
 
 
 void HurricaneSelectionWidget::showPointOnMap(void)
 {
-#ifdef ARC_GIS
-    mapViewSubWidget->addPointToScene();
-#endif
+//#ifdef ARC_GIS
+//    mapViewSubWidget->addPointToScene();
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     mapViewSubWidget->setMapTool(userGrid.get());
     userPoint->show();
-#endif
+//#endif
 }
 
 
@@ -1124,11 +1124,11 @@ int HurricaneSelectionWidget::loadResults(const QString& outputDir)
 
         QString attribute = "Peak Wind Speeds";
 
-#ifdef ARC_GIS
-        station->updateFeatureAttribute(attribute,QVariant(pwsStr));
-#endif
+//#ifdef ARC_GIS
+//        station->updateFeatureAttribute(attribute,QVariant(pwsStr));
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
         auto feat = station->getStationFeature();
 
         if(!feat.isValid())
@@ -1149,12 +1149,12 @@ int HurricaneSelectionWidget::loadResults(const QString& outputDir)
             this->errorMessage("Failed to update feature");
         }
         featList.push_back(feat);
-#endif
+//#endif
     }
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     this->updateGridLayerFeatures(featList);
-#endif
+//#endif
 
     emit outputDirectoryPathChanged(outputDir, resultsPath);
 

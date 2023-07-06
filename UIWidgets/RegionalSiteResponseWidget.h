@@ -58,17 +58,17 @@ class QLabel;
 class QProcess;
 class QPushButton;
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ArcGISMapImageLayer;
-class GroupLayer;
-class FeatureCollectionLayer;
-class KmlLayer;
-class Layer;
-}
-}
+//namespace Esri
+//{
+//namespace ArcGISRuntime
+//{
+//class ArcGISMapImageLayer;
+//class GroupLayer;
+//class FeatureCollectionLayer;
+//class KmlLayer;
+//class Layer;
+//}
+//}
 
 class SiteConfig;
 class SiteConfigWidget;
@@ -105,9 +105,9 @@ public:
 
     void clear(void);
 
-#ifdef ARC_GIS
-    void setCurrentlyViewable(bool status);
-#endif
+//#ifdef ARC_GIS
+//    void setCurrentlyViewable(bool status);
+//#endif
 
 public slots:
 
@@ -195,14 +195,14 @@ private:
     bool siteDataFlag;
     bool soilModelFlag;
 
-#ifdef ARC_GIS
-    std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
-#endif
+//#ifdef ARC_GIS
+//    std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
     MapViewWindow* mapViewSubWidget;
     RectangleGrid* userGrid;
-#endif
+//#endif
 };
 
 #endif // RegionalSiteResponseWidget_H

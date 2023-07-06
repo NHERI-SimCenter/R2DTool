@@ -72,13 +72,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "VisualizationWidget.h"
 
-#ifdef ARC_GIS
-#include "ArcGISVisualizationWidget.h"
-#endif
+//#ifdef ARC_GIS
+//#include "ArcGISVisualizationWidget.h"
+//#endif
 
-#ifdef Q_GIS
+//#ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
-#endif
+//#endif
 
 #include <QApplication>
 #include <QCoreApplication>
