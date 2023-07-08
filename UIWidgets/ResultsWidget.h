@@ -66,10 +66,6 @@ public:
 
     virtual int processResults(QString resultsDir);
 
-//#ifdef ARC_GIS
-//    void setCurrentlyViewable(bool status);
-//#endif
-
     void clear(void);
 
     void resultsShow(bool value);

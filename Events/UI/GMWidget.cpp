@@ -81,29 +81,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStringList>
 #include <QString>
 
-//#ifdef Q_GIS
 // GIS includes
 #include "SimCenterMapcanvasWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "MapViewWindow.h"
 #include <qgsmapcanvas.h>
 #include <qgsvectorlayer.h>
-//#endif
 
-//#ifdef ARC_GIS
-//
-//#include "SimCenterMapGraphicsView.h"
-//#include "MapGraphicsView.h"
-//#include "Map.h"
-//#include "Point.h"
-//#include "FeatureCollection.h"
-//#include "FeatureCollectionLayer.h"
-//#include "SimpleRenderer.h"
-//#include "SimpleMarkerSymbol.h"
-//#include "LayerTreeView.h"
-//#include "ArcGISVisualizationWidget.h"
-//using namespace Esri::ArcGISRuntime;
-//#endif
 
 GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
@@ -141,18 +125,6 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
 
     m_runButton = new QPushButton(tr("&Run Hazard Simulation"));
     //m_settingButton = new QPushButton(tr("&Path Settings"));
-
-//#ifdef ARC_GIS
-//    auto mapView = theVisualizationWidget->getMapViewWidget();
-
-//    // Create a map view that will be used for selecting the grid points
-//    mapViewSubWidget = std::make_unique<MapViewSubWidget>(mapView);
-
-//    auto userGrid = mapViewSubWidget->getGrid();
-//    userGrid->createGrid();
-//    userGrid->setSiteGridConfig(m_siteConfig);
-//    userGrid->setVisualizationWidget(theVisualizationWidget);
-//#endif
 
     // Adding vs30 widget
     this->m_vs30 = new Vs30(this);
@@ -472,11 +444,6 @@ void GMWidget::showGISWindow(void)
 {
     //    theVisualizationWidget->testNewMapCanvas();
 
-//#ifdef ARC_GIS
-//    mapViewSubWidget->addGridToScene();
-//#endif
-
-//#ifdef Q_GIS
     if(mapViewSubWidget == nullptr)
     {
         auto mapViewWidget = theVisualizationWidget->getMapViewWidget("Select grid on map");
@@ -492,7 +459,7 @@ void GMWidget::showGISWindow(void)
         userGrid->setSiteGridConfig(m_siteConfig);
         userGrid->setVisualizationWidget(theVisualizationWidget);
     }
-//#endif
+
 
     mapViewSubWidget->show();
     userGrid->show();
@@ -653,14 +620,8 @@ void GMWidget::runHazardSimulation(void)
     }
 
     // Remove the grid from the visualization screen
-//#ifdef ARC_GIS
-//    mapViewSubWidget->removeGridFromScene();
-//#endif
-
-//#ifdef Q_GIS
     if(userGrid)
         userGrid->hide();
-//#endif
 
     // First check if the settings are valid
     QString err;
@@ -835,15 +796,6 @@ void GMWidget::runHazardSimulation(void)
             return;
         }
 
-//#ifdef ARC_GIS
-//        // Create the objects needed to visualize the grid in the GIS
-//        auto siteGrid = mapViewSubWidget->getGrid();
-
-//        // Get the vector of grid nodes
-//        auto gridNodeVec = siteGrid->getGridNodeVec();
-//#endif
-
-//#ifdef Q_GIS
         // Get the vector of grid nodes
 
         if(userGrid == nullptr)
@@ -855,7 +807,6 @@ void GMWidget::runHazardSimulation(void)
 
         auto gridNodeVec = userGrid->getGridNodeVec();
         auto mapCanvas = mapViewSubWidget->getMapCanvasWidget()->mapCanvas();
-//#endif
 
         for(int i = 0; i<gridNodeVec.size(); ++i)
         {
@@ -1148,7 +1099,6 @@ void GMWidget::downloadRecordBatch(void)
     }
 }
 
-//#ifdef Q_GIS
 int GMWidget::processDownloadedRecords(QString& errorMessage)
 {
 
@@ -1380,217 +1330,6 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
     return 0;
 }
-//#endif
-
-//#ifdef ARC_GIS
-//int GMWidget::processDownloadedRecords(QString& errorMessage)
-//{
-
-//    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
-
-//    if(arcVizWidget == nullptr)
-//    {
-//        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
-//        return -1;
-//    }
-
-//    auto pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator() + "EventGrid.csv";
-
-//    const QFileInfo inputFile(pathToOutputDirectory);
-
-//    if (!inputFile.exists() || !inputFile.isFile())
-//    {
-//        errorMessage ="A file does not exist at the path: " + pathToOutputDirectory;
-//        return -1;
-//    }
-
-//    QStringList acceptableFileExtensions = {"*.CSV", "*.csv"};
-
-//    QStringList inputFiles = inputFile.dir().entryList(acceptableFileExtensions,QDir::Files);
-
-//    if(inputFiles.empty())
-//    {
-//        errorMessage ="No files with .csv extensions were found at the path: "+pathToOutputDirectory;
-//        return -1;
-//    }
-
-//    QString fileName = inputFile.fileName();
-
-//    CSVReaderWriter csvTool;
-
-//    QString err;
-//    QVector<QStringList> data = csvTool.parseCSVFile(pathToOutputDirectory,err);
-
-//    if(!err.isEmpty())
-//    {
-//        errorMessage = err;
-//        return -1;
-//    }
-
-//    if(data.empty())
-//        return -1;
-
-
-//    QApplication::processEvents();
-
-//    this->getProgressDialog()->setProgressBarRange(0,inputFiles.size());
-//    this->getProgressDialog()->setProgressBarValue(0);
-
-//    // Create the table to store the fields
-//    QList<Field> tableFields;
-//    tableFields.append(Field::createText("AssetType", "NULL",4));
-//    tableFields.append(Field::createText("TabName", "NULL",4));
-//    tableFields.append(Field::createText("Station Name", "NULL",4));
-//    tableFields.append(Field::createText("Latitude", "NULL",8));
-//    tableFields.append(Field::createText("Longitude", "NULL",9));
-//    tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
-//    tableFields.append(Field::createText("Ground Motions","",1));
-
-//    auto gridFeatureCollection = new FeatureCollection(this);
-
-//    // Create the feature collection table/layers
-//    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
-//    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
-
-//    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
-
-//    // Create red cross SimpleMarkerSymbol
-//    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
-
-//    // Create renderer and set symbol to crossSymbol
-//    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
-
-//    // Set the renderer for the feature layer
-//    gridFeatureCollectionTable->setRenderer(renderer);
-
-//    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
-//    // gridLayer->setMinScale(80000);
-
-//    auto headers = data.front();
-
-//    auto indexFile = headers.indexOf("GP_file");
-//    auto indexLon = headers.indexOf("Longitude");
-//    auto indexLat = headers.indexOf("Latitude");
-
-//    if(indexLon == -1 || indexLat == -1 || indexFile == -1)
-//    {
-//        errorMessage = "Error could not find latitude and longitude in headers";
-//        return -1;
-//    }
-
-//    // Pop off the row that contains the header information
-//    data.pop_front();
-
-//    auto numRows = data.size();
-
-//    // Get the data
-//    for(int i = 0; i<numRows; ++i)
-//    {
-//        this->getProgressDialog()->setProgressBarValue(i+1);
-
-//        auto vecValues = data.at(i);
-
-//        if(vecValues.size() < 3)
-//        {
-//            errorMessage = "Error in importing ground motions";
-//            return -1;
-//        }
-
-//        bool ok;
-//        auto lon = vecValues[indexLon].toDouble(&ok);
-
-//        if(!ok)
-//        {
-//            errorMessage = "Error converting longitude object " + vecValues[1] + " to a double";
-//            return -1;
-//        }
-
-//        auto lat = vecValues[indexLat].toDouble(&ok);
-
-//        if(!ok)
-//        {
-//            errorMessage = "Error converting latitude object " + vecValues[2] + " to a double";
-//            return -1;
-//        }
-
-//        auto stationName = vecValues[indexFile];
-
-//        auto stationPath = inputFile.dir().absolutePath() + QDir::separator() + stationName;
-
-//        GroundMotionStation GMStation(stationPath,lat,lon);
-
-//        try
-//        {
-//            GMStation.importGroundMotions();
-//        }
-//        catch(QString msg)
-//        {
-//            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
-
-//            this->errorMessage(errorMessage);
-
-//            return -1;
-//        }
-
-//        stationList.push_back(GMStation);
-
-//        // create the feature attributes
-//        QMap<QString, QVariant> featureAttributes;
-
-//        auto vecGMs = GMStation.getStationGroundMotions();
-//        featureAttributes.insert("Number of Ground Motions", vecGMs.size());
-
-//        QString GMNames;
-//        for(int i = 0; i<vecGMs.size(); ++i)
-//        {
-//            auto GMName = vecGMs.at(i).getName();
-
-//            GMNames.append(GMName);
-
-//            if(i != vecGMs.size()-1)
-//                GMNames.append(", ");
-
-//        }
-
-//        featureAttributes.insert("Station Name", stationName);
-//        featureAttributes.insert("Ground Motions", GMNames);
-//        featureAttributes.insert("AssetType", "GroundMotionGridPoint");
-//        featureAttributes.insert("TabName", "Ground Motion Grid Point");
-
-//        auto latitude = GMStation.getLatitude();
-//        auto longitude = GMStation.getLongitude();
-
-//        featureAttributes.insert("Latitude", latitude);
-//        featureAttributes.insert("Longitude", longitude);
-
-//        // Create the point and add it to the feature table
-//        Point point(longitude,latitude);
-//        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
-
-//        gridFeatureCollectionTable->addFeature(feature);
-//    }
-
-//    // Create a new layer
-//    LayerTreeView *layersTreeView = arcVizWidget->getLayersTree();
-
-//    // Check if there is a 'User Ground Motions' root item in the tree
-//    auto userInputTreeItem = layersTreeView->getTreeItem("EQ Hazard Simulation Grid", nullptr);
-
-//    // If there is no item, create one
-//    if(userInputTreeItem == nullptr)
-//        userInputTreeItem = layersTreeView->addItemToTree("EQ Hazard Simulation Grid", QString());
-
-//    // Add the event layer to the layer tree
-//    auto eventItem = layersTreeView->addItemToTree(fileName, QString(), userInputTreeItem);
-
-//    // Add the event layer to the map
-//    arcVizWidget->addLayerToMap(gridLayer,eventItem);
-
-//    return 0;
-//}
-//#endif
-
-
 
 
 int GMWidget::parseDownloadedRecords(QString zipFile)
@@ -1717,11 +1456,3 @@ bool GMWidget::getSimulationStatus()
     return tmp;
 }
 
-
-//#ifdef ARC_GIS
-//void GMWidget::setCurrentlyViewable(bool status){
-
-//    if (status == true)
-//        mapViewSubWidget->setCurrentlyViewable(status);
-//}
-//#endif

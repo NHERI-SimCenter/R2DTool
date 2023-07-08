@@ -233,7 +233,6 @@ void GroundMotionStation::importGroundMotionTimeHistory(const QString& filePath,
 
 }
 
-//#ifdef Q_GIS
 QgsFeature GroundMotionStation::getStationFeature() const
 {
     return stationFeature;
@@ -243,21 +242,6 @@ void GroundMotionStation::setStationFeature(const QgsFeature &value)
 {
     stationFeature = value;
 }
-//#endif
-
-
-//#ifdef ARC_GIS
-//QMap<QString, QVariant> GroundMotionStation::getStationAttributes() const
-//{
-//    return stationAttributes;
-//}
-
-
-//void GroundMotionStation::setStationAttributes(const QMap<QString, QVariant> &value)
-//{
-//    stationAttributes = value;
-//}
-//#endif
 
 
 QVector<GroundMotionTimeHistory> GroundMotionStation::getStationGroundMotions() const

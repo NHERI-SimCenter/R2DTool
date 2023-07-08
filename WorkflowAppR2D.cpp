@@ -71,14 +71,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ToolDialog.h"
 
 #include "VisualizationWidget.h"
-
-//#ifdef ARC_GIS
-//#include "ArcGISVisualizationWidget.h"
-//#endif
-
-//#ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
-//#endif
 
 #include <QApplication>
 #include <QCoreApplication>

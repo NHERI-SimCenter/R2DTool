@@ -59,15 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QThread>
 #include <QTime>
 
-//#ifdef ARC_GIS
-//#include "ArcGISRuntimeEnvironment.h"
-
-//using namespace Esri::ArcGISRuntime;
-//#endif
-
-//#ifdef Q_GIS
 #include "qgsapplication.h"
-//#endif
 
 static QString logFilePath;
 static bool logToFile = false;
@@ -152,25 +144,15 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(glFormat);
     *********************************************************************************/
 
-//#ifdef ARC_GIS
-//    // Regular Qt startup
-//    QApplication a(argc, argv);
-
-//    // Set the key for the ArcGIS interface
-//    ArcGISRuntimeEnvironment::setLicense(getArcGISKey());
-//#endif
-
-//#ifdef Q_GIS
 
     // Start the Application
     QgsApplication a( argc, argv, true );
 
-//#endif
     //Setting Google Analytics Tracking Information
-//    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
-//    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
-//    GoogleAnalytics::CreateSessionId();
-//    GoogleAnalytics::StartSession();
+    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
+    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
+    GoogleAnalytics::CreateSessionId();
+    GoogleAnalytics::StartSession();
 
 
     // create a remote interface
@@ -257,7 +239,7 @@ int main(int argc, char *argv[])
     theRemoteService->logout();
     thread->quit();
 
-//    GoogleAnalytics::EndSession();
+    GoogleAnalytics::EndSession();
 
     return res;
 }

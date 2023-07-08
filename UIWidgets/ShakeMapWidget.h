@@ -55,60 +55,6 @@ class QProgressBar;
 class QLabel;
 class QSplitter;
 
-//#ifdef ARC_GIS
-//namespace Esri
-//{
-//namespace ArcGISRuntime
-//{
-//class ArcGISMapImageLayer;
-//class GroupLayer;
-//class FeatureCollectionLayer;
-//class KmlLayer;
-//class Layer;
-//}
-//}
-
-//struct ShakeMap{
-
-//    QString eventName;
-
-//    Esri::ArcGISRuntime::GroupLayer* eventLayer = nullptr;
-//    Esri::ArcGISRuntime::Layer* gridLayer = nullptr;
-//    Esri::ArcGISRuntime::Layer* faultLayer = nullptr;
-//    Esri::ArcGISRuntime::Layer* eventKMZLayer = nullptr;
-//    Esri::ArcGISRuntime::Layer* pgaPolygonLayer = nullptr;
-//    Esri::ArcGISRuntime::Layer* pgaOverlayLayer = nullptr;
-//    Esri::ArcGISRuntime::Layer* pgaContourLayer = nullptr;
-//    Esri::ArcGISRuntime::Layer* epicenterLayer = nullptr;
-
-//    inline std::vector<Esri::ArcGISRuntime::Layer*> getAllActiveSubLayers(void)
-//    {
-//        std::vector<Esri::ArcGISRuntime::Layer*> layers;
-
-//        if(gridLayer)
-//            layers.push_back(gridLayer);
-//        if(faultLayer)
-//            layers.push_back(faultLayer);
-//        if(eventKMZLayer)
-//            layers.push_back(eventKMZLayer);
-//        if(pgaPolygonLayer)
-//            layers.push_back(pgaPolygonLayer);
-//        if(pgaOverlayLayer)
-//            layers.push_back(pgaOverlayLayer);
-//        if(pgaContourLayer)
-//            layers.push_back(pgaContourLayer);
-//        if(epicenterLayer)
-//            layers.push_back(epicenterLayer);
-
-//        return layers;
-//    }
-
-//    QVector<GroundMotionStation> stationList;
-//};
-//#endif
-
-//#ifdef Q_GIS
-
 class QgsVectorLayer;
 
 struct ShakeMap{
@@ -148,7 +94,6 @@ struct ShakeMap{
 
     QVector<GroundMotionStation> stationList;
 };
-//#endif
 
 
 class ShakeMapWidget : public SimCenterAppWidget

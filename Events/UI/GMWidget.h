@@ -85,9 +85,6 @@ public:
     bool copyFiles(QString &destDir);
     bool getSimulationStatus(void);
 
-//#ifdef ARC_GIS
-//    void setCurrentlyViewable(bool status);
-//#endif
 
     GmAppConfig *appConfig() const;
 
@@ -156,14 +153,8 @@ private:
 
     VisualizationWidget* theVisualizationWidget;
 
-//#ifdef ARC_GIS
-//    std::unique_ptr<MapViewSubWidget> mapViewSubWidget;
-//#endif
-
-//#ifdef Q_GIS
     MapViewWindow* mapViewSubWidget;
     RectangleGrid* userGrid;
-//#endif
 
     void setupConnections();
     void initAppConfig();

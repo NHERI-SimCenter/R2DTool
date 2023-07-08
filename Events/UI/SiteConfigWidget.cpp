@@ -5,9 +5,7 @@
 #include "VisualizationWidget.h"
 #include "VerticalScrollingWidget.h"
 
-#ifdef Q_GIS
 #include "QGISSiteInputWidget.h"
-#endif
 
 #include <QtWidgets>
 #include <QValidator>

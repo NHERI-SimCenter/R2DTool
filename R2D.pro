@@ -51,8 +51,6 @@ TEMPLATE = app
 VERSION = 1.1.1
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-# Select one of the following GIS librarys
-DEFINES +=  Q_GIS #ARC_GIS
 
 # Specify the path to the Simcenter common directory
 PATH_TO_COMMON=../SimCenterCommon
@@ -101,20 +99,6 @@ win32 {
 
 
 # GIS library
-#contains(DEFINES, ARC_GIS)  {
-
-#    message("Building with ArcGIS library")
-
-#    ARCGIS_RUNTIME_VERSION = 100.9
-#    include(./arcgisruntime.pri)
-
-#} contains(DEFINES, Q_GIS)  {
-
-
-
-#} else {
-#    message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS at line 50 in the .pro file")
-#}
 
 PATH_TO_QGIS_PLUGIN=../QGISPlugin
 
