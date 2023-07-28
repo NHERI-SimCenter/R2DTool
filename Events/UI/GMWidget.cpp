@@ -80,6 +80,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QHBoxLayout>
 #include <QStringList>
 #include <QString>
+#include <QTabWidget>
+#include <QScrollArea>
 
 #ifdef Q_GIS
 #include "SimCenterMapcanvasWidget.h"
@@ -118,8 +120,6 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     connect(process, &QProcess::readyReadStandardOutput, this, &GMWidget::handleProcessTextOutput);
     connect(process, &QProcess::started, this, &GMWidget::handleProcessStarted);
 
-//    QGridLayout* toolsGridLayout = new QGridLayout(this);
-//    toolsGridLayout->setContentsMargins(0,0,0,0);
 
     // Adding Site Config Widget
     this->m_siteConfig = new SiteConfig(this);
@@ -161,12 +161,15 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     //buttonsLayout->addWidget(this->m_settingButton);
     buttonsLayout->addWidget(this->m_runButton);
 
+
+    /*
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0,0,0,0);
 
     QVBoxLayout* lhs = new QVBoxLayout();
 
     m_ruptureWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+
     lhs->addWidget(m_siteConfigWidget);
     lhs->addWidget(m_vs30Widget);
     lhs->addWidget(spatialCorrWidget);
@@ -179,40 +182,72 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     rhs->addWidget(m_intensityMeasureWidget);
     rhs->addLayout(buttonsLayout);
 
-
     mainLayout->addLayout(lhs);
     mainLayout->addLayout(rhs);
 
-//    toolsGridLayout->addWidget(this->m_siteConfigWidget,        0,0,4,1,Qt::AlignTop);
-//    toolsGridLayout->addWidget(this->m_ruptureWidget,           4,0,2,1);
-//    toolsGridLayout->addWidget(this->m_eventGMDir,              6,0);
+    */
+    
+    QTabWidget *theTabWidget = new QTabWidget();
 
-//    toolsGridLayout->addWidget(this->spatialCorrWidget,         0,1,Qt::AlignTop);
-//    toolsGridLayout->addWidget(this->m_selectionWidget,         2,1);
-//    toolsGridLayout->addWidget(this->m_vs30Widget,              3,1);
-//    toolsGridLayout->addWidget(this->m_gmpeWidget,              4,1);
-//    toolsGridLayout->addWidget(this->m_intensityMeasureWidget,  5,1);
-//    toolsGridLayout->addLayout(buttonsLayout,                   6,1);
-//    //m_eventGMDir->hide();
+    QWidget     *mainGroup = new QWidget();
+    QGridLayout *mainLayout = new QGridLayout();
+    
+    QLabel *generalDescriptionLabel = new QLabel("\n Steps Involved in Obtaining a Set of Motions for a Set of Sites given a Rupture: "
+                                                 "\n --> Earthquake - specyfying source and ground motion models"
+                                                 "\n --> Sites - specifying locations and soil conditions for sites"
+                                                 "\n --> Selection - specifying ground motion database and intensity measure correlations between sites for selected records");
 
-//    toolsGridLayout->setHorizontalSpacing(5);
-//    toolsGridLayout->setVerticalSpacing(0);
-    //this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    mainLayout->addWidget(generalDescriptionLabel, 0, 0);
+    
+    QWidget *earthquakeWidget = new QWidget();
+    QVBoxLayout *earthquakeLayout=new QVBoxLayout();    
+    earthquakeLayout->addWidget(m_ruptureWidget);
+    earthquakeLayout->addWidget(m_gmpeWidget);
+    earthquakeLayout->addWidget(m_intensityMeasureWidget);
+    earthquakeWidget->setLayout(earthquakeLayout);
+    earthquakeLayout->addStretch();
+    
+    theTabWidget->addTab(earthquakeWidget, "Earthquake");
 
-    //toolsGridLayout->setRowStretch(7,1);
+    QWidget *siteWidget = new QWidget();
+    QVBoxLayout *siteLayout=new QVBoxLayout();
+    siteLayout->addWidget(m_siteConfigWidget);
+    siteLayout->addWidget(m_vs30Widget);
+    siteWidget->setLayout(siteLayout);
+    siteLayout->addStretch();
+    
+    theTabWidget->addTab(siteWidget, "Sites");
+    
+    QWidget *imWidget = new QWidget();
+    QVBoxLayout *imLayout=new QVBoxLayout();
+    imLayout->addWidget(m_selectionWidget);
+    imLayout->addWidget(spatialCorrWidget);
+    imLayout->addWidget(m_eventGMDir);
+    imLayout->addLayout(buttonsLayout);
+    imLayout->addStretch();
+    
+    imWidget->setLayout(imLayout);
+    theTabWidget->addTab(imWidget, "Record Selection");
+    
+    mainLayout->addWidget(theTabWidget, 1, 0);
 
+    
+    mainGroup->setLayout(mainLayout);
+    //mainGroup->setMaximumWidth(windowWidth);
+
+    QScrollArea *scrollArea = new QScrollArea();
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setLineWidth(1);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setWidget(mainGroup);
+    // scrollArea->setMaximumWidth(windowWidth + 25);
+
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(scrollArea);
+    this->setLayout(layout);
+
+    
     setupConnections();
-
-    //Test
-    //    // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
-    //    QString userName = getPEERUserName();
-    //    QString password = getPEERPassWord();
-
-    //    peerClient.signIn(userName, password);
-    //    this->showInfoDialog();
-
-    //    this->handleProcessFinished(0,QProcess::NormalExit);
-
 }
 
 
