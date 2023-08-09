@@ -79,7 +79,7 @@ private:
     QPushButton* browseIniFileButton;
 
     QComboBox* oqVersionCombo;
-    QString oqVersion = "3.12.0";
+    QString oqVersion = "3.17.1";
 
     void setSourceDir(QString dirPath);
     void setIniFile(QString dirPath);
