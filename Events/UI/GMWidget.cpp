@@ -110,7 +110,7 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     this->m_siteConfig = new SiteConfig(this);
     this->m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig, visWidget);
 
-    this->m_ruptureWidget = new RuptureWidget();
+    this->m_ruptureWidget = new RuptureWidget(this);
 
     this->m_gmpe = new GMPE(this);
     this->m_gmpeWidget = new GMPEWidget(*this->m_gmpe);
