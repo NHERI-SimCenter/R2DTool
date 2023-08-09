@@ -769,7 +769,7 @@ void GMWidget::runHazardSimulation(void)
     // Get the intensity measure Json object
     auto IMObj = m_intensityMeasure->getJson();
 
-    auto numGM =  m_siteConfigWidget->getNumberOfGMPerSite();
+    auto numGM =  m_selectionWidget->getNumberOfGMPerSite();
 
     if(numGM == -1)
     {

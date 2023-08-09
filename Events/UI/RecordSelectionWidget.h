@@ -48,10 +48,11 @@ class RecordSelectionWidget : public QWidget
     Q_OBJECT
 public:
     explicit RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent = nullptr);
-
+    int getNumberOfGMPerSite(void);
 private:
     RecordSelectionConfig& m_selectionConfig;
     QComboBox* m_dbBox;
+    QLineEdit* numGMLineEdit;
 
 };
 
