@@ -82,16 +82,15 @@ macdeployqt $appFile
 
 mkdir  $pathApp/Contents/MacOS/Examples
 mkdir  $pathApp/Contents/MacOS/Databases
-cp     ../../R2DExamples/Examples.json $pathApp/Contents/MacOS/Examples
 cp -fR $pathToBackendApps/applications $pathApp/Contents/MacOS
 cp -fR $pathToBackendApps/applications/performRegionalEventSimulation/regionalWindField/database/historical_storm/* $pathApp/Contents/MacOS/Databases
 mkdir  $pathApp/Contents/MacOS/applications/opensees
 mkdir  $pathApp/Contents/MacOS/applications/dakota
 mkdir  $pathApp/Contents/MacOS/Examples
 mkdir  $pathApp/Contents/MacOS/Databases
+cp     ../../R2DExamples/Examples.json $pathApp/Contents/MacOS/Examples
 cp -fr $pathToOpenSees/* $pathApp/Contents/MacOS/applications/opensees
 cp -fr $pathToDakota/* $pathApp/Contents/MacOS/applications/dakota
-cp -fr $pathApp/../../Examples/Examples.json $pathApp/Contents/MacOS/Examples
 cp -fr $pathApp/../../Databases/* $pathApp/Contents/MacOS/Databases
 
 mkdir $pathApp/Contents/MacOS/share
@@ -102,6 +101,8 @@ cp -fR $pathApp/../../../qgisplugin/mac/Install/lib/* $pathApp/Contents/Framewor
 cp -fR $pathApp/../../../qgisplugin/mac/qgis-deps-0.9/stage/lib/* $pathApp/Contents/Frameworks
 cp -fR $pathApp/../../../qgisplugin/mac/Install/share/* $pathApp/Contents/MacOS/share
 cp -fR $pathApp/../../../qgisplugin/mac/Install/qgis/* $pathApp/Contents/MacOS/lib/qgis
+
+install_name_tool -change @loader_path/libz.1.2.11.dylib @rpath/libz.1.2.11.dylib ./R2D.app/Contents/MacOS/R2D
 
 # remove unwanted stuff
 
@@ -117,8 +118,10 @@ declare -a notWantedApp=("createSAM/mdofBuildingModel/"
 			 "createEVENT/stochasticGroundMotion"
 			 "createEVENT/windTunnelExperiment"
 			 "createEDP/standardWindEDP"
-			 "createEDP/standardEarthquakeEDP"
 			 "createEDP/userEDP"
+			 "createEDP/userEDP"
+			 "createEDP/userEDP_R"
+			 "createEDP/standardEarthquakeEDP_R"			 
 			)
 
 for app in "${notWantedApp[@]}"

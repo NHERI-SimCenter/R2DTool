@@ -148,6 +148,13 @@ EarthquakeRuptureForecast* EarthquakeRuptureForecastWidget::getRuptureSource() c
     return m_eqRupture;
 }
 
+// KZ: adding getNumScen to return number of scenarios
+QString EarthquakeRuptureForecastWidget::getNumScen() const
+{
+    return this->NumScenarioLineEdit->text();
+}
+
+
 
 void EarthquakeRuptureForecastWidget::setupConnections()
 {

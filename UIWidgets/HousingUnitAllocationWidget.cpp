@@ -121,6 +121,9 @@ HousingUnitAllocationWidget::HousingUnitAllocationWidget(QWidget *parent, Visual
 
     // this->createGISFiles();
     // Test to remove end
+
+    // get current layers
+    this->handleGetLayersFromMap();
 }
 
 

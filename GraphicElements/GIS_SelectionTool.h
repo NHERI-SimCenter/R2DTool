@@ -1,10 +1,11 @@
-﻿#ifndef AssetsWidget_H
-#define AssetsWidget_H
+#ifndef GIS_SelectionTool_H
+#define GIS_SelectionTool_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -19,7 +20,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -28,37 +29,57 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "MultiComponentR2D.h"
+// Written by: Stevan Gavrilovic
 
-class SimCenterAppSelection;
+#include <QGraphicsItem>
+#include <QObject>
+
+#include <qgsmaptool.h>
+#include <QGraphicsItem>
+
+class QgsMapCanvas;
 class VisualizationWidget;
+class GridNode;
 
-class AssetsWidget : public  MultiComponentR2D
+class GIS_SelectionTool : public QgsMapTool, public QGraphicsItem
 {
     Q_OBJECT
-
+    Q_INTERFACES(QGraphicsItem)
+    
 public:
-    explicit AssetsWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~AssetsWidget();
+    
+  GIS_SelectionTool(QgsMapCanvas *);
+  virtual ~GIS_SelectionTool();
 
-    void clear(void);
+  virtual QVector<GridNode *> getGridNodeVec() const =0;
+  virtual void setVisualizationWidget(VisualizationWidget *value) =0;
+  virtual void setCanvas(QgsMapCanvas *parent) =0;  
+  virtual void createGrid() =0;
+  virtual void clearGrid() = 0;
+  virtual void removeGridFromScene(void) = 0;
+  virtual void show() = 0;
+
+signals:
+  void selectionChanged(void);
+  void geometryChanged();
+
+private:  
+
+private slots:
+
+protected:
 
 private:
-    SimCenterAppSelection* buildingWidget = nullptr;
-    SimCenterAppSelection* gasPipelineWidget = nullptr;
-    SimCenterAppSelection* waterNetworkWidget = nullptr;
-    SimCenterAppSelection* transportNetworkWidget = nullptr;
-    VisualizationWidget* visualizationWidget = nullptr;
+
 };
 
-#endif // AssetsWidget_H
+#endif // GIS_SelectionTool_H

@@ -41,6 +41,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterMapcanvasWidget.h"
 #include "GIS_Selection.h"
 #include <qgsmapcanvas.h>
+#include <PlainRectangle.h>
+#include <BrailsGoogleDialog.h>
+//#include <PythonProcessHandler.h>
+#include <SimCenterPreferences.h>
 
 #include <QLabel>
 #include <QPushButton>
@@ -48,7 +52,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QGridLayout>
 #include <SC_DoubleLineEdit.h>
+#include <QComboBox>
 #include <SC_FileEdit.h>
+#include <SC_IntLineEdit.h>
+#include <SC_DoubleLineEdit.h>
+#include <QSettings>
 
 BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -62,6 +70,15 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     minLong = new SC_DoubleLineEdit("minLong",0.0);
     maxLong = new SC_DoubleLineEdit("maxLong",0.0);    
     theOutputFile = new SC_FileEdit("outputFile");
+
+    QString appDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
+    QString brailsDir = appDir + QDir::separator() + QString("brails");
+    QDir dir(brailsDir);
+    if (!dir.exists())
+      dir.mkpath(brailsDir);
+
+    QString brailsOutput = brailsDir + QDir::separator() + "inventory.csv";
+    theOutputFile->setFilename(brailsOutput);
     
     QGridLayout *mainLayout = new QGridLayout(this);
     mainLayout->addWidget(new QLabel("Latitude:"),0,0);
@@ -69,6 +86,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     mainLayout->addWidget(minLat,1,1);    
     mainLayout->addWidget(new QLabel("max:"),1,2);
     mainLayout->addWidget(maxLat,1,3);
+
     mainLayout->addWidget(new QLabel("Longitude:"),0,4);
     mainLayout->addWidget(new QLabel("min:"),1,4);
     mainLayout->addWidget(minLong,1,5);    
@@ -77,27 +95,42 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     
     mainLayout->addWidget(new QLabel("Export BRAILS file"),2,0);
     mainLayout->addWidget(theOutputFile,2,1,1,7);
+
+    mainLayout->addWidget(new QLabel("Image Source"),3,0);
+    QComboBox *imageSourceCombo = new QComboBox();
+    imageSourceCombo->addItem("Google");
+    imageSourceCombo->addItem("Local");
+    imageSourceCombo->addItem("NHERI DesignSafe");
+    imageSourceCombo->addItem("NHERI Rapid");
+    mainLayout->addWidget(imageSourceCombo,3,1,1,3);
     
+    connect(imageSourceCombo, &QComboBox::currentTextChanged, this, [=](QString text) {
+      imageSource = text;
+    });
+    
+    mainLayout->addWidget(new QLabel("Imputation Algorithm"),4,0);
+    QComboBox *imputationAlgoCombo = new QComboBox();
+    imputationAlgoCombo->addItem("None");    
+    imputationAlgoCombo->addItem("Sang-ri");
+    imputationAlgoCombo->addItem("Aakash");
+    imputationAlgoCombo->addItem("Dimitrios");
+    mainLayout->addWidget(imputationAlgoCombo,4,1,1,3);
+
+    connect(imputationAlgoCombo, &QComboBox::currentTextChanged, this, [=](QString text) {
+      imputationAlgo = text;
+    });
+
     QPushButton *runButton = new QPushButton(tr("Run BRAILS"));
-    mainLayout->addWidget(runButton, 3,4,1,2);
-    //    runButton->setMaximumWidth(150);
-    
-    connect(runButton,SIGNAL(clicked()),this,SLOT(runBRAILS()));
+    mainLayout->addWidget(runButton, 5,0,1,8);
+    connect(runButton,SIGNAL(clicked()),this,SLOT(runBRAILS()));    
     
     theSelectionWidget = new GIS_Selection(theVisualizationWidget);
-    mainLayout->addWidget(theSelectionWidget,4,0,1,8);
-
+    mainLayout->addWidget(theSelectionWidget,6,0,1,8);
     connect(theSelectionWidget,SIGNAL(selectionGeometryChanged()), this, SLOT(coordsChanged()));
 
-    /* some connection for editing by user of selection .. coming later
-    connect(minLat, &QLineEdit::textChanged, this, [=](QString text){
-            minLatNumber = QString(text).toDouble();
-
-    });	    
-    */
-
-
-
+    // set current selections
+    imageSource=imageSourceCombo->currentText();
+    imputationAlgo=imputationAlgoCombo->currentText();
 }
 
 
@@ -111,10 +144,38 @@ void BrailsInventoryGenerator::clear(void)
 
 }
 
-
 void BrailsInventoryGenerator::runBRAILS(void)
 {
 
+  // make sure output dir exists
+  QFileInfo fileInfo(theOutputFile->getFilename());
+  QString outputPath = fileInfo.absolutePath();
+  QString fileName = fileInfo.baseName();  
+  QDir dir(outputPath);
+    if (!dir.exists())
+      dir.mkpath(outputPath);
+    
+  BrailsData brailsData;
+  brailsData.minLat = minLat->getDouble();
+  brailsData.maxLat = maxLat->getDouble();
+  brailsData.minLong = minLong->getDouble();
+  brailsData.maxLong = maxLong->getDouble();
+  brailsData.outputFile =theOutputFile->getFilename();
+  brailsData.imageSource = imageSource;
+  brailsData.imputationAlgo = imputationAlgo;
+
+  
+  if (imageSource == "Google") {
+    errorMessage("Starting Brails .. ");
+    if (theGoogleDialog == 0) {
+      theGoogleDialog = new BrailsGoogleDialog(this);
+    }
+    theGoogleDialog->setData(brailsData);
+    theGoogleDialog->show();
+    theGoogleDialog->raise();
+    theGoogleDialog->activateWindow();
+    errorMessage("Window Shown and activayed .. ");    
+  }
 }
 
 
@@ -122,12 +183,10 @@ void BrailsInventoryGenerator::runBRAILS(void)
 void BrailsInventoryGenerator::coordsChanged(void)
 {
   QVector<double> points = theSelectionWidget->getSelectedPoints();
-  qDebug() << "BRAILS_INVENTORY::coordsChanged " << points;
   minLat->setText(QString::number(points.at(0)));
   minLong->setText(QString::number(points.at(1)));
   maxLat->setText(QString::number(points.at(6)));
-  maxLong->setText(QString::number(points.at(7)));  
-  
+  maxLong->setText(QString::number(points.at(7)));    
 }
 
 
