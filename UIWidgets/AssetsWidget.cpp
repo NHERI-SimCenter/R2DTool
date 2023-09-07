@@ -47,8 +47,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVWaterNetworkInputWidget.h"
 #include "GISAssetInputWidget.h"
 #include "GISWaterNetworkInputWidget.h"
-#include "CSVTransportNetworkInputWidget.h"
-// #include "JSONTransportNetworkInputWidget.h"
+// #include "CSVTransportNetworkInputWidget.h"
+#include "JSONTransportNetworkInputWidget.h"
 #include "GISTransportNetworkInputWidget.h"
 
 // Qt headers
@@ -90,10 +90,10 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     CSVWaterNetworkInputWidget *csvWaterNetworkInventory = new CSVWaterNetworkInputWidget(this, visualizationWidget);
     waterNetworkWidget->addComponent(QString("CSV to Water Network"), QString("CSV_to_WATERNETWORK"), csvWaterNetworkInventory);
 
-    CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
-    transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
-    // JSONTransportNetworkInputWidget *jsonTransportNetworkInventory = new JSONTransportNetworkInputWidget(this, visualizationWidget);
-    // transportNetworkWidget->addComponent(QString("Json to Transportation Network"), QString("JSON_to_TRANSPORTNETWORK"), jsonTransportNetworkInventory);
+    // CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
+    // transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
+    JSONTransportNetworkInputWidget *jsonTransportNetworkInventory = new JSONTransportNetworkInputWidget(this, visualizationWidget);
+    transportNetworkWidget->addComponent(QString("Json to Transportation Network"), QString("JSON_to_TRANSPORTNETWORK"), jsonTransportNetworkInventory);
 
 
     GISWaterNetworkInputWidget *gisWaterNetworkInventory = new GISWaterNetworkInputWidget(this, visualizationWidget);
