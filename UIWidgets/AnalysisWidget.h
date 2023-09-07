@@ -56,6 +56,7 @@ private:
     SimCenterAppSelection *buildingWidget = nullptr;
     SimCenterAppSelection *pipelineWidget = nullptr;
     SimCenterAppSelection *WDNWidget = nullptr;
+    SimCenterAppSelection *transportWidget = nullptr;
 };
 
 #endif // AnalysisWidget_H

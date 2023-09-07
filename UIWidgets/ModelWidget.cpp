@@ -69,10 +69,15 @@ ModelWidget::ModelWidget(QWidget *parent)
   : MultiComponentR2D(QString("Modeling"), parent)
 {
 
-  QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");  
-    buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Buildings"), this);
+  QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
+  QList<QString> transportExtraKeys;
+  transportExtraKeys.append("TransportRoads");
+  transportExtraKeys.append("TransportBridges");
+  transportExtraKeys.append("TransportTunnels");
+  buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Buildings"), this);
     pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("NaturalGasPipelines"), this);
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("WaterDistributionNetwork"), waterExtraKeys);
+    transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), transportExtraKeys);
 
     // Building widget apps
     SimCenterAppWidget *mdofLU = new MDOF_LU();
@@ -98,9 +103,14 @@ ModelWidget::ModelWidget(QWidget *parent)
 
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
 
+    // Transportation network apps
+    SimCenterAppWidget *noneWidget4 = new NoneWidget(this);
+    transportWidget->addComponent(QString("None"), QString("None"), noneWidget4);
+
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network", pipelineWidget);
     this->addComponent("Water Network", WDNWidget);
+    this->addComponent("Transportation Network", transportWidget);
     this->hideAll();
 }
 
@@ -116,6 +126,7 @@ void ModelWidget::clear(void)
     buildingWidget->clear();
     pipelineWidget->clear();
     WDNWidget->clear();
+    transportWidget->clear();
 }
 
 

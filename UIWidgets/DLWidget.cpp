@@ -73,7 +73,11 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
     pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("NaturalGasPipelines"), this);
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
-
+    QList<QString> transportExtraKeys;
+    transportExtraKeys.append("TransportRoads");
+    transportExtraKeys.append("TransportBridges");
+    transportExtraKeys.append("TransportTunnels");
+    transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), transportExtraKeys);
     // Building widget apps
     SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget;    
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
@@ -95,9 +99,18 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
 
+    // Transportation widget apps
+    SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;
+    SimCenterAppWidget *buildingPelicun_trans = new PelicunDLWidget;
+    SimCenterAppWidget *noneWidget_trans = new NoneWidget(this);
+    transportWidget->addComponent(QString("Pelicun3"), QString("pelicun3"), buildingPelicun3_trans);
+    transportWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun_trans);
+    transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
+
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
     this->addComponent("Water Network",WDNWidget);
+    this->addComponent("Transportation Network",transportWidget);
 
     this->hideAll();
 }
@@ -141,6 +154,7 @@ void DLWidget::clear(void)
     buildingWidget->clear();
     pipelineWidget->clear();
     WDNWidget->clear();
+    transportWidget->clear();
 }
 
 

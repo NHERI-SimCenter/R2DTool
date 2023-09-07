@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GISAssetInputWidget.h"
 #include "GISWaterNetworkInputWidget.h"
 #include "CSVTransportNetworkInputWidget.h"
+// #include "JSONTransportNetworkInputWidget.h"
 #include "GISTransportNetworkInputWidget.h"
 
 // Qt headers
@@ -74,7 +75,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Buildings"), this);
     gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("NaturalGasPipelines"), this);
     waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("WaterDistributionNetwork"), this);
-    transportNetworkWidget = new SimCenterAppSelection(QString("Regional Transportation Network"), QString("TransportationDistributionNetwork"), this);
+    transportNetworkWidget = new SimCenterAppSelection(QString("Regional Transportation Network"), QString("TransportationNetwork"), this);
 
     PointAssetInputWidget *csvBuildingInventory = new PointAssetInputWidget(this, visualizationWidget, "Buildings","CSV_to_AIM");
     buildingWidget->addComponent(QString("CSV to AIM"), QString("CSV_to_AIM"), csvBuildingInventory);
@@ -91,6 +92,8 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
     CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
     transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
+    // JSONTransportNetworkInputWidget *jsonTransportNetworkInventory = new JSONTransportNetworkInputWidget(this, visualizationWidget);
+    // transportNetworkWidget->addComponent(QString("Json to Transportation Network"), QString("JSON_to_TRANSPORTNETWORK"), jsonTransportNetworkInventory);
 
 
     GISWaterNetworkInputWidget *gisWaterNetworkInventory = new GISWaterNetworkInputWidget(this, visualizationWidget);

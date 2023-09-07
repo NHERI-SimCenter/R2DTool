@@ -109,12 +109,13 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
+    $$PWD/UIWidgets/AssetInputJSONWidget.cpp \
             $$PWD/UIWidgets/AssetsWidget.cpp \
             $$PWD/UIWidgets/BuildingDMEQWidget.cpp \
             $$PWD/UIWidgets/BuildingDMWidget.cpp \
             $$PWD/UIWidgets/BuildingEDPEQWidget.cpp \
             $$PWD/UIWidgets/BuildingEDPWidget.cpp \
-            $$PWD/UIWidgets/CSVTransportNetworkInputWidget.cpp \
+#            $$PWD/UIWidgets/CSVTransportNetworkInputWidget.cpp \
             $$PWD/UIWidgets/ColorDialogDelegate.cpp \
             $$PWD/UIWidgets/BuildingModelGeneratorWidget.cpp \
             $$PWD/UIWidgets/BuildingModelingWidget.cpp \
@@ -122,6 +123,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.cpp \
             $$PWD/UIWidgets/AssetInputWidget.cpp \
             $$PWD/UIWidgets/GISTransportNetworkInputWidget.cpp \
+            $$PWD/UIWidgets/JSONTransportNetworkInputWidget.cpp \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.cpp \
             $$PWD/UIWidgets/DLWidget.cpp \
             $$PWD/UIWidgets/EarthquakeInputWidget.cpp \
@@ -230,12 +232,13 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \
             $$PWD/UIWidgets/AnalysisWidget.h \
+    $$PWD/UIWidgets/AssetInputJSONWidget.h \
             $$PWD/UIWidgets/AssetsWidget.h \
             $$PWD/UIWidgets/BuildingDMEQWidget.h \
             $$PWD/UIWidgets/BuildingDMWidget.h \
             $$PWD/UIWidgets/BuildingEDPEQWidget.h \
             $$PWD/UIWidgets/BuildingEDPWidget.h \
-            $$PWD/UIWidgets/CSVTransportNetworkInputWidget.h \
+#            $$PWD/UIWidgets/CSVTransportNetworkInputWidget.h \
             $$PWD/UIWidgets/ColorDialogDelegate.h \
             $$PWD/UIWidgets/GISObjectTypeMapping.h \
             $$PWD/UIWidgets/BuildingModelGeneratorWidget.h \
@@ -244,6 +247,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.h \
             $$PWD/UIWidgets/AssetInputWidget.h \
             $$PWD/UIWidgets/GISTransportNetworkInputWidget.h \
+            $$PWD/UIWidgets/JSONTransportNetworkInputWidget.h \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.h \
             $$PWD/UIWidgets/DLWidget.h \
             $$PWD/UIWidgets/EarthquakeInputWidget.h \
