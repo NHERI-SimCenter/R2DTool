@@ -229,14 +229,8 @@ void CBCitiesPostProcessor::importResults(const QString& pathToResults)
         throw errMsg;
     }
 
-    QString DVResultsSheet;
+    QString DVResultsSheet = "DV.csv";
 
-    for(auto&& it : existingCSVFiles)
-    {
-         if(it.startsWith("DV_"))
-            DVResultsSheet = it;
-
-    }
 
     CSVReaderWriter csvTool;
 
