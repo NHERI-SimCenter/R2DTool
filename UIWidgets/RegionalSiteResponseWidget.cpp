@@ -55,33 +55,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #include "QGISSiteInputWidget.h"
 
-#ifdef ARC_GIS
-#include "ArcGISVisualizationWidget.h"
-#include "FeatureCollectionLayer.h"
-#include "GroupLayer.h"
-#include "Layer.h"
-#include "LayerListModel.h"
-#include "SimpleMarkerSymbol.h"
-#include "SimpleRenderer.h"
-#include "SimCenterMapGraphicsView.h"
-#include "MapGraphicsView.h"
-#include "Map.h"
-#include "Point.h"
-#include "FeatureCollection.h"
-#include "FeatureCollectionLayer.h"
-#include "LayerTreeView.h"
-
-using namespace Esri::ArcGISRuntime;
-#endif
-
-#ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
 
 #include <qgsvectorlayer.h>
 #include "SimCenterMapcanvasWidget.h"
 #include "MapViewWindow.h"
 #include <qgsmapcanvas.h>
-#endif
 
 #include <QApplication>
 #include <QDialog>
@@ -640,17 +619,6 @@ QStackedWidget* RegionalSiteResponseWidget::getSiteWidget(VisualizationWidget* v
         getSiteData();
     });
 
-#ifdef ARC_GIS
-    auto mapView = theVisualizationWidget->getMapViewWidget();
-
-    // Create a map view that will be used for selecting the grid points
-    mapViewSubWidget = std::make_unique<MapViewSubWidget>(mapView);
-
-    auto userGrid = mapViewSubWidget->getGrid();
-    userGrid->createGrid();
-    userGrid->setSiteGridConfig(m_siteConfig);
-    userGrid->setVisualizationWidget(theVisualizationWidget);
-#endif
 
     connect(m_siteConfigWidget->getSiteGridWidget(), &SiteGridWidget::selectGridOnMap, this, &RegionalSiteResponseWidget::showGISWindow);
 
@@ -759,7 +727,6 @@ RegionalSiteResponseWidget::copyFiles(QString &destDir)
     return false;
 }
 
-#ifdef Q_GIS
 void RegionalSiteResponseWidget::loadUserGMData(void)
 {
     auto qgisVizWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
@@ -995,226 +962,6 @@ void RegionalSiteResponseWidget::loadUserGMData(void)
 
     return;
 }
-#endif
-
-#ifdef ARC_GIS
-void RegionalSiteResponseWidget::loadUserGMData(void)
-{
-
-    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
-
-    if(arcVizWidget == nullptr)
-    {
-        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
-        return;
-    }
-
-    CSVReaderWriter csvTool;
-
-    QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
-
-    if(!err.isEmpty())
-    {
-        this->errorMessage(err);
-        return;
-    }
-
-    if(data.empty())
-        return;
-
-    theStackedWidget->setCurrentWidget(progressBarWidget);
-    progressBarWidget->setVisible(true);
-
-    QApplication::processEvents();
-
-    //progressBar->setRange(0,inputFiles.size());
-    progressBar->setRange(0, data.count());
-
-    progressBar->setValue(0);
-
-    // Create the table to store the fields
-    QList<Field> tableFields;
-    tableFields.append(Field::createText("AssetType", "NULL",4));
-    tableFields.append(Field::createText("TabName", "NULL",4));
-    tableFields.append(Field::createText("Station Name", "NULL",4));
-    tableFields.append(Field::createText("Latitude", "NULL",8));
-    tableFields.append(Field::createText("Longitude", "NULL",9));
-    tableFields.append(Field::createText("Number of Ground Motions","NULL",4));
-    tableFields.append(Field::createText("Ground Motions","",1));
-
-    auto gridFeatureCollection = new FeatureCollection(this);
-
-    // Create the feature collection table/layers
-    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
-    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
-
-    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
-
-    gridLayer->setName("Ground Motion Grid Points");
-    gridLayer->setAutoFetchLegendInfos(true);
-
-    // Create red cross SimpleMarkerSymbol
-    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
-
-    // Create renderer and set symbol to crossSymbol
-    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
-    renderer->setLabel("Ground motion grid points");
-
-    // Set the renderer for the feature layer
-    gridFeatureCollectionTable->setRenderer(renderer);
-
-    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
-    // gridLayer->setMinScale(80000);
-
-    // Pop off the row that contains the header information
-    data.pop_front();
-
-    auto numRows = data.size();
-
-    int count = 0;
-
-    // Get the data
-    for(int i = 0; i<numRows; ++i)
-    {
-        auto rowStr = data.at(i);
-
-        auto stationName = rowStr[0];
-
-        // Path to station files, e.g., site0.csv
-        auto stationPath = motionDir + QDir::separator() + stationName;
-
-        bool ok;
-        auto lon = rowStr[1].toDouble(&ok);
-
-        if(!ok)
-        {
-            QString errMsg = "Error longitude to a double, check the value";
-            this->errorMessage(errMsg);
-
-            theStackedWidget->setCurrentWidget(inputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        auto lat = rowStr[2].toDouble(&ok);
-
-        if(!ok)
-        {
-            QString errMsg = "Error latitude to a double, check the value";
-            this->errorMessage(errMsg);
-
-            theStackedWidget->setCurrentWidget(inputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        GroundMotionStation GMStation(stationPath,lat,lon);
-
-        try
-        {
-            GMStation.importGroundMotions();
-        }
-        catch(QString msg)
-        {
-
-            auto errorMessage = "Error importing ground motion file: " + stationName+"\n"+msg;
-
-            this->errorMessage(errorMessage);
-
-            theStackedWidget->setCurrentWidget(inputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        // create the feature attributes
-        QMap<QString, QVariant> featureAttributes;
-
-        //  auto attrbText = GMStation.
-        //  auto attrbVal = pointData[i];
-        //  featureAttributes.insert(attrbText,attrbVal);
-
-        auto vecGMs = GMStation.getStationGroundMotions();
-        featureAttributes.insert("Number of Ground Motions", vecGMs.size());
-
-
-        QString GMNames;
-        for(int i = 0; i<vecGMs.size(); ++i)
-        {
-            auto GMName = vecGMs.at(i).getName();
-
-            GMNames.append(GMName);
-
-            if(i != vecGMs.size()-1)
-                GMNames.append(", ");
-
-        }
-
-        featureAttributes.insert("Station Name", stationName);
-        featureAttributes.insert("Ground Motions", GMNames);
-        featureAttributes.insert("AssetType", "GroundMotionGridPoint");
-        featureAttributes.insert("TabName", "Ground Motion Grid Point");
-
-        auto latitude = GMStation.getLatitude();
-        auto longitude = GMStation.getLongitude();
-
-        featureAttributes.insert("Latitude", latitude);
-        featureAttributes.insert("Longitude", longitude);
-
-        // Create the point and add it to the feature table
-        Point point(longitude,latitude);
-        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
-
-        gridFeatureCollectionTable->addFeature(feature);
-
-
-        ++count;
-        progressLabel->clear();
-        progressBar->setValue(count);
-
-        QApplication::processEvents();
-    }
-
-    // Create a new layer
-    auto layersTreeView = arcVizWidget->getLayersTree();
-
-    // Check if there is a 'User Ground Motions' root item in the tree
-    auto userInputTreeItem = layersTreeView->getTreeItem("User Ground Motions", nullptr);
-
-    // If there is no item, create one
-    if(userInputTreeItem == nullptr)
-    {
-        auto itemUID = theVisualizationWidget->createUniqueID();
-        userInputTreeItem = layersTreeView->addItemToTree("User Ground Motions", itemUID);
-    }
-
-
-    // Add the event layer to the layer tree
-    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
-
-    progressLabel->setVisible(false);
-
-    // Add the event layer to the map
-    arcVizWidget->addLayerToMap(gridLayer,userInputTreeItem);
-
-    // Reset the widget back to the input pane and close
-    theStackedWidget->setCurrentWidget(inputWidget);
-    inputWidget->setVisible(true);
-
-    if(theStackedWidget->isModal())
-        theStackedWidget->close();
-
-    emit loadingComplete(true);
-
-    emit outputDirectoryPathChanged(motionDir, eventFile);
-
-    return;
-}
-#endif
-
 
 void RegionalSiteResponseWidget::soilParamaterFileDialog(void)
 {
@@ -1398,12 +1145,6 @@ QString RegionalSiteResponseWidget::getFilterString(void)
 void RegionalSiteResponseWidget::showGISWindow(void)
 {
     //    theVisualizationWidget->testNewMapCanvas();
-
-#ifdef ARC_GIS
-    mapViewSubWidget->addGridToScene();
-#endif
-
-#ifdef Q_GIS
     if(mapViewSubWidget == nullptr)
     {
         auto mapViewWidget = theVisualizationWidget->getMapViewWidget("Select grid on map");
@@ -1418,19 +1159,10 @@ void RegionalSiteResponseWidget::showGISWindow(void)
         userGrid->setSiteGridConfig(m_siteConfig);
         userGrid->setVisualizationWidget(theVisualizationWidget);
     }
-#endif
 
     mapViewSubWidget->show();
     userGrid->show();
 }
-
-#ifdef ARC_GIS
-void RegionalSiteResponseWidget::setCurrentlyViewable(bool status){
-
-    if (status == true)
-        mapViewSubWidget->setCurrentlyViewable(status);
-}
-#endif
 
 void RegionalSiteResponseWidget::setDir(void)
 {
@@ -1608,18 +1340,9 @@ void RegionalSiteResponseWidget::getSiteData(void)
             this->statusMessage(msg);
             return;
         }
-#ifdef ARC_GIS
-        // Create the objects needed to visualize the grid in the GIS
-        auto siteGrid = mapViewSubWidget->getGrid();
-
-        // Get the vector of grid nodes
-        auto gridNodeVec = siteGrid->getGridNodeVec();
-#endif
-#ifdef Q_GIS
         // Get the vector of grid nodes
         auto gridNodeVec = userGrid->getGridNodeVec();
         auto mapCanvas = mapViewSubWidget->getMapCanvasWidget()->mapCanvas();
-#endif
         for(int i = 0; i<gridNodeVec.size(); ++i)
         {
             auto gridNode = gridNodeVec.at(i);

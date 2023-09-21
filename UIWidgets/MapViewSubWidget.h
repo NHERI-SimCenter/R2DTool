@@ -48,12 +48,6 @@ class MapViewSubWidget: public EmbeddedMapViewWidget
 public:
     MapViewSubWidget(SimCenterMapcanvasWidget* parent);
 
-#ifdef ARC_GIS
-    MapViewSubWidget(QGraphicsView* parent);
-
-    void setCurrentlyViewable(bool status);
-#endif
-
 protected:
 
     void showEvent(QShowEvent *event) override;

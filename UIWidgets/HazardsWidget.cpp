@@ -47,15 +47,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 
-#ifdef ARC_GIS
-#include "ArcGISHurricaneSelectionWidget.h"
-#endif
-
-#ifdef Q_GIS
 #include "QGISHurricaneSelectionWidget.h"
 #include "RasterHazardInputWidget.h"
 #include "GISHazardInputWidget.h"
-#endif
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -78,10 +72,8 @@ HazardsWidget::HazardsWidget(QWidget *parent,
     theUserInputGMWidget = new UserInputGMWidget(theVisualizationWidget,this);
     theUserInputHurricaneWidget = new UserInputHurricaneWidget(theVisualizationWidget,this);
 
-#ifdef Q_GIS
     theRasterHazardWidget = new RasterHazardInputWidget(theVisualizationWidget,this);
     theGISHazardWidget = new GISHazardInputWidget(theVisualizationWidget,this);
-#endif
 
     theRegionalSiteResponseWidget = new RegionalSiteResponseWidget(theVisualizationWidget);
     
@@ -146,9 +138,3 @@ void HazardsWidget::eventTypeChangedSlot(QString eventType)
     emit eventTypeChangedSignal(eventType);
 }
 
-
-#ifdef ARC_GIS
-void HazardsWidget::setCurrentlyViewable(bool status) {
-    this->SimCenterAppSelection::setCurrentlyViewable(status);
-}
-#endif

@@ -75,23 +75,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextTable>
 #include <QValueAxis>
 
-#ifdef ARC_GIS
-#include "Basemap.h"
-#include "FeatureTable.h"
-#include "FeatureCollectionLayer.h"
-#include "Map.h"
-#include "MapGraphicsView.h"
-#include "ArcGISVisualizationWidget.h"
-#include "SimCenterMapGraphicsView.h"
-#endif
-
-
-#ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
 
 #include <qgsattributes.h>
 #include <qgsmapcanvas.h>
-#endif
 
 // Test to remove start
 // #include <chrono>
@@ -240,18 +227,10 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     tableDock2 = new QDockWidget(tr("Site Responses"), this);
     tableDock2->setObjectName("Site Responses");
 
-#ifdef Q_GIS
     // Get the map view widget
     auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
     mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
-#endif
 
-#ifdef ARC_GIS
-    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(mapViewMainWidget);
-
-    // Popup stuff Once map is set, connect to MapQuickView mouse clicked signal
-    connect(mapViewSubWidget.get(), &EmbeddedMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
-#endif
 
     QDockWidget* mapViewDock = new QDockWidget("Regional Map",this);
     mapViewDock->setObjectName("MapViewDock");
@@ -1251,31 +1230,7 @@ void PelicunPostProcessor::restoreUI(void)
 
 void PelicunPostProcessor::setCurrentlyViewable(bool status){
 
-
-#ifdef ARC_GIS    
-    // Set the legend to display the selected building layer
-    auto buildingsWidget = theVisualizationWidget->getComponentWidget("BUILDINGS");
-
-    if(buildingsWidget)
-    {
-        if (status == true)
-            mapViewSubWidget->setCurrentlyViewable(status);
-
-        auto selectedLayer = buildingsWidget->getSelectedFeatureLayer();
-
-        auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
-
-        if(arcVizWidget == nullptr)
-        {
-            qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
-            return;
-        }
-
-        arcVizWidget->handleLegendChange(selectedLayer);
-    }
-#else
     Q_UNUSED(status);
-#endif
 
 }
 

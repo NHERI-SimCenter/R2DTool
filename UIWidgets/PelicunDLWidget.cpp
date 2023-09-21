@@ -332,6 +332,19 @@ void PelicunDLWidget::clear(void)
     fragilityDirLineEdit->clear();
 }
 
+void PelicunDLWidget::clearParams(void)
+{
+    realizationsLineEdit->clear();
+    eventTimeComboBox->setCurrentIndex(1);
+    detailedResultsCheckBox->setChecked(false);
+    logFileCheckBox->setChecked(false);
+    coupledEDPCheckBox->setChecked(false);
+    groundFailureCheckBox->setChecked(false);
+    autoPopulationScriptLineEdit->clear();
+    fragilityDirLineEdit->clear();
+}
+
+
 
 
 bool PelicunDLWidget::copyFiles(QString &destName)
@@ -394,9 +407,9 @@ bool PelicunDLWidget::copyFiles(QString &destName)
 }
 
 
-void PelicunDLWidget::handleComboBoxChanged(const QString &text)
+void PelicunDLWidget::handleComboBoxChanged(const QString text)
 {
-
+    this->clearParams();
     if(text.compare("HAZUS MH EQ") == 0 || text.compare("HAZUS MH EQ IM") == 0)
     {
         groundFailureCheckBox->show();
