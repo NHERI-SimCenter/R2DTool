@@ -74,6 +74,8 @@ equals(QT_MAJOR_VERSION, 5) {
         }
 }
 
+DEFINES += Q_GIS
+
 win32:DEFINES +=  CURL_STATICLIB
 
 #win32::include($$PWD/R2D.user.pri)
