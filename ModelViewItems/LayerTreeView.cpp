@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LayerTreeModel.h"
 #include "LayerTreeView.h"
 #include "TreeViewStyle.h"
-#include "ArcGISVisualizationWidget.h"
+//#include "ArcGISVisualizationWidget.h"
 
 #include <QDebug>
 #include <QMenu>

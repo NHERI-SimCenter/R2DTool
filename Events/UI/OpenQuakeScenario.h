@@ -75,7 +75,7 @@ private:
     double maxDistance;
 
     QString rupFilename;
-    QString oqVersion = "3.12.0";
+    QString oqVersion = "3.17.1";
 
     bool copyRupFile();
 

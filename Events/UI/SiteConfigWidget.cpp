@@ -5,9 +5,7 @@
 #include "VisualizationWidget.h"
 #include "VerticalScrollingWidget.h"
 
-#ifdef Q_GIS
 #include "QGISSiteInputWidget.h"
-#endif
 
 #include <QtWidgets>
 #include <QValidator>
@@ -27,17 +25,6 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     //First we need to add type radio buttons
     m_typeButtonsGroup = new QButtonGroup();
 
-    // Number of ground motions per site
-    QLabel* numGMLabel;
-    if (!soilResponse)
-    {
-        numGMLabel= new QLabel("Number of ground motions per site:",this);
-        numGMLineEdit = new QLineEdit(this);
-        numGMLineEdit->setText("1");
-        auto validator = new QIntValidator(1, 99999999, this);
-        numGMLineEdit->setValidator(validator);
-    }
-
     siteRadioButton = new QRadioButton(tr("Single Location"));
     gridRadioButton = new QRadioButton(tr("Grid of Locations"));
     scatRadioButton = new QRadioButton(tr("Scattering Locations"));
@@ -55,11 +42,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     typeLayout->addWidget(gridRadioButton);
     typeLayout->addWidget(scatRadioButton);
     //typeLayout->addWidget(csvfRadioButton);
-    if (!soilResponse)
-    {
-        typeLayout->addWidget(numGMLabel);
-        typeLayout->addWidget(numGMLineEdit);
-    }
+
     typeLayout->addStretch(1);
 
     groupLayout->addWidget(typeGroupBox);
@@ -200,17 +183,6 @@ void SiteConfigWidget::setupConnections()
     connect(csvSiteInventory, SIGNAL(activateSoilModelWidget(bool)), this, SLOT(activateSoilModelWidgetSlot(bool)));
 }
 
-
-int SiteConfigWidget::getNumberOfGMPerSite(void)
-{
-    auto res = false;
-    int numGM = numGMLineEdit->text().toInt(&res);
-
-    if(res == true)
-        return numGM;
-
-    return -1;
-}
 
 
 QString SiteConfigWidget::getFilter(void)

@@ -71,14 +71,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ToolDialog.h"
 
 #include "VisualizationWidget.h"
-
-#ifdef ARC_GIS
-#include "ArcGISVisualizationWidget.h"
-#endif
-
-#ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
-#endif
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -378,11 +371,11 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
         result = false;
     }
 
-    if (thePerformanceWidget->outputAppDataToJSON(apps) == false) {
-        this->errorMessage("Error writing PRF data to output");
-        thePerformanceWidget->clear();
-        result = false;
-    }
+//    if (thePerformanceWidget->outputAppDataToJSON(apps) == false) {
+//        this->errorMessage("Error writing PRF data to output");
+//        thePerformanceWidget->clear();
+//        result = false;
+//    }
     
     if (theUQWidget->outputAppDataToJSON(apps) == false) {
         this->errorMessage("Error writing UQ data to output");
@@ -424,7 +417,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     theAnalysisWidget->outputToJSON(jsonObjectTop);
     theDamageAndLossWidget->outputToJSON(jsonObjectTop);
     theHazardToAssetWidget->outputToJSON(jsonObjectTop);
-    thePerformanceWidget->outputToJSON(jsonObjectTop);
+//    thePerformanceWidget->outputToJSON(jsonObjectTop);
     theUQWidget->outputToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
 
@@ -474,7 +467,7 @@ void WorkflowAppR2D::clear(void)
     theAssetsWidget->clear();
     theHazardsWidget->clear();
     theDamageAndLossWidget->clear();
-    thePerformanceWidget->clear();
+//    thePerformanceWidget->clear();
     theResultsWidget->clear();
     theVisualizationWidget->clear();
     // progressDialog->clear();

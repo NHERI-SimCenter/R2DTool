@@ -62,6 +62,16 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
     formLayout->addWidget(databaseLabel,0,0);
     formLayout->addWidget(m_dbBox,0,1);
 
+    auto smallVSpacer = new QSpacerItem(0,20);
+    QLabel* numGMLabel = new QLabel(tr("Number of ground motions per site:"),this);
+    auto validator = new QIntValidator(1, 99999999, this);
+    numGMLineEdit = new QLineEdit(this);
+    numGMLineEdit->setText("1");
+    numGMLineEdit->setValidator(validator);
+    formLayout->addItem(smallVSpacer,3,0,1,2);
+    formLayout->addWidget(numGMLabel,4,0);
+    formLayout->addWidget(numGMLineEdit,4,1);
+
     selectionGroupBox->setLayout(formLayout);
 
     layout->addWidget(selectionGroupBox);
@@ -71,4 +81,14 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
 
 }
 
+int RecordSelectionWidget::getNumberOfGMPerSite(void)
+{
+    auto res = false;
+    int numGM = numGMLineEdit->text().toInt(&res);
+
+    if(res == true)
+        return numGM;
+
+    return -1;
+}
 
