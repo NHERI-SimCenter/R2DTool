@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentDatabaseManager.h"
 #include "GeneralInformationWidgetR2D.h"
 #include "MainWindowWorkflowApp.h"
-#include "PelicunPostProcessor.h"
+#include "Pelicun3PostProcessor.h"
 #include "REmpiricalProbabilityDistribution.h"
 #include "TablePrinter.h"
 #include "TableNumberItem.h"
@@ -87,7 +87,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace QtCharts;
 
-PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : QMainWindow(parent), theVisualizationWidget(visWidget)
+Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget *parent, VisualizationWidget* visWidget) : QMainWindow(parent), theVisualizationWidget(visWidget)
 {
     casualtiesChart = nullptr;
     RFDiagChart = nullptr;
@@ -110,16 +110,16 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 
     if(resultsMenu)
     {
-        viewMenu = resultsMenu->addMenu(tr("&Buildings"));
-        viewMenu->addAction(tr("&Restore"), this, &PelicunPostProcessor::restoreUI);
+        viewMenu = resultsMenu->addMenu(tr("&View"));
+        viewMenu->addAction(tr("&Restore"), this, &Pelicun3PostProcessor::restoreUI);
     }
     else
     {
-        ProgramOutputDialog::getInstance()->appendErrorMessage("Could not find the results menu bar in PelicunPostProcessor::");
+        ProgramOutputDialog::getInstance()->appendErrorMessage("Could not find the results menu bar in Pelicun3PostProcessor::");
         return;
     }
 
-    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&PelicunPostProcessor::assemblePDF);
+    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&Pelicun3PostProcessor::assemblePDF);
 
     // Summary group box
     QWidget* totalsWidget = new QWidget(this);
@@ -205,7 +205,7 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     sortComboBox->insertItems(0,comboBoxHeadings);
     sortComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    connect(sortComboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),this, &PelicunPostProcessor::sortTable);
+    connect(sortComboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),this, &Pelicun3PostProcessor::sortTable);
 
     auto comboBoxLabel = new QLabel("Sorting Filter:", this);
 
@@ -255,9 +255,9 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 }
 
 
-void PelicunPostProcessor::importResults(const QString& pathToResults)
+void Pelicun3PostProcessor::importResults(const QString& pathToResults)
 {
-    qDebug() << "PelicunPostProcessor: " << pathToResults;
+    qDebug() << "Pelicun3PostProcessor: " << pathToResults;
 
     auto pathToBuildings = pathToResults + QDir::separator() + QString("Buildings");
 
@@ -302,13 +302,15 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
 
     CSVReaderWriter csvTool;
 
-    DMdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + DMResultsSheet,errMsg);
+    auto tmp = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + DMResultsSheet,errMsg);
+
+    DMdata = tmp;
     if(!errMsg.isEmpty())
         throw errMsg;
 
-    DVdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + DVResultsSheet,errMsg);
-     if(!errMsg.isEmpty())
-        throw errMsg;
+//    DVdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + DVResultsSheet,errMsg);
+//    if(!errMsg.isEmpty())
+//        throw errMsg;
 
     EDPdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + EDPreultsSheet,errMsg);
     if(!errMsg.isEmpty())
@@ -327,13 +329,13 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
         }
     }
 
-    if(!DVdata.empty())
-        this->processDVResults(DVdata);
-    else
-    {
-        errMsg = "The DV results are empty";
-        throw errMsg;
-    }
+//    if(!DVdata.empty())
+//        this->processDVResults(DVdata);
+//    else
+//    {
+//        errMsg = "The DV results are empty";
+//        throw errMsg;
+//    }
 
     // Enable the selection tool
     mapViewSubWidget->enableSelectionTool();
@@ -341,7 +343,7 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
 }
 
 
-void PelicunPostProcessor::showEvent(QShowEvent *e)
+void Pelicun3PostProcessor::showEvent(QShowEvent *e)
 {
     auto mainCanvas = mapViewSubWidget->getMainCanvas();
 
@@ -354,7 +356,7 @@ void PelicunPostProcessor::showEvent(QShowEvent *e)
 
 
 
-int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults)
+int Pelicun3PostProcessor::processDVResults(const QVector<QStringList>& DVResults)
 {
     if(DVResults.size() < numHeaderRows)
     {
@@ -670,14 +672,14 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 }
 
 
-void PelicunPostProcessor::setIsVisible(const bool value)
+void Pelicun3PostProcessor::setIsVisible(const bool value)
 {
     if(viewMenu)
         viewMenu->menuAction()->setVisible(value);
 }
 
 
-int PelicunPostProcessor::createCasualtiesChart(QBarSet *casualtiesSet)
+int Pelicun3PostProcessor::createCasualtiesChart(QBarSet *casualtiesSet)
 {
     QBarSeries *series = new QBarSeries();
     series->append(casualtiesSet);
@@ -721,7 +723,7 @@ int PelicunPostProcessor::createCasualtiesChart(QBarSet *casualtiesSet)
 }
 
 
-int PelicunPostProcessor::createHistogramChart(REmpiricalProbabilityDistribution* probDist)
+int Pelicun3PostProcessor::createHistogramChart(REmpiricalProbabilityDistribution* probDist)
 {
 
     QVector<double> xValues;
@@ -785,7 +787,7 @@ int PelicunPostProcessor::createHistogramChart(REmpiricalProbabilityDistribution
 }
 
 
-int PelicunPostProcessor::createLossesChart(QBarSet *structLossSet, QBarSet *NSAccLossSet, QBarSet *NSDriftLossSet)
+int Pelicun3PostProcessor::createLossesChart(QBarSet *structLossSet, QBarSet *NSAccLossSet, QBarSet *NSDriftLossSet)
 {
     QStackedBarSeries *series = new QStackedBarSeries();
     series->append(structLossSet);
@@ -838,7 +840,7 @@ int PelicunPostProcessor::createLossesChart(QBarSet *structLossSet, QBarSet *NSA
 }
 
 
-int PelicunPostProcessor::printToPDF(const QString& outputPath)
+int Pelicun3PostProcessor::printToPDF(const QString& outputPath)
 {
     outputFilePath = outputPath;
 
@@ -848,7 +850,7 @@ int PelicunPostProcessor::printToPDF(const QString& outputPath)
 }
 
 
-void PelicunPostProcessor::processResultsSubset(const std::set<int>& selectedComponentIDs)
+void Pelicun3PostProcessor::processResultsSubset(const std::set<int>& selectedComponentIDs)
 {
 
     if(selectedComponentIDs.empty())
@@ -907,7 +909,7 @@ void PelicunPostProcessor::processResultsSubset(const std::set<int>& selectedCom
 }
 
 
-int PelicunPostProcessor::assemblePDF(QImage screenShot)
+int Pelicun3PostProcessor::assemblePDF(QImage screenShot)
 {
     // The printer
     QPrinter printer(QPrinter::HighResolution);
@@ -1212,7 +1214,7 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
 }
 
 
-void PelicunPostProcessor::sortTable(int index)
+void Pelicun3PostProcessor::sortTable(int index)
 {
     if(index == 0)
         pelicunResultsTableWidget->sortByColumn(index,Qt::AscendingOrder);
@@ -1222,20 +1224,20 @@ void PelicunPostProcessor::sortTable(int index)
 }
 
 
-void PelicunPostProcessor::restoreUI(void)
+void Pelicun3PostProcessor::restoreUI(void)
 {
     this->restoreState(uiState);
 }
 
 
-void PelicunPostProcessor::setCurrentlyViewable(bool status){
+void Pelicun3PostProcessor::setCurrentlyViewable(bool status){
 
     Q_UNUSED(status);
 
 }
 
 
-void PelicunPostProcessor::addSiteResponseTable(void)
+void Pelicun3PostProcessor::addSiteResponseTable(void)
 {
     // kz: adding a dock layer for different assets
     // site table
@@ -1260,7 +1262,7 @@ void PelicunPostProcessor::addSiteResponseTable(void)
     tableDock2->setWidget(tableWidget2);
 }
 
-int PelicunPostProcessor::processIMResults(const QVector<QStringList>& IMResults)
+int Pelicun3PostProcessor::processIMResults(const QVector<QStringList>& IMResults)
 {
     qDebug() << "Starting processing IM results";
     if(IMResults.size() < numHeaderRows)
@@ -1347,7 +1349,7 @@ int PelicunPostProcessor::processIMResults(const QVector<QStringList>& IMResults
 }
 
 
-void PelicunPostProcessor::clear(void)
+void Pelicun3PostProcessor::clear(void)
 {
     DMdata.clear();
     DVdata.clear();

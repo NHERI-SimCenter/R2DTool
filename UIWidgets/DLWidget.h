@@ -54,6 +54,7 @@ public:
     void clear(void);
 
     QList<QString> getActiveDLApps(void);
+    QMap<QString, QString> getActiveAssetDLMap(void);
 
 private:
     SimCenterAppSelection *buildingWidget = nullptr;

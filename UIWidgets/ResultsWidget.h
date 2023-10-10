@@ -39,11 +39,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-
+#include "Pelicun3PostProcessorTspn.h"
 class AssetInputDelegate;
 class PelicunPostProcessor;
 class VisualizationWidget;
 class CBCitiesPostProcessor;
+class Pelicun3PostProcessor;
+
 
 class QTabWidget;
 class QStackedWidget;
@@ -98,7 +100,10 @@ private:
     VisualizationWidget* theVisualizationWidget = nullptr;
 
     std::unique_ptr<PelicunPostProcessor> thePelicunPostProcessor;
+    std::unique_ptr<Pelicun3PostProcessor> thePelicun3PostProcessor;
     std::unique_ptr<CBCitiesPostProcessor> theCBCitiesPostProcessor;
+
+    std::unique_ptr<Pelicun3PostProcessorTspn> theTransportationPelicun3PostProcessor;
 
 };
 
