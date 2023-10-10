@@ -59,7 +59,8 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   buildingWidget = new SimCenterAppSelection(QString("Building Mapping"), QString("Buildings"), this);
   gasWidget = new SimCenterAppSelection(QString("Gas Network Mapping"), QString("NaturalGasPipelines"), this);
   wdnWidget = new SimCenterAppSelection(QString("Water Distribution Network Mapping"), QString("WaterDistributionNetwork"), waterExtraKeys);
-  transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), transportExtraKeys);
+//  transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), transportExtraKeys);
+  transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), this);
 
   NearestNeighbourMapping *theNNMapB = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapB = new SiteSpecifiedMapping();

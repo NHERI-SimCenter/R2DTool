@@ -77,7 +77,9 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     transportExtraKeys.append("TransportRoads");
     transportExtraKeys.append("TransportBridges");
     transportExtraKeys.append("TransportTunnels");
-    transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), transportExtraKeys);
+//    transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), transportExtraKeys);
+    //Do not use the extra keys since all subtypes use the same DL for now
+    transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), this);
     // Building widget apps
     SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget;    
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
@@ -104,7 +106,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     SimCenterAppWidget *buildingPelicun_trans = new PelicunDLWidget;
     SimCenterAppWidget *noneWidget_trans = new NoneWidget(this);
     transportWidget->addComponent(QString("Pelicun3"), QString("pelicun3"), buildingPelicun3_trans);
-    transportWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun_trans);
+//    transportWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun_trans);
     transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
 
     this->addComponent("Buildings", buildingWidget);
@@ -146,6 +148,32 @@ QList<QString> DLWidget::getActiveDLApps(void)
     }
 
     return activeDLapps;
+}
+
+QMap<QString, QString> DLWidget::getActiveAssetDLMap(void)
+{
+    QMap<QString, QString> activeMap;
+    auto activeList = this->getActiveComponents();
+
+    for(auto&& it : activeList)
+    {
+        auto activeComp = dynamic_cast<SimCenterAppSelection*>(this->getComponent(it));
+
+        if(activeComp == nullptr)
+            return activeMap;
+
+        auto currComp = activeComp->getCurrentSelectionName();
+
+        if(currComp.isEmpty())
+        {
+            this->errorMessage("Could not get the active DL apps in DLWidget");
+            return activeMap;
+        }
+
+        activeMap.insert(it, currComp);
+    }
+
+    return activeMap;
 }
 
 

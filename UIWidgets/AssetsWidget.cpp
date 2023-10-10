@@ -93,7 +93,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     // CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
     // transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
     JSONTransportNetworkInputWidget *jsonTransportNetworkInventory = new JSONTransportNetworkInputWidget(this, visualizationWidget);
-    transportNetworkWidget->addComponent(QString("Json to Transportation Network"), QString("JSON_to_TRANSPORTNETWORK"), jsonTransportNetworkInventory);
+    transportNetworkWidget->addComponent(QString("Json to Transportation Network AIM"), QString("JSON_to_TRANSPORTNETWORK"), jsonTransportNetworkInventory);
 
 
     GISWaterNetworkInputWidget *gisWaterNetworkInventory = new GISWaterNetworkInputWidget(this, visualizationWidget);
@@ -124,6 +124,7 @@ void AssetsWidget::clear(void)
     buildingWidget->clear();
     gasPipelineWidget->clear();
     waterNetworkWidget->clear();
+    transportNetworkWidget->clear();
 }
 
 

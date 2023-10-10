@@ -67,7 +67,8 @@ UQWidget::UQWidget(QWidget *parent)
     transportExtraKeys.append("TransportRoads");
     transportExtraKeys.append("TransportBridges");
     transportExtraKeys.append("TransportTunnels");
-    transportWidget = new SimCenterAppSelection(QString("UQ Application"), QString("TransportationNetwork"), transportExtraKeys);
+//    transportWidget = new SimCenterAppSelection(QString("UQ Application"), QString("TransportationNetwork"), transportExtraKeys);
+    transportWidget = new SimCenterAppSelection(QString("UQ Application"), QString("TransportationNetwork"), this);
     transportWidget->addComponent(QString("None"), QString("None"), noneWidget3);
 
     this->addComponent("Buildings", buildingWidget);

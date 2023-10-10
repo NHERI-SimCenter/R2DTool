@@ -77,7 +77,8 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Buildings"), this);
   pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("NaturalGasPipelines"), this);
   WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("WaterDistributionNetwork"), waterExtraKeys);
-  transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), transportExtraKeys);
+//  transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), transportExtraKeys);
+  transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), this);
   
   // Building widget apps
   SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);
