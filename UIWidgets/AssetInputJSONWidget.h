@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Use this class to import assets in a csv format; functionality implemented in the 'loadAssetData' function
 
 #include "SimCenterAppWidget.h"
+#include "AssetInputDelegate.h"
 #include "GISSelectable.h"
 #include "ComponentDatabase.h"
 
@@ -132,7 +133,7 @@ signals:
     void doneLoadingComponents(void);
 
 public slots:
-    void handleComponentSelection(void);
+//    void handleComponentSelection(void);
     void handleCellChanged(const int row, const int col);
 
 protected slots:

@@ -36,9 +36,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Jinyan Zhao
 
 #include "AssetInputJSONWidget.h"
+#include <QMessageBox>
 
 class NonselectableAssetInputWidget;
 class LineAssetInputWidget;
@@ -55,26 +56,38 @@ class JSONTransportNetworkInputWidget : public AssetInputJSONWidget
 public:
     JSONTransportNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
     virtual ~JSONTransportNetworkInputWidget();
-
     int loadAssetVisualization() override;
-
-
-
-
-
-
     int getNodeMap();
-//    virtual int loadPipelinesVisualization();
-
     void clear() override;
 
-//    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
     bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+
+    QString getRoadsFilterString(void);
+    QString getBridgesFilterString(void);
+    QString getTunnelsFilterString(void);
 //    bool copyFiles(QString &destName);
 
+private:
+    QLineEdit *roadLengthLineEdit;
+public slots:
+    void handleRoadsSelection(void);
+    void handleBridgesSelection(void);
+    void handleTunnelsSelection(void);
 protected slots:
-    void handleAssetsLoaded();
     bool loadAssetData() override;
+    void handleAssetsLoaded();
+
+    void selectRoads(void);
+    void clearRoadsComponentSelection();
+
+    void selectBridges(void);
+    void clearBridgesComponentSelection();
+
+    void selectTunnels(void);
+    void clearTunnelsComponentSelection();
+
+    void printRoadLengthInput(void);
 
 protected:
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
@@ -88,6 +101,14 @@ protected:
     QgsVectorLayer* transportNetworkMainLayer = nullptr;
     QgsVectorLayer* transportNetworkSelectedLayer = nullptr;
 
+    QWidget* roadsfilterWidget = nullptr;
+    AssetInputDelegate* roadsSelectComponentsLineEdit = nullptr;
+    QWidget* bridgesfilterWidget = nullptr;
+    AssetInputDelegate* bridgesSelectComponentsLineEdit = nullptr;
+    QWidget* tunnelsfilterWidget = nullptr;
+    AssetInputDelegate* tunnelsSelectComponentsLineEdit = nullptr;
+
+    QWidget* roadLengthWidget = nullptr;
 
     // ID, QgsGeometry
     QMap<int, QgsPointXY> nodePointsMap;

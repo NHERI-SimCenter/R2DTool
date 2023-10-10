@@ -157,7 +157,7 @@ void AssetInputJSONWidget::createComponentsBox(void)
     componentFileLineEdit = new QLineEdit();
 //        componentFileLineEdit->setMaximumWidth(750);
     componentFileLineEdit->setMinimumWidth(400);
-    componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+//    componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
 
     browseFileButton = new QPushButton();
@@ -179,7 +179,7 @@ void AssetInputJSONWidget::createComponentsBox(void)
     mainWidgetLayout->addWidget(label1);
     mainWidgetLayout->addLayout(pathLayout);
 
-    mainWidgetLayout->addStretch();
+   mainWidgetLayout->addStretch();
 
     this->setLayout(mainWidgetLayout);
 }
@@ -204,83 +204,83 @@ void AssetInputJSONWidget::selectComponents(void)
 }
 
 
-void AssetInputJSONWidget::handleComponentSelection(void)
-{
+//void AssetInputJSONWidget::handleComponentSelection(void)
+//{
 
-    auto nRows = componentTableWidget->rowCount();
+//    auto nRows = componentTableWidget->rowCount();
 
-    if(nRows == 0)
-        return;
+//    if(nRows == 0)
+//        return;
 
-    // Get the ID of the first and last component
-    bool OK;
-    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
+//    // Get the ID of the first and last component
+//    bool OK;
+//    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
 
-    if(!OK)
-    {
-        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
-        this->errorMessage(msg);
-        return;
-    }
+//    if(!OK)
+//    {
+//        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+//        this->errorMessage(msg);
+//        return;
+//    }
 
-    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
+//    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
 
-    if(!OK)
-    {
-        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
-        this->errorMessage(msg);
-        return;
-    }
+//    if(!OK)
+//    {
+//        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+//        this->errorMessage(msg);
+//        return;
+//    }
 
-    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+//    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
 
-    // First check that all of the selected IDs are within range
-    for(auto&& it : selectedComponentIDs)
-    {
-        if(it<firstID || it>lastID)
-        {
-            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
-            this->errorMessage(msg);
-            selectComponentsLineEdit->clear();
-            return;
-        }
-    }
+//    // First check that all of the selected IDs are within range
+//    for(auto&& it : selectedComponentIDs)
+//    {
+//        if(it<firstID || it>lastID)
+//        {
+//            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
+//            this->errorMessage(msg);
+//            selectComponentsLineEdit->clear();
+//            return;
+//        }
+//    }
 
-    theComponentDb->startEditing();
+//    theComponentDb->startEditing();
 
-    // Test to remove
-    //    auto start = high_resolution_clock::now();
+//    // Test to remove
+//    //    auto start = high_resolution_clock::now();
 
-    auto res = theComponentDb->addFeaturesToSelectedLayer(selectedComponentIDs);
-    if(res == false)
-    {
-        this->errorMessage("Error adding features to selected layer");
-        return;
-    }
+//    auto res = theComponentDb->addFeaturesToSelectedLayer(selectedComponentIDs);
+//    if(res == false)
+//    {
+//        this->errorMessage("Error adding features to selected layer");
+//        return;
+//    }
 
-    auto numAssets = selectedComponentIDs.size();
-    QString msg = "A total of "+ QString::number(numAssets) + " " + assetType.toLower() + " are selected for analysis";
-    this->statusMessage(msg);
-
-
-    // Test to remove
-    //    auto stop = high_resolution_clock::now();
-    //    auto duration = duration_cast<milliseconds>(stop - start);
-    //    this->statusMessage("Done ALL "+QString::number(duration.count()));
-
-    theComponentDb->commitChanges();
-
-    // Hide all of the rows that are not selecetd. Takes a long time!
-    //    // Hide all rows in the table
-    //    for(int i = 0; i<nRows; ++i)
-    //        componentTableWidget->setRowHidden(i,true);
-
-    //    // Unhide the selected rows
-    //    for(auto&& it : selectedComponentIDs)
-    //        componentTableWidget->setRowHidden(it - firstID,false);
+//    auto numAssets = selectedComponentIDs.size();
+//    QString msg = "A total of "+ QString::number(numAssets) + " " + assetType.toLower() + " are selected for analysis";
+//    this->statusMessage(msg);
 
 
-}
+//    // Test to remove
+//    //    auto stop = high_resolution_clock::now();
+//    //    auto duration = duration_cast<milliseconds>(stop - start);
+//    //    this->statusMessage("Done ALL "+QString::number(duration.count()));
+
+//    theComponentDb->commitChanges();
+
+//    // Hide all of the rows that are not selecetd. Takes a long time!
+//    //    // Hide all rows in the table
+//    //    for(int i = 0; i<nRows; ++i)
+//    //        componentTableWidget->setRowHidden(i,true);
+
+//    //    // Unhide the selected rows
+//    //    for(auto&& it : selectedComponentIDs)
+//    //        componentTableWidget->setRowHidden(it - firstID,false);
+
+
+//}
 
 
 

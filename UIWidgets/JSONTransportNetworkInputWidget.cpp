@@ -24,41 +24,96 @@ JSONTransportNetworkInputWidget::JSONTransportNetworkInputWidget(QWidget *parent
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-////    theNodesDb = ComponentDatabaseManager::getInstance()->getTransportNetworkNodeComponentDb();
-//    theRoadsDb = ComponentDatabaseManager::getInstance()->createAssetDb("Transportation Roadways");
+    roadsfilterWidget = new QWidget();
+    QHBoxLayout* roadsSelectComponentsLayout = new QHBoxLayout(roadsfilterWidget);
+    QLabel* roadsFilterText = new QLabel();
+    roadsFilterText->setText(QString("Enter the indices of one or more roadways to analyze.")
+                             +QString("\nDefine a range of roadways with a dash and separate multiple roadways with a comma."));
+    roadsSelectComponentsLayout->addWidget(roadsFilterText);
+    roadsSelectComponentsLineEdit = new AssetInputDelegate();
+//    roadsSelectComponentsLineEdit->setMaximumWidth(1000);
+//    roadsSelectComponentsLineEdit->setMinimumWidth(400);
+//    roadsSelectComponentsLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    connect(roadsSelectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&JSONTransportNetworkInputWidget::handleRoadsSelection);
+    connect(roadsSelectComponentsLineEdit,&QLineEdit::editingFinished,this,&JSONTransportNetworkInputWidget::selectRoads);
+    QPushButton *roadsClearSelectionButton = new QPushButton();
+    roadsClearSelectionButton->setText(tr("Clear Selection"));
+    roadsClearSelectionButton->setMaximumWidth(150);
+    roadsSelectComponentsLayout->addWidget(roadsFilterText);
+    roadsSelectComponentsLayout->addWidget(roadsSelectComponentsLineEdit);
+    roadsSelectComponentsLayout->addWidget(roadsClearSelectionButton);
+    connect(roadsClearSelectionButton,SIGNAL(clicked()),this,SLOT(clearRoadsComponentSelection()));
+//    roadsfilterWidget->setMaximumWidth(1000);
+//    roadsfilterWidget->setMinimumWidth(400);
+//    roadsfilterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    mainWidgetLayout->addWidget(roadsfilterWidget);
 
-//    //    theNodesWidget = new NonselectableAssetInputWidget(this, theNodesDb, theVisualizationWidget, "Transport Network Nodes");
-//    //QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString()
-//    theNodesWidget = new PointAssetInputWidget(this, theVisualizationWidget, "Transport Network Nodes", "CSV_to_AIM");
+    roadLengthWidget = new QWidget();
+    QHBoxLayout* roadLengthLayout = new QHBoxLayout(roadLengthWidget);
+    QLabel* roadLengthLabel = new QLabel("Roadway length (m) per AIM",this);
+    roadLengthLineEdit = new QLineEdit(this);
+    roadLengthLineEdit->setText("100.0");
+    QDoubleValidator *validator = new QDoubleValidator(this);
+    validator->setBottom(0.0);
+    roadLengthLayout->addWidget(roadLengthLabel);
+    roadLengthLayout->addWidget(roadLengthLineEdit);
+//    roadLengthWidget->setMaximumWidth(200);
+//    roadLengthWidget->setMinimumWidth(100);
+//    roadLengthWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    mainWidgetLayout->addWidget(roadLengthWidget);
+    connect(roadLengthLineEdit, &QLineEdit::editingFinished, this, &JSONTransportNetworkInputWidget::printRoadLengthInput);
 
-//    theNodesWidget->setLabel1("Load Transport network inventory from a JSON file");
+    bridgesfilterWidget = new QWidget();
+    QHBoxLayout* bridgesSelectComponentsLayout = new QHBoxLayout(bridgesfilterWidget);
+    QLabel* bridgesFilterText = new QLabel();
+    bridgesFilterText->setText(QString("Enter the indices of one or more bridges to analyze.")
+                             +QString("\nDefine a range of bridges with a dash and separate multiple bridges with a comma."));
+    bridgesSelectComponentsLayout->addWidget(bridgesFilterText);
+    bridgesSelectComponentsLineEdit = new AssetInputDelegate();
+    connect(bridgesSelectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&JSONTransportNetworkInputWidget::handleBridgesSelection);
+    connect(bridgesSelectComponentsLineEdit,&QLineEdit::editingFinished,this,&JSONTransportNetworkInputWidget::selectBridges);
+    QPushButton *bridgesClearSelectionButton = new QPushButton();
+    bridgesClearSelectionButton->setText(tr("Clear Selection"));
+    bridgesClearSelectionButton->setMaximumWidth(150);
+    bridgesSelectComponentsLayout->addWidget(bridgesFilterText);
+    bridgesSelectComponentsLayout->addWidget(bridgesSelectComponentsLineEdit);
+    bridgesSelectComponentsLayout->addWidget(bridgesClearSelectionButton);
+    connect(bridgesClearSelectionButton,SIGNAL(clicked()),this,SLOT(clearBridgesComponentSelection()));
+//    bridgesfilterWidget->setMaximumWidth(1000);
+//    bridgesfilterWidget->setMinimumWidth(400);
+//    bridgesfilterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    mainWidgetLayout->addWidget(bridgesfilterWidget);
 
+    tunnelsfilterWidget = new QWidget();
+    QHBoxLayout* tunnelsSelectComponentsLayout = new QHBoxLayout(tunnelsfilterWidget);
+    QLabel* tunnelsFilterText = new QLabel();
+    tunnelsFilterText->setText(QString("Enter the indices of one or more tunnels to analyze.")
+                               +QString("\nDefine a range of tunnels with a dash and separate multiple tunnels with a comma."));
+    tunnelsSelectComponentsLayout->addWidget(tunnelsFilterText);
+    tunnelsSelectComponentsLineEdit = new AssetInputDelegate();
+    connect(tunnelsSelectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&JSONTransportNetworkInputWidget::handleTunnelsSelection);
+    connect(tunnelsSelectComponentsLineEdit,&QLineEdit::editingFinished,this,&JSONTransportNetworkInputWidget::selectTunnels);
+    QPushButton *tunnelsClearSelectionButton = new QPushButton();
+    tunnelsClearSelectionButton->setText(tr("Clear Selection"));
+    tunnelsClearSelectionButton->setMaximumWidth(150);
+    tunnelsSelectComponentsLayout->addWidget(tunnelsFilterText);
+    tunnelsSelectComponentsLayout->addWidget(tunnelsSelectComponentsLineEdit);
+    tunnelsSelectComponentsLayout->addWidget(tunnelsClearSelectionButton);
+    connect(tunnelsClearSelectionButton,SIGNAL(clicked()),this,SLOT(clearTunnelsComponentSelection()));
+//    tunnelsfilterWidget->setMaximumWidth(1000);
+//    tunnelsfilterWidget->setMinimumWidth(400);
+//    tunnelsfilterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    mainWidgetLayout->addWidget(tunnelsfilterWidget);
 
-//    connect(theNodesWidget,&LineAssetInputWidget::doneLoadingComponents,this,&JSONTransportNetworkInputWidget::handleAssetsLoaded);
-//    connect(theLinksWidget,&LineAssetInputWidget::doneLoadingComponents,this,&JSONTransportNetworkInputWidget::handleAssetsLoaded);
-
-//    theLinksWidget->setTheNodesWidget(theNodesWidget);
-
-//    QVBoxLayout* mainLayout = new QVBoxLayout(this);
-
-//    QSplitter* verticalSplitter = new QSplitter(Qt::Vertical);
-
-//    verticalSplitter->addWidget(theNodesWidget);
-//    verticalSplitter->addWidget(theLinksWidget);
-
-//    mainLayout->addWidget(verticalSplitter);
-
+    mainWidgetLayout->addStretch();
 }
-
-//int JSONTransportNetworkInputWidget::loadAssetVisualization(){
-//    return 0;
-//}
 
 
 JSONTransportNetworkInputWidget::~JSONTransportNetworkInputWidget()
 {
 
 }
+
 
 bool JSONTransportNetworkInputWidget::loadAssetData(){
     // Ask for the file path if the file path has not yet been set, and return if it is still null
@@ -143,262 +198,126 @@ bool JSONTransportNetworkInputWidget::loadAssetData(){
     return true;
 }
 
-//bool JSONTransportNetworkInputWidget::copyFiles(QString &destName)
-//{
-////    auto res = theNodesWidget->copyFiles(destName);
-
-////    if(!res)
-////        return res;
-
-////    return theLinksWidget->copyFiles(destName);
-//}
 
 
 
-//bool JSONTransportNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
-//{
-////    jsonObject["Application"]="JSON_to_TransportNETWORK";
+bool JSONTransportNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+{
+    jsonObject["Application"]=appType;
 
-////    QJsonObject data;
+    QJsonObject data;
+    QFileInfo componentFile(componentFileLineEdit->text());
+    if (componentFile.exists()) {
+        // if componentFile is a dir, then it is likely a folder containing shapefile and its dependencies
+        if (componentFile.isDir())
+        {
+            // look for shp, gdb, gpkg
+            QDir gisDir = componentFile.absoluteFilePath();
+            QStringList acceptableFileExtensions = {"*.shp", "*.gdb", "*.gpkg"};
+            QStringList inputFiles = gisDir.entryList(acceptableFileExtensions, QDir::Files);
+            if(inputFiles.empty())
+            {
+                this->errorMessage("Cannot find GIS file in input site data directory.");
+                return 0;
+            }
+            data["assetSourceFile"]=componentFile.absoluteFilePath() + QDir::separator() + inputFiles.value(0);
+            data["pathToSource"]=componentFile.absoluteFilePath();
+            data["inputIsGIS"]=true;
+        }
+        else
+        {
+            data["assetSourceFile"]=componentFile.fileName();
+            data["pathToSource"]=componentFile.absoluteDir().path();
+            data["inputIsGIS"]=false;
+        }
 
-////    QJsonObject nodeData;
-////    // The file containing the network nodes
-////    auto res = theNodesWidget->outputAppDataToJSON(nodeData);
+        QString roadsFilterData = this->getRoadsFilterString();
+        QString bridgesFilterData = this->getBridgesFilterString();
+        QString tunnelsFilterData = this->getTunnelsFilterString();
 
-////    if(!res)
-////    {
-////        this->errorMessage("Error, could not get the .json output from the nodes widget in JSON_to_TransportNETWORK");
-////        return false;
-////    }
+        if(roadsFilterData.isEmpty())
+        {
+            auto msgBox =  std::make_unique<QMessageBox>();
+            msgBox->setText("No IDs are selected for analysis in ASD roadways of "+assetType.toLower()+". Really run with all components?");
+            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+            auto res = msgBox->exec();
+            if(res != QMessageBox::Yes)
+                return false;
+        } else {
+            data["roadsFilter"] = roadsFilterData;
+        }
+        if(bridgesFilterData.isEmpty())
+        {
+            auto msgBox =  std::make_unique<QMessageBox>();
+            msgBox->setText("No IDs are selected for analysis in ASD bridges of "+assetType.toLower()+". Really run with all components?");
+            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+            auto res = msgBox->exec();
+            if(res != QMessageBox::Yes)
+                return false;
+        } else {
+            data["bridgesFilter"] = bridgesFilterData;
+        }
+        if(tunnelsFilterData.isEmpty())
+        {
+            auto msgBox =  std::make_unique<QMessageBox>();
+            msgBox->setText("No IDs are selected for analysis in ASD tunnels of "+assetType.toLower()+". Really run with all components?");
+            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+            auto res = msgBox->exec();
+            if(res != QMessageBox::Yes)
+                return false;
+        } else {
+            data["tunnelsFilter"] = tunnelsFilterData;
+        }
 
-////    data["TransportNetworkNodes"] = nodeData;
+        data["roadSegLength"] = roadLengthLineEdit->text().toDouble();
 
-////    QJsonObject pipelineData;
-////    // The file containing the network pipelines
-////    res = theLinksWidget->outputAppDataToJSON(pipelineData);
+    }
+    else
+    {
+        data["sourceFile"]=QString("None");
+        data["pathToSource"]=QString("");
+        return false;
+    }
 
-////    if(!res)
-////    {
-////        this->errorMessage("Error, could not get the .json output from the pipelines widget in JSON_to_TransportNETWORK");
-////        return false;
-////    }
+    jsonObject["ApplicationData"] = data;
 
-////    data["TransportNetworkPipelines"] = pipelineData;
-
-////    jsonObject["ApplicationData"] = data;
-
-////    return false;
-//}
+    return true;
+}
 
 
 bool JSONTransportNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
     bool res = AssetInputJSONWidget::inputAppDataFromJSON(jsonObject);
+    if (jsonObject.contains("ApplicationData")) {
+        QJsonObject appData = jsonObject["ApplicationData"].toObject();
+        if (appData.contains("roadsFilter")) {
+            roadsSelectComponentsLineEdit->setText(appData["roadsFilter"].toString());
+            this->selectRoads();
+        }
+        if (appData.contains("bridgesFilter")) {
+            bridgesSelectComponentsLineEdit->setText(appData["bridgesFilter"].toString());
+            this->selectBridges();
+        }
+        if (appData.contains("tunnelsFilter")) {
+            tunnelsSelectComponentsLineEdit->setText(appData["tunnelsFilter"].toString());
+            this->selectTunnels();
+        }
+        if (appData.contains("roadSegLength")) {
+            roadLengthLineEdit->setText(QString::number(appData["roadSegLength"].toDouble()));
+        }
+    }
     return res;
 }
 
-
+void JSONTransportNetworkInputWidget::printRoadLengthInput(void){
+    QString msg = "Roadway length per AIM is set as "+ roadLengthLineEdit->text() + " meters";
+    this->statusMessage(msg);
+}
 
 
 int JSONTransportNetworkInputWidget::loadAssetVisualization()
 {
 
-//    if(nodePointsMap.isEmpty())
-//    {
-//        this->errorMessage("The node map is empty in TransportNetworkInputWidget");
-//        return -1;
-//    }
-
-//    if(transportNetworkMainLayer != nullptr)
-//        theVisualizationWidget->removeLayer(transportNetworkMainLayer);
-
-//    if(transportNetworkSelectedLayer != nullptr)
-//        theVisualizationWidget->removeLayer(transportNetworkSelectedLayer);
-
-//    auto pipelinesTableWidget = theLinksWidget->getTableWidget();
-
-//    QgsFields featFields;
-//    featFields.append(QgsField("ID", QVariant::Int));
-//    featFields.append(QgsField("AssetType", QVariant::String));
-//    featFields.append(QgsField("TabName", QVariant::String));
-
-//    // Set the table headers as fields in the table
-//    for(int i = 1; i<pipelinesTableWidget->columnCount(); ++i)
-//    {
-//        auto fieldText = pipelinesTableWidget->horizontalHeaderItemVariant(i);
-//        featFields.append(QgsField(fieldText.toString(),fieldText.type()));
-//    }
-
-//    auto attribFields = featFields.toList();
-
-
-//    auto horzHeaders = theLinksWidget->getTableHorizontalHeadings();
-
-//    auto indexNodeTag1 = horzHeaders.indexOf("node1");
-
-//    if(indexNodeTag1 == -1)
-//    {
-//        this->errorMessage("Error, cannot find column header 'node1' that specifies the starting node of a pipe");
-//        return -1;
-//    }
-
-//    auto indexNodeTag2 = horzHeaders.indexOf("node2");
-
-//    if(indexNodeTag2 == -1)
-//    {
-//        this->errorMessage("Error, cannot find column header 'node2' that specifies the ending node of a pipe");
-//        return -1;
-//    }
-
-//    // Create the pipelines layer
-//    transportNetworkMainLayer = theVisualizationWidget->addVectorLayer("linestring","All Transport Network Links");
-
-//    if(transportNetworkMainLayer == nullptr)
-//    {
-//        this->errorMessage("Error adding a vector layer");
-//        return -1;
-//    }
-
-//    auto pr = transportNetworkMainLayer->dataProvider();
-
-//    transportNetworkMainLayer->startEditing();
-
-//    auto res = pr->addAttributes(attribFields);
-
-//    if(!res)
-//        this->errorMessage("Error adding attributes to the layer" + transportNetworkMainLayer->name());
-
-//    transportNetworkMainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
-
-//    theRoadsDb->setMainLayer(transportNetworkMainLayer);
-
-//    // Get the number of rows
-//    auto nRows = pipelinesTableWidget->rowCount();
-
-//    auto numAtrb = attribFields.size();
-
-//    for(int i = 0; i<nRows; ++i)
-//    {
-
-//        // create the feature attributes
-//        QgsAttributes featureAttributes(numAtrb);
-
-//        // Create a new pipeline
-//        QString pipelineIDStr = pipelinesTableWidget->item(i,0).toString();
-
-//        int pipelineID =  pipelineIDStr.toInt();
-
-//        // Create a unique ID for the pipeline
-//        //        auto uid = theVisualizationWidget->createUniqueID();
-
-//        // "ID"
-//        // "AssetType"
-//        // "Tabname"
-
-//        featureAttributes[0] = QVariant(pipelineID);
-//        featureAttributes[1] = QVariant("TransportPIPELINES");
-//        featureAttributes[2] = QVariant("ID: "+QString::number(pipelineID));
-
-//        // The feature attributes are the columns from the table
-//        for(int j = 1; j<pipelinesTableWidget->columnCount(); ++j)
-//        {
-//            auto attrbVal = pipelinesTableWidget->item(i,j);
-//            featureAttributes[2+j] = attrbVal;
-//        }
-
-//        QgsFeature feature;
-//        feature.setFields(featFields);
-
-//        auto nodeTag1 = pipelinesTableWidget->item(i,indexNodeTag1).toInt();
-
-//        auto nodeTag2 = pipelinesTableWidget->item(i,indexNodeTag2).toInt();
-
-//        // Start and end point of the pipe
-//        QgsPointXY point1 = nodePointsMap.value(nodeTag1);
-
-//        if(point1.isEmpty())
-//        {
-//            this->errorMessage("Error, could not find node with ID "+ QString::number(nodeTag1)+ " in the node table");
-//            return -1;
-//        }
-
-//        QgsPointXY point2 = nodePointsMap.value(nodeTag2);
-
-//        if(point2.isEmpty())
-//        {
-//            this->errorMessage("Error, could not find node with ID "+ QString::number(nodeTag2)+ " in the node table");
-//            return -1;
-//        }
-
-//        QgsPolylineXY pipeSegment(2);
-//        pipeSegment[0]=point1;
-//        pipeSegment[1]=point2;
-
-//        feature.setGeometry(QgsGeometry::fromPolylineXY(pipeSegment));
-
-//        feature.setAttributes(featureAttributes);
-
-//        if(!feature.isValid())
-//            return -1;
-
-//        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
-//        if(!res)
-//        {
-//            this->errorMessage("Error adding the feature to the layer");
-//            return -1;
-//        }
-//    }
-
-//    transportNetworkMainLayer->commitChanges(true);
-//    transportNetworkMainLayer->updateExtents();
-
-//    QgsLineSymbol* markerSymbol = new QgsLineSymbol();
-
-//    markerSymbol->setWidth(0.8);
-//    markerSymbol->setColor(Qt::darkBlue);
-//    theVisualizationWidget->createSimpleRenderer(markerSymbol,transportNetworkMainLayer);
-
-//    //    auto numFeat = mainLayer->featureCount();
-
-//    theVisualizationWidget->zoomToLayer(transportNetworkMainLayer);
-
-//    auto layerId = transportNetworkMainLayer->id();
-
-//    theVisualizationWidget->registerLayerForSelection(layerId,theLinksWidget);
-
-//    // Create the selected pipeline layer
-//    transportNetworkSelectedLayer = theVisualizationWidget->addVectorLayer("linestring","Selected Transport Network Links");
-
-//    if(transportNetworkSelectedLayer == nullptr)
-//    {
-//        this->errorMessage("Error adding the selected assets vector layer");
-//        return -1;
-//    }
-
-//    QgsLineSymbol* selectedLayerMarkerSymbol = new QgsLineSymbol();
-
-//    selectedLayerMarkerSymbol->setWidth(2.0);
-//    selectedLayerMarkerSymbol->setColor(Qt::darkBlue);
-//    theVisualizationWidget->createSimpleRenderer(selectedLayerMarkerSymbol,transportNetworkSelectedLayer);
-
-//    auto pr2 = transportNetworkSelectedLayer->dataProvider();
-
-//    auto res2 = pr2->addAttributes(attribFields);
-
-//    if(!res2)
-//        this->errorMessage("Error adding attributes to the layer");
-
-//    transportNetworkSelectedLayer->updateFields(); // tell the vector layer to fetch changes from the provider
-
-//    theRoadsDb->setSelectedLayer(transportNetworkSelectedLayer);
-
-//    QVector<QgsMapLayer*> mapLayers;
-//    mapLayers.push_back(transportNetworkSelectedLayer);
-//    mapLayers.push_back(transportNetworkMainLayer);
-
-//    theVisualizationWidget->createLayerGroup(mapLayers,"Transport Network Links");
-
-//    return 0;
 }
 
 
@@ -406,64 +325,16 @@ int JSONTransportNetworkInputWidget::loadAssetVisualization()
 int JSONTransportNetworkInputWidget::getNodeMap()
 {
 
-//    if(theNodesWidget->isEmpty())
-//    {
-//        this->errorMessage("Error, the nodes table is empty in TransportNetworkInputWidget");
-//        return -1;
-//    }
-
-//    auto theNodesTableWidget = theNodesWidget->getTableWidget();
-
-//    // Get the number of rows
-//    auto nRows = theNodesTableWidget->rowCount();
-
-//    auto headers = theNodesWidget->getTableHorizontalHeadings();
-
-//    // First check if a footprint was provided
-//    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, "latitude");
-//    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, "longitude");
-
-
-
-//    if(indexLongitude == -1 || indexLatitude == -1)
-//    {
-//        indexLatitude = theVisualizationWidget->getIndexOfVal(headers, "lat");
-//        indexLongitude = theVisualizationWidget->getIndexOfVal(headers, "lon");
-//        if(indexLongitude == -1 || indexLatitude == -1){
-//            this->errorMessage("Could not find latitude and longitude in the header columns");
-//            return -1;
-//        }
-//    }
-
-
-//    for(int i = 0; i<nRows; ++i)
-//    {
-
-//        // Create a new node
-//        QString nodeIDStr = theNodesTableWidget->item(i,0).toString();
-
-//        int nodeID = nodeIDStr.toInt();
-
-//        auto latitude = theNodesTableWidget->item(i,indexLatitude).toDouble();
-//        auto longitude = theNodesTableWidget->item(i,indexLongitude).toDouble();
-
-//        QgsPointXY point(longitude,latitude);
-//        auto geom = QgsGeometry::fromPointXY(point);
-//        if(geom.isEmpty())
-//        {
-//            this->errorMessage("Error creating the Transport network node geometry");
-//            return -1;
-//        }
-
-//        nodePointsMap.insert(nodeID,point);
-//    }
-
-//    return 0;
 }
 
 
 void JSONTransportNetworkInputWidget::clear()
 {
+    this->clearLoadedData();
+    roadsSelectComponentsLineEdit->clear();
+    bridgesSelectComponentsLineEdit->clear();
+    tunnelsSelectComponentsLineEdit->clear();
+    roadLengthLineEdit->clear();
 //    theRoadsDb->clear();
 //    nodePointsMap.clear();
 //    theNodesWidget->clear();
@@ -476,23 +347,101 @@ void JSONTransportNetworkInputWidget::clear()
 
 void JSONTransportNetworkInputWidget::handleAssetsLoaded()
 {
-//    if(theNodesWidget->isEmpty() || theLinksWidget->isEmpty())
-//        return;
 
-//    auto res = this->getNodeMap();
+}
 
-//    if(res != 0)
-//    {
-//        this->errorMessage("Error, failed to load the Transport network nodes mapped");
-//        return;
-//    }
 
-//    res = this->loadPipelinesVisualization();
+void JSONTransportNetworkInputWidget::selectRoads(void)
+{
+    try
+    {
+        roadsSelectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->errorMessage(msg);
+    }
+}
 
-//    if(res != 0)
-//    {
-//        this->errorMessage("Error, failed to load the Transport network links visualization");
-//        return;
-//    }
+void JSONTransportNetworkInputWidget::selectBridges(void)
+{
+    try
+    {
+        bridgesSelectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->errorMessage(msg);
+    }
+}
 
+void JSONTransportNetworkInputWidget::selectTunnels(void)
+{
+    try
+    {
+        tunnelsSelectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->errorMessage(msg);
+    }
+}
+
+void::JSONTransportNetworkInputWidget::handleRoadsSelection(){
+    auto selectedComponentIDs = roadsSelectComponentsLineEdit->getSelectedComponentIDs();
+    auto numAssets = selectedComponentIDs.size();
+    QString msg = "A total of "+ QString::number(numAssets) + " roadways are selected for analysis";
+    this->statusMessage(msg);
+    //Do nothing. Can be used to check if roads filter input is valid
+}
+
+void::JSONTransportNetworkInputWidget::handleBridgesSelection(){
+    auto selectedComponentIDs = bridgesSelectComponentsLineEdit->getSelectedComponentIDs();
+    auto numAssets = selectedComponentIDs.size();
+    QString msg = "A total of "+ QString::number(numAssets) + " bridges are selected for analysis";
+    this->statusMessage(msg);
+    //Do nothing. Can be used to check if roads filter input is valid
+}
+
+void::JSONTransportNetworkInputWidget::handleTunnelsSelection(){
+    auto selectedComponentIDs = tunnelsSelectComponentsLineEdit->getSelectedComponentIDs();
+    auto numAssets = selectedComponentIDs.size();
+    QString msg = "A total of "+ QString::number(numAssets) + " tunnels are selected for analysis";
+    this->statusMessage(msg);
+    //Do nothing. Can be used to check if roads filter input is valid
+}
+
+void JSONTransportNetworkInputWidget::clearRoadsComponentSelection()
+{
+    roadsSelectComponentsLineEdit->clear();
+    //    theComponentDb->clearSelectedLayer();
+    //    theComponentDb->getSelectedLayer()->updateExtents();
+}
+
+void JSONTransportNetworkInputWidget::clearBridgesComponentSelection()
+{
+    bridgesSelectComponentsLineEdit->clear();
+    //    theComponentDb->clearSelectedLayer();
+    //    theComponentDb->getSelectedLayer()->updateExtents();
+}
+
+void JSONTransportNetworkInputWidget::clearTunnelsComponentSelection()
+{
+    tunnelsSelectComponentsLineEdit->clear();
+    //    theComponentDb->clearSelectedLayer();
+    //    theComponentDb->getSelectedLayer()->updateExtents();
+}
+
+
+QString JSONTransportNetworkInputWidget::getRoadsFilterString(void){
+    QString filterData = roadsSelectComponentsLineEdit->getComponentAnalysisList();
+    return filterData;
+}
+QString JSONTransportNetworkInputWidget::getBridgesFilterString(void){
+    QString filterData = bridgesSelectComponentsLineEdit->getComponentAnalysisList();
+    return filterData;
+}
+QString JSONTransportNetworkInputWidget::getTunnelsFilterString(void){
+    QString filterData = tunnelsSelectComponentsLineEdit->getComponentAnalysisList();
+    return filterData;
 }
