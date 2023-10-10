@@ -109,7 +109,7 @@ CBCitiesPostProcessor::CBCitiesPostProcessor(QWidget *parent, VisualizationWidge
 
     if(resultsMenu)
     {
-        viewMenu = resultsMenu->addMenu(tr("&View"));
+        viewMenu = resultsMenu->addMenu(tr("&Water Network"));
         viewMenu->addAction(tr("&Restore"), this, &CBCitiesPostProcessor::restoreUI);
     }
     else
@@ -229,14 +229,8 @@ void CBCitiesPostProcessor::importResults(const QString& pathToResults)
         throw errMsg;
     }
 
-    QString DVResultsSheet;
+    QString DVResultsSheet = "DV.csv";
 
-    for(auto&& it : existingCSVFiles)
-    {
-         if(it.startsWith("DV_"))
-            DVResultsSheet = it;
-
-    }
 
     CSVReaderWriter csvTool;
 
