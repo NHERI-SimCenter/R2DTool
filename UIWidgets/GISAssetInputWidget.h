@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "AssetInputWidget.h"
+#include "qgsvectorfilewriter.h"
 
 class QgsVectorLayer;
 class CRSSelectionWidget;
@@ -57,6 +58,7 @@ public:
     bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
 
     bool copyFiles(QString &destName) override;
+    bool copyFilesGeoJSON(QString &destName);
 
     void clear(void) override;
 

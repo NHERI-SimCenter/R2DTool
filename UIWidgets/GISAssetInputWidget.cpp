@@ -637,6 +637,55 @@ bool GISAssetInputWidget::copyFiles(QString &destName)
     return AssetInputWidget::copyFiles(destPath);
 }
 
+bool GISAssetInputWidget::copyFilesGeoJSON(QString &destName)
+{
+
+
+    // Copy over the gis file(s), note that if it is a gdb or shapefile, it will have other supporting files with the main file
+    auto compLineEditText = componentFileLineEdit->text();
+
+    QFileInfo componentFile(compLineEditText);
+
+    if (!componentFile.exists())
+        return false;
+
+    QString destFileName = componentFile.baseName() + ".geojson";
+
+    auto destPath = destName + QDir::separator() + destFileName;
+
+    QDir dirDest(destName);
+
+    if (!dirDest.exists())
+    {
+        if (!dirDest.mkpath(destPath))
+        {
+            QString errMsg = QString("Could not create destination Dir: ") + destPath;
+            this->errorMessage(errMsg);
+
+            return false;
+        }
+    }
+//    QgsVectorFileWriter writer = QgsVectorFileWriter();
+    auto options = QgsVectorFileWriter::SaveVectorOptions();
+    options.driverName = "geoJson";
+    if(mainLayer != nullptr){
+        auto err = QgsVectorFileWriter::writeAsVectorFormat(mainLayer,
+                                                           destPath,
+                                                           options);
+        if (err !=0) {
+            QString msg = "Error saving GIS files as GeoJSON format in the directory " + destPath + "\n Try converting them to GeoJSON and then load them again.";
+            errorMessage(msg);
+            return false;
+        }
+    } else {
+        QString msg = "Source layer not defined when saving GIS files as GeoJSON format in the directory " + destPath;
+                errorMessage(msg);
+                return false;
+    }
+
+    return true;
+}
+
 
 void GISAssetInputWidget::setCRS(const QgsCoordinateReferenceSystem & val)
 {
