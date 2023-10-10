@@ -62,9 +62,9 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
-    DLTypeComboBox->addItem("HAZUS MH EQ");
+//    DLTypeComboBox->addItem("HAZUS MH EQ");
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
-    DLTypeComboBox->addItem("HAZUS MH HU");
+//    DLTypeComboBox->addItem("HAZUS MH HU");
     DLTypeComboBox->addItem("User-provided Fragilities");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
@@ -140,7 +140,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
-    jsonObject.insert("Application","pelicun");
+    jsonObject.insert("Application","pelicun3");
 
     QJsonObject appDataObj;
 
@@ -151,7 +151,10 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("coupled_EDP",coupledEDPCheckBox->isChecked());
     appDataObj.insert("event_time",eventTimeComboBox->currentText());
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
-
+    appDataObj.insert("regional", "true");
+    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ IM")==0){
+        appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_IM.py");
+    }
     // test separating the path and filename of auto-population codes (KZ)
     QFileInfo test_auto(autoPopulationScriptLineEdit->text());
     if(test_auto.exists())
