@@ -46,6 +46,6 @@ static QString getPEERUserName(void){return "PEER_USER_NAME";}
 
 static QString getPEERPassWord(void){return "PEER_USER_PASS";}
 
-static QString getArcGISKey(void){return "ARC_GIS_KEY";}
+//static QString getArcGISKey(void){return "ARC_GIS_KEY";}
 
 #endif // SAMPLEUSERPASS_H

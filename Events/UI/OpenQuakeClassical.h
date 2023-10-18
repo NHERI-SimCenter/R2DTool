@@ -96,7 +96,7 @@ private:
     bool UHS = true;
     int returnPeriod = 500;
     QJsonArray quant = {0.1,0.5,0.9};
-    QString oq_version = "3.12.0"; // default OpenQuake version
+    QString oq_version = "3.17.1"; // default OpenQuake version
 
     QString sourceFilename;
     QString gmpeFilename;

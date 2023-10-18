@@ -1,5 +1,5 @@
-#ifndef LayerManagerTableView_H
-#define LayerManagerTableView_H
+#ifndef CSVTransportNetworkInputWidget_H
+#define CSVTransportNetworkInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,37 +38,52 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ColorDialogDelegate.h"
-#include "LayerComboBoxItemDelegate.h"
+#include "AssetInputWidget.h"
 
-#include <QTableView>
+class NonselectableAssetInputWidget;
+class LineAssetInputWidget;
+class PointAssetInputWidget;
 
-class LayerManagerModel;
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class FeatureCollectionLayer;
-}
-}
-
-class LayerManagerTableView : public QTableView
+class CSVTransportNetworkInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    LayerManagerTableView(QWidget* parent);
+    CSVTransportNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~CSVTransportNetworkInputWidget();
 
-    void setLayer(Esri::ArcGISRuntime::FeatureCollectionLayer* layer);
+    int getNodeMap();
+    virtual int loadPipelinesVisualization();
 
-private:
-    LayerManagerModel* dataModel;
+    void clear();
 
-    std::unique_ptr<ColorDialogDelegate> colorDelegate;
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool copyFiles(QString &destName);
 
-    std::unique_ptr<LayerComboBoxItemDelegate> markerTypeComboDelegate;
+protected slots:
+    void handleAssetsLoaded();
+
+protected:
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    ComponentDatabase*  theNodesDb = nullptr;
+    ComponentDatabase*  theLinksDb = nullptr;
+
+    PointAssetInputWidget* theNodesWidget = nullptr;
+    LineAssetInputWidget* theLinksWidget = nullptr;
+
+    QgsVectorLayer* transportNetworkMainLayer = nullptr;
+    QgsVectorLayer* transportNetworkSelectedLayer = nullptr;
+
+
+    // ID, QgsGeometry
+    QMap<int, QgsPointXY> nodePointsMap;
 
 };
 
-#endif // LayerManagerTableView_H
+#endif // CSVTransportNetworkInputWidget_H

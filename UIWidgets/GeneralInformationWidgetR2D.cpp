@@ -227,15 +227,15 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
 
     soilCheckBox->setCheckable(false);
     gasCheckBox->setCheckable(true);
-    waterCheckBox->setCheckable(false);
+    waterCheckBox->setCheckable(true);
     sewerCheckBox->setCheckable(false);
-    transportationCheckBox->setCheckable(false);
+    transportationCheckBox->setCheckable(true);
 
     soilCheckBox->setEnabled(false);
     gasCheckBox->setEnabled(false);
     waterCheckBox->setEnabled(true);
     sewerCheckBox->setEnabled(false);
-    transportationCheckBox->setEnabled(false);
+    transportationCheckBox->setEnabled(true);
 
     connect(buildingsCheckBox, &QCheckBox::stateChanged, this, [=](){
         emit assetChanged("Buildings",buildingsCheckBox->isChecked());
@@ -253,7 +253,7 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
        emit assetChanged("Sewer Network",sewerCheckBox->isChecked());
     });
     connect(transportationCheckBox, &QCheckBox::stateChanged, this, [=](){
-        emit assetChanged("TransportationNetwork",transportationCheckBox->isChecked());
+        emit assetChanged("Transportation Network",transportationCheckBox->isChecked());
     });
 
 

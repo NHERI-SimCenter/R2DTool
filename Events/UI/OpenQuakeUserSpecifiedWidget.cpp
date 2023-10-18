@@ -75,6 +75,7 @@ OpenQuakeUserSpecifiedWidget::OpenQuakeUserSpecifiedWidget(QWidget *parent) : Si
     // OpenQuake Version
     QLabel* oqVerLabel = new QLabel(tr("OpenQuake Version:"),this);
     oqVersionCombo = new QComboBox(this);
+    oqVersionCombo->addItem("3.17");
     oqVersionCombo->addItem("3.12");
     oqVersionCombo->addItem("3.11");
     oqVersionCombo->addItem("3.10");
@@ -111,6 +112,10 @@ void OpenQuakeUserSpecifiedWidget::handleOQVersionChanged(const QString& selecti
     else if(selection.compare("3.12") == 0)
     {
         oqVersion = "3.12.0"; // this is the latest version 09/27/21
+    }
+    else if(selection.compare("3.17") == 0)
+    {
+        oqVersion = "3.17.1"; // this is the latest version 08/08/23
     }
     m_eqRupture->setOQVersion(oqVersion);
 }

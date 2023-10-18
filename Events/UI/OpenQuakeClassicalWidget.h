@@ -94,7 +94,7 @@ private:
     QCheckBox* UHSCheckBox;
 
     QComboBox* oqVersionCombo;
-    QString oqVersion = "3.12.0";
+    QString oqVersion = "3.17.1";
 
     void setupConnections();
     void setSourceFile(QString dirPath);

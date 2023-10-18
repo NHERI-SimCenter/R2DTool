@@ -57,6 +57,7 @@ private:
     SimCenterAppSelection* buildingWidget = nullptr;
     SimCenterAppSelection* gasPipelineWidget = nullptr;
     SimCenterAppSelection* waterNetworkWidget = nullptr;
+    SimCenterAppSelection* transportNetworkWidget = nullptr;
     VisualizationWidget* visualizationWidget = nullptr;
 };
 

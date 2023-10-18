@@ -65,7 +65,7 @@ public:
 
 public slots:
 
-    void handleComboBoxChanged(const QString &text);
+    void handleComboBoxChanged(const QString text);
     void handleBrowseButton1Pressed(void);
     void handleBrowseButton2Pressed(void);
 
@@ -82,6 +82,7 @@ private:
     QCheckBox* groundFailureCheckBox;
     QLineEdit* autoPopulationScriptLineEdit;
     QLineEdit* fragilityDirLineEdit;
+    void clearParams(void);
 };
 
 #endif // PelicunDLWidget_H
