@@ -58,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextStream>
 #include <QThread>
 #include <QTime>
+#include <QWebEngineView>
 
 #include "qgsapplication.h"
 
