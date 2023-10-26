@@ -1,5 +1,5 @@
-﻿#ifndef MultiComponentR2D_H
-#define MultiComponentR2D_H
+#ifndef GeojsonAssetInputWidget_H
+#define GeojsonAssetInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,71 +36,53 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Dr. Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include <QList>
 
-class SecondaryComponentSelection;
-class QFrame;
-class QStackedWidget;
-class QPushButton;
-class QVBoxLayout;
-class QHBoxLayout;
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class GISAssetInputWidget;
+class MultiComponentR2D;
 
-class MultiComponentR2D : public  SimCenterAppWidget
+class QLineEdit;
+
+class QgsMapLayer;
+class QgsFeature;
+class QgsGeometry;
+
+class GeojsonAssetInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-  explicit MultiComponentR2D(QString jsonKeyword, QWidget *parent);
-    ~MultiComponentR2D();
+    GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType);
+    virtual ~GeojsonAssetInputWidget();
+
+    void clear();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
     bool copyFiles(QString &destName);
 
-    void clear(void);
-    virtual void hideAll();
-    virtual bool hide(QString text);
-    virtual bool show(QString text);
-    bool addComponent(QString text, SimCenterAppWidget *);
-    SimCenterAppWidget *getComponent(QString text);
-    void removeAllComponents(void);
-
-    // SG add
-    SimCenterAppWidget* getCurrentComponent(void);
-    void hideSelectionWidget(void);
-    int getCurrentIndex(void) const;
-    int getIndexOfComponent(QString text) const;
-
-    // Returns a list of all the components that are active or 'on', i.e., theButton->isHidden() == false
-    QList<QString> getActiveComponents(void);
-
-public slots:
-    void selectionChangedSlot(const QString &);
-
-signals:
-    void selectionChangedSignal(const QString &);
+protected slots:
+    void loadAssetData();
+    void chooseAssetFileDialog(void);
 
 protected:
-    virtual bool displayComponent(QString text);
-    QVBoxLayout *theMainLayout = nullptr;
 
-private:
-    int numHidden;
+    QLineEdit* componentFileLineEdit = nullptr;
 
-    QFrame *theSelectionWidget = nullptr;
-    QVBoxLayout *theSelectionLayout = nullptr;
-    QStackedWidget *theStackedWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    MultiComponentR2D* mainAssetWidget = nullptr;
 
-    QString jsonKeyword;
-    QList<QString> theNames;
-    QList<QPushButton *>thePushButtons;
-    QList<SimCenterAppWidget *> theComponents;
+    QList<GISAssetInputWidget*> theAssetInputWidgetList;
+    QList<QgsMapLayer*> theAssetLayerList;
 
-    //  SecondaryComponentSelection *theSelection;
+    QString componentType;
+    QString appType;
+
 };
 
-#endif // MultiComponentR2D_H
+#endif // GeojsonAssetInputWidget_H

@@ -65,6 +65,7 @@ class QTableWidget;
 class QLabel;
 class QVBoxLayout;
 class QPushButton;
+class QHBoxLayout;
 
 class AssetInputWidget : public  SimCenterAppWidget, public GISSelectable
 {
@@ -124,6 +125,14 @@ public:
     QVBoxLayout* mainWidgetLayout = nullptr;
 #endif
 
+    QString getAssetType() const;
+
+    QHBoxLayout *getAssetFilePathLayout() const;
+
+    QLabel *getLabel1() const;
+
+    void setPathToComponentInputFile(const QString &newPathToComponentInputFile);
+
 signals:
     void headingValuesChanged(QStringList);
     void doneLoadingComponents(void);
@@ -169,7 +178,7 @@ protected:
 
     QString pathToComponentInputFile;
     QLineEdit* componentFileLineEdit = nullptr;
-
+    QHBoxLayout* pathLayout = nullptr;
     QGroupBox* componentGroupBox = nullptr;
 
 #ifndef OpenSRA

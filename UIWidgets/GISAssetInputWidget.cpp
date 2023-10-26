@@ -327,6 +327,8 @@ bool GISAssetInputWidget::loadAssetData(void)
         return false;
     }
 
+    this->setCRS(mainLayer->crs());
+
     auto numFeat = mainLayer->featureCount();
 
     if(numFeat == 0)
