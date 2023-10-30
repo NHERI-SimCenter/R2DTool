@@ -74,7 +74,7 @@ private:
     QPushButton* browseFileButton;
 
     QComboBox* oqVersionCombo;
-    QString oq_version = "3.12.0";
+    QString oq_version = "3.17.1";
 
     void setupConnections();
     void setRupFile(QString dirPath);

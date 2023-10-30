@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "DLWidget.h"
 #include "PelicunDLWidget.h"
+#include "Pelicun3DLWidget.h"
 #include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "NoArgSimCenterApp.h"
@@ -74,9 +75,11 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
 
     // Building widget apps
+    SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget;    
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
-
+    
+    buildingWidget->addComponent(QString("Pelicun3"), QString("pelicun3"), buildingPelicun3);    
     buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 

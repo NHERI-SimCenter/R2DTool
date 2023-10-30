@@ -41,19 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVector>
 #include <QVariant>
 
-#ifdef ARC_GIS
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Feature;
-}
-}
-#endif
-
-#ifdef Q_GIS
 #include <qgsfeature.h>
-#endif
 
 class WindFieldStation
 {
@@ -89,16 +77,8 @@ public:
         return val;
     }
 
-
-#ifdef ARC_GIS
-    Esri::ArcGISRuntime::Feature *getStationFeature() const;
-    void setStationFeature(Esri::ArcGISRuntime::Feature *value);
-#endif
-
-#ifdef Q_GIS
     QgsFeature getStationFeature() const;
     void setStationFeature(QgsFeature value);
-#endif
 
     int updateFeatureAttribute(const QString& attribute, const QVariant& value);
 
@@ -120,13 +100,7 @@ private:
 
     QStringList tableHeadings;
 
-#ifdef ARC_GIS
-    Esri::ArcGISRuntime::Feature* stationFeature;
-#endif
-
-#ifdef Q_GIS
     QgsFeature stationFeature;
-#endif
 
 
 };

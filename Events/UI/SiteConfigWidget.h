@@ -52,7 +52,6 @@ private:
     SiteGridWidget* siteGridWidget;
     SiteScatterWidget* siteScatWidget;
     QGISSiteInputWidget* csvSiteInventory;
-    QLineEdit* numGMLineEdit;
     VisualizationWidget* visualizationWidget;
 
     QRadioButton* siteRadioButton;

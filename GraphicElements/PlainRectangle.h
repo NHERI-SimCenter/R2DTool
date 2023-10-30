@@ -1,5 +1,6 @@
-#ifndef RectangleGrid_H
-#define RectangleGrid_H
+#ifndef PlainRectangle_H
+#define PlainRectangle_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
+
 // Written by: Stevan Gavrilovic
 
 #include <QGraphicsItem>
@@ -49,30 +51,27 @@ class GridNode;
 class SiteConfig;
 class VisualizationWidget;
 
-class RectangleGrid : public QgsMapTool, public QGraphicsItem
+class PlainRectangle : public QgsMapTool, public QGraphicsItem
 {
     Q_OBJECT
     Q_INTERFACES(QGraphicsItem)
     
-    public:
+public:
+    
+    PlainRectangle(QgsMapCanvas* parent);
+    ~PlainRectangle();
 
-    RectangleGrid(QgsMapCanvas* parent);
-    ~RectangleGrid();
-
-    QVector<GridNode *> getGridNodeVec() const;
+    QVector<GridNode *> getGridNodeVec() const; 
     void setVisualizationWidget(VisualizationWidget *value);
-    void clearGrid();
-    void createGrid();
+    void createGrid(); 
+    void clearGrid(); 
+    void removeGridFromScene(void); 
     void show();
-    void removeGridFromScene(void);
 
-    void setSiteGridConfig(SiteConfig *value);
-    size_t getNumDivisionsHoriz() const;
-    void setNumDivisionsHoriz(const size_t &value);
-    size_t getNumDivisionsVertical() const;
-    void setNumDivisionsVertical(const size_t &value);
+signals:
+    void selectionChanged(void);
+    void geometryChanged();
 
-  
 private:  
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
@@ -90,13 +89,13 @@ private:
     void setTopLeftNode(NodeHandle *value);
 
     void setCenterNode(const double latitude, const double longitude);
-
+    void setNewExtent(double latLeft, double latRight, double longBottom, double longTop);
+  
     NodeHandle *getBottomLeftNode() const;
     NodeHandle *getBottomRightNode() const;
     NodeHandle *getTopRightNode() const;
     NodeHandle *getTopLeftNode() const;
     NodeHandle *getCenterNode() const;
-
 
     void canvasPressEvent( QgsMapMouseEvent *e ) override;
     void canvasMoveEvent( QgsMapMouseEvent *e ) override;
@@ -105,10 +104,6 @@ private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
-
-signals:
-    void selectionChanged(void);
-
 private slots:
     void handleBottomLeftCornerChanged(const QPointF& pos);
     void handleBottomRightCornerChanged(const QPointF& pos);
@@ -116,24 +111,16 @@ private slots:
     void handleTopRightCornerChanged(const QPointF& pos);
     void handleCenterNodeChanged(const QPointF& pos);
     void handleLatLonChanged(void);
-    void handleGridDivisionsChanged(void);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-
     void updateGeometry(void);
-
-signals:
-    void geometryChanged();
 
 private:
     QColor color;
     QRect rectangleGeometry;
     bool changingDimensions;
     bool updateConnectedWidgets;
-
-    size_t numDivisionsHoriz;
-    size_t numDivisionsVertical;
 
     NodeHandle* bottomLeftNode;
     NodeHandle* bottomRightNode;
@@ -154,4 +141,4 @@ private:
     QgsMapCanvas* mapCanvas;
 };
 
-#endif // RectangleGrid_H
+#endif // PlainRectangle_H

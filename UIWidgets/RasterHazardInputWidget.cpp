@@ -41,7 +41,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RasterHazardInputWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
-#include "SimCenterUnitsCombo.h"
+
+#include "SimCenterIMWidget.h"
 #include "SimCenterUnitsWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentDatabase.h"
@@ -92,6 +93,8 @@ RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget,
     layout->setSpacing(0);
     layout->addStretch();
     this->setLayout(layout);
+
+    eventFile = "EventGrid.csv";
 }
 
 
@@ -111,21 +114,12 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     QFileInfo rasterFile (rasterPathLineEdit->text());
 
+    appData["eventClassification"] = eventTypeCombo->currentText();
     appData["rasterFile"] = rasterFile.fileName();
     appData["pathToSource"]=rasterFile.path();
     crsSelectorWidget->outputAppDataToJSON(appData);
 
-    appData["eventClassification"] = eventTypeCombo->currentText();
-
-    QJsonArray bandArray;
-
-    for(auto&& it : bandNames)
-        bandArray.append(it);
-
-    appData["bands"] = bandArray;
-
     jsonObject["ApplicationData"]=appData;
-
 
     return true;
 }
@@ -135,19 +129,15 @@ bool RasterHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
     QFileInfo theFile(pathToEventFile);
-
     if (theFile.exists()) {
         jsonObj["eventFile"]= theFile.fileName();
         jsonObj["eventFilePath"]=theFile.path();
     } else {
-        jsonObj["eventFile"]=eventFile; 
+      jsonObj["eventFile"]=eventFile; 
         jsonObj["eventFilePath"]=QString("");
     }
 
-    auto res = unitsWidget->outputToJSON(jsonObj);
-
-    if(!res)
-        this->errorMessage("Could not get the units in 'Raster Defined Hazard'");
+    bool res = theIMs->outputToJSON(jsonObj);
 
     return res;
 }
@@ -156,28 +146,13 @@ bool RasterHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 bool RasterHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     // Set the units
-    auto res = unitsWidget->inputFromJSON(jsonObject);
-
-    // If setting of units failed, provide default units and issue a warning
-    if(!res)
-    {
-        auto paramNames = unitsWidget->getParameterNames();
-
-        this->infoMessage("Warning \\!/: Failed to find/import the units in 'Raster Defined Hazard' widget. Please set the units for the following parameters:");
-
-        for(auto&& it : paramNames)
-            this->infoMessage("For parameter: "+it);
-
-    }
 
     if (jsonObject.contains("eventFile"))
         eventFile = jsonObject["eventFile"].toString();
 
-    if(eventFile.isEmpty())
-    {
-        errorMessage("Raster hazard input widget -Error could not find the eventFile");
-        return false;
-    }
+    bool res = theIMs->inputFromJSON(jsonObject);
+    if (res == false) 
+      errorMessage("RasterHazard::input of intensity measures failed" );
     
     return res;
 }
@@ -186,6 +161,7 @@ bool RasterHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
 bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
     if (jsonObj.contains("ApplicationData")) {
+
         QJsonObject appData = jsonObj["ApplicationData"].toObject();
 
         QString fileName;
@@ -214,6 +190,8 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
         rasterPathLineEdit->setText(fullFilePath);
         rasterFilePath = fullFilePath;
 
+        auto res = this->loadRaster();
+	
         // Get the event type
         auto eventType = appData["eventClassification"].toString();
 
@@ -235,40 +213,14 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
             eventTypeCombo->setCurrentIndex(eventIndex);
         }
 
-
-        auto res = this->loadRaster();
+        theIMs->handleHazardChange(eventType);
 
         if(res !=0)
         {
             this->errorMessage("Failed to load the raster");
             return false;
         }
-
-        auto bandArray = appData["bands"].toArray();
-
-        auto numBands = rasterlayer->bandCount();
-
-        if(bandArray.size() != numBands)
-        {
-            this->errorMessage("Error in loading raster. The number of provided bands in the json file should be equal to the number of bands in the raster");
-            return false;
-        }
-
-        for(int i = 0; i<numBands; ++i)
-        {
-            // Note that band numbers start from 1 and not 0!
-            //auto bandName = rasterlayer->bandName(i+1);
-
-            auto unitStr = bandArray.at(i).toString();
-
-            auto labelName = "Band No. " + QString::number(i+1) + ": " + unitStr;
-
-            bandNames.append(unitStr);
-
-            unitsWidget->addNewUnitItem(unitStr, labelName);
-        }
-
-
+	
         // Set the CRS
         QString errMsg;
         if(!crsSelectorWidget->inputAppDataFromJSON(appData,errMsg))
@@ -283,7 +235,6 @@ bool RasterHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
 {
-
     // file  input
     fileInputWidget = new QWidget();
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
@@ -311,8 +262,10 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     eventTypeCombo->addItem("Tsunami","Tsunami");
     eventTypeCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    unitsWidget = new SimCenterUnitsWidget();
+    theIMs = new SimCenterIMWidget("Intensity Measures of Raster");
 
+    connect(eventTypeCombo,&QComboBox::currentTextChanged,theIMs,&SimCenterIMWidget::handleHazardChange);
+    
     QLabel* crsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
 
     fileLayout->addWidget(eventTypeLabel, 1,0);
@@ -321,7 +274,7 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     fileLayout->addWidget(crsTypeLabel,2,0);
     fileLayout->addWidget(crsSelectorWidget,2,1,1,2);
 
-    fileLayout->addWidget(unitsWidget, 3,0,1,3);
+    fileLayout->addWidget(theIMs, 3,0,1,3);
 
     fileLayout->setRowStretch(4,1);
 
@@ -331,19 +284,21 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
 
 void RasterHazardInputWidget::chooseEventFileDialog(void)
 {
-
     QFileDialog dialog(this);
     QString newEventFile = QFileDialog::getOpenFileName(this,tr("Event Raster File"));
     dialog.close();
+
 
     // Return if the user cancels or enters same file
     if(newEventFile.isEmpty() || newEventFile == rasterFilePath)
         return;
 
+    this->clear();
+    
     rasterFilePath = newEventFile;
     rasterPathLineEdit->setText(rasterFilePath);
 
-    eventFile.clear();
+    // eventFile.clear();
 
     auto res = this->loadRaster();
 
@@ -355,18 +310,12 @@ void RasterHazardInputWidget::chooseEventFileDialog(void)
 
     auto numBands = rasterlayer->bandCount();
 
-    unitsWidget->clear();
-
+    //unitsWidget->clear();
     for(int i = 0; i<numBands; ++i)
     {
         // Note that band numbers start from 1 and not 0!
-        auto bandName = rasterlayer->bandName(i+1);
-
-        bandNames.append(bandName);
-
-        auto labelName = "Band No. " + QString::number(i+1) + ": " + bandName;
-
-        unitsWidget->addNewUnitItem(bandName,labelName);
+        auto labelName = "Band No. " + QString::number(i+1);
+        theIMs->addNewIMItem(labelName,"drivel");  // drivel as this Event does not utilize the name
     }
 
     return;
@@ -377,16 +326,10 @@ void RasterHazardInputWidget::clear(void)
 {
     rasterFilePath.clear();
     rasterPathLineEdit->clear();
-    bandNames.clear();
-
-    eventFile.clear();
-    pathToEventFile.clear();
-
     crsSelectorWidget->clear();
 
-    eventTypeCombo->setCurrentIndex(0);
-
-    unitsWidget->clear();
+    //unitsWidget->clear();
+    theIMs->clear();    
 }
 
 
@@ -498,7 +441,6 @@ int RasterHazardInputWidget::loadRaster(void)
     //    this->statusMessage("Duration: "+QString::number(duration.count()));
     //    // Test to remove end
 
-
     return 0;
 }
 
@@ -512,23 +454,20 @@ void RasterHazardInputWidget::handleLayerCrsChanged(const QgsCoordinateReference
 
 bool RasterHazardInputWidget::copyFiles(QString &destDir)
 {
-    if(eventFile.isEmpty())
+
+  // here we create the EventGris and Site files
+  if(eventFile.isEmpty())
     {
-        this->errorMessage("In raster hazard input widget, no eventFile given in copy files");
-        return false;
+      eventFile = QString("EventFile.csv");
     }
 
-    auto numBands = rasterlayer->bandCount();
-
-    if(numBands != bandNames.size())
+    int  numBands = rasterlayer->bandCount();
+    QStringList selectedIMs = theIMs->getSelectedIMs();
+    
+    if(numBands != selectedIMs.size())
     {
-        this->infoMessage("In raster hazard input widget, the number of bands in the raster is not equal to the number of band names. Using generic names");
-
-        for(int i = 0; i<numBands; ++i)
-        {
-            auto bName = rasterlayer->bandName(i+1);
-            bandNames.append(bName);
-        }
+        this->infoMessage("In raster hazard input widget, the number of bands in the raster is not equal to the number of band names from the IM Widget!!");
+	return false;
     }
 
     pathToEventFile = destDir + QDir::separator() + eventFile;
@@ -613,7 +552,7 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
             pointData.append(xstr);
             pointData.append(ystr);
 
-            for(int i = 0; i< bandNames.size(); ++i)
+            for(int i = 0; i< selectedIMs.size(); ++i)
             {
                 auto val = this->sampleRaster(x, y, i+1);
                 auto valStr = QString::number(val);
@@ -636,7 +575,7 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
         QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
         gridData.push_back(headerRow);
 
-        QStringList stationHeader = bandNames;
+        // QStringList stationHeader = bandNames;
 
         QApplication::processEvents();
 
@@ -656,7 +595,8 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
             QStringList stationRow = {point.begin()+2,point.end()};
 
             // Save the station data
-            QVector<QStringList> stationData = {stationHeader};
+            QVector<QStringList> stationData = {selectedIMs};
+						
 
             stationData.push_back(stationRow);
 

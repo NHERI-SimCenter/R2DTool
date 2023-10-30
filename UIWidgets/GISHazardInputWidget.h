@@ -103,8 +103,8 @@ private:
     QgsVectorDataProvider* dataProvider = nullptr;
     QgsVectorLayer* vectorLayer = nullptr;
 
-    SimCenterUnitsWidget* unitsWidget = nullptr;
-    SimCenterIMWidget* IMsWidget = nullptr;
+    // SimCenterUnitsWidget* unitsWidget = nullptr;
+    SimCenterIMWidget* theIMs = nullptr;
 
     CRSSelectionWidget* crsSelectorWidget = nullptr;
     QComboBox* eventTypeCombo = nullptr;

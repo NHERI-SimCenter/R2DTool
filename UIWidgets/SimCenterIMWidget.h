@@ -1,5 +1,6 @@
 #ifndef SimCenterIMWidget_H
 #define SimCenterIMWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -40,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QGridLayout;
 class QComboBox;
+class QSignalMapper;
 
 #include <QGroupBox>
 #include "JsonSerializable.h"
@@ -49,10 +51,9 @@ using EDPdict = QMap<QString, QString>;
 class SimCenterIMWidget : public QGroupBox, public JsonSerializable
 {
 public:
-    SimCenterIMWidget(QString title = "Intensity Measurses of Event Input File",QWidget* parent = nullptr);
+    SimCenterIMWidget(QString title = "Intensity Measures of Event File",QWidget* parent = nullptr);
 
     bool outputToJSON(QJsonObject &jsonObject);
-
     bool inputFromJSON(QJsonObject &jsonObject);
 
     void reset(void);
@@ -62,10 +63,11 @@ public:
     void addNewIMItem(const QString& labelText, const QString& IMName);
 
     int getNumberOfIMs(void);
+    QStringList getSelectedIMs(void);  // returns data name as opposed to one shown in ComboBox
 
     int setIM(const QString& parameterName, const QString& IM);
 
-    QList<QString> getParameterNames();
+    // QList<QString> getParameterNames();
 
 public slots:
     void handleHazardChange(const QString hazard);
@@ -76,6 +78,10 @@ private:
     QComboBox* findChild(const QString& name);
 
     QMap<QString, EDPdict> hazardDict;
+
+    int numIMs = 0; // add this as rowCount does not return 0 for some reason
+    QString hazard;
+    QSignalMapper *theSignalMapper;
 };
 
 #endif // SimCenterIMWidget_H

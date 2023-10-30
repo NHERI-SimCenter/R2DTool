@@ -71,7 +71,7 @@ EarthquakeRuptureForecastWidget::EarthquakeRuptureForecastWidget(QWidget *parent
 
     QLabel* magMinLabel = new QLabel(tr("Minimum Magnitude:"),this);
     QLabel* magMaxLabel = new QLabel(tr("Maximum Magnitude:"),this);
-    QLabel* distMaxLabel = new QLabel(tr("Maximum Distance:"),this);
+    QLabel* distMaxLabel = new QLabel(tr("Maximum Distance (km):"),this);
 
     QLabel* nameLabel = new QLabel(tr("Earthquake Name:"),this);
     QLabel* modelLabel = new QLabel(tr("Forecast Model:"),this);
@@ -147,6 +147,13 @@ EarthquakeRuptureForecast* EarthquakeRuptureForecastWidget::getRuptureSource() c
 {
     return m_eqRupture;
 }
+
+// KZ: adding getNumScen to return number of scenarios
+QString EarthquakeRuptureForecastWidget::getNumScen() const
+{
+    return this->NumScenarioLineEdit->text();
+}
+
 
 
 void EarthquakeRuptureForecastWidget::setupConnections()

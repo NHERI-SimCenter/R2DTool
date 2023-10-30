@@ -54,6 +54,8 @@ public:
     explicit EarthquakeRuptureForecastWidget(QWidget *parent = nullptr);
 
     EarthquakeRuptureForecast* getRuptureSource() const;
+    // KZ: adding getNumScen to return number of scenarios
+    QString getNumScen() const;
 
 signals:
 

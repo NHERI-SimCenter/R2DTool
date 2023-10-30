@@ -1,5 +1,6 @@
 #ifndef BrailsInventoryGenerator_H
 #define BrailsInventoryGenerator_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,25 +37,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-
+// Written by: fmk, Stevan Gavrilovic
 #include "SimCenterAppWidget.h"
-
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
 class VisualizationWidget;
+class GIS_Selection;
+class SC_DoubleLineEdit;
+class SC_FileEdit;
+class BrailsGoogleDialog;
 
-class QgsMapLayer;
-class QgsVectorLayer;
-class QgsLayerTreeGroup;
-class QgsMapToolExtent;
-class QgsRectangle;
-class QDomNodeList;
-class QStackedWidget;
-class QProgressBar;
-class QLabel;
-class QLineEdit;
+typedef struct BrailsDataStruct {
+  double minLat;
+  double maxLat;
+  double minLong;
+  double maxLong;
+  QString outputFile;
+  QString imageSource;
+  QString imputationAlgo;    
+} BrailsData;
+
 
 class BrailsInventoryGenerator : public SimCenterAppWidget
 {
@@ -64,48 +67,30 @@ public:
     BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~BrailsInventoryGenerator();
 
-    QStackedWidget* getBrailsInventoryGenerator(void);
-
-
 public slots:
     void clear(void);
 
 signals:
-    void loadingComplete(const bool value);
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
 
 protected:
 
-    void showEvent(QShowEvent *e);
-
 private slots:
-    void clearSelection(void);
-    void chooseExportFileDialog(void);
-
-    void handleRectangleSelect(void);
-
-    void handleSelectionDone(void);
-
-    void selectRectangle( const QgsRectangle &extent );
-
+  void runBRAILS(void);
+  void coordsChanged(void);
+  
 private:
+  std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+  QGISVisualizationWidget* theVisualizationWidget = nullptr;
+  
+  
+  SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
+  SC_FileEdit *theOutputFile;
+  GIS_Selection *theSelectionWidget;  
 
-    QWidget* fileInputWidget = nullptr;
-    QProgressBar* progressBar = nullptr;
-    QLabel* progressLabel = nullptr;
-    QWidget* progressBarWidget = nullptr;
-    QStackedWidget* theStackedWidget = nullptr;
-    QgsMapToolExtent* extentTool = nullptr;
-    QLineEdit* exportPathLineEdit = nullptr;
+  QString imageSource;
+  QString imputationAlgo;
 
-    QgsRectangle rectToLatLonCoordinates(QgsRectangle rect);
-
-    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
-
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
-
-    // Gives the bottom-left and top-right points in string format
-    QString boundingPoints;
+  BrailsGoogleDialog *theGoogleDialog = 0;
 };
 
 #endif // BrailsInventoryGenerator_H

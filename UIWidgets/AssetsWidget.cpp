@@ -37,23 +37,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "AssetsWidget.h"
-#include "SecondaryComponentSelection.h"
+//#include "SecondaryComponentSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterAppSelection.h"
 
-#ifdef ARC_GIS
-#include "ArcGISBuildingInputWidget.h"
-#include "ArcGISGasPipelineInputWidget.h"
-#endif
-
-#ifdef Q_GIS
 #include "PointAssetInputWidget.h"
 #include "LineAssetInputWidget.h"
 #include "CSVWaterNetworkInputWidget.h"
 #include "GISAssetInputWidget.h"
 #include "GISWaterNetworkInputWidget.h"
-#endif
+#include "CSVTransportNetworkInputWidget.h"
+#include "GISTransportNetworkInputWidget.h"
 
 // Qt headers
 #include <QCheckBox>
@@ -79,26 +74,14 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Buildings"), this);
     gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("NaturalGasPipelines"), this);
     waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("WaterDistributionNetwork"), this);
+    transportNetworkWidget = new SimCenterAppSelection(QString("Regional Transportation Network"), QString("TransportationDistributionNetwork"), this);
 
-#ifdef ARC_GIS
-    ArcGISBuildingInputWidget *csvBuildingInventory = new ArcGISBuildingInputWidget(this,"Buildings","CSV_to_AIM");
-    buildingWidget->addComponent(QString("CSV to AIM"), QString("CSV_to_AIM"), csvBuildingInventory);
-#endif
-
-#ifdef Q_GIS
     PointAssetInputWidget *csvBuildingInventory = new PointAssetInputWidget(this, visualizationWidget, "Buildings","CSV_to_AIM");
     buildingWidget->addComponent(QString("CSV to AIM"), QString("CSV_to_AIM"), csvBuildingInventory);
 
     GISAssetInputWidget *GISBuildingInventory = new GISAssetInputWidget(this,visualizationWidget,"Buildings","GIS_to_AIM");
     buildingWidget->addComponent(QString("GIS File to AIM"), QString("GIS_to_AIM"), GISBuildingInventory);
-#endif
 
-#ifdef ARC_GIS
-    ArcGISGasPipelineInputWidget *csvPipelineInventory = new ArcGISGasPipelineInputWidget(this,"Gas Pipelines","Gas Network");
-    pipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
-#endif
-
-#ifdef Q_GIS
     LineAssetInputWidget *csvPipelineInventory = new LineAssetInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
     gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
 
@@ -106,10 +89,15 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     CSVWaterNetworkInputWidget *csvWaterNetworkInventory = new CSVWaterNetworkInputWidget(this, visualizationWidget);
     waterNetworkWidget->addComponent(QString("CSV to Water Network"), QString("CSV_to_WATERNETWORK"), csvWaterNetworkInventory);
 
+    CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
+    transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
+
 
     GISWaterNetworkInputWidget *gisWaterNetworkInventory = new GISWaterNetworkInputWidget(this, visualizationWidget);
     waterNetworkWidget->addComponent(QString("GIS to Water Network"), QString("GIS_to_WATERNETWORK"), gisWaterNetworkInventory);
-#endif
+
+    GISTransportNetworkInputWidget *gisTransportNetworkInventory = new GISTransportNetworkInputWidget(this, visualizationWidget);
+    transportNetworkWidget->addComponent(QString("GIS to Transportation Network"), QString("GIS_to_TRANSPORTNETWORK"), gisTransportNetworkInventory);
 
     // QString pathToPipelineInfoFile = "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
     // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
@@ -117,6 +105,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",gasPipelineWidget);
     this->addComponent("Water Network",waterNetworkWidget);
+    this->addComponent("Transportation Network", transportNetworkWidget);
     this->hideAll();
 }
 

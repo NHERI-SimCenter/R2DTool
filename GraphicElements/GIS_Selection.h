@@ -1,5 +1,5 @@
-#ifndef ArcGISHurricanePreprocessor_H
-#define ArcGISHurricanePreprocessor_H
+#ifndef GIS_Selection_H
+#define GIS_Selection_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,65 +36,66 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: fmk using cut & paste of existing code created by Stevan Gavrilovic
 
-#include "HurricaneObject.h"
 
-#include <QString>
-#include <QStringList>
-#include <QVector>
-#include <QVariant>
 
-class ArcGISVisualizationWidget;
-class LayerTreeItem;
+#include "SimCenterAppWidget.h"
+class PlainRectangle;
 
-class QObject;
+class SimCenterMapcanvasWidget;
+class QGISVisualizationWidget;
+class VisualizationWidget;
+
+class QgsMapLayer;
+class QgsVectorLayer;
+class QgsLayerTreeGroup;
+
+class QStackedWidget;
 class QProgressBar;
+class QLabel;
+class QLineEdit;
 
-namespace Esri
+class GIS_Selection : public SimCenterAppWidget
 {
-namespace ArcGISRuntime
-{
-class Layer;
-class GroupLayer;
-class Geometry;
-}
-}
+    Q_OBJECT
 
-class ArcGISHurricanePreprocessor
-{
 public:
-    ArcGISHurricanePreprocessor(QProgressBar* pBar, ArcGISVisualizationWidget* visWidget, QObject* parent);
+  GIS_Selection(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+  ~GIS_Selection();
+  QVector<double> getSelectedPoints(void);
+		  
+public slots:
+  
+  void clear(void);
+  void handleSelectionGeometryChange();
+  
+signals:
+  void selectionGeometryChanged();
 
-    int loadHurricaneTrackData(const QString &eventFile, QString &err);
+protected:
 
-    void clear(void);
+  void showEvent(QShowEvent *e);
 
-    // Gets the hurricane of the given storm id
-    HurricaneObject* getHurricane(const QString& SID);
+private slots:
+    void clearSelection(void);
 
-    Esri::ArcGISRuntime::Layer *getAllHurricanesLayer() const;
+  void handleRectangleSelect(void);
+  //  void handlePolygonSelect(void);
+  //  void handleRadiusSelect(void);
+  //  void handleFreehandSelect(void);
+  //  void handleNoneSelect(void);
 
-    // Creates a hurricane visualization of the track and track points if desired
-    LayerTreeItem* createTrackVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
-
-    // Note that including track points may take a long time, moreover not all hurricanes have a landfall
-    LayerTreeItem*  createTrackPointsVisualization(HurricaneObject* hurricane, LayerTreeItem* parentItem, Esri::ArcGISRuntime::GroupLayer* parentLayer, QString& err);
-
-    LayerTreeItem* createLandfallVisualization(const double latitude,
-                                               const double longitude,
-                                               const QMap<QString, QVariant>& featureAttributes,
-                                               LayerTreeItem* parentItem,
-                                               Esri::ArcGISRuntime::GroupLayer* parentLayer);
+    void handleSelectionDone(void);
 
 private:
+  std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+  QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    Esri::ArcGISRuntime::Geometry getTrackGeometry(HurricaneObject* hurricane, QString& err);
-    Esri::ArcGISRuntime::Layer* allHurricanesLayer;
-    QProgressBar* theProgressBar;
-    ArcGISVisualizationWidget* theVisualizationWidget;
-    QObject* theParent;
-    QVector<HurricaneObject> hurricanes;
+  PlainRectangle *userGrid = 0;
+
+  QVector<double> selectedPoints;
 };
 
-#endif // ArcGISHurricanePreprocessor_H
+
+#endif // GIS_Selection_H

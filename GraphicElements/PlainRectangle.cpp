@@ -34,12 +34,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-
-// Written: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic
 
 #include "GridNode.h"
 #include "NodeHandle.h"
-#include "RectangleGrid.h"
+#include "PlainRectangle.h"
 #include "SiteConfig.h"
 #include "VisualizationWidget.h"
 
@@ -59,10 +58,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QRandomGenerator>
 #include <QWidget>
 
-RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanvas(parent)
+PlainRectangle::PlainRectangle(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanvas(parent)
 {
-    gridSiteConfig = nullptr;
-
     setCacheMode(DeviceCoordinateCache);
     setZValue(-1);
 
@@ -73,9 +70,6 @@ RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanv
     lonMin = 0.0;
     latMax = 0.0;
     lonMax = 0.0;
-
-    numDivisionsHoriz = 5;
-    numDivisionsVertical = 5;
 
     color.setRgb(0,0,255,30);
 
@@ -97,11 +91,11 @@ RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanv
     centerNode->setToolTip("Rupture Location");
     centerNode->setDiameter(20.0);
 
-    connect(bottomLeftNode,&NodeHandle::positionChanged,this,&RectangleGrid::handleBottomLeftCornerChanged);
-    connect(bottomRightNode,&NodeHandle::positionChanged,this,&RectangleGrid::handleBottomRightCornerChanged);
-    connect(topRightNode,&NodeHandle::positionChanged,this,&RectangleGrid::handleTopRightCornerChanged);
-    connect(topLeftNode,&NodeHandle::positionChanged,this,&RectangleGrid::handleTopLeftCornerChanged);
-    connect(centerNode,&NodeHandle::positionChanged,this,&RectangleGrid::handleCenterNodeChanged);
+    connect(bottomLeftNode,&NodeHandle::positionChanged,this,&PlainRectangle::handleBottomLeftCornerChanged);
+    connect(bottomRightNode,&NodeHandle::positionChanged,this,&PlainRectangle::handleBottomRightCornerChanged);
+    connect(topRightNode,&NodeHandle::positionChanged,this,&PlainRectangle::handleTopRightCornerChanged);
+    connect(topLeftNode,&NodeHandle::positionChanged,this,&PlainRectangle::handleTopLeftCornerChanged);
+    connect(centerNode,&NodeHandle::positionChanged,this,&PlainRectangle::handleCenterNodeChanged);
 
     this->updateGeometry();
 
@@ -112,13 +106,13 @@ RectangleGrid::RectangleGrid(QgsMapCanvas* parent) : QgsMapTool(parent), mapCanv
 }
 
 
-RectangleGrid::~RectangleGrid()
+PlainRectangle::~PlainRectangle()
 {
 
 }
 
 
-void RectangleGrid::show()
+void PlainRectangle::show()
 {
     QGraphicsScene* mapCanvasScene = mapCanvas->scene();
 
@@ -130,7 +124,10 @@ void RectangleGrid::show()
     auto sceneHeight = sceneRect.height();
 
     // Set the initial grid size if it has not already been set
-    if(this->getBottomLeftNode()->pos().isNull() || this->getTopRightNode()->pos().isNull() || this->getTopLeftNode()->pos().isNull() || this->getBottomRightNode()->pos().isNull() )
+    if(this->getBottomLeftNode()->pos().isNull() ||
+       this->getTopRightNode()->pos().isNull() ||
+       this->getTopLeftNode()->pos().isNull() ||
+       this->getBottomRightNode()->pos().isNull() )
     {
         this->setWidth(0.5*sceneWidth);
         this->setHeight(0.5*sceneHeight);
@@ -143,13 +140,14 @@ void RectangleGrid::show()
 }
 
 
-void RectangleGrid::removeGridFromScene(void)
+void PlainRectangle::removeGridFromScene(void)
 {
     QGraphicsScene* mapCanvasScene = mapCanvas->scene();
+
     mapCanvasScene->removeItem(this);
 }
 
-void RectangleGrid::canvasPressEvent( QgsMapMouseEvent *event )
+void PlainRectangle::canvasPressEvent( QgsMapMouseEvent *event )
 {
     // Store some of the event's button-down data.
     auto mousePressViewPoint = event->pos();
@@ -181,7 +179,7 @@ void RectangleGrid::canvasPressEvent( QgsMapMouseEvent *event )
 }
 
 
-void RectangleGrid::canvasMoveEvent( QgsMapMouseEvent *event )
+void PlainRectangle::canvasMoveEvent( QgsMapMouseEvent *event )
 {
     // Store some of the event's button-down data.
     auto mousePressViewPoint = event->pos();
@@ -208,7 +206,7 @@ void RectangleGrid::canvasMoveEvent( QgsMapMouseEvent *event )
     QApplication::sendEvent(mapCanvas->scene(), &mouseEvent);
 }
 
-void RectangleGrid::canvasReleaseEvent( QgsMapMouseEvent *event )
+void PlainRectangle::canvasReleaseEvent( QgsMapMouseEvent *event )
 {
     // Store some of the event's button-down data.
     auto mousePressViewPoint = event->pos();
@@ -236,7 +234,7 @@ void RectangleGrid::canvasReleaseEvent( QgsMapMouseEvent *event )
 }
 
 
-QRectF RectangleGrid::boundingRect() const
+QRectF PlainRectangle::boundingRect() const
 {
     qreal adjust = 5;
     return QRectF(rectangleGeometry.x() - adjust, rectangleGeometry.y() - adjust,
@@ -244,7 +242,7 @@ QRectF RectangleGrid::boundingRect() const
 }
 
 
-QPainterPath RectangleGrid::shape() const
+QPainterPath PlainRectangle::shape() const
 {
     QPainterPath path;
     path.addRect(rectangleGeometry);
@@ -252,7 +250,7 @@ QPainterPath RectangleGrid::shape() const
 }
 
 
-void RectangleGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void PlainRectangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -263,7 +261,7 @@ void RectangleGrid::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
 }
 
 
-void RectangleGrid::updateGeometry(void)
+void PlainRectangle::updateGeometry(void)
 {
     auto bottomLeftPnt = rectangleGeometry.bottomLeft();
     auto topRightPnt = rectangleGeometry.topRight();
@@ -275,103 +273,42 @@ void RectangleGrid::updateGeometry(void)
     topLeftNode->setPos(rectangleGeometry.topLeft());
     centerNode->setPos(centerPnt);
 
-    if(gridSiteConfig && updateConnectedWidgets)
-    {
-        latMin = theVisWidget->getLatFromScreenPoint(bottomLeftPnt,mapCanvas);
-        latMax = theVisWidget->getLatFromScreenPoint(topRightPnt,mapCanvas);
-
-        lonMin = theVisWidget->getLongFromScreenPoint(topRightPnt,mapCanvas);
-        lonMax = theVisWidget->getLongFromScreenPoint(bottomLeftPnt,mapCanvas);
-
-        gridSiteConfig->siteGrid().latitude().set(latMin, latMax, numDivisionsHoriz);
-        gridSiteConfig->siteGrid().longitude().set(lonMin, lonMax, numDivisionsVertical);
-    }
-
-    // qDebug() << "RectangleRrid - emitting geometryChanged()";
-    // qDebug() << mapCanvas->extent().toRectF();
-    
     emit geometryChanged();
 }
 
 
-QVector<GridNode *> RectangleGrid::getGridNodeVec() const
+QVector<GridNode *> PlainRectangle::getGridNodeVec() const
 {
     return gridNodeVec;
 }
 
-
-size_t RectangleGrid::getNumDivisionsVertical() const
-{
-    return numDivisionsVertical;
-}
-
-
-void RectangleGrid::setNumDivisionsVertical(const size_t &value)
-{
-    numDivisionsVertical = value;
-    handleGridDivisionsChanged();
-}
-
-
-size_t RectangleGrid::getNumDivisionsHoriz() const
-{
-    return numDivisionsHoriz;
-}
-
-
-void RectangleGrid::setNumDivisionsHoriz(const size_t &value)
-{
-    numDivisionsHoriz = value;
-    handleGridDivisionsChanged();    
-}
-
-
-void RectangleGrid::setVisualizationWidget(VisualizationWidget *value)
+void PlainRectangle::setVisualizationWidget(VisualizationWidget *value)
 {
     theVisWidget = value;
 }
 
-
-void RectangleGrid::setSiteGridConfig(SiteConfig *value)
-{
-    gridSiteConfig = value;
-
-    // Connect grid latitude
-    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
-    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
-
-    // Connect grid longitude
-    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::minChanged, this, &RectangleGrid::handleLatLonChanged);
-    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::maxChanged, this, &RectangleGrid::handleLatLonChanged);
-
-    // Connect the grid discretization
-    connect(&gridSiteConfig->siteGrid().latitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
-    connect(&gridSiteConfig->siteGrid().longitude(), &GridDivision::divisionsChanged, this, &RectangleGrid::handleGridDivisionsChanged);
-}
-
-
-void RectangleGrid::setPos(const QPoint& pos)
+void PlainRectangle::setPos(const QPoint& pos)
 {
     this->rectangleGeometry.moveCenter(pos);
     this->updateGeometry();
 }
 
 
-void RectangleGrid::setWidth(const double& val)
+void PlainRectangle::setWidth(const double& val)
 {
     this->rectangleGeometry.setWidth(val);
     this->updateGeometry();
 }
 
 
-void RectangleGrid::setHeight(const double& val)
+void PlainRectangle::setHeight(const double& val)
 {
     this->rectangleGeometry.setHeight(val);
     this->updateGeometry();
 }
 
 
-QVariant RectangleGrid::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant PlainRectangle::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     switch (change) {
     case ItemPositionHasChanged:
@@ -385,61 +322,61 @@ QVariant RectangleGrid::itemChange(GraphicsItemChange change, const QVariant &va
 }
 
 
-void RectangleGrid::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void PlainRectangle::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsItem::mousePressEvent(event);
 }
 
 
-void RectangleGrid::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void PlainRectangle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
 
-NodeHandle *RectangleGrid::getCenterNode() const
+NodeHandle *PlainRectangle::getCenterNode() const
 {
     return centerNode;
 }
 
 
-NodeHandle *RectangleGrid::getTopLeftNode() const
+NodeHandle *PlainRectangle::getTopLeftNode() const
 {
     return topLeftNode;
 }
 
 
-NodeHandle *RectangleGrid::getTopRightNode() const
+NodeHandle *PlainRectangle::getTopRightNode() const
 {
     return topRightNode;
 }
 
 
-NodeHandle *RectangleGrid::getBottomRightNode() const
+NodeHandle *PlainRectangle::getBottomRightNode() const
 {
     return bottomRightNode;
 }
 
 
-NodeHandle *RectangleGrid::getBottomLeftNode() const
+NodeHandle *PlainRectangle::getBottomLeftNode() const
 {
     return bottomLeftNode;
 }
 
 
-void RectangleGrid::setTopLeftNode(NodeHandle *value)
+void PlainRectangle::setTopLeftNode(NodeHandle *value)
 {
     topLeftNode = value;
 }
 
 
-void RectangleGrid::setTopRightNode(NodeHandle *value)
+void PlainRectangle::setTopRightNode(NodeHandle *value)
 {
     topRightNode = value;
 }
 
 
-void RectangleGrid::setTopRightNode(const double latitude, const double longitude)
+void PlainRectangle::setTopRightNode(const double latitude, const double longitude)
 {
     auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
@@ -447,7 +384,7 @@ void RectangleGrid::setTopRightNode(const double latitude, const double longitud
 }
 
 
-void RectangleGrid::setCenterNode(const double latitude, const double longitude)
+void PlainRectangle::setCenterNode(const double latitude, const double longitude)
 {
     auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
@@ -455,27 +392,38 @@ void RectangleGrid::setCenterNode(const double latitude, const double longitude)
 }
 
 
-void RectangleGrid::setBottomRightNode(NodeHandle *value)
+void PlainRectangle::setBottomRightNode(NodeHandle *value)
 {
     bottomRightNode = value;
 }
 
 
-void RectangleGrid::setBottomLeftNode(NodeHandle *value)
+void PlainRectangle::setBottomLeftNode(NodeHandle *value)
 {
     bottomLeftNode = value;
 }
 
 
-void RectangleGrid::setBottomLeftNode(const double latitude, const double longitude)
+void PlainRectangle::setBottomLeftNode(const double latitude, const double longitude)
 {
     auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latitude,longitude,mapCanvas);
 
     this->handleBottomLeftCornerChanged(scrnPnt);
 }
 
+void PlainRectangle::setNewExtent(double latLeft, double latRight, double longBottom, double longTop) {
 
-void RectangleGrid::handleBottomLeftCornerChanged(const QPointF& pos)
+    auto scrnPnt = theVisWidget->getScreenPointFromLatLong(latLeft,longBottom,mapCanvas);
+    this->handleBottomLeftCornerChanged(scrnPnt);
+    scrnPnt = theVisWidget->getScreenPointFromLatLong(latLeft,longTop,mapCanvas);
+    this->handleTopLeftCornerChanged(scrnPnt);
+    scrnPnt = theVisWidget->getScreenPointFromLatLong(latRight,longTop,mapCanvas);
+    this->handleTopRightCornerChanged(scrnPnt);
+    scrnPnt = theVisWidget->getScreenPointFromLatLong(latLeft,longTop,mapCanvas);
+    this->handleTopLeftCornerChanged(scrnPnt);            
+}
+
+void PlainRectangle::handleBottomLeftCornerChanged(const QPointF& pos)
 {
     if(changingDimensions == true)
         return;
@@ -487,7 +435,7 @@ void RectangleGrid::handleBottomLeftCornerChanged(const QPointF& pos)
 }
 
 
-void RectangleGrid::handleBottomRightCornerChanged(const QPointF& pos)
+void PlainRectangle::handleBottomRightCornerChanged(const QPointF& pos)
 {
     if(changingDimensions == true)
         return;
@@ -499,7 +447,7 @@ void RectangleGrid::handleBottomRightCornerChanged(const QPointF& pos)
 }
 
 
-void RectangleGrid::handleTopLeftCornerChanged(const QPointF& pos)
+void PlainRectangle::handleTopLeftCornerChanged(const QPointF& pos)
 {
     if(changingDimensions == true)
         return;
@@ -511,7 +459,7 @@ void RectangleGrid::handleTopLeftCornerChanged(const QPointF& pos)
 }
 
 
-void RectangleGrid::handleTopRightCornerChanged(const QPointF& pos)
+void PlainRectangle::handleTopRightCornerChanged(const QPointF& pos)
 {
     if(changingDimensions == true)
         return;
@@ -523,7 +471,7 @@ void RectangleGrid::handleTopRightCornerChanged(const QPointF& pos)
 }
 
 
-void RectangleGrid::handleCenterNodeChanged(const QPointF& pos)
+void PlainRectangle::handleCenterNodeChanged(const QPointF& pos)
 {
     if(changingDimensions == true)
         return;
@@ -536,23 +484,21 @@ void RectangleGrid::handleCenterNodeChanged(const QPointF& pos)
 }
 
 
-void RectangleGrid::clearGrid()
+void PlainRectangle::clearGrid()
 {
     qDeleteAll(gridNodeVec);
     gridNodeVec.clear();
 }
 
 
-void RectangleGrid::createGrid()
+void PlainRectangle::createGrid()
 {
-    auto ni = numDivisionsHoriz;
-    auto nj = numDivisionsVertical;
+    int ni = 1;
+    int nj = 1;
 
-    gridNodeVec.reserve(ni*nj);
-
-    for (size_t i=0; i<=ni; ++i)
+    for (int i=0; i<=ni; ++i)
     {
-        for (size_t j=0;j<=nj; ++j)
+        for (int j=0;j<=nj; ++j)
         {
 
             // X COORDINATE
@@ -587,6 +533,7 @@ void RectangleGrid::createGrid()
             // Create the grid node
             GridNode* newGridNode = new GridNode(this);
 
+	    qDebug() << i << " " << j << " " << x << " " << y << " " << xCoordinatelambda() << " " << yCoordinatelambda();
             newGridNode->setX(x);
             newGridNode->setY(y);
 
@@ -595,30 +542,13 @@ void RectangleGrid::createGrid()
 
             gridNodeVec.push_back(newGridNode);
 
-            connect(this,&RectangleGrid::geometryChanged,newGridNode,&GridNode::updateGeometry);
+            connect(this,&PlainRectangle::geometryChanged,newGridNode,&GridNode::updateGeometry);
         }
     }
+    
 }
 
-
-void RectangleGrid::handleGridDivisionsChanged(void)
-{
-    if (gridSiteConfig) {
-        auto numDivH = static_cast<size_t>(gridSiteConfig->siteGrid().longitude().divisions());
-        auto numDivV = static_cast<size_t>(gridSiteConfig->siteGrid().latitude().divisions());
-
-        if(numDivV == this->numDivisionsVertical && numDivH == this->numDivisionsHoriz)
-            return;
-
-        this->numDivisionsVertical = numDivV;
-        this->numDivisionsHoriz = numDivH;
-    }
-    this->clearGrid();
-    this->createGrid();
-}
-
-
-void RectangleGrid::handleLatLonChanged(void)
+void PlainRectangle::handleLatLonChanged(void)
 {
     if(changingDimensions == true)
         return;

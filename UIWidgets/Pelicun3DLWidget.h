@@ -1,5 +1,6 @@
-﻿#ifndef SimCenter_MAP_GRAPHICS_VIEW_H
-#define SimCenter_MAP_GRAPHICS_VIEW_H
+#ifndef Pelicun3DLWidget_H
+#define Pelicun3DLWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,34 +37,53 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna, Stevan Gavrilovic
+// Written by: Stevan Gavrilovic
 
-#include "MapGraphicsView.h"
+#include "SimCenterAppWidget.h"
 
-#include <QVBoxLayout>
+class QComboBox;
+class QCheckBox;
+class QLineEdit;
+class QHBoxLayout;
+class QWidget;
 
-class GISLegendView;
-
-class SimCenterMapGraphicsView: public  Esri::ArcGISRuntime::MapGraphicsView
+class Pelicun3DLWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    static SimCenterMapGraphicsView *getInstance();
-    ~SimCenterMapGraphicsView();
+    explicit Pelicun3DLWidget(QWidget *parent = nullptr);
 
-    void setCurrentLayout(QLayout *layout);
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
 
-    GISLegendView *getLegendView() const;
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+
+    void clear(void);
+
+    bool copyFiles(QString &destName);
+
+    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
+
+public slots:
+
+    void handleComboBoxChanged(const QString &text);
+    void handleBrowseButton1Pressed(void);
+    void handleBrowseButton2Pressed(void);
 
 private:
-    SimCenterMapGraphicsView(QObject *obj);
+    QWidget* autoPopulateScriptWidget;
+    QWidget* fragDirWidget;
 
-    QVBoxLayout *theCurrentLayout;
-    static SimCenterMapGraphicsView *theInstance;
-
-    GISLegendView* legendView;
-
+    QComboBox* DLTypeComboBox;
+    QLineEdit* realizationsLineEdit;
+    QComboBox* eventTimeComboBox;
+    QCheckBox* detailedResultsCheckBox;
+    QCheckBox* logFileCheckBox;
+    QCheckBox* coupledEDPCheckBox;
+    QCheckBox* groundFailureCheckBox;
+    QLineEdit* autoPopulationScriptLineEdit;
+    QLineEdit* fragilityDirLineEdit;
+    void clearParams(void);
 };
 
-#endif // SimCenter_MAP_GRAPHICS_VIEW_H
+#endif // Pelicun3DLWidget_H

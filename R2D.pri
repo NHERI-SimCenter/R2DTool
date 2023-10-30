@@ -114,12 +114,14 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/BuildingDMWidget.cpp \
             $$PWD/UIWidgets/BuildingEDPEQWidget.cpp \
             $$PWD/UIWidgets/BuildingEDPWidget.cpp \
+            $$PWD/UIWidgets/CSVTransportNetworkInputWidget.cpp \
             $$PWD/UIWidgets/ColorDialogDelegate.cpp \
             $$PWD/UIWidgets/BuildingModelGeneratorWidget.cpp \
             $$PWD/UIWidgets/BuildingModelingWidget.cpp \
             $$PWD/UIWidgets/BuildingSimulationWidget.cpp \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.cpp \
             $$PWD/UIWidgets/AssetInputWidget.cpp \
+            $$PWD/UIWidgets/GISTransportNetworkInputWidget.cpp \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.cpp \
             $$PWD/UIWidgets/DLWidget.cpp \
             $$PWD/UIWidgets/EarthquakeInputWidget.cpp \
@@ -145,6 +147,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.cpp \
             $$PWD/UIWidgets/WaterNetworkPerformanceModel.cpp \
             $$PWD/UIWidgets/PelicunDLWidget.cpp \
+            $$PWD/UIWidgets/Pelicun3DLWidget.cpp \	    
             $$PWD/UIWidgets/PerformanceWidget.cpp \
             $$PWD/UIWidgets/ResultsWidget.cpp \
             $$PWD/UIWidgets/SecondaryComponentSelection.cpp \
@@ -158,10 +161,14 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/HurricaneSelectionWidget.cpp \
             $$PWD/UIWidgets/OpenQuakeSelectionWidget.cpp \
             $$PWD/UIWidgets/BrailsInventoryGenerator.cpp \
+            $$PWD/UIWidgets/BrailsTranspInventoryGenerator.cpp \	
+            $$PWD/UIWidgets/BrailsGoogleDialog.cpp \	    
             $$PWD/UIWidgets/UserInputHurricaneWidget.cpp \
             $$PWD/GraphicElements/NodeHandle.cpp \
             $$PWD/GraphicElements/RectangleGrid.cpp \
+            $$PWD/GraphicElements/PlainRectangle.cpp \	    
             $$PWD/GraphicElements/GridNode.cpp \
+            $$PWD/GraphicElements/GIS_Selection.cpp \
             $$PWD/RunWidget.cpp \
             $$PWD/WorkflowAppR2D.cpp \
 
@@ -228,6 +235,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/BuildingDMWidget.h \
             $$PWD/UIWidgets/BuildingEDPEQWidget.h \
             $$PWD/UIWidgets/BuildingEDPWidget.h \
+            $$PWD/UIWidgets/CSVTransportNetworkInputWidget.h \
             $$PWD/UIWidgets/ColorDialogDelegate.h \
             $$PWD/UIWidgets/GISObjectTypeMapping.h \
             $$PWD/UIWidgets/BuildingModelGeneratorWidget.h \
@@ -235,6 +243,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/BuildingSimulationWidget.h \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.h \
             $$PWD/UIWidgets/AssetInputWidget.h \
+            $$PWD/UIWidgets/GISTransportNetworkInputWidget.h \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.h \
             $$PWD/UIWidgets/DLWidget.h \
             $$PWD/UIWidgets/EarthquakeInputWidget.h \
@@ -260,6 +269,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.h \
             $$PWD/UIWidgets/WaterNetworkPerformanceModel.h \
             $$PWD/UIWidgets/PelicunDLWidget.h \
+            $$PWD/UIWidgets/Pelicun3DLWidget.h \	    
             $$PWD/UIWidgets/PerformanceWidget.h \
             $$PWD/UIWidgets/ResultsWidget.h \
             $$PWD/UIWidgets/SecondaryComponentSelection.h \
@@ -273,6 +283,8 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/HurricaneSelectionWidget.h \
             $$PWD/UIWidgets/OpenQuakeSelectionWidget.h \
             $$PWD/UIWidgets/BrailsInventoryGenerator.h \
+            $$PWD/UIWidgets/BrailsTranspInventoryGenerator.h \            
+            $$PWD/UIWidgets/BrailsGoogleDialog.h \	    
             $$PWD/UIWidgets/UserInputHurricaneWidget.h \
             $$PWD/UIWidgets/HurricaneObject.h \
             $$PWD/ModelViewItems/CustomListWidget.h \
@@ -282,54 +294,56 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/GraphicElements/GridNode.h \
             $$PWD/GraphicElements/NodeHandle.h \
             $$PWD/GraphicElements/RectangleGrid.h \
+            $$PWD/GraphicElements/PlainRectangle.h \	    
+            $$PWD/GraphicElements/GIS_Selection.h \
             $$PWD/WorkflowAppR2D.h \
             $$PWD/RunWidget.h \
 
 
-contains(DEFINES, ARC_GIS)  {
+#contains(DEFINES, ARC_GIS)  {
 
-SOURCES +=  $$PWD/ModelViewItems/ArcGISLegendView.cpp \
-            $$PWD/GraphicElements/ConvexHull.cpp \
-            $$PWD/GraphicElements/PolygonBoundary.cpp \
-            $$PWD/ModelViewItems/LayerTreeView.cpp \
-            $$PWD/UIWidgets/ArcGISBuildingInputWidget.cpp \
-            $$PWD/UIWidgets/ArcGISGasPipelineInputWidget.cpp \
-            $$PWD/Tools/ArcGISHurricanePreprocessor.cpp \
-            $$PWD/UIWidgets/ArcGISHurricaneSelectionWidget.cpp \
-            $$PWD/UIWidgets/LayerManagerDialog.cpp \
-            $$PWD/UIWidgets/LayerManagerTableView.cpp \
-            $$PWD/UIWidgets/LayerManagerModel.cpp \
-            $$PWD/UIWidgets/LayerComboBoxItemDelegate.cpp \
-            $$PWD/UIWidgets/RendererModel.cpp \
-            $$PWD/UIWidgets/RendererTableView.cpp \
-            $$PWD/UIWidgets/RendererComboBoxItemDelegate.cpp \
-            $$PWD/UIWidgets/SimCenterMapGraphicsView.cpp \
-            $$PWD/UIWidgets/EmbeddedMapViewWidget.cpp \
-            $$PWD/UIWidgets/MapViewSubWidget.cpp \
+#SOURCES +=  $$PWD/ModelViewItems/ArcGISLegendView.cpp \ d
+#            $$PWD/GraphicElements/ConvexHull.cpp \ d
+#            $$PWD/GraphicElements/PolygonBoundary.cpp \ d
+#            $$PWD/ModelViewItems/LayerTreeView.cpp \
+#            $$PWD/UIWidgets/ArcGISBuildingInputWidget.cpp \ d
+#            $$PWD/UIWidgets/ArcGISGasPipelineInputWidget.cpp \d
+#            $$PWD/Tools/ArcGISHurricanePreprocessor.cpp \ d
+#            $$PWD/UIWidgets/ArcGISHurricaneSelectionWidget.cpp \ d
+#            $$PWD/UIWidgets/LayerManagerDialog.cpp \ d
+#            $$PWD/UIWidgets/LayerManagerTableView.cpp \d
+#            $$PWD/UIWidgets/LayerManagerModel.cpp \d
+#            $$PWD/UIWidgets/LayerComboBoxItemDelegate.cpp \ d
+#            $$PWD/UIWidgets/RendererModel.cpp \d
+#            $$PWD/UIWidgets/RendererTableView.cpp \d
+#            $$PWD/UIWidgets/RendererComboBoxItemDelegate.cpp \ d
+#            $$PWD/UIWidgets/SimCenterMapGraphicsView.cpp \ d
+#            $$PWD/UIWidgets/EmbeddedMapViewWidget.cpp \
+#            $$PWD/UIWidgets/MapViewSubWidget.cpp \
 
-HEADERS +=  $$PWD/ModelViewItems/ArcGISLegendView.h \
-            $$PWD/UIWidgets/ArcGISVisualizationWidget.h \
-            $$PWD/GraphicElements/ConvexHull.h \
-            $$PWD/GraphicElements/PolygonBoundary.h \
-            $$PWD/ModelViewItems/LayerTreeView.h \
-            $$PWD/Tools/ArcGISHurricanePreprocessor.h \
-            $$PWD/UIWidgets/ArcGISBuildingInputWidget.h \
-            $$PWD/UIWidgets/ArcGISGasPipelineInputWidget.h \
-            $$PWD/UIWidgets/ArcGISHurricaneSelectionWidget.h \
-            $$PWD/UIWidgets/LayerManagerDialog.h \
-            $$PWD/UIWidgets/LayerManagerTableView.h \
-            $$PWD/UIWidgets/LayerManagerModel.h \
-            $$PWD/UIWidgets/LayerComboBoxItemDelegate.h \
-            $$PWD/UIWidgets/RendererModel.h \
-            $$PWD/UIWidgets/RendererTableView.h \
-            $$PWD/UIWidgets/RendererComboBoxItemDelegate.h \
-            $$PWD/UIWidgets/SimCenterMapGraphicsView.h \
-            $$PWD/UIWidgets/EmbeddedMapViewWidget.h \
-            $$PWD/UIWidgets/MapViewSubWidget.h \
-}
+#HEADERS +=  $$PWD/ModelViewItems/ArcGISLegendView.h \
+#            $$PWD/UIWidgets/ArcGISVisualizationWidget.h \
+#            $$PWD/GraphicElements/ConvexHull.h \
+#            $$PWD/GraphicElements/PolygonBoundary.h \
+#            $$PWD/ModelViewItems/LayerTreeView.h \
+#            $$PWD/Tools/ArcGISHurricanePreprocessor.h \
+#            $$PWD/UIWidgets/ArcGISBuildingInputWidget.h \
+#            $$PWD/UIWidgets/ArcGISGasPipelineInputWidget.h \
+#            $$PWD/UIWidgets/ArcGISHurricaneSelectionWidget.h \
+#            $$PWD/UIWidgets/LayerManagerDialog.h \
+#            $$PWD/UIWidgets/LayerManagerTableView.h \
+#            $$PWD/UIWidgets/LayerManagerModel.h \
+#            $$PWD/UIWidgets/LayerComboBoxItemDelegate.h \
+#            $$PWD/UIWidgets/RendererModel.h \
+#            $$PWD/UIWidgets/RendererTableView.h \
+#            $$PWD/UIWidgets/RendererComboBoxItemDelegate.h \
+#            $$PWD/UIWidgets/SimCenterMapGraphicsView.h \
+#            $$PWD/UIWidgets/EmbeddedMapViewWidget.h \
+#            $$PWD/UIWidgets/MapViewSubWidget.h \
+#}
 
 
-contains(DEFINES, Q_GIS)  {
+# Add QGIS sources and headers
 
 SOURCES +=  $$PWD/Tools/QGISHurricanePreprocessor.cpp \
             $$PWD/UIWidgets/LineAssetInputWidget.cpp \
@@ -342,6 +356,9 @@ SOURCES +=  $$PWD/Tools/QGISHurricanePreprocessor.cpp \
             $$PWD/UIWidgets/GISWaterNetworkInputWidget.cpp \
             $$PWD/UIWidgets/MapViewWindow.cpp \
             $$PWD/UIWidgets/CRSSelectionWidget.cpp \
+#            $$PWD/UIWidgets/EmbeddedMapViewWidget.cpp \
+#            $$PWD/UIWidgets/MapViewSubWidget.cpp \
+#            $$PWD/ModelViewItems/LayerTreeView.cpp \
 
 HEADERS +=  $$PWD/Tools/QGISHurricanePreprocessor.h \
             $$PWD/UIWidgets/LineAssetInputWidget.h \
@@ -354,8 +371,11 @@ HEADERS +=  $$PWD/Tools/QGISHurricanePreprocessor.h \
             $$PWD/UIWidgets/GISWaterNetworkInputWidget.h \
             $$PWD/UIWidgets/MapViewWindow.h \
             $$PWD/UIWidgets/CRSSelectionWidget.h \
+#            $$PWD/UIWidgets/EmbeddedMapViewWidget.h \
+#            $$PWD/UIWidgets/MapViewSubWidget.h \
+#            $$PWD/ModelViewItems/LayerTreeView.h \
 
-}
+
 
 
 
