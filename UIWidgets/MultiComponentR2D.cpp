@@ -120,6 +120,9 @@ MultiComponentR2D::MultiComponentR2D(QString key, QWidget *parent)
     // SG add
     connect(theStackedWidget,&QStackedWidget::currentChanged,this,[=](int idx){
 
+        if (idx == -1)
+            return;
+
         if(idx<=theNames.size()-1)
             emit selectionChangedSignal(theNames.at(idx));
     });
@@ -480,3 +483,18 @@ void MultiComponentR2D::clear(void)
         comp->clear();
 }
 
+
+void MultiComponentR2D::removeAllComponents(void)
+{
+
+    while (theStackedWidget->count() > 0) {
+        QWidget *widget = theStackedWidget->widget(0);
+        theStackedWidget->removeWidget(widget);
+        delete widget;
+    }
+
+    theNames.clear();
+    theComponents.clear();
+    qDeleteAll(thePushButtons);
+    thePushButtons.clear();
+}

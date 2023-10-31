@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GISWaterNetworkInputWidget.h"
 #include "CSVTransportNetworkInputWidget.h"
 #include "GISTransportNetworkInputWidget.h"
+#include "GeojsonAssetInputWidget.h"
 
 // Qt headers
 #include <QCheckBox>
@@ -76,31 +77,37 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("WaterDistributionNetwork"), this);
     transportNetworkWidget = new SimCenterAppSelection(QString("Regional Transportation Network"), QString("TransportationDistributionNetwork"), this);
 
+    // Buildings
     PointAssetInputWidget *csvBuildingInventory = new PointAssetInputWidget(this, visualizationWidget, "Buildings","CSV_to_AIM");
     buildingWidget->addComponent(QString("CSV to AIM"), QString("CSV_to_AIM"), csvBuildingInventory);
 
     GISAssetInputWidget *GISBuildingInventory = new GISAssetInputWidget(this,visualizationWidget,"Buildings","GIS_to_AIM");
     buildingWidget->addComponent(QString("GIS File to AIM"), QString("GIS_to_AIM"), GISBuildingInventory);
 
+    GeojsonAssetInputWidget *GeoJsonBuildingAssetInventory = new GeojsonAssetInputWidget(this,visualizationWidget,"Buildings","GEOJSON_TO_ASSET");
+    buildingWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonBuildingAssetInventory);
+
+    // Gas pipelines
     LineAssetInputWidget *csvPipelineInventory = new LineAssetInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
     gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
 
-
+    // Water networks
     CSVWaterNetworkInputWidget *csvWaterNetworkInventory = new CSVWaterNetworkInputWidget(this, visualizationWidget);
     waterNetworkWidget->addComponent(QString("CSV to Water Network"), QString("CSV_to_WATERNETWORK"), csvWaterNetworkInventory);
 
-    CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
-    transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
-
+    GeojsonAssetInputWidget *GeoJsonWaterNetworkAssetInventory = new GeojsonAssetInputWidget(this,visualizationWidget,"Water Networks","GEOJSON_TO_ASSET");
+    waterNetworkWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonWaterNetworkAssetInventory);
 
     GISWaterNetworkInputWidget *gisWaterNetworkInventory = new GISWaterNetworkInputWidget(this, visualizationWidget);
     waterNetworkWidget->addComponent(QString("GIS to Water Network"), QString("GIS_to_WATERNETWORK"), gisWaterNetworkInventory);
 
+    // Transportation networks
+    CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
+    transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
+
     GISTransportNetworkInputWidget *gisTransportNetworkInventory = new GISTransportNetworkInputWidget(this, visualizationWidget);
     transportNetworkWidget->addComponent(QString("GIS to Transportation Network"), QString("GIS_to_TRANSPORTNETWORK"), gisTransportNetworkInventory);
 
-    // QString pathToPipelineInfoFile = "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-    // csvBuildingInventory->testFileLoad(pathToBuildingInfoFile);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",gasPipelineWidget);
