@@ -140,7 +140,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
-    jsonObject.insert("Application","pelicun");
+    jsonObject.insert("Application","Pelicun3");
 
     QJsonObject appDataObj;
 
