@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("3.1.0");
+    QCoreApplication::setApplicationVersion("3.1.1");
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -177,6 +177,7 @@ int main(int argc, char *argv[])
     w.setAbout(aboutTitle, aboutSource);
 
     QString version = QString("Version ") + QCoreApplication::applicationVersion();
+
     w.setVersion(version);
 
     QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Adam Zsarnoczay, Kuanshi Zhong, Wael Elhaddad, & Pedro Arduino. (2023). NHERI-SimCenter/R2DTool: Version 3.0.0 (v3.0.0). Zenodo. https://doi.org/10.5281/zenodo.7946803 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matt J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
@@ -234,17 +235,19 @@ int main(int argc, char *argv[])
     }
 
     //Setting Google Analytics Tracking Information
-    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
-    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
+    //GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
+    //GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
     GoogleAnalytics::CreateSessionId();
     GoogleAnalytics::StartSession();
 
     // Opening a QWebEngineView and using github to get app geographic usage
+    /*
     QWebEngineView view;
     view.setUrl(QUrl("https://nheri-simcenter.github.io/R2DTool/GA4.html"));
     view.resize(1024, 750);
     view.show();
     view.hide();
+    */
     /* ******************************************************************* */
     
 
