@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetInputWidget.h"
 #include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
+#include "GeoJSONReaderWriter.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
 #include "ComponentDatabaseManager.h"
@@ -746,6 +747,7 @@ bool AssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 }
 
 
+
 bool AssetInputWidget::copyFiles(QString &destName)
 {
     auto compLineEditText = componentFileLineEdit->text();
@@ -817,6 +819,15 @@ bool AssetInputWidget::copyFiles(QString &destName)
             return false;
         }
     }
+
+    GeoJSONReaderWriter geoJsonTool;
+    auto pathToSaveFileGJ = destName + QDir::separator() + componentFile.baseName() + ".geojson";
+
+    QString err2;
+    geoJsonTool.saveGeoJsonFile(data, headerValues, assetType, pathToSaveFileGJ, err);
+
+    if(!err2.isEmpty())
+        return false;
 
     //     For testing, creates a csv file of only the selected components
     //        qDebug()<<"Saving selected components to .csv";
