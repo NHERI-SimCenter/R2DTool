@@ -140,7 +140,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
-    jsonObject.insert("Application","pelicun3");
+    jsonObject.insert("Application","Pelicun3");
 
     QJsonObject appDataObj;
 
@@ -335,6 +335,18 @@ void Pelicun3DLWidget::clear(void)
     fragilityDirLineEdit->clear();
 }
 
+void Pelicun3DLWidget::clearParams(void)
+{
+    realizationsLineEdit->clear();
+    eventTimeComboBox->setCurrentIndex(1);
+    detailedResultsCheckBox->setChecked(false);
+    logFileCheckBox->setChecked(false);
+    coupledEDPCheckBox->setChecked(false);
+    groundFailureCheckBox->setChecked(false);
+    autoPopulationScriptLineEdit->clear();
+    fragilityDirLineEdit->clear();
+}
+
 
 
 bool Pelicun3DLWidget::copyFiles(QString &destName)
@@ -399,6 +411,7 @@ bool Pelicun3DLWidget::copyFiles(QString &destName)
 
 void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
 {
+    this->clearParams();
 
     if(text.compare("HAZUS MH EQ") == 0 || text.compare("HAZUS MH EQ IM") == 0)
     {

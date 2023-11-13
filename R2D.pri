@@ -125,6 +125,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.cpp \
             $$PWD/UIWidgets/AssetInputWidget.cpp \
             $$PWD/UIWidgets/GISTransportNetworkInputWidget.cpp \
+            $$PWD/UIWidgets/GeojsonAssetInputWidget.cpp \
             $$PWD/UIWidgets/JSONTransportNetworkInputWidget.cpp \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.cpp \
             $$PWD/UIWidgets/DLWidget.cpp \
@@ -251,6 +252,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/CSVtoBIMModelingWidget.h \
             $$PWD/UIWidgets/AssetInputWidget.h \
             $$PWD/UIWidgets/GISTransportNetworkInputWidget.h \
+            $$PWD/UIWidgets/GeojsonAssetInputWidget.h \
             $$PWD/UIWidgets/JSONTransportNetworkInputWidget.h \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.h \
             $$PWD/UIWidgets/DLWidget.h \

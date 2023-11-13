@@ -85,7 +85,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
     
-    buildingWidget->addComponent(QString("Pelicun3"), QString("pelicun3"), buildingPelicun3);    
+    buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);    
     buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 

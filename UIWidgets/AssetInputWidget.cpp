@@ -326,7 +326,7 @@ void AssetInputWidget::createComponentsBox(void)
     
     connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &AssetInputWidget::handleCellChanged);
     
-    QHBoxLayout* pathLayout = new QHBoxLayout();
+    pathLayout = new QHBoxLayout();
     pathLayout->addWidget(pathText);
     pathLayout->addWidget(componentFileLineEdit);
     pathLayout->addWidget(browseFileButton);
@@ -358,6 +358,7 @@ void AssetInputWidget::createComponentsBox(void)
     mainWidgetLayout->addStretch();
 
     this->setLayout(mainWidgetLayout);
+
 }
 
 
@@ -937,6 +938,30 @@ void AssetInputWidget::handleComponentFilter(void)
         selectComponentsLineEdit->insertSelectedComponents(filterIds);
         selectComponentsLineEdit->selectComponents();
     }
+}
+
+
+void AssetInputWidget::setPathToComponentInputFile(const QString &newPathToComponentInputFile)
+{
+    pathToComponentInputFile = newPathToComponentInputFile;
+}
+
+
+QLabel *AssetInputWidget::getLabel1() const
+{
+    return label1;
+}
+
+
+QHBoxLayout *AssetInputWidget::getAssetFilePathLayout() const
+{
+    return pathLayout;
+}
+
+
+QString AssetInputWidget::getAssetType() const
+{
+    return assetType;
 }
 
 

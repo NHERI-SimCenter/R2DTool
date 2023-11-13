@@ -1,4 +1,4 @@
->#*****************************************************************************
+#*****************************************************************************
 # Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 # All rights reserved.
 #
@@ -36,7 +36,7 @@
 
 # Written by: Stevan Gavrilovic, Frank McKenna
 
-QT += core gui charts concurrent network sql xml serialport
+QT += core gui charts concurrent network sql xml serialport webenginewidgets
 QT += 3dcore 3drender 3dextras opengl positioning quickwidgets
 
 mac {
@@ -73,6 +73,8 @@ equals(QT_MAJOR_VERSION, 5) {
                 error("$$TARGET requires Qt 5.15.0")
         }
 }
+
+DEFINES += Q_GIS
 
 win32:DEFINES +=  CURL_STATICLIB
 
