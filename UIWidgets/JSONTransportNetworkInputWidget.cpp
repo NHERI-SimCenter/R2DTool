@@ -50,7 +50,7 @@ JSONTransportNetworkInputWidget::JSONTransportNetworkInputWidget(QWidget *parent
 
     roadLengthWidget = new QWidget();
     QHBoxLayout* roadLengthLayout = new QHBoxLayout(roadLengthWidget);
-    QLabel* roadLengthLabel = new QLabel("Roadway length (m) per AIM",this);
+    QLabel* roadLengthLabel = new QLabel("Maximum roadway length (m) per AIM",this);
     roadLengthLineEdit = new QLineEdit(this);
     roadLengthLineEdit->setText("100.0");
     QDoubleValidator *validator = new QDoubleValidator(this);

@@ -107,7 +107,7 @@ AssetInputWidget::~AssetInputWidget()
 }
 
 
-bool AssetInputWidget::loadAssetData(void)
+bool AssetInputWidget::loadAssetData(bool message)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)

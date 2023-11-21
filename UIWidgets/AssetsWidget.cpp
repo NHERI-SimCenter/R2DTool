@@ -107,6 +107,20 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     JSONTransportNetworkInputWidget *jsonTransportNetworkInventory = new JSONTransportNetworkInputWidget(this, visualizationWidget);
     transportNetworkWidget->addComponent(QString("Json to Transportation Network AIM"), QString("JSON_to_TRANSPORTNETWORK"), jsonTransportNetworkInventory);
 
+    GeojsonAssetInputWidget *GeoJsonTransportNetworkAssetInventory = new GeojsonAssetInputWidget(this,visualizationWidget,"Transportation Network","GEOJSON_TO_ASSET");
+    QWidget* roadLengthWidget = new QWidget();
+    QHBoxLayout* roadLengthLayout = new QHBoxLayout(roadLengthWidget);
+    QLabel* roadLengthLabel = new QLabel("Maximum roadway length (m) per AIM",this);
+    QLineEdit* roadLengthLineEdit = new QLineEdit(this);
+    roadLengthLineEdit->setText("100.0");
+    QDoubleValidator *validator = new QDoubleValidator(this);
+    validator->setBottom(0.0);
+    roadLengthLayout->addWidget(roadLengthLabel);
+    roadLengthLayout->addWidget(roadLengthLineEdit);
+    GeoJsonTransportNetworkAssetInventory->insertLineEditToMainLayout(1, roadLengthWidget, roadLengthLineEdit, "Roadway", "maxRoadLength_m");
+
+    transportNetworkWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonTransportNetworkAssetInventory);
+
     GISTransportNetworkInputWidget *gisTransportNetworkInventory = new GISTransportNetworkInputWidget(this, visualizationWidget);
     transportNetworkWidget->addComponent(QString("GIS to Transportation Network"), QString("GIS_to_TRANSPORTNETWORK"), gisTransportNetworkInventory);
 

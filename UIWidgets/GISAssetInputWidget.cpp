@@ -117,6 +117,10 @@ GISAssetInputWidget::~GISAssetInputWidget()
 
 }
 
+CRSSelectionWidget* GISAssetInputWidget::getCRSSelectorWidget(){
+    return crsSelectorWidget;
+}
+
 
 #ifdef OpenSRA
 bool GISAssetInputWidget::loadFileFromPath(const QString& filePath)
@@ -280,7 +284,7 @@ int GISAssetInputWidget::loadAssetVisualization()
 }
 
 
-bool GISAssetInputWidget::loadAssetData(void)
+bool GISAssetInputWidget::loadAssetData(bool message)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
@@ -337,8 +341,11 @@ bool GISAssetInputWidget::loadAssetData(void)
         return false;
     }
     else{
-        this->statusMessage("Loading information for " + QString::number(numFeat)+ " assets");
-        QApplication::processEvents();
+        if (message){
+            this->statusMessage("Loading information for " + QString::number(numFeat)+ " assets");
+            QApplication::processEvents();
+        }
+
     }
 
     auto layerId = mainLayer->id();
