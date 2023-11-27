@@ -140,7 +140,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
-    jsonObject.insert("Application","pelicun");
+    jsonObject.insert("Application","Pelicun3");
 
     QJsonObject appDataObj;
 
@@ -152,14 +152,16 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("event_time",eventTimeComboBox->currentText());
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
 
-    // test separating the path and filename of auto-population codes (KZ)
-    QFileInfo test_auto(autoPopulationScriptLineEdit->text());
-    if(test_auto.exists())
-    {
-        appDataObj.insert("auto_script",test_auto.fileName());
-        appDataObj.insert("path_to_auto_script",test_auto.path());
+    // automatically load the auto script path for built-in methods
+    QString auto_script = "";
+
+    if (DLTypeComboBox->currentText() == "HAZUS MH EQ IM") {
+        auto_script = "PelicunDefault/Hazus_Earthquake_IM.py";
     }
 
+    if (auto_script != "") {
+        appDataObj.insert("auto_script",auto_script);    
+    }
 
     if(!fragDirWidget->isHidden())
     {
