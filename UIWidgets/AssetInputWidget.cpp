@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetInputWidget.h"
 #include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
+#include "GeoJSONReaderWriter.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
 #include "ComponentDatabaseManager.h"
@@ -63,14 +64,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QHeaderView>
 
-#ifdef ARC_GIS
-#include "ArcGISVisualizationWidget.h"
-#include <FeatureCollectionLayer.h>
-#endif
-
-#ifdef Q_GIS
 #include "QGISVisualizationWidget.h"
-#endif
+
 
 // Std library headers
 #include <string>
@@ -78,15 +73,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : SimCenterAppWidget(parent), appType(appType), assetType(assetType)
 {
-#ifdef ARC_GIS
-    theVisualizationWidget = static_cast<ArcGISVisualizationWidget*>(visWidget);
-
-    if(theVisualizationWidget == nullptr)
-    {
-        this->errorMessage("Failed to cast to QISVisualizationWidget");
-        return;
-    }
-#endif
 
     offset = 0;
 
@@ -341,7 +327,7 @@ void AssetInputWidget::createComponentsBox(void)
     
     connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &AssetInputWidget::handleCellChanged);
     
-    QHBoxLayout* pathLayout = new QHBoxLayout();
+    pathLayout = new QHBoxLayout();
     pathLayout->addWidget(pathText);
     pathLayout->addWidget(componentFileLineEdit);
     pathLayout->addWidget(browseFileButton);
@@ -373,6 +359,7 @@ void AssetInputWidget::createComponentsBox(void)
     mainWidgetLayout->addStretch();
 
     this->setLayout(mainWidgetLayout);
+
 }
 
 
@@ -395,128 +382,6 @@ void AssetInputWidget::selectComponents(void)
 }
 
 
-#ifdef ARC_GIS
-void AssetInputWidget::handleComponentSelection(void)
-{
-    
-    auto nRows = componentTableWidget->rowCount();
-    
-    if(nRows == 0)
-        return;
-    
-    // Get the ID of the first and last component
-    bool OK;
-    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
-    
-    if(!OK)
-    {
-        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
-        this->errorMessage(msg);
-        return;
-    }
-    
-    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
-    
-    if(!OK)
-    {
-        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
-        this->errorMessage(msg);
-        return;
-    }
-    
-    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
-    
-    // First check that all of the selected IDs are within range
-    for(auto&& it : selectedComponentIDs)
-    {
-        if(it<firstID || it>lastID)
-        {
-            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
-            this->errorMessage(msg);
-            selectComponentsLineEdit->clear();
-            return;
-        }
-    }
-    
-    // Hide all rows in the table
-    for(int i = 0; i<nRows; ++i)
-        componentTableWidget->setRowHidden(i,true);
-    
-    // Unhide the selected rows
-    for(auto&& it : selectedComponentIDs)
-        componentTableWidget->setRowHidden(it - firstID,false);
-    
-    auto numAssets = selectedComponentIDs.size();
-    QString msg = "A total of "+ QString::number(numAssets) + " " + componentType.toLower() + " are selected for analysis";
-    this->statusMessage(msg);
-    
-    for(auto&& it : selectedComponentIDs)
-    {
-        auto component = theComponentDb->getComponent(it);
-        
-        auto feature = component.ComponentFeature;
-        
-        if(feature == nullptr)
-            continue;
-        
-        QMap<QString, QVariant> featureAttributes;
-        auto atrb = feature->attributes()->attributesMap();
-        
-        auto id = atrb.value("UID").toString();
-        
-        if(selectedFeaturesForAnalysis.contains(id))
-            continue;
-        
-        auto atrVals = atrb.values();
-        auto atrKeys = atrb.keys();
-        
-        // qDebug()<<"Num atributes: "<<atrb.size();
-        
-        for(int i = 0; i<atrb.size();++i)
-        {
-            auto key = atrKeys.at(i);
-            auto val = atrVals.at(i);
-            
-            // Including the ObjectID causes a crash!!! Do not include it when creating an object
-            if(key == "ObjectID")
-                continue;
-            
-            // qDebug()<< nid<<"-key:"<<key<<"-value:"<<atrVals.at(i).toString();
-            
-            featureAttributes[key] = val;
-        }
-
-        
-        //        auto geom = feature->geometry();
-        
-        auto res = this->addFeatureToSelectedLayer(*feature);
-
-        if(res == false)
-            this->errorMessage("Error adding feature to selected feature layer");
-        else
-            selectedFeaturesForAnalysis.insert(id,feature);
-    }
-
-    auto selecFeatLayer = this->getSelectedFeatureLayer();
-
-    if(selecFeatLayer == nullptr)
-    {
-        QString err = "Error in getting the selected feature layer";
-        qDebug()<<err;
-        return;
-    }
-
-    // Add the layer to the map if it does not already exist
-    auto layerExists = theVisualizationWidget->getLayer(selecFeatLayer->layerId());
-
-    if(layerExists == nullptr)
-        theVisualizationWidget->addSelectedFeatureLayerToMap(selecFeatLayer);
-
-}
-#endif
-
-
-#ifdef Q_GIS
 void AssetInputWidget::handleComponentSelection(void)
 {
 
@@ -594,7 +459,6 @@ void AssetInputWidget::handleComponentSelection(void)
 
 
 }
-#endif
 
 
 
@@ -883,6 +747,7 @@ bool AssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 }
 
 
+
 bool AssetInputWidget::copyFiles(QString &destName)
 {
     auto compLineEditText = componentFileLineEdit->text();
@@ -955,6 +820,15 @@ bool AssetInputWidget::copyFiles(QString &destName)
         }
     }
 
+    GeoJSONReaderWriter geoJsonTool;
+    auto pathToSaveFileGJ = destName + QDir::separator() + componentFile.baseName() + ".geojson";
+
+    QString err2;
+    geoJsonTool.saveGeoJsonFile(data, headerValues, assetType, pathToSaveFileGJ, err);
+
+    if(!err2.isEmpty())
+        return false;
+
     //     For testing, creates a csv file of only the selected components
     //        qDebug()<<"Saving selected components to .csv";
     //        auto selectedIDs = selectComponentsLineEdit->getSelectedComponentIDs();
@@ -1022,72 +896,12 @@ void AssetInputWidget::handleCellChanged(const int row, const int col)
 
     auto attribVal = componentTableWidget->item(row,col);
 
-#ifdef ARC_GIS
-    auto uid = component.UID;
-    this->updateSelectedComponentAttribute(uid,attrib,attribVal);
-#endif
 
-#ifdef Q_GIS
     auto res = theComponentDb->updateComponentAttribute(ID,attrib,attribVal);
     if(res == false)
         this->errorMessage("Error could not update asset "+QString::number(ID)+" after cell change");
-#endif
 
 }
-
-#ifdef ARC_GIS
-Esri::ArcGISRuntime::Feature* AssetInputWidget::addFeatureToSelectedLayer(QMap<QString, QVariant>& /*featureAttributes*/, Esri::ArcGISRuntime::Geometry& /*geom*/)
-{
-    return nullptr;
-}
-
-
-int AssetInputWidget::removeFeatureFromSelectedLayer(Esri::ArcGISRuntime::Feature* /*feat*/)
-{
-    return -1;
-}
-
-
-Esri::ArcGISRuntime::FeatureCollectionLayer* AssetInputWidget::getSelectedFeatureLayer(void)
-{
-    return nullptr;
-}
-
-
-void AssetInputWidget::updateSelectedComponentAttribute(const QString&  uid, const QString& attribute, const QVariant& value)
-{
-
-    if(selectedFeaturesForAnalysis.empty())
-    {
-        this->statusMessage("Selected features map is empty, nothing to update");
-        return;
-    }
-
-    if(!selectedFeaturesForAnalysis.contains(id))
-    {
-        this->statusMessage("Feature not found in selected components map");
-        return;
-    }
-
-    // Get the feature
-    Esri::ArcGISRuntime::Feature* feat = selectedFeaturesForAnalysis[uid];
-
-    if(feat == nullptr)
-    {
-        qDebug()<<"Feature is a nullptr";
-        return;
-    }
-
-    feat->attributes()->replaceAttribute(attribute,value);
-    feat->featureTable()->updateFeature(feat);
-
-    if(feat->attributes()->attributeValue(attribute).isNull())
-    {
-        qDebug()<<"Failed to update feature "<<feat->attributes()->attributeValue("ID").toString();
-        return;
-    }
-}
-#endif
 
 
 void AssetInputWidget::insertSelectedAssets(QgsFeatureIds& featureIds)
@@ -1135,6 +949,30 @@ void AssetInputWidget::handleComponentFilter(void)
         selectComponentsLineEdit->insertSelectedComponents(filterIds);
         selectComponentsLineEdit->selectComponents();
     }
+}
+
+
+void AssetInputWidget::setPathToComponentInputFile(const QString &newPathToComponentInputFile)
+{
+    pathToComponentInputFile = newPathToComponentInputFile;
+}
+
+
+QLabel *AssetInputWidget::getLabel1() const
+{
+    return label1;
+}
+
+
+QHBoxLayout *AssetInputWidget::getAssetFilePathLayout() const
+{
+    return pathLayout;
+}
+
+
+QString AssetInputWidget::getAssetType() const
+{
+    return assetType;
 }
 
 

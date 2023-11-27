@@ -1,5 +1,5 @@
-#ifndef LayerManagerTableView_H
-#define LayerManagerTableView_H
+#ifndef GeojsonAssetInputWidget_H
+#define GeojsonAssetInputWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,39 +36,53 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
 
-#include "ColorDialogDelegate.h"
-#include "LayerComboBoxItemDelegate.h"
+#include "SimCenterAppWidget.h"
+#include <QList>
 
-#include <QTableView>
+class QGISVisualizationWidget;
+class VisualizationWidget;
+class GISAssetInputWidget;
+class MultiComponentR2D;
 
-class LayerManagerModel;
+class QLineEdit;
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class FeatureCollectionLayer;
-}
-}
+class QgsMapLayer;
+class QgsFeature;
+class QgsGeometry;
 
-class LayerManagerTableView : public QTableView
+class GeojsonAssetInputWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    LayerManagerTableView(QWidget* parent);
+    GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType);
+    virtual ~GeojsonAssetInputWidget();
 
-    void setLayer(Esri::ArcGISRuntime::FeatureCollectionLayer* layer);
+    void clear();
 
-private:
-    LayerManagerModel* dataModel;
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    bool copyFiles(QString &destName);
 
-    std::unique_ptr<ColorDialogDelegate> colorDelegate;
+protected slots:
+    void loadAssetData();
+    void chooseAssetFileDialog(void);
 
-    std::unique_ptr<LayerComboBoxItemDelegate> markerTypeComboDelegate;
+protected:
+
+    QLineEdit* componentFileLineEdit = nullptr;
+
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    MultiComponentR2D* mainAssetWidget = nullptr;
+
+    QList<GISAssetInputWidget*> theAssetInputWidgetList;
+    QList<QgsMapLayer*> theAssetLayerList;
+
+    QString componentType;
+    QString appType;
 
 };
 
-#endif // LayerManagerTableView_H
+#endif // GeojsonAssetInputWidget_H

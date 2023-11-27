@@ -83,6 +83,7 @@ private:
     QCheckBox* groundFailureCheckBox;
     QLineEdit* autoPopulationScriptLineEdit;
     QLineEdit* fragilityDirLineEdit;
+    void clearParams(void);
 };
 
 #endif // Pelicun3DLWidget_H

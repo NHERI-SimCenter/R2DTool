@@ -67,6 +67,7 @@ public:
     virtual bool show(QString text);
     bool addComponent(QString text, SimCenterAppWidget *);
     SimCenterAppWidget *getComponent(QString text);
+    void removeAllComponents(void);
 
     // SG add
     SimCenterAppWidget* getCurrentComponent(void);

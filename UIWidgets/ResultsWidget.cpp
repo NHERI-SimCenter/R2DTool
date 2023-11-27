@@ -227,15 +227,6 @@ bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 }
 
 
-#ifdef ARC_GIS
-void ResultsWidget::setCurrentlyViewable(bool status){
-
-    if (status == true)
-        thePelicunPostProcessor->setCurrentlyViewable(status);
-}
-#endif
-
-
 int ResultsWidget::processResults(QString resultsDirectory)
 {
     //auto SCPrefs = SimCenterPreferences::getInstance();

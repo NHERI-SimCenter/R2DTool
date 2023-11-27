@@ -1,5 +1,5 @@
-#ifndef PolygonBoundary_H
-#define PolygonBoundary_H
+#ifndef GeoJSONReaderWriter_H
+#define GeoJSONReaderWriter_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,66 +38,28 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QMouseEvent>
-#include <QObject>
+#include <QVector>
 
-class ArcGISVisualizationWidget;
-class SimCenterMapGraphicsView;
+class QString;
+class QStringList;
 
-namespace Esri
+class GeoJSONReaderWriter
 {
-namespace ArcGISRuntime
-{
-class GraphicsOverlay;
-class SimpleMarkerSymbol;
-class Graphic;
-class Point;
-class SimpleLineSymbol;
-class SimpleFillSymbol;
-class MultipointBuilder;
-class Geometry;
-class Map;
-}
-}
-
-class PolygonBoundary : public QObject
-{
-    Q_OBJECT
-
 public:
-    PolygonBoundary(ArcGISVisualizationWidget* visualizationWidget);
+    GeoJSONReaderWriter();
 
-    void setupPolygonBoundaryObjects();
+    // Saves data in the format of a GeoJson file
+    int saveGeoJsonFile(const QVector<QStringList>& data,
+                        const QStringList& headers,
+                        const QString assetType,
+                        const QString& pathToFile,
+                        QString& err);
 
-    bool getSelectingPoints() const;
-    void setSelectingPoints(bool value);
-
-signals:
-    void selectionStart();
-    void selectionEnd();
-
-public slots:
-    void plotPolygonBoundary();
-    void getPolygonBoundaryInputs();
-    void resetPolygonBoundary();
-    void getItemsInPolygonBoundary();
-    void PolygonBoundaryPointSelector(QMouseEvent& e);
 
 private:
 
-    // Create a graphic to display the convex hull selection
-    Esri::ArcGISRuntime::GraphicsOverlay* m_graphicsOverlay = nullptr;
-    Esri::ArcGISRuntime::SimpleMarkerSymbol* m_markerSymbol = nullptr;
-    Esri::ArcGISRuntime::Graphic* m_inputsGraphic = nullptr;
-    Esri::ArcGISRuntime::Graphic* m_PolygonBoundaryGraphic = nullptr;
-    Esri::ArcGISRuntime::SimpleLineSymbol* m_lineSymbol = nullptr;
-    Esri::ArcGISRuntime::SimpleFillSymbol* m_fillSymbol = nullptr;
-    Esri::ArcGISRuntime::MultipointBuilder* m_multipointBuilder = nullptr;
-    bool selectingPolygonBoundary;
+    int getIndexOfVal(const QStringList& headersStr, const QString val);
 
-    Esri::ArcGISRuntime::Map *mapGIS = nullptr;
-    ArcGISVisualizationWidget* theVisualizationWidget = nullptr;
-    SimCenterMapGraphicsView *mapViewWidget = nullptr;
 };
 
-#endif // PolygonBoundary_H
+#endif // GeoJSONReaderWriter_H

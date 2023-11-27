@@ -71,7 +71,7 @@ EarthquakeRuptureForecastWidget::EarthquakeRuptureForecastWidget(QWidget *parent
 
     QLabel* magMinLabel = new QLabel(tr("Minimum Magnitude:"),this);
     QLabel* magMaxLabel = new QLabel(tr("Maximum Magnitude:"),this);
-    QLabel* distMaxLabel = new QLabel(tr("Maximum Distance:"),this);
+    QLabel* distMaxLabel = new QLabel(tr("Maximum Distance (km):"),this);
 
     QLabel* nameLabel = new QLabel(tr("Earthquake Name:"),this);
     QLabel* modelLabel = new QLabel(tr("Forecast Model:"),this);

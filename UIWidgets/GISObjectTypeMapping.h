@@ -4,20 +4,20 @@
 #include <QString>
 #include "SimpleMarkerSymbol.h"
 
-inline QString getTextFromMarkerSymbolType(Esri::ArcGISRuntime::SimpleMarkerSymbolStyle style)
-{
-    switch(static_cast<int>(style))
-    {
-    case 0: return "Circle";
-    case 1: return "Cross";
-    case 2: return "Diamond";
-    case 3: return "Square";
-    case 4: return "Triangle";
-    case 5: return "X";
+//inline QString getTextFromMarkerSymbolType(Esri::ArcGISRuntime::SimpleMarkerSymbolStyle style)
+//{
+//    switch(static_cast<int>(style))
+//    {
+//    case 0: return "Circle";
+//    case 1: return "Cross";
+//    case 2: return "Diamond";
+//    case 3: return "Square";
+//    case 4: return "Triangle";
+//    case 5: return "X";
 
-    default: return {};
-    }
-}
+//    default: return {};
+//    }
+//}
 
 inline int getMarkerSymbolTypeFromText(QString style)
 {
@@ -38,20 +38,20 @@ inline int getMarkerSymbolTypeFromText(QString style)
 }
 
 
-inline QString getTextFromLineSymbolType(Esri::ArcGISRuntime::SimpleLineSymbolStyle style)
-{
-    switch(static_cast<int>(style))
-    {
-    case 0: return "Dash";
-    case 1: return "Dash Dot";
-    case 2: return "Dash Dot Dot";
-    case 3: return "Dot";
-    case 4: return "Null";
-    case 5: return "Solid";
+//inline QString getTextFromLineSymbolType(Esri::ArcGISRuntime::SimpleLineSymbolStyle style)
+//{
+//    switch(static_cast<int>(style))
+//    {
+//    case 0: return "Dash";
+//    case 1: return "Dash Dot";
+//    case 2: return "Dash Dot Dot";
+//    case 3: return "Dot";
+//    case 4: return "Null";
+//    case 5: return "Solid";
 
-    default: return {};
-    }
-}
+//    default: return {};
+//    }
+//}
 
 
 inline int getLineSymbolTypeFromText(QString style)
@@ -73,22 +73,22 @@ inline int getLineSymbolTypeFromText(QString style)
 }
 
 
-inline QString getTextFromFillSymbolType(Esri::ArcGISRuntime::SimpleFillSymbolStyle style)
-{
-    switch(static_cast<int>(style))
-    {
-    case 0: return "Backward Diagonal";
-    case 1: return "Cross";
-    case 2: return "Diagonal Cross";
-    case 3: return "Forward Diagonal";
-    case 4: return "Horizontal";
-    case 5: return "Null";
-    case 6: return "Solid";
-    case 7: return "Vertical";
+//inline QString getTextFromFillSymbolType(Esri::ArcGISRuntime::SimpleFillSymbolStyle style)
+//{
+//    switch(static_cast<int>(style))
+//    {
+//    case 0: return "Backward Diagonal";
+//    case 1: return "Cross";
+//    case 2: return "Diagonal Cross";
+//    case 3: return "Forward Diagonal";
+//    case 4: return "Horizontal";
+//    case 5: return "Null";
+//    case 6: return "Solid";
+//    case 7: return "Vertical";
 
-    default: return {};
-    }
-}
+//    default: return {};
+//    }
+//}
 
 
 inline int getFillSymbolTypeFromText(QString style)

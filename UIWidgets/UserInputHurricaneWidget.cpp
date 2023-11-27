@@ -45,27 +45,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WindFieldStation.h"
 #include "SimCenterUnitsWidget.h"
 
-#ifdef ARC_GIS
-#include "ArcGISHurricanePreprocessor.h"
-#include "ArcGISVisualizationWidget.h"
-
-// GIS Layers
-#include <FeatureCollectionLayer.h>
-#include <GroupLayer.h>
-#include <Layer.h>
-#include <LayerListModel.h>
-#include <SimpleMarkerSymbol.h>
-#include <SimpleRenderer.h>
-
-using namespace Esri::ArcGISRuntime;
-#endif
-
-#ifdef Q_GIS
 #include "QGISHurricanePreprocessor.h"
 #include "QGISVisualizationWidget.h"
 
 #include <qgsvectorlayer.h>
-#endif
 
 #include <QApplication>
 #include <QDialog>
@@ -332,20 +315,6 @@ void UserInputHurricaneWidget::showEventSelectDialog(void)
 void UserInputHurricaneWidget::loadHurricaneTrackData(void)
 {
 
-#ifdef ARC_GIS
-    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
-
-    if(arcVizWidget == nullptr)
-    {
-        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
-        return;
-    }
-
-    ArcGISHurricanePreprocessor hurricaneImportTool(progressBar, arcVizWidget, this);
-#endif
-
-
-#ifdef Q_GIS
     auto qgisVizWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
 
     if(qgisVizWidget == nullptr)
@@ -355,7 +324,6 @@ void UserInputHurricaneWidget::loadHurricaneTrackData(void)
     }
 
     QGISHurricanePreprocessor hurricaneImportTool(progressBar, qgisVizWidget, this);
-#endif
 
     theStackedWidget->setCurrentWidget(progressBarWidget);
     progressBarWidget->setVisible(true);
@@ -506,7 +474,6 @@ void UserInputHurricaneWidget::clear(void)
 }
 
 
-#ifdef Q_GIS
 void UserInputHurricaneWidget::loadUserWFData(void)
 {
     auto QGsVisWidget = static_cast<QGISVisualizationWidget*>(theVisualizationWidget);
@@ -749,238 +716,8 @@ void UserInputHurricaneWidget::loadUserWFData(void)
 
     return;
 }
-#endif
 
 
-#ifdef ARC_GIS
-void UserInputHurricaneWidget::loadUserWFData(void)
-{
-    auto arcVizWidget = static_cast<ArcGISVisualizationWidget*>(theVisualizationWidget);
-
-    if(arcVizWidget == nullptr)
-    {
-        qDebug()<<"Failed to cast to ArcGISVisualizationWidget";
-        return;
-    }
-
-    this->statusMessage("Loading wind field data");
-    CSVReaderWriter csvTool;
-
-    QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(eventFile, err);
-
-    if(!err.isEmpty())
-    {
-        this->errorMessage(err);
-        return;
-    }
-
-    if(data.empty())
-        return;
-
-    theStackedWidget->setCurrentWidget(progressBarWidget);
-    progressBarWidget->setVisible(true);
-
-    QApplication::processEvents();
-
-    //progressBar->setRange(0,inputFiles.size());
-    progressBar->setRange(0, data.count());
-
-    progressBar->setValue(0);
-
-    // Create the table to store the fields
-    QList<Field> tableFields;
-    tableFields.append(Field::createText("AssetType", "NULL",4));
-    tableFields.append(Field::createText("TabName", "NULL",4));
-    tableFields.append(Field::createText("Station Name", "NULL",4));
-    tableFields.append(Field::createText("Latitude", "NULL",8));
-    tableFields.append(Field::createText("Longitude", "NULL",9));
-    tableFields.append(Field::createText("Peak Wind Speeds", "NULL",9));
-    tableFields.append(Field::createText("Peak Inundation Heights", "N/A",9));
-
-    auto gridFeatureCollection = new FeatureCollection(this);
-
-    // Create the feature collection table/layers
-    auto gridFeatureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Point, SpatialReference::wgs84(), this);
-    gridFeatureCollection->tables()->append(gridFeatureCollectionTable);
-
-    auto gridLayer = new FeatureCollectionLayer(gridFeatureCollection,this);
-
-    gridLayer->setName("Wind Field Grid");
-    gridLayer->setAutoFetchLegendInfos(true);
-
-    // Create red cross SimpleMarkerSymbol
-    SimpleMarkerSymbol* crossSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Cross, QColor("black"), 6, this);
-
-    // Create renderer and set symbol to crossSymbol
-    SimpleRenderer* renderer = new SimpleRenderer(crossSymbol, this);
-    renderer->setLabel("Wind Field Grid Points");
-
-    // Set the renderer for the feature layer
-    gridFeatureCollectionTable->setRenderer(renderer);
-
-    // Set the scale at which the layer will become visible - if scale is too high, then the entire view will be filled with symbols
-    // gridLayer->setMinScale(80000);
-
-    auto headerInfo = data.front();
-
-    auto latIndex = headerInfo.indexOf("Latitude");
-    auto lonIndex = headerInfo.indexOf("Longitude");
-
-    if(latIndex == -1 || lonIndex == -1)
-    {
-        this->errorMessage("Could not find the Latitude and Longitude headsers in the EventGrid.csv file");
-        return;
-    }
-
-    // Pop off the row that contains the header information
-    data.pop_front();
-
-    auto numRows = data.size();
-
-    int count = 0;
-
-    // Get the data
-    for(int i = 0; i<numRows; ++i)
-    {
-        auto rowStr = data.at(i);
-
-        auto stationName = rowStr[0];
-
-        // Path to station files, e.g., site0.csv
-        auto stationPath = eventDir + QDir::separator() + stationName;
-
-        bool ok;
-        auto longitude = rowStr[lonIndex].toDouble(&ok);
-
-        if(!ok)
-        {
-            QString errMsg = "Error longitude to a double, check the value";
-            this->errorMessage(errMsg);
-
-            theStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        auto latitude = rowStr[latIndex].toDouble(&ok);
-
-        if(!ok)
-        {
-            QString errMsg = "Error latitude to a double, check the value";
-            this->errorMessage(errMsg);
-
-            theStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        WindFieldStation WFStation(stationName,latitude,longitude);
-
-        WFStation.setStationFilePath(stationPath);
-
-        try
-        {
-            WFStation.importWindFieldStation();
-        }
-        catch(QString msg)
-        {
-            auto errorMessage = "Error importing wind field file: " + stationName+"\n"+msg;
-
-            this->errorMessage(errorMessage);
-
-            theStackedWidget->setCurrentWidget(fileInputWidget);
-            progressBarWidget->setVisible(false);
-
-            return;
-        }
-
-        auto pws = WFStation.getPeakWindSpeeds();
-
-        QString pwsStr;
-        for(int i = 0; i<pws.size()-1; ++i)
-        {
-            pwsStr += QString::number(pws[i]) + ", ";
-        }
-
-        pwsStr += QString::number(pws.back());
-
-
-        auto pih = WFStation.getPeakInundationHeights();
-
-        QString pihStr;
-        for(int i = 0; i<pih.size()-1; ++i)
-        {
-            pihStr += QString::number(pih[i]) + ", ";
-        }
-
-        pihStr += QString::number(pih.back());
-
-
-        // create the feature attributes
-        QMap<QString, QVariant> featureAttributes;
-        featureAttributes.insert("Station Name", stationName);
-        featureAttributes.insert("AssetType", "WindfieldGridPoint");
-        featureAttributes.insert("TabName", "Wind Field Grid Point");
-        featureAttributes.insert("Latitude", latitude);
-        featureAttributes.insert("Longitude", longitude);
-        featureAttributes.insert("Peak Wind Speeds", pwsStr);
-
-        if(!pihStr.isEmpty())
-            featureAttributes.insert("Peak Inundation Heights", pihStr);
-
-        // Create the point and add it to the feature table
-        Point point(longitude,latitude);
-        Feature* feature = gridFeatureCollectionTable->createFeature(featureAttributes, point, this);
-
-        gridFeatureCollectionTable->addFeature(feature);
-        WFStation.setStationFeature(feature);
-
-        ++count;
-        progressLabel->clear();
-        progressBar->setValue(count);
-
-        QApplication::processEvents();
-    }
-
-    // Create a new layer
-    auto layersTreeView = arcVizWidget->getLayersTree();
-
-    // Check if there is a 'User Ground Motions' root item in the tree
-    auto userInputTreeItem = layersTreeView->getTreeItem("User Wind Field", nullptr);
-
-    // If there is no item, create one
-    if(userInputTreeItem == nullptr)
-    {
-        auto itemUID = theVisualizationWidget->createUniqueID();
-        userInputTreeItem = layersTreeView->addItemToTree("User Wind Field", itemUID);
-    }
-
-
-    // Add the event layer to the layer tree
-    //    auto eventItem = layersTreeView->addItemToTree(eventFile, QString(), userInputTreeItem);
-
-    progressLabel->setVisible(false);
-
-    // Add the event layer to the map
-    arcVizWidget->addLayerToMap(gridLayer,userInputTreeItem);
-
-    // Reset the widget back to the input pane and close
-    theStackedWidget->setCurrentWidget(fileInputWidget);
-    fileInputWidget->setVisible(true);
-
-    if(theStackedWidget->isModal())
-        theStackedWidget->close();
-
-    emit loadingComplete(true);
-
-    emit outputDirectoryPathChanged(eventDir, eventFile);
-
-    return;
-}
-#endif
 
 
 void UserInputHurricaneWidget::showProgressBar(void)

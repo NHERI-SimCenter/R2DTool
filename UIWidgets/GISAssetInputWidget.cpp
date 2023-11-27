@@ -327,6 +327,8 @@ bool GISAssetInputWidget::loadAssetData(void)
         return false;
     }
 
+    this->setCRS(mainLayer->crs());
+
     auto numFeat = mainLayer->featureCount();
 
     if(numFeat == 0)
@@ -622,9 +624,15 @@ bool GISAssetInputWidget::copyFiles(QString &destName)
             return false;
         }
     }
-
-    auto res = SCUtils::recursiveCopy(srcPath, destPath);
-
+    QString fileSuffix = componentFile.completeSuffix();
+    auto res = false;
+    if (fileSuffix.contains("json")){
+        auto destFilePath = destPath + QDir::separator()+componentFile.fileName();
+        res = QFile::copy(componentFile.absoluteFilePath(), destFilePath);
+    } else{
+        // RecursiveCopy is needed for .shp GIS files
+        res = SCUtils::recursiveCopy(srcPath, destPath);
+    }
     if(!res)
     {
         QString msg = "Error copying GIS files over to the directory " + destPath;

@@ -1,4 +1,4 @@
->#*****************************************************************************
+#*****************************************************************************
 # Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 # All rights reserved.
 #
@@ -36,7 +36,7 @@
 
 # Written by: Stevan Gavrilovic, Frank McKenna
 
-QT += core gui charts concurrent network sql xml serialport
+QT += core gui charts concurrent network sql xml serialport webenginewidgets
 QT += 3dcore 3drender 3dextras opengl positioning quickwidgets
 
 mac {
@@ -51,8 +51,6 @@ TEMPLATE = app
 VERSION = 1.1.1
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-# Select one of the following GIS librarys
-DEFINES +=  Q_GIS #ARC_GIS
 
 # Specify the path to the Simcenter common directory
 PATH_TO_COMMON=../SimCenterCommon
@@ -75,6 +73,8 @@ equals(QT_MAJOR_VERSION, 5) {
                 error("$$TARGET requires Qt 5.15.0")
         }
 }
+
+DEFINES += Q_GIS
 
 win32:DEFINES +=  CURL_STATICLIB
 
@@ -101,24 +101,12 @@ win32 {
 
 
 # GIS library
-contains(DEFINES, ARC_GIS)  {
 
-    message("Building with ArcGIS library")
+PATH_TO_QGIS_PLUGIN=../QGISPlugin
 
-    ARCGIS_RUNTIME_VERSION = 100.9
-    include(./arcgisruntime.pri)
+message("Building with QGIS library")
 
-} contains(DEFINES, Q_GIS)  {
-
-    PATH_TO_QGIS_PLUGIN=../QGISPlugin
-
-    message("Building with QGIS library")
-
-    include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
-
-} else {
-    message("A GIS library needs to be specified, choose from either ARC_GIS or Q_GIS at line 50 in the .pro file")
-}
+include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 
 # Simcenter dependencies
