@@ -180,15 +180,15 @@ bool GeojsonAssetInputWidget::copyFiles(QString &destDir)
 
             if(activeComp == nullptr)
                 continue;
-
-            QgsVectorLayer* mainLayer = activeComp->getMainLayer();
-            int numerFeature = mainLayer->featureCount();
-            QgsFeature feat = mainLayer->getFeature(0);
-            QgsJsonExporter exportor = QgsJsonExporter(mainLayer);
-            QString featString = exportor.exportFeature(feat);
-            QgsFeature feat2 = mainLayer->getFeature(1);
-            QString featString2 = exportor.exportFeature(feat2);
-            this->errorMessage(featString2);
+// Try to write a geojson file containing only the selected features
+//            QgsVectorLayer* mainLayer = activeComp->getMainLayer();
+//            int numerFeature = mainLayer->featureCount();
+//            QgsFeature feat = mainLayer->getFeature(0);
+//            QgsJsonExporter exportor = QgsJsonExporter(mainLayer);
+//            QString featString = exportor.exportFeature(feat);
+//            QgsFeature feat2 = mainLayer->getFeature(1);
+//            QString featString2 = exportor.exportFeature(feat2);
+//            this->errorMessage(featString2);
 
         }
     }
@@ -206,6 +206,13 @@ bool GeojsonAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     jsonObject["Application"]="GEOJSON_TO_ASSET";
 
     QJsonObject data;
+
+    QFileInfo componentFile(componentFileLineEdit->text());
+    if (componentFile.exists()){
+        data.insert("assetSourceFile", componentFile.absoluteFilePath());
+    } else {
+        this->errorMessage("Cannot find GeoJSON file" + componentFileLineEdit->text());
+    }
 
 //    data.insert("assetType",componentType);
 
