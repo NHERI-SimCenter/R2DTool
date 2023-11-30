@@ -1,5 +1,5 @@
-#ifndef EarthquakeRuptureForecastWidget_H
-#define EarthquakeRuptureForecastWidget_H
+#ifndef UCERF2Widget_H
+#define UCERF2Widget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -40,42 +40,35 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QWidget>
 
-class EarthquakeRuptureForecast;
+#include "JsonSerializable.h"
 
-class QComboBox;
-class QLineEdit;
-class QDoubleSpinBox;
+class SC_ComboBox;
+class SC_DoubleLineEdit;
+class SC_CheckBox;
 
-class EarthquakeRuptureForecastWidget : public QWidget
+class UCERF2Widget : public QWidget, JsonSerializable
 {
     Q_OBJECT
 
 public:
-    explicit EarthquakeRuptureForecastWidget(QWidget *parent = nullptr);
+    explicit UCERF2Widget(QWidget *parent = nullptr);
 
-    EarthquakeRuptureForecast* getRuptureSource() const;
-    // KZ: adding getNumScen to return number of scenarios
-    QString getNumScen() const;
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
 
-signals:
+    void reset(void);
 
 public slots:
 
 private:
-    EarthquakeRuptureForecast* m_eqRupture;
-    QComboBox* ModelTypeCombo;
-    QLineEdit* EQNameLineEdit;
-    QDoubleSpinBox* m_magnitudeMinBox;
-    QDoubleSpinBox* m_magnitudeMaxBox;
-    QDoubleSpinBox* m_maxDistanceBox;
 
-    // number of scenarios
-    QLineEdit* NumScenarioLineEdit;
-    // sampling methods
-    QComboBox* SamplingMethodCombo;
-
-    void setupConnections();
-
+    SC_ComboBox* EqkRupForecastCombo = nullptr;
+    SC_DoubleLineEdit* rupOffstLE = nullptr;
+    SC_ComboBox* floaterTypeCombo = nullptr;
+    SC_ComboBox* backgroundSeisCombo = nullptr;
+    SC_ComboBox* backgroundSeisTypeCombo = nullptr;
+    SC_CheckBox* applyCyberShakeCB = nullptr;
+    SC_ComboBox* probabilityModelCombo = nullptr;
 };
 
-#endif // EarthquakeRuptureForecastWidget_H
+#endif // UCERF2Widget_H

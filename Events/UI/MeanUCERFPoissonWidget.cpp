@@ -36,80 +36,65 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
+#include "MeanUCERFPoissonWidget.h"
+#include "SC_ComboBox.h"
+#include "SC_DoubleLineEdit.h"
+#include "SC_CheckBox.h"
 
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QGroupBox>
-#include <QComboBox>
+#include <QGridLayout>
+#include <QLabel>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+MeanUCERFPoissonWidget::MeanUCERFPoissonWidget(QWidget *parent) : QWidget(parent)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    //We use a grid layout for the Rupture widget
+    auto mainLayout = new QGridLayout(this);
 
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+    auto applyAfterShockLabel = new QLabel("Apply Aftershock Filter");
+    auto AleatoryMagStdDevLabel = new QLabel("Aleatory Mag-Area StdDev");
 
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    auto backgroundSeisLabel = new QLabel("Background Seismicity");
+    auto backgroundSeisTypeLabel = new QLabel("Treat Background Seismicity As");
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
+    applyAfterShockCB = new SC_CheckBox("ApplyAfterShockFilter", "Apply Aftershock Filter");
+    AleatoryMagStdDevLE = new SC_DoubleLineEdit("RuptureOffset");
 
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
+    backgroundSeisCombo = new SC_ComboBox("BackgroundSeismicity",QStringList({"Include"}));
+    backgroundSeisTypeCombo = new SC_ComboBox("BackgroundSeismicityType",QStringList({"Point Sources"}));
 
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
 
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+    mainLayout->addWidget(applyAfterShockLabel,0,0);
+    mainLayout->addWidget(applyAfterShockCB,0,1);
+    mainLayout->addWidget(AleatoryMagStdDevLabel,1,0);
+    mainLayout->addWidget(AleatoryMagStdDevLE,1,1);
+    mainLayout->addWidget(backgroundSeisLabel,2,0);
+    mainLayout->addWidget(backgroundSeisCombo,2,1);
+    mainLayout->addWidget(backgroundSeisTypeLabel,3,0);
+    mainLayout->addWidget(backgroundSeisTypeCombo,3,1);
 
 }
 
 
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
+void MeanUCERFPoissonWidget::reset(void)
 {
-    ucerfWidget->outputToJSON(jsonObject);
+
 }
 
 
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+bool MeanUCERFPoissonWidget::inputFromJSON(QJsonObject& /*obj*/)
 {
+
     return true;
 }
 
 
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
+bool MeanUCERFPoissonWidget::outputToJSON(QJsonObject& obj)
+{
 
+    AleatoryMagStdDevLE->outputToJSON(obj);
+    backgroundSeisCombo->outputToJSON(obj);
+    backgroundSeisTypeCombo->outputToJSON(obj);
+    applyAfterShockCB->outputToJSON(obj);
 
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
+    return true;
+}
 
-
-//    return gmpeLT;
-//}

@@ -1,6 +1,3 @@
-#ifndef EarthquakeRuptureForecast_H
-#define EarthquakeRuptureForecast_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,50 +36,66 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QObject>
-#include "JsonSerializable.h"
+#include "GMSiteWidget.h"
+#include "SiteConfigWidget.h"
+#include "Vs30Widget.h"
+#include "zDepthWidget.h"
 
-class EarthquakeRuptureForecast : public QObject, JsonSerializable
+#include <QVBoxLayout>
+#include <QGroupBox>
+
+GMSiteWidget::GMSiteWidget(VisualizationWidget* visWidget, QWidget *parent) : QWidget(parent), theVisualizationWidget(visWidget)
 {
-    Q_OBJECT
+    // Adding Site Config Widget
+    m_siteConfig = new SiteConfig(this);
+    m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig, visWidget);
 
-public:
-    EarthquakeRuptureForecast(double magMin, double magMax, double maxDist, QString model, QString name, QString samplingMethod, int numScen, QObject *parent = nullptr);
+    // Adding vs30 widget
+    this->m_vs30 = new Vs30(this);
+    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig);
 
-    double getMagnitudeMin() const;
-    double getMagnitudeMax() const;
-    double getMaxDistance() const;
-    QString getEQName() const;
-    QString getEQModelType() const;
-    QString getSamplingMethod() const;
-    int getNumScen() const;
+    // Add the zDepth widgets
+    QGroupBox* z1GroupBox = new QGroupBox(this);
+    QString title = QString("Depth (m) to Vs=1.0 km/sec (Z1pt0)");
+    z1GroupBox->setTitle(title);
+    QHBoxLayout* z1Layout = new QHBoxLayout(z1GroupBox);
+    m_z1DepthWidget = new zDepthWidget("Z1pt0",this);
+    z1Layout->addWidget(m_z1DepthWidget);
 
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
+    QGroupBox* z2GroupBox = new QGroupBox(this);
+    QString title2 = QString("Depth (m) to Vs=2.5 km/sec (Z2pt5)");
+    z2GroupBox->setTitle(title2);
+    QHBoxLayout* z2Layout = new QHBoxLayout(z2GroupBox);
+    m_z2DepthWidget = new zDepthWidget("Z2pt5",this);
+    z2Layout->addWidget(m_z2DepthWidget);
 
-    void reset(void);
 
-signals:
+    QVBoxLayout *siteLayout=new QVBoxLayout(this);
+    siteLayout->addWidget(m_siteConfigWidget);
+    siteLayout->addWidget(m_vs30Widget);
+    siteLayout->addWidget(z1GroupBox);
+    siteLayout->addWidget(z2GroupBox);
+    siteLayout->addStretch();
+}
 
-public slots:
-    void setMagnitudeMin(double magnitude);
-    void setMagnitudeMax(double magnitude);
-    void setMaxDistance(double value);
-    void setEQName(const QString &value);
-    void setEQModelType(const QString &value);
-    void setSamplingMethod(const QString &value);
-    void setNumScen(const QString value);
+SiteConfig *GMSiteWidget::siteConfig() const
+{
+    return m_siteConfig;
+}
 
-private:
-    double magnitudeMin;
-    double magnitudeMax;
-    double maxDistance;
+SiteConfigWidget *GMSiteWidget::siteConfigWidget() const
+{
+    return m_siteConfigWidget;
+}
 
-    QString EQModelType;
-    QString EQName;
-    QString SamplingMethod;
-    int NumScen;
 
-};
+void GMSiteWidget::outputToJson(QJsonObject& obj)
+{
 
-#endif // EarthquakeRuptureForecast_H
+    // Get the Vs30 Json object
+    QJsonObject Vs30obj;
+    m_vs30->outputToJSON(Vs30obj);
+    obj.insert("Vs30", Vs30obj);
+
+}
+

@@ -36,80 +36,78 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
+#include "GroundMotionModelsWidget.h"
+#include "MeanUCERFPoissonWidget.h"
+#include "MeanUCERFFM3Widget.h"
+#include "SpatialCorrelationWidget.h"
+#include "GMPEWidget.h"
+#include "IntensityMeasureWidget.h"
 
 #include <QVBoxLayout>
 #include <QStackedWidget>
-#include <QGroupBox>
 #include <QComboBox>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+GroundMotionModelsWidget::GroundMotionModelsWidget(QWidget *parent) : QWidget(parent)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    auto mainLayout = new QVBoxLayout(this);
 
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+    spatialCorrWidget = new SpatialCorrelationWidget();
 
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    m_gmpe = new GMPE(this);
+    m_gmpeWidget = new GMPEWidget(*this->m_gmpe);
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
+    m_intensityMeasure = new IntensityMeasure(this);
+    m_intensityMeasureWidget = new IntensityMeasureWidget(*this->m_intensityMeasure);
 
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
+    // GMPE options (link between source type and GMPE options)
+//    connect(erfWidget->ruptureWidget(), SIGNAL(widgetTypeChanged(QString)),
+//            m_gmpeWidget, SLOT(handleAvailableGMPE(QString)));
 
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
+//    // correlation model options (link between source type and correlation model options)
+//    connect(erfWidget->ruptureWidget(), SIGNAL(widgetTypeChanged(QString)),
+//            spatialCorrWidget, SLOT(handleAvailableModel(QString)));
 
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+//    // Intensity Measure Levels options (link between source type and intensity measure levels options)
+//    connect(erfWidget->ruptureWidget(), SIGNAL(widgetTypeChanged(QString)),
+//            m_intensityMeasureWidget, SLOT(handleIntensityMeasureLevels(QString)));
+
+    mainLayout->addWidget(m_intensityMeasureWidget);
+    mainLayout->addWidget(m_gmpeWidget);
+    mainLayout->addWidget(spatialCorrWidget);
 
 }
 
 
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
+void GroundMotionModelsWidget::reset(void)
 {
-    ucerfWidget->outputToJSON(jsonObject);
+
 }
 
 
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+IntensityMeasure *GroundMotionModelsWidget::intensityMeasure() const
+{
+    return m_intensityMeasure;
+}
+
+
+bool GroundMotionModelsWidget::inputFromJSON(QJsonObject& /*obj*/)
 {
     return true;
 }
 
 
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
+bool GroundMotionModelsWidget::outputToJSON(QJsonObject& obj)
+{
 
+    // Get the correlation model Json object
+    auto corrModObj = spatialCorrWidget->getJsonCorr();
 
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
+    // Get the intensity measure Json object
+    auto IMObj = m_intensityMeasure->getJson();
 
+    obj.insert("CorrelationModel", corrModObj);
+    obj.insert("IntensityMeasure", IMObj);
 
-//    return gmpeLT;
-//}
+    return true;
+}
+

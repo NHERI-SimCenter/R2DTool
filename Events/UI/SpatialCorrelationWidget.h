@@ -55,8 +55,6 @@ public:
 
     QJsonObject getJsonCorr();
 
-    QJsonObject getJsonScaling();
-
 signals:
 
 public slots:
@@ -68,9 +66,6 @@ private:
 
     QLabel* spatialCorrelationInterLabel;
     QLabel* spatialCorrelationIntraLabel;
-
-    QLineEdit* maxScalingLineEdit;
-    QLineEdit* minScalingLineEdit;
 
 };
 

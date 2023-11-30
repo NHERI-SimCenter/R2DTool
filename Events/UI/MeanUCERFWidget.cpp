@@ -36,80 +36,64 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
 #include "MeanUCERFWidget.h"
+#include "MeanUCERFPoissonWidget.h"
+#include "MeanUCERFFM3Widget.h"
 
 #include <QVBoxLayout>
 #include <QStackedWidget>
-#include <QGroupBox>
 #include <QComboBox>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+MeanUCERFWidget::MeanUCERFWidget(QWidget *parent) : QWidget(parent)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    auto mainLayout = new QVBoxLayout(this);
 
-    ruptureSelectionCombo = new QComboBox();
+    meanPresetsCombo = new QComboBox();
     mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+
+    poissonWidget = new MeanUCERFPoissonWidget();
+    FM3P1Widget = new MeanUCERFFM3Widget();
+    FM3P2Widget = new MeanUCERFFM3Widget();
+
+    mainStackedWidget->addWidget(poissonWidget);
+    mainStackedWidget->addWidget(FM3P1Widget);
+    mainStackedWidget->addWidget(FM3P2Widget);
+
+    meanPresetsCombo->addItem("(POISSON ONLY) Both FM Branch Averaged");
+    meanPresetsCombo->addItem("FM3.1 Branch Averaged");
+    meanPresetsCombo->addItem("FM3.2 Branch Averaged");
 
     // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+    QObject::connect(meanPresetsCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
                      mainStackedWidget, &QStackedWidget::setCurrentIndex);
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
-
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
-
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
-
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+    mainLayout->addWidget(meanPresetsCombo);
+    mainLayout->addWidget(mainStackedWidget);
 
 }
 
 
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
+void MeanUCERFWidget::reset(void)
 {
-    ucerfWidget->outputToJSON(jsonObject);
+
 }
 
 
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+bool MeanUCERFWidget::inputFromJSON(QJsonObject& /*obj*/)
 {
     return true;
 }
 
 
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
+bool MeanUCERFWidget::outputToJSON(QJsonObject& obj)
+{
+    auto jsonSerializable = dynamic_cast<JsonSerializable*>(mainStackedWidget->currentWidget());
 
+    if (jsonSerializable != nullptr)
+        jsonSerializable->outputToJSON(obj);
+    else
+        return false;
 
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
+    return true;
+}
 
-
-//    return gmpeLT;
-//}

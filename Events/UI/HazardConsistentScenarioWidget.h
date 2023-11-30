@@ -1,3 +1,5 @@
+#ifndef HazardConsistentScenarioWidget_H
+#define HazardConsistentScenarioWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,80 +38,31 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
+#include <QWidget>
 
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QGroupBox>
-#include <QComboBox>
+#include "JsonSerializable.h"
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+class SC_ComboBox;
+class HazardCurveInputWidget;
+
+class HazardConsistentScenarioWidget : public QWidget, JsonSerializable
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    Q_OBJECT
 
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+public:
+    explicit HazardConsistentScenarioWidget(QWidget *parent = nullptr);
 
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
+    void reset(void);
 
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
+public slots:
 
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
+private:
 
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+    SC_ComboBox* downSamplingCombo = nullptr;
+    HazardCurveInputWidget* hazCurveWidget = nullptr;
+};
 
-}
-
-
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
-{
-    ucerfWidget->outputToJSON(jsonObject);
-}
-
-
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
-{
-    return true;
-}
-
-
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
-
-
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
-
-
-//    return gmpeLT;
-//}
+#endif // HazardConsistentScenarioWidget_H

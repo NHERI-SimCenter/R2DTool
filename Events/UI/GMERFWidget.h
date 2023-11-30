@@ -1,3 +1,5 @@
+#ifndef GMERFWidget_H
+#define GMERFWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,80 +38,50 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
+#include "Site.h"
+#include "JsonSerializable.h"
+#include "SimCenterMapcanvasWidget.h"
 
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QGroupBox>
-#include <QComboBox>
+#include <QWidget>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+class VisualizationWidget;
+class RuptureWidget;
+class PointSourceRuptureWidget;
+class OpenQuakeUserSpecifiedWidget;
+class OpenQuakeScenarioWidget;
+//class HazardOccurrenceWidget;
+//class OpenQuakeClassicalWidget;
+
+class QComboBox;
+class QStackedWidget;
+
+class GMERFWidget : public QWidget, JsonSerializable
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    Q_OBJECT
+public:
+    explicit GMERFWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
 
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
+    inline void reset(void) {}
 
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    RuptureWidget *ruptureWidget() const;
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
+private:
 
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
+    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+    QStackedWidget* mainStackedWidget = nullptr;
+    QComboBox* ruptureSelectCombo = nullptr;
 
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
+    RuptureWidget* ERFruptureWidget = nullptr;
+    PointSourceRuptureWidget* pointSourceWidget = nullptr;
+    OpenQuakeUserSpecifiedWidget* oqcpuWidget = nullptr;
+    OpenQuakeScenarioWidget* oqsbWidget = nullptr;
+    //    OpenQuakeClassicalWidget* oqcpWidget;
+    //    HazardOccurrenceWidget* hoWidget;
 
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+    VisualizationWidget* theVisualizationWidget = nullptr;
 
-}
+};
 
-
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
-{
-    ucerfWidget->outputToJSON(jsonObject);
-}
-
-
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
-{
-    return true;
-}
-
-
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
-
-
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
-
-
-//    return gmpeLT;
-//}
+#endif // GMERFWidget_H

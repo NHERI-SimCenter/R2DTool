@@ -36,80 +36,72 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
+#include "HazardCurveInputWidget.h"
+#include "SC_FileEdit.h"
 
 #include <QVBoxLayout>
 #include <QStackedWidget>
-#include <QGroupBox>
 #include <QComboBox>
+#include <QGroupBox>
+#include <QLabel>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+HazardCurveInputWidget::HazardCurveInputWidget(QWidget *parent) : QWidget(parent)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    auto mainLayout = new QVBoxLayout(this);
 
-    ruptureSelectionCombo = new QComboBox();
+    auto hazCurveLabel = new QLabel("Hazard Curve Input");
+    meanPresetsCombo = new QComboBox();
     mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+
+    auto emptyWidget = new QWidget();
+    auto NSHMCombo = new QComboBox();
+    NSHMCombo->addItem("NSHM V1");
+    NSHMCombo->addItem("NSHM V2");
+
+    SC_FileEdit* userDefHazardLE = new SC_FileEdit("UserDefined");
+    auto userDefLabel = new QLabel("Load a user-defined hazard curve");
+
+    auto userDefHaz = new QWidget();
+    auto horizLayout = new QHBoxLayout(userDefHaz);
+    horizLayout->addWidget(userDefLabel);
+    horizLayout->addWidget(userDefHazardLE);
+
+    meanPresetsCombo->addItem("Inferred");
+    meanPresetsCombo->addItem("National Seismic Hazard Map");
+    meanPresetsCombo->addItem("User-defined");
+
+    mainStackedWidget->addWidget(emptyWidget);
+    mainStackedWidget->addWidget(NSHMCombo);
+    mainStackedWidget->addWidget(userDefHaz);
+
 
     // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+    QObject::connect(meanPresetsCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
                      mainStackedWidget, &QStackedWidget::setCurrentIndex);
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
-
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
-
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
-
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+    mainLayout->addWidget(hazCurveLabel);
+    mainLayout->addWidget(meanPresetsCombo);
+    mainLayout->addWidget(mainStackedWidget);
 
 }
 
 
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
+void HazardCurveInputWidget::reset(void)
 {
-    ucerfWidget->outputToJSON(jsonObject);
+
 }
 
 
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+bool HazardCurveInputWidget::inputFromJSON(QJsonObject& /*obj*/)
 {
     return true;
 }
 
 
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
+bool HazardCurveInputWidget::outputToJSON(QJsonObject& obj)
+{
 
 
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
+    return true;
+}
 
-
-//    return gmpeLT;
-//}

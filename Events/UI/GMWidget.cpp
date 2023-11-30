@@ -37,31 +37,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "CSVReaderWriter.h"
-#include "GMPEWidget.h"
 #include "GMWidget.h"
 #include "GmAppConfig.h"
 #include "GmAppConfigWidget.h"
 #include "GmCommon.h"
 #include "GridNode.h"
-#include "IntensityMeasureWidget.h"
 #include "Utils/ProgramOutputDialog.h"
 #include "MapViewSubWidget.h"
 #include "NGAW2Converter.h"
 #include "RecordSelectionWidget.h"
-#include "RuptureWidget.h"
 #include "SimCenterPreferences.h"
-#include "SiteConfigWidget.h"
 #include "SiteGridWidget.h"
 #include "SiteScatterWidget.h"
+#include "GMSiteWidget.h"
+#include "GMERFWidget.h"
+#include "RuptureWidget.h"
 #include "SiteWidget.h"
-#include "SpatialCorrelationWidget.h"
 #include "VisualizationWidget.h"
-#include "Vs30Widget.h"
 #include "WorkflowAppR2D.h"
 #include "PeerNgaWest2Client.h"
 #include "PeerLoginDialog.h"
 #include "ZipUtils.h"
 #include "QGISSiteInputWidget.h"
+#include "SiteConfig.h"
+#include "SiteConfigWidget.h"
+#include "ScenarioSelectionWidget.h"
+#include "GroundMotionModelsWidget.h"
+#include "IntensityMeasure.h"
 
 #ifdef INCLUDE_USER_PASS
 #include "R2DUserPass.h"
@@ -93,6 +95,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+
+
     mapViewSubWidget = nullptr;
     userGrid = nullptr;
 
@@ -106,19 +110,7 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     connect(process, &QProcess::started, this, &GMWidget::handleProcessStarted);
 
 
-    // Adding Site Config Widget
-    this->m_siteConfig = new SiteConfig(this);
-    this->m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig, visWidget);
 
-    this->m_ruptureWidget = new RuptureWidget(this);
-
-    this->m_gmpe = new GMPE(this);
-    this->m_gmpeWidget = new GMPEWidget(*this->m_gmpe);
-
-    this->m_intensityMeasure = new IntensityMeasure(this);
-    this->m_intensityMeasureWidget = new IntensityMeasureWidget(*this->m_intensityMeasure);
-
-    spatialCorrWidget = new SpatialCorrelationWidget();
 
     this->m_selectionconfig = new RecordSelectionConfig(this);
     this->m_selectionWidget = new RecordSelectionWidget(*this->m_selectionconfig);
@@ -126,75 +118,42 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     m_runButton = new QPushButton(tr("&Run Hazard Simulation"));
     //m_settingButton = new QPushButton(tr("&Path Settings"));
 
-    // Adding vs30 widget
-    this->m_vs30 = new Vs30(this);
-    this->m_vs30Widget = new Vs30Widget(*this->m_vs30, *this->m_siteConfig);
+
 
     auto buttonsLayout = new QHBoxLayout();
     //buttonsLayout->addWidget(this->m_settingButton);
     buttonsLayout->addWidget(this->m_runButton);
 
-
-    /*
-    QHBoxLayout* mainLayout = new QHBoxLayout(this);
-    mainLayout->setContentsMargins(0,0,0,0);
-
-    QVBoxLayout* lhs = new QVBoxLayout();
-
-    m_ruptureWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-
-    lhs->addWidget(m_siteConfigWidget);
-    lhs->addWidget(m_vs30Widget);
-    lhs->addWidget(spatialCorrWidget);
-    lhs->addWidget(m_eventGMDir);
-
-    QVBoxLayout* rhs = new QVBoxLayout();
-    rhs->addWidget(m_ruptureWidget);
-    rhs->addWidget(m_selectionWidget);
-    rhs->addWidget(m_gmpeWidget);
-    rhs->addWidget(m_intensityMeasureWidget);
-    rhs->addLayout(buttonsLayout);
-
-    mainLayout->addLayout(lhs);
-    mainLayout->addLayout(rhs);
-
-    */
     
     QTabWidget *theTabWidget = new QTabWidget();
 
     QWidget     *mainGroup = new QWidget();
-    QGridLayout *mainLayout = new QGridLayout();
-    
-    QLabel *generalDescriptionLabel = new QLabel("\n Steps Involved in Obtaining a Set of Motions for a Set of Sites given a Rupture: "
-                                                 "\n --> Earthquake - specyfying source and ground motion models"
-                                                 "\n --> Sites - specifying locations and soil conditions for sites"
-                                                 "\n --> Selection - specifying ground motion database and intensity measure correlations between sites for selected records");
+    auto *mainLayout = new QVBoxLayout(mainGroup);
 
-    mainLayout->addWidget(generalDescriptionLabel, 0, 0);
-    
-    QWidget *earthquakeWidget = new QWidget();
-    QVBoxLayout *earthquakeLayout=new QVBoxLayout();    
-    earthquakeLayout->addWidget(m_ruptureWidget);
-    earthquakeLayout->addWidget(m_gmpeWidget);
-    earthquakeLayout->addWidget(m_intensityMeasureWidget);
-    earthquakeWidget->setLayout(earthquakeLayout);
-    earthquakeLayout->addStretch();
-    
-    theTabWidget->addTab(earthquakeWidget, "Earthquake");
+//    QLabel *generalDescriptionLabel = new QLabel("\n Steps Involved in Obtaining a Set of Motions for a Set of Sites given a Rupture: "
+//                                                 "\n --> Earthquake - specyfying source and ground motion models"
+//                                                 "\n --> Sites - specifying locations and soil conditions for sites"
+//                                                 "\n --> Selection - specifying ground motion database and intensity measure correlations between sites for selected records");
 
-    QWidget *siteWidget = new QWidget();
-    QVBoxLayout *siteLayout=new QVBoxLayout();
-    siteLayout->addWidget(m_siteConfigWidget);
-    siteLayout->addWidget(m_vs30Widget);
-    siteWidget->setLayout(siteLayout);
-    siteLayout->addStretch();
-    
+//    mainLayout->addWidget(generalDescriptionLabel, 0, 0);
+
+    // Create the site tab widget
+    siteWidget = new GMSiteWidget(theVisualizationWidget);
     theTabWidget->addTab(siteWidget, "Sites");
-    
+
+    // Create the earthquake rupture forecast widget
+    erfWidget = new GMERFWidget(theVisualizationWidget);
+    theTabWidget->addTab(erfWidget, "Earthquake Rupture Forecasting");
+
+    scenarioSelectWidget = new ScenarioSelectionWidget();
+    theTabWidget->addTab(scenarioSelectWidget, "Scenario Selection");
+
+    groundMotionModelsWidget = new GroundMotionModelsWidget();
+    theTabWidget->addTab(groundMotionModelsWidget, "Ground Motion Models");
+
     QWidget *imWidget = new QWidget();
     QVBoxLayout *imLayout=new QVBoxLayout();
     imLayout->addWidget(m_selectionWidget);
-    imLayout->addWidget(spatialCorrWidget);
     imLayout->addWidget(m_eventGMDir);
     imLayout->addLayout(buttonsLayout);
     imLayout->addStretch();
@@ -202,11 +161,8 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     imWidget->setLayout(imLayout);
     theTabWidget->addTab(imWidget, "Record Selection");
     
-    mainLayout->addWidget(theTabWidget, 1, 0);
+    mainLayout->addWidget(theTabWidget);
 
-    
-    mainGroup->setLayout(mainLayout);
-    //mainGroup->setMaximumWidth(windowWidth);
 
     QScrollArea *scrollArea = new QScrollArea();
     scrollArea->setWidgetResizable(true);
@@ -239,24 +195,13 @@ void GMWidget::setAppConfig(void)
 
 void GMWidget::setupConnections()
 {
-    // GMPE options (link between source type and GMPE options)
-    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
-            m_gmpeWidget, SLOT(handleAvailableGMPE(QString)));
-
-    // correlation model options (link between source type and correlation model options)
-    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
-            spatialCorrWidget, SLOT(handleAvailableModel(QString)));
-
-    // Intensity Measure Levels options (link between source type and intensity measure levels options)
-    connect(m_ruptureWidget, SIGNAL(widgetTypeChanged(QString)),
-            m_intensityMeasureWidget, SLOT(handleIntensityMeasureLevels(QString)));
 
     //Connecting the run button
     connect(m_runButton, &QPushButton::clicked, this, [this]()
     {
 
         // Get the type of site definition, i.e., single or grid
-        auto type = m_siteConfig->getType();
+        auto type = siteWidget->siteConfig()->getType();
 
         if(type == SiteConfig::SiteType::Single)
         {
@@ -266,7 +211,7 @@ void GMWidget::setupConnections()
         }
         else if(type == SiteConfig::SiteType::Grid)
         {
-            if(!m_siteConfigWidget->getSiteGridWidget()->getGridCreated())
+            if(!siteWidget->siteConfigWidget()->getSiteGridWidget()->getGridCreated())
             {
                 QString msg = "Please select a grid before continuing";
                 this->statusMessage(msg);
@@ -275,7 +220,7 @@ void GMWidget::setupConnections()
         }
         else if(type == SiteConfig::SiteType::Scatter)
         {
-            if(!m_siteConfigWidget->getSiteScatterWidget()->siteFileExists())
+            if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->siteFileExists())
             {
                 QString msg = "Please choose a site file before continuing";
                 this->statusMessage(msg);
@@ -312,7 +257,7 @@ void GMWidget::setupConnections()
     connect(m_appConfig, &GmAppConfig::outputDirectoryPathChanged, m_eventGMDir, &EventGMDirWidget::setEventFile);
     connect(m_appConfig, &GmAppConfig::outputDirectoryPathChanged, m_eventGMDir, &EventGMDirWidget::setMotionDir);
 
-    connect(m_siteConfigWidget->getSiteGridWidget(), &SiteGridWidget::selectGridOnMap, this, &GMWidget::showGISWindow);
+    connect(siteWidget->siteConfigWidget()->getSiteGridWidget(), &SiteGridWidget::selectGridOnMap, this, &GMWidget::showGISWindow);
 
 
     connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString zipFile)
@@ -491,7 +436,7 @@ void GMWidget::showGISWindow(void)
         // Also important to get events from QGIS
         mapCanvas->setMapTool(userGrid);
         userGrid->createGrid();
-        userGrid->setSiteGridConfig(m_siteConfig);
+        userGrid->setSiteGridConfig(siteWidget->siteConfig());
         userGrid->setVisualizationWidget(theVisualizationWidget);
     }
 
@@ -599,7 +544,7 @@ bool GMWidget::outputToJSON(QJsonObject &jsonObj)
     // Only IMs
     if (m_selectionconfig->getDatabase().size() == 0)
     {
-        auto IMType = m_intensityMeasure->type();
+        auto IMType = groundMotionModelsWidget->intensityMeasure()->type();
         unitsObj[IMType] = "g";
     }
     else // Time history download selected
@@ -666,26 +611,26 @@ void GMWidget::runHazardSimulation(void)
         return;
     }
 
-    //int maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+    //int maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
     int minID = 0;
     int maxID = 1;
-    if(m_siteConfig->getType() == SiteConfig::SiteType::Grid)
+    if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Grid)
     {
-        maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+        maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
     }
-    else if(m_siteConfig->getType() == SiteConfig::SiteType::Scatter)
+    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Scatter)
     {
-        minID = m_siteConfigWidget->getSiteScatterWidget()->getMinID();
-        maxID = m_siteConfigWidget->getSiteScatterWidget()->getMaxID();
+        minID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMinID();
+        maxID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMaxID();
     }
-    else if(m_siteConfig->getType() == SiteConfig::SiteType::UserCSV)
+    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::UserCSV)
     {
-        QString filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
+        QString filterIDs = siteWidget->siteConfigWidget()->getCsvSiteWidget()->getFilterString();
         if (filterIDs.isEmpty())
         {
             this->statusMessage("Warning: no filters defined - will load all sites.");
-            m_siteConfigWidget->getCsvSiteWidget()->selectAllComponents();
-            filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
+            siteWidget->siteConfigWidget()->getCsvSiteWidget()->selectAllComponents();
+            filterIDs = siteWidget->siteConfigWidget()->getCsvSiteWidget()->getFilterString();
         }
         QStringList IDs = filterIDs.split(QRegExp(",|-"), QString::SkipEmptyParts);
         qDebug() << IDs;
@@ -712,62 +657,26 @@ void GMWidget::runHazardSimulation(void)
     // add an output_file field for preparing OpenQuake site model
     siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
 
-    QJsonObject scenarioObj;
-    scenarioObj.insert("Type", "Earthquake");
-    // get scenario number
-    QString numEQ = this->m_ruptureWidget->getEQNum();
-    if (numEQ.compare("All")==0) {
-        scenarioObj.insert("Number", "All");
-    } else {
-        scenarioObj.insert("Number", numEQ.toInt());
-    }
-    scenarioObj.insert("Generator", "Selection");
 
-    QJsonObject EqRupture;
-    m_ruptureWidget->outputToJSON(EqRupture);
 
-    // number of scenarios for ERF widget
-    if (m_ruptureWidget->getWidgetType().compare("OpenSHA ERF")==0)
-    {
-        if (EqRupture.contains("Number"))
-            scenarioObj["Number"] = EqRupture["Number"];
-    }
 
-    if(EqRupture.isEmpty())
-    {
-        QString err = "Error in getting the earthquake rupture .JSON";
-        this->errorMessage(err);
-        return;
-    }
-
-    scenarioObj.insert("EqRupture",EqRupture);
 
     // Get the GMPE Json object
     QJsonObject GMPEobj;
-    qDebug() << QString(m_ruptureWidget->getWidgetType());
-    if (m_ruptureWidget->getWidgetType().compare("OpenQuake Classical")==0 || m_ruptureWidget->getWidgetType().compare("OpenQuake User-Specified")==0)
-    {
-        GMPEobj.insert("Type", "LogicTree");
-        GMPEobj.insert("Parameters", m_ruptureWidget->getGMPELogicTree());
-    }
-    else
-    {
-        m_gmpe->outputToJSON(GMPEobj);
-    }
+//    qDebug() << QString(erfWidget->ruptureWidget()->getWidgetType());
+//    if (erfWidget->ruptureWidget()->getWidgetType().compare("OpenQuake Classical")==0 || erfWidget->ruptureWidget()->getWidgetType().compare("OpenQuake User-Specified")==0)
+//    {
+//        GMPEobj.insert("Type", "LogicTree");
+//        GMPEobj.insert("Parameters", erfWidget->ruptureWidget()->getGMPELogicTree());
+//    }
+//    else
+//    {
+//        m_gmpe->outputToJSON(GMPEobj);
+//    }
 
-    // Get the Vs30 Json object
-    QJsonObject Vs30obj;
-    m_vs30->outputToJSON(Vs30obj);
-    siteObj.insert("Vs30", Vs30obj);
 
-    // Get the correlation model Json object
-    auto corrModObj = spatialCorrWidget->getJsonCorr();
 
-    // Get the scaling Json object
-    auto scalingObj = spatialCorrWidget->getJsonScaling();
 
-    // Get the intensity measure Json object
-    auto IMObj = m_intensityMeasure->getJson();
 
     auto numGM =  m_selectionWidget->getNumberOfGMPerSite();
 
@@ -781,21 +690,18 @@ void GMWidget::runHazardSimulation(void)
     QJsonObject eventObj;
     eventObj.insert("NumberPerSite", numGM);
     eventObj.insert("GMPE", GMPEobj);
-    eventObj.insert("CorrelationModel", corrModObj);
-    eventObj.insert("IntensityMeasure", IMObj);
-    eventObj.insert("ScalingFactor", scalingObj);
     eventObj.insert("SaveIM", true);
     eventObj.insert("Database",  m_selectionconfig->getDatabase());
     eventObj.insert("OutputFormat", "SimCenterEvent");
 
     QJsonObject configFile;
     configFile.insert("Site",siteObj);
-    configFile.insert("Scenario",scenarioObj);
+    erfWidget->outputToJSON(configFile);
     configFile.insert("Event",eventObj);
     configFile.insert("Directory",m_appConfig->getJson());
 
     // Get the type of site definition, i.e., single or grid
-    auto type = m_siteConfig->getType();
+    auto type = siteWidget->siteConfig()->getType();
 
     QVector<QStringList> gridData;
 
@@ -814,8 +720,8 @@ void GMWidget::runHazardSimulation(void)
         stationRow.push_back(QString::number(0));
 
         // The latitude and longitude
-        auto longitude = m_siteConfig->site().location().longitude();
-        auto latitude = m_siteConfig->site().location().latitude();
+        auto longitude = siteWidget->siteConfig()->site().location().longitude();
+        auto latitude = siteWidget->siteConfig()->site().location().latitude();
 
         stationRow.push_back(QString::number(latitude));
         stationRow.push_back(QString::number(longitude));
@@ -824,7 +730,7 @@ void GMWidget::runHazardSimulation(void)
     }
     else if(type == SiteConfig::SiteType::Grid)
     {
-        if(!m_siteConfigWidget->getSiteGridWidget()->getGridCreated())
+        if(!siteWidget->siteConfigWidget()->getSiteGridWidget()->getGridCreated())
         {
             QString msg = "Select a grid before continuing";
             this->statusMessage(msg);
@@ -869,7 +775,7 @@ void GMWidget::runHazardSimulation(void)
         // Site file will be copied to the input directory
         writeSiteFile = false;
 
-        if(!m_siteConfigWidget->getSiteScatterWidget()->copySiteFile(pathToInputDir))
+        if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->copySiteFile(pathToInputDir))
         {
             this->errorMessage("Error copying site file to inputput directory");
         }
@@ -878,13 +784,13 @@ void GMWidget::runHazardSimulation(void)
     {
         // Site file will be copied to the input directory
         writeSiteFile = false;
-        if(!m_siteConfigWidget->getCsvSiteWidget()->copyFiles(pathToInputDir))
+        if(!siteWidget->siteConfigWidget()->getCsvSiteWidget()->copyFiles(pathToInputDir))
         {
             this->errorMessage("Error copying site file to inputput directory");
         }
         else
         {
-            QFileInfo csv_origin(m_siteConfigWidget->getCsvSiteWidget()->getPathToComponentFile());
+            QFileInfo csv_origin(siteWidget->siteConfigWidget()->getCsvSiteWidget()->getPathToComponentFile());
             QFile csv_file(pathToInputDir + QDir::separator() + csv_origin.fileName());
             if (!csv_file.fileName().contains("SiteFile.csv", Qt::CaseSensitive))
             {

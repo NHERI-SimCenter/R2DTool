@@ -37,40 +37,60 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "RecordSelectionWidget.h"
+#include "SC_DoubleLineEdit.h"
+#include "SC_IntLineEdit.h"
+#include "SC_ComboBox.h"
+
+#include <QVBoxLayout>
+#include <QComboBox>
+#include <QLabel>
+#include <QGroupBox>
+#include <QLineEdit>
 
 RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent) : QWidget(parent), m_selectionConfig(selectionConfig)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
-    QGroupBox* selectionGroupBox = new QGroupBox(this);
+    QGroupBox* selectionGroupBox = new QGroupBox();
     selectionGroupBox->setTitle("Record Selection");
     selectionGroupBox->setContentsMargins(0,0,0,0);
 
-    //selectionGroupBox->setMinimumWidth(400);
-    //selectionGroupBox->setMaximumWidth(500);
 
     QGridLayout* formLayout = new QGridLayout(selectionGroupBox);
 
-    QLabel* databaseLabel = new QLabel(tr("Database:"),this);
-    m_dbBox = new QComboBox(this);
-    m_dbBox->addItem("PEER NGA West 2");
-    m_dbBox->addItem("None"); // add "None" for skipping the ground motion selection
+    QLabel* databaseLabel = new QLabel(tr("Database:"));
+    m_dbBox = new SC_ComboBox("GMDatabase",QStringList({"None","PEER NGA West 2"}));
     connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
-    m_dbBox->setCurrentText("PEER NGA West 2");
+
     m_selectionConfig.setDatabase("PEER NGA West 2");
     m_dbBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+
+    connect(this->m_dbBox, &QComboBox::currentTextChanged, this, &RecordSelectionWidget::handleDBSelection);
 
     formLayout->addWidget(databaseLabel,0,0);
     formLayout->addWidget(m_dbBox,0,1);
 
-    auto smallVSpacer = new QSpacerItem(0,20);
-    QLabel* numGMLabel = new QLabel(tr("Number of ground motions per site:"),this);
-    auto validator = new QIntValidator(1, 99999999, this);
-    numGMLineEdit = new QLineEdit(this);
-    numGMLineEdit->setText("1");
+    QLabel* numGMLabel = new QLabel(tr("Number of ground motions per site:"));
+    auto validator = new QIntValidator(1, 99999999);
+    numGMLineEdit = new SC_IntLineEdit("NumGmPerSite",1);
     numGMLineEdit->setValidator(validator);
-    formLayout->addItem(smallVSpacer,3,0,1,2);
+
+    formLayout->addItem(new QSpacerItem(0,20),3,0,1,2);
+
     formLayout->addWidget(numGMLabel,4,0);
     formLayout->addWidget(numGMLineEdit,4,1);
+
+    formLayout->addItem(new QSpacerItem(0,20),5,0,1,2);
+
+    scalingMinLabel = new QLabel("Minimum Scaling Factor");
+    scalingMaxLabel = new QLabel("Maximum Scaling Factor");
+    scalingMin = new SC_DoubleLineEdit("ScalingMin",0.1);
+    scalingMax = new SC_DoubleLineEdit("ScalingMax",20.0);
+
+    formLayout->addWidget(scalingMinLabel,6,0);
+    formLayout->addWidget(scalingMin,6,1);
+
+    formLayout->addWidget(scalingMaxLabel,7,0);
+    formLayout->addWidget(scalingMax,7,1);
 
     selectionGroupBox->setLayout(formLayout);
 
@@ -78,8 +98,34 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
 
     this->setLayout(layout);
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    setScalingVisibility(false);
 
 }
+
+
+void RecordSelectionWidget::reset(void)
+{
+
+}
+
+
+bool RecordSelectionWidget::inputFromJSON(QJsonObject& /*obj*/)
+{
+
+    return true;
+}
+
+
+bool RecordSelectionWidget::outputToJSON(QJsonObject& obj)
+{
+    m_dbBox->outputToJSON(obj);
+    numGMLineEdit->outputToJSON(obj);
+    scalingMin->outputToJSON(obj);
+    scalingMax->outputToJSON(obj);
+
+    return true;
+}
+
 
 int RecordSelectionWidget::getNumberOfGMPerSite(void)
 {
@@ -90,5 +136,23 @@ int RecordSelectionWidget::getNumberOfGMPerSite(void)
         return numGM;
 
     return -1;
+}
+
+void RecordSelectionWidget::setScalingVisibility(bool val)
+{
+    scalingMin->setVisible(val);
+    scalingMax->setVisible(val);
+    scalingMinLabel->setVisible(val);
+    scalingMaxLabel->setVisible(val);
+}
+
+
+void RecordSelectionWidget::handleDBSelection(const QString& selection)
+{
+    if(selection == "PEER NGA West 2")
+        setScalingVisibility(true);
+    else
+        setScalingVisibility(false);
+
 }
 

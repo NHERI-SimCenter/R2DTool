@@ -36,80 +36,46 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
+#include "ConventionalScenarioWidget.h"
+#include "AssetInputDelegate.h"
 
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QGroupBox>
-#include <QComboBox>
+#include <QGridLayout>
+#include <QLabel>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+ConventionalScenarioWidget::ConventionalScenarioWidget(QWidget *parent) : QWidget(parent)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    //We use a grid layout for the Rupture widget
+    auto mainLayout = new QGridLayout(this);
 
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+    auto ruptureLabel = new QLabel("Enter the indexes of one or more rupture scenarios to analyze."
+                                   "\nDefine a range of rupture scenarios with a dash and separate multiple ruputure scenarios with a comma.");
+    ruptureLineEdit = new AssetInputDelegate();
 
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    ruptureLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
+    mainLayout->addWidget(ruptureLabel,0,0);
+    mainLayout->addWidget(ruptureLineEdit,0,1);
+}
 
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
 
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
-
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+void ConventionalScenarioWidget::reset(void)
+{
 
 }
 
 
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
+bool ConventionalScenarioWidget::inputFromJSON(QJsonObject& /*obj*/)
 {
-    ucerfWidget->outputToJSON(jsonObject);
-}
 
-
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
-{
     return true;
 }
 
 
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
+bool ConventionalScenarioWidget::outputToJSON(QJsonObject& obj)
+{
 
+    obj["RuptureFilter"] = ruptureLineEdit->getComponentAnalysisList();
 
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
+    return true;
+}
 
-
-//    return gmpeLT;
-//}

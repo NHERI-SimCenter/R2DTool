@@ -36,80 +36,25 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
 
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QGroupBox>
-#include <QComboBox>
+#include "zDepthUserInputWidget.h"
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSizePolicy>
+#include <QLineEdit>
+
+zDepthUserInputWidget::zDepthUserInputWidget(QWidget *parent): QWidget(parent)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    QHBoxLayout* layout = new QHBoxLayout(this);
 
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+    QLabel* typeLabel = new QLabel(tr("Please provide Z1pt0 (m):"),this);
 
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    m_z1DepthLineEdit = new QLineEdit();
+    m_z1DepthLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
-
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
-
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
-
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+    layout->addWidget(typeLabel);
+    layout->addWidget(m_z1DepthLineEdit);
 
 }
 
-
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
-{
-    ucerfWidget->outputToJSON(jsonObject);
-}
-
-
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
-{
-    return true;
-}
-
-
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
-
-
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
-
-
-//    return gmpeLT;
-//}

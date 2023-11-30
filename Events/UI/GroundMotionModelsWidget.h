@@ -1,3 +1,5 @@
+#ifndef GroundMotionModelsWidget_H
+#define GroundMotionModelsWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,80 +38,40 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
+#include <QWidget>
 
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QGroupBox>
-#include <QComboBox>
+#include "JsonSerializable.h"
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+class SpatialCorrelationWidget;
+class IntensityMeasureWidget;
+class GMPEWidget;
+class GMPE;
+class IntensityMeasure;
+
+class GroundMotionModelsWidget : public QWidget, JsonSerializable
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    Q_OBJECT
 
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+public:
+    explicit GroundMotionModelsWidget(QWidget *parent = nullptr);
 
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
+    void reset(void);
 
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
+    IntensityMeasure *intensityMeasure() const;
 
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
+public slots:
 
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+private:
 
-}
+    SpatialCorrelationWidget* spatialCorrWidget = nullptr;
+    IntensityMeasure* m_intensityMeasure = nullptr;
+    IntensityMeasureWidget* m_intensityMeasureWidget = nullptr;
+    GMPEWidget* m_gmpeWidget = nullptr;
+    GMPE* m_gmpe = nullptr;
 
+};
 
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
-{
-    ucerfWidget->outputToJSON(jsonObject);
-}
-
-
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
-{
-    return true;
-}
-
-
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
-
-
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
-
-
-//    return gmpeLT;
-//}
+#endif // GroundMotionModelsWidget_H

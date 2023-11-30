@@ -36,80 +36,47 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "RuptureWidget.h"
-#include "UCERF2Widget.h"
-#include "MeanUCERFWidget.h"
 
-#include <QVBoxLayout>
-#include <QStackedWidget>
+#include "zDepthWidget.h"
+#include "zDepthUserInputWidget.h"
+
+#include <QHBoxLayout>
 #include <QGroupBox>
 #include <QComboBox>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QSizePolicy>
+#include <QStackedWidget>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+zDepthWidget::zDepthWidget(QString type, QWidget *parent): type(type), QWidget(parent)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
+    m_z1Combo = new QComboBox(this);
+    m_z1Combo->addItem("OpenSHA default model");
+    m_z1Combo->addItem("User provided");
+    m_z1Combo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    auto comboLayout = new QHBoxLayout(this);
 
-    ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
+    QLabel* typeLabel = new QLabel(QString("%1:").arg(type),this);
 
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
+    comboLayout->addWidget(typeLabel);
+    comboLayout->addWidget(m_z1Combo);
 
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
+    z1StackedWidget = new QStackedWidget(this);
+    auto labelZ1 = new QLabel(QString("Will get %1 from OpenSHA").arg(type));
+    z1StackedWidget->addWidget(labelZ1);
 
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+    auto userInputZ1 = new zDepthUserInputWidget();
+    z1StackedWidget->addWidget(userInputZ1);
 
+    mainLayout->addLayout(comboLayout);
+    mainLayout->addWidget(z1StackedWidget);
+
+    QObject::connect(m_z1Combo, SIGNAL(currentIndexChanged(int)), z1StackedWidget, SLOT(setCurrentIndex(int)));
 }
 
 
-bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
-{
-    ucerfWidget->outputToJSON(jsonObject);
-}
 
 
-bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
-{
-    return true;
-}
-
-
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
-
-
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
-
-
-//    return gmpeLT;
-//}

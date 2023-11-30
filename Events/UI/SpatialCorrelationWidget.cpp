@@ -51,7 +51,7 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     QVBoxLayout* layout = new QVBoxLayout(this);
 
     QGroupBox* spatCorrGroupBox = new QGroupBox(this);
-    spatCorrGroupBox->setTitle("Spatial Correlation and Scaling");
+    spatCorrGroupBox->setTitle("Spatial Correlation");
     spatCorrGroupBox->setContentsMargins(0,0,0,0);
 
     this->setMinimumWidth(375);
@@ -71,34 +71,13 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): QWidget(par
     m_correlationBoxIntra->addItem("Jayaram & Baker (2009)");
     m_correlationBoxIntra->addItem("Loth & Baker (2013)");
 
-    QLabel* minScalingLabel = new QLabel(tr("Minimum Scaling Factor:"),this);
-    QLabel* maxScalingLabel = new QLabel(tr("Maximum Scaling Factor:"),this);
-
-    QDoubleValidator* doubleValid = new QDoubleValidator(0.0, 100.0,2,this);
-
-    minScalingLineEdit = new QLineEdit(this);
-    minScalingLineEdit->setText("0.1");
-
-    maxScalingLineEdit = new QLineEdit(this);
-    maxScalingLineEdit->setText("20.0");
-
-    minScalingLineEdit->setValidator(doubleValid);
-    maxScalingLineEdit->setValidator(doubleValid);
-
-    auto smallVSpacer = new QSpacerItem(0,20);
-
-
     // auto Vspacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
     //gridLayout->addItem(Vspacer,0,0,1,2);
     gridLayout->addWidget(spatialCorrelationInterLabel,1,0);
     gridLayout->addWidget(m_correlationBoxInter,1,1);
     gridLayout->addWidget(spatialCorrelationIntraLabel,2,0);
     gridLayout->addWidget(m_correlationBoxIntra,2,1);
-    gridLayout->addItem(smallVSpacer,3,0,1,2);
-    gridLayout->addWidget(minScalingLabel,4,0);
-    gridLayout->addWidget(minScalingLineEdit,4,1);
-    gridLayout->addWidget(maxScalingLabel,5,0);
-    gridLayout->addWidget(maxScalingLineEdit,5,1);
+
     //gridLayout->addItem(Vspacer,6,0,1,2);
     // gridLayout->setRowStretch(6,1);
 
@@ -120,15 +99,6 @@ QJsonObject SpatialCorrelationWidget::getJsonCorr()
     return spatCorr;
 }
 
-
-QJsonObject SpatialCorrelationWidget::getJsonScaling()
-{
-    QJsonObject scaling;
-    scaling.insert("Maximum", maxScalingLineEdit->text().toDouble());
-    scaling.insert("Minimum", minScalingLineEdit->text().toDouble());
-
-    return scaling;
-}
 
 
 void SpatialCorrelationWidget::handleAvailableModel(const QString sourceType)
