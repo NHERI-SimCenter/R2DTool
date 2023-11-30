@@ -104,8 +104,8 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     waterNetworkWidget->addComponent(QString("GIS to Water Network"), QString("GIS_to_WATERNETWORK"), gisWaterNetworkInventory);
 
     // Transportation networks
-    JSONTransportNetworkInputWidget *jsonTransportNetworkInventory = new JSONTransportNetworkInputWidget(this, visualizationWidget);
-    transportNetworkWidget->addComponent(QString("Json to Transportation Network AIM"), QString("JSON_to_TRANSPORTNETWORK"), jsonTransportNetworkInventory);
+//    JSONTransportNetworkInputWidget *jsonTransportNetworkInventory = new JSONTransportNetworkInputWidget(this, visualizationWidget);
+//    transportNetworkWidget->addComponent(QString("Json to Transportation Network AIM"), QString("JSON_to_TRANSPORTNETWORK"), jsonTransportNetworkInventory);
 
     GeojsonAssetInputWidget *GeoJsonTransportNetworkAssetInventory = new GeojsonAssetInputWidget(this,visualizationWidget,"Transportation Network","GEOJSON_TO_ASSET");
 //    QWidget* roadLengthWidget = new QWidget();
