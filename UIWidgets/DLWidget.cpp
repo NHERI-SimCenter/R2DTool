@@ -85,7 +85,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
     
-    buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);    
+    buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);
     buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
@@ -105,7 +105,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;
     SimCenterAppWidget *buildingPelicun_trans = new PelicunDLWidget;
     SimCenterAppWidget *noneWidget_trans = new NoneWidget(this);
-    transportWidget->addComponent(QString("Pelicun3"), QString("pelicun3"), buildingPelicun3_trans);
+    transportWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3_trans);
 //    transportWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun_trans);
     transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
 
