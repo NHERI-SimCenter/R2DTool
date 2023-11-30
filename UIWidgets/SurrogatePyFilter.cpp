@@ -66,11 +66,13 @@ SurrogateFile::SurrogateFile(QWidget *parent)
 
    QLabel *labelFile = new QLabel();
    labelFile->setText("File Path");
-   theFilePath = new SC_StringLineEdit("fileName");
+   theFilePath = new SC_FileEdit("fileName");
+   connect(theFilePath,SIGNAL(fileNameChanged(QString)),this,SLOT(onFilePathChanged(QString)));
 
-   QPushButton *chooseFile = new QPushButton();
-   chooseFile->setText(tr("Choose"));
-   connect(chooseFile,SIGNAL(clicked()),this,SLOT(chooseFileName()));
+   //theFilePath = new SC_StringLineEdit("fileName");
+   //QPushButton *chooseFile = new QPushButton();
+   //chooseFile->setText(tr("Choose"));
+   //connect(chooseFile,SIGNAL(clicked()),this,SLOT(chooseFileName()));
 
    theModelName = new SC_StringLineEdit("modelName");
    theModelName->setText(QString(""));
@@ -78,7 +80,7 @@ SurrogateFile::SurrogateFile(QWidget *parent)
    layout->addWidget(button);
    layout->addWidget(labelFile);
    layout->addWidget(theFilePath,1);
-   layout->addWidget(chooseFile);
+   //layout->addWidget(chooseFile);
    layout->addWidget(new QLabel("Model Name"));
    layout->addWidget(theModelName);
 
@@ -92,19 +94,25 @@ SurrogateFile::~SurrogateFile()
 
 }
 
-
-
 void
-SurrogateFile::chooseFileName(void) {
-    QString filePath=QFileDialog::getOpenFileName(this,tr("Open File"),"", "All files (*.*)");
-    if(!filePath.isEmpty()) {
-        QFileInfo fileInfo(filePath);
-        theFilePath->setText(filePath);
-        QString fileName = fileInfo.fileName();
-        fileName.chop(5); // remove .AT2
-        theModelName->setText(fileName);
-    }
+SurrogateFile::onFilePathChanged(QString newPath) {
+    QFileInfo fileInfo(newPath);
+    QString fileName = fileInfo.fileName();
+    fileName.chop(5); // remove .json
+    theModelName->setText(fileName);
 }
+
+//void
+//SurrogateFile::chooseFileName(void) {
+//    QString filePath=QFileDialog::getOpenFileName(this,tr("Open File"),"", "All files (*.*)");
+//    if(!filePath.isEmpty()) {
+//        QFileInfo fileInfo(filePath);
+//        theFilePath->setFilename(filePath);
+//        QString fileName = fileInfo.fileName();
+//        fileName.chop(5); // remove .AT2
+//        theModelName->setText(fileName);
+//    }
+//}
 
 
 void
@@ -116,7 +124,7 @@ SurrogateFile::onRemoveMod(bool value) {
 
 bool
 SurrogateFile::outputToJSON(QJsonObject &jsonObject) {
-    QFileInfo fileInfo(theFilePath->text());
+    QFileInfo fileInfo(theFilePath->getFilename());
     jsonObject["fileName"]= fileInfo.fileName();
     jsonObject["filePath"]=fileInfo.path();
     jsonObject["modelName"]=theModelName->text();
@@ -142,7 +150,8 @@ SurrogateFile::inputFromJSON(QJsonObject &jsonObject) {
     } else
         return false;
 
-    theFilePath->setText(QDir(filePath).filePath(fileName));
+    QString fullFilePath = filePath + QDir::separator() + fileName;
+    theFilePath->setFilename(fullFilePath);
 
     if (jsonObject.contains("modelName")) {
         QJsonValue theValue = jsonObject["dirn"];
@@ -153,7 +162,10 @@ SurrogateFile::inputFromJSON(QJsonObject &jsonObject) {
     return true;
 }
 
-
+QString
+SurrogateFile::getFilePath(void) {
+    return theFilePath->getFilename();
+}
 
 SurrogatePyFilter::SurrogatePyFilter(QWidget *parent)
     : SimCenterAppWidget(parent)
@@ -279,6 +291,12 @@ void SurrogatePyFilter::clear(void)
 bool SurrogatePyFilter::outputToJSON(QJsonObject &jsonObject)
 {
 
+    QJsonObject dataObj;
+    QFileInfo fileInfo(filterPath->getFilename());
+    jsonObject["filterFileName"]= fileInfo.fileName();
+    jsonObject["filterFilePath"]=fileInfo.path();
+    jsonObject["defaultModule"]="";
+
     bool result = true;
     QJsonArray theArray;
     for (int i = 0; i <theModels.size(); ++i) {
@@ -342,7 +360,7 @@ bool SurrogatePyFilter::outputAppDataToJSON(QJsonObject &jsonObject) {
     // and all data to be used in ApplicationDate
     //
 
-    jsonObject["Application"] = "SurrogatePy";
+    jsonObject["Application"] = "SurrogateRegionalPy";
 
 
     QJsonObject dataObj;
@@ -370,11 +388,19 @@ bool SurrogatePyFilter::inputAppDataFromJSON(QJsonObject &jsonObject) {
 bool SurrogatePyFilter::copyFiles(QString &dirName) {
 
     QString fileName = filterPath->getFilename();
-    QFileInfo fileInfo(fileName);
+    QFileInfo fileInfo(fileName);    
 
     if (fileInfo.exists()) {
         return this->copyFile(fileName, dirName);
     }
+
+    //enumerate files
+    int numInputWidgetExistingEvents = theModels.size();
+    for (int i = numInputWidgetExistingEvents-1; i >= 0; i--) {
+      SurrogateFile *theModel = theModels.at(i);
+      return this->copyFile(theModel->getFilePath(), dirName);
+    }
+
 
     return true;
 }
@@ -423,7 +449,8 @@ void SurrogatePyFilter::loadModsFromDir(void) {
         theModel->theModelName->setText(name);
 
         if (theModel != NULL) {
-            theModel->theFilePath->setText(directory.filePath(fileName));
+            QString filePathStr = directory.filePath(fileName);
+            theModel->theFilePath->setFilename(filePathStr);
         }
         theModels.append(theModel);
         surLayout->insertWidget(surLayout->count()-1, theModel);

@@ -66,13 +66,15 @@ public:
 
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
+    QString getFilePath(void);
 
     QRadioButton *button;  // used to mark if Event intended for deletion
-    SC_StringLineEdit  *theFilePath;    // full path to file name
+    SC_FileEdit  *theFilePath;    // full path to file name
     SC_StringLineEdit  *theModelName;  // load factor
 
 public slots:
-    void chooseFileName(void);
+    //void chooseFileName(void);
+    void onFilePathChanged(QString);
     void onRemoveMod(bool);
     //void onAddMod(bool);
 
