@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVWaterNetworkInputWidget.h"
 #include "GISAssetInputWidget.h"
 #include "GISWaterNetworkInputWidget.h"
-#include "CSVTransportNetworkInputWidget.h"
+//#include "CSVTransportNetworkInputWidget.h"
 #include "GISTransportNetworkInputWidget.h"
 #include "GeojsonAssetInputWidget.h"
 
@@ -75,7 +75,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Buildings"), this);
     gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("NaturalGasPipelines"), this);
     waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("WaterDistributionNetwork"), this);
-    transportNetworkWidget = new SimCenterAppSelection(QString("Regional Transportation Network"), QString("TransportationDistributionNetwork"), this);
+    transportNetworkWidget = new SimCenterAppSelection(QString("Regional Transportation Network"), QString("TransportationNetwork"), this);
 
     // Buildings
     PointAssetInputWidget *csvBuildingInventory = new PointAssetInputWidget(this, visualizationWidget, "Buildings","CSV_to_AIM");
@@ -102,11 +102,24 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     waterNetworkWidget->addComponent(QString("GIS to Water Network"), QString("GIS_to_WATERNETWORK"), gisWaterNetworkInventory);
 
     // Transportation networks
-    CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
-    transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
+//    CSVTransportNetworkInputWidget *csvTransportNetworkInventory = new CSVTransportNetworkInputWidget(this, visualizationWidget);
+//    transportNetworkWidget->addComponent(QString("CSV to Transportation Network"), QString("CSV_to_TRANSPORTNETWORK"), csvTransportNetworkInventory);
 
     GISTransportNetworkInputWidget *gisTransportNetworkInventory = new GISTransportNetworkInputWidget(this, visualizationWidget);
     transportNetworkWidget->addComponent(QString("GIS to Transportation Network"), QString("GIS_to_TRANSPORTNETWORK"), gisTransportNetworkInventory);
+
+    GeojsonAssetInputWidget *GeoJsonTransportNetworkAssetInventory = new GeojsonAssetInputWidget(this,visualizationWidget,"Transportation Network","GEOJSON_TO_ASSET");
+    //    QWidget* roadLengthWidget = new QWidget();
+    //    QHBoxLayout* roadLengthLayout = new QHBoxLayout(roadLengthWidget);
+    //    QLabel* roadLengthLabel = new QLabel("Maximum roadway length (m) per AIM",this);
+    //    QLineEdit* roadLengthLineEdit = new QLineEdit(this);
+    //    roadLengthLineEdit->setText("100.0");
+    //    QDoubleValidator *validator = new QDoubleValidator(this);
+    //    validator->setBottom(0.0);
+    //    roadLengthLayout->addWidget(roadLengthLabel);
+    //    roadLengthLayout->addWidget(roadLengthLineEdit);
+    //    GeoJsonTransportNetworkAssetInventory->insertLineEditToMainLayout(1, roadLengthWidget, roadLengthLineEdit, "Roadway", "maxRoadLength_m");
+    transportNetworkWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonTransportNetworkAssetInventory);
 
 
     this->addComponent("Buildings", buildingWidget);
@@ -128,6 +141,7 @@ void AssetsWidget::clear(void)
     buildingWidget->clear();
     gasPipelineWidget->clear();
     waterNetworkWidget->clear();
+    transportNetworkWidget->clear();
 }
 
 
