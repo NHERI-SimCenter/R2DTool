@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "AssetInputWidget.h"
+#include "qgsvectorfilewriter.h"
 
 class QgsVectorLayer;
 class CRSSelectionWidget;
@@ -57,6 +58,7 @@ public:
     bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
 
     bool copyFiles(QString &destName) override;
+    bool copyFilesGeoJSON(QString &destName);
 
     void clear(void) override;
 
@@ -76,9 +78,10 @@ public:
     // All features in QGIS set/get by their feature id (id set internally by QGIS). e.g., layer->getFeature(feature_id)
     // Problem is that the feature id may be different than the id given by the user. Hence, need to calcualte the offset to reconcile the difference
     int getOffset(void);
+    CRSSelectionWidget* getCRSSelectorWidget(void);
 
 public slots:
-    bool loadAssetData(void) override;
+    bool loadAssetData(bool message = true) override;
 
 private slots:
     void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
