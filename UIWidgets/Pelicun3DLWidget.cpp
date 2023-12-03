@@ -62,9 +62,10 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
-    DLTypeComboBox->addItem("HAZUS MH EQ");
+//    DLTypeComboBox->addItem("HAZUS MH EQ");
+
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
-    DLTypeComboBox->addItem("HAZUS MH HU");
+//    DLTypeComboBox->addItem("HAZUS MH HU");
     DLTypeComboBox->addItem("User-provided Fragilities");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
@@ -151,17 +152,18 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("coupled_EDP",coupledEDPCheckBox->isChecked());
     appDataObj.insert("event_time",eventTimeComboBox->currentText());
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
-
-    // automatically load the auto script path for built-in methods
-    QString auto_script = "";
-
-    if (DLTypeComboBox->currentText() == "HAZUS MH EQ IM") {
-        auto_script = "PelicunDefault/Hazus_Earthquake_IM.py";
+    appDataObj.insert("regional", "true");
+    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ IM")==0){
+        appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_IM.py");
+    }
+    // test separating the path and filename of auto-population codes (KZ)
+    QFileInfo test_auto(autoPopulationScriptLineEdit->text());
+    if(test_auto.exists())
+    {
+        appDataObj.insert("auto_script",test_auto.fileName());
+        appDataObj.insert("path_to_auto_script",test_auto.path());
     }
 
-    if (auto_script != "") {
-        appDataObj.insert("auto_script",auto_script);    
-    }
 
     if(!fragDirWidget->isHidden())
     {
