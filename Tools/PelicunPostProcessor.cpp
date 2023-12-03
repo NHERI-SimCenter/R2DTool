@@ -254,10 +254,6 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
     numHeaderRows = 4;
 }
 
-void PelicunPostProcessor::showViewMenu(){
-    viewMenu -> show();
-}
-
 
 void PelicunPostProcessor::importResults(const QString& pathToResults)
 {
