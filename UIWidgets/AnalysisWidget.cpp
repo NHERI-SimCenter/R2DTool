@@ -70,11 +70,15 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
 {
 
   QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNetworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
-  
+  QList<QString> transportExtraKeys;
+  transportExtraKeys.append("TransportRoads");
+  transportExtraKeys.append("TransportBridges");
+  transportExtraKeys.append("TransportTunnels");
   buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Buildings"), this);
   pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("NaturalGasPipelines"), this);
   WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("WaterDistributionNetwork"), waterExtraKeys);
-
+//  transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), transportExtraKeys);
+  transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), this);
   
   // Building widget apps
   SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);
@@ -107,9 +111,17 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
   WDNWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP3);
 
+  // Transportation network apps
+  SimCenterAppWidget *noneWidget4 = new NoneWidget(this);
+  SimCenterAppWidget *imAsEDP4 = new NoArgSimCenterApp(QString("IMasEDP"));
+
+  transportWidget->addComponent(QString("None"), QString("None"), noneWidget4);
+  transportWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP4);
+
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",pipelineWidget);
   this->addComponent("Water Network", WDNWidget);
+  this->addComponent("Transportation Network", transportWidget);
   this->hideAll();
 }
 
@@ -125,6 +137,7 @@ void AnalysisWidget::clear(void)
     buildingWidget->clear();
     pipelineWidget->clear();
     WDNWidget->clear();
+    transportWidget->clear();
 }
 
 

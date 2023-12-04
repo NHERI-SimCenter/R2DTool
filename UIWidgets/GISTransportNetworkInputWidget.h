@@ -39,6 +39,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Dr. Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include <QLineEdit>
+#include <QLabel>
+#include <QLabel>
+#include <QMessageBox>
 
 class QGISVisualizationWidget;
 class VisualizationWidget;
@@ -58,6 +62,7 @@ public:
 
     virtual int loadBridgesVisualization();
     virtual int loadRoadwaysVisualization();
+    virtual int loadTunnelsVisualization();
 
     void clear();
 
@@ -67,16 +72,23 @@ public:
 
 protected slots:
     void handleAssetsLoaded();
+    void printRoadLengthInput(void);
 
 protected:
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
     GISAssetInputWidget* theBridgesWidget = nullptr;
+    GISAssetInputWidget* theTunnelsWidget = nullptr;
     GISAssetInputWidget* theRoadwaysWidget = nullptr;
+
 
     QgsVectorLayer* bridgesMainLayer = nullptr;
     QgsVectorLayer* roadwaysMainLayer = nullptr;
+    QgsVectorLayer* tunnelsMainLayer = nullptr;
+private:
+//    QLineEdit *roadLengthLineEdit;
+//    QWidget* roadLengthWidget = nullptr;
 
 };
 

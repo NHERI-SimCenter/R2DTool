@@ -53,16 +53,21 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-    theBridgesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Bridge Network");
+    theBridgesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Bridges");
 
     theBridgesWidget->setLabel1("Load Bridge Data from a GIS file");
 
-    theRoadwaysWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Roadway Network");
+    theRoadwaysWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Roads");
 
     theRoadwaysWidget->setLabel1("Load Roadway Data from a GIS file");
 
+    theTunnelsWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Tunnels");
+
+    theTunnelsWidget->setLabel1("Load Tunnel Data from a GIS file");
+
     connect(theBridgesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
     connect(theRoadwaysWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
+    connect(theTunnelsWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
@@ -72,14 +77,32 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     roadwaysGB->setFlat(true);
     QVBoxLayout* roadwaysGBlayout = new QVBoxLayout(roadwaysGB);
     roadwaysGBlayout->addWidget(theRoadwaysWidget);
+
+//    roadLengthWidget = new QWidget();
+//    QHBoxLayout* roadLengthLayout = new QHBoxLayout(roadLengthWidget);
+//    QLabel* roadLengthLabel = new QLabel("Maximum roadway length (m) per AIM",this);
+//    roadLengthLineEdit = new QLineEdit(this);
+//    roadLengthLineEdit->setText("100.0");
+//    QDoubleValidator *validator = new QDoubleValidator(this);
+//    validator->setBottom(0.0);
+//    roadLengthLayout->addWidget(roadLengthLabel);
+//    roadLengthLayout->addWidget(roadLengthLineEdit);
+//    roadwaysGBlayout->addWidget(roadLengthWidget);
+//    connect(roadLengthLineEdit, &QLineEdit::editingFinished, this, &GISTransportNetworkInputWidget::printRoadLengthInput);
     
     QGroupBox* bridgesGB = new QGroupBox("Bridges");
     bridgesGB->setFlat(true);
     QVBoxLayout* bridgesGBlayout = new QVBoxLayout(bridgesGB);
     bridgesGBlayout->addWidget(theBridgesWidget);
 
+    QGroupBox* tunnelsGB = new QGroupBox("Tunnels");
+    tunnelsGB->setFlat(true);
+    QVBoxLayout* tunnelsGBlayout = new QVBoxLayout(tunnelsGB);
+    tunnelsGBlayout->addWidget(theTunnelsWidget);
+
     verticalSplitter->addWidget(roadwaysGB);    
     verticalSplitter->addWidget(bridgesGB);
+    verticalSplitter->addWidget(tunnelsGB);
 
     mainLayout->addWidget(verticalSplitter);
 
@@ -106,48 +129,100 @@ GISTransportNetworkInputWidget::~GISTransportNetworkInputWidget()
 
 bool GISTransportNetworkInputWidget::copyFiles(QString &destName)
 {
-
-    auto res = theBridgesWidget->copyFiles(destName);
-
-    if(!res)
+    bool res;
+    if(!theBridgesWidget->isEmpty()){
+//        res = theBridgesWidget->copyFilesGeoJSON(destName);
+        res = theBridgesWidget->copyFiles(destName);
+        if(!res)
+            return res;
+    }
+    if(!theRoadwaysWidget->isEmpty()){
+//        res = theRoadwaysWidget->copyFilesGeoJSON(destName);
+        res = theRoadwaysWidget->copyFiles(destName);
+        if(!res)
+            return res;
+    }
+    if(!theTunnelsWidget->isEmpty()){
+//        res = theTunnelsWidget->copyFilesGeoJSON(destName);
+        res = theTunnelsWidget->copyFiles(destName);
+        if(!res)
+            return res;
         return res;
+    }
 
-    // The file containing the network roadways
-    res = theRoadwaysWidget->copyFiles(destName);
+    if(theTunnelsWidget->isEmpty() && theBridgesWidget->isEmpty() && theRoadwaysWidget->isEmpty()){
+        QString msg = "No asset loaded in Transportation Network.\n Please load or unselect Transportation Network in General Information";
+        this->errorMessage(msg);
+        return false;
+    }
 
-    return res;
+        return true;
+
+
 }
 
 
 bool GISTransportNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    jsonObject["Application"]="GIS_to_TransportNETWORK";
+    jsonObject["Application"]="GIS_to_TRANSPORTNETWORK";
 
     QJsonObject data;
 
-    QJsonObject nodeData;
-    // The file containing the network bridges
-    auto res = theBridgesWidget->outputAppDataToJSON(nodeData);
 
-    if(!res)
-    {
-        this->errorMessage("Error, could not get the .json output from the bridges widget in GIS_to_TransportNETWORK");
-        return false;
+    if (!theBridgesWidget->isEmpty()){
+        data["assetSourceFileBridge"] = theBridgesWidget->getPathToComponentFile();
+        QString bridgesFilterData = theBridgesWidget->getFilterString();
+        if(bridgesFilterData.isEmpty())
+        {
+            auto msgBox =  std::make_unique<QMessageBox>();
+            msgBox->setText("No IDs are selected for analysis in ASD bridges of Transportation Network. Really run with all components?");
+            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+            auto res = msgBox->exec();
+            if(res != QMessageBox::Yes)
+                return false;
+        } else {
+            data["bridgesFilter"] = bridgesFilterData;
+        }
+    }
+    if (!theTunnelsWidget->isEmpty()){
+        data["assetSourceFileTunnel"] = theTunnelsWidget->getPathToComponentFile();
+        QString tunnelsFilterData = theTunnelsWidget->getFilterString();
+        if(tunnelsFilterData.isEmpty())
+        {
+            auto msgBox =  std::make_unique<QMessageBox>();
+            msgBox->setText("No IDs are selected for analysis in ASD tunnels of Transportation Network. Really run with all components?");
+            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+            auto res = msgBox->exec();
+            if(res != QMessageBox::Yes)
+                return false;
+        } else {
+            data["tunnelsFilter"] = tunnelsFilterData;
+        }
+    }
+    if (!theRoadwaysWidget->isEmpty()){
+        data["assetSourceFileRoad"] = theRoadwaysWidget->getPathToComponentFile();
+        QString roadsFilterData = theRoadwaysWidget->getFilterString();
+        if(roadsFilterData.isEmpty())
+        {
+            auto msgBox =  std::make_unique<QMessageBox>();
+            msgBox->setText("No IDs are selected for analysis in ASD roadways of Transportation Network. Really run with all components?");
+            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+            auto res = msgBox->exec();
+            if(res != QMessageBox::Yes)
+                return false;
+        } else {
+            data["roadsFilter"] = roadsFilterData;
+        }
+//        data["roadSegLength"] = roadLengthLineEdit->text().toDouble();
     }
 
-    data["TransportNetworkBridges"] = nodeData;
 
-    QJsonObject pipelineData;
-    // The file containing the network roadways
-    res = theRoadwaysWidget->outputAppDataToJSON(pipelineData);
 
-    if(!res)
+    if(theBridgesWidget->isEmpty() && theTunnelsWidget->isEmpty() && theRoadwaysWidget->isEmpty())
     {
-        this->errorMessage("Error, could not get the .json output from the roadways widget in GIS_to_TransportNETWORK");
+        this->errorMessage("Error, could not get the .json output from the transportation widget in GIS_to_TRANSPORTNETWORK");
         return false;
     }
-
-    data["TransportNetworkRoadways"] = pipelineData;
 
     jsonObject["ApplicationData"] = data;
 
@@ -160,7 +235,7 @@ bool GISTransportNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObjec
 
     // Check the app type
     if (jsonObject.contains("Application")) {
-        if ("GIS_to_TransportNETWORK" != jsonObject["Application"].toString()) {
+        if ("GIS_to_TRANSPORTNETWORK" != jsonObject["Application"].toString()) {
             this->errorMessage("GISTransportNetworkInputWidget::inputFRommJSON app name conflict");
             return false;
         }
@@ -176,29 +251,49 @@ bool GISTransportNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObjec
     QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
 
-    if (!appData.contains("TransportNetworkBridges") && !appData.contains("TransportNetworkRoadways"))
+    if (!appData.contains("TransportNetworkBridges") && !appData.contains("TransportNetworkRoadways") && !appData.contains("TransportNetworkTunnels"))
     {
-        this->errorMessage("GISTransportNetworkInputWidget needs TransportNetworkBridges and TransportNetworkRoadways");
+        this->errorMessage("GISTransportNetworkInputWidget needs TransportNetworkBridges or TransportNetworkRoadways or TransportNetworkTunnels");
         return false;
     }
 
-    QJsonObject bridgesData = appData["TransportNetworkBridges"].toObject();
 
-    // Input the bridges
-    auto res = theBridgesWidget->inputAppDataFromJSON(bridgesData);
+    if (appData.contains("TransportNetworkBridges")){
+        QJsonObject bridgesData = appData["TransportNetworkBridges"].toObject();
 
-    if(!res)
-        return res;
+        // Input the bridges
+        auto res = theBridgesWidget->inputAppDataFromJSON(bridgesData);
 
+        if(!res)
+            return res;
+    }
 
-    QJsonObject roadwaysData = appData["TransportNetworkRoadways"].toObject();
+    if (appData.contains("TransportNetworkRoadways")){
+        QJsonObject roadwaysData = appData["TransportNetworkRoadways"].toObject();
 
+        // Input the roadways
+        auto res = theRoadwaysWidget->inputAppDataFromJSON(roadwaysData);
 
-    // Input the roadways
-    res = theRoadwaysWidget->inputAppDataFromJSON(roadwaysData);
+        if(!res){
+            return res;
+        }
+        if (roadwaysData.contains("ApplicationData")){
+            QJsonObject roadwaysAppData = roadwaysData["ApplicationData"].toObject();
+            if (roadwaysAppData.contains("roadSegLength")) {
+//                roadLengthLineEdit->setText(QString::number(roadwaysAppData["roadSegLength"].toDouble()));
+            }
+        }
+    }
 
-    if(!res)
-        return res;
+    if (appData.contains("TransportNetworkTunnels")){
+        QJsonObject tunnelsData = appData["TransportNetworkTunnels"].toObject();
+
+        // Input the roadways
+        auto res = theTunnelsWidget->inputAppDataFromJSON(tunnelsData);
+
+        if(!res)
+            return res;
+    }
 
 
     return true;
@@ -236,7 +331,7 @@ int GISTransportNetworkInputWidget::loadBridgesVisualization()
 
     QgsSymbol* markerSymbol = new QgsMarkerSymbol();
 
-    markerSymbol->setColor(Qt::blue);
+    markerSymbol->setColor(Qt::red);
     theVisualizationWidget->createSimpleRenderer(markerSymbol,bridgesMainLayer);
 
     //    auto numFeat = mainLayer->featureCount();
@@ -246,37 +341,78 @@ int GISTransportNetworkInputWidget::loadBridgesVisualization()
     return 0;
 }
 
+int GISTransportNetworkInputWidget::loadTunnelsVisualization()
+{
+    tunnelsMainLayer = theTunnelsWidget->getMainLayer();
+
+    if(bridgesMainLayer==nullptr)
+        return -1;
+
+    QgsSymbol* markerSymbol = new QgsMarkerSymbol();
+
+    markerSymbol->setColor(Qt::red);
+    theVisualizationWidget->createSimpleRenderer(markerSymbol,tunnelsMainLayer);
+
+    //    auto numFeat = mainLayer->featureCount();
+
+    theVisualizationWidget->zoomToLayer(tunnelsMainLayer);
+
+    return 0;
+}
+
 
 void GISTransportNetworkInputWidget::clear()
 {
     theBridgesWidget->clear();
     theRoadwaysWidget->clear();
+    theTunnelsWidget->clear();
+//    roadLengthLineEdit->clear();
 
     bridgesMainLayer = nullptr;
     roadwaysMainLayer = nullptr;
+    tunnelsMainLayer = nullptr;
 }
 
 
 void GISTransportNetworkInputWidget::handleAssetsLoaded()
 {
-    if(theBridgesWidget->isEmpty() || theRoadwaysWidget->isEmpty())
-        return;
+    if(theBridgesWidget->isEmpty() ){}
+    else{
+        auto res = this->loadBridgesVisualization();
 
-    auto res = this->loadBridgesVisualization();
-
-    if(res != 0)
-    {
-        this->errorMessage("Error, failed to load the Bridges visualization");
-        return;
+        if(res != 0)
+        {
+            this->errorMessage("Error, failed to load the Bridges visualization");
+            return;
+        }
     }
 
-    res = this->loadRoadwaysVisualization();
+    if(theTunnelsWidget->isEmpty()){}
+    else{
+        auto res = this->loadTunnelsVisualization();
 
-    if(res != 0)
-    {
-        this->errorMessage("Error, failed to load the Roadways visualization");
-        return;
+        if(res != 0)
+        {
+            this->errorMessage("Error, failed to load the Tunnels visualization");
+            return;
+        }
     }
 
+    if (theRoadwaysWidget->isEmpty()){}
+    else{
+        auto res = this->loadRoadwaysVisualization();
+
+        if(res != 0)
+        {
+            this->errorMessage("Error, failed to load the Roadways visualization");
+            return;
+        }
+    }
+}
+
+
+void GISTransportNetworkInputWidget::printRoadLengthInput(void){
+//    QString msg = "Roadway length per AIM is set as "+ roadLengthLineEdit->text() + " meters";
+//    this->statusMessage(msg);
 }
 

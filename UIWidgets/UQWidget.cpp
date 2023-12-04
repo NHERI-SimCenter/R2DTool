@@ -60,12 +60,21 @@ UQWidget::UQWidget(QWidget *parent)
 
     QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
     WDNWidget = new SimCenterAppSelection(QString("UQ Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
-    WDNWidget->addComponent(QString("None"), QString("None"), noneWidget2);    
-    
+    WDNWidget->addComponent(QString("None"), QString("None"), noneWidget2);
+
+    SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
+    QList<QString> transportExtraKeys;
+    transportExtraKeys.append("TransportRoads");
+    transportExtraKeys.append("TransportBridges");
+    transportExtraKeys.append("TransportTunnels");
+//    transportWidget = new SimCenterAppSelection(QString("UQ Application"), QString("TransportationNetwork"), transportExtraKeys);
+    transportWidget = new SimCenterAppSelection(QString("UQ Application"), QString("TransportationNetwork"), this);
+    transportWidget->addComponent(QString("None"), QString("None"), noneWidget3);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
     this->addComponent("Water Network", WDNWidget);
+    this->addComponent("Transportation Network", transportWidget);
     
     this->hideAll();
 }
@@ -81,6 +90,8 @@ void UQWidget::clear(void)
 {
     buildingWidget->clear();
     pipelineWidget->clear();
+    WDNWidget->clear();
+    transportWidget->clear();
 }
 
 

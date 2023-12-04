@@ -117,6 +117,10 @@ GISAssetInputWidget::~GISAssetInputWidget()
 
 }
 
+CRSSelectionWidget* GISAssetInputWidget::getCRSSelectorWidget(){
+    return crsSelectorWidget;
+}
+
 
 #ifdef OpenSRA
 bool GISAssetInputWidget::loadFileFromPath(const QString& filePath)
@@ -280,7 +284,7 @@ int GISAssetInputWidget::loadAssetVisualization()
 }
 
 
-bool GISAssetInputWidget::loadAssetData(void)
+bool GISAssetInputWidget::loadAssetData(bool message)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
@@ -337,8 +341,11 @@ bool GISAssetInputWidget::loadAssetData(void)
         return false;
     }
     else{
-        this->statusMessage("Loading information for " + QString::number(numFeat)+ " assets");
-        QApplication::processEvents();
+        if (message){
+            this->statusMessage("Loading information for " + QString::number(numFeat)+ " assets");
+            QApplication::processEvents();
+        }
+
     }
 
     auto layerId = mainLayer->id();
@@ -643,6 +650,55 @@ bool GISAssetInputWidget::copyFiles(QString &destName)
 
     // Then create the csv file
     return AssetInputWidget::copyFiles(destPath);
+}
+
+bool GISAssetInputWidget::copyFilesGeoJSON(QString &destName)
+{
+
+
+    // Copy over the gis file(s), note that if it is a gdb or shapefile, it will have other supporting files with the main file
+    auto compLineEditText = componentFileLineEdit->text();
+
+    QFileInfo componentFile(compLineEditText);
+
+    if (!componentFile.exists())
+        return false;
+
+    QString destFileName = componentFile.baseName() + ".geojson";
+
+    auto destPath = destName + QDir::separator() + destFileName;
+
+    QDir dirDest(destName);
+
+    if (!dirDest.exists())
+    {
+        if (!dirDest.mkpath(destPath))
+        {
+            QString errMsg = QString("Could not create destination Dir: ") + destPath;
+            this->errorMessage(errMsg);
+
+            return false;
+        }
+    }
+//    QgsVectorFileWriter writer = QgsVectorFileWriter();
+    auto options = QgsVectorFileWriter::SaveVectorOptions();
+    options.driverName = "geoJson";
+    if(mainLayer != nullptr){
+        auto err = QgsVectorFileWriter::writeAsVectorFormat(mainLayer,
+                                                           destPath,
+                                                           options);
+        if (err !=0) {
+            QString msg = "Error saving GIS files as GeoJSON format in the directory " + destPath + "\n Try converting them to GeoJSON and then load them again.";
+            errorMessage(msg);
+            return false;
+        }
+    } else {
+        QString msg = "Source layer not defined when saving GIS files as GeoJSON format in the directory " + destPath;
+                errorMessage(msg);
+                return false;
+    }
+
+    return true;
 }
 
 

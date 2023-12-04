@@ -73,13 +73,19 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
     pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("NaturalGasPipelines"), this);
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
-
+    QList<QString> transportExtraKeys;
+    transportExtraKeys.append("TransportRoads");
+    transportExtraKeys.append("TransportBridges");
+    transportExtraKeys.append("TransportTunnels");
+//    transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), transportExtraKeys);
+    //Do not use the extra keys since all subtypes use the same DL for now
+    transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), this);
     // Building widget apps
     SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget;    
     SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
     
-    buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);    
+    buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);
     buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
@@ -95,9 +101,18 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
 
+    // Transportation widget apps
+    SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;
+    SimCenterAppWidget *buildingPelicun_trans = new PelicunDLWidget;
+    SimCenterAppWidget *noneWidget_trans = new NoneWidget(this);
+    transportWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3_trans);
+//    transportWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun_trans);
+    transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
+
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
     this->addComponent("Water Network",WDNWidget);
+    this->addComponent("Transportation Network",transportWidget);
 
     this->hideAll();
 }
@@ -135,12 +150,39 @@ QList<QString> DLWidget::getActiveDLApps(void)
     return activeDLapps;
 }
 
+QMap<QString, QString> DLWidget::getActiveAssetDLMap(void)
+{
+    QMap<QString, QString> activeMap;
+    auto activeList = this->getActiveComponents();
+
+    for(auto&& it : activeList)
+    {
+        auto activeComp = dynamic_cast<SimCenterAppSelection*>(this->getComponent(it));
+
+        if(activeComp == nullptr)
+            return activeMap;
+
+        auto currComp = activeComp->getCurrentSelectionName();
+
+        if(currComp.isEmpty())
+        {
+            this->errorMessage("Could not get the active DL apps in DLWidget");
+            return activeMap;
+        }
+
+        activeMap.insert(it, currComp);
+    }
+
+    return activeMap;
+}
+
 
 void DLWidget::clear(void)
 {
     buildingWidget->clear();
     pipelineWidget->clear();
     WDNWidget->clear();
+    transportWidget->clear();
 }
 
 
