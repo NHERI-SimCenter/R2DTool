@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetsWidget.h"
 //#include "SecondaryComponentSelection.h"
 #include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 #include "SimCenterAppSelection.h"
 
 #include "PointAssetInputWidget.h"
@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVTransportNetworkInputWidget.h"
 #include "GISTransportNetworkInputWidget.h"
 #include "GeojsonAssetInputWidget.h"
+#include "InpFileWaterInputWidget.h"
 
 // Qt headers
 #include <QCheckBox>
@@ -92,9 +93,13 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
 
     // Water networks
+    
     CSVWaterNetworkInputWidget *csvWaterNetworkInventory = new CSVWaterNetworkInputWidget(this, visualizationWidget);
     waterNetworkWidget->addComponent(QString("CSV to Water Network"), QString("CSV_to_WATERNETWORK"), csvWaterNetworkInventory);
 
+    InpFileWaterInputWidget *inpFileWaterInput = new InpFileWaterInputWidget(this,visualizationWidget,"Water Networks","INP_FILE");
+    waterNetworkWidget->addComponent(QString("EPANET INP File"), QString("INP_FILE"), inpFileWaterInput);
+    
     GeojsonAssetInputWidget *GeoJsonWaterNetworkAssetInventory = new GeojsonAssetInputWidget(this,visualizationWidget,"Water Networks","GEOJSON_TO_ASSET");
     waterNetworkWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonWaterNetworkAssetInventory);
 
