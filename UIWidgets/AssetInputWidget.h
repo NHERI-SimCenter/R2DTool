@@ -143,7 +143,7 @@ public slots:
 
 protected slots:
     void selectComponents(void);
-    virtual bool loadAssetData(void);
+    virtual bool loadAssetData(bool message = true);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
     void handleComponentFilter(void);

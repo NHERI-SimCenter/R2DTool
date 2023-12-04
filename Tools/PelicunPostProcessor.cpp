@@ -110,7 +110,7 @@ PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget*
 
     if(resultsMenu)
     {
-        viewMenu = resultsMenu->addMenu(tr("&View"));
+        viewMenu = resultsMenu->addMenu(tr("&Buildings"));
         viewMenu->addAction(tr("&Restore"), this, &PelicunPostProcessor::restoreUI);
     }
     else
@@ -307,7 +307,7 @@ void PelicunPostProcessor::importResults(const QString& pathToResults)
         throw errMsg;
 
     DVdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + DVResultsSheet,errMsg);
-    if(!errMsg.isEmpty())
+     if(!errMsg.isEmpty())
         throw errMsg;
 
     EDPdata = csvTool.parseCSVFile(pathToBuildings + QDir::separator() + EDPreultsSheet,errMsg);

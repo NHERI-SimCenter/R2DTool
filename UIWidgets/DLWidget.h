@@ -54,11 +54,13 @@ public:
     void clear(void);
 
     QList<QString> getActiveDLApps(void);
+    QMap<QString, QString> getActiveAssetDLMap(void);
 
 private:
     SimCenterAppSelection *buildingWidget = nullptr;
     SimCenterAppSelection *pipelineWidget = nullptr;
     SimCenterAppSelection *WDNWidget = nullptr;
+    SimCenterAppSelection *transportWidget = nullptr;
 
     VisualizationWidget* visualizationWidget;
 };
