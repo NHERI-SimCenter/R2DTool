@@ -107,14 +107,8 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     QVBoxLayout* tunnelsGBlayout = new QVBoxLayout(tunnelsGB);
     tunnelsGBlayout->addWidget(theTunnelsWidget);
 
-    QGroupBox* tunnelsGB = new QGroupBox("Tunnels");
-    tunnelsGB->setFlat(true);
-    QVBoxLayout* tunnelsGBlayout = new QVBoxLayout(tunnelsGB);
-    tunnelsGBlayout->addWidget(theTunnelsWidget);
-
     verticalSplitter->addWidget(roadwaysGB);    
     verticalSplitter->addWidget(bridgesGB);
-    verticalSplitter->addWidget(tunnelsGB);
     verticalSplitter->addWidget(tunnelsGB);
 
     mainLayout->addWidget(verticalSplitter);
