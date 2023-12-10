@@ -39,11 +39,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ComponentDatabase.h"
-
+#include "SC_ResultsWidget.h"
 #include "SimCenterMapcanvasWidget.h"
 
 #include <QString>
 #include <QMainWindow>
+#include <QJsonArray>
 
 #include <memory>
 #include <set>
@@ -66,15 +67,13 @@ class QBarSet;
 class QChart;
 }
 
-class Pelicun3PostProcessor : public QMainWindow
+class Pelicun3PostProcessor : public SC_ResultsWidget
 {
     Q_OBJECT
 
 public:
-
-    Pelicun3PostProcessor(QWidget *parent, VisualizationWidget* visWidget);
-
-    void importResults(const QString& pathToResults);
+    Pelicun3PostProcessor(QWidget *parent);
+//    Pelicun3PostProcessor(QWidget *parent, VisualizationWidget* visWidget);
 
     int printToPDF(const QString& outputPath);
 
@@ -117,10 +116,14 @@ public:
 
     void setCurrentlyViewable(bool status);
 
-    void clear(void);
+    void clear(void) override;
 
     void setIsVisible(const bool value);
 
+    int processResults(QString &outputFile, QString &dirName, QString &assetType,
+                       QList<QString> typesInAssetType) override;
+
+    QMainWindow* mainWindow;
 private slots:
 
     int assemblePDF(QImage screenShot);
@@ -135,7 +138,7 @@ protected:
 
 private:
 
-    int processDVResults(const QVector<QStringList>& DVResults);
+    double calculateTotal(QJsonArray& featArray, QString field);
 
     QVector<QStringList> DMdata;
     QVector<QStringList> DVdata;
@@ -146,26 +149,34 @@ private:
 
     QMenu* viewMenu;
 
-    QLabel* totalCasLabel;
-    QLabel* totalLossLabel;
-    QLabel* totalRepairTimeLabel;
-    QLabel* totalFatalitiesLabel;
-    QLabel* structLossLabel;
-    QLabel* nonStructLossLabel;
-    QLabel* totalCasValueLabel;
-    QLabel* totalLossValueLabel;
-    QLabel* totalRepairTimeValueLabel;
-    QLabel* totalFatalitiesValueLabel;
-    QLabel* structLossValueLabel;
-    QLabel* nonStructLossValueLabel;
+    QLabel* totalRepairCostLabel;
+    QLabel* totalRepairTimeSequentialLabel;
+    QLabel* totalRepairTimeParallelLabel;
+
+    QLabel* totalRepairCostValueLabel;
+    QLabel* totalRepairTimeSequentialValueLabel;
+    QLabel* totalRepairTimeParallelValueLabel;
+
+    QLabel* totalCostNoteLabel;
+    QWidget* totalsWidget;
+    QWidget* totalAndFootNoteWidget;
+    QVBoxLayout* totalAndFootNoteLayout;
+
+
+    QDockWidget* mapViewDock;
 
     QWidget *tableWidget;
+    QVBoxLayout* layout;
+//    QList<QVector<QVector<double>>*> dataList;
 
-    QTableWidget* pelicunResultsTableWidget;
+    QList<QTableWidget*> ResultsTableWidgetList;
 
     QDockWidget* chartsDock1;
     QDockWidget* chartsDock2;
     QDockWidget* chartsDock3;
+
+    QList<QDockWidget*> dockList;
+    QList<QTableWidget*> tableList;
 
     VisualizationWidget* theVisualizationWidget;
 
@@ -175,19 +186,8 @@ private:
 
     QGraphicsView* mapViewMainWidget;
 
-    QtCharts::QChart *casualtiesChart;
-    QtCharts::QChart *RFDiagChart;
-    QtCharts::QChart *Losseschart;
 
-    QtCharts::QChartView *casualtiesChartView;
-    QtCharts::QChartView *lossesChartView;
-    QtCharts::QChartView *lossesRFDiagram;
-
-    int createHistogramChart(REmpiricalProbabilityDistribution* probDist);
-
-    int createLossesChart(QtCharts::QBarSet *structLossSet, QtCharts::QBarSet *NSAccLossSet, QtCharts::QBarSet *NSDriftLossSet);
-
-    int createCasualtiesChart(QtCharts::QBarSet *casualtiesSet);
+    int extractDataAddToTable(QJsonArray& features, QStringList& attributes, QTableWidget* table, QStringList headings);
 
     QByteArray uiState;
 

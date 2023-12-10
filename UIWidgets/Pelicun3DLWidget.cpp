@@ -134,6 +134,8 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     autoPopulateScriptWidget->hide();
     fragDirWidget->hide();
+
+    resultWidget = new Pelicun3PostProcessor(parent);
 }
 
 
@@ -494,4 +496,14 @@ void Pelicun3DLWidget::handleBrowseButton2Pressed(void)
         return;
 
     fragilityDirLineEdit->setText(fragFolder);
+}
+
+//QMainWindow* Pelicun3DLWidget::getPostProcessor(QWidget *parent, SimCenterAppWidget* visWidget){
+//    VisualizationWidget* visWidgetDownCast = dynamic_cast<VisualizationWidget>
+//    QMainWindow* returnPtr = dynamic_cast<QMainWindow*> (new Pelicun3PostProcessor());
+//    return returnPtr;
+//};
+SC_ResultsWidget* Pelicun3DLWidget::getResultsWidget(QWidget* parent){
+    resultWidget->setParent(parent);
+    return resultWidget;
 }

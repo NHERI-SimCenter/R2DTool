@@ -39,7 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "QGISVisualizationWidget.h"
 #include "Pelicun3PostProcessorTspn.h"
+#include <QJsonArray>
 class AssetInputDelegate;
 class PelicunPostProcessor;
 class VisualizationWidget;
@@ -97,9 +99,12 @@ private:
     QWidget* resultsPageWidget = nullptr;
 
     AssetInputDelegate* selectComponentsLineEdit = nullptr;
-    VisualizationWidget* theVisualizationWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    QWidget *theParent = nullptr;
 
     std::unique_ptr<PelicunPostProcessor> thePelicunPostProcessor;
+//    PelicunPostProcessor* thePelicunPostProcessor;
     std::unique_ptr<Pelicun3PostProcessor> thePelicun3PostProcessor;
     std::unique_ptr<CBCitiesPostProcessor> theCBCitiesPostProcessor;
 
