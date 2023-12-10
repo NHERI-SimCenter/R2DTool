@@ -1,5 +1,5 @@
-#ifndef GISTransportNetworkInputWidget_H
-#define GISTransportNetworkInputWidget_H
+#ifndef GeoJSONReaderWriter_H
+#define GeoJSONReaderWriter_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,64 +36,30 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Dr. Stevan Gavrilovic
+// Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
-#include <QLineEdit>
-#include <QLabel>
-#include <QLabel>
-#include <QMessageBox>
-#include <QLineEdit>
-#include <QLabel>
-#include <QLabel>
-#include <QMessageBox>
+#include <QVector>
 
-class QGISVisualizationWidget;
-class VisualizationWidget;
-class GISAssetInputWidget;
+class QString;
+class QStringList;
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
-
-class GISTransportNetworkInputWidget : public SimCenterAppWidget
+class GeoJSONReaderWriter
 {
-    Q_OBJECT
-
 public:
-    GISTransportNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
-    virtual ~GISTransportNetworkInputWidget();
+    GeoJSONReaderWriter();
 
-    virtual int loadBridgesVisualization();
-    virtual int loadRoadwaysVisualization();
-    virtual int loadTunnelsVisualization();
-
-    void clear();
-
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool copyFiles(QString &destName);
-
-protected slots:
-    void handleAssetsLoaded();
-    void printRoadLengthInput(void);
-
-protected:
-
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
-
-    GISAssetInputWidget* theBridgesWidget = nullptr;
-    GISAssetInputWidget* theTunnelsWidget = nullptr;
-    GISAssetInputWidget* theRoadwaysWidget = nullptr;
+    // Saves data in the format of a GeoJson file
+    int saveGeoJsonFile(const QVector<QStringList>& data,
+                        const QStringList& headers,
+                        const QString assetType,
+                        const QString& pathToFile,
+                        QString& err);
 
 
-    QgsVectorLayer* bridgesMainLayer = nullptr;
-    QgsVectorLayer* roadwaysMainLayer = nullptr;
-    QgsVectorLayer* tunnelsMainLayer = nullptr;
 private:
-//    QLineEdit *roadLengthLineEdit;
-//    QWidget* roadLengthWidget = nullptr;
+
+    int getIndexOfVal(const QStringList& headersStr, const QString val);
 
 };
 
-#endif // GISTransportNetworkInputWidget_H
+#endif // GeoJSONReaderWriter_H

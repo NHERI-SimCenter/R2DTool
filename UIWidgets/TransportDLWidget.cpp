@@ -34,9 +34,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, Jinyan Zhao
 
-#include "Pelicun3DLWidget.h"
+#include "TransportDLWidget.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -52,8 +52,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
-Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
+TransportDLWidget::TransportDLWidget(QWidget *parent): SimCenterAppWidget(parent)
 {
+    QSpacerItem *spacer = new QSpacerItem(0,20);
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* groupBox = new QGroupBox(this);
     groupBox->setTitle("Pelicun Damage and Loss Prediction Methodology");
@@ -62,14 +63,13 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
-//    DLTypeComboBox->addItem("HAZUS MH EQ");
-
+    DLTypeComboBox->addItem("HAZUS MH EQ");
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
-//    DLTypeComboBox->addItem("HAZUS MH HU");
+    DLTypeComboBox->addItem("HAZUS MH HU");
     DLTypeComboBox->addItem("User-provided Fragilities");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
-    connect(DLTypeComboBox,&QComboBox::currentTextChanged, this, &Pelicun3DLWidget::handleComboBoxChanged);
+    connect(DLTypeComboBox,&QComboBox::currentTextChanged, this, &TransportDLWidget::handleComboBoxChanged);
 
     QLabel* realizationsLabel = new QLabel(tr("Number of realizations:"));
     realizationsLineEdit = new QLineEdit();
@@ -95,7 +95,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     auto autoPopScriptLabel = new QLabel("Auto-populate script:");
     autoPopulationScriptLineEdit = new QLineEdit();
     auto browseButton = new QPushButton("Browse");
-    connect(browseButton,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton1Pressed);
+    connect(browseButton,&QPushButton::pressed,this,&TransportDLWidget::handleBrowseButton1Pressed);
 
     auto autoPopulateScriptLayout = new QHBoxLayout(autoPopulateScriptWidget);
     autoPopulateScriptLayout->addWidget(autoPopScriptLabel);
@@ -106,7 +106,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     auto fragFolderLabel = new QLabel("Folder containing user-defined fragility function:");
     fragilityDirLineEdit = new QLineEdit();
     auto browseButton2 = new QPushButton("Browse");
-    connect(browseButton2,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton2Pressed);
+    connect(browseButton2,&QPushButton::pressed,this,&TransportDLWidget::handleBrowseButton2Pressed);
 
     auto fragDirLayout = new QHBoxLayout(fragDirWidget);
     fragDirLayout->addWidget(fragFolderLabel);
@@ -135,15 +135,13 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     autoPopulateScriptWidget->hide();
     fragDirWidget->hide();
-
-    resultWidget = new Pelicun3PostProcessor(parent);
 }
 
 
-bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool TransportDLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
-    jsonObject.insert("Application","Pelicun3");
+    jsonObject.insert("Application","pelicun");
 
     QJsonObject appDataObj;
 
@@ -154,10 +152,7 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("coupled_EDP",coupledEDPCheckBox->isChecked());
     appDataObj.insert("event_time",eventTimeComboBox->currentText());
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
-    appDataObj.insert("regional", "true");
-    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ IM")==0){
-        appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_IM.py");
-    }
+
     // test separating the path and filename of auto-population codes (KZ)
     QFileInfo test_auto(autoPopulationScriptLineEdit->text());
     if(test_auto.exists())
@@ -196,7 +191,7 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 }
 
 
-bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool TransportDLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
     if (jsonObject.contains("ApplicationData"))
     {
@@ -325,7 +320,7 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 }
 
 
-void Pelicun3DLWidget::clear(void)
+void TransportDLWidget::clear(void)
 {
     DLTypeComboBox->setCurrentIndex(0);
     realizationsLineEdit->clear();
@@ -338,21 +333,9 @@ void Pelicun3DLWidget::clear(void)
     fragilityDirLineEdit->clear();
 }
 
-void Pelicun3DLWidget::clearParams(void)
-{
-    realizationsLineEdit->clear();
-    eventTimeComboBox->setCurrentIndex(1);
-    detailedResultsCheckBox->setChecked(false);
-    logFileCheckBox->setChecked(false);
-    coupledEDPCheckBox->setChecked(false);
-    groundFailureCheckBox->setChecked(false);
-    autoPopulationScriptLineEdit->clear();
-    fragilityDirLineEdit->clear();
-}
 
 
-
-bool Pelicun3DLWidget::copyFiles(QString &destName)
+bool TransportDLWidget::copyFiles(QString &destName)
 {
     auto compLineEditText = autoPopulationScriptLineEdit->text();
 
@@ -412,9 +395,8 @@ bool Pelicun3DLWidget::copyFiles(QString &destName)
 }
 
 
-void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
+void TransportDLWidget::handleComboBoxChanged(const QString &text)
 {
-    this->clearParams();
 
     if(text.compare("HAZUS MH EQ") == 0 || text.compare("HAZUS MH EQ IM") == 0)
     {
@@ -434,7 +416,7 @@ void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
 }
 
 
-bool Pelicun3DLWidget::recursiveCopy(const QString &sourcePath, const QString &destPath)
+bool TransportDLWidget::recursiveCopy(const QString &sourcePath, const QString &destPath)
 {
     QFileInfo srcFileInfo(sourcePath);
 
@@ -472,7 +454,7 @@ bool Pelicun3DLWidget::recursiveCopy(const QString &sourcePath, const QString &d
 }
 
 
-void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
+void TransportDLWidget::handleBrowseButton1Pressed(void)
 {
     QFileDialog dialog(this);
     QString scriptFile = QFileDialog::getOpenFileName(this,tr("Auto-populate Script"));
@@ -486,7 +468,7 @@ void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
 }
 
 
-void Pelicun3DLWidget::handleBrowseButton2Pressed(void)
+void TransportDLWidget::handleBrowseButton2Pressed(void)
 {
     QFileDialog dialog(this);
     QString fragFolder = QFileDialog::getExistingDirectory(this,tr("Folder containing user-provided fragility data"));
@@ -497,14 +479,4 @@ void Pelicun3DLWidget::handleBrowseButton2Pressed(void)
         return;
 
     fragilityDirLineEdit->setText(fragFolder);
-}
-
-//QMainWindow* Pelicun3DLWidget::getPostProcessor(QWidget *parent, SimCenterAppWidget* visWidget){
-//    VisualizationWidget* visWidgetDownCast = dynamic_cast<VisualizationWidget>
-//    QMainWindow* returnPtr = dynamic_cast<QMainWindow*> (new Pelicun3PostProcessor());
-//    return returnPtr;
-//};
-SC_ResultsWidget* Pelicun3DLWidget::getResultsWidget(QWidget* parent){
-    resultWidget->setParent(parent);
-    return resultWidget;
 }

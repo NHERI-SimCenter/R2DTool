@@ -234,21 +234,24 @@ int main(int argc, char *argv[])
         qDebug() << "could not open stylesheet";
     }
 
+    //
     //Setting Google Analytics Tracking Information
+    //
+    
+    /* ******************************************************************* 
+
     GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
     GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
     GoogleAnalytics::CreateSessionId();
     GoogleAnalytics::StartSession();
 
     // Opening a QWebEngineView and using github to get app geographic usage
-    /*
     QWebEngineView view;
     view.setUrl(QUrl("https://nheri-simcenter.github.io/R2DTool/GA4.html"));
     view.resize(1024, 750);
     view.show();
     view.hide();
-    */
-    /* ******************************************************************* */
+     ******************************************************************* */
     
 
     int res = a.exec();

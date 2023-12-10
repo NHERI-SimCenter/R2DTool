@@ -101,6 +101,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/Tools/AssetFilterDelegate.cpp \
             $$PWD/Tools/ComponentDatabase.cpp \
             $$PWD/Tools/CSVReaderWriter.cpp \
+            $$PWD/Tools/GeoJSONReaderWriter.cpp \
             $$PWD/Tools/ComponentDatabaseManager.cpp \
             $$PWD/Tools/NGAW2Converter.cpp \
     $$PWD/Tools/Pelicun3PostProcessor.cpp \
@@ -226,6 +227,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Tools/AssetFilterDelegate.h \
             $$PWD/Tools/ComponentDatabase.h \
             $$PWD/Tools/CSVReaderWriter.h \
+            $$PWD/Tools/GeoJSONReaderWriter.h \
             $$PWD/Tools/ComponentDatabaseManager.h \
             $$PWD/Tools/NGAW2Converter.h \
     $$PWD/Tools/Pelicun3PostProcessor.h \

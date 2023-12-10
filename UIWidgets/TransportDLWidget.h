@@ -1,5 +1,5 @@
-#ifndef GISTransportNetworkInputWidget_H
-#define GISTransportNetworkInputWidget_H
+#ifndef TransportDLWidget_H
+#define TransportDLWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,64 +36,52 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Dr. Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, Jinyan Zhao
 
 #include "SimCenterAppWidget.h"
-#include <QLineEdit>
-#include <QLabel>
-#include <QLabel>
-#include <QMessageBox>
-#include <QLineEdit>
-#include <QLabel>
-#include <QLabel>
-#include <QMessageBox>
 
-class QGISVisualizationWidget;
-class VisualizationWidget;
-class GISAssetInputWidget;
+class QComboBox;
+class QCheckBox;
+class QLineEdit;
+class QHBoxLayout;
+class QWidget;
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
-
-class GISTransportNetworkInputWidget : public SimCenterAppWidget
+class TransportDLWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    GISTransportNetworkInputWidget(QWidget *parent, VisualizationWidget* visWidget);
-    virtual ~GISTransportNetworkInputWidget();
-
-    virtual int loadBridgesVisualization();
-    virtual int loadRoadwaysVisualization();
-    virtual int loadTunnelsVisualization();
-
-    void clear();
+    explicit TransportDLWidget(QWidget *parent = nullptr);
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
+
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
+
+    void clear(void);
+
     bool copyFiles(QString &destName);
 
-protected slots:
-    void handleAssetsLoaded();
-    void printRoadLengthInput(void);
+    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
 
-protected:
+public slots:
 
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    void handleComboBoxChanged(const QString &text);
+    void handleBrowseButton1Pressed(void);
+    void handleBrowseButton2Pressed(void);
 
-    GISAssetInputWidget* theBridgesWidget = nullptr;
-    GISAssetInputWidget* theTunnelsWidget = nullptr;
-    GISAssetInputWidget* theRoadwaysWidget = nullptr;
-
-
-    QgsVectorLayer* bridgesMainLayer = nullptr;
-    QgsVectorLayer* roadwaysMainLayer = nullptr;
-    QgsVectorLayer* tunnelsMainLayer = nullptr;
 private:
-//    QLineEdit *roadLengthLineEdit;
-//    QWidget* roadLengthWidget = nullptr;
+    QWidget* autoPopulateScriptWidget;
+    QWidget* fragDirWidget;
 
+    QComboBox* DLTypeComboBox;
+    QLineEdit* realizationsLineEdit;
+    QComboBox* eventTimeComboBox;
+    QCheckBox* detailedResultsCheckBox;
+    QCheckBox* logFileCheckBox;
+    QCheckBox* coupledEDPCheckBox;
+    QCheckBox* groundFailureCheckBox;
+    QLineEdit* autoPopulationScriptLineEdit;
+    QLineEdit* fragilityDirLineEdit;
 };
 
-#endif // GISTransportNetworkInputWidget_H
+#endif // TransportDLWidget_H

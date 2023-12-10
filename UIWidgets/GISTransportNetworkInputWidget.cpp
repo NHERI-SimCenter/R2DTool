@@ -54,9 +54,11 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     assert(theVisualizationWidget);
 
     theBridgesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Bridges");
+    theBridgesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Bridges");
 
     theBridgesWidget->setLabel1("Load Bridge Data from a GIS file");
 
+    theRoadwaysWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Roads");
     theRoadwaysWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Roads");
 
     theRoadwaysWidget->setLabel1("Load Roadway Data from a GIS file");
@@ -65,8 +67,13 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
 
     theTunnelsWidget->setLabel1("Load Tunnel Data from a GIS file");
 
+    theTunnelsWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Tunnels");
+
+    theTunnelsWidget->setLabel1("Load Tunnel Data from a GIS file");
+
     connect(theBridgesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
     connect(theRoadwaysWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
+    connect(theTunnelsWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
     connect(theTunnelsWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -78,17 +85,17 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     QVBoxLayout* roadwaysGBlayout = new QVBoxLayout(roadwaysGB);
     roadwaysGBlayout->addWidget(theRoadwaysWidget);
 
-    roadLengthWidget = new QWidget();
-    QHBoxLayout* roadLengthLayout = new QHBoxLayout(roadLengthWidget);
-    QLabel* roadLengthLabel = new QLabel("Maximum roadway length (m) per AIM",this);
-    roadLengthLineEdit = new QLineEdit(this);
-    roadLengthLineEdit->setText("100.0");
-    QDoubleValidator *validator = new QDoubleValidator(this);
-    validator->setBottom(0.0);
-    roadLengthLayout->addWidget(roadLengthLabel);
-    roadLengthLayout->addWidget(roadLengthLineEdit);
-    roadwaysGBlayout->addWidget(roadLengthWidget);
-    connect(roadLengthLineEdit, &QLineEdit::editingFinished, this, &GISTransportNetworkInputWidget::printRoadLengthInput);
+//    roadLengthWidget = new QWidget();
+//    QHBoxLayout* roadLengthLayout = new QHBoxLayout(roadLengthWidget);
+//    QLabel* roadLengthLabel = new QLabel("Maximum roadway length (m) per AIM",this);
+//    roadLengthLineEdit = new QLineEdit(this);
+//    roadLengthLineEdit->setText("100.0");
+//    QDoubleValidator *validator = new QDoubleValidator(this);
+//    validator->setBottom(0.0);
+//    roadLengthLayout->addWidget(roadLengthLabel);
+//    roadLengthLayout->addWidget(roadLengthLineEdit);
+//    roadwaysGBlayout->addWidget(roadLengthWidget);
+//    connect(roadLengthLineEdit, &QLineEdit::editingFinished, this, &GISTransportNetworkInputWidget::printRoadLengthInput);
     
     QGroupBox* bridgesGB = new QGroupBox("Bridges");
     bridgesGB->setFlat(true);
@@ -100,8 +107,14 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     QVBoxLayout* tunnelsGBlayout = new QVBoxLayout(tunnelsGB);
     tunnelsGBlayout->addWidget(theTunnelsWidget);
 
+    QGroupBox* tunnelsGB = new QGroupBox("Tunnels");
+    tunnelsGB->setFlat(true);
+    QVBoxLayout* tunnelsGBlayout = new QVBoxLayout(tunnelsGB);
+    tunnelsGBlayout->addWidget(theTunnelsWidget);
+
     verticalSplitter->addWidget(roadwaysGB);    
     verticalSplitter->addWidget(bridgesGB);
+    verticalSplitter->addWidget(tunnelsGB);
     verticalSplitter->addWidget(tunnelsGB);
 
     mainLayout->addWidget(verticalSplitter);
@@ -131,17 +144,20 @@ bool GISTransportNetworkInputWidget::copyFiles(QString &destName)
 {
     bool res;
     if(!theBridgesWidget->isEmpty()){
-        res = theBridgesWidget->copyFilesGeoJSON(destName);
+//        res = theBridgesWidget->copyFilesGeoJSON(destName);
+        res = theBridgesWidget->copyFiles(destName);
         if(!res)
             return res;
     }
     if(!theRoadwaysWidget->isEmpty()){
-        res = theRoadwaysWidget->copyFilesGeoJSON(destName);
+//        res = theRoadwaysWidget->copyFilesGeoJSON(destName);
+        res = theRoadwaysWidget->copyFiles(destName);
         if(!res)
             return res;
     }
     if(!theTunnelsWidget->isEmpty()){
-        res = theTunnelsWidget->copyFilesGeoJSON(destName);
+//        res = theTunnelsWidget->copyFilesGeoJSON(destName);
+        res = theTunnelsWidget->copyFiles(destName);
         if(!res)
             return res;
         return res;
@@ -210,7 +226,7 @@ bool GISTransportNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject
         } else {
             data["roadsFilter"] = roadsFilterData;
         }
-        data["roadSegLength"] = roadLengthLineEdit->text().toDouble();
+//        data["roadSegLength"] = roadLengthLineEdit->text().toDouble();
     }
 
 
@@ -277,7 +293,7 @@ bool GISTransportNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObjec
         if (roadwaysData.contains("ApplicationData")){
             QJsonObject roadwaysAppData = roadwaysData["ApplicationData"].toObject();
             if (roadwaysAppData.contains("roadSegLength")) {
-                roadLengthLineEdit->setText(QString::number(roadwaysAppData["roadSegLength"].toDouble()));
+//                roadLengthLineEdit->setText(QString::number(roadwaysAppData["roadSegLength"].toDouble()));
             }
         }
     }
@@ -363,7 +379,7 @@ void GISTransportNetworkInputWidget::clear()
     theBridgesWidget->clear();
     theRoadwaysWidget->clear();
     theTunnelsWidget->clear();
-    roadLengthLineEdit->clear();
+//    roadLengthLineEdit->clear();
 
     bridgesMainLayer = nullptr;
     roadwaysMainLayer = nullptr;
@@ -409,7 +425,7 @@ void GISTransportNetworkInputWidget::handleAssetsLoaded()
 
 
 void GISTransportNetworkInputWidget::printRoadLengthInput(void){
-    QString msg = "Roadway length per AIM is set as "+ roadLengthLineEdit->text() + " meters";
-    this->statusMessage(msg);
+//    QString msg = "Roadway length per AIM is set as "+ roadLengthLineEdit->text() + " meters";
+//    this->statusMessage(msg);
 }
 
