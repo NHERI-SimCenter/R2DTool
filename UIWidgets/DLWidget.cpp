@@ -97,9 +97,11 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     // Water distribution network apps
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
     SimCenterAppWidget *WDNDL = new NoArgSimCenterApp(QString("CBCitiesDL"));
+    SimCenterAppWidget *waterPelicun = new Pelicun3DLWidget;    
 
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
+    WDNWidget->addComponent(QString("ReWet"), QString("Pelicun3"), waterPelicun);
 
     // Transportation widget apps
     SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;
