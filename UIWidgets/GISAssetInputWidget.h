@@ -52,22 +52,22 @@ public:
     explicit GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = "GIS_to_AIM");
     virtual ~GISAssetInputWidget();
 
-    int loadAssetVisualization() override;
+    int loadAssetVisualization();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject) override;
-    bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
 
-    bool copyFiles(QString &destName) override;
+    bool copyFiles(QString &destName);
     bool copyFilesGeoJSON(QString &destName);
 
-    void clear(void) override;
+    void clear(void);
 
 #ifdef OpenSRA
     bool loadFileFromPath(const QString& filePath);
 
     // Map the OpenSRA inputs and outputs to the SimCenter inputs and outputs
-    bool inputFromJSON(QJsonObject &rvObject) override;
-    bool outputToJSON(QJsonObject &rvObject) override;
+    bool inputFromJSON(QJsonObject &rvObject);
+    bool outputToJSON(QJsonObject &rvObject);
 #endif
 
     bool isEmpty();
@@ -81,7 +81,7 @@ public:
     CRSSelectionWidget* getCRSSelectorWidget(void);
 
 public slots:
-    bool loadAssetData(bool message = true) override;
+    bool loadAssetData(bool message = true);
 
 private slots:
     void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
