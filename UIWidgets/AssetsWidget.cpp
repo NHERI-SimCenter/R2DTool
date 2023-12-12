@@ -50,7 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 //#include "CSVTransportNetworkInputWidget.h"
 #include "GISTransportNetworkInputWidget.h"
 #include "GeojsonAssetInputWidget.h"
-#include "InpFileWaterInputWidget.h"
+//#include "InpFileWaterInputWidget.h"
 
 // Qt headers
 #include <QCheckBox>
@@ -97,8 +97,10 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     CSVWaterNetworkInputWidget *csvWaterNetworkInventory = new CSVWaterNetworkInputWidget(this, visualizationWidget);
     waterNetworkWidget->addComponent(QString("CSV to Water Network"), QString("CSV_to_WATERNETWORK"), csvWaterNetworkInventory);
 
+    /*
     InpFileWaterInputWidget *inpFileWaterInput = new InpFileWaterInputWidget(this,visualizationWidget,"Water Networks","INP_FILE");
     waterNetworkWidget->addComponent(QString("EPANET INP File"), QString("INP_FILE"), inpFileWaterInput);
+    */
     
     GeojsonAssetInputWidget *GeoJsonWaterNetworkAssetInventory = new GeojsonAssetInputWidget(this,visualizationWidget,"Water Networks","GEOJSON_TO_ASSET");
     waterNetworkWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonWaterNetworkAssetInventory);
