@@ -57,8 +57,8 @@ CSVtoBIMModelingWidget::CSVtoBIMModelingWidget(QWidget *parent) : SimCenterAppWi
     QLabel* IDLabel = new QLabel("Select a range of building IDs for which to create a model. By default, all buildings selected for analysis are converted into a BIM.",this);
 
     selectComponentsLineEdit = new QLineEdit();
-    selectComponentsLineEdit->setMaximumWidth(1000);
-    selectComponentsLineEdit->setMinimumWidth(400);
+    // selectComponentsLineEdit->setMaximumWidth(1000);
+    // selectComponentsLineEdit->setMinimumWidth(400);
     selectComponentsLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     selectComponentsLineEdit->setPlaceholderText("e.g., 1, 3, 5-10, 12");
 

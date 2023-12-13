@@ -146,6 +146,8 @@ if [ ! -f "$userID" ]; then
     exit
 fi
 
+exit
+
 source $userID
 echo $appleID
 

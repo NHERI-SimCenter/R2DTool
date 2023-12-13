@@ -46,9 +46,10 @@ INCLUDEPATH += $$PWD \
                $$PWD/GraphicElements \
                $$PWD/Events/UI \
                $$PWD/Tools \
-               $$PWD/assets \
-               $$PWD/assets/EPANET2.2/include \
-	       $$PWD/assets/EPANET2.2/src	       
+               $$PWD/assetWidgets \
+               $$PWD/assetWidgets/EPANET2.2/include \
+	       $$PWD/assetWidgets/EPANET2.2/src \
+	       $$PWD/dlWidgets
 
 SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/Events/UI/BedrockDepth.cpp \
@@ -175,30 +176,31 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/GraphicElements/GIS_Selection.cpp \
 	    $$PWD/RunWidget.cpp \
             $$PWD/WorkflowAppR2D.cpp \
-            $$PWD/assets/InpFileWaterInputWidget.cpp \
-	    $$PWD/assets/EPANET2.2/geoJSON.c \
-	    $$PWD/assets/EPANET2.2/src/inpfile.c \
-	    $$PWD/assets/EPANET2.2/src/qualreact.c \
-	    $$PWD/assets/EPANET2.2/src/genmmd.c \
-	    $$PWD/assets/EPANET2.2/src/hydcoeffs.c \
-	    $$PWD/assets/EPANET2.2/src/input1.c \
-	    $$PWD/assets/EPANET2.2/src/output.c \
-	    $$PWD/assets/EPANET2.2/src/qualroute.c \
-	    $$PWD/assets/EPANET2.2/src/epanet.c \
-	    $$PWD/assets/EPANET2.2/src/epanet2.c \	    
-	    $$PWD/assets/EPANET2.2/src/hydraul.c \
-	    $$PWD/assets/EPANET2.2/src/input2.c \
-	    $$PWD/assets/EPANET2.2/src/outputJSON.c \
-	    $$PWD/assets/EPANET2.2/src/report.c \
-	    $$PWD/assets/EPANET2.2/src/hydsolver.c \
-	    $$PWD/assets/EPANET2.2/src/input3.c \
-	    $$PWD/assets/EPANET2.2/src/project.c \
-	    $$PWD/assets/EPANET2.2/src/rules.c \
-	    $$PWD/assets/EPANET2.2/src/hash.c \
-	    $$PWD/assets/EPANET2.2/src/hydstatus.c \
-	    $$PWD/assets/EPANET2.2/src/mempool.c \
-	    $$PWD/assets/EPANET2.2/src/quality.c \
-	    $$PWD/assets/EPANET2.2/src/smatrix.c
+            $$PWD/dlWidgets/ReWetWidget.cpp \	    
+            $$PWD/assetWidgets/InpFileWaterInputWidget.cpp \
+	    $$PWD/assetWidgets/EPANET2.2/geoJSON.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/inpfile.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/qualreact.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/genmmd.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/hydcoeffs.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/input1.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/output.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/qualroute.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/epanet.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/epanet2.c \	    
+	    $$PWD/assetWidgets/EPANET2.2/src/hydraul.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/input2.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/outputJSON.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/report.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/hydsolver.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/input3.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/project.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/rules.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/hash.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/hydstatus.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/mempool.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/quality.c \
+	    $$PWD/assetWidgets/EPANET2.2/src/smatrix.c
 
 HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/Events/UI/BedrockDepth.h \
@@ -328,17 +330,18 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/GraphicElements/GIS_Selection.h \
             $$PWD/WorkflowAppR2D.h \
             $$PWD/RunWidget.h \
-            $$PWD/assets/InpFileWaterInputWidget.h \	    
-	    $$PWD/assets/EPANET2.2/include/epanet2.h \
-	    $$PWD/assets/EPANET2.2/include/epanet2_2.h \
-	    $$PWD/assets/EPANET2.2/include/epanet2_enums.h \
-	    $$PWD/assets/EPANET2.2/src/enumstxt.h \
-	    $$PWD/assets/EPANET2.2/src/funcs.h \
-	    $$PWD/assets/EPANET2.2/src/hash.h \
-	    $$PWD/assets/EPANET2.2/src/text.h \
-	    $$PWD/assets/EPANET2.2/src/types.h \
-	    $$PWD/assets/EPANET2.2/src/version.h \
-	    $$PWD/assets/EPANET2.2/src/mempool.h 
+            $$PWD/dlWidgets/ReWetWidget.h \
+            $$PWD/assetWidgets/InpFileWaterInputWidget.h \	    
+	    $$PWD/assetWidgets/EPANET2.2/include/epanet2.h \
+	    $$PWD/assetWidgets/EPANET2.2/include/epanet2_2.h \
+	    $$PWD/assetWidgets/EPANET2.2/include/epanet2_enums.h \
+	    $$PWD/assetWidgets/EPANET2.2/src/enumstxt.h \
+	    $$PWD/assetWidgets/EPANET2.2/src/funcs.h \
+	    $$PWD/assetWidgets/EPANET2.2/src/hash.h \
+	    $$PWD/assetWidgets/EPANET2.2/src/text.h \
+	    $$PWD/assetWidgets/EPANET2.2/src/types.h \
+	    $$PWD/assetWidgets/EPANET2.2/src/version.h \
+	    $$PWD/assetWidgets/EPANET2.2/src/mempool.h 
 
 #contains(DEFINES, ARC_GIS)  {
 

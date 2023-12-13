@@ -285,9 +285,9 @@ void AssetInputWidget::createComponentsBox(void)
     pathText->setText("Path to file:");
     
     componentFileLineEdit = new QLineEdit();
-    //    componentFileLineEdit->setMaximumWidth(750);
-    componentFileLineEdit->setMinimumWidth(400);
-    componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    // componentFileLineEdit->setMaximumWidth(750);
+    // componentFileLineEdit->setMinimumWidth(400);
+    // componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
 
     browseFileButton = new QPushButton();
@@ -358,7 +358,6 @@ void AssetInputWidget::createComponentsBox(void)
     mainWidgetLayout->addStretch();
 
     this->setLayout(mainWidgetLayout);
-
 }
 
 
