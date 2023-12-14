@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 #include "SC_FileEdit.h"
 #include "SC_StringLineEdit.h"
+#include "SimCenterAppSelection.h"
 
 #include <QComboBox>
 #include <QGridLayout>
@@ -96,6 +97,7 @@ public:
     bool outputAppDataToJSON(QJsonObject &rvObject) override;
     bool inputAppDataFromJSON(QJsonObject &rvObject) override;
     bool copyFiles(QString &dirName) override;
+    SimCenterAppSelection *buildingWidget;
 
     QString getMainInput();
     QVBoxLayout *recordLayout;

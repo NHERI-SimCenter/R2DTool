@@ -57,6 +57,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SurrogateGP.h"
 #include "SimCenterAppMulti.h"
 #include "ModelWidget.h"
+#include "SimCenterAppSelection.h"
+#include "InputWidgetOpenSeesAnalysis.h"
+#include "InputWidgetOpenSeesPyAnalysis.h"
+#include "NoArgSimCenterApp.h"
+#include "NoneWidget.h"
 
 SurrogateFile::SurrogateFile(QWidget *parent)
 :SimCenterWidget(parent)
@@ -170,11 +175,13 @@ SurrogateFile::getFilePath(void) {
 SurrogatePyFilter::SurrogatePyFilter(QWidget *parent)
     : SimCenterAppWidget(parent)
 {
-    QGridLayout *layout = new QGridLayout();
+    QTabWidget *tabWidget= new QTabWidget();
+
+    QGridLayout *filterLayout = new QGridLayout();
     filterPath = new SC_FileEdit("filterScript");
     filterPath->setMinimumWidth(600);
-    layout->addWidget(new QLabel("Filter script (.py)"),0,0);
-    layout->addWidget(filterPath,0,1);
+    filterLayout->addWidget(new QLabel("Filter script (.py)"),0,0);
+    filterLayout->addWidget(filterPath,0,1);
 
     //
     // Surrogates
@@ -242,38 +249,36 @@ SurrogatePyFilter::SurrogatePyFilter(QWidget *parent)
     connect(removeAllEvent, SIGNAL(pressed()), this, SLOT(removeAllMods()));
     connect(loadDirectory, SIGNAL(pressed()), this, SLOT(loadModsFromDir()));
 
+    filterLayout->addWidget(surGroupBox,1,0,1,-1);
+    filterLayout->setRowStretch(1,1);
+    filterLayout->setColumnStretch(3,1);
 
-
-
-//    RandomVariablesContainer *theRVs = RandomVariablesContainer::getInstance();
-//    SimCenterAppWidget *sur = new surrogateGP(theRVs);
-//    SimCenterAppWidget *multi = new SimCenterAppMulti(QString("Simulation"), QString("MultiModel-Simulation"),sur, this);
-//    QVBoxLayout * multiLayout = new QVBoxLayout();
-//    multiLayout->addWidget(multi);
-
-//    // Put it in Groupbox
-
-//    surGroupBox->setLayout(multiLayout);
+    QWidget *placeholderWidget = new QWidget();
+    placeholderWidget->setLayout(filterLayout);
+    tabWidget->addTab(placeholderWidget,"Surrogate Models");
 
     //
-    // Defaults
+    // Default option
     //
+    buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Buildings"), this);
 
-//    ModelWidget *theModelingWidget = new ModelWidget(this);
-//    QVBoxLayout * defaultLayout = new QVBoxLayout();
-//    defaultLayout->addWidget(theModelingWidget);
+    // Building widget apps
+    SimCenterAppWidget *openSeesPy = new InputWidgetOpenSeesPyAnalysis(this);
+    InputWidgetOpenSeesAnalysis *openSees = new InputWidgetOpenSeesAnalysis();
+    SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMasEDP"));
+    SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
-//    // Put it in Groupbox
-//    QGroupBox* defaultGroupBox = new QGroupBox("Default");
-//    defaultGroupBox->setContentsMargins(0,5,0,0);
-//    defaultGroupBox->setLayout(defaultLayout);
+    buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation"), openSees);
+    buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);
+    buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
+    buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-    layout->addWidget(surGroupBox,1,0,1,-1);
-//    layout->addWidget(defaultGroupBox,2,0,1,-1);
+    tabWidget->addTab(buildingWidget,"Default Analysis");
 
-    layout->setRowStretch(1,1);
-    layout->setColumnStretch(2,1);
-    this->setLayout(layout);
+
+    QVBoxLayout * placeholder = new QVBoxLayout();
+    placeholder->addWidget(tabWidget);
+    this->setLayout(placeholder);
 }
 
 
@@ -309,6 +314,10 @@ bool SurrogatePyFilter::outputToJSON(QJsonObject &jsonObject)
         }
     }
     jsonObject["Models"]=theArray;
+
+    QJsonObject defaultObj;
+    buildingWidget->outputToJSON(defaultObj);
+    jsonObject["DefaultAnalysis"]=defaultObj;
     return result;
 }
 
@@ -345,6 +354,9 @@ bool SurrogatePyFilter::inputFromJSON(QJsonObject &jsonObject)
             }
         }
     }
+
+    auto defaultObject = jsonObject["DefaultAnalysis"].toObject();
+    buildingWidget->inputFromJSON(defaultObject);
 
     return result;
 
@@ -391,16 +403,18 @@ bool SurrogatePyFilter::copyFiles(QString &dirName) {
     QFileInfo fileInfo(fileName);    
 
     if (fileInfo.exists()) {
-        return this->copyFile(fileName, dirName);
+        this->copyFile(fileName, dirName);
+    } else {
+        return false;
     }
 
     //enumerate files
     int numInputWidgetExistingEvents = theModels.size();
-    for (int i = numInputWidgetExistingEvents-1; i >= 0; i--) {
+    for (int i = 0; i < numInputWidgetExistingEvents; i++) {
       SurrogateFile *theModel = theModels.at(i);
-      return this->copyFile(theModel->getFilePath(), dirName);
+      auto a = theModel->getFilePath();
+      this->copyFile(theModel->getFilePath(), dirName);
     }
-
 
     return true;
 }
