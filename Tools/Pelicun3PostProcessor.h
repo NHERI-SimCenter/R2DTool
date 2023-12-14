@@ -140,11 +140,6 @@ private:
 
     double calculateTotal(QJsonArray& featArray, QString field);
 
-    QVector<QStringList> DMdata;
-    QVector<QStringList> DVdata;
-    QVector<QStringList> EDPdata;
-    QVector<QStringList> IMdata;
-
     QString outputFilePath;
 
     QMenu* viewMenu;
@@ -164,16 +159,10 @@ private:
 
 
     QDockWidget* mapViewDock;
+    QDockWidget* summaryDock;
 
     QWidget *tableWidget;
     QVBoxLayout* layout;
-//    QList<QVector<QVector<double>>*> dataList;
-
-    QList<QTableWidget*> ResultsTableWidgetList;
-
-    QDockWidget* chartsDock1;
-    QDockWidget* chartsDock2;
-    QDockWidget* chartsDock3;
 
     QList<QDockWidget*> dockList;
     QList<QTableWidget*> tableList;
@@ -190,9 +179,6 @@ private:
     int extractDataAddToTable(QJsonArray& features, QStringList& attributes, QTableWidget* table, QStringList headings);
 
     QByteArray uiState;
-
-    // The number of header rows in the Pelicun results file
-    int numHeaderRows;
 
     // kz: adding a dock layer under detailed results for different assets
     QDockWidget* tableDock;

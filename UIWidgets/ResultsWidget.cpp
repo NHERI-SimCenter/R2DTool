@@ -41,7 +41,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GeneralInformationWidget.h"
 #include "PelicunPostProcessor.h"
 #include "CBCitiesPostProcessor.h"
-#include "Pelicun3PostProcessor.h"
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include <WorkflowAppR2D.h>
@@ -119,20 +118,8 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     theCBCitiesPostProcessor = std::make_unique<CBCitiesPostProcessor>(parent,theVisualizationWidget);
 
-//    thePelicun3PostProcessor = std::make_unique<Pelicun3PostProcessor>(parent, theVisualizationWidget);
-
-    theTransportationPelicun3PostProcessor = std::make_unique<Pelicun3PostProcessorTspn>(parent, theVisualizationWidget);
-
     resTabWidget = new QTabWidget();
 
-//    resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings");
-//    resTabWidget->addTab(thePelicun3PostProcessor.get(),"Buildings");
-//    resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Pipelines");
-//    resTabWidget->addTab(theTransportationPelicun3PostProcessor.get(), "Transportation Network");
-//    resTabWidget->insertTab(0, thePelicunPostProcessor.get(),"Buildings");
-//    resTabWidget->insertTab(2, thePelicun3PostProcessor.get(),"Buildings Pelicun3");
-//    resTabWidget->insertTab(1, theCBCitiesPostProcessor.get(),"Water Pipelines");
-//    resTabWidget->insertTab(3, theTransportationPelicun3PostProcessor.get(), "Transportation Network");
     mainStackedWidget->addWidget(resTabWidget);
 
     //    // Export layout and objects
@@ -242,6 +229,24 @@ bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 
 int ResultsWidget::processResults(QString resultsDirectory)
 {
+    //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
+    int tabCount = resTabWidget->count();
+    for (int ind = 0; ind < tabCount; ind++){
+        SC_ResultsWidget* tab = static_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
+        if (tab !=0){
+            tab->clear();
+        }
+    }
+    resTabWidget->clear();
+    auto resultLyr = theVisualizationWidget->getLayerGroup("Results");
+    if (resultLyr){
+        theVisualizationWidget->removeLayerGroup("Results");
+    }
+    auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Damage State");
+    if (DMGLyr){
+        theVisualizationWidget->removeLayerGroup("Most Likely Damage State");
+    }
+
     QString pathGeojson = resultsDirectory + QDir::separator() +  QString("R2D_results.geojson");
     QFile jsonFile(pathGeojson);
     QMap<QString, QList<QJsonObject>> assetDictionary;
@@ -305,9 +310,12 @@ int ResultsWidget::processResults(QString resultsDirectory)
         }
     }
     else{
-        this->errorMessage("Failed to open file at location: "+pathGeojson);
-        return false;
+        // for legacy pelicun 2 results
+//        this->errorMessage("Failed to open file at location: "+pathGeojson);
+//        return false;
     }
+
+    if (jsonFile.exists()){
     QVector<QgsMapLayer*> mapLayers;
     QVector<QgsMapLayer*> DMGLayers;
     for (auto it = assetDictionary.begin(); it != assetDictionary.end(); ++it)
@@ -342,7 +350,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
         file.close();
 
         QgsVectorLayer* assetLayer;
-        assetLayer = theVisualizationWidget->addVectorLayer(outputFile, assetType, "ogr");
+        assetLayer = theVisualizationWidget->addVectorLayer(outputFile, assetType + QString("_results"), "ogr");
         if(assetLayer == nullptr)
         {
             this->errorMessage("Error, failed to add GIS layer");
@@ -374,34 +382,14 @@ int ResultsWidget::processResults(QString resultsDirectory)
         }
         theVisualizationWidget->createCategoryRenderer("highest_DMG", DMGlayer, markerSymbol);
         DMGLayers.append(DMGlayer);
-//        auto layerId = assetLayer->id();
-//        theVisualizationWidget->registerLayerForSelection(layerId,this);
-//        if (!file.remove()) {
-//            this->errorMessage("Warning, failed to remove the temporary file "+outputFile);
-//        }
         mapLayers.append(assetLayer);
     }
 
     theVisualizationWidget->createLayerGroup(mapLayers,"Results");
     theVisualizationWidget->createLayerGroup(DMGLayers,"Most Likely Damage State");
-
-
-
-
-    //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
-    int tabCount = resTabWidget->count();
-    for (int ind = 0; ind < tabCount; ind++){
-        SC_ResultsWidget* tab = static_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
-        if (tab !=0){
-            tab->clear();
-        }
-//        resTabWidget->removeTab(ind);
-//        delete resTabWidget->widget(ind);
     }
-    resTabWidget->clear();
 
     auto activeComponents = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLApps();
-    auto activeAssets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveComponents();
     auto activeAssetDLappMap = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveAssetDLMap();
     if(activeComponents.isEmpty())
         return -1;
@@ -420,11 +408,6 @@ int ResultsWidget::processResults(QString resultsDirectory)
             activeDLResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
 
         }
-//        if (activeDLResultsWidgets.contains("Buildings")){
-//            activeDLResultsWidgets["Buildings"]->setVisualizationWidget(theVisualizationWidget);
-//            resTabWidget->addTab(activeDLResultsWidgets["Buildings"], "Buildings");
-//            activeDLResultsWidgets["Buildings"]->processResults(resultFile, resultsDirectory);
-//        }
     } catch (const QString msg)
     {
         this->errorMessage(msg);
@@ -434,67 +417,14 @@ int ResultsWidget::processResults(QString resultsDirectory)
     try
     {
         if (activeAssetDLappMap.contains("Buildings") && activeAssetDLappMap["Buildings"].compare("pelicun")==0){
-//            thePelicunPostProcessor->importResults(resultsDirectory);
-//            resTabWidget->setTabVisible(0, true);
             resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings");
             thePelicunPostProcessor->importResults(resultsDirectory);
         }
-        else {
-//            resTabWidget->setTabVisible(0, false);
-        }
-        if (activeAssetDLappMap.contains("Buildings") && activeAssetDLappMap["Buildings"].compare("Pelicun3")==0){
-//            thePelicun3PostProcessor->importResults(resultsDirectory);
-//            resTabWidget->setTabVisible(2, true);
-//            resTabWidget->addTab(thePelicun3PostProcessor.get(),"Buildings");
-//            thePelicun3PostProcessor->importResults(resultsDirectory);
-//            resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings Pelicun");
-//            thePelicunPostProcessor->importResults(resultsDirectory);
-        }
-        else {
-//            resTabWidget->setTabVisible(2, false);
-        }
         if(activeAssetDLappMap.contains("Water Network") && activeAssetDLappMap["Water Network"].compare("CBCitiesDL")==0)
         {
-//            theCBCitiesPostProcessor->importResults(resultsDirectory);
-//            resTabWidget->setTabVisible(1, true);
             resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Network");
             theCBCitiesPostProcessor->importResults(resultsDirectory);
         }
-        else
-        {
-//            resTabWidget->setTabVisible(1, false);
-        }
-        if(activeAssetDLappMap.contains("Transportation Network") && activeAssetDLappMap["Transportation Network"].compare("Pelicun3")==0)
-        {
-//            theTransportationPelicun3PostProcessor->importResults(resultsDirectory);
-//            resTabWidget->setTabVisible(3, true);
-//            resTabWidget->addTab(theTransportationPelicun3PostProcessor.get(),"Transportation Network");
-//            theTransportationPelicun3PostProcessor->importResults(resultsDirectory);
-        }
-        else
-        {
-//            resTabWidget->setTabVisible(3, false);
-        }
-//        if(activeComponents.contains("pelicun"))
-//        {
-//            thePelicunPostProcessor->importResults(resultsDirectory);
-//            resTabWidget->setTabVisible(0, true);
-
-//        }
-//        else
-//        {
-//            resTabWidget->setTabVisible(0, false);
-//        }
-
-//        if(activeComponents.contains("CBCitiesDL"))
-//        {
-//            theCBCitiesPostProcessor->importResults(resultsDirectory);
-//            resTabWidget->setTabVisible(1, true);
-//        }
-//        else
-//        {
-//            resTabWidget->setTabVisible(1, false);
-//        }
 
         this->resultsShow(true);
 
@@ -619,9 +549,6 @@ void ResultsWidget::clear(void)
 
     thePelicunPostProcessor->clear();
     theCBCitiesPostProcessor->clear();
-//    thePelicun3PostProcessor->clear();
-    theTransportationPelicun3PostProcessor->clear();
-
     int tabCount = resTabWidget->count();
     for (int ind = 0; ind < tabCount; ind++){
         SC_ResultsWidget* tab = static_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));

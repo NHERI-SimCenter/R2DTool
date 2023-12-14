@@ -86,7 +86,6 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
     
     buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);
-    buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);
     buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
@@ -167,7 +166,7 @@ QMap<QString, SC_ResultsWidget*>  DLWidget::getActiveDLResultsWidgets(QWidget *p
         SimCenterAppWidget* currSelection = activeComp->getCurrentSelection();
         SC_ResultsWidget* currResultWidget = currSelection->getResultsWidget(parent);
         if(!currResultWidget){
-            this->errorMessage("The DL widget of "+currComp+" does not have a resultWidget");
+//            this->errorMessage("The DL widget of "+currComp+" does not have a resultWidget");
         } else {
 //            Pelicun3PostProcessor* currResultDownCast = dynamic_cast<Pelicun3PostProcessor*> (currResultWidget);
 //            if (currResultDownCast==0){

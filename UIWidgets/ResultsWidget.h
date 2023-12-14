@@ -40,13 +40,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 #include "QGISVisualizationWidget.h"
-#include "Pelicun3PostProcessorTspn.h"
 #include <QJsonArray>
 class AssetInputDelegate;
 class PelicunPostProcessor;
 class VisualizationWidget;
 class CBCitiesPostProcessor;
-class Pelicun3PostProcessor;
 
 
 class QTabWidget;
@@ -104,11 +102,7 @@ private:
     QWidget *theParent = nullptr;
 
     std::unique_ptr<PelicunPostProcessor> thePelicunPostProcessor;
-//    PelicunPostProcessor* thePelicunPostProcessor;
-    std::unique_ptr<Pelicun3PostProcessor> thePelicun3PostProcessor;
     std::unique_ptr<CBCitiesPostProcessor> theCBCitiesPostProcessor;
-
-    std::unique_ptr<Pelicun3PostProcessorTspn> theTransportationPelicun3PostProcessor;
 
 };
 
