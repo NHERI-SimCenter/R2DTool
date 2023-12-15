@@ -47,6 +47,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLabel>
 #include <QMessageBox>
+#include <qgsjsonutils.h>
+#include <QJsonArray>
+#include <qgscoordinatereferencesystem.h>
+#include <qgsproject.h>
+#include <qgscoordinatetransform.h>
 
 class QGISVisualizationWidget;
 class VisualizationWidget;
@@ -90,9 +95,12 @@ protected:
     QgsVectorLayer* bridgesMainLayer = nullptr;
     QgsVectorLayer* roadwaysMainLayer = nullptr;
     QgsVectorLayer* tunnelsMainLayer = nullptr;
+
+    void exportLayerToGeoJSON(QgsVectorLayer* layer, QJsonArray& featArray,QString assetType);
 private:
 //    QLineEdit *roadLengthLineEdit;
 //    QWidget* roadLengthWidget = nullptr;
+    QString destFolder = "";
 
 };
 

@@ -367,6 +367,11 @@ QgsVectorLayer *AssetInputWidget::getMainLayer() const
     return mainLayer;
 }
 
+QgsVectorLayer *AssetInputWidget::getSelectedLayer() const
+{
+    return selectedFeaturesLayer;
+}
+
 
 void AssetInputWidget::selectComponents(void)
 {

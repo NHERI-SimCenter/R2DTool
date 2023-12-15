@@ -53,23 +53,18 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-    theBridgesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Bridges");
-    theBridgesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Bridges");
+    theBridgesWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Bridges");
 
     theBridgesWidget->setLabel1("Load Bridge Data from a GIS file");
 
-    theRoadwaysWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Roads");
-    theRoadwaysWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Roads");
+    theRoadwaysWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Roads");
 
     theRoadwaysWidget->setLabel1("Load Roadway Data from a GIS file");
 
-    theTunnelsWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Tunnels");
+    theTunnelsWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Tunnels");
 
     theTunnelsWidget->setLabel1("Load Tunnel Data from a GIS file");
 
-    theTunnelsWidget = new GISAssetInputWidget(this, theVisualizationWidget, "Highway Tunnels");
-
-    theTunnelsWidget->setLabel1("Load Tunnel Data from a GIS file");
 
     connect(theBridgesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
     connect(theRoadwaysWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
@@ -136,94 +131,101 @@ GISTransportNetworkInputWidget::~GISTransportNetworkInputWidget()
 
 bool GISTransportNetworkInputWidget::copyFiles(QString &destName)
 {
-    bool res;
-    if(!theBridgesWidget->isEmpty()){
-//        res = theBridgesWidget->copyFilesGeoJSON(destName);
-        res = theBridgesWidget->copyFiles(destName);
-        if(!res)
-            return res;
-    }
-    if(!theRoadwaysWidget->isEmpty()){
-//        res = theRoadwaysWidget->copyFilesGeoJSON(destName);
-        res = theRoadwaysWidget->copyFiles(destName);
-        if(!res)
-            return res;
-    }
-    if(!theTunnelsWidget->isEmpty()){
-//        res = theTunnelsWidget->copyFilesGeoJSON(destName);
-        res = theTunnelsWidget->copyFiles(destName);
-        if(!res)
-            return res;
-        return res;
-    }
-
     if(theTunnelsWidget->isEmpty() && theBridgesWidget->isEmpty() && theRoadwaysWidget->isEmpty()){
-        QString msg = "No asset loaded in Transportation Network.\n Please load or unselect Transportation Network in General Information";
+        QString msg = "No asset selected for Transportation Network.\n Please load or unselect Transportation Network in General Information";
         this->errorMessage(msg);
         return false;
     }
+    destFolder = destName;
+    QJsonArray featuresArray;
+    QJsonObject combinedGeoJSON;
+    combinedGeoJSON["type"]="FeatureCollection";
 
-        return true;
+    QString crsString = R"(
+        {
+            "type": "name",
+            "properties": {
+                "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+            }
+        }
+    )";
+    QJsonDocument crsDoc = QJsonDocument::fromJson(crsString.toUtf8());
+    QJsonObject crsJson = crsDoc.object();
+    combinedGeoJSON.insert("crs", crsJson);
+    if(theBridgesWidget->getSelectedLayer() != nullptr){
+        QgsVectorLayer* layer = theBridgesWidget->getSelectedLayer();
+        QString type = "Bridge";
+        exportLayerToGeoJSON(layer, featuresArray, type);
+    }
+    if(theRoadwaysWidget->getSelectedLayer() != nullptr){
+        QgsVectorLayer* layer = theRoadwaysWidget->getSelectedLayer();
+        QString type = "Roadway";
+        exportLayerToGeoJSON(layer, featuresArray, type);
+    }
+    if(theTunnelsWidget->getSelectedLayer() != nullptr){
+        QgsVectorLayer* layer = theTunnelsWidget->getSelectedLayer();
+        QString type = "Tunnel";
+        exportLayerToGeoJSON(layer, featuresArray, type);
+    }
+    combinedGeoJSON.insert("features", featuresArray);
+    QString destFile = destFolder + QDir::separator() + tr("simcenter_trnsp_inventory.geojson");
+    QFile file(destFile);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        return false;
+    }
+    QJsonDocument doc(combinedGeoJSON);
+    file.write(doc.toJson());
+    file.close();
 
+    return true;
+
+
+}
+
+void GISTransportNetworkInputWidget::exportLayerToGeoJSON(QgsVectorLayer* layer, QJsonArray& featArray, QString assetType){
+    QgsJsonExporter exporter = QgsJsonExporter(layer);
+    QgsCoordinateReferenceSystem source_crs = layer->sourceCrs();
+    QgsCoordinateReferenceSystem target_crs = QgsCoordinateReferenceSystem("EPSG:4326");
+    bool need_reproject = (source_crs.toWkt() != target_crs.toWkt());
+    QgsFeatureIterator featIt = layer->getFeatures();
+    QgsFeature feat;
+    if (need_reproject){
+        while (featIt.nextFeature(feat))
+        {
+            auto newFeat = QgsFeature(feat); // Use the feature copy constructor
+            // Do a deep clone of the geometry
+            QgsGeometry newGeom = QgsGeometry(feat.geometry().get()->clone());
+            newGeom.transform(QgsCoordinateTransform(source_crs, target_crs, QgsProject::instance()));
+            newFeat.setGeometry(newGeom);
+            QString featData = exporter.exportFeature(newFeat);
+            QJsonDocument doc = QJsonDocument::fromJson(featData.toUtf8());
+            QJsonObject featJSON = doc.object();
+            QJsonObject prop = featJSON["properties"].toObject();
+            prop.insert("type",assetType);
+            featJSON["properties"] = prop;
+            featArray.append(featJSON);
+        }
+    } else {
+        while (featIt.nextFeature(feat))
+        {
+            QString featData = exporter.exportFeature(feat);
+            QJsonDocument doc = QJsonDocument::fromJson(featData.toUtf8());
+            QJsonObject featJSON = doc.object();
+            QJsonObject prop = featJSON["properties"].toObject();
+            prop.insert("type",assetType);
+            featJSON["properties"] = prop;
+            featArray.append(featJSON);
+        }
+    }
 
 }
 
 
 bool GISTransportNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    jsonObject["Application"]="GIS_to_TRANSPORTNETWORK";
+    jsonObject["Application"]="GEOJSON_TO_ASSET";
 
     QJsonObject data;
-
-
-    if (!theBridgesWidget->isEmpty()){
-        data["assetSourceFileBridge"] = theBridgesWidget->getPathToComponentFile();
-        QString bridgesFilterData = theBridgesWidget->getFilterString();
-        if(bridgesFilterData.isEmpty())
-        {
-            auto msgBox =  std::make_unique<QMessageBox>();
-            msgBox->setText("No IDs are selected for analysis in ASD bridges of Transportation Network. Really run with all components?");
-            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-            auto res = msgBox->exec();
-            if(res != QMessageBox::Yes)
-                return false;
-        } else {
-            data["bridgesFilter"] = bridgesFilterData;
-        }
-    }
-    if (!theTunnelsWidget->isEmpty()){
-        data["assetSourceFileTunnel"] = theTunnelsWidget->getPathToComponentFile();
-        QString tunnelsFilterData = theTunnelsWidget->getFilterString();
-        if(tunnelsFilterData.isEmpty())
-        {
-            auto msgBox =  std::make_unique<QMessageBox>();
-            msgBox->setText("No IDs are selected for analysis in ASD tunnels of Transportation Network. Really run with all components?");
-            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-            auto res = msgBox->exec();
-            if(res != QMessageBox::Yes)
-                return false;
-        } else {
-            data["tunnelsFilter"] = tunnelsFilterData;
-        }
-    }
-    if (!theRoadwaysWidget->isEmpty()){
-        data["assetSourceFileRoad"] = theRoadwaysWidget->getPathToComponentFile();
-        QString roadsFilterData = theRoadwaysWidget->getFilterString();
-        if(roadsFilterData.isEmpty())
-        {
-            auto msgBox =  std::make_unique<QMessageBox>();
-            msgBox->setText("No IDs are selected for analysis in ASD roadways of Transportation Network. Really run with all components?");
-            msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-            auto res = msgBox->exec();
-            if(res != QMessageBox::Yes)
-                return false;
-        } else {
-            data["roadsFilter"] = roadsFilterData;
-        }
-//        data["roadSegLength"] = roadLengthLineEdit->text().toDouble();
-    }
-
-
 
     if(theBridgesWidget->isEmpty() && theTunnelsWidget->isEmpty() && theRoadwaysWidget->isEmpty())
     {
@@ -231,6 +233,23 @@ bool GISTransportNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject
         return false;
     }
 
+    if (!theBridgesWidget->isEmpty()){
+        QJsonObject filter {{"filter",""}};
+        data.insert("Bridge", filter);
+    }
+    if (!theTunnelsWidget->isEmpty()){
+        QJsonObject filter {{"filter",""}};
+        data.insert("Tunnel", filter);
+    }
+    if (!theRoadwaysWidget->isEmpty()){
+        QJsonObject filter {{"filter",""}};
+        data.insert("Roadway", filter);
+    }
+    if (destFolder.compare("")==0){
+        return false;
+    }
+    QString destFile = destFolder + QDir::separator() + tr("simcenter_trnsp_inventory.geojson");
+    data.insert("assetSourceFile", destFile);
     jsonObject["ApplicationData"] = data;
 
     return true;

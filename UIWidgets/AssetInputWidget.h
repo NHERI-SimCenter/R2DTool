@@ -118,6 +118,7 @@ public:
     bool isEmpty();
 
     QgsVectorLayer *getMainLayer() const;
+    QgsVectorLayer *getSelectedLayer() const;
 
     void setFilterVisibility(const bool value);
 
