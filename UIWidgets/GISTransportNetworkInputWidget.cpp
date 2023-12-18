@@ -69,7 +69,7 @@ GISTransportNetworkInputWidget::GISTransportNetworkInputWidget(QWidget *parent, 
     connect(theBridgesWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
     connect(theRoadwaysWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
     connect(theTunnelsWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
-    connect(theTunnelsWidget,&GISAssetInputWidget::doneLoadingComponents,this,&GISTransportNetworkInputWidget::handleAssetsLoaded);
+
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
