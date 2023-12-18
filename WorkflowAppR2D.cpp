@@ -396,11 +396,13 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 
             NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
             if (theNoArgWidget == nullptr || theNoArgWidget->getAppName() != "IMasEDP") {
+                QJsonObject buildingEdp;
                 QJsonObject edpData;
                 edpData["Application"]="StandardEarthquakeEDP";
                 QJsonObject edpAppData;
                 edpData["ApplicationData"] = edpAppData;
-                apps["EDP"] = edpData;
+                buildingEdp["Buildings"] = edpData;
+                apps["EDP"] = buildingEdp;
             }
         }
     }
