@@ -62,7 +62,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
-//    DLTypeComboBox->addItem("HAZUS MH EQ");
+    DLTypeComboBox->addItem("HAZUS MH EQ");
 
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
 //    DLTypeComboBox->addItem("HAZUS MH HU");
@@ -157,6 +157,9 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("regional", "true");
     if (DLTypeComboBox->currentText().compare("HAZUS MH EQ IM")==0){
         appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_IM.py");
+    }
+    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ")==0){
+        appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_Story.py");
     }
     // test separating the path and filename of auto-population codes (KZ)
     QFileInfo test_auto(autoPopulationScriptLineEdit->text());
@@ -269,11 +272,14 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                     // adam .. adam .. adam
                     pathToComponentInfoFile = currPath + QDir::separator()
                             + "input_data" + QDir::separator() + pathToScript;
-
-                    if (fileInfo.exists(pathToComponentInfoFile))
-                        autoPopulationScriptLineEdit->setText(pathToComponentInfoFile);
-                    else
+                    if (pathToScript.startsWith("PelicunDefault")){
+                        // Do nothing, the rwhale knows where to find PelicunDefault dir
+                    }
+                    else if (fileInfo.exists(pathToComponentInfoFile))
+                        autoPopulationScriptLineEdit->setText(pathToComponentInfoFile); 
+                    else{
                         this->infoMessage("Warning: the script file "+pathToScript+ " does not exist");
+                    }
                 }
             }
         }
