@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 #include "QGISVisualizationWidget.h"
 #include <QJsonArray>
+#include "qgsproject.h"
 class AssetInputDelegate;
 class PelicunPostProcessor;
 class VisualizationWidget;

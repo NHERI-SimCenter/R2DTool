@@ -242,9 +242,16 @@ int ResultsWidget::processResults(QString resultsDirectory)
     if (resultLyr){
         theVisualizationWidget->removeLayerGroup("Results");
     }
-    auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Damage State");
+    auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Critical Damage State");
     if (DMGLyr){
         theVisualizationWidget->removeLayerGroup("Most Likely Damage State");
+    }
+    QgsProject *project = QgsProject::instance();
+    for (QgsMapLayer *layer : project->mapLayers().values()) {
+//        QString
+        if ((layer->name() == "Results")||(layer->name() == "Most Likely Critical Damage State")) {
+            theVisualizationWidget->removeLayer(layer);
+        }
     }
 
     QString pathGeojson = resultsDirectory + QDir::separator() +  QString("R2D_results.geojson");
@@ -380,13 +387,20 @@ int ResultsWidget::processResults(QString resultsDirectory)
             this->errorMessage("Could not parse the layer type for layer "+DMGlayer->name());
             return -1;
         }
-        theVisualizationWidget->createCategoryRenderer("highest_DMG", DMGlayer, markerSymbol);
+        theVisualizationWidget->createCategoryRenderer("R2Dres_MostLikelyCriticalDamageState", DMGlayer, markerSymbol);
         DMGLayers.append(DMGlayer);
         mapLayers.append(assetLayer);
     }
-
-    theVisualizationWidget->createLayerGroup(mapLayers,"Results");
-    theVisualizationWidget->createLayerGroup(DMGLayers,"Most Likely Damage State");
+        if (mapLayers.count()>1){
+            theVisualizationWidget->createLayerGroup(mapLayers,"Results");
+        } else {
+            mapLayers.at(0)->setName("Results");
+        }
+        if (DMGLayers.count()>1){
+            theVisualizationWidget->createLayerGroup(DMGLayers,"Most Likely Critical Damage State");
+        } else {
+            DMGLayers.at(0)->setName("Most Likely Critical Damage State");
+        }
     }
 
     auto activeComponents = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLApps();
@@ -551,7 +565,7 @@ void ResultsWidget::clear(void)
     theCBCitiesPostProcessor->clear();
     int tabCount = resTabWidget->count();
     for (int ind = 0; ind < tabCount; ind++){
-        SC_ResultsWidget* tab = static_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
+        SC_ResultsWidget* tab = dynamic_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
         if (tab !=0){
             tab->clear();
         }
