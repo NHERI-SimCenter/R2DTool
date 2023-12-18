@@ -92,40 +92,40 @@ Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget * parent) : SC_ResultsWidge
     mainWindow = new QMainWindow(parent);
 
     // Total widget
-    totalAndFootNoteWidget = new QWidget(mainWindow);
-    totalAndFootNoteLayout = new QVBoxLayout(totalAndFootNoteWidget);
-    totalsWidget = new QWidget(totalAndFootNoteWidget);
-    totalsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    QGridLayout* totalsLayout = new QGridLayout(totalsWidget);
+//    totalAndFootNoteWidget = new QWidget(mainWindow);
+//    totalAndFootNoteLayout = new QVBoxLayout(totalAndFootNoteWidget);
+//    totalsWidget = new QWidget(totalAndFootNoteWidget);
+//    totalsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//    QGridLayout* totalsLayout = new QGridLayout(totalsWidget);
 
-    totalRepairCostLabel = new QLabel("Repair cost*: ", totalsWidget);
-    totalRepairTimeSequentialLabel = new QLabel("Repair Time (Sequential) [days]", totalsWidget);
-    totalRepairTimeParallelLabel = new QLabel("Repair Time (Parallel) [days]", totalsWidget);
+//    totalRepairCostLabel = new QLabel("Repair cost*: ", totalsWidget);
+//    totalRepairTimeSequentialLabel = new QLabel("Repair Time (Sequential) [days]", totalsWidget);
+//    totalRepairTimeParallelLabel = new QLabel("Repair Time (Parallel) [days]", totalsWidget);
 
-    totalRepairCostValueLabel = new QLabel("", totalsWidget);
-    totalRepairTimeSequentialValueLabel = new QLabel("", totalsWidget);
-    totalRepairTimeParallelValueLabel = new QLabel("", totalsWidget);
+//    totalRepairCostValueLabel = new QLabel("", totalsWidget);
+//    totalRepairTimeSequentialValueLabel = new QLabel("", totalsWidget);
+//    totalRepairTimeParallelValueLabel = new QLabel("", totalsWidget);
 
-    totalCostNoteLabel = new QLabel("* The unit of repair cost is the same with the units defined in ASD.", totalAndFootNoteWidget);
-    totalCostNoteLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//    totalCostNoteLabel = new QLabel("* The unit of repair cost is the same with the units defined in ASD.", totalAndFootNoteWidget);
+//    totalCostNoteLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-    totalsLayout->addWidget(totalRepairCostLabel,0,0);
-    totalsLayout->addWidget(totalRepairCostValueLabel,0,1,1,1,Qt::AlignLeft);
-    totalsLayout->addWidget(totalRepairTimeSequentialLabel,0,2);
-    totalsLayout->addWidget(totalRepairTimeSequentialValueLabel,0,3,1,1,Qt::AlignLeft);
-    totalsLayout->addWidget(totalRepairTimeParallelLabel,1,0);
-    totalsLayout->addWidget(totalRepairTimeParallelValueLabel,1,1,1,1,Qt::AlignLeft);
-    totalAndFootNoteLayout->addWidget(totalsWidget);
-    totalAndFootNoteLayout->addWidget(totalCostNoteLabel);
-    totalAndFootNoteLayout->addStretch();
-    totalAndFootNoteWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//    totalsLayout->addWidget(totalRepairCostLabel,0,0);
+//    totalsLayout->addWidget(totalRepairCostValueLabel,0,1,1,1,Qt::AlignLeft);
+//    totalsLayout->addWidget(totalRepairTimeSequentialLabel,0,2);
+//    totalsLayout->addWidget(totalRepairTimeSequentialValueLabel,0,3,1,1,Qt::AlignLeft);
+//    totalsLayout->addWidget(totalRepairTimeParallelLabel,1,0);
+//    totalsLayout->addWidget(totalRepairTimeParallelValueLabel,1,1,1,1,Qt::AlignLeft);
+//    totalAndFootNoteLayout->addWidget(totalsWidget);
+//    totalAndFootNoteLayout->addWidget(totalCostNoteLabel);
+//    totalAndFootNoteLayout->addStretch();
+//    totalAndFootNoteWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-    summaryDock = new QDockWidget("Estimated Regional Totals",this);
-    summaryDock->setObjectName("SummaryDock");
-    summaryDock->setWidget(totalAndFootNoteWidget);
-    summaryDock->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    summaryDock->setMaximumHeight(200);
-    mainWindow->addDockWidget(Qt::RightDockWidgetArea, summaryDock);
+//    summaryDock = new QDockWidget("Estimated Regional Totals",this);
+//    summaryDock->setObjectName("SummaryDock");
+//    summaryDock->setWidget(totalAndFootNoteWidget);
+//    summaryDock->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//    summaryDock->setMaximumHeight(200);
+//    mainWindow->addDockWidget(Qt::RightDockWidgetArea, summaryDock);
 
     mainWindow->show();
     layout->addWidget(mainWindow);
@@ -167,9 +167,9 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
     mapViewDock->setWidget(mapViewSubWidget.get());
     mainWindow->addDockWidget(Qt::LeftDockWidgetArea, mapViewDock);
 
-    double totalRepairCostValue = 0.0;
-    double totalRepairTimeSequentialValue = 0.0;
-    double totalRepairTimeParallelValue = 0.0;
+//    double totalRepairCostValue = 0.0;
+//    double totalRepairTimeSequentialValue = 0.0;
+//    double totalRepairTimeParallelValue = 0.0;
     for (int type_i=0; type_i<typesInAssetType.count(); type_i++){
         QString type = typesInAssetType.at(type_i);
         QString pathGeojson = dirName + QDir::separator() +  type + QString(".geojson");
@@ -181,9 +181,9 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
             features = jsonObject["features"].toArray();
         }
 
-        totalRepairCostValue += calculateTotal(features, "mean repair_cost-");
-        totalRepairTimeSequentialValue += calculateTotal(features, "mean repair_time-sequential");
-        totalRepairTimeParallelValue += calculateTotal(features, "mean repair_time-parallel");
+//        totalRepairCostValue += calculateTotal(features, "mean repair_cost-");
+//        totalRepairTimeSequentialValue += calculateTotal(features, "mean repair_time-sequential");
+//        totalRepairTimeParallelValue += calculateTotal(features, "mean repair_time-parallel");
 
         //Dock widget for this type
         QDockWidget* typeDockWidget = new QDockWidget(type,mainWindow);
@@ -210,7 +210,23 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         tableList.append(typeResultsTableWidget);
         // Combo box to select how to sort the table
         QHBoxLayout* comboLayout = new QHBoxLayout();
-        QStringList comboBoxHeadings = {"Asset ID","Mean Repair Cost","Mean Repair Time, Parallel [days]","Mean Repair Time, Sequential [days]", "Most Likely Critical Damage State"};
+
+        QStringList extractAttributes = {"AIM_id"};
+        QStringList comboBoxHeadings = {"AIM_id"};
+        QJsonObject ft = features.at(0).toObject();
+        QJsonObject properties = ft["properties"].toObject();
+        QStringList keys = properties.keys();
+        foreach (const QString &key, keys) {
+            if (key.startsWith("R2Dres_")){
+                QString resultName = key.section('_', 1);
+                if (!resultName.startsWith("MostLikelyDamageState")){
+                    extractAttributes.append(key);
+                    comboBoxHeadings.append(key.section('_', 1));
+                }
+            }
+        }
+
+//        QStringList comboBoxHeadings = {"Asset ID","Mean Repair Cost","Mean Repair Time, Parallel [days]","Mean Repair Time, Sequential [days]", "Most Likely Critical Damage State"};
         QComboBox* sortComboBox = new QComboBox(typeDockWidget);
         sortComboBox->insertItems(0,comboBoxHeadings);
         sortComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
@@ -226,20 +242,20 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         typetableWidgetLayout->addWidget(typeResultsTableWidget);
         typetableWidgetLayout->addStretch(0);
 
-        QStringList extractAttributes = {"AIM_id","mean repair_cost-","mean repair_time-parallel","mean repair_time-sequential", "highest_DMG"};
+//        QStringList extractAttributes = {"AIM_id","mean repair_cost-","mean repair_time-parallel","mean repair_time-sequential", "highest_DMG"};
         extractDataAddToTable(features, extractAttributes,typeResultsTableWidget, comboBoxHeadings);
         dockList.append(typeDockWidget);
 
         typeDockWidget->setWidget(typetableWidget);
         typeDockWidget->setMinimumWidth(475);
-//        typeDockWidget->setMaximumWidth(475);
+        typeDockWidget->setMaximumWidth(575);
         typeDockWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
         mainWindow->addDockWidget(Qt::RightDockWidgetArea, typeDockWidget);
 
     }
-    totalRepairCostValueLabel->setText(QString::number(totalRepairCostValue));
-    totalRepairTimeSequentialValueLabel->setText(QString::number(totalRepairTimeSequentialValue));
-    totalRepairTimeParallelValueLabel->setText(QString::number(totalRepairTimeParallelValue));
+//    totalRepairCostValueLabel->setText(QString::number(totalRepairCostValue));
+//    totalRepairTimeSequentialValueLabel->setText(QString::number(totalRepairTimeSequentialValue));
+//    totalRepairTimeParallelValueLabel->setText(QString::number(totalRepairTimeParallelValue));
     // tabify dock widgets
     if (dockList.count()>1){
         QDockWidget* base = dockList.at(0);
@@ -248,11 +264,11 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         }
     }
     // resize docks
-    QList<QDockWidget*> alldocks = {mapViewDock, summaryDock};
+    QList<QDockWidget*> alldocks = {mapViewDock};
     float windowWidth = mainWindow->size().width();
     float windowHeight = mainWindow->size().height();
-    QList<int> dockWidthes = {int(0.7*windowWidth), int(0.3*windowWidth)};
-    QList<int> dockHeights = {int(windowHeight), int(0.3*windowHeight)};
+    QList<int> dockWidthes = {int(0.7*windowWidth)};
+    QList<int> dockHeights = {int(windowHeight)};
     for (int dock_i = 0; dock_i<dockList.count(); dock_i++){
         alldocks.append(dockList.at(dock_i));
         dockWidthes.append(int(0.3*windowWidth));
@@ -283,7 +299,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         }
         viewMenu = resultsMenu->addMenu("&" + assetType);
         viewMenu->addAction(tr("&Restore"), this, &Pelicun3PostProcessor::restoreUI);
-        viewMenu->addAction(summaryDock->toggleViewAction());
+//        viewMenu->addAction(summaryDock->toggleViewAction());
         viewMenu->addAction(mapViewDock->toggleViewAction());
         for (int dock_i = 0; dock_i<dockList.count(); dock_i++){
             viewMenu->addAction(dockList.at(dock_i)->toggleViewAction());

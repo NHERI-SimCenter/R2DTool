@@ -144,22 +144,22 @@ private:
 
     QMenu* viewMenu;
 
-    QLabel* totalRepairCostLabel;
-    QLabel* totalRepairTimeSequentialLabel;
-    QLabel* totalRepairTimeParallelLabel;
+//    QLabel* totalRepairCostLabel;
+//    QLabel* totalRepairTimeSequentialLabel;
+//    QLabel* totalRepairTimeParallelLabel;
 
-    QLabel* totalRepairCostValueLabel;
-    QLabel* totalRepairTimeSequentialValueLabel;
-    QLabel* totalRepairTimeParallelValueLabel;
+//    QLabel* totalRepairCostValueLabel;
+//    QLabel* totalRepairTimeSequentialValueLabel;
+//    QLabel* totalRepairTimeParallelValueLabel;
 
-    QLabel* totalCostNoteLabel;
-    QWidget* totalsWidget;
-    QWidget* totalAndFootNoteWidget;
-    QVBoxLayout* totalAndFootNoteLayout;
+//    QLabel* totalCostNoteLabel;
+//    QWidget* totalsWidget;
+//    QWidget* totalAndFootNoteWidget;
+//    QVBoxLayout* totalAndFootNoteLayout;
 
 
     QDockWidget* mapViewDock;
-    QDockWidget* summaryDock;
+//    QDockWidget* summaryDock;
 
     QWidget *tableWidget;
     QVBoxLayout* layout;
