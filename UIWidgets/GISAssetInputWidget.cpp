@@ -101,8 +101,7 @@ GISAssetInputWidget::GISAssetInputWidget(QWidget *parent, VisualizationWidget* v
     // mainWidgetLayout->insertWidget(insPoint-3,crsSelectorWidget);
     //
 #else
-    auto insPoint = mainWidgetLayout->count();
-    mainWidgetLayout->insertWidget(insPoint-3,crsSelectorWidget);
+    mainWidgetLayout->addWidget(crsSelectorWidget,0,0,1,4);
 #endif
 
     //    pathToComponentInputFile = "/Users/steve/Desktop/GalvestonTestbed/GalvestonGIS/GalvestonBuildings/galveston-bldg-v7.shp";
