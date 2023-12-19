@@ -1352,7 +1352,7 @@ void PelicunPostProcessor::clear(void)
     DMdata.clear();
     DVdata.clear();
     EDPdata.clear();
-    if(!IMdata.isEmpty())
+    if(!IMdata.isEmpty() && IMdata.size()>numHeaderRows)
         siteResponseTableWidget->clear();
     IMdata.clear();
 

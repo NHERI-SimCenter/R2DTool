@@ -43,7 +43,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CBCitiesPostProcessor.h"
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
-#include "VisualizationWidget.h"
 #include <WorkflowAppR2D.h>
 #include "sectiontitle.h"
 
@@ -66,8 +65,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QFileDialog>
 
-ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
 {
+    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
+
+    theParent = parent;
+
     DVApp = "Pelicun";
 
     resultsMainLabel = new QLabel("No results to display", this);
@@ -116,9 +119,6 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     theCBCitiesPostProcessor = std::make_unique<CBCitiesPostProcessor>(parent,theVisualizationWidget);
 
     resTabWidget = new QTabWidget();
-
-    resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings");
-    resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Pipelines");
 
     mainStackedWidget->addWidget(resTabWidget);
 
@@ -229,37 +229,215 @@ bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 
 int ResultsWidget::processResults(QString resultsDirectory)
 {
-    //auto SCPrefs = SimCenterPreferences::getInstance();
-
     //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
+    int tabCount = resTabWidget->count();
+    for (int ind = 0; ind < tabCount; ind++){
+        SC_ResultsWidget* tab = static_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
+        if (tab !=0){
+            tab->clear();
+        }
+    }
+    resTabWidget->clear();
+    auto resultLyr = theVisualizationWidget->getLayerGroup("Results");
+    if (resultLyr){
+        theVisualizationWidget->removeLayerGroup("Results");
+    }
+    auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Critical Damage State");
+    if (DMGLyr){
+        theVisualizationWidget->removeLayerGroup("Most Likely Damage State");
+    }
+    QgsProject *project = QgsProject::instance();
+    for (QgsMapLayer *layer : project->mapLayers().values()) {
+//        QString
+        if ((layer->name() == "Results")||(layer->name() == "Most Likely Critical Damage State")) {
+            theVisualizationWidget->removeLayer(layer);
+        }
+    }
+
+    QString pathGeojson = resultsDirectory + QDir::separator() +  QString("R2D_results.geojson");
+    QFile jsonFile(pathGeojson);
+    QMap<QString, QList<QJsonObject>> assetDictionary;
+    QMap<QString, QList<QString>> assetTypeToType;
+    QJsonObject crs;
+    if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
+
+        QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
+        QJsonObject jsonObject = exDoc.object();
+
+        if(jsonObject.contains("crs"))
+            crs = jsonObject["crs"].toObject();
+        QString crsString = crs["properties"].toObject()["name"].toString();
+        QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
+        if (!qgsCRS.isValid()){
+            qgsCRS.createFromOgcWmsCrs(crsString);
+        }
+        if (!qgsCRS.isValid()){
+            QString msg = "The CRS defined in " + pathGeojson + "is invalid and ignored";
+            errorMessage(msg);
+        }
+        QJsonArray features = jsonObject["features"].toArray();
+        for (const QJsonValue& valueIt : features) {
+            QJsonObject value = valueIt.toObject();
+            // Get the type
+            QJsonObject assetProperties = value["properties"].toObject();
+            if (!jsonObject.contains("type")) {
+                this->errorMessage("The Json object is missing the 'type' key that defines the asset type");
+                return false;
+            }
+            // type is Bridge/Tunnel/Road
+            QString type = assetProperties["type"].toString();
+            if (!assetDictionary.contains(type))
+            {
+                assetDictionary[type] = QList<QJsonObject>({value});
+            }
+            else
+            {
+                QList<QJsonObject>& featList = assetDictionary[type];
+                featList.append(value);
+            }
+            // assetType is Transportation Network
+            QString assetType = assetProperties["assetType"].toString();
+            if (!assetTypeToType.contains(assetType))
+            {
+                assetTypeToType[assetType] = QList<QString>({type});
+            }
+            else
+            {
+                QList<QString>& typesList = assetTypeToType[assetType];
+                bool typeExists = false;
+                for (QString it : typesList){
+                    if (it.compare(type)==0){
+                        typeExists = true;
+                    }
+                }
+                if (!typeExists){
+                    typesList.append(type);
+                }
+            }
+        }
+    }
+    else{
+        // for legacy pelicun 2 results
+//        this->errorMessage("Failed to open file at location: "+pathGeojson);
+//        return false;
+    }
+
+    if (jsonFile.exists()){
+    QVector<QgsMapLayer*> mapLayers;
+    QVector<QgsMapLayer*> DMGLayers;
+    for (auto it = assetDictionary.begin(); it != assetDictionary.end(); ++it)
+    {
+        QString assetType = it.key();
+        QList<QJsonObject> features = it.value();
+
+        QJsonArray featuresArray;
+        for (const auto& obj : features) {
+            featuresArray.append(obj);
+        }
+
+        QJsonObject assetDictionary;
+        assetDictionary["type"]="FeatureCollection";
+        assetDictionary["features"]=featuresArray;
+
+        if(!crs.isEmpty())
+            assetDictionary["crs"]=crs;
+
+        QString outputFile = resultsDirectory + QDir::separator() + assetType + ".geojson";
+
+        QFile file(outputFile);
+        if (!file.open(QFile::WriteOnly | QFile::Text))
+        {
+            this->errorMessage("Error creating the asset output json file in GeojsonAssetInputWidget");
+            return false;
+        }
+
+        // Write the file to the folder
+        QJsonDocument doc(assetDictionary);
+        file.write(doc.toJson());
+        file.close();
+
+        QgsVectorLayer* assetLayer;
+        assetLayer = theVisualizationWidget->addVectorLayer(outputFile, assetType + QString("_results"), "ogr");
+        if(assetLayer == nullptr)
+        {
+            this->errorMessage("Error, failed to add GIS layer");
+            return false;
+        }
+        QgsVectorLayer* DMGlayer;
+        DMGlayer = theVisualizationWidget->duplicateExistingLayer(assetLayer);
+        DMGlayer->setName(assetType + QString("_DMG"));
+        QgsSymbol* markerSymbol = nullptr;
+        // Get the layer type
+        QString layerType;
+        auto geomType = DMGlayer->geometryType();
+        if(geomType == QgsWkbTypes::PolygonGeometry){
+            layerType = "polygon";
+            markerSymbol = new QgsFillSymbol();
+        }
+        else if (geomType == QgsWkbTypes::PointGeometry){
+            layerType = "point";
+            markerSymbol = new QgsMarkerSymbol();
+        }
+        else if (geomType == QgsWkbTypes::LineGeometry){
+            layerType = "linestring";
+            markerSymbol = new QgsLineSymbol();
+        }
+        else
+        {
+            this->errorMessage("Could not parse the layer type for layer "+DMGlayer->name());
+            return -1;
+        }
+        theVisualizationWidget->createCategoryRenderer("R2Dres_MostLikelyCriticalDamageState", DMGlayer, markerSymbol);
+        DMGLayers.append(DMGlayer);
+        mapLayers.append(assetLayer);
+    }
+        if (mapLayers.count()>1){
+            theVisualizationWidget->createLayerGroup(mapLayers,"Results");
+        } else {
+            mapLayers.at(0)->setName("Results");
+        }
+        if (DMGLayers.count()>1){
+            theVisualizationWidget->createLayerGroup(DMGLayers,"Most Likely Critical Damage State");
+        } else {
+            DMGLayers.at(0)->setName("Most Likely Critical Damage State");
+        }
+    }
 
     auto activeComponents = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLApps();
-
+    auto activeAssetDLappMap = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveAssetDLMap();
     if(activeComponents.isEmpty())
         return -1;
 
     qDebug() << resultsDirectory;
+
+    QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
+
+
+    try {
+        for (QString assetType : activeDLResultsWidgets.keys()){
+            activeDLResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
+            resTabWidget->addTab(activeDLResultsWidgets[assetType], assetType);
+            QString resultFile = assetType + QString(".geojson");
+            QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+            activeDLResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+
+        }
+    } catch (const QString msg)
+    {
+        this->errorMessage(msg);
+
+        return -1;
+    }
     try
     {
-        if(activeComponents.contains("pelicun"))
-        {
+        if (activeAssetDLappMap.contains("Buildings") && activeAssetDLappMap["Buildings"].compare("pelicun")==0){
+            resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings");
             thePelicunPostProcessor->importResults(resultsDirectory);
-            resTabWidget->setTabVisible(0, true);
-
         }
-        else
+        if(activeAssetDLappMap.contains("Water Network") && activeAssetDLappMap["Water Network"].compare("CBCitiesDL")==0)
         {
-            resTabWidget->setTabVisible(0, false);
-        }
-
-        if(activeComponents.contains("CBCitiesDL"))
-        {
+            resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Network");
             theCBCitiesPostProcessor->importResults(resultsDirectory);
-            resTabWidget->setTabVisible(1, true);
-        }
-        else
-        {
-            resTabWidget->setTabVisible(1, false);
         }
 
         this->resultsShow(true);
@@ -385,6 +563,14 @@ void ResultsWidget::clear(void)
 
     thePelicunPostProcessor->clear();
     theCBCitiesPostProcessor->clear();
+    int tabCount = resTabWidget->count();
+    for (int ind = 0; ind < tabCount; ind++){
+        SC_ResultsWidget* tab = dynamic_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
+        if (tab !=0){
+            tab->clear();
+        }
+    }
+    resTabWidget->clear();
 
     resultsShow(false);
 }

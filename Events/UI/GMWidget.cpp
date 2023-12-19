@@ -669,36 +669,27 @@ void GMWidget::runHazardSimulation(void)
     //int maxID = m_siteConfig->siteGrid().getNumSites() - 1;
     int minID = 0;
     int maxID = 1;
+    QString filterIDs;
     if(m_siteConfig->getType() == SiteConfig::SiteType::Grid)
     {
         maxID = m_siteConfig->siteGrid().getNumSites() - 1;
+        filterIDs = QString::number(minID)+"-"+QString::number(maxID);
     }
     else if(m_siteConfig->getType() == SiteConfig::SiteType::Scatter)
     {
         minID = m_siteConfigWidget->getSiteScatterWidget()->getMinID();
         maxID = m_siteConfigWidget->getSiteScatterWidget()->getMaxID();
+        filterIDs = QString::number(minID)+"-"+QString::number(maxID);
     }
     else if(m_siteConfig->getType() == SiteConfig::SiteType::UserCSV)
     {
-        QString filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
+        filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
         if (filterIDs.isEmpty())
         {
             this->statusMessage("Warning: no filters defined - will load all sites.");
             m_siteConfigWidget->getCsvSiteWidget()->selectAllComponents();
             filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
         }
-        QStringList IDs = filterIDs.split(QRegExp(",|-"), QString::SkipEmptyParts);
-        qDebug() << IDs;
-        int tmpMin = 10000000;
-        int tmpMax = 0;
-        for (int i = 0; i < IDs.size(); i++) {
-            if (IDs[i].toInt() > tmpMax)
-                tmpMax = IDs[i].toInt();
-            if (IDs[i].toInt() < tmpMin)
-                tmpMin = IDs[i].toInt();
-        }
-        minID = tmpMin;
-        maxID = tmpMax;
     }
 
     //    maxID = 5;
@@ -707,8 +698,9 @@ void GMWidget::runHazardSimulation(void)
     QJsonObject siteObj;
     siteObj.insert("Type", "From_CSV");
     siteObj.insert("input_file", "SiteFile.csv");
-    siteObj.insert("min_ID", minID);
-    siteObj.insert("max_ID", maxID);
+//    siteObj.insert("min_ID", minID);
+//    siteObj.insert("max_ID", maxID);
+    siteObj.insert("filterIDs", filterIDs);
     // add an output_file field for preparing OpenQuake site model
     siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
 
