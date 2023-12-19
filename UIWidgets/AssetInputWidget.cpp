@@ -90,9 +90,11 @@ AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidg
 
     auto txt3 = QStringRef(&assetType, 0, assetType.length()-1) + " Information";
 
+#ifdef OpenSRA
     label1->setText(txt1);
     label2->setText(txt2);
     label3->setText(txt3);
+#endif
 
     theComponentDb = ComponentDatabaseManager::getInstance()->createAssetDb(assetType);
 
@@ -268,6 +270,8 @@ ComponentTableView *AssetInputWidget::getTableWidget() const
 
 void AssetInputWidget::createComponentsBox(void)
 {
+  
+#ifdef OpenSRA 
     componentGroupBox = new QGroupBox(assetType);
     componentGroupBox->setFlat(true);
     componentGroupBox->setContentsMargins(0,0,0,0);
@@ -282,12 +286,12 @@ void AssetInputWidget::createComponentsBox(void)
     label1 = new QLabel();
     
     QLabel* pathText = new QLabel();
-    pathText->setText("Path to file:");
+    pathText->setText("Assets to Analyze:");
     
     componentFileLineEdit = new QLineEdit();
-    //    componentFileLineEdit->setMaximumWidth(750);
-    componentFileLineEdit->setMinimumWidth(400);
-    componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    // componentFileLineEdit->setMaximumWidth(750);
+    // componentFileLineEdit->setMinimumWidth(400);
+    // componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
 
     browseFileButton = new QPushButton();
@@ -342,23 +346,112 @@ void AssetInputWidget::createComponentsBox(void)
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
 
-#ifdef OpenSRA
     // hide selection part
     selectComponentsLineEdit->setText("1");
     selectComponentsLineEdit->hide();
     clearSelectionButton->hide();
     filterExpressionButton->hide();
-#else
-    mainWidgetLayout->addWidget(filterWidget);
-#endif
 
     mainWidgetLayout->addWidget(label3,0,Qt::AlignCenter);
     mainWidgetLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
     
     mainWidgetLayout->addStretch();
 
-    this->setLayout(mainWidgetLayout);
+#else // using GridLayout
+    
+    componentGroupBox = new QGroupBox(assetType);
+    componentGroupBox->setFlat(true);
+    componentGroupBox->setContentsMargins(0,0,0,0);
+    
+    mainWidgetLayout = new QGridLayout();
+    
+    // mainWidgetLayout->setMargin(0);
+    // mainWidgetLayout->setSpacing(5);
+    // mainWidgetLayout->setContentsMargins(10,0,0,0);
+    
+    componentGroupBox->setLayout(mainWidgetLayout);
+    
+    label1 = new QLabel();
+    label1->setText("Asset File:");
+    
+    // QLabel* pathText = new QLabel();
+    // pathText->setText("Path to file:");
+    
+    componentFileLineEdit = new QLineEdit();
+    // componentFileLineEdit->setMaximumWidth(750);
+    // componentFileLineEdit->setMinimumWidth(400);
+    // componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
+
+    browseFileButton = new QPushButton("Browse");
+    //    browseFileButton->setText(tr("Browse"));
+    browseFileButton->setMaximumWidth(150);
+    
+    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));
+    
+    // Add a horizontal spacer after the browse and load buttons
+    //    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
+    
+    label2 = new QLabel();
+    label2->setText("Assets to Analyze:");
+    selectComponentsLineEdit = new AssetInputDelegate();
+    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&AssetInputWidget::handleComponentSelection);
+    connect(selectComponentsLineEdit,&QLineEdit::editingFinished,this,&AssetInputWidget::selectComponents);
+    
+    QPushButton *clearSelectionButton = new QPushButton();
+    clearSelectionButton->setText(tr("Clear Selection"));
+    clearSelectionButton->setMaximumWidth(150);
+    
+    connect(clearSelectionButton,SIGNAL(clicked()),this,SLOT(clearComponentSelection()));
+
+    QPushButton *filterExpressionButton = new QPushButton();
+    filterExpressionButton->setText(tr("Advanced Filter"));
+    filterExpressionButton->setMaximumWidth(150);
+    connect(filterExpressionButton,SIGNAL(clicked()),this,SLOT(handleComponentFilter()));
+    
+    // Text label for Component information
+    label3 = new QLabel();
+    label3->setStyleSheet("font-weight: bold; color: black");
+    label3->hide();
+    
+    // Create the table that will show the Component information
+    componentTableWidget = new ComponentTableView();
+    
+    connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &AssetInputWidget::handleCellChanged);
+
+    mainWidgetLayout->addWidget(label1, 1,0);
+    mainWidgetLayout->addWidget(componentFileLineEdit, 1,1);
+    mainWidgetLayout->addWidget(browseFileButton, 1,2);    
+    
+    //pathLayout = new QHBoxLayout();
+    //pathLayout->addWidget(pathText);
+    //pathLayout->addWidget(componentFileLineEdit);
+    //pathLayout->addWidget(browseFileButton);
+    
+    // Add a vertical spacer at the bottom to push everything up
+    // mainWidgetLayout->addWidget(label1);
+    //    mainWidgetLayout->addLayout(pathLayout);
+
+    //    filterWidget = new QWidget();
+    //QHBoxLayout* selectComponentsLayout = new QHBoxLayout(filterWidget);
+    //selectComponentsLayout->addWidget(label2);
+    // selectComponentsLayout->addWidget(selectComponentsLineEdit);
+    // selectComponentsLayout->addWidget(filterExpressionButton);
+    //selectComponentsLayout->addWidget(clearSelectionButton);
+    mainWidgetLayout->addWidget(label2, 2,0);
+    mainWidgetLayout->addWidget(selectComponentsLineEdit, 2,1);
+    mainWidgetLayout->addWidget(filterExpressionButton, 2,2);
+    mainWidgetLayout->addWidget(clearSelectionButton, 2,3);
+    // mainWidgetLayout->addWidget(label3,0,Qt::AlignCenter);
+    
+    mainWidgetLayout->addWidget(componentTableWidget,3, 0, 1,4);
+    mainWidgetLayout->setRowStretch(4,1);
+    
+    //    mainWidgetLayout->addStretch();
+
+#endif
+
+    this->setLayout(mainWidgetLayout);    
 }
 
 
@@ -487,19 +580,25 @@ void AssetInputWidget::clearComponentSelection(void)
 
 void AssetInputWidget::setLabel1(const QString &value)
 {
-    label1->setText(value);
+#ifdef OpenSRA
+  label1->setText(value);
+#endif
 }
 
 
 void AssetInputWidget::setLabel2(const QString &value)
 {
-    label2->setText(value);
+#ifdef OpenSRA  
+  label2->setText(value);
+#endif  
 }
 
 
 void AssetInputWidget::setLabel3(const QString &value)
 {
-    label3->setText(value);
+#ifdef OpenSRA    
+  label3->setText(value);
+#endif  
 }
 
 
@@ -1006,3 +1105,22 @@ void AssetInputWidget::setFilterVisibility(const bool value)
     filterWidget->setVisible(value);
 }
 
+void AssetInputWidget::hideCRS_Selection() const
+{
+    int rowAssetPath = 0; // I don't like this .. crs row should be defined and hidden .. the inut takes a layout
+    for (int i=0; i<mainWidgetLayout->columnCount(); i++) {
+        QLayoutItem *item = mainWidgetLayout->itemAtPosition(rowAssetPath,i);
+        if (item != nullptr)
+            item->widget()->hide();
+    }
+}
+
+void AssetInputWidget::hideAssetFilePath() const
+{
+    int rowAssetPath = 1; // again i don't like this solution
+    for (int i=0; i<mainWidgetLayout->columnCount(); i++) {
+        QLayoutItem *item = mainWidgetLayout->itemAtPosition(rowAssetPath,i);
+        if (item != nullptr)
+            item->widget()->hide();
+    }
+}

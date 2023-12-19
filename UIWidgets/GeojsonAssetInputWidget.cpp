@@ -54,7 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QJsonArray>
 
-GeojsonAssetInputWidget::GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
+GeojsonAssetInputWidget::GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType)
+    : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
@@ -483,11 +484,11 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
 
         this->statusMessage("Loading asset type "+assetType+" with "+ QString::number(features.size())+" features");
 
-        auto thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
+        GISAssetInputWidget *thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
 
         // Hide the first label
+        /*
         thisAssetWidget->getLabel1()->hide();
-
         thisAssetWidget->getCRSSelectorWidget()->hide();
 
         // Hide the file input widgets in the asset file path layout
@@ -498,6 +499,10 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
                 widget->hide();
             }
         }
+        */
+	
+        thisAssetWidget->hideCRS_Selection();
+        thisAssetWidget->hideAssetFilePath();
 
         thisAssetWidget->setPathToComponentInputFile(outputFile);
         if (!thisAssetWidget->loadAssetData(false)) {
