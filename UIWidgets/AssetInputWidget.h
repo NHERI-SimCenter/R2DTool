@@ -66,6 +66,7 @@ class QLabel;
 class QVBoxLayout;
 class QPushButton;
 class QHBoxLayout;
+class QGridLayout;
 
 class AssetInputWidget : public  SimCenterAppWidget, public GISSelectable
 {
@@ -118,6 +119,7 @@ public:
     bool isEmpty();
 
     QgsVectorLayer *getMainLayer() const;
+    QgsVectorLayer *getSelectedLayer() const;
 
     void setFilterVisibility(const bool value);
 
@@ -128,8 +130,10 @@ public:
     QString getAssetType() const;
 
     QHBoxLayout *getAssetFilePathLayout() const;
-
     QLabel *getLabel1() const;
+
+    void hideAssetFilePath() const;
+    void hideCRS_Selection() const;
 
     void setPathToComponentInputFile(const QString &newPathToComponentInputFile);
 
@@ -143,7 +147,7 @@ public slots:
 
 protected slots:
     void selectComponents(void);
-    virtual bool loadAssetData(void);
+    virtual bool loadAssetData(bool message = true);
     void chooseComponentInfoFileDialog(void);
     void clearComponentSelection(void);
     void handleComponentFilter(void);
@@ -182,7 +186,7 @@ protected:
     QGroupBox* componentGroupBox = nullptr;
 
 #ifndef OpenSRA
-    QVBoxLayout* mainWidgetLayout = nullptr;
+    QGridLayout* mainWidgetLayout = nullptr;
 #endif
 
     QLabel* label1 = nullptr;
