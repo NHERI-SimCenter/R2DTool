@@ -39,7 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Dr. Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "CRSSelectionWidget.h"
 #include <QList>
+#include <QBoxLayout>
 
 class QGISVisualizationWidget;
 class VisualizationWidget;
@@ -51,6 +53,7 @@ class QLineEdit;
 class QgsMapLayer;
 class QgsFeature;
 class QgsGeometry;
+class CRSSelectionWidget;
 
 class GeojsonAssetInputWidget : public SimCenterAppWidget
 {
@@ -60,15 +63,20 @@ public:
     GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType);
     virtual ~GeojsonAssetInputWidget();
 
+    void insertLineEditToMainLayout(int index, QWidget* widget, QLineEdit* LineEdit, QString componentType, QString FieldName);
+
     void clear();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool copyFiles(QString &destName);
+    bool copyFiles(QString &destDir);
 
 protected slots:
-    void loadAssetData();
+    bool loadAssetData();
     void chooseAssetFileDialog(void);
+
+private slots:
+    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
 
 protected:
 
@@ -82,6 +90,16 @@ protected:
 
     QString componentType;
     QString appType;
+
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+
+    QVBoxLayout* mainLayout = nullptr;
+
+    // Additional fields:
+    QList<QLineEdit*> LineEditList;
+    QMap<QString, QLineEdit*> FieldNameToLineEdit;
+    QMap<QString, QList<QWidget*>> ComponentTypeToAdditionalWidget;
+    QMap<QString, QList<QString>> ComponentTypeToFieldNames;
 
 };
 

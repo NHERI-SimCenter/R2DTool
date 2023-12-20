@@ -48,15 +48,17 @@ CRSSelectionWidget::CRSSelectionWidget(QWidget* parent) : QWidget(parent)
 {
 
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
+    mainLayout->setContentsMargins(0,0,0,0);
 
     mCrsSelector = new QgsProjectionSelectionWidget();
-    mCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+    // mCrsSelector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     mCrsSelector->setObjectName(QString::fromUtf8("mCrsSelector"));
     mCrsSelector->setFocusPolicy(Qt::StrongFocus);
 
     connect(mCrsSelector,&QgsProjectionSelectionWidget::crsChanged,this,[=](const QgsCoordinateReferenceSystem& val){emit crsChanged(val);});
 
-    QLabel* crsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
+    //    QLabel* crsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
+    QLabel* crsTypeLabel = new QLabel("Coordinate Reference System:",this);    
 
     mainLayout->addWidget(crsTypeLabel);
     mainLayout->addWidget(mCrsSelector);

@@ -39,6 +39,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Dr. Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include <QLineEdit>
+#include <QLabel>
+#include <QLabel>
+#include <QMessageBox>
+#include <QLineEdit>
+#include <QLabel>
+#include <QLabel>
+#include <QMessageBox>
+#include <qgsjsonutils.h>
+#include <QJsonArray>
+#include <qgscoordinatereferencesystem.h>
+#include <qgsproject.h>
+#include <qgscoordinatetransform.h>
 
 class QGISVisualizationWidget;
 class VisualizationWidget;
@@ -58,6 +71,7 @@ public:
 
     virtual int loadBridgesVisualization();
     virtual int loadRoadwaysVisualization();
+    virtual int loadTunnelsVisualization();
 
     void clear();
 
@@ -67,16 +81,26 @@ public:
 
 protected slots:
     void handleAssetsLoaded();
+    void printRoadLengthInput(void);
 
 protected:
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
     GISAssetInputWidget* theBridgesWidget = nullptr;
+    GISAssetInputWidget* theTunnelsWidget = nullptr;
     GISAssetInputWidget* theRoadwaysWidget = nullptr;
+
 
     QgsVectorLayer* bridgesMainLayer = nullptr;
     QgsVectorLayer* roadwaysMainLayer = nullptr;
+    QgsVectorLayer* tunnelsMainLayer = nullptr;
+
+    void exportLayerToGeoJSON(QgsVectorLayer* layer, QJsonArray& featArray,QString assetType);
+private:
+//    QLineEdit *roadLengthLineEdit;
+//    QWidget* roadLengthWidget = nullptr;
+    QString destFolder = "";
 
 };
 
