@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include <WorkflowAppR2D.h>
-#include "SectionTitle.h"
+#include "sectiontitle.h"
 
 #include <QCheckBox>
 #include <QApplication>
@@ -71,7 +71,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsfillsymbol.h>
 #include <qgsmarkersymbol.h>
-
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
@@ -293,6 +292,9 @@ int ResultsWidget::processResults(QString resultsDirectory)
             }
             // type is Bridge/Tunnel/Road
             QString type = assetProperties["type"].toString();
+            if (type.compare("")==0){
+                type = "Building";
+            }
             if (!assetDictionary.contains(type))
             {
                 assetDictionary[type] = QList<QJsonObject>({value});
@@ -578,6 +580,22 @@ void ResultsWidget::clear(void)
         }
     }
     resTabWidget->clear();
+
+    auto resultLyr = theVisualizationWidget->getLayerGroup("Results");
+    if (resultLyr){
+        theVisualizationWidget->removeLayerGroup("Results");
+    }
+    auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Critical Damage State");
+    if (DMGLyr){
+        theVisualizationWidget->removeLayerGroup("Most Likely Damage State");
+    }
+    QgsProject *project = QgsProject::instance();
+    for (QgsMapLayer *layer : project->mapLayers().values()) {
+        //        QString
+        if ((layer->name() == "Results")||(layer->name() == "Most Likely Critical Damage State")) {
+            theVisualizationWidget->removeLayer(layer);
+        }
+    }
 
     resultsShow(false);
 }
