@@ -275,7 +275,9 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
-//    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);
+    /* *********************** Performance ***************************** 
+    theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);    
+    ******************************************************************** */
 
 
     theComponentSelection->displayComponent("VIZ");
@@ -363,11 +365,13 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
         result = false;
     }
 
-//    if (thePerformanceWidget->outputAppDataToJSON(apps) == false) {
-//        this->errorMessage("Error writing PRF data to output");
-//        thePerformanceWidget->clear();
-//        result = false;
-//    }
+    /* **************************** Performance ***************************** 
+    if (thePerformanceWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing PRF data to output");
+        thePerformanceWidget->clear();
+        result = false;
+    }
+    **************************** Performance ***************************** */    
     
     if (theUQWidget->outputAppDataToJSON(apps) == false) {
         this->errorMessage("Error writing UQ data to output");
@@ -411,7 +415,10 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     theAnalysisWidget->outputToJSON(jsonObjectTop);
     theDamageAndLossWidget->outputToJSON(jsonObjectTop);
     theHazardToAssetWidget->outputToJSON(jsonObjectTop);
-//    thePerformanceWidget->outputToJSON(jsonObjectTop);
+    /* **************************** Performance *****************************
+    thePerformanceWidget->outputToJSON(jsonObjectTop);       
+    ******************************* Performance ***************************** */
+    
     theUQWidget->outputToJSON(jsonObjectTop);
     theRVs->outputToJSON(jsonObjectTop);
 
@@ -461,7 +468,9 @@ void WorkflowAppR2D::clear(void)
     theAssetsWidget->clear();
     theHazardsWidget->clear();
     theDamageAndLossWidget->clear();
-//    thePerformanceWidget->clear();
+    /* **************************** Performance *****************************    
+    thePerformanceWidget->clear();
+    ****************************** Performance ***************************** */    
     theResultsWidget->clear();
     theVisualizationWidget->clear();
     // progressDialog->clear();
@@ -535,11 +544,13 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
             result = false;
         }
 
-        if (thePerformanceWidget->inputAppDataFromJSON(apps) == false) {
+	/* **************************** Performance *****************************
+	  if (thePerformanceWidget->inputAppDataFromJSON(apps) == false) {
             this->errorMessage("PRF failed to read input data");
             thePerformanceWidget->clear();
             result = false;
         }
+        *************************************************************************/
 	
     } else {
         this->errorMessage("Error, no Applications field in input file");
@@ -597,11 +608,12 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
       this->errorMessage("DL failed to read app specific data");
       result = false;
     }
-    
+    /* **************************** Performance *****************************	       
     if (thePerformanceWidget->inputFromJSON(jsonObject) == false) {
       this->errorMessage("PRF failed to read app specific data");
       result = false;
     }
+    **************************** Performance ******************************** */
     
     return result;
 }
@@ -891,7 +903,9 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         theModelingWidget->show(text);
 	//        theLocalEvent->show(text);
         theAnalysisWidget->show(text);
+	/* ********* PERFORMANCE **********
         thePerformanceWidget->show(text);
+	* *********************************/
         theDamageAndLossWidget->show(text);
         theUQWidget->show(text);
     }
@@ -902,7 +916,9 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         theModelingWidget->hide(text);
         //theLocalEvent->hide(text);	
         theAnalysisWidget->hide(text);
+	/* ********* PERFORMANCE **********	
         thePerformanceWidget->hide(text);
+	*********************************** */	
         theDamageAndLossWidget->hide(text);
         theUQWidget->hide(text);
     }
