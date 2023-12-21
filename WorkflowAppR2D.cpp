@@ -679,7 +679,7 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     else
         destinationDirectory.mkpath(tmpDirectory);
 
-
+    theResultsWidget->clear();
     //qDebug() << "WorkflowAppR2D is changinging subDir to input_data";
     subDir = "input_data";
 
