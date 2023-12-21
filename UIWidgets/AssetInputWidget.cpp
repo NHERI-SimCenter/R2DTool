@@ -140,7 +140,7 @@ bool AssetInputWidget::loadAssetData(bool message)
     
     // Test to remove
     // auto start = high_resolution_clock::now();
-    
+
     CSVReaderWriter csvTool;
     
     QString err;
@@ -191,8 +191,11 @@ bool AssetInputWidget::loadAssetData(bool message)
     }
     
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
-    
+
+#ifdef OpenSRA
     label3->show();
+#endif
+    
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
@@ -202,7 +205,8 @@ bool AssetInputWidget::loadAssetData(bool message)
 
     if(selectedFeaturesLayer != nullptr)
         theVisualizationWidget->removeLayer(selectedFeaturesLayer);
-    
+
+
     auto res = this->loadAssetVisualization();
 
     if(res != 0)
@@ -726,7 +730,8 @@ bool AssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         }
     }
 
-
+    
+    
     if (jsonObject.contains("ApplicationData")) {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
 

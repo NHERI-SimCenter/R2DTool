@@ -284,14 +284,6 @@ void WorkflowAppR2D::initialize(void)
 
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidgetR2D->setAssetTypeState("Buildings", true);
-
-    // Test to remove start
-    // theComponentSelection->displayComponent("HAZ");
-//     loadFile("/Users/steve/Desktop/E11SeasideWaterNetwork/input.json");
-//     loadFile("/Users/steve/Desktop/E12EastBayWaterNetwork/input.json");
-//     loadResults();
-    // Test to remove end
-
 }
 
 
@@ -512,7 +504,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
             theLocalEvent->clear();
             result = false;
         }	
-
+	
         if (theAnalysisWidget->inputAppDataFromJSON(apps) == false) {
             this->errorMessage("ANA failed to read input data");
             theAnalysisWidget->clear();
@@ -530,7 +522,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
             theAssetsWidget->clear();
             result = false;
         }
-
+	
         if (theHazardsWidget->inputAppDataFromJSON(apps) == false) {
             this->errorMessage("HAZ failed to read input data");
             theHazardsWidget->clear();
@@ -548,13 +540,14 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
             thePerformanceWidget->clear();
             result = false;
         }
-
-    } else
-    {
+	
+    } else {
         this->errorMessage("Error, no Applications field in input file");
         return false;
     }
 
+
+    
     //
     // now read app specific data
     //
@@ -818,7 +811,10 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
 
 int WorkflowAppR2D::loadFile(QString &fileName){
 
+    //
     // check file exists & set apps current dir of it does
+    //
+    
     QFileInfo fileInfo(fileName);
     if (!fileInfo.exists()){
         this->errorMessage(QString("File does not exist: ") + fileName);
@@ -827,8 +823,7 @@ int WorkflowAppR2D::loadFile(QString &fileName){
 
     QString dirPath = fileInfo.absoluteDir().absolutePath();
     QDir::setCurrent(dirPath);
-    // qDebug() << "WorkflowAppR2D: setting current dir" << dirPath;
-
+    
     //
     // open file
     //
@@ -851,35 +846,33 @@ int WorkflowAppR2D::loadFile(QString &fileName){
     // close file
     file.close();
 
-    progressDialog->showProgressBar();
-    QApplication::processEvents();
-
-    // Clear this before loading a new file
-    this->clear();
-
+    //
     // Clean up and find the relative paths if the paths are wrong
+    //
+    
     SCUtils::ResolveAbsolutePaths(jsonObj, fileInfo.dir());
     SCUtils::PathFinder(jsonObj,dirPath);
+    
+    //
+    // clear current and input from new JSON
+    //
 
-    auto res = this->inputFromJSON(jsonObj);
-    if(res == false)
-    {
+    this->clear();
+    bool res = this->inputFromJSON(jsonObj);
+    if(res == false) {
         this->errorMessage("Failed to load the input file: " + fileName);
-        progressDialog->hideProgressBar();
         return -1;
-    }
+    } 
 
-    progressDialog->hideProgressBar();
-
+    this->statusMessage("Done Loading File");
+    /*
     auto fileSender = qobject_cast<RemoteJobManager*>(QObject::sender());
     if(fileSender == nullptr)
-        this->statusMessage("Done loading input file.  Click on the 'RUN' button to run an analysis.");
+    this->statusMessage("Done Loading File");
     else
-        this->statusMessage("Done loading from remote.");
-
-    // Automatically hide after n seconds
-    // progressDialog->hideAfterElapsedTime(4);
-
+        this->statusMessage("Done Downloading & Loading Remote File");
+    */
+    
     return 0;
 }
 
