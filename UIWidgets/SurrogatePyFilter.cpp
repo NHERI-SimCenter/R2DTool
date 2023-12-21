@@ -159,7 +159,7 @@ SurrogateFile::inputFromJSON(QJsonObject &jsonObject) {
     theFilePath->setFilename(fullFilePath);
 
     if (jsonObject.contains("modelName")) {
-        QJsonValue theValue = jsonObject["dirn"];
+        QJsonValue theValue = jsonObject["modelName"];
         theModelName->setText(theValue.toString());
     } else
         return false;
@@ -300,7 +300,6 @@ bool SurrogatePyFilter::outputToJSON(QJsonObject &jsonObject)
     QFileInfo fileInfo(filterPath->getFilename());
     jsonObject["filterFileName"]= fileInfo.fileName();
     jsonObject["filterFilePath"]=fileInfo.path();
-    jsonObject["defaultModule"]="";
 
     bool result = true;
     QJsonArray theArray;
@@ -329,22 +328,25 @@ bool SurrogatePyFilter::inputFromJSON(QJsonObject &jsonObject)
 
     // clean out current list
     this->clear();
-
+    QString filterFilePath = jsonObject["filterFilePath"].toString();
+    QString filterFileName = jsonObject["filterFileName"].toString();
+    auto  myPath = filterFilePath + QDir::separator() + filterFileName;
+    filterPath->setFilename(myPath);
     // get array
-    if (jsonObject.contains("Events")) {
-        if (jsonObject["Events"].isArray()) {
+    if (jsonObject.contains("Models")) {
+        if (jsonObject["Models"].isArray()) {
 
-            QJsonArray eventArray = jsonObject["Events"].toArray();
+            QJsonArray modelArray = jsonObject["Models"].toArray();
 
             // foreach object in array
-            foreach (const QJsonValue &eventValue, eventArray) {
+            foreach (const QJsonValue &modelValue, modelArray) {
 
                 // get data, create an event, read it and then add to layout
 
-                QJsonObject eventObject = eventValue.toObject();
+                QJsonObject modelObject = modelValue.toObject();
                 SurrogateFile *theModel = new SurrogateFile();
 
-                if (theModel->inputFromJSON(eventObject)) { // this method is where type is set
+                if (theModel->inputFromJSON(modelObject)) { // this method is where type is set
                     theModels.append(theModel);
                     surLayout->insertWidget(surLayout->count()-1, theModel);
                 } else {
@@ -379,7 +381,6 @@ bool SurrogatePyFilter::outputAppDataToJSON(QJsonObject &jsonObject) {
     QFileInfo fileInfo(filterPath->getFilename());
     dataObj["fileName"]= fileInfo.fileName();
     dataObj["filePath"]=fileInfo.path();
-    dataObj["defaultModule"]="";
     jsonObject["ApplicationData"] = dataObj;
 
     return 1;
@@ -400,7 +401,7 @@ bool SurrogatePyFilter::inputAppDataFromJSON(QJsonObject &jsonObject) {
 bool SurrogatePyFilter::copyFiles(QString &dirName) {
 
     QString fileName = filterPath->getFilename();
-    QFileInfo fileInfo(fileName);    
+    QFileInfo fileInfo(fileName);
 
     if (fileInfo.exists()) {
         this->copyFile(fileName, dirName);

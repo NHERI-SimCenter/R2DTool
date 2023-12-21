@@ -92,7 +92,7 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation"), openSees);
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
-  buildingWidget->addComponent(QString("PreTrained Surrogate Models"), QString("SurrogateSimulation"), surrogatePy);
+  buildingWidget->addComponent(QString("PreTrained Surrogate Models"), QString("SurrogateRegionalPy"), surrogatePy);
   buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
   // KZ: adding customPy
