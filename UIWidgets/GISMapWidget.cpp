@@ -108,8 +108,8 @@ QWidget* GISMapWidget::getGISInputWidget(void)
     selectComponentsText->setWordWrap(true);
 
     GISMapDirectoryLineEdit = new QLineEdit();
-    GISMapDirectoryLineEdit->setMinimumWidth(400);
-    GISMapDirectoryLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    // GISMapDirectoryLineEdit->setMinimumWidth(400);
+    // GISMapDirectoryLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     QPushButton *browseFileButton = new QPushButton();
     browseFileButton->setText(tr("Browse"));
