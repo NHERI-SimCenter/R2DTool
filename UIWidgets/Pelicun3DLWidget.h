@@ -68,7 +68,7 @@ public:
     bool recursiveCopy(const QString &sourcePath, const QString &destPath);
 
 
-    SC_ResultsWidget* getResultsWidget(QWidget* parent = nullptr) override;
+    SC_ResultsWidget* getResultsWidget(QWidget* parent = nullptr);
 
     QMainWindow* getPostProcessor(void);
 public slots:

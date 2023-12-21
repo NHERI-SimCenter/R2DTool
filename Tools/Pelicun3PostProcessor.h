@@ -116,12 +116,12 @@ public:
 
     void setCurrentlyViewable(bool status);
 
-    void clear(void) override;
+    void clear(void);
 
     void setIsVisible(const bool value);
 
     int processResults(QString &outputFile, QString &dirName, QString &assetType,
-                       QList<QString> typesInAssetType) override;
+                       QList<QString> typesInAssetType);
 
     QMainWindow* mainWindow;
 private slots:
