@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include <WorkflowAppR2D.h>
-#include "SectionTitle.h"
+#include "sectiontitle.h"
 
 #include <QCheckBox>
 #include <QApplication>
@@ -71,7 +71,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsfillsymbol.h>
 #include <qgsmarkersymbol.h>
-
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);

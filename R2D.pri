@@ -147,6 +147,7 @@ SOURCES +=  $$PWD/Events/UI/EarthquakeRuptureForecast.cpp \
             $$PWD/UIWidgets/SiteSpecifiedMapping.cpp \
             $$PWD/UIWidgets/GISBasedMapping.cpp \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.cpp \
+            $$PWD/UIWidgets/SurrogatePyFilter.cpp \
             $$PWD/UIWidgets/WaterNetworkPerformanceModel.cpp \
             $$PWD/UIWidgets/PelicunDLWidget.cpp \
             $$PWD/UIWidgets/Pelicun3DLWidget.cpp \	    
@@ -271,6 +272,7 @@ HEADERS +=  $$PWD/Events/UI/EarthquakeRuptureForecast.h \
             $$PWD/UIWidgets/SiteSpecifiedMapping.h \
             $$PWD/UIWidgets/GISBasedMapping.h \
             $$PWD/UIWidgets/OpenSeesPyBuildingModel.h \
+            $$PWD/UIWidgets/SurrogatePyFilter.h \
             $$PWD/UIWidgets/WaterNetworkPerformanceModel.h \
             $$PWD/UIWidgets/PelicunDLWidget.h \
             $$PWD/UIWidgets/Pelicun3DLWidget.h \	    
