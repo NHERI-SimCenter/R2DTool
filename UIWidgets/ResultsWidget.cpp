@@ -251,7 +251,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
     }
     auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Critical Damage State");
     if (DMGLyr){
-        theVisualizationWidget->removeLayerGroup("Most Likely Damage State");
+        theVisualizationWidget->removeLayerGroup("Most Likely Critical Damage State");
     }
     QgsProject *project = QgsProject::instance();
     for (QgsMapLayer *layer : project->mapLayers().values()) {
@@ -588,7 +588,7 @@ void ResultsWidget::clear(void)
     }
     auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Critical Damage State");
     if (DMGLyr){
-        theVisualizationWidget->removeLayerGroup("Most Likely Damage State");
+        theVisualizationWidget->removeLayerGroup("Most Likely Critical Damage State");
     }
     QgsProject *project = QgsProject::instance();
     for (QgsMapLayer *layer : project->mapLayers().values()) {
