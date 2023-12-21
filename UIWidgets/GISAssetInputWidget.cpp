@@ -370,7 +370,7 @@ bool GISAssetInputWidget::loadAssetData(bool message)
     }
 
     // Add the ID column to the headers
-    //fieldsStrList.push_front("ID");
+//    fieldsStrList.push_front("Index");
 
     tableHorizontalHeadings = fieldsStrList;
 
@@ -388,6 +388,7 @@ bool GISAssetInputWidget::loadAssetData(bool message)
     {
         //QStringList attributeStrList = {QString::number(i+1)};
         QStringList attributeStrList;
+//        attributeStrList.push_back(QString::number(i));
 
         auto attributes = feat.attributes();
         for(int i = 0; i<attributes.size(); ++i)
@@ -416,8 +417,9 @@ bool GISAssetInputWidget::loadAssetData(bool message)
 
     componentTableWidget->clear();
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
-
+#ifdef OpenSRA
     label3->show();
+#endif
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
@@ -558,7 +560,7 @@ bool GISAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             this->errorMessage(errMessage);
             return false;
         }
-
+        QApplication::processEvents();
         if (appData.contains("filter"))
             this->setFilterString(appData["filter"].toString());
 
