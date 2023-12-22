@@ -1,5 +1,5 @@
-#ifndef GeojsonAssetInputWidget_H
-#define GeojsonAssetInputWidget_H
+#ifndef SURROGATE_PY_FILTER_H
+#define SURROGATE_PY_FILTER_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,71 +36,91 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Dr. Stevan Gavrilovic
+// Written by: Frank McKenna
 
 #include "SimCenterAppWidget.h"
-#include "CRSSelectionWidget.h"
-#include <QList>
-#include <QBoxLayout>
+#include "SC_FileEdit.h"
+#include "SC_StringLineEdit.h"
+#include "SimCenterAppSelection.h"
 
-class QGISVisualizationWidget;
-class VisualizationWidget;
-class GISAssetInputWidget;
-class MultiComponentR2D;
+#include <QComboBox>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QVector>
+#include <QRadioButton>
 
-class QLineEdit;
+//class InputWidgetParameters;
 
-class QgsMapLayer;
-class QgsFeature;
-class QgsGeometry;
-class CRSSelectionWidget;
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <QSpinBox>
 
-class GeojsonAssetInputWidget : public SimCenterAppWidget
+using namespace std;
+
+class SurrogateFile : public SimCenterWidget
 {
     Q_OBJECT
-
 public:
-    GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType);
-    virtual ~GeojsonAssetInputWidget();
+    explicit SurrogateFile(QWidget *parent = 0);
+    ~SurrogateFile();
 
-    void insertLineEditToMainLayout(int index, QWidget* widget, QLineEdit* LineEdit, QString componentType, QString FieldName);
+    bool outputToJSON(QJsonObject &rvObject);
+    bool inputFromJSON(QJsonObject &rvObject);
+    QString getFilePath(void);
 
-    void clear();
+    QRadioButton *button;  // used to mark if Event intended for deletion
+    SC_FileEdit  *theFilePath;    // full path to file name
+    SC_StringLineEdit  *theModelName;  // load factor
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-    bool copyFiles(QString &destDir);
+public slots:
+    //void chooseFileName(void);
+    void onFilePathChanged(QString);
+    void onRemoveMod(bool);
+    //void onAddMod(bool);
 
-protected slots:
-    bool loadAssetData();
-    void chooseAssetFileDialog(void);
-
-private slots:
-    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
-
-protected:
-
-    QLineEdit* componentFileLineEdit = nullptr;
-
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
-    MultiComponentR2D* mainAssetWidget = nullptr;
-
-    QList<GISAssetInputWidget*> theAssetInputWidgetList;
-    QList<QgsMapLayer*> theAssetLayerList;
-
-    QString componentType;
-    QString appType;
-
-    CRSSelectionWidget* crsSelectorWidget = nullptr;
-
-    QVBoxLayout* mainLayout = nullptr;
-
-    // Additional fields:
-    QList<QLineEdit*> LineEditList;
-    QMap<QString, QLineEdit*> FieldNameToLineEdit;
-    QMap<QString, QList<QWidget*>> ComponentTypeToAdditionalWidget;
-    QMap<QString, QList<QString>> ComponentTypeToFieldNames;
+signals:
+    void removeRecord();
 
 };
 
-#endif // GeojsonAssetInputWidget_H
+
+class SurrogatePyFilter : public SimCenterAppWidget
+{
+    Q_OBJECT
+public:
+    explicit SurrogatePyFilter(QWidget *parent = 0);
+    ~SurrogatePyFilter();
+
+    bool outputToJSON(QJsonObject &rvObject) override;
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputAppDataToJSON(QJsonObject &rvObject) override;
+    bool inputAppDataFromJSON(QJsonObject &rvObject) override;
+    bool copyFiles(QString &dirName) override;
+    SimCenterAppSelection *buildingWidget;
+
+    QString getMainInput();
+    QVBoxLayout *recordLayout;
+    QRadioButton *button; // used to mark if Event intended for deletion
+    QLineEdit *theName; // a QLineEdit with name of File (filename minus path and extension)
+    QVector<SurrogateFile  *>theFiles;
+
+    void clear(void);
+
+public slots:
+
+    void addMod(void);
+    void removeMod(void);
+    void removeAllMods(void);
+    void loadModsFromDir(void);
+
+private:
+    SC_FileEdit *filterPath;
+
+    QVBoxLayout *verticalLayout;
+    QVBoxLayout *surLayout;
+
+    QVector<SurrogateFile *>theModels;
+};
+
+#endif // SURROGATE_PY_FILTER_H

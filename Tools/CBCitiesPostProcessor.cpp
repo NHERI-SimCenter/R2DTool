@@ -109,7 +109,7 @@ CBCitiesPostProcessor::CBCitiesPostProcessor(QWidget *parent, VisualizationWidge
 
     if(resultsMenu)
     {
-        viewMenu = resultsMenu->addMenu(tr("&View"));
+        viewMenu = resultsMenu->addMenu(tr("&Water Network"));
         viewMenu->addAction(tr("&Restore"), this, &CBCitiesPostProcessor::restoreUI);
     }
     else
