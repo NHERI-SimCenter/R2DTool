@@ -38,35 +38,30 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
+#include "SimCenterAppSelection.h"
 
-#include "JsonSerializable.h"
+class SimCenterAppWidget;
+class NSHMCurveWidget;
+class UserDefinedCurveWidget;
 
-class QComboBox;
-class QStackedWidget;
-
-class MeanUCERFPoissonWidget;
-class MeanUCERFFM3Widget;
-
-class HazardCurveInputWidget : public QWidget, JsonSerializable
+class HazardCurveInputWidget : public SimCenterAppSelection
 {
     Q_OBJECT
 
 public:
-    explicit HazardCurveInputWidget(QWidget *parent = nullptr);
+    explicit HazardCurveInputWidget(QString jsonKey,QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
-
-    void reset(void);
 
 public slots:
 
 private:
 
-    QStackedWidget* mainStackedWidget = nullptr;
-    QComboBox* meanPresetsCombo = nullptr;
-
+    SimCenterAppWidget* inferredWIdget = nullptr;
+    NSHMCurveWidget* nshmWidget = nullptr;
+    UserDefinedCurveWidget* userDefHaz = nullptr;
+    QString jsonKey;
 
 };
 

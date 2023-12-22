@@ -38,22 +38,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "IntensityMeasure.h"
+#include "SimCenterAppWidget.h"
 
-#include <QWidget>
-
-class QComboBox;
-class QCheckBox;
+class SC_ComboBox;
 class QLineEdit;
 class QLabel;
 
-class SpatialCorrelationWidget : public QWidget
+class SpatialCorrelationWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
     explicit SpatialCorrelationWidget(QWidget *parent = nullptr);
 
-    QJsonObject getJsonCorr();
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
 
 signals:
 
@@ -61,8 +59,8 @@ public slots:
     void handleAvailableModel(const QString sourceType);
 
 private:
-    QComboBox* m_correlationBoxInter;
-    QComboBox* m_correlationBoxIntra;
+    SC_ComboBox* m_correlationBoxInter = nullptr;
+    SC_ComboBox* m_correlationBoxIntra = nullptr;
 
     QLabel* spatialCorrelationInterLabel;
     QLabel* spatialCorrelationIntraLabel;

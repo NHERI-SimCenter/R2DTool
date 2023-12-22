@@ -60,7 +60,7 @@ class MapViewSubWidget;
 class RecordSelectionConfig;
 class RecordSelectionWidget;
 class SpatialCorrelationWidget;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 class ScenarioSelectionWidget;
 class GroundMotionModelsWidget;
 
@@ -72,7 +72,7 @@ class GMWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit GMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit GMWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~GMWidget();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -101,14 +101,14 @@ public slots:
     void showGISWindow(void);
     void runHazardSimulation(void);
 
+    void runScenarioForecast(void);
+
     // Handles the results when the user is finished
-    void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void handleProcessFinished();
 
     // Brings up the dialog and tells the user that the process has started
     void handleProcessStarted(void);
 
-    // Displays the text output of the process in the dialog
-    void handleProcessTextOutput(void);
 
     // Download records once selected
     int downloadRecords(void);
@@ -128,6 +128,12 @@ public slots:
 private slots:
 
 private:
+
+    QJsonObject loadJsonFile(const QString& filePath);
+
+    QVector<QStringList> getUserGridData(void);
+    QVector<QStringList> getSingleLocationGridData(void);
+
     PeerNgaWest2Client peerClient;
 
     QProcess* process = nullptr;
@@ -148,7 +154,7 @@ private:
     QString eventPath;
     QString motionFolder;
 
-    VisualizationWidget* theVisualizationWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
     MapViewWindow* mapViewSubWidget = nullptr;
     RectangleGrid* userGrid = nullptr;

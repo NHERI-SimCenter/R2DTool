@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGridLayout>
 #include <QLabel>
 
-MeanUCERFPoissonWidget::MeanUCERFPoissonWidget(QWidget *parent) : QWidget(parent)
+MeanUCERFPoissonWidget::MeanUCERFPoissonWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     //We use a grid layout for the Rupture widget
     auto mainLayout = new QGridLayout(this);
@@ -70,12 +70,6 @@ MeanUCERFPoissonWidget::MeanUCERFPoissonWidget(QWidget *parent) : QWidget(parent
     mainLayout->addWidget(backgroundSeisCombo,2,1);
     mainLayout->addWidget(backgroundSeisTypeLabel,3,0);
     mainLayout->addWidget(backgroundSeisTypeCombo,3,1);
-
-}
-
-
-void MeanUCERFPoissonWidget::reset(void)
-{
 
 }
 

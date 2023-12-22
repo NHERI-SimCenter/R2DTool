@@ -49,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QMessageBox>
 
-OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterWidget(parent)
+OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 

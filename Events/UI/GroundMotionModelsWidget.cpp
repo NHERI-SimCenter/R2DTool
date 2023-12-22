@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QComboBox>
 
-GroundMotionModelsWidget::GroundMotionModelsWidget(QWidget *parent) : QWidget(parent)
+GroundMotionModelsWidget::GroundMotionModelsWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     auto mainLayout = new QVBoxLayout(this);
 
@@ -74,6 +74,7 @@ GroundMotionModelsWidget::GroundMotionModelsWidget(QWidget *parent) : QWidget(pa
     mainLayout->addWidget(m_intensityMeasureWidget);
     mainLayout->addWidget(m_gmpeWidget);
     mainLayout->addWidget(spatialCorrWidget);
+    mainLayout->addStretch(0);
 
 }
 
@@ -100,13 +101,25 @@ bool GroundMotionModelsWidget::outputToJSON(QJsonObject& obj)
 {
 
     // Get the correlation model Json object
-    auto corrModObj = spatialCorrWidget->getJsonCorr();
+    QJsonObject spatCorrObj;
+    if (!spatialCorrWidget->outputToJSON(spatCorrObj))
+        return false;
+
 
     // Get the intensity measure Json object
-    auto IMObj = m_intensityMeasure->getJson();
+    QJsonObject IMObj;
+    if (!m_intensityMeasure->outputToJSON(IMObj))
+        return false;
 
-    obj.insert("CorrelationModel", corrModObj);
+
+    QJsonObject GMPEObj;
+    if (!m_gmpeWidget->outputToJSON(GMPEObj))
+        return false;
+
+
+    obj.insert("CorrelationModel", spatCorrObj);
     obj.insert("IntensityMeasure", IMObj);
+    obj.insert("GMPE", GMPEObj);
 
     return true;
 }

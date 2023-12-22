@@ -38,14 +38,38 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
-
-#include "JsonSerializable.h"
+#include "SimCenterAppWidget.h"
+#include <QValidator>
 
 class SC_ComboBox;
+class SC_IntLineEdit;
+class SC_StringLineEdit;
 class HazardCurveInputWidget;
+class IntensityMeasure;
+class SC_StringLineEdit;
+class QRegExpValidator;
 
-class HazardConsistentScenarioWidget : public QWidget, JsonSerializable
+// CustomValidator class for custom validation logic
+class CustomRPValidator : public QValidator
+{
+public:
+    CustomRPValidator(QObject *parent = nullptr) : QValidator(parent) {}
+
+    // Validate function is called during user input
+    State validate(QString &input, int &/*pos*/) const override
+    {
+        // Use a regular expression for custom validation
+        QRegExp rx("(\\s*\\d+\\s*,?\\s*)*");
+
+        if (rx.exactMatch(input))
+            return Acceptable;
+        else
+            return Invalid;
+    }
+};
+
+
+class HazardConsistentScenarioWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
@@ -55,14 +79,19 @@ public:
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
 
-    void reset(void);
-
 public slots:
 
 private:
 
+    QJsonArray getRPArray(const QString& integerListString);
+
     SC_ComboBox* downSamplingCombo = nullptr;
     HazardCurveInputWidget* hazCurveWidget = nullptr;
+    IntensityMeasure* m_intensityMeasure = nullptr;
+    SC_IntLineEdit* scenarioSampleSizeLE = nullptr;
+    SC_IntLineEdit* gmSampleSizeLE = nullptr;
+    SC_StringLineEdit* return_periods_lineEdit = nullptr;
+
 };
 
 #endif // HazardConsistentScenarioWidget_H

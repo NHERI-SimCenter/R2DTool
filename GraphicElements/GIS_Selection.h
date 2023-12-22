@@ -61,7 +61,7 @@ class GIS_Selection : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-  GIS_Selection(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+  GIS_Selection(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
   ~GIS_Selection();
   QVector<double> getSelectedPoints(void);
 		  

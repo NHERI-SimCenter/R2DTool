@@ -39,18 +39,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "RecordSelectionConfig.h"
-#include "JsonSerializable.h"
+#include "SimCenterAppWidget.h"
 
-#include <QWidget>
-
-class QLineEdit;
 class QLabel;
 
 class SC_ComboBox;
 class SC_DoubleLineEdit;
 class SC_IntLineEdit;
 
-class RecordSelectionWidget : public QWidget, JsonSerializable
+class RecordSelectionWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
@@ -60,7 +57,6 @@ public:
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
-    void reset(void);
 
 private slots:
 

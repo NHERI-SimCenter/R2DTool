@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Kuanshi Zhong
 
-#include "SimCenterWidget.h"
+#include "SimCenterAppWidget.h"
 #include "qsettings.h"
 
 class OpenQuakeClassical;
@@ -51,7 +51,7 @@ class QDoubleSpinBox;
 class QCheckBox;
 class QComboBox;
 
-class OpenQuakeUserSpecifiedWidget : public SimCenterWidget
+class OpenQuakeUserSpecifiedWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 

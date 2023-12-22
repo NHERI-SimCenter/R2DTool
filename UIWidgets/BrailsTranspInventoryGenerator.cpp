@@ -58,11 +58,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_DoubleLineEdit.h>
 #include <QSettings>
 
-BrailsTranspInventoryGenerator::BrailsTranspInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
-{
-    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
-    assert(visWidget);
-    
+BrailsTranspInventoryGenerator::BrailsTranspInventoryGenerator(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+{   
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     minLat  = new SC_DoubleLineEdit("minLat",0.0);

@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGridLayout>
 #include <QLabel>
 
-MeanUCERFFM3Widget::MeanUCERFFM3Widget(QWidget *parent) : QWidget(parent)
+MeanUCERFFM3Widget::MeanUCERFFM3Widget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     //We use a grid layout for the Rupture widget
     auto mainLayout = new QGridLayout(this);
@@ -60,11 +60,11 @@ MeanUCERFFM3Widget::MeanUCERFFM3Widget(QWidget *parent) : QWidget(parent)
     auto bptAvgTypeLabel = new QLabel("BPT Averaging Type");
 
     applyAfterShockCB = new SC_CheckBox("ApplyAfterShockFilter", "Apply Aftershock Filter");
-    AleatoryMagStdDevLE = new SC_DoubleLineEdit("RuptureOffset");
-    backgroundSeisCombo = new SC_ComboBox("BackgroundSeismicity",QStringList({"Include"}));
-    backgroundSeisTypeCombo = new SC_ComboBox("BackgroundSeismicityType",QStringList({"Point Sources"}));
+    AleatoryMagStdDevLE = new SC_DoubleLineEdit("Rupture Offset");
+    backgroundSeisCombo = new SC_ComboBox("Background Seismicity",QStringList({"Include"}));
+    backgroundSeisTypeCombo = new SC_ComboBox("BackgroundSeismicityType",QStringList({"Point Sources", "Two perpendicular faults"}));
     faultGridSpacingLE = new SC_DoubleLineEdit("FaultGridSpacing",1.0);
-    probabilityModelCombo = new SC_ComboBox("PorbabilityModel",QStringList({"UCERF3 BPT"}));
+    probabilityModelCombo = new SC_ComboBox("Probability Model",QStringList({"UCERF3 BPT"}));
     aperiodicityModelCombo = new SC_ComboBox("Aperiodicity",QStringList({"0.5,0.4,0.3,0.2"}));
     historicOpenIntLE = new SC_DoubleLineEdit("HistoricOpenInterval", 0.0);
     bptAvgTypeCombo = new SC_ComboBox("BPTAvgType",QStringList({"AveRI and AveNormTimeSince"}));
@@ -88,12 +88,6 @@ MeanUCERFFM3Widget::MeanUCERFFM3Widget(QWidget *parent) : QWidget(parent)
     mainLayout->addWidget(historicOpenIntLE,7,1);
     mainLayout->addWidget(bptAvgTypeLabel,8,0);
     mainLayout->addWidget(bptAvgTypeCombo,8,1);
-
-}
-
-
-void MeanUCERFFM3Widget::reset(void)
-{
 
 }
 

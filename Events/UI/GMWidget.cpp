@@ -64,6 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ScenarioSelectionWidget.h"
 #include "GroundMotionModelsWidget.h"
 #include "IntensityMeasure.h"
+#include "ModularPython.h"
 
 #ifdef INCLUDE_USER_PASS
 #include "R2DUserPass.h"
@@ -93,7 +94,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 
 
-GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+GMWidget::GMWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
 
 
@@ -106,7 +107,6 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
 
     process = new QProcess(this);
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &GMWidget::handleProcessFinished);
-    connect(process, &QProcess::readyReadStandardOutput, this, &GMWidget::handleProcessTextOutput);
     connect(process, &QProcess::started, this, &GMWidget::handleProcessStarted);
 
 
@@ -130,22 +130,24 @@ GMWidget::GMWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterA
     QWidget     *mainGroup = new QWidget();
     auto *mainLayout = new QVBoxLayout(mainGroup);
 
-//    QLabel *generalDescriptionLabel = new QLabel("\n Steps Involved in Obtaining a Set of Motions for a Set of Sites given a Rupture: "
-//                                                 "\n --> Earthquake - specyfying source and ground motion models"
-//                                                 "\n --> Sites - specifying locations and soil conditions for sites"
-//                                                 "\n --> Selection - specifying ground motion database and intensity measure correlations between sites for selected records");
+    //    QLabel *generalDescriptionLabel = new QLabel("\n Steps Involved in Obtaining a Set of Motions for a Set of Sites given a Rupture: "
+    //                                                 "\n --> Earthquake - specyfying source and ground motion models"
+    //                                                 "\n --> Sites - specifying locations and soil conditions for sites"
+    //                                                 "\n --> Selection - specifying ground motion database and intensity measure correlations between sites for selected records");
 
-//    mainLayout->addWidget(generalDescriptionLabel, 0, 0);
+    //    mainLayout->addWidget(generalDescriptionLabel, 0, 0);
 
     // Create the site tab widget
     siteWidget = new GMSiteWidget(theVisualizationWidget);
     theTabWidget->addTab(siteWidget, "Sites");
 
     // Create the earthquake rupture forecast widget
-    erfWidget = new GMERFWidget(theVisualizationWidget);
+    erfWidget = new GMERFWidget(theVisualizationWidget, m_appConfig,"Scenario");
     theTabWidget->addTab(erfWidget, "Earthquake Rupture Forecasting");
 
-    scenarioSelectWidget = new ScenarioSelectionWidget();
+//    erfWidget->processRuptureScenarioResults();
+
+    scenarioSelectWidget = new ScenarioSelectionWidget("Generator");
     theTabWidget->addTab(scenarioSelectWidget, "Scenario Selection");
 
     groundMotionModelsWidget = new GroundMotionModelsWidget();
@@ -197,59 +199,17 @@ void GMWidget::setupConnections()
 {
 
     //Connecting the run button
-    connect(m_runButton, &QPushButton::clicked, this, [this]()
-    {
-
-        // Get the type of site definition, i.e., single or grid
-        auto type = siteWidget->siteConfig()->getType();
-
-        if(type == SiteConfig::SiteType::Single)
-        {
-            QString msg = "Single site selection not supported yet";
-            this->infoMessage(msg);
-            return;
-        }
-        else if(type == SiteConfig::SiteType::Grid)
-        {
-            if(!siteWidget->siteConfigWidget()->getSiteGridWidget()->getGridCreated())
-            {
-                QString msg = "Please select a grid before continuing";
-                this->statusMessage(msg);
-                return;
-            }
-        }
-        else if(type == SiteConfig::SiteType::Scatter)
-        {
-            if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->siteFileExists())
-            {
-                QString msg = "Please choose a site file before continuing";
-                this->statusMessage(msg);
-                return;
-            }
-        }
-
-        // kz: only contact PEER NGA when the databse is set to "NGA West"
-        if(this->m_selectionconfig->getDatabase().compare("NGAWest2")==0) {
-            QString userName = getPEERUserName();
-            QString password = getPEERPassWord();
-            peerClient.signIn(userName, password);
-        }
-        /***
-        // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
-        QString userName = getPEERUserName();
-        QString password = getPEERPassWord();
-
-        peerClient.signIn(userName, password);
-        ***/
+    connect(m_runButton, &QPushButton::clicked, this, &GMWidget::runHazardSimulation);
 
 
-        runHazardSimulation();
-    });
+    //Connecting the run button
+    connect(erfWidget->getForecastRupScenButton(), &QPushButton::clicked, this, &GMWidget::runScenarioForecast );
+
 
     connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, [this](QString statusUpdate)
-    {
-        this->statusMessage(statusUpdate);
-    });
+            {
+                this->statusMessage(statusUpdate);
+            });
 
     //connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
 
@@ -261,10 +221,10 @@ void GMWidget::setupConnections()
 
 
     connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString zipFile)
-    {
-        this->parseDownloadedRecords(zipFile);
-        this->getProgressDialog()->hideProgressBar();
-    });
+            {
+                this->parseDownloadedRecords(zipFile);
+                this->getProgressDialog()->hideProgressBar();
+            });
 
     // connect use event and ground motion dir to Hazard widget to switch
     connect(m_eventGMDir, &EventGMDirWidget::useEventFileMotionDir, this, &GMWidget::sendEventFileMotionDir);
@@ -312,7 +272,7 @@ void GMWidget::initAppConfig()
             if (!dirWork.mkpath(workingDir))
             {
                 QString errorMessage = QString("Could not load the Working Directory: ") + workingDir
-                        + QString(". Change the Local Jobs Directory location in preferences.");
+                                       + QString(". Change the Local Jobs Directory location in preferences.");
 
                 this->errorMessage(errorMessage);
 
@@ -346,7 +306,7 @@ void GMWidget::initAppConfig()
             if (!dirWork.mkpath(workingDir))
             {
                 QString errorMessage = QString("Could not load the Input File Directory: ") + workingDir
-                        + QString(". Change the Local Jobs Directory location in preferences.");
+                                       + QString(". Change the Local Jobs Directory location in preferences.");
 
                 this->errorMessage(errorMessage);
 
@@ -379,7 +339,7 @@ void GMWidget::initAppConfig()
             if (!dirWork.mkpath(workingDir))
             {
                 QString errorMessage = QString("Could not load the Input File Directory: ") + workingDir
-                        + QString(". Change the Local Jobs Directory location in preferences.");
+                                       + QString(". Change the Local Jobs Directory location in preferences.");
 
                 this->errorMessage(errorMessage);
 
@@ -516,7 +476,7 @@ bool GMWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
         if (!motionD.exists()){
             QString trialDir = QDir::currentPath() +
-                    QDir::separator() + "input_data" + motionFolder;
+                               QDir::separator() + "input_data" + motionFolder;
             if (motionD.exists(trialDir)) {
                 motionFolder = trialDir;
                 m_eventGMDir->setMotionDir(motionFolder);
@@ -565,267 +525,176 @@ bool GMWidget::inputFromJSON(QJsonObject &/*jsonObject*/){
 }
 
 
-void GMWidget::runHazardSimulation(void)
+QVector<QStringList> GMWidget::getUserGridData(void)
 {
-
-    simulationComplete = false;
-
-    QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
-
-    // Remove old csv files in the output folder
-    const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
-
-    // Get the existing files in the folder to see if we already have the record
-    QStringList acceptableFileExtensions = {"*.csv"};
-    QStringList existingCSVFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
-
-    // Remove the csv files - in case we have less sites that previous and they are not overwritten
-    for(auto&& it : existingCSVFiles)
-    {
-        QFile file(pathToGMFilesDirectory + it);
-        file.remove();
-    }
-
-    // Clean out any existing input files
-    auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
-
-    QStringList nameFilters = {"SiteFile.csv","OpenQuakeSiteModel.csv","sites_oq.csv","EQHazardConfiguration.json","oq_job.ini","rupture_model_example.xml"};
-
-    QDir dir(pathToInputDir);
-    dir.setNameFilters(nameFilters);
-    dir.setFilter(QDir::Files);
-    foreach(QString dirFile, dir.entryList())
-    {
-        dir.remove(dirFile);
-    }
-
-    // Remove the grid from the visualization screen
-    if(userGrid)
-        userGrid->hide();
-
-    // First check if the settings are valid
-    QString err;
-    if(!m_appConfig->validate(err))
-    {
-        this->errorMessage(err);
-        return;
-    }
-
-    //int maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
-    int minID = 0;
-    int maxID = 1;
-    if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Grid)
-    {
-        maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
-    }
-    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Scatter)
-    {
-        minID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMinID();
-        maxID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMaxID();
-    }
-    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::UserCSV)
-    {
-        QString filterIDs = siteWidget->siteConfigWidget()->getCsvSiteWidget()->getFilterString();
-        if (filterIDs.isEmpty())
-        {
-            this->statusMessage("Warning: no filters defined - will load all sites.");
-            siteWidget->siteConfigWidget()->getCsvSiteWidget()->selectAllComponents();
-            filterIDs = siteWidget->siteConfigWidget()->getCsvSiteWidget()->getFilterString();
-        }
-        QStringList IDs = filterIDs.split(QRegExp(",|-"), QString::SkipEmptyParts);
-        qDebug() << IDs;
-        int tmpMin = 10000000;
-        int tmpMax = 0;
-        for (int i = 0; i < IDs.size(); i++) {
-            if (IDs[i].toInt() > tmpMax)
-                tmpMax = IDs[i].toInt();
-            if (IDs[i].toInt() < tmpMin)
-                tmpMin = IDs[i].toInt();
-        }
-        minID = tmpMin;
-        maxID = tmpMax;
-    }
-
-    //    maxID = 5;
-
-
-    QJsonObject siteObj;
-    siteObj.insert("Type", "From_CSV");
-    siteObj.insert("input_file", "SiteFile.csv");
-    siteObj.insert("min_ID", minID);
-    siteObj.insert("max_ID", maxID);
-    // add an output_file field for preparing OpenQuake site model
-    siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
-
-
-
-
-
-    // Get the GMPE Json object
-    QJsonObject GMPEobj;
-//    qDebug() << QString(erfWidget->ruptureWidget()->getWidgetType());
-//    if (erfWidget->ruptureWidget()->getWidgetType().compare("OpenQuake Classical")==0 || erfWidget->ruptureWidget()->getWidgetType().compare("OpenQuake User-Specified")==0)
-//    {
-//        GMPEobj.insert("Type", "LogicTree");
-//        GMPEobj.insert("Parameters", erfWidget->ruptureWidget()->getGMPELogicTree());
-//    }
-//    else
-//    {
-//        m_gmpe->outputToJSON(GMPEobj);
-//    }
-
-
-
-
-
-    auto numGM =  m_selectionWidget->getNumberOfGMPerSite();
-
-    if(numGM == -1)
-    {
-        QString err = "Error in getting the number of ground motions at a site";
-        this->errorMessage(err);
-        return;
-    }
-
-    QJsonObject eventObj;
-    eventObj.insert("NumberPerSite", numGM);
-    eventObj.insert("GMPE", GMPEobj);
-    eventObj.insert("SaveIM", true);
-    eventObj.insert("Database",  m_selectionconfig->getDatabase());
-    eventObj.insert("OutputFormat", "SimCenterEvent");
-
-    QJsonObject configFile;
-    configFile.insert("Site",siteObj);
-    erfWidget->outputToJSON(configFile);
-    configFile.insert("Event",eventObj);
-    configFile.insert("Directory",m_appConfig->getJson());
-
-    // Get the type of site definition, i.e., single or grid
-    auto type = siteWidget->siteConfig()->getType();
-
     QVector<QStringList> gridData;
 
     QStringList headerRow = {"Station", "Latitude", "Longitude"};
 
     gridData.push_back(headerRow);
 
-    bool writeSiteFile = true;
+    auto gridNodeVec = userGrid->getGridNodeVec();
+    auto mapCanvas = mapViewSubWidget->getMapCanvasWidget()->mapCanvas();
 
-    if(type == SiteConfig::SiteType::Single)
+    for(int i = 0; i<gridNodeVec.size(); ++i)
     {
-        //qDebug()<<"Single site selection not supported yet";
+        auto gridNode = gridNodeVec.at(i);
+
         QStringList stationRow;
 
         // The station id
-        stationRow.push_back(QString::number(0));
+        stationRow.push_back(QString::number(i));
+
+        auto screenPoint = gridNode->getPoint();
 
         // The latitude and longitude
-        auto longitude = siteWidget->siteConfig()->site().location().longitude();
-        auto latitude = siteWidget->siteConfig()->site().location().latitude();
+        auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint,mapCanvas);
+        auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint,mapCanvas);
 
         stationRow.push_back(QString::number(latitude));
         stationRow.push_back(QString::number(longitude));
 
         gridData.push_back(stationRow);
     }
-    else if(type == SiteConfig::SiteType::Grid)
+
+    return gridData;
+}
+
+
+QVector<QStringList> GMWidget::getSingleLocationGridData(void)
+{
+    QVector<QStringList> gridData;
+
+    QStringList headerRow = {"Station", "Latitude", "Longitude"};
+
+    gridData.push_back(headerRow);
+
+    QStringList stationRow;
+
+    // The station id
+    stationRow.push_back(QString::number(0));
+
+    // The latitude and longitude
+    auto longitude = siteWidget->siteConfig()->site().location().longitude();
+    auto latitude = siteWidget->siteConfig()->site().location().latitude();
+
+    stationRow.push_back(QString::number(latitude));
+    stationRow.push_back(QString::number(longitude));
+
+    gridData.push_back(stationRow);
+
+    return gridData;
+}
+
+
+QJsonObject GMWidget::loadJsonFile(const QString& filePath)
+{
+
+    // Read the JSON file
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        if(!siteWidget->siteConfigWidget()->getSiteGridWidget()->getGridCreated())
-        {
-            QString msg = "Select a grid before continuing";
-            this->statusMessage(msg);
-            return;
-        }
-
-        // Get the vector of grid nodes
-
-        if(userGrid == nullptr)
-        {
-            QString err = "Please create a user-grid";
-            this->errorMessage(err);
-            return;
-        }
-
-        auto gridNodeVec = userGrid->getGridNodeVec();
-        auto mapCanvas = mapViewSubWidget->getMapCanvasWidget()->mapCanvas();
-
-        for(int i = 0; i<gridNodeVec.size(); ++i)
-        {
-            auto gridNode = gridNodeVec.at(i);
-
-            QStringList stationRow;
-
-            // The station id
-            stationRow.push_back(QString::number(i));
-
-            auto screenPoint = gridNode->getPoint();
-
-            // The latitude and longitude
-            auto longitude = theVisualizationWidget->getLongFromScreenPoint(screenPoint,mapCanvas);
-            auto latitude = theVisualizationWidget->getLatFromScreenPoint(screenPoint,mapCanvas);
-
-            stationRow.push_back(QString::number(latitude));
-            stationRow.push_back(QString::number(longitude));
-
-            gridData.push_back(stationRow);
-        }
-    }
-    else if(type == SiteConfig::SiteType::Scatter)
-    {
-        // Site file will be copied to the input directory
-        writeSiteFile = false;
-
-        if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->copySiteFile(pathToInputDir))
-        {
-            this->errorMessage("Error copying site file to inputput directory");
-        }
-    }
-    else if(type == SiteConfig::SiteType::UserCSV)
-    {
-        // Site file will be copied to the input directory
-        writeSiteFile = false;
-        if(!siteWidget->siteConfigWidget()->getCsvSiteWidget()->copyFiles(pathToInputDir))
-        {
-            this->errorMessage("Error copying site file to inputput directory");
-        }
-        else
-        {
-            QFileInfo csv_origin(siteWidget->siteConfigWidget()->getCsvSiteWidget()->getPathToComponentFile());
-            QFile csv_file(pathToInputDir + QDir::separator() + csv_origin.fileName());
-            if (!csv_file.fileName().contains("SiteFile.csv", Qt::CaseSensitive))
-            {
-                QFileInfo csv_t(pathToInputDir + QDir::separator() + "SiteFile.csv");
-                if (csv_t.exists() && csv_t.isFile())
-                {
-                    QFile csv_tf(pathToInputDir + QDir::separator() + "SiteFile.csv");
-                    csv_tf.remove();
-                }
-                csv_file.rename(pathToInputDir + QDir::separator() + "SiteFile.csv");
-            }
-        }
+        qDebug() << "Failed to open file: " << file.errorString();
+        return QJsonObject();
     }
 
-    if(writeSiteFile)
+    // Read the contents of the file
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    // Parse the JSON data
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &error);
+    if (error.error != QJsonParseError::NoError)
     {
-        QString pathToSiteLocationFile = pathToInputDir + QDir::separator() + "SiteFile.csv";
-
-        CSVReaderWriter csvTool;
-
-        auto res = csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err);
-
-        if(res != 0)
-        {
-            this->errorMessage(err);
-            return;
-        }
+        qDebug() << "Error parsing JSON: " << error.errorString();
+        return QJsonObject();
     }
 
-    QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
+    // Convert the QJsonDocument to QJsonObject
+    QJsonObject jsonObject = jsonDoc.object();
 
-    // Hazard sim
+    return jsonObject;
+}
+
+
+void GMWidget::runHazardSimulation(void)
+{
+
+    auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
+    auto pathToOutputDir = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+
+    //TODO: Check to see if the scenario SIM ran before this!!
+    // Get the previous scenario object
+    auto eqRupObject = loadJsonFile(pathToOutputDir+"EQRupture.json");
+    if(eqRupObject.isEmpty())
+    {
+        this->errorMessage("Missing the earthquake scenario rupture file. Please run rupture scenarios first");
+        return;
+    }
+
+    auto pathToRupFile = pathToOutputDir+"Output" + QDir::separator() + "RupFile.geojson";
+    if(!QFile::exists(pathToRupFile))
+    {
+        this->errorMessage("Missing the earthquake ruptures (RupFile.geojson). Please run rupture scenarios first");
+        return;
+    }
+
+
+    auto pathToSiteModelFile = pathToOutputDir+"Input" + QDir::separator() + "OpenQuakeSiteModel.csv";
+    if(!QFile::exists(pathToSiteModelFile))
+    {
+        this->errorMessage("Missing the earthquake site model file (OpenQuakeSiteModel.csv). Please run rupture scenarios first");
+        return;
+    }
+
+
+    // kz: only contact PEER NGA when the databse is set to "NGA West"
+    if(this->m_selectionconfig->getDatabase().compare("NGAWest2")==0) {
+        QString userName = getPEERUserName();
+        QString password = getPEERPassWord();
+        peerClient.signIn(userName, password);
+    }
+
+    QJsonObject configFile;
+
+    configFile["Directory"] = pathToOutputDir;
+    QJsonObject siteObj;
+    siteObj["siteFile"] = pathToSiteModelFile;
+    configFile["Site"] = siteObj;
+
+    // populate the config file
+    QJsonObject eventObj;
+
+    // get the spatial correlation, IM, and GMPEs
+    groundMotionModelsWidget->outputToJSON(eventObj);
+
+    // Get the database, scaling, and number of events per site
+    m_selectionWidget->outputToJSON(eventObj);
+
+    // Some hardcoded things
+    eventObj["SaveIM"]=true;
+    eventObj["OutputFormat"]="SimCenterEvent";
+
+    configFile["Event"]=eventObj;
+
+    // Get the scenario object
+    QJsonObject scenarioObj;
+    scenarioSelectWidget->outputToJSON(scenarioObj);
+
+    // Add the eq rupture object to the scenario file
+    scenarioObj["EqRupture"] = eqRupObject;
+    scenarioObj["sourceFile"] = pathToRupFile;
+    scenarioObj["Type"] = "Earthquake";
+
+    configFile["Scenario"]=scenarioObj;
+
+    // Assemble the path to the config file
     QString pathToConfigFile = pathToInputDir + QDir::separator() + "EQHazardConfiguration.json";
 
     QFile file(pathToConfigFile);
+
+    QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
 
     if(!file.open(QIODevice::WriteOnly))
     {
@@ -837,55 +706,232 @@ void GMWidget::runHazardSimulation(void)
         file.close();
     }
 
-    auto pythonPath = SimCenterPreferences::getInstance()->getPython();
+    QString scriptPath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+                         + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
+                         + "regionalGroundMotion" + QDir::separator() + "HazardSimulation.py";
 
-    // TODO: make this a relative link once we figure out the folder structure
-    // auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
-    // auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
-    QString pathToHazardSimScript = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-            + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-            + "regionalGroundMotion" + QDir::separator() + "HazardSimulation.py";
 
-    QFileInfo hazardFileInfo(pathToHazardSimScript);
-    if (!hazardFileInfo.exists()) {
-        QString errorMessage = QString("ERROR - hazardApp does not exist") + pathToHazardSimScript;
-        this->errorMessage(errorMessage);
-        qDebug() << errorMessage;
-        return;
-    }
-    QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
+    QStringList scriptArgs;
+    scriptArgs << QString("--hazard_config")  << pathToConfigFile;
 
-    qDebug()<<"Hazard Simulation Command:"<<args[0]<<" "<<args[1]<<" "<<args[2];
+    std::unique_ptr<ModularPython> thePy = std::make_unique<ModularPython>(pathToOutputDir);
 
-    this->getProgressDialog()->showProgressBar();
+    connect(thePy.get(),SIGNAL(runComplete()),this,SLOT(handleProcessFinished()));
 
-    process->start(pythonPath, args);
-    //process->waitForStarted();
-    process->waitForFinished();
+    this->handleProcessStarted();
+    thePy->run(scriptPath,scriptArgs);
+
+    disconnect(thePy.get(),SIGNAL(runComplete()),this,SLOT(handleProcessFinished()));
+
+    /***
+        // Here you need the file "PEERUserPass.h", it is not included in the repo. Set your own username and password below.
+        QString userName = getPEERUserName();
+        QString password = getPEERPassWord();
+
+        peerClient.signIn(userName, password);
+        ***/
+
+//    simulationComplete = false;
+
+//    QString pathToGMFilesDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+
+//    // Remove old csv files in the output folder
+//    const QFileInfo existingFilesInfo(pathToGMFilesDirectory);
+
+//    // Get the existing files in the folder to see if we already have the record
+//    QStringList acceptableFileExtensions = {"*.csv"};
+//    QStringList existingCSVFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+
+//    // Remove the csv files - in case we have less sites that previous and they are not overwritten
+//    for(auto&& it : existingCSVFiles)
+//    {
+//        QFile file(pathToGMFilesDirectory + it);
+//        file.remove();
+//    }
+
+//    // Clean out any existing input files
+//    auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
+
+//    QStringList nameFilters = {"SiteFile.csv","OpenQuakeSiteModel.csv","sites_oq.csv","EQHazardConfiguration.json","oq_job.ini","rupture_model_example.xml"};
+
+//    QDir dir(pathToInputDir);
+//    dir.setNameFilters(nameFilters);
+//    dir.setFilter(QDir::Files);
+//    foreach(QString dirFile, dir.entryList())
+//    {
+//        dir.remove(dirFile);
+//    }
+
+//    // Remove the grid from the visualization screen
+//    if(userGrid)
+//        userGrid->hide();
+
+//    // First check if the settings are valid
+//    QString err;
+//    if(!m_appConfig->validate(err))
+//    {
+//        this->errorMessage(err);
+//        return;
+//    }
+
+//    //int maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
+//    int minID = 0;
+//    int maxID = 1;
+//    if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Grid)
+//    {
+//        maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
+//    }
+//    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Scatter)
+//    {
+//        minID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMinID();
+//        maxID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMaxID();
+//    }
+//    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::UserCSV)
+//    {
+//        QString filterIDs = siteWidget->siteConfigWidget()->getCsvSiteWidget()->getFilterString();
+//        if (filterIDs.isEmpty())
+//        {
+//            this->statusMessage("Warning: no filters defined - will load all sites.");
+//            siteWidget->siteConfigWidget()->getCsvSiteWidget()->selectAllComponents();
+//            filterIDs = siteWidget->siteConfigWidget()->getCsvSiteWidget()->getFilterString();
+//        }
+//        QStringList IDs = filterIDs.split(QRegExp(",|-"), QString::SkipEmptyParts);
+//        qDebug() << IDs;
+//        int tmpMin = 10000000;
+//        int tmpMax = 0;
+//        for (int i = 0; i < IDs.size(); i++) {
+//            if (IDs[i].toInt() > tmpMax)
+//                tmpMax = IDs[i].toInt();
+//            if (IDs[i].toInt() < tmpMin)
+//                tmpMin = IDs[i].toInt();
+//        }
+//        minID = tmpMin;
+//        maxID = tmpMax;
+//    }
+
+//    //    maxID = 5;
+
+
+//    QJsonObject siteObj;
+//    siteObj.insert("Type", "From_CSV");
+//    siteObj.insert("input_file", "SiteFile.csv");
+//    siteObj.insert("min_ID", minID);
+//    siteObj.insert("max_ID", maxID);
+//    // add an output_file field for preparing OpenQuake site model
+//    siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
+
+
+
+
+
+//    // Get the GMPE Json object
+//    QJsonObject GMPEobj;
+//    //    qDebug() << QString(erfWidget->ruptureWidget()->getWidgetType());
+//    //    if (erfWidget->ruptureWidget()->getWidgetType().compare("OpenQuake Classical")==0 || erfWidget->ruptureWidget()->getWidgetType().compare("OpenQuake User-Specified")==0)
+//    //    {
+//    //        GMPEobj.insert("Type", "LogicTree");
+//    //        GMPEobj.insert("Parameters", erfWidget->ruptureWidget()->getGMPELogicTree());
+//    //    }
+//    //    else
+//    //    {
+//    //        m_gmpe->outputToJSON(GMPEobj);
+//    //    }
+
+
+
+
+
+//    auto numGM =  m_selectionWidget->getNumberOfGMPerSite();
+
+//    if(numGM == -1)
+//    {
+//        QString err = "Error in getting the number of ground motions at a site";
+//        this->errorMessage(err);
+//        return;
+//    }
+
+//    QJsonObject eventObj;
+//    eventObj.insert("NumberPerSite", numGM);
+//    eventObj.insert("GMPE", GMPEobj);
+//    eventObj.insert("SaveIM", true);
+//    eventObj.insert("Database",  m_selectionconfig->getDatabase());
+//    eventObj.insert("OutputFormat", "SimCenterEvent");
+
+//    QJsonObject configFile;
+//    configFile.insert("Site",siteObj);
+//    erfWidget->outputToJSON(configFile);
+//    configFile.insert("Event",eventObj);
+//    configFile.insert("Directory",m_appConfig->getJson());
+
+//    // Get the type of site definition, i.e., single or grid
+
+
+//    QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
+
+//    // Hazard sim
+//    QString pathToConfigFile = pathToInputDir + QDir::separator() + "EQHazardConfiguration.json";
+
+//    QFile file(pathToConfigFile);
+
+//    if(!file.open(QIODevice::WriteOnly))
+//    {
+//        file.close();
+//    }
+//    else
+//    {
+//        QTextStream out(&file); out << strFromObj;
+//        file.close();
+//    }
+
+//    auto pythonPath = SimCenterPreferences::getInstance()->getPython();
+
+//    // TODO: make this a relative link once we figure out the folder structure
+//    // auto pathToHazardSimScript = "/Users/steve/Desktop/SimCenter/HazardSimulation/HazardSimulation.py";
+//    // auto pathToHazardSimScript = "/Users/fmckenna/release/HazardSimulation/HazardSimulation.py";
+//    QString pathToHazardSimScript = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+//                                    + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
+//                                    + "regionalGroundMotion" + QDir::separator() + "HazardSimulation.py";
+
+//    QFileInfo hazardFileInfo(pathToHazardSimScript);
+//    if (!hazardFileInfo.exists()) {
+//        QString errorMessage = QString("ERROR - hazardApp does not exist") + pathToHazardSimScript;
+//        this->errorMessage(errorMessage);
+//        qDebug() << errorMessage;
+//        return;
+//    }
+//    QStringList args = {pathToHazardSimScript,"--hazard_config",pathToConfigFile};
+
+//    qDebug()<<"Hazard Simulation Command:"<<args[0]<<" "<<args[1]<<" "<<args[2];
+
+//    this->getProgressDialog()->showProgressBar();
+
+//    process->start(pythonPath, args);
+//    //process->waitForStarted();
+//    process->waitForFinished();
 }
 
 
-void GMWidget::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void GMWidget::handleProcessFinished()
 {
     this->m_runButton->setEnabled(true);
 
-    if(exitStatus == QProcess::ExitStatus::CrashExit)
-    {
-        QString errText("Error, the process running the hazard simulation script crashed");
-        this->errorMessage(errText);
-        this->getProgressDialog()->hideProgressBar();
+//    if(exitStatus == QProcess::ExitStatus::CrashExit)
+//    {
+//        QString errText("Error, the process running the hazard simulation script crashed");
+//        this->errorMessage(errText);
+//        this->getProgressDialog()->hideProgressBar();
 
-        return;
-    }
+//        return;
+//    }
 
-    if(exitCode != 0)
-    {
-        QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
-        this->errorMessage(errText);
-        this->getProgressDialog()->hideProgressBar();
+//    if(exitCode != 0)
+//    {
+//        QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
+//        this->errorMessage(errText);
+//        this->getProgressDialog()->hideProgressBar();
 
-        return;
-    }
+//        return;
+//    }
 
     // Checking if the ground motion selection is requested by the user
     if (m_selectionconfig->getDatabase().size() == 0)
@@ -934,14 +980,6 @@ void GMWidget::handleProcessStarted(void)
 {
     this->statusMessage("Running script in the background");
     this->m_runButton->setEnabled(false);
-}
-
-
-void GMWidget::handleProcessTextOutput(void)
-{
-    QByteArray output = process->readAllStandardOutput();
-
-    this->statusMessage(QString(output));
 }
 
 
@@ -1007,7 +1045,7 @@ int GMWidget::downloadRecords(void)
     qDebug()<<QString::number(recordsListToDownload.empty());
     if (!recordsListToDownload.isEmpty())
     {
-            this->downloadRecordBatch();
+        this->downloadRecordBatch();
     }
 
     return 0;
@@ -1039,6 +1077,7 @@ void GMWidget::downloadRecordBatch(void)
         recordsListToDownload = recordsListToDownload.mid(maxBatchSize-1,recordsListToDownload.size()-1);
     }
 }
+
 
 int GMWidget::processDownloadedRecords(QString& errorMessage)
 {
@@ -1338,10 +1377,12 @@ int GMWidget::parseDownloadedRecords(QString zipFile)
     return 0;
 }
 
+
 GmAppConfig *GMWidget::appConfig() const
 {
     return m_appConfig;
 }
+
 
 void GMWidget::sendEventFileMotionDir(const QString &eventFile, const QString &motionDir)
 {
@@ -1350,6 +1391,7 @@ void GMWidget::sendEventFileMotionDir(const QString &eventFile, const QString &m
     m_appConfig->setOutputFilePath(motionDir);
     emit useEventFileMotionDir(motionDir, eventFile);
 }
+
 
 bool GMWidget::copyFiles(QString &destDir)
 {
@@ -1386,14 +1428,144 @@ bool GMWidget::copyFiles(QString &destDir)
     return false;
 }
 
+
 void GMWidget::updateSimulationTag()
 {
     simulationComplete = false;
 }
 
+
 bool GMWidget::getSimulationStatus()
 {
     bool tmp = simulationComplete;
     return tmp;
+}
+
+
+void GMWidget::runScenarioForecast(void)
+{
+
+    // Get the type of site definition, i.e., single or grid
+    auto type = siteWidget->siteConfig()->getType();
+
+    if(type == SiteConfig::SiteType::Single)
+    {
+        auto lon = siteWidget->siteConfig()->site().location().longitude();
+        auto lat = siteWidget->siteConfig()->site().location().latitude();
+
+        if(lon == 0.0 || lat == 0.0)
+        {
+            QString msg = "Please set the latitude and longitude in the Sites panel";
+            this->infoMessage(msg);
+        }
+
+        return;
+    }
+    else if(type == SiteConfig::SiteType::Grid)
+    {
+        if(!siteWidget->siteConfigWidget()->getSiteGridWidget()->getGridCreated())
+        {
+            QString msg = "Please select a grid before continuing in the Sites panel";
+            this->statusMessage(msg);
+            return;
+        }
+    }
+    else if(type == SiteConfig::SiteType::Scatter)
+    {
+        if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->siteFileExists())
+        {
+            QString msg = "Please choose a site file before continuing in the Sites panel";
+            this->statusMessage(msg);
+            return;
+        }
+    }
+
+
+    auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
+
+    // Remove old csv files in the output folder
+    const QFileInfo existingFilesInfo(pathToInputDir);
+
+    // Get the existing files in the folder to see if we already have the record
+    QStringList acceptableFileExtensions = {"*.csv", "EQScenarioConfiguration.json"};
+    QStringList existingCSVFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+
+    // Remove the csv files - in case we have less sites that previous and they are not overwritten
+    for(auto&& it : existingCSVFiles)
+    {
+        QFile file(pathToInputDir + it);
+        file.remove();
+    }
+
+
+    // Remove the grid from the visualization screen
+    if(userGrid)
+        userGrid->hide();
+
+    // First check if the settings are valid
+    QString err;
+    if(!m_appConfig->validate(err))
+    {
+        this->errorMessage(err);
+        return;
+    }
+
+    //int maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
+    int minID = 0;
+    int maxID = 1;
+    if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Grid)
+    {
+        maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
+    }
+    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Scatter)
+    {
+        minID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMinID();
+        maxID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMaxID();
+    }
+
+
+    QString pathToSiteLocationFile = pathToInputDir + QDir::separator() + "SiteFile.csv";
+
+    QJsonObject siteObj;
+    siteObj.insert("Type", "From_CSV");
+    siteObj.insert("input_file", pathToSiteLocationFile);
+    siteObj.insert("min_ID", minID);
+    siteObj.insert("max_ID", maxID);
+
+    // Get the vs 30
+    siteWidget->outputToJson(siteObj);
+    // add an output_file field for preparing OpenQuake site model
+    siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
+
+    if(type == SiteConfig::SiteType::Scatter)
+    {
+        if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->copySiteFile(pathToInputDir))
+        {
+            this->errorMessage("Error copying site file to inputput directory");
+            return;
+        }
+    }
+    else
+    {
+        QVector<QStringList> gridData;
+
+        if(type == SiteConfig::SiteType::Single)
+            gridData=getSingleLocationGridData();
+        else if(type == SiteConfig::SiteType::Grid)
+            gridData=getUserGridData();
+
+        CSVReaderWriter csvTool;
+
+        if(csvTool.saveCSVFile(gridData, pathToSiteLocationFile, err) != 0)
+        {
+            this->errorMessage("Error could not create the csv site file");
+            this->errorMessage(err);
+            return;
+        }
+    }
+
+
+    erfWidget->run_button_pressed(siteObj);
+
 }
 

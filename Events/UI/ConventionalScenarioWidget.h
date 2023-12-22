@@ -38,13 +38,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
-
-#include "JsonSerializable.h"
+#include "SimCenterAppWidget.h"
 
 class AssetInputDelegate;
 
-class ConventionalScenarioWidget : public QWidget, JsonSerializable
+class ConventionalScenarioWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
@@ -54,7 +52,6 @@ public:
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
 
-    void reset(void);
 
 public slots:
 

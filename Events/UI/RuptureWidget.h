@@ -38,20 +38,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
+#include "SimCenterAppSelection.h"
 
 class PointSourceRuptureWidget;
 class UCERF2Widget;
 class MeanUCERFWidget;
 
-class QComboBox;
-class QStackedWidget;
+class SC_DoubleLineEdit;
 
-class RuptureWidget : public SimCenterAppWidget
+class RuptureWidget : public SimCenterAppSelection
 {
     Q_OBJECT
 public:
-    explicit RuptureWidget(QWidget *parent = nullptr);
+    explicit RuptureWidget(QString jsonKey, QWidget *parent = nullptr);
 
 //    QString getGMPELogicTree(void) const;
 //    QString getEQNum(void) const;
@@ -60,10 +59,14 @@ public:
 
 
 private:
-    QComboBox* ruptureSelectionCombo = nullptr;
-    QStackedWidget* mainStackedWidget = nullptr;
     UCERF2Widget* ucerfWidget = nullptr;
     MeanUCERFWidget* meanUcerfWidget = nullptr;
+
+    SC_DoubleLineEdit* maxDistLE = nullptr;
+    SC_DoubleLineEdit* maxMagLE = nullptr;
+    SC_DoubleLineEdit* minMagLE = nullptr;
+
+    QString jsonKey;
 
 };
 

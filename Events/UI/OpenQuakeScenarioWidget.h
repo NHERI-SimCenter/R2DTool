@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Kuanshi Zhong
 
-#include "SimCenterWidget.h"
+#include "SimCenterAppWidget.h"
 
 class OpenQuakeScenario;
 
@@ -48,7 +48,7 @@ class QLineEdit;
 class QPushButton;
 class QDoubleSpinBox;
 
-class OpenQuakeScenarioWidget : public SimCenterWidget
+class OpenQuakeScenarioWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 

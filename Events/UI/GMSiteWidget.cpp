@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QGroupBox>
 
-GMSiteWidget::GMSiteWidget(VisualizationWidget* visWidget, QWidget *parent) : QWidget(parent), theVisualizationWidget(visWidget)
+GMSiteWidget::GMSiteWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : QWidget(parent), theVisualizationWidget(visWidget)
 {
     // Adding Site Config Widget
     m_siteConfig = new SiteConfig(this);

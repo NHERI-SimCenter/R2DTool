@@ -88,6 +88,8 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Events/UI/RecordSelectionWidget.cpp \
             $$PWD/Events/UI/RuptureLocation.cpp \
             $$PWD/Events/UI/RuptureWidget.cpp \
+            $$PWD/Events/UI/NSHMCurveWidget.cpp \
+            $$PWD/Events/UI/UserDefinedCurveWidget.cpp \
             $$PWD/Events/UI/Site.cpp \
             $$PWD/Events/UI/SiteConfig.cpp \
             $$PWD/Events/UI/SiteConfigWidget.cpp \
@@ -224,6 +226,8 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Events/UI/RecordSelectionWidget.h \
             $$PWD/Events/UI/RuptureLocation.h \
             $$PWD/Events/UI/RuptureWidget.h \
+            $$PWD/Events/UI/NSHMCurveWidget.h \
+            $$PWD/Events/UI/UserDefinedCurveWidget.h \
             $$PWD/Events/UI/Site.h \
             $$PWD/Events/UI/SiteConfig.h \
             $$PWD/Events/UI/SiteConfigWidget.h \

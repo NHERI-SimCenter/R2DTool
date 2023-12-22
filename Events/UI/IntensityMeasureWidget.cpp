@@ -224,3 +224,9 @@ void IntensityMeasureWidget::handleIntensityMeasureLevels(const QString sourceTy
         imtTrucBox->hide();
     }
 }
+
+
+QComboBox *IntensityMeasureWidget::typeBox() const
+{
+    return m_typeBox;
+}

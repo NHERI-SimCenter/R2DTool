@@ -38,16 +38,21 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
+#include "SimCenterAppWidget.h"
+
 #include "GMPE.h"
 
-#include <QWidget>
-#include <QtWidgets>
+class SC_ComboBox;
+class QGroupBox;
 
-class GMPEWidget : public QWidget
+class GMPEWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
     explicit GMPEWidget(GMPE& gmpe, QWidget *parent = nullptr);
+
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
 
 signals:
 
@@ -56,8 +61,10 @@ public slots:
 
 private:
     GMPE& m_gmpe;
-    QComboBox* m_typeBox;
-    QGroupBox* gmpeGroupBox;
+
+    SC_ComboBox* m_typeBox = nullptr;
+
+    QGroupBox* gmpeGroupBox = nullptr;
 
     void setupConnections();
 };

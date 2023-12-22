@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "Site.h"
-#include "JsonSerializable.h"
+#include "SimCenterAppSelection.h"
 #include "SimCenterMapcanvasWidget.h"
 
 #include <QWidget>
@@ -49,29 +49,38 @@ class RuptureWidget;
 class PointSourceRuptureWidget;
 class OpenQuakeUserSpecifiedWidget;
 class OpenQuakeScenarioWidget;
+class ModularPython;
+class GmAppConfig;
 //class HazardOccurrenceWidget;
 //class OpenQuakeClassicalWidget;
 
 class QComboBox;
 class QStackedWidget;
 
-class GMERFWidget : public QWidget, JsonSerializable
+class GMERFWidget : public SimCenterAppSelection
 {
     Q_OBJECT
 public:
-    explicit GMERFWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit GMERFWidget(QGISVisualizationWidget* visWidget, GmAppConfig* appConfig, QString jsonKey, QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
-    inline void reset(void) {}
+    void clear(void);
 
     RuptureWidget *ruptureWidget() const;
+
+    QPushButton *getForecastRupScenButton() const;
+
+    void run_button_pressed(const QJsonObject& siteObj);
+
+
+public slots:
+    void processRuptureScenarioResults(void);
 
 private:
 
     std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
-    QStackedWidget* mainStackedWidget = nullptr;
-    QComboBox* ruptureSelectCombo = nullptr;
+    QPushButton* forecastRupScenButton = nullptr;
 
     RuptureWidget* ERFruptureWidget = nullptr;
     PointSourceRuptureWidget* pointSourceWidget = nullptr;
@@ -80,7 +89,12 @@ private:
     //    OpenQuakeClassicalWidget* oqcpWidget;
     //    HazardOccurrenceWidget* hoWidget;
 
-    VisualizationWidget* theVisualizationWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    GmAppConfig* m_appConfig = nullptr;
+
+    QString jsonKey;
+    QgsVectorLayer* mainLayer = nullptr;
+
 
 };
 

@@ -38,9 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
-
-#include "JsonSerializable.h"
+#include "SimCenterAppSelection.h"
 
 class QComboBox;
 class QStackedWidget;
@@ -49,27 +47,24 @@ class SpecificScenarioWidget;
 class ConventionalScenarioWidget;
 class HazardConsistentScenarioWidget;
 
-class ScenarioSelectionWidget : public QWidget, JsonSerializable
+class ScenarioSelectionWidget : public SimCenterAppSelection
 {
     Q_OBJECT
 
 public:
-    explicit ScenarioSelectionWidget(QWidget *parent = nullptr);
+    explicit ScenarioSelectionWidget(QString jsonKey, QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
-
-    void reset(void);
 
 public slots:
 
 private:
 
-    QStackedWidget* mainStackedWidget = nullptr;
-    QComboBox* meanPresetsCombo = nullptr;
     SpecificScenarioWidget* specificScenarioWidget = nullptr;
     ConventionalScenarioWidget* convenScenarioWidget = nullptr;
     HazardConsistentScenarioWidget* hazConsistentScenarioWidget= nullptr;
+    QString jsonKey;
 };
 
 #endif // ScenarioSelectionWidget_H

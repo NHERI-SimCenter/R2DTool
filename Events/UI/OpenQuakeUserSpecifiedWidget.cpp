@@ -51,7 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 #include <QSettings>
 
-OpenQuakeUserSpecifiedWidget::OpenQuakeUserSpecifiedWidget(QWidget *parent) : SimCenterWidget(parent)
+OpenQuakeUserSpecifiedWidget::OpenQuakeUserSpecifiedWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 

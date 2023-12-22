@@ -39,10 +39,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ConventionalScenarioWidget.h"
 #include "AssetInputDelegate.h"
 
+#include <QJsonObject>
 #include <QGridLayout>
 #include <QLabel>
 
-ConventionalScenarioWidget::ConventionalScenarioWidget(QWidget *parent) : QWidget(parent)
+ConventionalScenarioWidget::ConventionalScenarioWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     //We use a grid layout for the Rupture widget
     auto mainLayout = new QGridLayout(this);
@@ -55,12 +56,8 @@ ConventionalScenarioWidget::ConventionalScenarioWidget(QWidget *parent) : QWidge
 
     mainLayout->addWidget(ruptureLabel,0,0);
     mainLayout->addWidget(ruptureLineEdit,0,1);
-}
 
-
-void ConventionalScenarioWidget::reset(void)
-{
-
+    mainLayout->setRowStretch(1, 1);
 }
 
 

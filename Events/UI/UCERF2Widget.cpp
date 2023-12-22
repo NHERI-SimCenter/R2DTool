@@ -41,60 +41,47 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SC_DoubleLineEdit.h"
 #include "SC_CheckBox.h"
 
+#include <QJsonObject>
 #include <QGridLayout>
 #include <QLabel>
 
-UCERF2Widget::UCERF2Widget(QWidget *parent) : QWidget(parent)
+UCERF2Widget::UCERF2Widget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     //We use a grid layout for the Rupture widget
     auto mainLayout = new QGridLayout(this);
-    mainLayout->setContentsMargins(1,1,1,1);
-    mainLayout->setSpacing(1);
+//    mainLayout->setContentsMargins(1,1,1,1);
+//    mainLayout->setSpacing(1);
 
-    auto EqkLabel = new QLabel("Eqk Rup Forecast");
     auto rupOffstLabel = new QLabel("Rupture Offset (km)");
     auto floaterTypeLabel = new QLabel("Floater Type");
     auto backgroundSeisLabel = new QLabel("Background Seismicity");
     auto backgroundSeisTypeLabel = new QLabel("Treat Background Seismicity As");
-    auto applySSkLabel = new QLabel("Apply CyberShake DDW Corr");
+//    auto applySSkLabel = new QLabel("Apply CyberShake DDW Corr");
     auto probabilityModelLabel = new QLabel("Probability Model");
 
-    EqkLabel->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
 
-    EqkRupForecastCombo = new SC_ComboBox("EqkRupForecast",QStringList({"WGCEP (2007) UCERF2 - Single Branch"}));
-    rupOffstLE = new SC_DoubleLineEdit("RuptureOffset", 5.0);
-    floaterTypeCombo = new SC_ComboBox("FloaterType",QStringList({"Along strike & centered down dip"}));
-    backgroundSeisCombo = new SC_ComboBox("BackgroundSeismicity",QStringList({"Include"}));
-    backgroundSeisTypeCombo = new SC_ComboBox("BackgroundSeismicityType",QStringList({"Two perpendicular faults"}));
-    applyCyberShakeCB = new SC_CheckBox("ApplyCyberShakeDDWCorr", "Apply CyberShake DDW Corr");
-    probabilityModelCombo = new SC_ComboBox("PorbabilityModel",QStringList({"WGCEP Preferred Blend"}));
+    rupOffstLE = new SC_DoubleLineEdit("Rupture Offset", 5.0);
+    floaterTypeCombo = new SC_ComboBox("Floater Type",QStringList({"Along strike & centered down dip"}));
+    backgroundSeisCombo = new SC_ComboBox("Background Seismicity",QStringList({"Include"}));
+    backgroundSeisTypeCombo = new SC_ComboBox("Treat Background Seismicity As",QStringList({"Point Sources", "Two perpendicular faults"}));
+    probabilityModelCombo = new SC_ComboBox("Probability Model",QStringList({"Poisson","WGCEP Preferred Blend"}));
+//    applyCyberShakeCB = new SC_CheckBox("ApplyCyberShakeDDWCorr", "Apply CyberShake DDW Corr");
 
-    EqkRupForecastCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    // Turn off max width
+    rupOffstLE->setMaximumWidth(QWIDGETSIZE_MAX);
 
-
-    mainLayout->addWidget(EqkLabel,0,0);
-    mainLayout->addWidget(EqkRupForecastCombo,0,1);
-    mainLayout->addWidget(rupOffstLabel,1,0);
-    mainLayout->addWidget(rupOffstLE,1,1);
-    mainLayout->addWidget(floaterTypeLabel,2,0);
-    mainLayout->addWidget(floaterTypeCombo,2,1);
-    mainLayout->addWidget(backgroundSeisLabel,3,0);
-    mainLayout->addWidget(backgroundSeisCombo,3,1);
-    mainLayout->addWidget(backgroundSeisTypeLabel,4,0);
-    mainLayout->addWidget(backgroundSeisTypeCombo,4,1);
-    mainLayout->addWidget(applySSkLabel,5,0);
-    mainLayout->addWidget(applyCyberShakeCB,5,1);
-    mainLayout->addWidget(probabilityModelLabel,6,0);
-    mainLayout->addWidget(probabilityModelCombo,6,1);
-
-    // Set column stretch factors
-    mainLayout->setColumnStretch(0, 1); // Smaller stretch factor for the first column
-    mainLayout->setColumnStretch(1, 2); // Larger stretch factor for the second column, it will be wider
-}
-
-
-void UCERF2Widget::reset(void)
-{
+    mainLayout->addWidget(rupOffstLabel,0,0);
+    mainLayout->addWidget(rupOffstLE,0,1);
+    mainLayout->addWidget(floaterTypeLabel,1,0);
+    mainLayout->addWidget(floaterTypeCombo,1,1);
+    mainLayout->addWidget(backgroundSeisLabel,2,0);
+    mainLayout->addWidget(backgroundSeisCombo,2,1);
+    mainLayout->addWidget(backgroundSeisTypeLabel,3,0);
+    mainLayout->addWidget(backgroundSeisTypeCombo,3,1);
+//    mainLayout->addWidget(applySSkLabel,4,0);
+//    mainLayout->addWidget(applyCyberShakeCB,4,1);
+    mainLayout->addWidget(probabilityModelLabel,4,0);
+    mainLayout->addWidget(probabilityModelCombo,4,1);
 
 }
 
@@ -108,14 +95,19 @@ bool UCERF2Widget::inputFromJSON(QJsonObject& /*obj*/)
 
 bool UCERF2Widget::outputToJSON(QJsonObject& obj)
 {
+    obj["Model"] = this->objectName();
 
-    EqkRupForecastCombo->outputToJSON(obj);
-    rupOffstLE->outputToJSON(obj);
-    floaterTypeCombo->outputToJSON(obj);
-    backgroundSeisCombo->outputToJSON(obj);
-    backgroundSeisTypeCombo->outputToJSON(obj);
-    applyCyberShakeCB->outputToJSON(obj);
-    probabilityModelCombo->outputToJSON(obj);
+    QJsonObject modelParams;
+
+    rupOffstLE->outputToJSON(modelParams);
+
+    floaterTypeCombo->outputToJSON(modelParams);
+    backgroundSeisCombo->outputToJSON(modelParams);
+    backgroundSeisTypeCombo->outputToJSON(modelParams);
+//    applyCyberShakeCB->outputToJSON(modelParams);
+    probabilityModelCombo->outputToJSON(modelParams);
+
+    obj["ModelParameters"] = modelParams;
 
     return true;
 }

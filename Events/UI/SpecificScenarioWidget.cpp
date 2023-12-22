@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGridLayout>
 #include <QLabel>
 
-SpecificScenarioWidget::SpecificScenarioWidget(QWidget *parent) : QWidget(parent)
+SpecificScenarioWidget::SpecificScenarioWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     //We use a grid layout for the Rupture widget
     auto mainLayout = new QGridLayout(this);
@@ -59,12 +59,7 @@ SpecificScenarioWidget::SpecificScenarioWidget(QWidget *parent) : QWidget(parent
     mainLayout->addWidget(ruptureIDLabel,1,0);
     mainLayout->addWidget(ruptureIDLE,1,1);
 
-}
-
-
-void SpecificScenarioWidget::reset(void)
-{
-
+    mainLayout->setRowStretch(2, 1);
 }
 
 

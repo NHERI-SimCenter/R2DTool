@@ -38,38 +38,30 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
-
-#include "JsonSerializable.h"
-
-class QComboBox;
-class QStackedWidget;
+#include "SimCenterAppSelection.h"
 
 class MeanUCERFPoissonWidget;
 class MeanUCERFFM3Widget;
 
-class MeanUCERFWidget : public QWidget, JsonSerializable
+class MeanUCERFWidget : public SimCenterAppSelection
 {
     Q_OBJECT
 
 public:
-    explicit MeanUCERFWidget(QWidget *parent = nullptr);
+    explicit MeanUCERFWidget(QString jsonKey, QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
-
-    void reset(void);
 
 public slots:
 
 private:
 
-    QStackedWidget* mainStackedWidget = nullptr;
-    QComboBox* meanPresetsCombo = nullptr;
-
     MeanUCERFPoissonWidget* poissonWidget = nullptr;
     MeanUCERFFM3Widget* FM3P1Widget = nullptr;
     MeanUCERFFM3Widget* FM3P2Widget = nullptr;
+
+    QString jsonKey;
 };
 
 #endif // MeanUCERFWidget_H

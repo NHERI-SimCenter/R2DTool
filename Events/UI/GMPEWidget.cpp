@@ -37,31 +37,35 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "GMPEWidget.h"
+#include "SC_ComboBox.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QGroupBox>
 #include <QLabel>
-#include <QSizePolicy>
+#include <QStringListModel>
 
-GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): QWidget(parent), m_gmpe(gmpe)
+GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): SimCenterAppWidget(parent), m_gmpe(gmpe)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
-    gmpeGroupBox = new QGroupBox(this);
+    gmpeGroupBox = new QGroupBox();
     gmpeGroupBox->setTitle("Ground Motion Prediction Equation");
 
+    const QStringList validType = this->m_gmpe.validTypes();
+
+
     QHBoxLayout* formLayout = new QHBoxLayout(gmpeGroupBox);
-    m_typeBox = new QComboBox(this);
+    m_typeBox = new SC_ComboBox("Type",validType);
 
     m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    QLabel* typeLabel = new QLabel(tr("Type:"),this);
+    QLabel* typeLabel = new QLabel(tr("Type:"));
 
     formLayout->addWidget(typeLabel);
     formLayout->addWidget(m_typeBox);
 
     layout->addWidget(gmpeGroupBox);
 
-    const QStringList validType = this->m_gmpe.validTypes();
 
     QStringListModel* typeModel = new QStringListModel(validType);
     m_typeBox->setModel(typeModel);
@@ -78,6 +82,24 @@ void GMPEWidget::setupConnections()
     connect(&this->m_gmpe, &GMPE::typeChanged,
             this->m_typeBox, &QComboBox::setCurrentText);
 }
+
+
+bool GMPEWidget::inputFromJSON(QJsonObject& /*obj*/)
+{
+
+    return true;
+}
+
+
+bool GMPEWidget::outputToJSON(QJsonObject& obj)
+{
+    m_typeBox->outputToJSON(obj);
+
+    obj["Parameters"] = QJsonObject();
+
+    return true;
+}
+
 
 
 void GMPEWidget::handleAvailableGMPE(const QString sourceType)

@@ -60,10 +60,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStandardPaths>
 #include <QGroupBox>
 
-GIS_Selection::GIS_Selection(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
+GIS_Selection::GIS_Selection(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
-    assert(visWidget);
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0,0,0,0);

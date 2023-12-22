@@ -43,6 +43,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PointSourceRuptureWidget.h"
 #include "OpenQuakeUserSpecifiedWidget.h"
 #include "OpenQuakeScenarioWidget.h"
+#include "ModularPython.h"
+#include "SimCenterPreferences.h"
+#include "QGISVisualizationWidget.h"
+#include "GmAppConfig.h"
+#include "qgsvectorlayer.h"
 
 #include <QVBoxLayout>
 #include <QGroupBox>
@@ -50,17 +55,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QStackedWidget>
 
-GMERFWidget::GMERFWidget(VisualizationWidget* visWidget, QWidget *parent) : QWidget(parent), theVisualizationWidget(visWidget)
+GMERFWidget::GMERFWidget(QGISVisualizationWidget* visWidget, GmAppConfig* appConfig, QString jsonKey, QWidget *parent) : SimCenterAppSelection("Earthquake Rupture",jsonKey,parent), theVisualizationWidget(visWidget), m_appConfig(appConfig), jsonKey(jsonKey)
 {
-    ruptureSelectCombo = new QComboBox();
-    mainStackedWidget =  new QStackedWidget();
-
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
 
     // Create the widgets that will be in the stacked box
-    ERFruptureWidget = new RuptureWidget();
+    ERFruptureWidget = new RuptureWidget("EqRupture");
     pointSourceWidget = new PointSourceRuptureWidget();
     oqcpuWidget = new OpenQuakeUserSpecifiedWidget();
     oqsbWidget = new OpenQuakeScenarioWidget();
@@ -73,30 +72,25 @@ GMERFWidget::GMERFWidget(VisualizationWidget* visWidget, QWidget *parent) : QWid
     //    hoWidget->setToolTip("Hazard occurrence models reduce the number of earthquake scenarios and/or \nground motion maps to be analyzed in regional risk assessment");
     //    hoWidget->setToolTipDuration(5000);
 
-    ruptureSelectCombo->addItem("OpenSHA ERF");
-    ruptureSelectCombo->addItem("Point Source");
-    ruptureSelectCombo->addItem("OpenQuake Source Model");
-    ruptureSelectCombo->addItem("OpenQuake Scenario-based");
 
-    mainStackedWidget->addWidget(ERFruptureWidget);
-    mainStackedWidget->addWidget(pointSourceWidget);
-    mainStackedWidget->addWidget(oqcpuWidget);
-    mainStackedWidget->addWidget(oqsbWidget);
-//    mainStackedWidget->addWidget(oqcpWidget);
-//    mainStackedWidget->addWidget(hoWidget);
+    this->addComponent("OpenSHA ERF","OpenSHAEQ", ERFruptureWidget);
+    this->addComponent("Point Source","PointEQ", pointSourceWidget);
+    this->addComponent("OpenQuake Source Model","OpenQSource", oqcpuWidget);
+    this->addComponent("OpenQuake Scenario-based","OpenQScenario", oqsbWidget);
+    //    theStackedWidget->addWidget(oqcpWidget);
+    //    theStackedWidget->addWidget(hoWidget);
 
-    auto forecastRupScenButton = new QPushButton("Forecast Rupture Scenarios");
+    forecastRupScenButton = new QPushButton("Forecast Rupture Scenarios");
 
     auto mapView = theVisualizationWidget->getMapViewWidget("RuptureScenarioView");
     mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
 
-    QVBoxLayout *earthquakeLayout=new QVBoxLayout(this);
-    earthquakeLayout->addWidget(ruptureSelectCombo);
-    earthquakeLayout->addWidget(mainStackedWidget);
+    auto* earthquakeLayout = qobject_cast<QVBoxLayout*>(this->layout());
     earthquakeLayout->addWidget(forecastRupScenButton);
     earthquakeLayout->addWidget(mapViewSubWidget.get());
 
 }
+
 
 bool GMERFWidget::inputFromJSON(QJsonObject& /*obj*/)
 {
@@ -108,39 +102,133 @@ bool GMERFWidget::inputFromJSON(QJsonObject& /*obj*/)
 bool GMERFWidget::outputToJSON(QJsonObject& obj)
 {
 
-    QJsonObject scenarioObj;
-    scenarioObj.insert("Type", "Earthquake");
-//    // get scenario number
-//    QString numEQ = this->ERFruptureWidget->getEQNum();
-//    if (numEQ.compare("All")==0) {
-//        scenarioObj.insert("Number", "All");
-//    } else {
-//        scenarioObj.insert("Number", numEQ.toInt());
-//    }
-//    scenarioObj.insert("Generator", "Selection");
-
-    QJsonObject EqRupture;
-    ERFruptureWidget->outputToJSON(EqRupture);
-
-//    // number of scenarios for ERF widget
-//    if (ERFruptureWidget->getWidgetType().compare("OpenSHA ERF")==0)
-//    {
-//        if (EqRupture.contains("Number"))
-//            scenarioObj["Number"] = EqRupture["Number"];
-//    }
-
-    if(EqRupture.isEmpty())
+    if(!SimCenterAppSelection::outputToJSON(obj))
         return false;
 
-    scenarioObj.insert("EqRupture",EqRupture);
+    // Add some additional things to the object - TODO check if this is redundant
+    QJsonObject scenarioObj = obj[jsonKey].toObject();
 
-    obj.insert("Scenario",scenarioObj);
+    scenarioObj.insert("Type", "Earthquake");
+    scenarioObj.insert("Generator", "Selection");
+
+    obj[jsonKey] = scenarioObj;
 
     return true;
 }
+
 
 RuptureWidget *GMERFWidget::ruptureWidget() const
 {
     return ERFruptureWidget;
 }
 
+
+void GMERFWidget::run_button_pressed(const QJsonObject& siteObj)
+{
+
+    QJsonObject configFile;
+
+    configFile["Site"] = siteObj;
+
+    this->outputToJSON(configFile);
+
+    auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
+    auto pathToOutputDir = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+
+    configFile["Directory"] = pathToOutputDir;
+
+    // Assemble the path and save the config file
+    QString pathToConfigFile = pathToInputDir + QDir::separator() + "EQScenarioConfiguration.json";
+
+    QFile file(pathToConfigFile);
+
+    QString strFromObj = QJsonDocument(configFile).toJson(QJsonDocument::Indented);
+
+    if(!file.open(QIODevice::WriteOnly))
+    {
+        file.close();
+    }
+    else
+    {
+        QTextStream out(&file); out << strFromObj;
+        file.close();
+    }
+
+    // Assemble the path and save the EqRupture file
+    QJsonObject eqRupFile = configFile["Scenario"].toObject()["EqRupture"].toObject();
+    QString pathToEqRupFile = pathToOutputDir + QDir::separator() + "EQRupture.json";
+
+    QFile file2(pathToEqRupFile);
+
+    QString strFromObj2 = QJsonDocument(eqRupFile).toJson(QJsonDocument::Indented);
+
+    if(!file2.open(QIODevice::WriteOnly))
+    {
+        file2.close();
+    }
+    else
+    {
+        QTextStream out(&file2); out << strFromObj2;
+        file2.close();
+    }
+
+    // Set up and run the script
+    QString scriptPath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+                         + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
+                         + "regionalGroundMotion" + QDir::separator() + "ScenarioForecast.py";
+
+
+
+    QStringList scriptArgs;
+    scriptArgs << QString("--hazard_config")  << pathToConfigFile;
+
+    std::unique_ptr<ModularPython> thePy = std::make_unique<ModularPython>(pathToOutputDir);
+
+    connect(thePy.get(),SIGNAL(runComplete()),this,SLOT(processRuptureScenarioResults()));
+
+    thePy->run(scriptPath,scriptArgs);
+
+    disconnect(thePy.get(),SIGNAL(runComplete()),this,SLOT(processRuptureScenarioResults()));
+
+}
+
+
+QPushButton *GMERFWidget::getForecastRupScenButton() const
+{
+    return forecastRupScenButton;
+}
+
+
+void GMERFWidget::clear(void)
+{
+    mainLayer = nullptr;
+}
+
+
+void GMERFWidget::processRuptureScenarioResults(void)
+{
+    auto pathToRupturesFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + "Output" + QDir::separator() + "RupFile.geojson";
+
+    if(!QFile::exists(pathToRupturesFile))
+    {
+        this->errorMessage("Error, could not find the rupture files");
+        return;
+    }
+
+    this->infoMessage("Processing rupture file");
+
+    // Clear the old layers if any
+    if(mainLayer != nullptr)
+        theVisualizationWidget->removeLayer(mainLayer);
+
+    mainLayer = theVisualizationWidget->addVectorLayer(pathToRupturesFile, "Earthquake Ruptures", "ogr");
+
+    if(mainLayer == nullptr)
+    {
+        this->errorMessage("Error, failed to add the ruptures layer");
+    }
+
+    auto numFeat = mainLayer->featureCount();
+
+    this->infoMessage("Loaded "+QString::number(numFeat)+" ruptures ");
+}

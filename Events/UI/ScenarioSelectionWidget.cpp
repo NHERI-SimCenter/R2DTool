@@ -45,41 +45,21 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QComboBox>
 
-ScenarioSelectionWidget::ScenarioSelectionWidget(QWidget *parent) : QWidget(parent)
+ScenarioSelectionWidget::ScenarioSelectionWidget(QString jsonKey, QWidget *parent) : SimCenterAppSelection("OpenSHA",jsonKey,parent), jsonKey(jsonKey)
 {
-    auto mainLayout = new QVBoxLayout(this);
-
-    meanPresetsCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-
-    meanPresetsCombo->addItem("Scenario-specific");
-    meanPresetsCombo->addItem("Conventional Monte Carlo");
-    meanPresetsCombo->addItem("Hazard Consistant Downsampling");
-
     specificScenarioWidget = new SpecificScenarioWidget();
     convenScenarioWidget = new ConventionalScenarioWidget();
     hazConsistentScenarioWidget = new HazardConsistentScenarioWidget();
 
-    mainStackedWidget->addWidget(specificScenarioWidget);
-    mainStackedWidget->addWidget(convenScenarioWidget);
-    mainStackedWidget->addWidget(hazConsistentScenarioWidget);
+    specificScenarioWidget->setObjectName("Scenario-specific");
+    convenScenarioWidget->setObjectName("Conventional Monte Carlo");
+    hazConsistentScenarioWidget->setObjectName("Hazard Consistant Downsampling");
 
-
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(meanPresetsCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
-
-    mainLayout->addWidget(meanPresetsCombo);
-    mainLayout->addWidget(mainStackedWidget);
-    mainLayout->addStretch(1);
-
+    this->addComponent(specificScenarioWidget->objectName(),"Scenario-specific",specificScenarioWidget);
+    this->addComponent(convenScenarioWidget->objectName(),"Conventional Monte Carlo",convenScenarioWidget);
+    this->addComponent(hazConsistentScenarioWidget->objectName(),"Hazard Consistant Downsampling",hazConsistentScenarioWidget);
 }
 
-
-void ScenarioSelectionWidget::reset(void)
-{
-
-}
 
 
 bool ScenarioSelectionWidget::inputFromJSON(QJsonObject& /*obj*/)
@@ -90,13 +70,6 @@ bool ScenarioSelectionWidget::inputFromJSON(QJsonObject& /*obj*/)
 
 bool ScenarioSelectionWidget::outputToJSON(QJsonObject& obj)
 {
-    auto jsonSerializable = dynamic_cast<JsonSerializable*>(mainStackedWidget->currentWidget());
-
-    if (jsonSerializable != nullptr)
-        jsonSerializable->outputToJSON(obj);
-    else
-        return false;
-
-    return true;
+    return SimCenterAppSelection::outputToJSON(obj);
 }
 

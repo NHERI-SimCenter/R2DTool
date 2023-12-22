@@ -7,7 +7,7 @@
 class SiteWidget;
 class SiteGridWidget;
 class SiteScatterWidget;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 
 class QButtonGroup;
 class QStackedWidget;
@@ -20,7 +20,7 @@ class SiteConfigWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit SiteConfigWidget(SiteConfig& siteconfig, VisualizationWidget* visWidget, bool soilResponse = false, QWidget *parent = nullptr);
+    explicit SiteConfigWidget(SiteConfig& siteconfig, QGISVisualizationWidget* visWidget, bool soilResponse = false, QWidget *parent = nullptr);
 
     SiteWidget *getSiteWidget();
     SiteGridWidget *getSiteGridWidget() const;
@@ -52,7 +52,7 @@ private:
     SiteGridWidget* siteGridWidget;
     SiteScatterWidget* siteScatWidget;
     QGISSiteInputWidget* csvSiteInventory;
-    VisualizationWidget* visualizationWidget;
+    QGISVisualizationWidget* visualizationWidget;
 
     QRadioButton* siteRadioButton;
     QRadioButton* gridRadioButton;

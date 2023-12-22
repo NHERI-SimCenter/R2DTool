@@ -38,15 +38,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
-
-#include "JsonSerializable.h"
+#include "SimCenterAppWidget.h"
 
 class SC_ComboBox;
 class SC_DoubleLineEdit;
 class SC_CheckBox;
 
-class UCERF2Widget : public QWidget, JsonSerializable
+class UCERF2Widget : public SimCenterAppWidget
 {
     Q_OBJECT
 
@@ -56,18 +54,15 @@ public:
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
 
-    void reset(void);
-
 public slots:
 
 private:
 
-    SC_ComboBox* EqkRupForecastCombo = nullptr;
     SC_DoubleLineEdit* rupOffstLE = nullptr;
     SC_ComboBox* floaterTypeCombo = nullptr;
     SC_ComboBox* backgroundSeisCombo = nullptr;
     SC_ComboBox* backgroundSeisTypeCombo = nullptr;
-    SC_CheckBox* applyCyberShakeCB = nullptr;
+//    SC_CheckBox* applyCyberShakeCB = nullptr;
     SC_ComboBox* probabilityModelCombo = nullptr;
 };
 

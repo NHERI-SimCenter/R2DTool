@@ -1,5 +1,5 @@
-#ifndef RasterHazardInputWidget_H
-#define RasterHazardInputWidget_H
+#ifndef UserDefinedCurveWidget_H
+#define UserDefinedCurveWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -40,77 +40,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
-#include <qgscoordinatereferencesystem.h>
+class SC_FileEdit;
 
-#include <memory>
-
-#include <QMap>
-
-class QGISVisualizationWidget;
-class QgsRasterDataProvider;
-class QgsProjectionSelectionWidget;
-class QgsRasterLayer;
-class SimCenterIMWidget;
-class CRSSelectionWidget;
-
-class QLineEdit;
-class QProgressBar;
-class QLabel;
-class QComboBox;
-class QGridLayout;
-
-class RasterHazardInputWidget : public SimCenterAppWidget
+class UserDefinedCurveWidget : public SimCenterAppWidget
 {
     Q_OBJECT
-
 public:
-    RasterHazardInputWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~RasterHazardInputWidget();
+    explicit UserDefinedCurveWidget(QWidget *parent = nullptr);
 
-    QWidget* getRasterHazardInputWidget(void);
-
+    bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
-    bool outputToJSON(QJsonObject &jsonObj);
-    bool inputAppDataFromJSON(QJsonObject &jsonObj);
-    bool outputAppDataToJSON(QJsonObject &jsonObj);
-    bool copyFiles(QString &destDir);
-    void clear(void);
 
-    // Returns the value of the raster layer in the given band
-    // Note that band numbers start from 1 and not 0!
-    double sampleRaster(const double& x, const double& y, const int& bandNumber);
-
-private slots:
-    void chooseEventFileDialog(void);
-    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
-
-signals:
-    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
-    void eventTypeChangedSignal(QString eventType);
-    void loadingComplete(const bool value);
 
 private:
+    SC_FileEdit* userDefHazardLE = nullptr;
 
-    int loadRaster(void);
+    QString jsonKey;
 
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
-
-    QString eventFile;
-    QString rasterFilePath;
-    QLineEdit* rasterPathLineEdit = nullptr;
-
-    QString pathToEventFile;
-
-    QWidget* fileInputWidget = nullptr;
-
-    QgsRasterDataProvider* dataProvider = nullptr;
-    QgsRasterLayer* rasterlayer = nullptr;
-
-    SimCenterIMWidget* theIMs = nullptr;  
-    CRSSelectionWidget* crsSelectorWidget = nullptr;
-    QComboBox* eventTypeCombo = nullptr;
-
-    bool asHdf5 = false;
 };
 
-#endif // RasterHazardInputWidget_H
+#endif // UserDefinedCurveWidget_H

@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QLineEdit>
 
-RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent) : QWidget(parent), m_selectionConfig(selectionConfig)
+RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent) : SimCenterAppWidget(parent), m_selectionConfig(selectionConfig)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* selectionGroupBox = new QGroupBox();
@@ -58,7 +58,7 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
     QGridLayout* formLayout = new QGridLayout(selectionGroupBox);
 
     QLabel* databaseLabel = new QLabel(tr("Database:"));
-    m_dbBox = new SC_ComboBox("GMDatabase",QStringList({"None","PEER NGA West 2"}));
+    m_dbBox = new SC_ComboBox("Datase",QStringList({"None","PEER NGA West 2"}));
     connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
 
     m_selectionConfig.setDatabase("PEER NGA West 2");
@@ -71,7 +71,7 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
 
     QLabel* numGMLabel = new QLabel(tr("Number of ground motions per site:"));
     auto validator = new QIntValidator(1, 99999999);
-    numGMLineEdit = new SC_IntLineEdit("NumGmPerSite",1);
+    numGMLineEdit = new SC_IntLineEdit("NumberPerSite",1);
     numGMLineEdit->setValidator(validator);
 
     formLayout->addItem(new QSpacerItem(0,20),3,0,1,2);
@@ -83,8 +83,8 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
 
     scalingMinLabel = new QLabel("Minimum Scaling Factor");
     scalingMaxLabel = new QLabel("Maximum Scaling Factor");
-    scalingMin = new SC_DoubleLineEdit("ScalingMin",0.1);
-    scalingMax = new SC_DoubleLineEdit("ScalingMax",20.0);
+    scalingMin = new SC_DoubleLineEdit("Minimum",0.1);
+    scalingMax = new SC_DoubleLineEdit("Maximum",20.0);
 
     formLayout->addWidget(scalingMinLabel,6,0);
     formLayout->addWidget(scalingMin,6,1);
@@ -103,12 +103,6 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
 }
 
 
-void RecordSelectionWidget::reset(void)
-{
-
-}
-
-
 bool RecordSelectionWidget::inputFromJSON(QJsonObject& /*obj*/)
 {
 
@@ -118,10 +112,18 @@ bool RecordSelectionWidget::inputFromJSON(QJsonObject& /*obj*/)
 
 bool RecordSelectionWidget::outputToJSON(QJsonObject& obj)
 {
-    m_dbBox->outputToJSON(obj);
+    if (m_dbBox->currentIndex() == 0)
+        obj[m_dbBox->getKey()]="";
+    else
+        m_dbBox->outputToJSON(obj);
+
     numGMLineEdit->outputToJSON(obj);
-    scalingMin->outputToJSON(obj);
-    scalingMax->outputToJSON(obj);
+
+    QJsonObject scalingObj;
+    scalingMin->outputToJSON(scalingObj);
+    scalingMax->outputToJSON(scalingObj);
+
+    obj["ScalingFactor"] = scalingObj;
 
     return true;
 }

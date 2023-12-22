@@ -39,42 +39,71 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RuptureWidget.h"
 #include "UCERF2Widget.h"
 #include "MeanUCERFWidget.h"
+#include "SC_DoubleLineEdit.h"
 
 #include <QVBoxLayout>
+#include <QJsonObject>
 #include <QStackedWidget>
 #include <QGroupBox>
 #include <QComboBox>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+RuptureWidget::RuptureWidget(QString jsonKey, QWidget *parent) : SimCenterAppSelection("OpenSHA",jsonKey,parent), jsonKey(jsonKey)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-
-    ruptureSelectionCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
-    mainStackedWidget->setContentsMargins(0,0,0,0);
-
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(ruptureSelectionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
+    this->setContentsMargins(0,0,0,0);
 
     ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget();
+    meanUcerfWidget = new MeanUCERFWidget("ModelType");
 
-    ruptureSelectionCombo->addItem("WGCEP (2007) UCERF2 - Single Branch");
-    ruptureSelectionCombo->addItem("Mean UCERF3");
+    ucerfWidget->setObjectName("WGCEP (2007) UCERF2 - Single Branch");
+    meanUcerfWidget->setObjectName("Mean UCERF3");
 
-    mainStackedWidget->addWidget(ucerfWidget);
-    mainStackedWidget->addWidget(meanUcerfWidget);
+    this->addComponent(ucerfWidget->objectName(),"UCERF2",ucerfWidget);
+    this->addComponent(meanUcerfWidget->objectName(),"MEANUCERF2",meanUcerfWidget);
 
-    layout->addWidget(ruptureSelectionCombo);
-    layout->addWidget(mainStackedWidget);
+    auto maxDistLabel = new QLabel("Maximum Distance [km]");
+    auto maxMagLabel= new QLabel("Maximum Magnitude");
+    auto minMagLabel= new QLabel("Minimum Magnitude");
+
+    maxDistLE = new SC_DoubleLineEdit("max_Dist", 200.0);
+    maxMagLE= new SC_DoubleLineEdit("max_Mag", 10.0);
+    minMagLE= new SC_DoubleLineEdit("min_Mag", 2.5);
+
+    // Turn off max width
+    maxDistLE->setMaximumWidth(QWIDGETSIZE_MAX);
+    maxMagLE->setMaximumWidth(QWIDGETSIZE_MAX);
+    minMagLE->setMaximumWidth(QWIDGETSIZE_MAX);
+
+    auto gridLayout = new QGridLayout();
+    gridLayout->setContentsMargins(0,5,0,5);
+    gridLayout->addWidget(maxDistLabel,0,0);
+    gridLayout->addWidget(maxDistLE,0,1);
+    gridLayout->addWidget(maxMagLabel,1,0);
+    gridLayout->addWidget(maxMagLE,1,1);
+    gridLayout->addWidget(minMagLabel,2,0);
+    gridLayout->addWidget(minMagLE,2,1);
+
+    auto thisLayout = qobject_cast<QVBoxLayout*>(this->layout());
+    thisLayout->addLayout(gridLayout);
 
 }
 
 
 bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
 {
-    ucerfWidget->outputToJSON(jsonObject);
+    if(!SimCenterAppSelection::outputToJSON(jsonObject))
+        return false;
+
+    auto jsonKeyObj = jsonObject[jsonKey].toObject();
+
+    jsonKeyObj["Type"] = "ERF";
+
+    maxDistLE->outputToJSON(jsonKeyObj);
+    maxMagLE->outputToJSON(jsonKeyObj);
+    minMagLE->outputToJSON(jsonKeyObj);
+
+    jsonObject[jsonKey] = jsonKeyObj;
+
+    return true;
 }
 
 
@@ -83,33 +112,3 @@ bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
     return true;
 }
 
-
-//QString RuptureWidget::getEQNum() const
-//{
-//    QString numEQ;
-//    if (widgetType.compare("Hazard Occurrence")==0) {
-//        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-//    } else {
-//        //KZ: update the scenario number for OpenSHA ERF
-//        //numEQ = "1";
-//        if (widgetType.compare("OpenSHA ERF")==0) {
-//            numEQ = erfWidget->getNumScen();
-//        } else {
-//            numEQ = "1";
-//        }
-//    }
-//    return numEQ;
-//}
-
-
-//QString RuptureWidget::getGMPELogicTree() const
-//{
-//    QString gmpeLT = "";
-//    if (widgetType.compare("OpenQuake Classical")==0)
-//    {
-//        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-//    }
-
-
-//    return gmpeLT;
-//}

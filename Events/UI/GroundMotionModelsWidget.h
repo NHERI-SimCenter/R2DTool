@@ -38,9 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
-
-#include "JsonSerializable.h"
+#include "SimCenterAppWidget.h"
 
 class SpatialCorrelationWidget;
 class IntensityMeasureWidget;
@@ -48,7 +46,7 @@ class GMPEWidget;
 class GMPE;
 class IntensityMeasure;
 
-class GroundMotionModelsWidget : public QWidget, JsonSerializable
+class GroundMotionModelsWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 

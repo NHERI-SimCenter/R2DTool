@@ -39,32 +39,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "HazardConsistentScenarioWidget.h"
 #include "HazardCurveInputWidget.h"
 #include "SC_ComboBox.h"
-
+#include "SC_IntLineEdit.h"
+#include "SC_StringLineEdit.h"
+#include "IntensityMeasureWidget.h"
+#include "IntensityMeasure.h"
 
 #include <QGridLayout>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QLabel>
 
-HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) : QWidget(parent)
+HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     //We use a grid layout for the Rupture widget
     auto mainLayout = new QGridLayout(this);
 
     auto DownSamplingAlgoLabel = new QLabel("Downsampling Algorithm");
-    downSamplingCombo = new SC_ComboBox("DownsamplingAlgorithm",QStringList({"Manzour & Davidson (2016)"}));
+    downSamplingCombo = new SC_ComboBox("Model",QStringList({"Manzour & Davidson (2016)"}));
 
-    hazCurveWidget = new HazardCurveInputWidget();
+    downSamplingCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+    hazCurveWidget = new HazardCurveInputWidget("Generator");
+
+    m_intensityMeasure = new IntensityMeasure(this);
+    auto m_intensityMeasureWidget = new IntensityMeasureWidget(*m_intensityMeasure);
+    m_intensityMeasureWidget->typeBox()->setCurrentIndex(1); // Set to PGA
+
+    scenarioSampleSizeLE = new SC_IntLineEdit("EarthquakeSampleSize",40);
+    gmSampleSizeLE = new SC_IntLineEdit("GroundMotionMapSize",100);
+
+    QLabel* scenarioSampleSize_label = new QLabel(tr("Earthquake scenario sample size:"));
+    QLabel* gmSampleSize_label = new QLabel(tr("Ground motion map sample size:"));
+    QLabel* return_period_label = new QLabel(tr("Return periods (yr):"));
+
+    return_periods_lineEdit = new SC_StringLineEdit("ReturnPeriods","50, 224, 475, 975, 2475");
+    return_periods_lineEdit->setValidator(new CustomRPValidator(return_periods_lineEdit));
 
     mainLayout->addWidget(DownSamplingAlgoLabel,0,0);
     mainLayout->addWidget(downSamplingCombo,0,1);
     mainLayout->addWidget(hazCurveWidget,1,0,1,2);
+    mainLayout->addWidget(m_intensityMeasureWidget,2,0,1,2);
+    mainLayout->addWidget(scenarioSampleSize_label,3,0);
+    mainLayout->addWidget(scenarioSampleSizeLE,3,1);
+    mainLayout->addWidget(gmSampleSize_label,4,0);
+    mainLayout->addWidget(gmSampleSizeLE,4,1);
+    mainLayout->addWidget(return_period_label,5,0);
+    mainLayout->addWidget(return_periods_lineEdit,5,1);
+    mainLayout->setRowStretch(6,1);
 
 }
 
 
-void HazardConsistentScenarioWidget::reset(void)
-{
-
-}
 
 
 bool HazardConsistentScenarioWidget::inputFromJSON(QJsonObject& /*obj*/)
@@ -74,9 +99,52 @@ bool HazardConsistentScenarioWidget::inputFromJSON(QJsonObject& /*obj*/)
 }
 
 
+QJsonArray HazardConsistentScenarioWidget::getRPArray(const QString& integerListString)
+{
+    // Split the string into a QStringList using commas as the delimiter
+    QStringList integerStringList = integerListString.split(", ");
+
+    // Convert the QStringList to a QJsonArray of integers
+    QJsonArray jsonArray;
+    for (const QString &integerString : integerStringList) {
+        bool conversionOk;
+        int integerValue = integerString.toInt(&conversionOk);
+        if (conversionOk) {
+            jsonArray.append(integerValue);
+        } else {
+            qDebug() << "Invalid integer value:" << integerString;
+            // Handle the error as needed
+        }
+    }
+
+    return jsonArray;
+}
+
+
 bool HazardConsistentScenarioWidget::outputToJSON(QJsonObject& obj)
 {
-    downSamplingCombo->outputToJSON(obj);
+    obj["method"] = "Subsampling";
+
+    QJsonObject paramObj;
+    downSamplingCombo->outputToJSON(paramObj);
+    scenarioSampleSizeLE->outputToJSON(paramObj);
+    gmSampleSizeLE->outputToJSON(paramObj);
+    hazCurveWidget->outputToJSON(paramObj);
+
+    QJsonObject im;
+    m_intensityMeasure->outputToJSON(im);
+
+    paramObj["IntensityMeasure"] = im["Type"];
+
+    if (im["Type"]=="PGA")
+        paramObj["Period"] = im["Period"];
+    else
+        paramObj["Periods"] = im["Periods"];
+
+    auto rpArr = getRPArray(return_periods_lineEdit->text());
+    paramObj["ReturnPeriods"] = rpArr;
+
+    obj["Parameters"] = paramObj;
 
     return true;
 }

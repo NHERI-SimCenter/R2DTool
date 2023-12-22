@@ -38,12 +38,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
+#include "SimCenterAppWidget.h"
 #include <QtWidgets>
 
 class PointSourceRupture;
 
-class PointSourceRuptureWidget : public QWidget
+class PointSourceRuptureWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:

@@ -82,7 +82,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QByteArray>
 #include <QStringList>
 
-RegionalSiteResponseWidget::RegionalSiteResponseWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+RegionalSiteResponseWidget::RegionalSiteResponseWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     progressBar = nullptr;
     inputWidget = nullptr;
@@ -543,7 +543,7 @@ QStackedWidget* RegionalSiteResponseWidget::getRegionalSiteResponseWidget(void)
 }
 
 
-QStackedWidget* RegionalSiteResponseWidget::getSiteWidget(VisualizationWidget* visWidget)
+QStackedWidget* RegionalSiteResponseWidget::getSiteWidget(QGISVisualizationWidget* visWidget)
 {
     if (theSiteStackedWidget)
       return theSiteStackedWidget;

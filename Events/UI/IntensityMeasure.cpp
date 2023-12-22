@@ -38,12 +38,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "IntensityMeasure.h"
 
-#include <QtAlgorithms>
 #include <QJsonArray>
+#include <QJsonObject>
 #include <QLineEdit>
-#include <QDebug>
 
-IntensityMeasure::IntensityMeasure(QObject *parent) : QObject(parent)
+IntensityMeasure::IntensityMeasure(QWidget *parent) : SimCenterAppWidget(parent)
 {
 
 }
@@ -67,41 +66,11 @@ bool IntensityMeasure::setType(const QString &type)
 }
 
 
-QJsonObject IntensityMeasure::getJson()
-{
-    QJsonObject im;
-
-    if(m_type.compare("Spectral Accelerations (SA)") == 0)
-        im.insert("Type", "SA");
-    else if(m_type.compare("Peak Ground Acceleration (PGA)") == 0)
-        im.insert("Type", "PGA");
-    else
-    {
-        im.insert("Type", "UNKNOWN");
-        qDebug()<<"Warning, the type of intensity measure "<<m_type<<" is not recognized";
-    }
-
-    QJsonArray arrayPeriods;
-
-    for(auto&& it : m_periods)
-    {
-        arrayPeriods.append(it);
-    }
-    im.insert("Periods", arrayPeriods);
-
-    im.insert("Levels", imtLevels); // intensity measure levels
-    im.insert("Scale", imtScale); // intensity measure level scale
-    im.insert("Truncation", imtTruc); // truncation level
-
-    return im;
-}
-
-
 const QStringList &IntensityMeasure::validTypes()
 {
     static QStringList validTypes = QStringList()
-            << "Peak Ground Acceleration (PGA)"
-            << "Spectral Accelerations (SA)";
+                                    << "Peak Ground Acceleration (PGA)"
+                                    << "Spectral Accelerations (SA)";
 
     return validTypes;
 }
@@ -138,7 +107,7 @@ void IntensityMeasure::setImtLevels(const QString &value)
     while(imtLevels.count())
     {
         imtLevels.pop_back();
-     }
+    }
     // remove spaces
     QString tmp = value;
     tmp.remove(" ");
@@ -185,6 +154,8 @@ double IntensityMeasure::getImtTruc() const
 {
     return imtTruc;
 }
+
+
 bool IntensityMeasure::outputToJSON(QJsonObject &jsonObject)
 {
     if(m_type.compare("Spectral Accelerations (SA)") == 0)
@@ -203,7 +174,15 @@ bool IntensityMeasure::outputToJSON(QJsonObject &jsonObject)
     {
         arrayPeriods.append(it);
     }
-    jsonObject.insert("Periods", arrayPeriods);
+
+    if(jsonObject["Type"] != "PGA")
+        jsonObject.insert("Periods", arrayPeriods);
+    else
+        jsonObject.insert("Period", 0);
+
+    jsonObject.insert("Levels", imtLevels); // intensity measure levels
+    jsonObject.insert("Scale", imtScale); // intensity measure level scale
+    jsonObject.insert("Truncation", imtTruc); // truncation level
 
     return true;
 }

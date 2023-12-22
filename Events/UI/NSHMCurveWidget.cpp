@@ -36,41 +36,38 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "HazardCurveInputWidget.h"
 #include "NSHMCurveWidget.h"
-#include "UserDefinedCurveWidget.h"
+#include "SC_ComboBox.h"
 
+#include <QGridLayout>
 #include <QLabel>
-#include <QJsonObject>
 
-HazardCurveInputWidget::HazardCurveInputWidget(QString jsonKey,QWidget *parent) : SimCenterAppSelection("Hazard Curve Input",jsonKey,parent), jsonKey(jsonKey)
+NSHMCurveWidget::NSHMCurveWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
-    inferredWIdget = new SimCenterAppWidget();
-    nshmWidget = new NSHMCurveWidget();
-    userDefHaz = new UserDefinedCurveWidget();
+    this->setContentsMargins(0,0,0,0);
 
-    this->addComponent("Inferred","NA",inferredWIdget);
-    this->addComponent("National Seismic Hazard Map","NA",nshmWidget);
-    this->addComponent("User-defined","NA",userDefHaz);
+    auto mainLayout = new QGridLayout(this);
 
+    auto nshmComboLabel = new QLabel("NSHM Model");
+
+    NSHMCombo = new SC_ComboBox("HazardCurveInput",QStringList({"NSHM V1","NSHM V2"}));
+    NSHMCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+    mainLayout->addWidget(nshmComboLabel, 0, 0);
+    mainLayout->addWidget(NSHMCombo, 0, 1);
+    mainLayout->setRowStretch(1,1);
 }
 
 
-bool HazardCurveInputWidget::inputFromJSON(QJsonObject& /*obj*/)
+bool NSHMCurveWidget::outputToJSON(QJsonObject &jsonObject)
 {
+    NSHMCombo->outputToJSON(jsonObject);
     return true;
 }
 
 
-bool HazardCurveInputWidget::outputToJSON(QJsonObject& obj)
+bool NSHMCurveWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
-
-    if(this->getCurrentSelection() == inferredWIdget)
-        obj["HazardCurveInput"] = "Inferred_sourceFile";
-    else if(this->getCurrentSelection() == nshmWidget)
-        return nshmWidget->outputToJSON(obj);
-    else if(this->getCurrentSelection() == userDefHaz)
-        return userDefHaz->outputToJSON(obj);
     return true;
 }
 

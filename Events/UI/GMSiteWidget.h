@@ -47,13 +47,13 @@ class Vs30Widget; // vs30 setup widget
 class zDepthWidget;
 class SiteConfig;
 class SiteConfigWidget;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 
 class GMSiteWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GMSiteWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit GMSiteWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
 
     SiteConfig *siteConfig() const;
 
@@ -68,7 +68,7 @@ private:
     Vs30Widget* m_vs30Widget = nullptr;
     zDepthWidget* m_z1DepthWidget = nullptr;
     zDepthWidget* m_z2DepthWidget = nullptr;
-    VisualizationWidget* theVisualizationWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 };
 
 #endif // GMSiteWidget_H

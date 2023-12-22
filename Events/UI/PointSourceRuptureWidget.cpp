@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "HBoxFormLayout.h"
 #include "PointSourceRupture.h"
 
-PointSourceRuptureWidget::PointSourceRuptureWidget(QWidget *parent, Qt::Orientation orientation) : QWidget(parent)
+PointSourceRuptureWidget::PointSourceRuptureWidget(QWidget *parent, Qt::Orientation orientation) : SimCenterAppWidget(parent)
 {
 
     this->m_magnitudeBox = new QDoubleSpinBox(this);

@@ -44,37 +44,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QComboBox>
 
-MeanUCERFWidget::MeanUCERFWidget(QWidget *parent) : QWidget(parent)
+MeanUCERFWidget::MeanUCERFWidget(QString jsonKey, QWidget *parent) : SimCenterAppSelection("Mean UCERF Model",jsonKey,parent), jsonKey(jsonKey)
 {
-    auto mainLayout = new QVBoxLayout(this);
-
-    meanPresetsCombo = new QComboBox();
-    mainStackedWidget = new QStackedWidget();
+    this->setContentsMargins(0,0,0,0);
 
     poissonWidget = new MeanUCERFPoissonWidget();
     FM3P1Widget = new MeanUCERFFM3Widget();
     FM3P2Widget = new MeanUCERFFM3Widget();
 
-    mainStackedWidget->addWidget(poissonWidget);
-    mainStackedWidget->addWidget(FM3P1Widget);
-    mainStackedWidget->addWidget(FM3P2Widget);
-
-    meanPresetsCombo->addItem("(POISSON ONLY) Both FM Branch Averaged");
-    meanPresetsCombo->addItem("FM3.1 Branch Averaged");
-    meanPresetsCombo->addItem("FM3.2 Branch Averaged");
-
-    // Connect the combo box signal to the stacked widget slot
-    QObject::connect(meanPresetsCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                     mainStackedWidget, &QStackedWidget::setCurrentIndex);
-
-    mainLayout->addWidget(meanPresetsCombo);
-    mainLayout->addWidget(mainStackedWidget);
-
-}
-
-
-void MeanUCERFWidget::reset(void)
-{
+    this->addComponent("(POISSON ONLY) Both FM Branch Averaged","UCERF2",poissonWidget);
+    this->addComponent("FM3.1 Branch Averaged","UCERF2",FM3P1Widget);
+    this->addComponent("FM3.2 Branch Averaged","UCERF2",FM3P2Widget);
 
 }
 
@@ -87,13 +67,6 @@ bool MeanUCERFWidget::inputFromJSON(QJsonObject& /*obj*/)
 
 bool MeanUCERFWidget::outputToJSON(QJsonObject& obj)
 {
-    auto jsonSerializable = dynamic_cast<JsonSerializable*>(mainStackedWidget->currentWidget());
-
-    if (jsonSerializable != nullptr)
-        jsonSerializable->outputToJSON(obj);
-    else
-        return false;
-
-    return true;
+    return SimCenterAppSelection::outputToJSON(obj);
 }
 
