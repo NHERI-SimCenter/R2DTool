@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 
     // Create the main window
     WorkflowAppR2D *theInputApp = new WorkflowAppR2D(theRemoteService);
-    MainWindowWorkflowApp w(QString("R2D: Regional Resilience Determination Tool"), theInputApp, theRemoteService);
+    MainWindowWorkflowApp w(QString("R2D: Regional Resilience Determination Tool"), theInputApp, theRemoteService, 0, true);
 
     // Create the  menu bar and actions to run the examples
     theInputApp->initialize();
