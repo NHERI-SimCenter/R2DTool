@@ -65,7 +65,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     DLTypeComboBox->addItem("HAZUS MH EQ Story");
 
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
-//    DLTypeComboBox->addItem("HAZUS MH HU");
+    DLTypeComboBox->addItem("HAZUS MH HU");
     DLTypeComboBox->addItem("User-provided Fragilities");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
