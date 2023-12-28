@@ -62,7 +62,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
-    DLTypeComboBox->addItem("HAZUS MH EQ");
+    DLTypeComboBox->addItem("HAZUS MH EQ Story");
 
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
 //    DLTypeComboBox->addItem("HAZUS MH HU");
@@ -158,7 +158,7 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     if (DLTypeComboBox->currentText().compare("HAZUS MH EQ IM")==0){
         appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_IM.py");
     }
-    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ")==0){
+    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ Story")==0){
         appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_Story.py");
     }
     // test separating the path and filename of auto-population codes (KZ)
@@ -422,7 +422,7 @@ void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
 {
     this->clearParams();
 
-    if(text.compare("HAZUS MH EQ") == 0 || text.compare("HAZUS MH EQ IM") == 0)
+    if(text.compare("HAZUS MH EQ Story") == 0 || text.compare("HAZUS MH EQ IM") == 0)
     {
         groundFailureCheckBox->show();
         autoPopulateScriptWidget->hide();
