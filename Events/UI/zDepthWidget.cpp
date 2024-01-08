@@ -54,7 +54,7 @@ zDepthWidget::zDepthWidget(QString type, QWidget *parent): type(type), QWidget(p
 
     m_z1Combo = new QComboBox(this);
     m_z1Combo->addItem("OpenSHA default model");
-    m_z1Combo->addItem("User provided");
+    m_z1Combo->addItem("User-specified");
     m_z1Combo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     auto comboLayout = new QHBoxLayout(this);

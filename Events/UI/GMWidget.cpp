@@ -1445,6 +1445,7 @@ bool GMWidget::getSimulationStatus()
 void GMWidget::runScenarioForecast(void)
 {
 
+    QString sitefile = "";
     // Get the type of site definition, i.e., single or grid
     auto type = siteWidget->siteConfig()->getType();
 
@@ -1466,7 +1467,7 @@ void GMWidget::runScenarioForecast(void)
         if(!siteWidget->siteConfigWidget()->getSiteGridWidget()->getGridCreated())
         {
             QString msg = "Please select a grid before continuing in the Sites panel";
-            this->statusMessage(msg);
+            this->errorMessage(msg);
             return;
         }
     }
@@ -1475,13 +1476,23 @@ void GMWidget::runScenarioForecast(void)
         if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->siteFileExists())
         {
             QString msg = "Please choose a site file before continuing in the Sites panel";
-            this->statusMessage(msg);
+            this->errorMessage(msg);
+            return;
+        }
+    }
+    else if(type == SiteConfig::SiteType::UserCSV)
+    {
+        sitefile = siteWidget->siteConfigWidget()->getCsvSiteWidget()->getPathToComponentFile();
+        QFileInfo fileInfo;
+        if(!fileInfo.exists(sitefile)){
+            QString msg = "Please choose a site file before continuing in the Sites panel";
+            this->errorMessage(msg);
             return;
         }
     }
 
 
-    auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
+    auto pathToInputDir = m_appConfig->getInputDirectoryPath();
 
     // Remove old csv files in the output folder
     const QFileInfo existingFilesInfo(pathToInputDir);
@@ -1513,33 +1524,24 @@ void GMWidget::runScenarioForecast(void)
     //int maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
     int minID = 0;
     int maxID = 1;
+    QString filter = QString::number(minID) + "-" + QString::number(maxID);
     if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Grid)
     {
         maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
+        filter = QString::number(minID) + "-" + QString::number(maxID);
     }
-    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Scatter)
+    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::UserCSV)
     {
-        minID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMinID();
-        maxID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMaxID();
+        filter = siteWidget->siteConfigWidget()->getFilter();
     }
 
 
-    QString pathToSiteLocationFile = pathToInputDir + QDir::separator() + "SiteFile.csv";
-
-    QJsonObject siteObj;
-    siteObj.insert("Type", "From_CSV");
-    siteObj.insert("input_file", pathToSiteLocationFile);
-    siteObj.insert("min_ID", minID);
-    siteObj.insert("max_ID", maxID);
-
-    // Get the vs 30
-    siteWidget->outputToJson(siteObj);
-    // add an output_file field for preparing OpenQuake site model
-    siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
-
-    if(type == SiteConfig::SiteType::Scatter)
+    QString pathToSiteLocationFile;
+    if(type == SiteConfig::SiteType::UserCSV)
     {
-        if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->copySiteFile(pathToInputDir))
+        QFileInfo siteFileInfo(sitefile);
+        pathToSiteLocationFile = pathToInputDir + QDir::separator() + siteFileInfo.fileName();
+        if(QFile::copy(siteFileInfo.absoluteFilePath(), pathToSiteLocationFile))
         {
             this->errorMessage("Error copying site file to inputput directory");
             return;
@@ -1547,6 +1549,7 @@ void GMWidget::runScenarioForecast(void)
     }
     else
     {
+        pathToSiteLocationFile = pathToInputDir + QDir::separator() + "SiteFile.csv";
         QVector<QStringList> gridData;
 
         if(type == SiteConfig::SiteType::Single)
@@ -1563,6 +1566,15 @@ void GMWidget::runScenarioForecast(void)
             return;
         }
     }
+
+    QJsonObject siteObj;
+    siteObj.insert("Type", "From_CSV");
+    siteObj.insert("input_file", pathToSiteLocationFile);
+    siteObj.insert("filter", filter);
+    // Get the vs 30
+    siteWidget->outputToJson(siteObj);
+    // add an output_file field for preparing OpenQuake site model
+    siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
 
 
     erfWidget->run_button_pressed(siteObj);

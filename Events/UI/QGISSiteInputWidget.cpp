@@ -52,7 +52,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
-
+    label1->setText("Site File: (.csv)");
+    label2->setText("Sites to Analyze");
+//    mainWidgetLayout->removeWidget(label2);
+//    mainWidgetLayout->removeWidget(selectComponentsLineEdit);
+//    mainWidgetLayout->removeWidget(filterExpressionButton);
+//    mainWidgetLayout->removeWidget(clearSelectionButton);
+//    mainWidgetLayout->removeWidget(componentTableWidget);
+//    QLayoutItem *child;
+//    while ((child = mainWidgetLayout->takeAt(3)) != nullptr) {
+//        child->widget()->hide(); // delete the widget
+//    }
 }
 
 

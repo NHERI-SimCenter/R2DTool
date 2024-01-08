@@ -62,9 +62,11 @@ signals:
 
 public slots:
     bool setType(const QString &type);
+    bool setInferred(const bool inferred);
 
 private:
     QString m_type;
+    bool vsInferred;
 
 };
 

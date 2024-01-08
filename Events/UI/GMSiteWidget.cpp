@@ -48,7 +48,7 @@ GMSiteWidget::GMSiteWidget(QGISVisualizationWidget* visWidget, QWidget *parent) 
 {
     // Adding Site Config Widget
     m_siteConfig = new SiteConfig(this);
-    m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig, visWidget);
+    m_siteConfigWidget = new SiteConfigWidget(*m_siteConfig, visWidget, false);
 
     // Adding vs30 widget
     this->m_vs30 = new Vs30(this);

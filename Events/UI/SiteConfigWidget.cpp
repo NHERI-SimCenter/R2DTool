@@ -67,7 +67,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QGISVisualizationWidg
     if (soilResponse)
         csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "SiteSoilColumn","RegionalSiteResponse");
     else
-        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "SiteSoilColumn","regionalGroundMotion");
+        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Sites","regionalGroundMotion");
 
     csvSiteInventory->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     auto sa = new VerticalScrollingWidget(csvSiteInventory);

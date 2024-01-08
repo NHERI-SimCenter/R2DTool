@@ -74,15 +74,41 @@ Vs30Widget::Vs30Widget(Vs30& vs30, SiteConfig& siteConfig, QWidget *parent): QWi
     QStringListModel* typeModel = new QStringListModel(validType);
     m_typeBox->setModel(typeModel);
     m_typeBox->setCurrentIndex(validType.indexOf(m_vs30.type()));
+
+    vsInferredCheckbox = new QCheckBox("Specified Vs30 values are inferred");
+    layout->addWidget(vsInferredCheckbox);
+    vsInferredCheckbox->setChecked(true);
+    vsInferredCheckbox->setEnabled(false);
     this->setupConnections();
+
 }
 
+void Vs30Widget::changeVs30InferredEnable(int index){
+    if(vsInferredCheckbox == nullptr){
+        return;
+    }
+    if (index == 3){
+        vsInferredCheckbox->setEnabled(true);
+        vsInferredCheckbox->setChecked(false);
+    } else {
+        vsInferredCheckbox->setEnabled(false);
+        vsInferredCheckbox->setChecked(true);
+    }
+}
 
 void Vs30Widget::setupConnections()
 {
     connect(this->m_typeBox, &QComboBox::currentTextChanged,
             &this->m_vs30, &Vs30::setType);
 
+//    connect(vsInferredCheckbox, SIGNAL(QCheckBox::stateChanged(bool)),
+//            &this->m_vs30, SLOT(Vs30::setInferred(bool)));
+
     connect(&this->m_vs30, &Vs30::typeChanged,
             this->m_typeBox, &QComboBox::setCurrentText);
+
+//    connect(m_typeBox, SIGNAL(QComboBox::currentIndexChanged(int)), this, SLOT(Vs30Widget::changeVs30InferredEnable(int)));
+//    connect(this->m_typeBox, QComboBox::currentIndexChanged,
+//            this, changeVs30InferredEnable);
+
 }
