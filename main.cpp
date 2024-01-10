@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("3.1.1");
+    QCoreApplication::setApplicationVersion("4.0.0");
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 
     // Create the main window
     WorkflowAppR2D *theInputApp = new WorkflowAppR2D(theRemoteService);
-    MainWindowWorkflowApp w(QString("R2D: Regional Resilience Determination Tool"), theInputApp, theRemoteService);
+    MainWindowWorkflowApp w(QString("R2D: Regional Resilience Determination Tool"), theInputApp, theRemoteService, 0, true);
 
     // Create the  menu bar and actions to run the examples
     theInputApp->initialize();
@@ -234,21 +234,24 @@ int main(int argc, char *argv[])
         qDebug() << "could not open stylesheet";
     }
 
+    //
     //Setting Google Analytics Tracking Information
-    //GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
-    //GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
+    //
+    
+    /* ******************************************************************* 
+
+    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
+    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
     GoogleAnalytics::CreateSessionId();
     GoogleAnalytics::StartSession();
 
     // Opening a QWebEngineView and using github to get app geographic usage
-    /*
     QWebEngineView view;
     view.setUrl(QUrl("https://nheri-simcenter.github.io/R2DTool/GA4.html"));
     view.resize(1024, 750);
     view.show();
     view.hide();
-    */
-    /* ******************************************************************* */
+     ******************************************************************* */
     
 
     int res = a.exec();

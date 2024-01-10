@@ -320,9 +320,10 @@ void LineAssetInputWidget::createComponentsBox(void)
 
     locationWidget->setLayout(latLonLayout);
 #endif
-    auto insPoint = mainWidgetLayout->count();
 
-    mainWidgetLayout->insertWidget(insPoint-3,locationWidget);
+    // Insert the widget three rows from the bottom
+    insertWidgetIntoLayout(locationWidget,3);
+
 }
 
 #endif

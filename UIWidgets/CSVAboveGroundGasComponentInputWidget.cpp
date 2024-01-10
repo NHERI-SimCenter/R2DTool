@@ -69,9 +69,8 @@ void CSVAboveGroundGasComponentInputWidget::createComponentsBox(void)
     vboxLayout->addWidget(latLabel,1,0,Qt::AlignLeft);
     inputLayout->addWidget(locationWidget);
 
-    auto insPoint = mainWidgetLayout->count();
-
-    mainWidgetLayout->insertLayout(insPoint-3,inputLayout);
+    // Insert the widget three rows from the bottom
+    insertWidgetIntoLayout(locationWidget,3);
 }
 
 

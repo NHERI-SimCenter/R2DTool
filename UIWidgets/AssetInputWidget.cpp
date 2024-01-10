@@ -41,7 +41,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetInputWidget.h"
 #include "VisualizationWidget.h"
 #include "CSVReaderWriter.h"
-#include "GeoJSONReaderWriter.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
 #include "ComponentDatabaseManager.h"
@@ -91,9 +90,11 @@ AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidg
 
     auto txt3 = QStringRef(&assetType, 0, assetType.length()-1) + " Information";
 
+#ifdef OpenSRA
     label1->setText(txt1);
     label2->setText(txt2);
     label3->setText(txt3);
+#endif
 
     theComponentDb = ComponentDatabaseManager::getInstance()->createAssetDb(assetType);
 
@@ -108,7 +109,7 @@ AssetInputWidget::~AssetInputWidget()
 }
 
 
-bool AssetInputWidget::loadAssetData(void)
+bool AssetInputWidget::loadAssetData(bool message)
 {
     // Ask for the file path if the file path has not yet been set, and return if it is still null
     if(pathToComponentInputFile.compare("NULL") == 0)
@@ -139,7 +140,7 @@ bool AssetInputWidget::loadAssetData(void)
     
     // Test to remove
     // auto start = high_resolution_clock::now();
-    
+
     CSVReaderWriter csvTool;
     
     QString err;
@@ -190,8 +191,11 @@ bool AssetInputWidget::loadAssetData(void)
     }
     
     componentTableWidget->getTableModel()->populateData(data, tableHorizontalHeadings);
-    
+
+#ifdef OpenSRA
     label3->show();
+#endif
+    
     componentTableWidget->show();
     componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
@@ -201,7 +205,8 @@ bool AssetInputWidget::loadAssetData(void)
 
     if(selectedFeaturesLayer != nullptr)
         theVisualizationWidget->removeLayer(selectedFeaturesLayer);
-    
+
+
     auto res = this->loadAssetVisualization();
 
     if(res != 0)
@@ -269,30 +274,33 @@ ComponentTableView *AssetInputWidget::getTableWidget() const
 
 void AssetInputWidget::createComponentsBox(void)
 {
+    
     componentGroupBox = new QGroupBox(assetType);
     componentGroupBox->setFlat(true);
     componentGroupBox->setContentsMargins(0,0,0,0);
     
-    mainWidgetLayout = new QVBoxLayout();
-    mainWidgetLayout->setMargin(0);
-    mainWidgetLayout->setSpacing(5);
-    mainWidgetLayout->setContentsMargins(10,0,0,0);
+    mainWidgetLayout = new QGridLayout();
+    
+    // mainWidgetLayout->setMargin(0);
+    // mainWidgetLayout->setSpacing(5);
+    // mainWidgetLayout->setContentsMargins(10,0,0,0);
     
     componentGroupBox->setLayout(mainWidgetLayout);
     
     label1 = new QLabel();
+    label1->setText("Asset File:");
     
-    QLabel* pathText = new QLabel();
-    pathText->setText("Path to file:");
+    // QLabel* pathText = new QLabel();
+    // pathText->setText("Path to file:");
     
     componentFileLineEdit = new QLineEdit();
-    //    componentFileLineEdit->setMaximumWidth(750);
-    componentFileLineEdit->setMinimumWidth(400);
-    componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    // componentFileLineEdit->setMaximumWidth(750);
+    // componentFileLineEdit->setMinimumWidth(400);
+    // componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
 
-    browseFileButton = new QPushButton();
-    browseFileButton->setText(tr("Browse"));
+    browseFileButton = new QPushButton("Browse");
+    //    browseFileButton->setText(tr("Browse"));
     browseFileButton->setMaximumWidth(150);
     
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));
@@ -301,7 +309,7 @@ void AssetInputWidget::createComponentsBox(void)
     //    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
     
     label2 = new QLabel();
-    
+    label2->setText("Assets to Analyze:");
     selectComponentsLineEdit = new AssetInputDelegate();
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&AssetInputWidget::handleComponentSelection);
     connect(selectComponentsLineEdit,&QLineEdit::editingFinished,this,&AssetInputWidget::selectComponents);
@@ -326,46 +334,60 @@ void AssetInputWidget::createComponentsBox(void)
     componentTableWidget = new ComponentTableView();
     
     connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &AssetInputWidget::handleCellChanged);
+
+    mainWidgetLayout->addWidget(label1, 1,0);
+    mainWidgetLayout->addWidget(componentFileLineEdit, 1,1);
+    mainWidgetLayout->addWidget(browseFileButton, 1,2);    
     
-    pathLayout = new QHBoxLayout();
-    pathLayout->addWidget(pathText);
-    pathLayout->addWidget(componentFileLineEdit);
-    pathLayout->addWidget(browseFileButton);
+    //pathLayout = new QHBoxLayout();
+    //pathLayout->addWidget(pathText);
+    //pathLayout->addWidget(componentFileLineEdit);
+    //pathLayout->addWidget(browseFileButton);
     
     // Add a vertical spacer at the bottom to push everything up
-    mainWidgetLayout->addWidget(label1);
-    mainWidgetLayout->addLayout(pathLayout);
+    // mainWidgetLayout->addWidget(label1);
+    //    mainWidgetLayout->addLayout(pathLayout);
+
+#ifdef OpenSRA
+    mainWidgetLayout->addWidget(label2, 2,0);
 
     filterWidget = new QWidget();
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout(filterWidget);
-    selectComponentsLayout->addWidget(label2);
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
 
-#ifdef OpenSRA
-    // hide selection part
-    selectComponentsLineEdit->setText("1");
-    selectComponentsLineEdit->hide();
-    clearSelectionButton->hide();
-    filterExpressionButton->hide();
+    mainWidgetLayout->addWidget(selectComponentsLineEdit, 2,1);
+    mainWidgetLayout->addWidget(filterExpressionButton, 2,2);
+    mainWidgetLayout->addWidget(clearSelectionButton, 2,3);
+
+    mainWidgetLayout->addWidget(label3, 3,0,Qt::AlignCenter);
+    mainWidgetLayout->addWidget(componentTableWidget,4, 0, 1,4);
+    mainWidgetLayout->setRowStretch(5,1);
 #else
-    mainWidgetLayout->addWidget(filterWidget);
-#endif
-
-    mainWidgetLayout->addWidget(label3,0,Qt::AlignCenter);
-    mainWidgetLayout->addWidget(componentTableWidget,0,Qt::AlignCenter);
+    mainWidgetLayout->addWidget(label2, 2,0);
+    mainWidgetLayout->addWidget(selectComponentsLineEdit, 2,1);
+    mainWidgetLayout->addWidget(filterExpressionButton, 2,2);
+    mainWidgetLayout->addWidget(clearSelectionButton, 2,3);
     
-    mainWidgetLayout->addStretch();
+    mainWidgetLayout->addWidget(componentTableWidget,3, 0, 1,4);
+    mainWidgetLayout->setRowStretch(4,1);
+#endif
+    //    mainWidgetLayout->addStretch();
 
-    this->setLayout(mainWidgetLayout);
 
+    this->setLayout(mainWidgetLayout);    
 }
 
 
 QgsVectorLayer *AssetInputWidget::getMainLayer() const
 {
     return mainLayer;
+}
+
+QgsVectorLayer *AssetInputWidget::getSelectedLayer() const
+{
+    return selectedFeaturesLayer;
 }
 
 
@@ -488,19 +510,25 @@ void AssetInputWidget::clearComponentSelection(void)
 
 void AssetInputWidget::setLabel1(const QString &value)
 {
-    label1->setText(value);
+#ifdef OpenSRA
+  label1->setText(value);
+#endif
 }
 
 
 void AssetInputWidget::setLabel2(const QString &value)
 {
-    label2->setText(value);
+#ifdef OpenSRA  
+  label2->setText(value);
+#endif  
 }
 
 
 void AssetInputWidget::setLabel3(const QString &value)
 {
-    label3->setText(value);
+#ifdef OpenSRA    
+  label3->setText(value);
+#endif  
 }
 
 
@@ -623,7 +651,8 @@ bool AssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         }
     }
 
-
+    
+    
     if (jsonObject.contains("ApplicationData")) {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
@@ -747,7 +776,6 @@ bool AssetInputWidget::inputFromJSON(QJsonObject &rvObject)
 }
 
 
-
 bool AssetInputWidget::copyFiles(QString &destName)
 {
     auto compLineEditText = componentFileLineEdit->text();
@@ -819,15 +847,6 @@ bool AssetInputWidget::copyFiles(QString &destName)
             return false;
         }
     }
-
-    GeoJSONReaderWriter geoJsonTool;
-    auto pathToSaveFileGJ = destName + QDir::separator() + componentFile.baseName() + ".geojson";
-
-    QString err2;
-    geoJsonTool.saveGeoJsonFile(data, headerValues, assetType, pathToSaveFileGJ, err);
-
-    if(!err2.isEmpty())
-        return false;
 
     //     For testing, creates a csv file of only the selected components
     //        qDebug()<<"Saving selected components to .csv";
@@ -952,6 +971,32 @@ void AssetInputWidget::handleComponentFilter(void)
 }
 
 
+void AssetInputWidget::insertWidgetIntoLayout(QWidget* widget, int numRowsFromBottom, int numColumnsSpan)
+{
+    // Get the layout info
+    int totalRows = mainWidgetLayout->rowCount();
+    int targetRow = totalRows - numRowsFromBottom;
+
+    int numberOfColumns = mainWidgetLayout->columnCount();
+
+    if(numColumnsSpan == 0)
+        numColumnsSpan = numberOfColumns;
+
+    // Shift existing widgets down
+    mainWidgetLayout->addWidget(widget, totalRows, 0, 1, numColumnsSpan);
+    for (int row = totalRows; row > targetRow; --row) {
+        for (int col = 0; col < numberOfColumns; ++col) {
+            QLayoutItem* item = mainWidgetLayout->itemAtPosition(row - 1, col);
+            if (item) {
+                mainWidgetLayout->addWidget(item->widget(), row, col);
+            }
+        }
+    }
+
+    // Add the new widget at the target row
+    mainWidgetLayout->addWidget(widget, targetRow, 0, 1, numColumnsSpan);
+}
+
 void AssetInputWidget::setPathToComponentInputFile(const QString &newPathToComponentInputFile)
 {
     pathToComponentInputFile = newPathToComponentInputFile;
@@ -1017,3 +1062,22 @@ void AssetInputWidget::setFilterVisibility(const bool value)
     filterWidget->setVisible(value);
 }
 
+void AssetInputWidget::hideCRS_Selection() const
+{
+    int rowAssetPath = 0; // I don't like this .. crs row should be defined and hidden .. the inut takes a layout
+    for (int i=0; i<mainWidgetLayout->columnCount(); i++) {
+        QLayoutItem *item = mainWidgetLayout->itemAtPosition(rowAssetPath,i);
+        if (item != nullptr)
+            item->widget()->hide();
+    }
+}
+
+void AssetInputWidget::hideAssetFilePath() const
+{
+    int rowAssetPath = 1; // again i don't like this solution
+    for (int i=0; i<mainWidgetLayout->columnCount(); i++) {
+        QLayoutItem *item = mainWidgetLayout->itemAtPosition(rowAssetPath,i);
+        if (item != nullptr)
+            item->widget()->hide();
+    }
+}

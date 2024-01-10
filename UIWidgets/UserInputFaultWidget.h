@@ -59,7 +59,7 @@ class UserInputFaultWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    UserInputFaultWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    UserInputFaultWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputFaultWidget();
 
     QStackedWidget* getUserInputFaultWidget(void);

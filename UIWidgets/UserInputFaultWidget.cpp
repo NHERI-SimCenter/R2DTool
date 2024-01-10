@@ -66,11 +66,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgslinesymbol.h>
 
-UserInputFaultWidget::UserInputFaultWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
+UserInputFaultWidget::UserInputFaultWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
-
-    assert(theVisualizationWidget);
 
     eventFile = "";
 

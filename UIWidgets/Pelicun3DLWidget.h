@@ -40,6 +40,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "Pelicun3PostProcessor.h"
+#include "VisualizationWidget.h"
+#include <QMainWindow>
 
 class QComboBox;
 class QCheckBox;
@@ -64,6 +67,10 @@ public:
 
     bool recursiveCopy(const QString &sourcePath, const QString &destPath);
 
+
+    SC_ResultsWidget* getResultsWidget(QWidget* parent = nullptr);
+
+    QMainWindow* getPostProcessor(void);
 public slots:
 
     void handleComboBoxChanged(const QString &text);
@@ -73,6 +80,7 @@ public slots:
 private:
     QWidget* autoPopulateScriptWidget;
     QWidget* fragDirWidget;
+    Pelicun3PostProcessor* resultWidget;
 
     QComboBox* DLTypeComboBox;
     QLineEdit* realizationsLineEdit;

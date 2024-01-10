@@ -52,11 +52,16 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
 {
 
   QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNetworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
-  
+  QList<QString> transportExtraKeys;
+  transportExtraKeys.append("TransportRoads");
+  transportExtraKeys.append("TransportBridges");
+  transportExtraKeys.append("TransportTunnels");
   buildingWidget = new SimCenterAppSelection(QString("Building Mapping"), QString("Buildings"), this);
   gasWidget = new SimCenterAppSelection(QString("Gas Network Mapping"), QString("NaturalGasPipelines"), this);
   wdnWidget = new SimCenterAppSelection(QString("Water Distribution Network Mapping"), QString("WaterDistributionNetwork"), waterExtraKeys);
-  
+//  transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), transportExtraKeys);
+  transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), this);
+
   NearestNeighbourMapping *theNNMapB = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapB = new SiteSpecifiedMapping();
   GISBasedMapping *theGISMapB = new GISBasedMapping();
@@ -79,11 +84,20 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   
   wdnWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapWDN);
   wdnWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapWDN);
-  wdnWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapWDN);      
+  wdnWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapWDN);
+
+  NearestNeighbourMapping *theNNMapTransport = new NearestNeighbourMapping();
+  SiteSpecifiedMapping *theSSMapTransport = new SiteSpecifiedMapping();
+  GISBasedMapping *theGISMapTransport = new GISBasedMapping();
+
+  transportWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapTransport);
+  transportWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapTransport);
+//  wdnWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapWDN);
 
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",gasWidget);
   this->addComponent("Water Network", wdnWidget);
+  this->addComponent("Transportation Network", transportWidget);
   this->hideAll();  
 }
 
@@ -98,5 +112,6 @@ void HazardToAssetWidget::clear(void)
 {
     buildingWidget->clear();
     gasWidget->clear();
-    wdnWidget->clear();    
+    wdnWidget->clear();
+    transportWidget->clear();
 }

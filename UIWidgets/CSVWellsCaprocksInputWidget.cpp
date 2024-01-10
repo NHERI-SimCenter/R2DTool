@@ -67,7 +67,9 @@ CSVWellsCaprocksInputWidget::CSVWellsCaprocksInputWidget(QWidget *parent, Visual
 
 void CSVWellsCaprocksInputWidget::createComponentsBox(void)
 {
-    QVBoxLayout* inputLayout = new QVBoxLayout();
+
+    auto inputWidget = new QWidget();
+    QVBoxLayout* inputLayout = new QVBoxLayout(inputWidget);
 
     // top of well lat lon headers
 //    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
@@ -181,9 +183,10 @@ void CSVWellsCaprocksInputWidget::createComponentsBox(void)
     );
     inputLayout->addWidget(notesLabel);
 
-    auto insPoint = mainWidgetLayout->count();
 
-    mainWidgetLayout->insertLayout(insPoint-3,inputLayout);
+    // Insert the widget three rows from the bottom
+    insertWidgetIntoLayout(inputWidget,3);
+
 }
 
 

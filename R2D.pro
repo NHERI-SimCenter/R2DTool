@@ -64,6 +64,8 @@ PATH_TO_EXAMPLES=../R2DExamples
 # C++17 support
 CONFIG += c++17
 
+CONFIG -= qml_debug
+
 # Check for the required Qt version
 equals(QT_MAJOR_VERSION, 5) {
     lessThan(QT_MINOR_VERSION, 15) {

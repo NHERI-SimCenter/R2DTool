@@ -76,7 +76,8 @@ GISWellsCaprocksInputWidget::GISWellsCaprocksInputWidget(QWidget *parent, Visual
     mainLayout->addWidget(theWellsWidget);
 
     // other inputs (trace dir, caprock shapefile, notes)
-    QVBoxLayout* otherInputLayout = new QVBoxLayout(this);
+    auto otherInputWidget = new QWidget();
+    QVBoxLayout* otherInputLayout = new QVBoxLayout(otherInputWidget);
 
     // well traces
     QHBoxLayout* welltraceLayout = new QHBoxLayout();
@@ -129,9 +130,8 @@ GISWellsCaprocksInputWidget::GISWellsCaprocksInputWidget(QWidget *parent, Visual
     );
     otherInputLayout->addWidget(notesLabel);
 
-    auto insPoint = theWellsWidget->mainWidgetLayout->count();
-
-    theWellsWidget->mainWidgetLayout->insertLayout(insPoint-3,otherInputLayout);
+    // Insert the widget three rows from the bottom
+    theWellsWidget->insertWidgetIntoLayout(otherInputWidget,3);
 
 }
 
