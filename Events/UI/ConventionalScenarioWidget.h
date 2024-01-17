@@ -55,6 +55,8 @@ public:
 
 public slots:
 
+protected slots:
+    void selectComponents(void);
 private:
 
     AssetInputDelegate* ruptureLineEdit = nullptr;

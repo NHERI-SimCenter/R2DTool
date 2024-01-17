@@ -51,7 +51,7 @@ ConventionalScenarioWidget::ConventionalScenarioWidget(QWidget *parent) : SimCen
     auto ruptureLabel = new QLabel("Enter the indexes of one or more rupture scenarios to analyze."
                                    "\nDefine a range of rupture scenarios with a dash and separate multiple ruputure scenarios with a comma.");
     ruptureLineEdit = new AssetInputDelegate();
-
+    connect(ruptureLineEdit,&QLineEdit::editingFinished,this,&ConventionalScenarioWidget::selectComponents);
     ruptureLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
     mainLayout->addWidget(ruptureLabel,0,0);
@@ -72,7 +72,20 @@ bool ConventionalScenarioWidget::outputToJSON(QJsonObject& obj)
 {
 
     obj["RuptureFilter"] = ruptureLineEdit->getComponentAnalysisList();
+    obj.insert("method","MonteCarlo");
 
     return true;
+}
+
+void ConventionalScenarioWidget::selectComponents(void)
+{
+    try
+    {
+        ruptureLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->errorMessage(msg);
+    }
 }
 
