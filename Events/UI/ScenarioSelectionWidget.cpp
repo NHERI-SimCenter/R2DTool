@@ -48,7 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 ScenarioSelectionWidget::ScenarioSelectionWidget(QString jsonKey, GMERFWidget* gmerf, QWidget *parent) : SimCenterAppSelection("OpenSHA",jsonKey,parent), jsonKey(jsonKey)
 {
     specificScenarioWidget = new SpecificScenarioWidget(gmerf);
-    convenScenarioWidget = new ConventionalScenarioWidget();
+    convenScenarioWidget = new ConventionalScenarioWidget(gmerf);
     hazConsistentScenarioWidget = new HazardConsistentScenarioWidget();
 
     specificScenarioWidget->setObjectName("Scenario-specific");
