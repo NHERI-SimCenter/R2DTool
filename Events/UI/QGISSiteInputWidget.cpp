@@ -104,6 +104,11 @@ int QGISSiteInputWidget::loadAssetVisualization()
 
     if(indexLongitude == -1 || indexLatitude == -1)
     {
+        indexLatitude = headers.indexOf("lat");
+        indexLongitude = headers.indexOf("lon");
+    }
+    if(indexLongitude == -1 || indexLatitude == -1)
+    {
         this->errorMessage("Could not find latitude and longitude in the header columns");
         return -1;
     }
