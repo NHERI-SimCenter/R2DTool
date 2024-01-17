@@ -55,12 +55,15 @@ MeanUCERFPoissonWidget::MeanUCERFPoissonWidget(QWidget *parent) : SimCenterAppWi
     auto backgroundSeisLabel = new QLabel("Background Seismicity");
     auto backgroundSeisTypeLabel = new QLabel("Treat Background Seismicity As");
 
-    applyAfterShockCB = new SC_CheckBox("ApplyAfterShockFilter", "Apply Aftershock Filter");
-    AleatoryMagStdDevLE = new SC_DoubleLineEdit("RuptureOffset");
+    applyAfterShockCB = new SC_CheckBox("Apply Aftershock Filter",
+                                        "Apply Aftershock Filter", false);
+    AleatoryMagStdDevLE = new SC_DoubleLineEdit("Aleatory Mag-Area StdDev", 0.0);
 
-    backgroundSeisCombo = new SC_ComboBox("BackgroundSeismicity",QStringList({"Include"}));
-    backgroundSeisTypeCombo = new SC_ComboBox("BackgroundSeismicityType",QStringList({"Point Sources"}));
+    backgroundSeisCombo = new SC_ComboBox("Background Seismicity",QStringList({"Include","Exclude","Only"}));
+    backgroundSeisTypeCombo = new SC_ComboBox("Treat Background Seismicity As",QStringList({"Point Sources","Single Random Strike Faults","Two Perpendicular Faults"}));
 
+    // Turn off max width
+    AleatoryMagStdDevLE->setMaximumWidth(QWIDGETSIZE_MAX);
 
     mainLayout->addWidget(applyAfterShockLabel,0,0);
     mainLayout->addWidget(applyAfterShockCB,0,1);

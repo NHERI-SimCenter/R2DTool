@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QComboBox>
 
-MeanUCERFWidget::MeanUCERFWidget(QString jsonKey, QWidget *parent) : SimCenterAppSelection("Mean UCERF Model",jsonKey,parent), jsonKey(jsonKey)
+MeanUCERFWidget::MeanUCERFWidget(QString jsonKey, QWidget *parent) : SimCenterAppSelection("Mean UCERF3 Presets",jsonKey,parent), jsonKey(jsonKey)
 {
     this->setContentsMargins(0,0,0,0);
 
@@ -52,9 +52,9 @@ MeanUCERFWidget::MeanUCERFWidget(QString jsonKey, QWidget *parent) : SimCenterAp
     FM3P1Widget = new MeanUCERFFM3Widget();
     FM3P2Widget = new MeanUCERFFM3Widget();
 
-    this->addComponent("(POISSON ONLY) Both FM Branch Averaged","UCERF2",poissonWidget);
-    this->addComponent("FM3.1 Branch Averaged","UCERF2",FM3P1Widget);
-    this->addComponent("FM3.2 Branch Averaged","UCERF2",FM3P2Widget);
+    this->addComponent("(POISSON ONLY) Both FM Branch Averaged","Mean UCERF3",poissonWidget);
+    this->addComponent("FM3.1 Branch Averaged","Mean UCERF3",FM3P1Widget);
+    this->addComponent("FM3.2 Branch Averaged","Mean UCERF3",FM3P2Widget);
 
 }
 
@@ -67,6 +67,11 @@ bool MeanUCERFWidget::inputFromJSON(QJsonObject& /*obj*/)
 
 bool MeanUCERFWidget::outputToJSON(QJsonObject& obj)
 {
-    return SimCenterAppSelection::outputToJSON(obj);
+    obj["Model"] = this->getCurrentSelectionName();
+    SimCenterAppSelection::outputToJSON(obj);
+    QJsonObject ModelParams = obj["ModelParameters"].toObject();
+    ModelParams["preset"] = this->getCurrentComboName();
+    obj["ModelParameters"] = ModelParams;
+    return true;
 }
 

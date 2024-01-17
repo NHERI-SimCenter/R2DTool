@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppSelection.h"
-
+#include "qjsonobject.h"
 class MeanUCERFPoissonWidget;
 class MeanUCERFFM3Widget;
 

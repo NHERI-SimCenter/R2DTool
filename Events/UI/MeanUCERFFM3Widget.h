@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-
+#include "qlabel.h"
 class SC_ComboBox;
 class SC_DoubleLineEdit;
 class SC_CheckBox;
@@ -68,6 +68,14 @@ private:
     SC_ComboBox* aperiodicityModelCombo = nullptr;
     SC_DoubleLineEdit* historicOpenIntLE = nullptr;
     SC_ComboBox* bptAvgTypeCombo = nullptr;
+
+    QLabel* aperiodicityLabel;
+    QLabel* historicOpenIntLabel;
+    QLabel* bptAvgTypeLabel;
+
+
+private slots:
+    bool showAdditionalInputForProbabilityModel(int currentIndex);
 
 };
 

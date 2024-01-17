@@ -55,20 +55,24 @@ MeanUCERFFM3Widget::MeanUCERFFM3Widget(QWidget *parent) : SimCenterAppWidget(par
     auto backgroundSeisTypeLabel = new QLabel("Treat Background Seismicity As");
     auto faultGridSpacingLabel = new QLabel("Fault Grid Spacing (km)");
     auto probabilityModelLabel = new QLabel("Probability Model");
-    auto aperiodicityLabel = new QLabel("Probability Model");
-    auto historicOpenIntLabel = new QLabel("Historic Open Interval (Years)");
-    auto bptAvgTypeLabel = new QLabel("BPT Averaging Type");
+    aperiodicityLabel = new QLabel("Aperiodicity");
+    historicOpenIntLabel = new QLabel("Historic Open Interval (Years)");
+    bptAvgTypeLabel = new QLabel("BPT Averaging Type");
 
-    applyAfterShockCB = new SC_CheckBox("ApplyAfterShockFilter", "Apply Aftershock Filter");
-    AleatoryMagStdDevLE = new SC_DoubleLineEdit("Rupture Offset");
-    backgroundSeisCombo = new SC_ComboBox("Background Seismicity",QStringList({"Include"}));
-    backgroundSeisTypeCombo = new SC_ComboBox("BackgroundSeismicityType",QStringList({"Point Sources", "Two perpendicular faults"}));
-    faultGridSpacingLE = new SC_DoubleLineEdit("FaultGridSpacing",1.0);
-    probabilityModelCombo = new SC_ComboBox("Probability Model",QStringList({"UCERF3 BPT"}));
-    aperiodicityModelCombo = new SC_ComboBox("Aperiodicity",QStringList({"0.5,0.4,0.3,0.2"}));
-    historicOpenIntLE = new SC_DoubleLineEdit("HistoricOpenInterval", 0.0);
-    bptAvgTypeCombo = new SC_ComboBox("BPTAvgType",QStringList({"AveRI and AveNormTimeSince"}));
+    applyAfterShockCB = new SC_CheckBox("Apply AfterShock Filter",
+                                        "Apply AfterShock Filter", false);
+    AleatoryMagStdDevLE = new SC_DoubleLineEdit("Aleatory Mag-Area StdDev", 0.0);
+    backgroundSeisCombo = new SC_ComboBox("Background Seismicity",QStringList({"Include","Exclude","Only"}));
+    backgroundSeisTypeCombo = new SC_ComboBox("Treat Background Seismicity As",QStringList({"Point Sources","Single Random Strike Faults","Two Perpendicular Faults"}));
+    faultGridSpacingLE = new SC_DoubleLineEdit("Fault Grid Spacing (km)",1.0);
+    probabilityModelCombo = new SC_ComboBox("Probability Model",QStringList({"Poisson", "UCERF3 BPT", "UCERF3 Preferred Blend", "WG02 BPT"}));
+    aperiodicityModelCombo = new SC_ComboBox("Aperiodicity",QStringList({"0.5,0.4,0.3,0.2",
+"0.4,0.3,0.2,0.1","0.6,0.5,0.4,0.3","All 0.1","All 0.2","All 0.3","All 0.4","All 0.5","All 0.6","All 0.7","All 0.8"}));
+    historicOpenIntLE = new SC_DoubleLineEdit("Historic Open Interval", 0.0);
+    bptAvgTypeCombo = new SC_ComboBox("BPT Averaging Type",QStringList({"AveRI and AveNormTimeSince","AveRI and AveTimeSince","AveRate and AveNormTimeSince"}));
 
+    // Turn off max width
+    AleatoryMagStdDevLE->setMaximumWidth(QWIDGETSIZE_MAX);
 
     mainLayout->addWidget(applyAfterShockLabel,0,0);
     mainLayout->addWidget(applyAfterShockCB,0,1);
@@ -88,6 +92,19 @@ MeanUCERFFM3Widget::MeanUCERFFM3Widget(QWidget *parent) : SimCenterAppWidget(par
     mainLayout->addWidget(historicOpenIntLE,7,1);
     mainLayout->addWidget(bptAvgTypeLabel,8,0);
     mainLayout->addWidget(bptAvgTypeCombo,8,1);
+
+    historicOpenIntLabel->hide();
+    historicOpenIntLE->hide();
+    aperiodicityLabel->hide();
+    aperiodicityModelCombo->hide();
+    bptAvgTypeLabel->hide();
+    bptAvgTypeCombo->hide();
+
+//    QComboBox* probabilityCombo = static_cast<QComboBox*>(probabilityModelCombo);
+
+    QObject::connect(probabilityModelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MeanUCERFFM3Widget::showAdditionalInputForProbabilityModel);
+
 
 }
 
@@ -116,3 +133,39 @@ bool MeanUCERFFM3Widget::outputToJSON(QJsonObject& obj)
     return true;
 }
 
+bool MeanUCERFFM3Widget::showAdditionalInputForProbabilityModel(int currentIndex){
+    if (currentIndex == 0){
+        // Poisson
+        historicOpenIntLabel->hide();
+        historicOpenIntLE->hide();
+        aperiodicityLabel->hide();
+        aperiodicityModelCombo->hide();
+        bptAvgTypeLabel->hide();
+        bptAvgTypeCombo->hide();
+    }
+    else if (currentIndex == 1){
+//        UCERF3 BPT
+        historicOpenIntLabel->show();
+        historicOpenIntLE->show();
+        aperiodicityLabel->show();
+        aperiodicityModelCombo->show();
+        bptAvgTypeLabel->show();
+        bptAvgTypeCombo->show();
+    } else if (currentIndex == 2){
+        //UCERF3 Preferred Blend
+        historicOpenIntLabel->show();
+        historicOpenIntLE->show();
+        aperiodicityLabel->hide();
+        aperiodicityModelCombo->hide();
+        bptAvgTypeLabel->show();
+        bptAvgTypeCombo->show();
+    } else if (currentIndex == 3) {
+        // WG02 BPT
+        historicOpenIntLabel->show();
+        historicOpenIntLE->show();
+        aperiodicityLabel->show();
+        aperiodicityModelCombo->show();
+        bptAvgTypeLabel->hide();
+        bptAvgTypeCombo->hide();
+    }
+}
