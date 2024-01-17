@@ -63,6 +63,7 @@ private:
     void setupConnections();
 private slots:
     void changeVs30InferredEnable(int index);
+    void setInferred();
 };
 
 #endif // VS30WIDGET_H

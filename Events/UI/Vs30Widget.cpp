@@ -50,7 +50,7 @@ Vs30Widget::Vs30Widget(Vs30& vs30, SiteConfig& siteConfig, QWidget *parent): QWi
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* vs30GroupBox = new QGroupBox(this);
-    vs30GroupBox->setTitle("Vs30 Model (if no Vs30 provided by users)");
+    vs30GroupBox->setTitle("Vs30 Model");
 
     QHBoxLayout* formLayout = new QHBoxLayout(vs30GroupBox);
     m_typeBox = new QComboBox(this);
@@ -96,19 +96,30 @@ void Vs30Widget::changeVs30InferredEnable(int index){
     }
 }
 
+void Vs30Widget::setInferred(){
+    if(vsInferredCheckbox == nullptr){
+        return;
+    }
+    if (vsInferredCheckbox->isChecked()){
+        m_vs30.setInferred(true);
+    } else {
+        m_vs30.setInferred(false);
+    }
+}
+
 void Vs30Widget::setupConnections()
 {
     connect(this->m_typeBox, &QComboBox::currentTextChanged,
             &this->m_vs30, &Vs30::setType);
 
-//    connect(vsInferredCheckbox, SIGNAL(QCheckBox::stateChanged(bool)),
-//            &this->m_vs30, SLOT(Vs30::setInferred(bool)));
+    connect(vsInferredCheckbox, &QCheckBox::stateChanged,
+            this, &Vs30Widget::setInferred);
 
     connect(&this->m_vs30, &Vs30::typeChanged,
             this->m_typeBox, &QComboBox::setCurrentText);
 
-//    connect(m_typeBox, SIGNAL(QComboBox::currentIndexChanged(int)), this, SLOT(Vs30Widget::changeVs30InferredEnable(int)));
-//    connect(this->m_typeBox, QComboBox::currentIndexChanged,
-//            this, changeVs30InferredEnable);
+    connect(m_typeBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Vs30Widget::changeVs30InferredEnable);
+
 
 }
