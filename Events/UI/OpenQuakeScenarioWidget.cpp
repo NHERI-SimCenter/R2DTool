@@ -74,11 +74,21 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterApp
     this->m_maxDistanceBox->setSingleStep(1.0);
     //FMK this->m_maxDistanceBox->setMinimumWidth(250);
 
+    this->maxMagLE = new SC_DoubleLineEdit("max_mag", 10.0);
+    this->minMagLE = new SC_DoubleLineEdit("min_mag", 2.5);
+    this->mdfBinLE = new SC_DoubleLineEdit("width_of_mfd_bin", 0.1);
+
+
+
+
     QLabel* rupMeshLabel = new QLabel(tr("Rupture Meshsize (km):"),this);
     QLabel* areaMeshLabel = new QLabel(tr("Area Meshsize (km<sup>2</sup>):"),this);
     QLabel* distMaxLabel = new QLabel(tr("Maximum Distance (km):"),this);
+    QLabel* mfdBinLable = new QLabel(tr("Magnitude-Frequency Distribution Bin Width"), this);
+    QLabel* maxMagLable = new QLabel(tr("Maximum Magnitude"), this);
+    QLabel* minMagLable = new QLabel(tr("Minimum Magnitude"), this);
 
-    QLabel* filenameLabel = new QLabel(tr("Rupture File (.xml):"),this);
+    QLabel* filenameLabel = new QLabel(tr("Source Model (.xml):"),this);
     FilenameLineEdit = new QLineEdit(this);
     browseFileButton = new QPushButton();
     browseFileButton->setText(tr("Browse"));
@@ -89,9 +99,9 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterApp
     QLabel* oqVerLabel = new QLabel(tr("OpenQuake Version:"),this);
     oqVersionCombo = new QComboBox(this);
     oqVersionCombo->addItem("3.17");
-    oqVersionCombo->addItem("3.12");
-    oqVersionCombo->addItem("3.11");
-    oqVersionCombo->addItem("3.10");
+//    oqVersionCombo->addItem("3.12");
+//    oqVersionCombo->addItem("3.11");
+//    oqVersionCombo->addItem("3.10");
     connect(oqVersionCombo,&QComboBox::currentTextChanged,this,&OpenQuakeScenarioWidget::handleOQVersionChanged);
 
     // version
@@ -110,10 +120,20 @@ OpenQuakeScenarioWidget::OpenQuakeScenarioWidget(QWidget *parent) : SimCenterApp
     layout->addWidget(distMaxLabel,1,4);
     layout->addWidget(m_maxDistanceBox,1,5);
 
+    layout->addWidget(maxMagLable,2,0);
+    layout->addWidget(maxMagLE,2,1);
+
+    layout->addWidget(minMagLable,2,2);
+    layout->addWidget(minMagLE,2,3);
+
+    layout->addWidget(mfdBinLable,2,4);
+    layout->addWidget(mdfBinLE,2,5);
+
     // rupture definition (.xml)
-    layout->addWidget(filenameLabel,2,0);
-    layout->addWidget(FilenameLineEdit,2,1,1,4);
-    layout->addWidget(browseFileButton,2,5);
+    layout->addWidget(filenameLabel,3,0);
+    layout->addWidget(FilenameLineEdit,3,1,1,4);
+    layout->addWidget(browseFileButton,3,5);
+
 
     this->setLayout(layout);
 
@@ -178,6 +198,11 @@ void OpenQuakeScenarioWidget::setRupFile(QString dirPath)
     return;
 }
 
+QString OpenQuakeScenarioWidget::getRupFile()
+{
+    return FilenameLineEdit->text();
+}
+
 
 void OpenQuakeScenarioWidget::loadRupFile()
 {
@@ -203,6 +228,22 @@ void OpenQuakeScenarioWidget::loadRupFile()
     }
 
     //this->transferFile();
+}
+
+bool OpenQuakeScenarioWidget::outputToJSON(QJsonObject &jsonObject){
+
+    QJsonObject EqRupture;
+    EqRupture["Type"] = "oqSourceXML";
+    EqRupture["investigation_time"] = 1; // hard code for now
+    EqRupture["rupture_mesh_spacing"] = (m_rupMeshBox->text()).toDouble();
+    EqRupture["area_source_discretization"] = (m_areaMeshBox->text()).toDouble();
+    minMagLE->outputToJSON(EqRupture);
+    maxMagLE->outputToJSON(EqRupture);
+    mdfBinLE->outputToJSON(EqRupture);
+    QFileInfo providedSourceFileInfo(FilenameLineEdit->text());
+    EqRupture["sourceFile"] = providedSourceFileInfo.fileName();
+    jsonObject["EqRupture"] = EqRupture;
+    return true;
 }
 
 
