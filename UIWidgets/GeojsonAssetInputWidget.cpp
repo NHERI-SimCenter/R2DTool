@@ -403,7 +403,8 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
     QJsonObject crs;
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
 
-        QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
+        QString data = jsonFile.readAll();
+        QJsonDocument exDoc = QJsonDocument::fromJson(data.toUtf8());
         QJsonObject jsonObject = exDoc.object();
 
         if(jsonObject.contains("crs"))
