@@ -40,6 +40,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 #include <QValidator>
+#include "qcombobox.h"
+#include "qlabel.h"
+#include "qlineedit.h"
 
 class SC_ComboBox;
 class SC_IntLineEdit;
@@ -80,6 +83,7 @@ public:
     bool inputFromJSON(QJsonObject& obj);
 
 public slots:
+    void handleTypeChanged(const QString &val);
 
 private:
 
@@ -91,6 +95,11 @@ private:
     SC_IntLineEdit* scenarioSampleSizeLE = nullptr;
     SC_IntLineEdit* gmSampleSizeLE = nullptr;
     SC_StringLineEdit* return_periods_lineEdit = nullptr;
+    // intensity measure type
+    QComboBox* IMT_Combo;
+    // period lineedit
+    QLabel* IMT_period;
+    QLineEdit* PeriodEdit;
 
 };
 
