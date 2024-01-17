@@ -44,11 +44,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSizePolicy>
 #include <QLineEdit>
 
-zDepthUserInputWidget::zDepthUserInputWidget(QWidget *parent): QWidget(parent)
+zDepthUserInputWidget::zDepthUserInputWidget(QString type, QWidget *parent): QWidget(parent)
 {
     QHBoxLayout* layout = new QHBoxLayout(this);
+    QLabel* typeLabel;
+    if (type == "Z1pt0"){
+        typeLabel = new QLabel(tr("Please provide Z1pt0 (m):"),this);
+    } else {
+        typeLabel = new QLabel(tr("Please provide Z2pt5 (m):"),this);
+    }
 
-    QLabel* typeLabel = new QLabel(tr("Please provide Z1pt0 (m):"),this);
 
     m_z1DepthLineEdit = new QLineEdit();
     m_z1DepthLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
@@ -56,5 +61,9 @@ zDepthUserInputWidget::zDepthUserInputWidget(QWidget *parent): QWidget(parent)
     layout->addWidget(typeLabel);
     layout->addWidget(m_z1DepthLineEdit);
 
+}
+
+double zDepthUserInputWidget::getValue(){
+    return m_z1DepthLineEdit->text().toDouble();
 }
 

@@ -65,10 +65,19 @@ zDepthWidget::zDepthWidget(QString type, QWidget *parent): type(type), QWidget(p
     comboLayout->addWidget(m_z1Combo);
 
     z1StackedWidget = new QStackedWidget(this);
-    auto labelZ1 = new QLabel(QString("Will get %1 from OpenSHA").arg(type));
+    QString lableText = QString("Will get %1 from OpenSHA").arg(type);
+    if (type == "Z1pt0"){
+        lableText = lableText + QString("\nThe value will be inferred from Vs30 (Chiou and Youngs, 2013) if it can not be interpolated from") +
+                    QString(" SCEC Community Velocity Models nor USGS Bay Area Velocity Model.\nThis model is only applicable for California");
+    } else {
+        lableText = lableText + QString("\nThe value will be inferred from Vs30 (Campbell and Bozorgnia (2014)) if it can not be interpolated from") +
+                    QString(" SCEC Community Velocity Models nor USGS Bay Area Velocity Model,\nThis model is only applicable for California");
+    }
+
+    auto labelZ1 = new QLabel(lableText);
     z1StackedWidget->addWidget(labelZ1);
 
-    auto userInputZ1 = new zDepthUserInputWidget();
+    userInputZ1 = new zDepthUserInputWidget(type);
     z1StackedWidget->addWidget(userInputZ1);
 
     mainLayout->addLayout(comboLayout);
@@ -77,6 +86,17 @@ zDepthWidget::zDepthWidget(QString type, QWidget *parent): type(type), QWidget(p
     QObject::connect(m_z1Combo, SIGNAL(currentIndexChanged(int)), z1StackedWidget, SLOT(setCurrentIndex(int)));
 }
 
+
+bool zDepthWidget::outputToJSON(QJsonObject &jsonObject)
+{
+    jsonObject.insert("Type", m_z1Combo->currentText());
+    if (m_z1Combo->currentText() == "User-specified"){
+        QJsonObject parameters;
+        parameters.insert("value", userInputZ1->getValue());
+        jsonObject.insert("Parameters", parameters);
+    }
+    return true;
+}
 
 
 
