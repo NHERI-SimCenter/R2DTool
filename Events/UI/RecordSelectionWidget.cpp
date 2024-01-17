@@ -58,10 +58,10 @@ RecordSelectionWidget::RecordSelectionWidget(RecordSelectionConfig& selectionCon
     QGridLayout* formLayout = new QGridLayout(selectionGroupBox);
 
     QLabel* databaseLabel = new QLabel(tr("Database:"));
-    m_dbBox = new SC_ComboBox("Datase",QStringList({"None","PEER NGA West 2"}));
+    m_dbBox = new SC_ComboBox("Database",QStringList({"None","PEER NGA West 2"}));
     connect(this->m_dbBox, &QComboBox::currentTextChanged, &this->m_selectionConfig, &RecordSelectionConfig::setDatabase);
 
-    m_selectionConfig.setDatabase("PEER NGA West 2");
+    m_selectionConfig.setDatabase("None");
     m_dbBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     connect(this->m_dbBox, &QComboBox::currentTextChanged, this, &RecordSelectionWidget::handleDBSelection);
