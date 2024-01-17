@@ -61,10 +61,12 @@ UCERF2Widget::UCERF2Widget(QWidget *parent) : SimCenterAppWidget(parent)
 
 
     rupOffstLE = new SC_DoubleLineEdit("Rupture Offset", 5.0);
-    floaterTypeCombo = new SC_ComboBox("Floater Type",QStringList({"Along strike & centered down dip"}));
-    backgroundSeisCombo = new SC_ComboBox("Background Seismicity",QStringList({"Include"}));
-    backgroundSeisTypeCombo = new SC_ComboBox("Treat Background Seismicity As",QStringList({"Point Sources", "Two perpendicular faults"}));
-    probabilityModelCombo = new SC_ComboBox("Probability Model",QStringList({"Poisson","WGCEP Preferred Blend"}));
+    floaterTypeCombo = new SC_ComboBox("Floater Type",QStringList({"Along strike & centered down dip",
+"Along strike and down dip", "Only along strike ( rupture full DDW)"}));
+    backgroundSeisCombo = new SC_ComboBox("Background Seismicity",QStringList({"Include", "Exclude", "Only Background"}));
+    backgroundSeisTypeCombo = new SC_ComboBox("Treat Background Seismicity As",QStringList({"Point Sources", "Two perpendicular faults",
+                                                                                             "One Random Strike Fault", "NSHMP 2013"}));
+    probabilityModelCombo = new SC_ComboBox("Probability Model",QStringList({"Poisson","WGCEP Preferred Blend", "BPT", "Empirical"}));
 //    applyCyberShakeCB = new SC_CheckBox("ApplyCyberShakeDDWCorr", "Apply CyberShake DDW Corr");
 
     // Turn off max width
