@@ -123,11 +123,13 @@ bool SpecificScenarioWidget::LoadRupturesTable(QString pathToRuptureFile){
         QJsonObject firstFeat = features[0].toObject();
         QJsonObject firstProp = firstFeat["properties"].toObject();
         QStringList keys = firstProp.keys();
-
+        int index = 1; // rupture index starts from 1 to be consistent with QGIS attribute table
         for (const QJsonValue& valueIt : features) {
             QJsonObject feat = valueIt.toObject();
             QJsonObject prop = feat["properties"].toObject();
             QStringList row;
+            row.append(QString::number(index));
+            index++;
             for (const QString& key:keys){
                 QString value = prop[key].toVariant().toString();
                 if (value == ""){
@@ -140,6 +142,7 @@ bool SpecificScenarioWidget::LoadRupturesTable(QString pathToRuptureFile){
             }
             data.append(row);
         }
+        keys.prepend("index");
         componentTableWidget->getTableModel()->populateData(data, keys);
         componentTableWidget->show();
         componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
