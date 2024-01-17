@@ -73,7 +73,8 @@ public:
 
     void run_button_pressed(const QJsonObject& siteObj);
 
-
+signals:
+    void ruptureFileReady(QString pathToRupturesFile);
 public slots:
     void processRuptureScenarioResults(void);
 
