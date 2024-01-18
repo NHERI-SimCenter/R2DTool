@@ -415,7 +415,7 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
             qgsCRS.createFromOgcWmsCrs(crsString);
         }
         if (!qgsCRS.isValid()){
-            QString msg = "The CRS defined in " + pathGeojson + "is invalid and ignored";
+            QString msg = "The CRS: " + crsString + " defined in " + pathGeojson + " is invalid and ignored";
             errorMessage(msg);
         }
         crsSelectorWidget->setCRS(qgsCRS);
