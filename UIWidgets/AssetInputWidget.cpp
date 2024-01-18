@@ -337,39 +337,25 @@ void AssetInputWidget::createComponentsBox(void)
 
     mainWidgetLayout->addWidget(label1, 1,0);
     mainWidgetLayout->addWidget(componentFileLineEdit, 1,1);
-    mainWidgetLayout->addWidget(browseFileButton, 1,2);    
+    mainWidgetLayout->addWidget(browseFileButton, 1,2);
     
-    //pathLayout = new QHBoxLayout();
-    //pathLayout->addWidget(pathText);
-    //pathLayout->addWidget(componentFileLineEdit);
-    //pathLayout->addWidget(browseFileButton);
-    
-    // Add a vertical spacer at the bottom to push everything up
-    // mainWidgetLayout->addWidget(label1);
-    //    mainWidgetLayout->addLayout(pathLayout);
-
-#ifdef OpenSRA
-    mainWidgetLayout->addWidget(label2, 2,0);
-
     filterWidget = new QWidget();
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout(filterWidget);
     selectComponentsLayout->addWidget(selectComponentsLineEdit);
     selectComponentsLayout->addWidget(filterExpressionButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
 
-    mainWidgetLayout->addWidget(selectComponentsLineEdit, 2,1);
-    mainWidgetLayout->addWidget(filterExpressionButton, 2,2);
-    mainWidgetLayout->addWidget(clearSelectionButton, 2,3);
 
-    mainWidgetLayout->addWidget(label3, 3,0,Qt::AlignCenter);
-    mainWidgetLayout->addWidget(componentTableWidget,4, 0, 1,4);
-    mainWidgetLayout->setRowStretch(5,1);
+#ifdef OpenSRA
+    label2->setVisible(false);
+    this->setFilterVisibility(false);
+    mainWidgetLayout->addWidget(label3, 2,0,1,4,Qt::AlignCenter);
+    mainWidgetLayout->addWidget(componentTableWidget,3, 0, 1,4);
+    mainWidgetLayout->setRowStretch(4,1);
 #else
     mainWidgetLayout->addWidget(label2, 2,0);
-    mainWidgetLayout->addWidget(selectComponentsLineEdit, 2,1);
-    mainWidgetLayout->addWidget(filterExpressionButton, 2,2);
-    mainWidgetLayout->addWidget(clearSelectionButton, 2,3);
-    
+    mainWidgetLayout->addWidget(filterWidget, 2,1,1,3);
+
     mainWidgetLayout->addWidget(componentTableWidget,3, 0, 1,4);
     mainWidgetLayout->setRowStretch(4,1);
 #endif
