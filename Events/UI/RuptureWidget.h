@@ -38,49 +38,36 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "SimCenterAppWidget.h"
+#include "SimCenterAppSelection.h"
 
 class PointSourceRuptureWidget;
-class EarthquakeRuptureForecastWidget;
-class OpenQuakeScenarioWidget;
-class OpenQuakeClassicalWidget;
-class OpenQuakeUserSpecifiedWidget;
-class HazardOccurrenceWidget;
+class UCERF2Widget;
+class MeanUCERFWidget;
 
-class QGroupBox;
-class QComboBox;
-class QStackedWidget;
+class SC_DoubleLineEdit;
 
-class RuptureWidget : public SimCenterAppWidget
+class RuptureWidget : public SimCenterAppSelection
 {
     Q_OBJECT
 public:
-    explicit RuptureWidget(QWidget *parent = nullptr);
+    explicit RuptureWidget(QString jsonKey, QWidget *parent = nullptr);
 
-    QJsonObject getJson(void);
-    QString getWidgetType(void) const;
-    QString getGMPELogicTree(void) const;
-    QString getEQNum(void) const;
+//    QString getGMPELogicTree(void) const;
+//    QString getEQNum(void) const;
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
 
-public slots:
-    void handleSelectionChanged(const QString& selection);
-
-signals:
-    void widgetTypeChanged(QString newWidgetType);
 
 private:
-    QGroupBox* ruptureGroupBox;
-    QComboBox* ruptureSelectionCombo;
-    QStackedWidget* theRootStackedWidget;
-    PointSourceRuptureWidget* pointSourceWidget;
-    EarthquakeRuptureForecastWidget* erfWidget;
-    OpenQuakeScenarioWidget* oqsbWidget; // widget connecting OpenQuake Scenario
-    OpenQuakeClassicalWidget* oqcpWidget; // widget connecting OpenQuake classical PSHA
-    OpenQuakeUserSpecifiedWidget* oqcpuWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
-    HazardOccurrenceWidget* hoWidget; // widget connecting OpenQuake classical PSHA (Uesr ini)
-    QString widgetType = "OpenSHA ERF"; // widget type
+    UCERF2Widget* ucerfWidget = nullptr;
+    MeanUCERFWidget* meanUcerfWidget = nullptr;
+
+    SC_DoubleLineEdit* maxDistLE = nullptr;
+    SC_DoubleLineEdit* maxMagLE = nullptr;
+    SC_DoubleLineEdit* minMagLE = nullptr;
+
+    QString jsonKey;
+
 };
 
 #endif // RUPTUREWIDGET_H

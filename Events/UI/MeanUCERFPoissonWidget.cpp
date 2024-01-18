@@ -1,6 +1,3 @@
-#ifndef EarthquakeRuptureForecast_H
-#define EarthquakeRuptureForecast_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,50 +36,62 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QObject>
-#include "JsonSerializable.h"
+#include "MeanUCERFPoissonWidget.h"
+#include "SC_ComboBox.h"
+#include "SC_DoubleLineEdit.h"
+#include "SC_CheckBox.h"
 
-class EarthquakeRuptureForecast : public QObject, JsonSerializable
+#include <QGridLayout>
+#include <QLabel>
+
+MeanUCERFPoissonWidget::MeanUCERFPoissonWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
-    Q_OBJECT
+    //We use a grid layout for the Rupture widget
+    auto mainLayout = new QGridLayout(this);
 
-public:
-    EarthquakeRuptureForecast(double magMin, double magMax, double maxDist, QString model, QString name, QString samplingMethod, int numScen, QObject *parent = nullptr);
+    auto applyAfterShockLabel = new QLabel("Apply Aftershock Filter");
+    auto AleatoryMagStdDevLabel = new QLabel("Aleatory Mag-Area StdDev");
 
-    double getMagnitudeMin() const;
-    double getMagnitudeMax() const;
-    double getMaxDistance() const;
-    QString getEQName() const;
-    QString getEQModelType() const;
-    QString getSamplingMethod() const;
-    int getNumScen() const;
+    auto backgroundSeisLabel = new QLabel("Background Seismicity");
+    auto backgroundSeisTypeLabel = new QLabel("Treat Background Seismicity As");
 
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
+    applyAfterShockCB = new SC_CheckBox("Apply Aftershock Filter",
+                                        "Apply Aftershock Filter", false);
+    AleatoryMagStdDevLE = new SC_DoubleLineEdit("Aleatory Mag-Area StdDev", 0.0);
 
-    void reset(void);
+    backgroundSeisCombo = new SC_ComboBox("Background Seismicity",QStringList({"Include","Exclude","Only"}));
+    backgroundSeisTypeCombo = new SC_ComboBox("Treat Background Seismicity As",QStringList({"Point Sources","Single Random Strike Faults","Two Perpendicular Faults"}));
 
-signals:
+    // Turn off max width
+    AleatoryMagStdDevLE->setMaximumWidth(QWIDGETSIZE_MAX);
 
-public slots:
-    void setMagnitudeMin(double magnitude);
-    void setMagnitudeMax(double magnitude);
-    void setMaxDistance(double value);
-    void setEQName(const QString &value);
-    void setEQModelType(const QString &value);
-    void setSamplingMethod(const QString &value);
-    void setNumScen(const QString value);
+    mainLayout->addWidget(applyAfterShockLabel,0,0);
+    mainLayout->addWidget(applyAfterShockCB,0,1);
+    mainLayout->addWidget(AleatoryMagStdDevLabel,1,0);
+    mainLayout->addWidget(AleatoryMagStdDevLE,1,1);
+    mainLayout->addWidget(backgroundSeisLabel,2,0);
+    mainLayout->addWidget(backgroundSeisCombo,2,1);
+    mainLayout->addWidget(backgroundSeisTypeLabel,3,0);
+    mainLayout->addWidget(backgroundSeisTypeCombo,3,1);
 
-private:
-    double magnitudeMin;
-    double magnitudeMax;
-    double maxDistance;
+}
 
-    QString EQModelType;
-    QString EQName;
-    QString SamplingMethod;
-    int NumScen;
 
-};
+bool MeanUCERFPoissonWidget::inputFromJSON(QJsonObject& /*obj*/)
+{
 
-#endif // EarthquakeRuptureForecast_H
+    return true;
+}
+
+
+bool MeanUCERFPoissonWidget::outputToJSON(QJsonObject& obj)
+{
+
+    AleatoryMagStdDevLE->outputToJSON(obj);
+    backgroundSeisCombo->outputToJSON(obj);
+    backgroundSeisTypeCombo->outputToJSON(obj);
+    applyAfterShockCB->outputToJSON(obj);
+
+    return true;
+}
+

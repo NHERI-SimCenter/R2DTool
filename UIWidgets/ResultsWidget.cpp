@@ -266,8 +266,8 @@ int ResultsWidget::processResults(QString resultsDirectory)
     QMap<QString, QList<QString>> assetTypeToType;
     QJsonObject crs;
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
-
-        QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
+        QString resultData = jsonFile.readAll();
+        QJsonDocument exDoc = QJsonDocument::fromJson(resultData.toUtf8());
         QJsonObject jsonObject = exDoc.object();
 
         if(jsonObject.contains("crs"))
@@ -402,12 +402,12 @@ int ResultsWidget::processResults(QString resultsDirectory)
     }
         if (mapLayers.count()>1){
             theVisualizationWidget->createLayerGroup(mapLayers,"Results");
-        } else {
+        } else if (mapLayers.count()==1) {
             mapLayers.at(0)->setName("Results");
         }
         if (DMGLayers.count()>1){
             theVisualizationWidget->createLayerGroup(DMGLayers,"Most Likely Critical Damage State");
-        } else {
+        } else if (DMGLayers.count()==1) {
             DMGLayers.at(0)->setName("Most Likely Critical Damage State");
         }
     }

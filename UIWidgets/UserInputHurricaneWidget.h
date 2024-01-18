@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QMap>
 
-class VisualizationWidget;
+class QGISVisualizationWidget;
 class SimCenterUnitsWidget;
 
 class QStackedWidget;
@@ -57,7 +57,7 @@ class UserInputHurricaneWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    UserInputHurricaneWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputHurricaneWidget();
 
     QStackedWidget* getUserInputHurricaneWidget(void);
@@ -92,7 +92,7 @@ private:
 
     QStackedWidget* theStackedWidget;
 
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
     QString eventDir;

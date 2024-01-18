@@ -36,173 +36,79 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "EarthquakeRuptureForecast.h"
-#include "EarthquakeRuptureForecastWidget.h"
-#include "OpenQuakeScenario.h"
-#include "OpenQuakeScenarioWidget.h"
-#include "OpenQuakeClassical.h"
-#include "OpenQuakeClassicalWidget.h"
-#include "OpenQuakeUserSpecifiedWidget.h"
-#include "PointSourceRupture.h"
-#include "PointSourceRuptureWidget.h"
 #include "RuptureWidget.h"
-#include "HazardOccurrence.h"
-#include "HazardOccurrenceWidget.h"
+#include "UCERF2Widget.h"
+#include "MeanUCERFWidget.h"
+#include "SC_DoubleLineEdit.h"
 
 #include <QVBoxLayout>
+#include <QJsonObject>
 #include <QStackedWidget>
+#include <QGroupBox>
+#include <QComboBox>
 
-RuptureWidget::RuptureWidget(QWidget *parent) : SimCenterAppWidget(parent)
+RuptureWidget::RuptureWidget(QString jsonKey, QWidget *parent) : SimCenterAppSelection("OpenSHA",jsonKey,parent), jsonKey(jsonKey)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    this->setContentsMargins(0,0,0,0);
 
-    theRootStackedWidget = new QStackedWidget(this);
-    theRootStackedWidget->setContentsMargins(0,0,0,0);
+    ucerfWidget = new UCERF2Widget();
+    meanUcerfWidget = new MeanUCERFWidget("ModelParameters");
 
-    pointSourceWidget = new PointSourceRuptureWidget(parent);
-    erfWidget = new EarthquakeRuptureForecastWidget(parent);
-    // add widgets connecting the OpenQuake-type hazard
-    // OpenQuake scenario-based
-    oqsbWidget = new OpenQuakeScenarioWidget(parent);
-    // OpenQuake classical PSHA
-    oqcpWidget = new OpenQuakeClassicalWidget(parent);
-    // OpenQuake classical PSHA User
-    oqcpuWidget = new OpenQuakeUserSpecifiedWidget(parent);
-    // Hazard Occurrence (KZ-08/22)
-    hoWidget = new HazardOccurrenceWidget(parent);
-    hoWidget->setToolTip("Hazard occurrence models reduce the number of earthquake scenarios and/or \nground motion maps to be analyzed in regional risk assessment");
-    hoWidget->setToolTipDuration(5000);
+    ucerfWidget->setObjectName("WGCEP (2007) UCERF2 - Single Branch");
+    meanUcerfWidget->setObjectName("Mean UCERF3");
 
-    theRootStackedWidget->addWidget(pointSourceWidget);
-    theRootStackedWidget->addWidget(erfWidget);
-    theRootStackedWidget->addWidget(oqsbWidget);
-    theRootStackedWidget->addWidget(oqcpWidget);
-    theRootStackedWidget->addWidget(oqcpuWidget);
-    theRootStackedWidget->addWidget(hoWidget);
+    this->addComponent(ucerfWidget->objectName(),"UCERF2",ucerfWidget);
+    this->addComponent(meanUcerfWidget->objectName(),"MEANUCERF2",meanUcerfWidget);
 
-    theRootStackedWidget->setCurrentWidget(erfWidget);
+    auto maxDistLabel = new QLabel("Maximum Distance (km)");
+    auto maxMagLabel= new QLabel("Maximum Magnitude");
+    auto minMagLabel= new QLabel("Minimum Magnitude");
 
-    ruptureGroupBox = new QGroupBox(tr("Earthquake Scenario"));
-    QVBoxLayout* boxLayout = new QVBoxLayout(ruptureGroupBox);
+    maxDistLE = new SC_DoubleLineEdit("max_Dist", 200.0);
+    maxMagLE= new SC_DoubleLineEdit("max_Mag", 10.0);
+    minMagLE= new SC_DoubleLineEdit("min_Mag", 2.5);
 
-    ruptureSelectionCombo = new QComboBox(this);
+    // Turn off max width
+    maxDistLE->setMaximumWidth(QWIDGETSIZE_MAX);
+    maxMagLE->setMaximumWidth(QWIDGETSIZE_MAX);
+    minMagLE->setMaximumWidth(QWIDGETSIZE_MAX);
 
-    ruptureSelectionCombo->addItem("Earthquake Rupture Forecast");
-    ruptureSelectionCombo->addItem("Point Source");
-    ruptureSelectionCombo->addItem("OpenQuake Scenario-Based");
-    ruptureSelectionCombo->addItem("OpenQuake Classifcal PSHA");
-    ruptureSelectionCombo->addItem("OpenQuake User-Specified");
-    ruptureSelectionCombo->addItem("Hazard Occurrence");
+    auto gridLayout = new QGridLayout();
+    gridLayout->setContentsMargins(0,5,0,5);
+    gridLayout->addWidget(maxDistLabel,0,0);
+    gridLayout->addWidget(maxDistLE,0,1);
+    gridLayout->addWidget(maxMagLabel,1,0);
+    gridLayout->addWidget(maxMagLE,1,1);
+    gridLayout->addWidget(minMagLabel,2,0);
+    gridLayout->addWidget(minMagLE,2,1);
 
-    connect(ruptureSelectionCombo,&QComboBox::currentTextChanged,this,&RuptureWidget::handleSelectionChanged);
+    auto thisLayout = qobject_cast<QVBoxLayout*>(this->layout());
+    thisLayout->addLayout(gridLayout);
 
-    boxLayout->addWidget(ruptureSelectionCombo);
-    boxLayout->addWidget(theRootStackedWidget);
-
-    layout->addWidget(ruptureGroupBox);
-
-    this->setLayout(layout);
 }
-
 
 
 bool RuptureWidget::outputToJSON(QJsonObject &jsonObject)
 {
-    qDebug() << "RuptureWidget: starting output JSON...";
-    if(ruptureSelectionCombo->currentText().compare("Point Source") == 0)
-        pointSourceWidget->getRuptureSource()->outputToJSON(jsonObject);
-    else if(ruptureSelectionCombo->currentText().compare("Earthquake Rupture Forecast") == 0)
-        erfWidget->getRuptureSource()->outputToJSON(jsonObject);
-    else if(ruptureSelectionCombo->currentText().compare("OpenQuake Scenario-Based") == 0)
-        oqsbWidget->getRuptureSource()->outputToJSON(jsonObject);
-    else if(ruptureSelectionCombo->currentText().compare("OpenQuake Classifcal PSHA") == 0)
-        oqcpWidget->getRuptureSource()->outputToJSON(jsonObject);
-    else if(ruptureSelectionCombo->currentText().compare("OpenQuake User-Specified") == 0)
-        oqcpuWidget->getRuptureSource()->outputToJSON(jsonObject);
-    else if(ruptureSelectionCombo->currentText().compare("Hazard Occurrence") == 0)
-        hoWidget->getRuptureSource()->outputToJSON(jsonObject);
-    
+    if(!SimCenterAppSelection::outputToJSON(jsonObject))
+        return false;
+
+    auto jsonKeyObj = jsonObject[jsonKey].toObject();
+
+    jsonKeyObj["Type"] = "ERF";
+
+    maxDistLE->outputToJSON(jsonKeyObj);
+    maxMagLE->outputToJSON(jsonKeyObj);
+    minMagLE->outputToJSON(jsonKeyObj);
+
+    jsonObject[jsonKey] = jsonKeyObj;
+
     return true;
 }
+
 
 bool RuptureWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
 
-
-void RuptureWidget::handleSelectionChanged(const QString& selection)
-{
-    if(selection.compare("Point Source") == 0)
-    {
-        theRootStackedWidget->setCurrentWidget(pointSourceWidget);
-        widgetType = "OpenSHA Point";
-    }
-    else if(selection.compare("Earthquake Rupture Forecast") == 0)
-    {
-        theRootStackedWidget->setCurrentWidget(erfWidget);
-        widgetType = "OpenSHA ERF";
-    }
-    else if(selection.compare("OpenQuake Scenario-Based") == 0)
-    {
-        theRootStackedWidget->setCurrentWidget(oqsbWidget);
-        widgetType = "OpenQuake Scenario";
-    }
-    else if(selection.compare("OpenQuake Classifcal PSHA") == 0)
-    {
-        theRootStackedWidget->setCurrentWidget(oqcpWidget);
-        widgetType = "OpenQuake Classical";
-    }
-    else if(selection.compare("OpenQuake User-Specified") == 0)
-    {
-        theRootStackedWidget->setCurrentWidget(oqcpuWidget);
-        widgetType = "OpenQuake User-Specified";
-    }
-    else if(selection.compare("Hazard Occurrence") == 0)
-    {
-        theRootStackedWidget->setCurrentWidget(hoWidget);
-        widgetType = "Hazard Occurrence";
-    }
-    emit widgetTypeChanged(widgetType);
-
-}
-
-
-QString RuptureWidget::getWidgetType() const
-{
-    return widgetType;
-}
-
-
-QString RuptureWidget::getEQNum() const
-{
-    QString numEQ;
-    if (widgetType.compare("Hazard Occurrence")==0) {
-        numEQ = hoWidget->getRuptureSource()->getCandidateEQ();
-    } else {
-        //KZ: update the scenario number for OpenSHA ERF
-        //numEQ = "1";
-        if (widgetType.compare("OpenSHA ERF")==0) {
-            numEQ = erfWidget->getNumScen();
-        } else {
-            numEQ = "1";
-        }
-    }
-    return numEQ;
-}
-
-
-QString RuptureWidget::getGMPELogicTree() const
-{
-    QString gmpeLT = "";
-    if (widgetType.compare("OpenQuake Classical")==0)
-    {
-        gmpeLT = oqcpWidget->getRuptureSource()->getGMPEFilename();
-    }
-    else if (widgetType.compare("OpenQuake User-Specified")==0)
-    {
-        gmpeLT = oqcpuWidget->getRuptureSource()->getGMPEFilename();
-    }
-
-    return gmpeLT;
-}

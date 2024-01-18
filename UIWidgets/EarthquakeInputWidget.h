@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class GMWidget;
 class ShakeMapWidget;
 class UserInputGMWidget;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 
 class QGroupBox;
 class QStackedWidget;
@@ -55,7 +55,7 @@ class EarthquakeInputWidget : public  SimCenterAppWidget
 
     Q_OBJECT
 public:
-    EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget);
+    EarthquakeInputWidget(QWidget *parent, QGISVisualizationWidget* visWidget);
     ~EarthquakeInputWidget();
 
     QWidget* getEarthquakesWidget(void);
@@ -77,7 +77,7 @@ private:
     QStackedWidget* theRootStackedWidget;
     QCheckBox* includeHazardCheckBox;
     QComboBox* earthquakeSelectionCombo;
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget;
     GMWidget* theEQSSWidget;
     ShakeMapWidget* theShakeMapWidget;
     UserInputGMWidget* theUserInputGMWidget;

@@ -57,11 +57,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStandardPaths>
 #include <QGroupBox>
 
-OpenQuakeSelectionWidget::OpenQuakeSelectionWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
+OpenQuakeSelectionWidget::OpenQuakeSelectionWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
-    assert(visWidget);
-
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     QVBoxLayout *layout = new QVBoxLayout(this);

@@ -42,7 +42,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
-class VisualizationWidget;
 class GIS_Selection;
 class SC_DoubleLineEdit;
 class SC_FileEdit;
@@ -61,7 +60,7 @@ class BrailsTranspInventoryGenerator : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    BrailsTranspInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    BrailsTranspInventoryGenerator(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~BrailsTranspInventoryGenerator();
 
 public slots:

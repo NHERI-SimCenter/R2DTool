@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "CSVReaderWriter.h"
 #include "LayerTreeView.h"
 #include "UserInputHurricaneWidget.h"
-#include "VisualizationWidget.h"
+#include "QGISVisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 #include "WindFieldStation.h"
 #include "SimCenterUnitsWidget.h"
@@ -67,7 +67,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QDir>
 
-UserInputHurricaneWidget::UserInputHurricaneWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+UserInputHurricaneWidget::UserInputHurricaneWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     progressBar = nullptr;
     fileInputWidget = nullptr;

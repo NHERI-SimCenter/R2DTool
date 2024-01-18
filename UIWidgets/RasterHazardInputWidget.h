@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QMap>
 
-class VisualizationWidget;
 class QGISVisualizationWidget;
 class QgsRasterDataProvider;
 class QgsProjectionSelectionWidget;
@@ -65,7 +64,7 @@ class RasterHazardInputWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    RasterHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    RasterHazardInputWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~RasterHazardInputWidget();
 
     QWidget* getRasterHazardInputWidget(void);

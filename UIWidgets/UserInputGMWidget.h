@@ -45,7 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QMap>
 
-class VisualizationWidget;
+class QGISVisualizationWidget;
 class SimCenterUnitsWidget;
 
 class QStackedWidget;
@@ -59,7 +59,7 @@ class UserInputGMWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    UserInputGMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    UserInputGMWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputGMWidget();
 
     QStackedWidget* getUserInputGMWidget(void);
@@ -93,7 +93,7 @@ private:
 
     QStackedWidget* theStackedWidget;
 
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
     QString motionDir;

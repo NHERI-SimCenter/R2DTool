@@ -46,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QMap>
 
-class VisualizationWidget;
 class QGISVisualizationWidget;
 class QgsVectorDataProvider;
 class QgsProjectionSelectionWidget;
@@ -66,7 +65,7 @@ class GISHazardInputWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    GISHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    GISHazardInputWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~GISHazardInputWidget();
 
     QWidget* getGISHazardInputWidget(void);

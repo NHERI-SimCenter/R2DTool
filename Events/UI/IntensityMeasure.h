@@ -38,16 +38,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "JsonSerializable.h"
+#include "SimCenterAppWidget.h"
 
-#include <QObject>
 #include <QJsonArray>
 
-class IntensityMeasure : public QObject, JsonSerializable
+class IntensityMeasure : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit IntensityMeasure(QObject *parent = nullptr);
+    explicit IntensityMeasure(QWidget *parent = nullptr);
 
     QString type() const;
 
@@ -85,8 +84,6 @@ private:
 
     double imtTruc = 3.0; // default trucation levels 3 \sigma
 
-public:
-    QJsonObject getJson();
 };
 
 #endif // INTENSITYMEASURE_H

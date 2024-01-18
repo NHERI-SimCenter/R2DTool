@@ -39,7 +39,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Kuanshi Zhong
 
-#include "SimCenterWidget.h"
+#include "SimCenterAppWidget.h"
+#include "SC_DoubleLineEdit.h"
 
 class OpenQuakeScenario;
 
@@ -48,7 +49,7 @@ class QLineEdit;
 class QPushButton;
 class QDoubleSpinBox;
 
-class OpenQuakeScenarioWidget : public SimCenterWidget
+class OpenQuakeScenarioWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
@@ -56,6 +57,8 @@ public:
     explicit OpenQuakeScenarioWidget(QWidget *parent = nullptr);
 
     OpenQuakeScenario* getRuptureSource() const;
+    bool outputToJSON(QJsonObject &jsonObject);
+    QString getRupFile();
 
 signals:
 
@@ -72,6 +75,10 @@ private:
     QDoubleSpinBox* m_areaMeshBox;
     QDoubleSpinBox* m_maxDistanceBox;
     QPushButton* browseFileButton;
+
+    SC_DoubleLineEdit* maxMagLE = nullptr;
+    SC_DoubleLineEdit* minMagLE = nullptr;
+    SC_DoubleLineEdit* mdfBinLE = nullptr;
 
     QComboBox* oqVersionCombo;
     QString oq_version = "3.17.1";

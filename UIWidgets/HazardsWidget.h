@@ -46,7 +46,7 @@ class HurricaneSelectionWidget;
 class UserInputHurricaneWidget;
 class UserInputGMWidget;
 class RegionalSiteResponseWidget;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 
 class QGroupBox;
 
@@ -55,7 +55,7 @@ class HazardsWidget : public  SimCenterAppSelection
     Q_OBJECT
 
 public:
-    HazardsWidget(QWidget *parent, VisualizationWidget* visWidget);
+    HazardsWidget(QWidget *parent, QGISVisualizationWidget* visWidget);
     ~HazardsWidget();
 
 signals:
@@ -70,7 +70,7 @@ private slots:
 
 private:
 
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget;
 
     ShakeMapWidget* theShakeMapWidget = nullptr;
     UserInputGMWidget* theUserInputGMWidget = nullptr;
