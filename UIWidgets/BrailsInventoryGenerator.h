@@ -42,9 +42,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
+class VisualizationWidget;
 class GIS_Selection;
 class SC_DoubleLineEdit;
 class SC_FileEdit;
+class SC_ComboBox;
 class BrailsGoogleDialog;
 
 typedef struct BrailsDataStruct {
@@ -54,7 +56,8 @@ typedef struct BrailsDataStruct {
   double maxLong;
   QString outputFile;
   QString imageSource;
-  QString imputationAlgo;    
+  QString imputationAlgo;
+  QString units;      
 } BrailsData;
 
 
@@ -63,7 +66,7 @@ class BrailsInventoryGenerator : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    BrailsInventoryGenerator(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
+    BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~BrailsInventoryGenerator();
 
 public slots:
@@ -81,7 +84,7 @@ private:
   std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
   QGISVisualizationWidget* theVisualizationWidget = nullptr;
   
-  
+  SC_ComboBox *units;  
   SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
   SC_FileEdit *theOutputFile;
   GIS_Selection *theSelectionWidget;  
