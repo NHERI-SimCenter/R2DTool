@@ -46,6 +46,8 @@ class VisualizationWidget;
 class GIS_Selection;
 class SC_DoubleLineEdit;
 class SC_FileEdit;
+class SC_CheckBox;
+class SC_ComboBox;
 
 typedef struct BrailsTranspDataStruct {
   double minLat;
@@ -80,7 +82,9 @@ private:
   QGISVisualizationWidget* theVisualizationWidget = nullptr;
   
   
-  SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
+  SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong, *maxRoadLength;
+  SC_ComboBox *units;
+  SC_CheckBox *minHazus;  
   SC_FileEdit *theOutputDir;
   GIS_Selection *theSelectionWidget;  
 

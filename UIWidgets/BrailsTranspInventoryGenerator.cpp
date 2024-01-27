@@ -51,9 +51,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStandardPaths>
 #include <QGroupBox>
 #include <QGridLayout>
+#include <QHBoxLayout>
 #include <SC_DoubleLineEdit.h>
 #include <QComboBox>
 #include <SC_FileEdit.h>
+#include <SC_CheckBox.h>
+#include <SC_ComboBox.h>
 #include <SC_IntLineEdit.h>
 #include <SC_DoubleLineEdit.h>
 #include <QSettings>
@@ -78,30 +81,57 @@ BrailsTranspInventoryGenerator::BrailsTranspInventoryGenerator(VisualizationWidg
       dir.mkpath(brailsDir);
 
     theOutputDir->setFilename(brailsDir);
-    
-    QGridLayout *mainLayout = new QGridLayout(this);
-    mainLayout->addWidget(new QLabel("Latitude:"),0,0);
-    mainLayout->addWidget(new QLabel("min:"),1,0);
-    mainLayout->addWidget(minLat,1,1);    
-    mainLayout->addWidget(new QLabel("max:"),1,2);
-    mainLayout->addWidget(maxLat,1,3);
 
-    mainLayout->addWidget(new QLabel("Longitude:"),0,4);
-    mainLayout->addWidget(new QLabel("min:"),1,4);
-    mainLayout->addWidget(minLong,1,5);    
-    mainLayout->addWidget(new QLabel("max:"),1,6);
-    mainLayout->addWidget(maxLong,1,7);
+    minHazus = new SC_CheckBox("minHazus", true);
+    maxRoadLength = new SC_DoubleLineEdit("maxRoadLength",100.0);
+    QStringList unitList; unitList << "m" << "ft";
+    units = new SC_ComboBox("units", unitList);
+
+    int numRow = 0;    
+    QGridLayout *mainLayout = new QGridLayout(this);
+
+    mainLayout->addWidget(new QLabel("Minimum HAZUS Info"),numRow,0);    
+    mainLayout->addWidget(minHazus,numRow,1);
     
-    mainLayout->addWidget(new QLabel("BRAILS output directory"),2,0);
-    mainLayout->addWidget(theOutputDir,2,1,1,7);
+    mainLayout->addWidget(new QLabel("max Road Length"),numRow,2);
+    QHBoxLayout *roadLengthLayout = new QHBoxLayout();
+    roadLengthLayout->addWidget(maxRoadLength);
+    roadLengthLayout->addWidget(units);
+    mainLayout->addLayout(roadLengthLayout,numRow,3);
     
+    numRow++;
+    mainLayout->addWidget(new QLabel("Latitude:"),numRow,0);
+    numRow++;
+    mainLayout->addWidget(new QLabel("min:"),numRow,0);
+    mainLayout->addWidget(minLat,numRow,1);    
+    mainLayout->addWidget(new QLabel("max:"),numRow,2);
+    mainLayout->addWidget(maxLat,numRow,3);
+
+    numRow = 1;    
+    mainLayout->addWidget(new QLabel("Longitude:"),numRow,4);
+    numRow = 2;
+    mainLayout->addWidget(new QLabel("min:"),numRow,4);
+    mainLayout->addWidget(minLong,numRow,5);    
+    mainLayout->addWidget(new QLabel("max:"),numRow,6);
+    mainLayout->addWidget(maxLong,numRow,7);
+
+    numRow++;
+    mainLayout->addWidget(new QLabel("BRAILS output directory"),numRow,0);
+    mainLayout->addWidget(theOutputDir,numRow,1,1,7);
+
+    numRow++;    
     QPushButton *runButton = new QPushButton(tr("Run BRAILS"));
-    mainLayout->addWidget(runButton, 5,0,1,8);
+    mainLayout->addWidget(runButton, numRow,0,1,8);
     connect(runButton,SIGNAL(clicked()),this,SLOT(runBRAILS()));    
-    
+
+    numRow++;
     theSelectionWidget = new GIS_Selection(theVisualizationWidget);
-    mainLayout->addWidget(theSelectionWidget,6,0,1,8);
+    mainLayout->addWidget(theSelectionWidget,numRow,0,1,8);
     connect(theSelectionWidget,SIGNAL(selectionGeometryChanged()), this, SLOT(coordsChanged()));
+
+    for (int i=0; i<8; i++)
+      mainLayout->setColumnStretch(i, 1);
+           
 }
 
 BrailsTranspInventoryGenerator::~BrailsTranspInventoryGenerator()
@@ -130,6 +160,7 @@ void BrailsTranspInventoryGenerator::runBRAILS(void)
   brailsData.minLong = minLong->getDouble();
   brailsData.maxLong = maxLong->getDouble();
   brailsData.outputFile =theOutputDir->getFilename();
+  
 
   QString appDir = SimCenterPreferences::getInstance()->getAppDir();
   QDir scriptDir(appDir + QDir::separator());
@@ -140,11 +171,18 @@ void BrailsTranspInventoryGenerator::runBRAILS(void)
 
   
   QStringList scriptArgs;
+  QString checkStatus = "false";
+  if (minHazus->isChecked())
+    checkStatus = "true";
+  
   scriptArgs << QString("--latMin")  << QString::number(brailsData.minLat)
 	     << QString("--latMax")  << QString::number(brailsData.maxLat)
 	     << QString("--longMin") << QString::number(brailsData.minLong)
 	     << QString("--longMax") << QString::number(brailsData.maxLong)
-	     << "--outputFile" << brailsData.outputFile;
+             << QString("--lengthUnit") << units->currentText()
+	     << QString("--minimumHAZUS") << checkStatus
+	     << QString("--maxRoadLength") << QString::number(maxRoadLength->getDouble())
+	     << "--outputFolder" << brailsData.outputFile;
 
   qDebug() << "BRAILS script: " << brailsScript;
   qDebug() << "BRAILS args: " << scriptArgs;

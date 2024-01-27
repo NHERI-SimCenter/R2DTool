@@ -54,6 +54,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_DoubleLineEdit.h>
 #include <QComboBox>
 #include <SC_FileEdit.h>
+#include <SC_ComboBox.h>
 #include <SC_IntLineEdit.h>
 #include <SC_DoubleLineEdit.h>
 #include <QSettings>
@@ -77,32 +78,46 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     if (!dir.exists())
       dir.mkpath(brailsDir);
 
-    QString brailsOutput = brailsDir + QDir::separator() + "inventory.csv";
+    QString brailsOutput = brailsDir + QDir::separator() + "inventory.geojson";
     theOutputFile->setFilename(brailsOutput);
     
     QGridLayout *mainLayout = new QGridLayout(this);
-    mainLayout->addWidget(new QLabel("Latitude:"),0,0);
-    mainLayout->addWidget(new QLabel("min:"),1,0);
-    mainLayout->addWidget(minLat,1,1);    
-    mainLayout->addWidget(new QLabel("max:"),1,2);
-    mainLayout->addWidget(maxLat,1,3);
 
-    mainLayout->addWidget(new QLabel("Longitude:"),0,4);
-    mainLayout->addWidget(new QLabel("min:"),1,4);
-    mainLayout->addWidget(minLong,1,5);    
-    mainLayout->addWidget(new QLabel("max:"),1,6);
-    mainLayout->addWidget(maxLong,1,7);
+    int numRow = 0;
+    QStringList unitList; unitList << "m" << "ft";    
+    units = new SC_ComboBox("units", unitList);
+    mainLayout->addWidget(new QLabel("Output Units"),numRow,0);    
+    mainLayout->addWidget(units,numRow,1);
     
-    mainLayout->addWidget(new QLabel("Export BRAILS file"),2,0);
-    mainLayout->addWidget(theOutputFile,2,1,1,7);
+    numRow++;
+    mainLayout->addWidget(new QLabel("Latitude:"),numRow,0);
+    numRow++;
+    mainLayout->addWidget(new QLabel("min:"),numRow,0);
+    mainLayout->addWidget(minLat,numRow,1);    
+    mainLayout->addWidget(new QLabel("max:"),numRow,2);
+    mainLayout->addWidget(maxLat,numRow,3);
 
-    mainLayout->addWidget(new QLabel("Image Source"),3,0);
+    numRow = 1;    
+    mainLayout->addWidget(new QLabel("Longitude:"),numRow,4);
+    numRow = 2;
+    mainLayout->addWidget(new QLabel("min:"),numRow,4);
+    mainLayout->addWidget(minLong,numRow,5);    
+    mainLayout->addWidget(new QLabel("max:"),numRow,6);
+    mainLayout->addWidget(maxLong,numRow,7);
+
+    numRow++;
+    
+    mainLayout->addWidget(new QLabel("Export BRAILS file"),numRow,0);
+    mainLayout->addWidget(theOutputFile,numRow,1,1,7);
+
+    numRow++;
+    mainLayout->addWidget(new QLabel("Image Source"),numRow,0);
     QComboBox *imageSourceCombo = new QComboBox();
     imageSourceCombo->addItem("Google");
     imageSourceCombo->addItem("Local");
     imageSourceCombo->addItem("NHERI DesignSafe");
     imageSourceCombo->addItem("NHERI Rapid");
-    mainLayout->addWidget(imageSourceCombo,3,1,1,3);
+    mainLayout->addWidget(imageSourceCombo,numRow,1,1,3);
     
     connect(imageSourceCombo, &QComboBox::currentTextChanged, this, [=](QString text) {
       imageSource = text;
@@ -111,9 +126,6 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     mainLayout->addWidget(new QLabel("Imputation Algorithm"),4,0);
     QComboBox *imputationAlgoCombo = new QComboBox();
     imputationAlgoCombo->addItem("None");    
-    imputationAlgoCombo->addItem("Sang-ri");
-    imputationAlgoCombo->addItem("Aakash");
-    imputationAlgoCombo->addItem("Dimitrios");
     mainLayout->addWidget(imputationAlgoCombo,4,1,1,3);
 
     connect(imputationAlgoCombo, &QComboBox::currentTextChanged, this, [=](QString text) {
@@ -163,6 +175,7 @@ void BrailsInventoryGenerator::runBRAILS(void)
   brailsData.outputFile =theOutputFile->getFilename();
   brailsData.imageSource = imageSource;
   brailsData.imputationAlgo = imputationAlgo;
+  brailsData.units = units->currentText();
 
   
   if (imageSource == "Google") {
@@ -174,7 +187,7 @@ void BrailsInventoryGenerator::runBRAILS(void)
     theGoogleDialog->show();
     theGoogleDialog->raise();
     theGoogleDialog->activateWindow();
-    errorMessage("Window Shown and activayed .. ");    
+    errorMessage("Window shown and activated .. ");    
   }
 }
 
