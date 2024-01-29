@@ -290,8 +290,8 @@ bool GeojsonAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     QString fileName;
 
-    if (appData.contains("assetFile")){
-        fileName = appData["assetFile"].toString();
+    if (appData.contains("assetSourceFile")){
+        fileName = appData["assetSourceFile"].toString();
     }
 
     QFileInfo fileInfo(fileName);
