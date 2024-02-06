@@ -92,7 +92,7 @@ bool EarthquakeInputWidget::outputToJSON(QJsonObject &jsonObj)
 
     auto currentSelection = earthquakeSelectionCombo->currentText();
 
-    if(currentSelection.compare("Earthquake Scenario Simulation") == 0)
+    if(currentSelection.compare("Earthquake Event Generation") == 0)
     {
         theEQSSWidget->outputToJSON(appDataObj);
     }
@@ -137,7 +137,7 @@ void EarthquakeInputWidget::createEarthquakesWidget(void)
     includeHazardCheckBox->setChecked(true);
 
     earthquakeSelectionCombo = new QComboBox();
-    earthquakeSelectionCombo->addItem("Earthquake Scenario Simulation");
+    earthquakeSelectionCombo->addItem("Earthquake Event Generation");
     earthquakeSelectionCombo->addItem("ShakeMap Input");
     earthquakeSelectionCombo->addItem("User Specified Ground Motions");
     earthquakeSelectionCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -193,7 +193,7 @@ void EarthquakeInputWidget::shakeMapLoadingFinished(const bool value)
 
 void EarthquakeInputWidget::handleEQTypeSelection(const QString& selection)
 {
-    if(selection == "Earthquake Scenario Simulation")
+    if(selection == "Earthquake Event Generation")
         theRootStackedWidget->setCurrentWidget(theEQSSWidget);
     else if(selection == "ShakeMap Input")
         theRootStackedWidget->setCurrentWidget(theShakeMapWidget->getShakeMapWidget());

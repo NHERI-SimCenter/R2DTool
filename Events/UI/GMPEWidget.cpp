@@ -49,7 +49,7 @@ GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): SimCenterAppWidget(parent),
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     gmpeGroupBox = new QGroupBox();
-    gmpeGroupBox->setTitle("Ground Motion Prediction Equation");
+    gmpeGroupBox->setTitle("Ground Motion Model");
 
     const QStringList validType = this->m_gmpe.validTypes();
 
