@@ -54,7 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QJsonArray>
 
-GeojsonAssetInputWidget::GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
+GeojsonAssetInputWidget::GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType)
+    : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
@@ -289,8 +290,8 @@ bool GeojsonAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     QString fileName;
 
-    if (appData.contains("assetFile")){
-        fileName = appData["assetFile"].toString();
+    if (appData.contains("assetSourceFile")){
+        fileName = appData["assetSourceFile"].toString();
     }
 
     QFileInfo fileInfo(fileName);
@@ -402,7 +403,8 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
     QJsonObject crs;
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
 
-        QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
+        QString data = jsonFile.readAll();
+        QJsonDocument exDoc = QJsonDocument::fromJson(data.toUtf8());
         QJsonObject jsonObject = exDoc.object();
 
         if(jsonObject.contains("crs"))
@@ -413,7 +415,7 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
             qgsCRS.createFromOgcWmsCrs(crsString);
         }
         if (!qgsCRS.isValid()){
-            QString msg = "The CRS defined in " + pathGeojson + "is invalid and ignored";
+            QString msg = "The CRS: " + crsString + " defined in " + pathGeojson + " is invalid and ignored";
             errorMessage(msg);
         }
         crsSelectorWidget->setCRS(qgsCRS);
@@ -483,11 +485,11 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
 
         this->statusMessage("Loading asset type "+assetType+" with "+ QString::number(features.size())+" features");
 
-        auto thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
+        GISAssetInputWidget *thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
 
         // Hide the first label
+        /*
         thisAssetWidget->getLabel1()->hide();
-
         thisAssetWidget->getCRSSelectorWidget()->hide();
 
         // Hide the file input widgets in the asset file path layout
@@ -498,6 +500,10 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
                 widget->hide();
             }
         }
+        */
+	
+        thisAssetWidget->hideCRS_Selection();
+        thisAssetWidget->hideAssetFilePath();
 
         thisAssetWidget->setPathToComponentInputFile(outputFile);
         if (!thisAssetWidget->loadAssetData(false)) {

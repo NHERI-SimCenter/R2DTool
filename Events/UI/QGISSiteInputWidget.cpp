@@ -52,7 +52,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
-
+    label1->setText("Site File: (.csv)");
+    label2->setText("Sites to Analyze");
+//    mainWidgetLayout->removeWidget(label2);
+//    mainWidgetLayout->removeWidget(selectComponentsLineEdit);
+//    mainWidgetLayout->removeWidget(filterExpressionButton);
+//    mainWidgetLayout->removeWidget(clearSelectionButton);
+//    mainWidgetLayout->removeWidget(componentTableWidget);
+//    QLayoutItem *child;
+//    while ((child = mainWidgetLayout->takeAt(3)) != nullptr) {
+//        child->widget()->hide(); // delete the widget
+//    }
 }
 
 
@@ -92,6 +102,11 @@ int QGISSiteInputWidget::loadAssetVisualization()
 //    auto indexDepthToRock = headers.indexOf("DepthToRock");
     auto indexModelType = headers.indexOf("Model");
 
+    if(indexLongitude == -1 || indexLatitude == -1)
+    {
+        indexLatitude = headers.indexOf("lat");
+        indexLongitude = headers.indexOf("lon");
+    }
     if(indexLongitude == -1 || indexLatitude == -1)
     {
         this->errorMessage("Could not find latitude and longitude in the header columns");

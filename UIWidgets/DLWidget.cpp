@@ -153,6 +153,37 @@ QList<QString> DLWidget::getActiveDLApps(void)
     return activeDLapps;
 }
 
+QMap<QString, SC_ResultsWidget*>  DLWidget::getActiveDLResultsWidgets(QWidget *parent)
+{
+    QMap<QString, SC_ResultsWidget*> activePostProcessors;
+    auto activeList = this->getActiveComponents();
+
+    for(auto&& it : activeList)
+    {
+        auto activeComp = dynamic_cast<SimCenterAppSelection*>(this->getComponent(it));
+
+        if(activeComp == nullptr)
+            return activePostProcessors;
+
+        QString currComp = activeComp->getCurrentSelectionName();
+        SimCenterAppWidget* currSelection = activeComp->getCurrentSelection();
+        SC_ResultsWidget* currResultWidget = currSelection->getResultsWidget(parent);
+        if(!currResultWidget){
+//            this->errorMessage("The DL widget of "+currComp+" does not have a resultWidget");
+        } else {
+//            Pelicun3PostProcessor* currResultDownCast = dynamic_cast<Pelicun3PostProcessor*> (currResultWidget);
+//            if (currResultDownCast==0){
+//                this->errorMessage("The DL widget of "+currComp+" can not be cast to a postprocessor");
+//            } else {
+//                activePostProcessors.insert(it, currResultDownCast);
+//            }
+            activePostProcessors.insert(it, currResultWidget);
+        }
+    }
+
+    return activePostProcessors;
+}
+
 QMap<QString, QString> DLWidget::getActiveAssetDLMap(void)
 {
     QMap<QString, QString> activeMap;

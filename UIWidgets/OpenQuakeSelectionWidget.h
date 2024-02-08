@@ -44,7 +44,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
-class VisualizationWidget;
 
 class QgsMapLayer;
 class QgsVectorLayer;
@@ -61,7 +60,7 @@ class OpenQuakeSelectionWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    OpenQuakeSelectionWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    OpenQuakeSelectionWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~OpenQuakeSelectionWidget();
 
     QStackedWidget* getOpenQuakeSelectionWidget(void);

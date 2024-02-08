@@ -50,7 +50,7 @@ Vs30Widget::Vs30Widget(Vs30& vs30, SiteConfig& siteConfig, QWidget *parent): QWi
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* vs30GroupBox = new QGroupBox(this);
-    vs30GroupBox->setTitle("Vs30 Model (if no Vs30 provided by users)");
+    vs30GroupBox->setTitle("Vs30 Model");
 
     QHBoxLayout* formLayout = new QHBoxLayout(vs30GroupBox);
     m_typeBox = new QComboBox(this);
@@ -74,15 +74,52 @@ Vs30Widget::Vs30Widget(Vs30& vs30, SiteConfig& siteConfig, QWidget *parent): QWi
     QStringListModel* typeModel = new QStringListModel(validType);
     m_typeBox->setModel(typeModel);
     m_typeBox->setCurrentIndex(validType.indexOf(m_vs30.type()));
+
+    vsInferredCheckbox = new QCheckBox("Specified Vs30 values are inferred");
+    layout->addWidget(vsInferredCheckbox);
+    vsInferredCheckbox->setChecked(true);
+    vsInferredCheckbox->setEnabled(false);
     this->setupConnections();
+
 }
 
+void Vs30Widget::changeVs30InferredEnable(int index){
+    if(vsInferredCheckbox == nullptr){
+        return;
+    }
+    if (index == 3){
+        vsInferredCheckbox->setEnabled(true);
+        vsInferredCheckbox->setChecked(false);
+    } else {
+        vsInferredCheckbox->setEnabled(false);
+        vsInferredCheckbox->setChecked(true);
+    }
+}
+
+void Vs30Widget::setInferred(){
+    if(vsInferredCheckbox == nullptr){
+        return;
+    }
+    if (vsInferredCheckbox->isChecked()){
+        m_vs30.setInferred(true);
+    } else {
+        m_vs30.setInferred(false);
+    }
+}
 
 void Vs30Widget::setupConnections()
 {
     connect(this->m_typeBox, &QComboBox::currentTextChanged,
             &this->m_vs30, &Vs30::setType);
 
+    connect(vsInferredCheckbox, &QCheckBox::stateChanged,
+            this, &Vs30Widget::setInferred);
+
     connect(&this->m_vs30, &Vs30::typeChanged,
             this->m_typeBox, &QComboBox::setCurrentText);
+
+    connect(m_typeBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Vs30Widget::changeVs30InferredEnable);
+
+
 }

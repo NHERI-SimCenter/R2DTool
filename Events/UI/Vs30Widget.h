@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "Vs30.h"
 #include "SiteConfig.h"
-
+#include <QCheckBox>
 #include <QWidget>
 
 class QComboBox;
@@ -58,8 +58,12 @@ public slots:
 private:
     Vs30& m_vs30;
     QComboBox* m_typeBox;
+    QCheckBox* vsInferredCheckbox;
 
     void setupConnections();
+private slots:
+    void changeVs30InferredEnable(int index);
+    void setInferred();
 };
 
 #endif // VS30WIDGET_H

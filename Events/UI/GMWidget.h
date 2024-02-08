@@ -46,6 +46,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QProcess>
 #include <QJsonObject>
 
+class GMSiteWidget;
+class GMERFWidget;
 class EventGMDirWidget;
 class GMPE;
 class GMPEWidget;
@@ -57,13 +59,10 @@ class MapViewWindow;
 class MapViewSubWidget;
 class RecordSelectionConfig;
 class RecordSelectionWidget;
-class RuptureWidget;
-class SiteConfig;
-class SiteConfigWidget;
 class SpatialCorrelationWidget;
-class VisualizationWidget;
-class Vs30; // vs30 info
-class Vs30Widget; // vs30 setup widget
+class QGISVisualizationWidget;
+class ScenarioSelectionWidget;
+class GroundMotionModelsWidget;
 
 class QPushButton;
 class QStatusBar;
@@ -73,7 +72,7 @@ class GMWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit GMWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit GMWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~GMWidget();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -102,14 +101,14 @@ public slots:
     void showGISWindow(void);
     void runHazardSimulation(void);
 
+    void runScenarioForecast(void);
+
     // Handles the results when the user is finished
-    void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void handleProcessFinished();
 
     // Brings up the dialog and tells the user that the process has started
     void handleProcessStarted(void);
 
-    // Displays the text output of the process in the dialog
-    void handleProcessTextOutput(void);
 
     // Download records once selected
     int downloadRecords(void);
@@ -129,32 +128,36 @@ public slots:
 private slots:
 
 private:
+
+    QJsonObject loadJsonFile(const QString& filePath);
+
+    QVector<QStringList> getUserGridData(void);
+    QVector<QStringList> getSingleLocationGridData(void);
+
     PeerNgaWest2Client peerClient;
 
-    RuptureWidget* m_ruptureWidget;
-    GMPE* m_gmpe;
-    GMPEWidget* m_gmpeWidget;
-    QProcess* process;
-    IntensityMeasure* m_intensityMeasure;
-    IntensityMeasureWidget* m_intensityMeasureWidget;
-    SpatialCorrelationWidget* spatialCorrWidget;
-    RecordSelectionConfig* m_selectionconfig;
-    RecordSelectionWidget* m_selectionWidget;
-    SiteConfig* m_siteConfig;
-    SiteConfigWidget* m_siteConfigWidget;
-    QPushButton* m_runButton;
+    QProcess* process = nullptr;
+
+    RecordSelectionConfig* m_selectionconfig = nullptr;
+    RecordSelectionWidget* m_selectionWidget = nullptr;
+    ScenarioSelectionWidget* scenarioSelectWidget = nullptr;
+    GroundMotionModelsWidget* groundMotionModelsWidget = nullptr;
+
+    GMSiteWidget *siteWidget = nullptr;
+    GMERFWidget *erfWidget = nullptr;
+
+    QPushButton* m_runButton = nullptr;
     //QPushButton* m_settingButton;
-    GmAppConfig* m_appConfig;
-    Vs30* m_vs30;
-    Vs30Widget* m_vs30Widget;
-    EventGMDirWidget *m_eventGMDir;
+    GmAppConfig* m_appConfig = nullptr;
+
+    EventGMDirWidget *m_eventGMDir = nullptr;
     QString eventPath;
     QString motionFolder;
 
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    MapViewWindow* mapViewSubWidget;
-    RectangleGrid* userGrid;
+    MapViewWindow* mapViewSubWidget = nullptr;
+    RectangleGrid* userGrid = nullptr;
 
     void setupConnections();
     void initAppConfig();

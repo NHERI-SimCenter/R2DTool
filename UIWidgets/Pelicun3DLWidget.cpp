@@ -62,10 +62,10 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
-//    DLTypeComboBox->addItem("HAZUS MH EQ");
+    DLTypeComboBox->addItem("HAZUS MH EQ Story");
 
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
-//    DLTypeComboBox->addItem("HAZUS MH HU");
+    DLTypeComboBox->addItem("HAZUS MH HU");
     DLTypeComboBox->addItem("User-provided Fragilities");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
@@ -135,6 +135,8 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     autoPopulateScriptWidget->hide();
     fragDirWidget->hide();
+
+    resultWidget = new Pelicun3PostProcessor(parent);
 }
 
 
@@ -155,6 +157,9 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("regional", "true");
     if (DLTypeComboBox->currentText().compare("HAZUS MH EQ IM")==0){
         appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_IM.py");
+    }
+    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ Story")==0){
+        appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_Story.py");
     }
     // test separating the path and filename of auto-population codes (KZ)
     QFileInfo test_auto(autoPopulationScriptLineEdit->text());
@@ -267,11 +272,14 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                     // adam .. adam .. adam
                     pathToComponentInfoFile = currPath + QDir::separator()
                             + "input_data" + QDir::separator() + pathToScript;
-
-                    if (fileInfo.exists(pathToComponentInfoFile))
-                        autoPopulationScriptLineEdit->setText(pathToComponentInfoFile);
-                    else
+                    if (pathToScript.startsWith("PelicunDefault")){
+                        // Do nothing, the rwhale knows where to find PelicunDefault dir
+                    }
+                    else if (fileInfo.exists(pathToComponentInfoFile))
+                        autoPopulationScriptLineEdit->setText(pathToComponentInfoFile); 
+                    else{
                         this->infoMessage("Warning: the script file "+pathToScript+ " does not exist");
+                    }
                 }
             }
         }
@@ -414,7 +422,7 @@ void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
 {
     this->clearParams();
 
-    if(text.compare("HAZUS MH EQ") == 0 || text.compare("HAZUS MH EQ IM") == 0)
+    if(text.compare("HAZUS MH EQ Story") == 0 || text.compare("HAZUS MH EQ IM") == 0)
     {
         groundFailureCheckBox->show();
         autoPopulateScriptWidget->hide();
@@ -495,4 +503,14 @@ void Pelicun3DLWidget::handleBrowseButton2Pressed(void)
         return;
 
     fragilityDirLineEdit->setText(fragFolder);
+}
+
+//QMainWindow* Pelicun3DLWidget::getPostProcessor(QWidget *parent, SimCenterAppWidget* visWidget){
+//    VisualizationWidget* visWidgetDownCast = dynamic_cast<VisualizationWidget>
+//    QMainWindow* returnPtr = dynamic_cast<QMainWindow*> (new Pelicun3PostProcessor());
+//    return returnPtr;
+//};
+SC_ResultsWidget* Pelicun3DLWidget::getResultsWidget(QWidget* parent){
+    resultWidget->setParent(parent);
+    return resultWidget;
 }

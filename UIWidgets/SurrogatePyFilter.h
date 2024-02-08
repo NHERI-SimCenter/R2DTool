@@ -1,6 +1,5 @@
-#ifndef EarthquakeRuptureForecast_H
-#define EarthquakeRuptureForecast_H
-
+#ifndef SURROGATE_PY_FILTER_H
+#define SURROGATE_PY_FILTER_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,52 +36,91 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Frank McKenna
 
-#include <QObject>
-#include "JsonSerializable.h"
+#include "SimCenterAppWidget.h"
+#include "SC_FileEdit.h"
+#include "SC_StringLineEdit.h"
+#include "SimCenterAppSelection.h"
 
-class EarthquakeRuptureForecast : public QObject, JsonSerializable
+#include <QComboBox>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QVector>
+#include <QRadioButton>
+
+//class InputWidgetParameters;
+
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <QSpinBox>
+
+using namespace std;
+
+class SurrogateFile : public SimCenterWidget
 {
     Q_OBJECT
-
 public:
-    EarthquakeRuptureForecast(double magMin, double magMax, double maxDist, QString model, QString name, QString samplingMethod, int numScen, QObject *parent = nullptr);
+    explicit SurrogateFile(QWidget *parent = 0);
+    ~SurrogateFile();
 
-    double getMagnitudeMin() const;
-    double getMagnitudeMax() const;
-    double getMaxDistance() const;
-    QString getEQName() const;
-    QString getEQModelType() const;
-    QString getSamplingMethod() const;
-    int getNumScen() const;
+    bool outputToJSON(QJsonObject &rvObject);
+    bool inputFromJSON(QJsonObject &rvObject);
+    QString getFilePath(void);
 
-    bool outputToJSON(QJsonObject &jsonObject);
-    bool inputFromJSON(QJsonObject &jsonObject);
-
-    void reset(void);
-
-signals:
+    QRadioButton *button;  // used to mark if Event intended for deletion
+    SC_FileEdit  *theFilePath;    // full path to file name
+    SC_StringLineEdit  *theModelName;  // load factor
 
 public slots:
-    void setMagnitudeMin(double magnitude);
-    void setMagnitudeMax(double magnitude);
-    void setMaxDistance(double value);
-    void setEQName(const QString &value);
-    void setEQModelType(const QString &value);
-    void setSamplingMethod(const QString &value);
-    void setNumScen(const QString value);
+    //void chooseFileName(void);
+    void onFilePathChanged(QString);
+    void onRemoveMod(bool);
+    //void onAddMod(bool);
 
-private:
-    double magnitudeMin;
-    double magnitudeMax;
-    double maxDistance;
-
-    QString EQModelType;
-    QString EQName;
-    QString SamplingMethod;
-    int NumScen;
+signals:
+    void removeRecord();
 
 };
 
-#endif // EarthquakeRuptureForecast_H
+
+class SurrogatePyFilter : public SimCenterAppWidget
+{
+    Q_OBJECT
+public:
+    explicit SurrogatePyFilter(QWidget *parent = 0);
+    ~SurrogatePyFilter();
+
+    bool outputToJSON(QJsonObject &rvObject) override;
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputAppDataToJSON(QJsonObject &rvObject) override;
+    bool inputAppDataFromJSON(QJsonObject &rvObject) override;
+    bool copyFiles(QString &dirName) override;
+    SimCenterAppSelection *buildingWidget;
+
+    QString getMainInput();
+    QVBoxLayout *recordLayout;
+    QRadioButton *button; // used to mark if Event intended for deletion
+    QLineEdit *theName; // a QLineEdit with name of File (filename minus path and extension)
+    QVector<SurrogateFile  *>theFiles;
+
+    void clear(void);
+
+public slots:
+
+    void addMod(void);
+    void removeMod(void);
+    void removeAllMods(void);
+    void loadModsFromDir(void);
+
+private:
+    SC_FileEdit *filterPath;
+
+    QVBoxLayout *verticalLayout;
+    QVBoxLayout *surLayout;
+
+    QVector<SurrogateFile *>theModels;
+};
+
+#endif // SURROGATE_PY_FILTER_H

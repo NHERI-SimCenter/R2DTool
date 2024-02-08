@@ -51,7 +51,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 CSVtoBIMModelingWidget::CSVtoBIMModelingWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {    
-
     QGridLayout* gridLayout = new QGridLayout(this);
 
     QLabel* IDLabel = new QLabel("Select a range of building IDs for which to create a model. By default, all buildings selected for analysis are converted into a BIM.",this);
@@ -59,7 +58,7 @@ CSVtoBIMModelingWidget::CSVtoBIMModelingWidget(QWidget *parent) : SimCenterAppWi
     selectComponentsLineEdit = new QLineEdit();
     // selectComponentsLineEdit->setMaximumWidth(1000);
     // selectComponentsLineEdit->setMinimumWidth(400);
-    selectComponentsLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    // selectComponentsLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     selectComponentsLineEdit->setPlaceholderText("e.g., 1, 3, 5-10, 12");
 
     // Create a regExp validator to make sure only '-' & ',' & ' ' & numbers are input

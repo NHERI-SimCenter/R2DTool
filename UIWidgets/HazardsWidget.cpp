@@ -61,7 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 
 HazardsWidget::HazardsWidget(QWidget *parent,
-                             VisualizationWidget* visWidget)
+                             QGISVisualizationWidget* visWidget)
   : SimCenterAppSelection(QString("Hazard Selection"),
               QString("RegionalEvent"), QString("Hazard"), QString(), parent),
     theVisualizationWidget(visWidget)

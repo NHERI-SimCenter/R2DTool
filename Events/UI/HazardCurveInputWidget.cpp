@@ -1,5 +1,3 @@
-#ifndef EarthquakeRuptureForecastWidget_H
-#define EarthquakeRuptureForecastWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,44 +36,41 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include <QWidget>
+#include "HazardCurveInputWidget.h"
+#include "NSHMCurveWidget.h"
+#include "UserDefinedCurveWidget.h"
 
-class EarthquakeRuptureForecast;
+#include <QLabel>
+#include <QJsonObject>
 
-class QComboBox;
-class QLineEdit;
-class QDoubleSpinBox;
-
-class EarthquakeRuptureForecastWidget : public QWidget
+HazardCurveInputWidget::HazardCurveInputWidget(QString jsonKey,QWidget *parent) : SimCenterAppSelection("Hazard Curve Input",jsonKey,parent), jsonKey(jsonKey)
 {
-    Q_OBJECT
+    inferredWIdget = new SimCenterAppWidget();
+    nshmWidget = new NSHMCurveWidget();
+    userDefHaz = new UserDefinedCurveWidget();
 
-public:
-    explicit EarthquakeRuptureForecastWidget(QWidget *parent = nullptr);
+    this->addComponent("Inferred","NA",inferredWIdget);
+    this->addComponent("National Seismic Hazard Map","NA",nshmWidget);
+    this->addComponent("User-defined","NA",userDefHaz);
 
-    EarthquakeRuptureForecast* getRuptureSource() const;
-    // KZ: adding getNumScen to return number of scenarios
-    QString getNumScen() const;
+}
 
-signals:
 
-public slots:
+bool HazardCurveInputWidget::inputFromJSON(QJsonObject& /*obj*/)
+{
+    return true;
+}
 
-private:
-    EarthquakeRuptureForecast* m_eqRupture;
-    QComboBox* ModelTypeCombo;
-    QLineEdit* EQNameLineEdit;
-    QDoubleSpinBox* m_magnitudeMinBox;
-    QDoubleSpinBox* m_magnitudeMaxBox;
-    QDoubleSpinBox* m_maxDistanceBox;
 
-    // number of scenarios
-    QLineEdit* NumScenarioLineEdit;
-    // sampling methods
-    QComboBox* SamplingMethodCombo;
+bool HazardCurveInputWidget::outputToJSON(QJsonObject& obj)
+{
 
-    void setupConnections();
+    if(this->getCurrentSelection() == inferredWIdget)
+        obj["HazardCurveInput"] = "Inferred_sourceFile";
+    else if(this->getCurrentSelection() == nshmWidget)
+        return nshmWidget->outputToJSON(obj);
+    else if(this->getCurrentSelection() == userDefHaz)
+        return userDefHaz->outputToJSON(obj);
+    return true;
+}
 
-};
-
-#endif // EarthquakeRuptureForecastWidget_H

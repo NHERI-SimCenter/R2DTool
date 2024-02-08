@@ -46,7 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <memory>
 
 class CustomListWidget;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 
 class QListWidget;
 class QStackedWidget;
@@ -101,7 +101,7 @@ class ShakeMapWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ShakeMapWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~ShakeMapWidget();
 
     QWidget* getShakeMapWidget(void);
@@ -141,7 +141,7 @@ private:
 
     QListWidget* IMListWidget = nullptr;
     CustomListWidget *listWidget = nullptr;
-    VisualizationWidget* theVisualizationWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
     QLineEdit *shakeMapDirectoryLineEdit = nullptr;
     QLabel* progressLabel = nullptr;
     QWidget* progressBarWidget = nullptr;

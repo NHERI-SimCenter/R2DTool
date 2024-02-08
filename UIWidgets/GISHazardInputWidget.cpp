@@ -84,11 +84,8 @@ using namespace std::chrono;
 
 
 
-GISHazardInputWidget::GISHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
+GISHazardInputWidget::GISHazardInputWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
-    assert(theVisualizationWidget != nullptr);
-
     GISFilePath = "";
 
     QVBoxLayout *layout = new QVBoxLayout;

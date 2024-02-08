@@ -76,7 +76,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsfillsymbol.h>
 
-ShakeMapWidget::ShakeMapWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+ShakeMapWidget::ShakeMapWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     shakeMapStackedWidget = nullptr;
     progressBar = nullptr;

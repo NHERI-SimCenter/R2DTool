@@ -46,7 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-
+#include "SurrogatePyFilter.h"
 // Qt headers
 #include <QCheckBox>
 #include <QColorTransform>
@@ -86,11 +86,13 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   //  SimCenterAppWidget *openSees = new NoArgSimCenterApp(QString("OpenSees-Simulation_R"));
   InputWidgetOpenSeesAnalysis *openSees = new InputWidgetOpenSeesAnalysis();
   SimCenterAppWidget *imAsEDP = new NoArgSimCenterApp(QString("IMasEDP"));
+  SimCenterAppWidget *surrogatePy = new SurrogatePyFilter(this);
   SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
   buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation"), openSees);
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);
   buildingWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP);
+  buildingWidget->addComponent(QString("PreTrained Surrogate Models"), QString("SurrogateRegionalPy"), surrogatePy);
   buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
   // KZ: adding customPy

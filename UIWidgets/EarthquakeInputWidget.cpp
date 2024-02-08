@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GMWidget.h"
 #include "ShakeMapWidget.h"
 #include "UserInputGMWidget.h"
-#include "VisualizationWidget.h"
+#include "QGISVisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 
 #include <QCheckBox>
@@ -51,7 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QStackedWidget>
 
-EarthquakeInputWidget::EarthquakeInputWidget(QWidget *parent, VisualizationWidget* visWidget)
+EarthquakeInputWidget::EarthquakeInputWidget(QWidget *parent, QGISVisualizationWidget* visWidget)
   : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     theEQWidget = nullptr;

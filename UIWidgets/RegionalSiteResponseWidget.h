@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMap>
 #include <QProcess>
 
-class VisualizationWidget;
+class QGISVisualizationWidget;
 class SimCenterUnitsWidget;
 
 class AssetInputWidget;
@@ -87,14 +87,14 @@ class RegionalSiteResponseWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    RegionalSiteResponseWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    RegionalSiteResponseWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~RegionalSiteResponseWidget();
 
     void showUserGMLayers(bool state);
 
     QStackedWidget* getRegionalSiteResponseWidget(void);
     // get sites and fetch needed data
-    QStackedWidget* getSiteWidget(VisualizationWidget* visWidget);
+    QStackedWidget* getSiteWidget(QGISVisualizationWidget* visWidget);
 
     bool inputFromJSON(QJsonObject &jsonObj);
     bool outputToJSON(QJsonObject &jsonObj);
@@ -146,7 +146,7 @@ private:
     QStackedWidget* theStackedWidget;
     QStackedWidget* theSiteStackedWidget;
 
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget;
 
     QString eventFile;
     QString motionDir;

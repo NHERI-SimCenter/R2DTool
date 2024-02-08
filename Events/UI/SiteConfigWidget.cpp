@@ -2,7 +2,7 @@
 #include "SiteWidget.h"
 #include "SiteGridWidget.h"
 #include "SiteScatterWidget.h"
-#include "VisualizationWidget.h"
+#include "QGISVisualizationWidget.h"
 #include "VerticalScrollingWidget.h"
 
 #include "QGISSiteInputWidget.h"
@@ -12,7 +12,7 @@
 #include <QTableWidget>
 #include <QScrollArea>
 
-SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* visWidget, bool soilResponse, QWidget *parent)
+SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, QGISVisualizationWidget* visWidget, bool soilResponse, QWidget *parent)
     : QWidget(parent), m_siteConfig(siteconfig), visualizationWidget(visWidget)
 {
     QGroupBox* siteGroupBox = new QGroupBox(tr("Site"));
@@ -67,7 +67,7 @@ SiteConfigWidget::SiteConfigWidget(SiteConfig &siteconfig, VisualizationWidget* 
     if (soilResponse)
         csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "SiteSoilColumn","RegionalSiteResponse");
     else
-        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "SiteSoilColumn","regionalGroundMotion");
+        csvSiteInventory = new QGISSiteInputWidget(this, visualizationWidget, "Sites","regionalGroundMotion");
 
     csvSiteInventory->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     auto sa = new VerticalScrollingWidget(csvSiteInventory);

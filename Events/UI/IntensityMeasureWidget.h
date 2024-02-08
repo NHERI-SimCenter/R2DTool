@@ -19,6 +19,8 @@ class IntensityMeasureWidget : public QWidget
 public:
     explicit IntensityMeasureWidget(IntensityMeasure& im, QWidget *parent = nullptr);
 
+    QComboBox *typeBox() const;
+
 signals:
 
 public slots:

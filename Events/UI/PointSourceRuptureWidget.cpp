@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "HBoxFormLayout.h"
 #include "PointSourceRupture.h"
 
-PointSourceRuptureWidget::PointSourceRuptureWidget(QWidget *parent, Qt::Orientation orientation) : QWidget(parent)
+PointSourceRuptureWidget::PointSourceRuptureWidget(QWidget *parent, Qt::Orientation orientation) : SimCenterAppWidget(parent)
 {
 
     this->m_magnitudeBox = new QDoubleSpinBox(this);
@@ -191,4 +191,21 @@ void PointSourceRuptureWidget::setupConnections()
 
     connect(this->m_eqRupture, &PointSourceRupture::rakeChanged,
             this->m_rakeBox, &QDoubleSpinBox::setValue);
+}
+
+bool PointSourceRuptureWidget::outputToJSON(QJsonObject &jsonObject)
+{
+    QJsonObject EqRupture;
+    EqRupture["Type"] = "PointSource";
+    EqRupture["Magnitude"] = m_magnitudeBox->value();
+    EqRupture["AverageDip"] = m_dipBox->value();
+    EqRupture["AverageRake"] = m_rakeBox->value();
+    QJsonObject location;
+    location["Depth"] = m_depthBox->value();
+    location["Latitude"] = m_latitudeBox->value();
+    location["Longitude"] = m_longitudeBox->value();
+    EqRupture.insert("Location",location);
+
+    jsonObject.insert("EqRupture", EqRupture);
+    return true;
 }

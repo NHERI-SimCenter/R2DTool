@@ -81,10 +81,8 @@ using namespace std::chrono;
 // Test to remove end
 
 
-RasterHazardInputWidget::RasterHazardInputWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
+RasterHazardInputWidget::RasterHazardInputWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
-    assert(theVisualizationWidget != nullptr);
 
     rasterFilePath = "";
 

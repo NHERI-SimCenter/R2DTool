@@ -39,6 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna, Stevan Gavrilovic
 
 #include "MultiComponentR2D.h"
+#include "SC_ResultsWidget.h"
+#include "Pelicun3PostProcessor.h"
+#include "VisualizationWidget.h"
 
 class VisualizationWidget;
 class SimCenterAppSelection;
@@ -55,6 +58,7 @@ public:
 
     QList<QString> getActiveDLApps(void);
     QMap<QString, QString> getActiveAssetDLMap(void);
+    QMap<QString, SC_ResultsWidget*> getActiveDLResultsWidgets(QWidget *parent);
 
 private:
     SimCenterAppSelection *buildingWidget = nullptr;

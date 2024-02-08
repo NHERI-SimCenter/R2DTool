@@ -39,20 +39,41 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "RecordSelectionConfig.h"
+#include "SimCenterAppWidget.h"
 
-#include <QWidget>
-#include <QtWidgets>
+class QLabel;
 
-class RecordSelectionWidget : public QWidget
+class SC_ComboBox;
+class SC_DoubleLineEdit;
+class SC_IntLineEdit;
+
+class RecordSelectionWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
     explicit RecordSelectionWidget(RecordSelectionConfig& selectionConfig, QWidget *parent = nullptr);
+
     int getNumberOfGMPerSite(void);
+
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
+
+private slots:
+
+    void handleDBSelection(const QString& selection);
+
 private:
+    void setScalingVisibility(bool val);
+
     RecordSelectionConfig& m_selectionConfig;
-    QComboBox* m_dbBox;
-    QLineEdit* numGMLineEdit;
+
+    SC_IntLineEdit* numGMLineEdit = nullptr;
+    SC_DoubleLineEdit* scalingMin = nullptr;
+    SC_DoubleLineEdit* scalingMax = nullptr;
+    SC_ComboBox* m_dbBox = nullptr;
+
+    QLabel* scalingMinLabel = nullptr;
+    QLabel* scalingMaxLabel = nullptr;
 
 };
 
