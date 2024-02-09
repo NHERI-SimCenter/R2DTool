@@ -67,10 +67,11 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     QWidget *simulationWidget = new QWidget();
     QGridLayout *simLayout = new QGridLayout();
     simulationWidget->setLayout(simLayout);
-    simulationTime = new SC_DoubleLineEdit("simulationTime");
+    simulationTime = new SC_DoubleLineEdit("simulationTime", 100);
     int numRow = 0;
     simLayout->addWidget(new QLabel("Simulation Time"), numRow, 0);
-    simLayout->addWidget(simulationTime, numRow++, 1); 
+    simLayout->addWidget(simulationTime, numRow, 1);
+    simLayout->addWidget(new QLabel("min"), numRow++, 2);    
 
 
     simLayout->setRowStretch(numRow, 1);

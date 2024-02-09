@@ -52,14 +52,10 @@ RecoveryWidget::RecoveryWidget(QWidget *parent)
   : MultiComponentR2D(QString("Recoverying"), parent)
 {
 
-  QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
-  QList<QString> transportExtraKeys;
-  transportExtraKeys.append("TransportRoads");
-  transportExtraKeys.append("TransportBridges");
-  transportExtraKeys.append("TransportTunnels");
+  //QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
   buildingWidget = new SimCenterAppSelection(QString("Building Recoverying"), QString("Buildings"), this);
   pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Recoverying"), QString("NaturalGasPipelines"), this);
-  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Recoverying"), QString("WaterDistributionNetwork"), waterExtraKeys);
+  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Recoverying"), QString("WaterDistributionNetwork"), this);
   transportWidget = new SimCenterAppSelection(QString("Transportation Components Recoverying"), QString("TransportationNetwork"), this);
 
   // Building widget apps
