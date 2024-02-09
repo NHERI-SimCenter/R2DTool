@@ -33,13 +33,13 @@ PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
-
 // Written: fmk
 
 #include "RewetRecovery.h"
 #include <QScrollArea>
 #include <QLineEdit>
 #include <QTabWidget>
+#include <QGridLayout>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QJsonObject>
@@ -65,18 +65,42 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     //
     
     QWidget *simulationWidget = new QWidget();
+    QGridLayout *simLayout = new QGridLayout();
+    simulationWidget->setLayout(simLayout);
+    simulationTime = new SC_DoubleLineEdit("simulationTime");
+    int numRow = 0;
+    simLayout->addWidget(new QLabel("Simulation Time"), numRow, 0);
+    simLayout->addWidget(simulationTime, numRow++, 1); 
 
+
+    simLayout->setRowStretch(numRow, 1);
+    
     //
     // hydraulics widget
     //
     
     QWidget *hydraulicsWidget = new QWidget();
+    QGridLayout *hydroLayout = new QGridLayout();
+    hydraulicsWidget->setLayout(hydroLayout);
+
+    QStringList solverOptions; solverOptions << "EPANET" << "WNTER";
+    solver = new SC_ComboBox("solver", solverOptions);
+    hydroLayout->addWidget(new QLabel("solver"),numRow,0);
+    hydroLayout->addWidget(solver,numRow++,1);    
 
     //
     // restoration widget
     //
     
-    QWidget *restorationWidget = new QWidget();    
+    QWidget *restorationWidget = new QWidget();
+    QGridLayout *restoreLayout = new QGridLayout();
+    restorationWidget->setLayout(restoreLayout);        
+
+
+    policyFile = new SC_FileEdit("policyFile");
+    restoreLayout->addWidget(new QLabel("Policy File"),numRow, 0);
+    restoreLayout->addWidget(policyFile,numRow++, 1);    
+
     
     theTabWidget->addTab(simulationWidget, "Simulation");
     theTabWidget->addTab(hydraulicsWidget, "Hydraulics");
@@ -119,6 +143,9 @@ bool RewetRecovery::inputFromJSON(QJsonObject &jsonObject)
   this->clear();
   
   //   inputSettings->inputFromJSON(jsonObject);
+  simulationTime->inputFromJSON(jsonObject);
+  solver->inputFromJSON(jsonObject);
+  policyFile->inputFromJSON(jsonObject);  
   
   return true;
 }
@@ -126,7 +153,9 @@ bool RewetRecovery::inputFromJSON(QJsonObject &jsonObject)
 bool RewetRecovery::outputToJSON(QJsonObject &jsonObject)
 {
   jsonObject["Application"] = "RewetRecovery";
-    
+  simulationTime->outputToJSON(jsonObject);
+  solver->outputToJSON(jsonObject);
+  policyFile->outputToJSON(jsonObject);
   
   // inputSettings->outputToJSON(jsonObject);
   
@@ -146,6 +175,7 @@ bool RewetRecovery::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     return true;
 }
+
 bool RewetRecovery::inputAppDataFromJSON(QJsonObject &jsonObject) {
     Q_UNUSED(jsonObject);
     return true;
@@ -153,6 +183,6 @@ bool RewetRecovery::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
 
 bool RewetRecovery::copyFiles(QString &destDir) {
-
+  policyFile->copyFile(destDir);
 }
 

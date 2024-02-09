@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class SC_FileEdit;
 class SC_DoubleLineEdit;
 class SC_IntLineEdit;
+class SC_ComboBox;
 
 class RewetRecovery : public SimCenterAppWidget
 {
@@ -64,7 +65,15 @@ public slots:
 
 private:
 
+  // simulation
+  SC_DoubleLineEdit *simulationTime;
 
+  // hydraulics
+  SC_ComboBox *solver;
+
+  // restoration
+  SC_FileEdit *policyFile;
+  
 };
 
 #endif // REWET_RECOVERY_H
