@@ -45,7 +45,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "SectionTitle.h"
-#include <ReWetWidget.h>
 
 // Qt headers
 #include <QCheckBox>
@@ -98,7 +97,8 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     // Water distribution network apps
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
     SimCenterAppWidget *WDNDL = new NoArgSimCenterApp(QString("CBCitiesDL"));
-    SimCenterAppWidget *waterPelicun = new ReWetWidget;    
+    //    SimCenterAppWidget *waterPelicun = new ReWetWidget;
+    SimCenterAppWidget *waterPelicun = new Pelicun3DLWidget;        
 
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);

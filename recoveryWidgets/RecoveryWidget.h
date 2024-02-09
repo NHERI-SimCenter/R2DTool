@@ -1,6 +1,5 @@
-#ifndef REWET_WIDGET_H
-#define REWET_WIDGET_H
-
+﻿#ifndef RecoveryWidget_H
+#define RecoveryWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,53 +36,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Frank McKenna
 
-#include "SimCenterAppWidget.h"
+#include "MultiComponentR2D.h"
 
-class QComboBox;
-class QCheckBox;
-class QLineEdit;
-class QHBoxLayout;
-class QWidget;
+class SimCenterAppSelection;
 
-class ReWetWidget : public SimCenterAppWidget
+class RecoveryWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
 public:
-    explicit ReWetWidget(QWidget *parent = nullptr);
-
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
+    explicit RecoveryWidget(QWidget *parent = 0);
+    ~RecoveryWidget();
 
     void clear(void);
 
-    bool copyFiles(QString &destName);
-
-    bool recursiveCopy(const QString &sourcePath, const QString &destPath);
-
-public slots:
-
-    void handleComboBoxChanged(const QString &text);
-    void handleBrowseButton1Pressed(void);
-    void handleBrowseButton2Pressed(void);
-
 private:
-    QWidget* autoPopulateScriptWidget;
-    QWidget* fragDirWidget;
-
-    QComboBox* DLTypeComboBox;
-    QLineEdit* realizationsLineEdit;
-    QComboBox* eventTimeComboBox;
-    QCheckBox* detailedResultsCheckBox;
-    QCheckBox* logFileCheckBox;
-    QCheckBox* coupledEDPCheckBox;
-    QCheckBox* groundFailureCheckBox;
-    QLineEdit* autoPopulationScriptLineEdit;
-    QLineEdit* fragilityDirLineEdit;
-    void clearParams(void);
+    SimCenterAppSelection *buildingWidget = nullptr;
+    SimCenterAppSelection *pipelineWidget = nullptr;
+    SimCenterAppSelection *WDNWidget = nullptr;
+    SimCenterAppSelection *transportWidget = nullptr;
 };
 
-#endif // REWET_WIDGET_H
+#endif // RecoveryWidget_H

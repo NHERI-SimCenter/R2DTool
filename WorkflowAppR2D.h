@@ -52,6 +52,7 @@ class GeneralInformationWidgetR2D;
 class HazardToAssetWidget;
 class HazardsWidget;
 class UQWidget;
+class RecoveryWidget;
 class ModelWidget;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -138,6 +139,7 @@ private:
     AnalysisWidget *theAnalysisWidget;
     DLWidget* theDamageAndLossWidget;
     UQWidget* theUQWidget;
+    RecoveryWidget *theRecoveryWidget;
     RandomVariablesContainer* theRVs;
     ResultsWidget* theResultsWidget;
     LoadResultsDialog* resultsDialog;
