@@ -168,4 +168,5 @@ bool MeanUCERFFM3Widget::showAdditionalInputForProbabilityModel(int currentIndex
         bptAvgTypeLabel->hide();
         bptAvgTypeCombo->hide();
     }
+    return true;
 }
