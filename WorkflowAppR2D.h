@@ -50,6 +50,7 @@ class DLWidget;
 class EngDemandParameterWidget;
 class GeneralInformationWidgetR2D;
 class HazardToAssetWidget;
+class RandomVariablesWidget;
 class HazardsWidget;
 class UQWidget;
 class ModelWidget;
@@ -67,6 +68,7 @@ class SimCenterAppEventSelection;
 class SimCenterComponentSelection;
 class UQOptions;
 class UQWidget;
+class RVWidget;
 class UQ_Results;
 class QGISVisualizationWidget;
 class PerformanceWidget;
@@ -101,6 +103,7 @@ public:
     DLWidget *getTheDamageAndLossWidget() const;
 
     LocalApplication *getLocalApp() const;
+    RandomVariablesWidget *getTheRandomVariableWidget() const;
 
 signals:
 
@@ -129,33 +132,34 @@ private:
     //
 
     ToolDialog* theToolDialog = nullptr;
-    QGISVisualizationWidget* theVisualizationWidget;
-    GeneralInformationWidgetR2D* theGeneralInformationWidgetR2D;
-    HazardsWidget* theHazardsWidget;
-    AssetsWidget* theAssetsWidget;
-    HazardToAssetWidget* theHazardToAssetWidget;
-    ModelWidget* theModelingWidget;
-    AnalysisWidget *theAnalysisWidget;
-    DLWidget* theDamageAndLossWidget;
-    UQWidget* theUQWidget;
-    RandomVariablesContainer* theRVs;
-    ResultsWidget* theResultsWidget;
-    LoadResultsDialog* resultsDialog;
-    PerformanceWidget* thePerformanceWidget;
+
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    GeneralInformationWidgetR2D* theGeneralInformationWidgetR2D = nullptr;
+    HazardsWidget* theHazardsWidget = nullptr;
+    AssetsWidget* theAssetsWidget = nullptr;
+    HazardToAssetWidget* theHazardToAssetWidget = nullptr;
+    ModelWidget* theModelingWidget = nullptr;
+    AnalysisWidget *theAnalysisWidget = nullptr;
+    DLWidget* theDamageAndLossWidget = nullptr;
+    UQWidget* theUQWidget = nullptr;
+    RVWidget* theRVWidget = nullptr;
+    ResultsWidget* theResultsWidget = nullptr;
+    LoadResultsDialog* resultsDialog = nullptr;
+    PerformanceWidget* thePerformanceWidget = nullptr;
     //LocalMappingWidget* theLocalMappingWidget;  
-    SimCenterAppEventSelection* theLocalEvent;  
+    SimCenterAppEventSelection* theLocalEvent = nullptr;
     //
     // Objects for running the workflow and obtaining results
     //
 
-    RunWidget *theRunWidget;
-    LocalApplication *localApp;
-    Application *remoteApp;
-    RemoteJobManager *theJobManager;
+    RunWidget *theRunWidget = nullptr;
+    LocalApplication *localApp = nullptr;
+    Application *remoteApp = nullptr;
+    RemoteJobManager *theJobManager = nullptr;
 
-    QJsonObject *jsonObjOrig;
-    QNetworkAccessManager *manager;
-    QString commonFilePath;
+    QJsonObject *jsonObjOrig = nullptr;
+    QNetworkAccessManager *manager = nullptr;
+    QString commonFilePath = nullptr;
     static WorkflowAppR2D *theInstance;
 
 };

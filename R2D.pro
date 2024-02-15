@@ -53,10 +53,15 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 
 # Specify the path to the Simcenter common directory
-PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_COMMON=../../SimCenterCommon
 
 # Specify the path to the R2D tool examples folder
 PATH_TO_EXAMPLES=../R2DExamples
+
+
+# Path to OpenSRA
+PATH_TO_OPENSRA=../../OpenSRA_GUI/OpenSRA
+include(OpenSRA.pri)
 
 
 ## ADVANCED USAGE BELOW ##

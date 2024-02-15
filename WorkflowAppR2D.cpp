@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GoogleAnalytics.h"
 #include "HazardToAssetWidget.h"
 #include "HazardsWidget.h"
+
 //#include "InputWidgetSampling.h"
 #include "LocalApplication.h"
 #include "MainWindowWorkflowApp.h"
@@ -56,7 +57,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include  <SimCenterEventRegional.h>
 #include  <SimCenterAppEventSelection.h>
 #include "PerformanceWidget.h"
-#include "RandomVariablesContainer.h"
 #include "RemoteApplication.h"
 #include "RemoteJobManager.h"
 #include "RemoteService.h"
@@ -66,6 +66,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterComponentSelection.h"
 //#include <UQ_EngineSelection.h>
 #include <UQWidget.h>
+#include "RVWidget.h"
 #include "WorkflowAppR2D.h"
 #include "LoadResultsDialog.h"
 #include "ToolDialog.h"
@@ -209,7 +210,6 @@ void WorkflowAppR2D::initialize(void)
 
     // Create the various widgets
     theGeneralInformationWidgetR2D = new GeneralInformationWidgetR2D(this);
-    theRVs = RandomVariablesContainer::getInstance();
     
     theVisualizationWidget = new QGISVisualizationWidget(theMainWindow);
 
@@ -227,6 +227,8 @@ void WorkflowAppR2D::initialize(void)
 	toolsMenu->addAction("&BRAILS-Transportation", theToolDialog, &ToolDialog::handleBrailsTranspInventoryTool);
     menuBar->insertMenu(menuAfter, toolsMenu);
 
+    theRVWidget = new RVWidget(this);
+
 
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
     theHazardToAssetWidget = new HazardToAssetWidget(this, theVisualizationWidget);
@@ -240,11 +242,9 @@ void WorkflowAppR2D::initialize(void)
     theLocalEvent->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);							
     
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
-    theUQWidget = new UQWidget(this);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
-    thePerformanceWidget = new PerformanceWidget(this,theRVs);
-
-
+    thePerformanceWidget = new PerformanceWidget(this);
+    theUQWidget = new UQWidget(this);
 
     connect(theGeneralInformationWidgetR2D, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
@@ -273,7 +273,7 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("ANA"), theAnalysisWidget);
     theComponentSelection->addComponent(tr("DL"),  theDamageAndLossWidget);
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
-    theComponentSelection->addComponent(tr("RV"), theRVs);
+    theComponentSelection->addComponent(tr("RV"), theRVWidget);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
     /* *********************** Performance ***************************** 
     theComponentSelection->addComponent(tr("PRF"), thePerformanceWidget);    
@@ -420,7 +420,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     ******************************* Performance ***************************** */
     
     theUQWidget->outputToJSON(jsonObjectTop);
-    theRVs->outputToJSON(jsonObjectTop);
+    theRVWidget->outputToJSON(jsonObjectTop);
 
     QJsonObject defaultValues;
     defaultValues["workflowInput"]=QString("scInput.json");    
@@ -461,6 +461,7 @@ void WorkflowAppR2D::clear(void)
 {
     theGeneralInformationWidgetR2D->clear();
     theUQWidget->clear();
+    theRVWidget->clear();
     theModelingWidget->clear();
     theLocalEvent->clear();    
     theAnalysisWidget->clear();
@@ -571,7 +572,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
       result = false;
     }
     
-    if (theRVs->inputFromJSON(jsonObject) == false)
+    if (theRVWidget->inputFromJSON(jsonObject) == false)
       return false;    
 
     if (theModelingWidget->inputFromJSON(jsonObject) == false) {
@@ -666,6 +667,12 @@ void WorkflowAppR2D::onRemoteGetButtonClicked(){
 
 void WorkflowAppR2D::onExitButtonClicked(){
 
+}
+
+
+RandomVariablesWidget *WorkflowAppR2D::getTheRandomVariableWidget() const
+{
+    return theRVWidget->getTheOSRARandomVariableWidget();
 }
 
 
@@ -908,6 +915,7 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
 	* *********************************/
         theDamageAndLossWidget->show(text);
         theUQWidget->show(text);
+        theRVWidget->show(text);
     }
     else
     {
@@ -921,6 +929,7 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
 	*********************************** */	
         theDamageAndLossWidget->hide(text);
         theUQWidget->hide(text);
+        theRVWidget->hide(text);
     }
 
 }

@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GISTransportNetworkInputWidget.h"
 #include "GeojsonAssetInputWidget.h"
 //#include "InpFileWaterInputWidget.h"
+#include "PipelineNetworkWidget.h"
 
 
 // Qt headers
@@ -75,7 +76,6 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 : MultiComponentR2D(QString("Assets"),parent), visualizationWidget(visWidget)
 {
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Buildings"), this);
-    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("NaturalGasPipelines"), this);
     waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("WaterDistributionNetwork"), this);
     transportNetworkWidget = new SimCenterAppSelection(QString("Regional Transportation Network"), QString("TransportationNetwork"), this);
 
@@ -90,8 +90,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonBuildingAssetInventory);
 
     // Gas pipelines
-    LineAssetInputWidget *csvPipelineInventory = new LineAssetInputWidget(this, visualizationWidget, "Gas Pipelines","Gas Network");
-    gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvPipelineInventory);
+    gasInfrastructureWidget = new PipelineNetworkWidget(visualizationWidget);
 
     // Water networks
     
@@ -132,7 +131,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
 
     this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",gasPipelineWidget);
+    this->addComponent("Gas Network",gasInfrastructureWidget);
     this->addComponent("Water Network",waterNetworkWidget);
     this->addComponent("Transportation Network", transportNetworkWidget);
     this->hideAll();
@@ -148,7 +147,7 @@ AssetsWidget::~AssetsWidget()
 void AssetsWidget::clear(void)
 {
     buildingWidget->clear();
-    gasPipelineWidget->clear();
+    gasInfrastructureWidget->clear();
     waterNetworkWidget->clear();
     transportNetworkWidget->clear();
 }

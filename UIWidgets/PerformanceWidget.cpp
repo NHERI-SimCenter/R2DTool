@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
+#include "RandomVariablesContainer.h"
 
 // Qt headers
 #include <QCheckBox>
@@ -63,10 +64,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-PerformanceWidget::PerformanceWidget(QWidget *parent, RandomVariablesContainer * theRVContainer)
+PerformanceWidget::PerformanceWidget(QWidget *parent)
 : MultiComponentR2D(QString("Performance"),parent)
 {
     waterNetworkWidget = new SimCenterAppSelection(QString("Water Network Modeling"), QString("WaterNetworkModeling"), this);
+
+    auto theRVContainer = RandomVariablesContainer::getInstance();
 
     SimCenterAppWidget *waterNetworkPerfModel = new WaterNetworkPerformanceModel(theRVContainer,this);
     SimCenterAppWidget *noneWidget = new NoneWidget(this);

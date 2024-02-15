@@ -3,7 +3,6 @@
 
 #include <QDialog>
 
-class WorkflowAppWidget;
 class QLineEdit;
 class WorkflowAppWidget;
 

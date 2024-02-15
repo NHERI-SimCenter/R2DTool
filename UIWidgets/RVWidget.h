@@ -1,5 +1,5 @@
-﻿#ifndef AssetsWidget_H
-#define AssetsWidget_H
+#ifndef RVWidget_H
+#define RVWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,30 +36,30 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Stevan Gavrilovic
 
 #include "MultiComponentR2D.h"
 
-class SimCenterAppSelection;
-class VisualizationWidget;
+class RandomVariablesWidget;
+class RandomVariablesContainer;
 
-class AssetsWidget : public  MultiComponentR2D
+class RVWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
 public:
-    explicit AssetsWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~AssetsWidget();
+    explicit RVWidget(QWidget *parent);
+    ~RVWidget();
 
     void clear(void);
 
+    RandomVariablesWidget *getTheOSRARandomVariableWidget() const;
+
 private:
 
-    MultiComponentR2D* gasInfrastructureWidget = nullptr;
-    SimCenterAppSelection* buildingWidget = nullptr;
-    SimCenterAppSelection* waterNetworkWidget = nullptr;
-    SimCenterAppSelection* transportNetworkWidget = nullptr;
-    VisualizationWidget* visualizationWidget = nullptr;
+    RandomVariablesWidget* theOSRARandomVariableWidget = nullptr;
+    RandomVariablesContainer* theRVContainer  = nullptr;
+
 };
 
-#endif // AssetsWidget_H
+#endif // RVWidget_H

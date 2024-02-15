@@ -149,6 +149,11 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/UIWidgets/SimCenterIMWidget.cpp \
             $$PWD/UIWidgets/VerticalScrollingWidget.cpp \
             $$PWD/UIWidgets/WindFieldStation.cpp \
+            $$PWD/UIWidgets/GISGasNetworkInputWidget.cpp \
+            $$PWD/UIWidgets/CSVWellsCaprocksInputWidget.cpp \
+            $$PWD/UIWidgets/GISWellsCaprocksInputWidget.cpp \
+            $$PWD/UIWidgets/CSVAboveGroundGasComponentInputWidget.cpp \
+            $$PWD/UIWidgets/GISAboveGroundGasComponentInputWidget.cpp \
             $$PWD/UIWidgets/GroundMotionTimeHistory.cpp \
             $$PWD/UIWidgets/HazardToAssetWidget.cpp \
             $$PWD/UIWidgets/HazardsWidget.cpp \
@@ -172,6 +177,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/UIWidgets/SimCenterEventRegional.cpp \
             $$PWD/UIWidgets/StructuralModelingWidget.cpp \
             $$PWD/UIWidgets/UQWidget.cpp \
+            $$PWD/UIWidgets/RVWidget.cpp \
             $$PWD/UIWidgets/UserDefinedEDPR.cpp \
             $$PWD/UIWidgets/UserInputGMWidget.cpp \
             $$PWD/UIWidgets/RegionalSiteResponseWidget.cpp \
@@ -286,6 +292,11 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/SimCenterIMWidget.h \
             $$PWD/UIWidgets/VerticalScrollingWidget.h \
             $$PWD/UIWidgets/WindFieldStation.h \
+            $$PWD/UIWidgets/GISGasNetworkInputWidget.h \
+            $$PWD/UIWidgets/CSVWellsCaprocksInputWidget.h \
+            $$PWD/UIWidgets/GISWellsCaprocksInputWidget.h \
+            $$PWD/UIWidgets/CSVAboveGroundGasComponentInputWidget.h \
+            $$PWD/UIWidgets/GISAboveGroundGasComponentInputWidget.h \
             $$PWD/UIWidgets/GroundMotionTimeHistory.h \
             $$PWD/UIWidgets/HazardToAssetWidget.h \
             $$PWD/UIWidgets/HazardsWidget.h \
@@ -309,6 +320,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/SimCenterEventRegional.h \
             $$PWD/UIWidgets/StructuralModelingWidget.h \
             $$PWD/UIWidgets/UQWidget.h \
+            $$PWD/UIWidgets/RVWidget.h \
             $$PWD/UIWidgets/UserDefinedEDPR.h \
             $$PWD/UIWidgets/UserInputGMWidget.h \
             $$PWD/Events/UI/ScenarioSelectionWidget.h \

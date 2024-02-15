@@ -1,10 +1,8 @@
-﻿#ifndef AssetsWidget_H
-#define AssetsWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -28,38 +26,64 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, Frank McKenna
+// Written by: Frank McKenna
 
-#include "MultiComponentR2D.h"
+#include "RandomVariablesWidget.h"
+#include "RandomVariablesContainer.h"
 
-class SimCenterAppSelection;
-class VisualizationWidget;
+#include "SimCenterAppSelection.h"
+#include "RVWidget.h"
 
-class AssetsWidget : public  MultiComponentR2D
+RVWidget::RVWidget(QWidget *parent)
+  : MultiComponentR2D(QString("RV"),parent)
 {
-    Q_OBJECT
 
-public:
-    explicit AssetsWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~AssetsWidget();
+    theRVContainer = RandomVariablesContainer::getInstance();
+    theOSRARandomVariableWidget = new RandomVariablesWidget(this);
 
-    void clear(void);
+    theRVContainer->setObjectName("RVCONTAINER");
+    theOSRARandomVariableWidget->setObjectName("OPENSRA");
 
-private:
+    this->addComponent("Buildings", theRVContainer);
+//    this->addComponent("Water Network", theRVContainer);
+//    this->addComponent("Transportation Network", theRVContainer);
+    this->addComponent("Gas Network",theOSRARandomVariableWidget);
 
-    MultiComponentR2D* gasInfrastructureWidget = nullptr;
-    SimCenterAppSelection* buildingWidget = nullptr;
-    SimCenterAppSelection* waterNetworkWidget = nullptr;
-    SimCenterAppSelection* transportNetworkWidget = nullptr;
-    VisualizationWidget* visualizationWidget = nullptr;
-};
+    this->hideAll();
 
-#endif // AssetsWidget_H
+}
+
+
+RVWidget::~RVWidget()
+{
+
+}
+
+
+void RVWidget::clear(void)
+{
+    theRVContainer->clear();
+    theOSRARandomVariableWidget->clear();
+}
+
+
+
+RandomVariablesWidget *RVWidget::getTheOSRARandomVariableWidget() const
+{
+    return theOSRARandomVariableWidget;
+}
+
+
+
+
+
+
+
