@@ -61,9 +61,25 @@ HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) 
 
     hazCurveWidget = new HazardCurveInputWidget("Generator");
 
-    m_intensityMeasure = new IntensityMeasure(this);
-    auto m_intensityMeasureWidget = new IntensityMeasureWidget(*m_intensityMeasure);
-    m_intensityMeasureWidget->typeBox()->setCurrentIndex(1); // Set to PGA
+//    m_intensityMeasure = new IntensityMeasure(this);
+//    auto m_intensityMeasureWidget = new IntensityMeasureWidget(*m_intensityMeasure);
+//    m_intensityMeasureWidget->typeBox()->setCurrentIndex(1); // Set to PGA
+
+    // Intensity measure type
+    QLabel* imt_label= new QLabel(tr("Intensity measure:"),this);
+    IMT_Combo = new QComboBox(this);
+    IMT_Combo->addItem("PGA");
+    IMT_Combo->addItem("SA");
+    IMT_Combo->setToolTip("Select intensity measure type for the hazard curves");
+
+    // Sa period
+    IMT_period= new QLabel(tr("Hazard curve Sa period:"),this);
+    PeriodEdit = new QLineEdit(this);
+    PeriodEdit->setText("0.0");
+    PeriodEdit->setDisabled(1);
+    PeriodEdit->setStyleSheet("background-color: lightgray");
+    PeriodEdit->setToolTip("Fill in a float number for the period if 'SA' is the intensity measure type");
+
 
     scenarioSampleSizeLE = new SC_IntLineEdit("EarthquakeSampleSize",40);
     gmSampleSizeLE = new SC_IntLineEdit("GroundMotionMapSize",100);
@@ -77,8 +93,13 @@ HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) 
 
     mainLayout->addWidget(DownSamplingAlgoLabel,0,0);
     mainLayout->addWidget(downSamplingCombo,0,1);
-    mainLayout->addWidget(hazCurveWidget,1,0,1,2);
-    mainLayout->addWidget(m_intensityMeasureWidget,2,0,1,2);
+    mainLayout->addWidget(hazCurveWidget,1,0,1,4);
+//    mainLayout->addWidget(m_intensityMeasureWidget,2,0,1,2);
+    mainLayout->addWidget(imt_label,2,0);
+    mainLayout->addWidget(IMT_Combo,2,1,1,1);
+    mainLayout->addWidget(IMT_period,2,2,1,1);
+    mainLayout->addWidget(PeriodEdit,2,3,1,1);
+
     mainLayout->addWidget(scenarioSampleSize_label,3,0);
     mainLayout->addWidget(scenarioSampleSizeLE,3,1);
     mainLayout->addWidget(gmSampleSize_label,4,0);
@@ -86,6 +107,9 @@ HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) 
     mainLayout->addWidget(return_period_label,5,0);
     mainLayout->addWidget(return_periods_lineEdit,5,1);
     mainLayout->setRowStretch(6,1);
+
+    connect(this->IMT_Combo, &QComboBox::currentTextChanged,
+            this, &HazardConsistentScenarioWidget::handleTypeChanged);
 
 }
 
@@ -131,15 +155,17 @@ bool HazardConsistentScenarioWidget::outputToJSON(QJsonObject& obj)
     gmSampleSizeLE->outputToJSON(paramObj);
     hazCurveWidget->outputToJSON(paramObj);
 
-    QJsonObject im;
-    m_intensityMeasure->outputToJSON(im);
+//    QJsonObject im;
+//    m_intensityMeasure->outputToJSON(im);
 
-    paramObj["IntensityMeasure"] = im["Type"];
+//    paramObj["IntensityMeasure"] = im["Type"];
 
-    if (im["Type"]=="PGA")
-        paramObj["Period"] = im["Period"];
-    else
-        paramObj["Periods"] = im["Periods"];
+//    if (im["Type"]=="PGA")
+//        paramObj["Period"] = im["Period"];
+//    else
+//        paramObj["Periods"] = im["Periods"];
+    paramObj.insert("IntensityMeasure", IMT_Combo->currentText());
+    paramObj.insert("Period", PeriodEdit->text().toDouble());
 
     auto rpArr = getRPArray(return_periods_lineEdit->text());
     paramObj["ReturnPeriods"] = rpArr;
@@ -149,3 +175,18 @@ bool HazardConsistentScenarioWidget::outputToJSON(QJsonObject& obj)
     return true;
 }
 
+void HazardConsistentScenarioWidget::handleTypeChanged(const QString &val)
+{
+    if(val.compare("SA") == 0)
+    {
+        PeriodEdit->setEnabled(1);
+        PeriodEdit->setStyleSheet("background-color: white");
+        PeriodEdit->setText("0.1");
+    }
+    else
+    {
+        PeriodEdit->setText("0.0");
+        PeriodEdit->setDisabled(1);
+        PeriodEdit->setStyleSheet("background-color: lightgray");
+    }
+}

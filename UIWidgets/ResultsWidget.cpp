@@ -266,21 +266,41 @@ int ResultsWidget::processResults(QString resultsDirectory)
     QMap<QString, QList<QString>> assetTypeToType;
     QJsonObject crs;
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
+        QString resultData = jsonFile.readAll();
 
-        QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
+	// FMK - placing Nan inside quotes to validate
+	if (resultData.contains(" NaN"))
+	    resultData.replace("NaN", " \"NaN\"");
+	/* ******************************************
+	QFile fileNan(QString(pathGeojson + ".Nan"));
+	if(!fileNan.open(QIODevice::WriteOnly)){
+	  fileNan.close();
+	} else {
+	  QTextStream out(&fileNan); out << resultData;
+	  fileNan.close();
+	}
+	********************************************/
+	
+        QJsonDocument exDoc = QJsonDocument::fromJson(resultData.toUtf8());
         QJsonObject jsonObject = exDoc.object();
 
-        if(jsonObject.contains("crs"))
+        if(jsonObject.contains("crs")) {
             crs = jsonObject["crs"].toObject();
-        QString crsString = crs["properties"].toObject()["name"].toString();
-        QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
-        if (!qgsCRS.isValid()){
-            qgsCRS.createFromOgcWmsCrs(crsString);
-        }
-        if (!qgsCRS.isValid()){
-            QString msg = "The CRS defined in " + pathGeojson + "is invalid and ignored";
-            errorMessage(msg);
-        }
+	    QString crsString = crs["properties"].toObject()["name"].toString();
+	    
+	    QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
+	    if (!qgsCRS.isValid()){
+	      qgsCRS.createFromOgcWmsCrs(crsString);
+	    }
+	    if (!qgsCRS.isValid()){
+	      QString msg = "The CRS (" + crsString + ") defined in " + pathGeojson + " is invalid and ignored";
+	      errorMessage(msg);
+	    }
+	} else {
+	  QString msg = "No CRS info provided in " + pathGeojson;
+	  errorMessage(msg);
+	}
+	
         QJsonArray features = jsonObject["features"].toArray();
         for (const QJsonValue& valueIt : features) {
             QJsonObject value = valueIt.toObject();
@@ -402,12 +422,12 @@ int ResultsWidget::processResults(QString resultsDirectory)
     }
         if (mapLayers.count()>1){
             theVisualizationWidget->createLayerGroup(mapLayers,"Results");
-        } else {
+        } else if (mapLayers.count()==1) {
             mapLayers.at(0)->setName("Results");
         }
         if (DMGLayers.count()>1){
             theVisualizationWidget->createLayerGroup(DMGLayers,"Most Likely Critical Damage State");
-        } else {
+        } else if (DMGLayers.count()==1) {
             DMGLayers.at(0)->setName("Most Likely Critical Damage State");
         }
     }

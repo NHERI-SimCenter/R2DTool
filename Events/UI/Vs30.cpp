@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 Vs30::Vs30(QObject *parent) : QObject(parent)
 {
     this->m_type = "CGS/Wills Vs30 (Wills et al., 2015)";
+    vsInferred = true;
 }
 
 
@@ -62,12 +63,18 @@ bool Vs30::setType(const QString &type)
     return false;
 }
 
+bool Vs30::setInferred(const bool inferred)
+{
+    vsInferred = inferred;
+    return true;
+}
 
 bool Vs30::outputToJSON(QJsonObject &jsonObject)
 {
     jsonObject.insert("Type", m_type);
-    jsonObject.insert("Parameters", QJsonObject());
-
+    QJsonObject isInferred;
+    isInferred.insert("vsInferred", vsInferred);
+    jsonObject.insert("Parameters", isInferred);
     return true;
 }
 
@@ -83,7 +90,8 @@ const QStringList &Vs30::validTypesUser()
     static QStringList validTypes = QStringList()
             << "CGS/Wills Vs30 (Wills et al., 2015)"
             << "Thompson California Vs30 (Thompson et al., 2018)"
-            << "Global Vs30 (Heath et al., 2020)";
+            << "Global Vs30 (Heath et al., 2020)"
+            << "User-specified";
             //<< "National Crustal Model (Boyd et al., 2019)";
 
     return validTypes;
@@ -95,7 +103,8 @@ const QStringList &Vs30::validTypes()
     static QStringList validTypes = QStringList()
             << "CGS/Wills Vs30 (Wills et al., 2015)"
             << "Thompson California Vs30 (Thompson et al., 2018)"
-            << "Global Vs30 (Heath et al., 2020)";
+            << "Global Vs30 (Heath et al., 2020)"
+            << "User-specified";
             //<< "National Crustal Model (Boyd et al., 2019)";
 
     return validTypes;
@@ -105,4 +114,5 @@ const QStringList &Vs30::validTypes()
 void Vs30::reset(void)
 {
     this->m_type = "CGS/Wills Vs30 (Wills et al., 2015)";
+    vsInferred = false;
 }

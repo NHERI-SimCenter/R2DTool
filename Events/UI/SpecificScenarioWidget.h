@@ -39,7 +39,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-
+#include "qjsonobject.h"
+#include "ComponentTableView.h"
+#include "ComponentTableModel.h"
+#include "GMERFWidget.h"
+#include <QFile>
+#include <QList>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QHeaderView>
 class SC_StringLineEdit;
 
 class SpecificScenarioWidget : public SimCenterAppWidget
@@ -47,17 +55,21 @@ class SpecificScenarioWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit SpecificScenarioWidget(QWidget *parent = nullptr);
+    explicit SpecificScenarioWidget(GMERFWidget* gmerf, QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
 
 public slots:
+    bool LoadRupturesTable(QString pathToRuptureFile);
 
 private:
 
+
     SC_StringLineEdit* sourceIDLE = nullptr;
     SC_StringLineEdit* ruptureIDLE = nullptr;
+    ComponentTableView* componentTableWidget = nullptr;
+    QItemSelectionModel *selectionModel;
 
 };
 

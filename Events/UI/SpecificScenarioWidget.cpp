@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGridLayout>
 #include <QLabel>
 
-SpecificScenarioWidget::SpecificScenarioWidget(QWidget *parent) : SimCenterAppWidget(parent)
+SpecificScenarioWidget::SpecificScenarioWidget(GMERFWidget* gmerf, QWidget *parent) : SimCenterAppWidget(parent)
 {
     //We use a grid layout for the Rupture widget
     auto mainLayout = new QGridLayout(this);
@@ -50,16 +50,56 @@ SpecificScenarioWidget::SpecificScenarioWidget(QWidget *parent) : SimCenterAppWi
     auto sourceIDLabel = new QLabel("Source ID");
     auto ruptureIDLabel = new QLabel("Rupture ID");
 
-    sourceIDLE = new SC_StringLineEdit("SourceID");
-    ruptureIDLE = new SC_StringLineEdit("RuptureID");
-
+    sourceIDLE = new SC_StringLineEdit("SourceIndex");
+    ruptureIDLE = new SC_StringLineEdit("RuptureIndex");
+    componentTableWidget = new ComponentTableView();
 
     mainLayout->addWidget(sourceIDLabel,0,0);
     mainLayout->addWidget(sourceIDLE,0,1);
     mainLayout->addWidget(ruptureIDLabel,1,0);
     mainLayout->addWidget(ruptureIDLE,1,1);
+    mainLayout->addWidget(componentTableWidget,2, 0, 1,3);
+    mainLayout->setRowStretch(3, 1);
+    mainLayout->setColumnStretch(2,1);
+//    mainLayout->setRowStretch(4,1);
+    // If gmerf emit a rupture load done, load the rupture to the component table
+    connect(gmerf, SIGNAL(ruptureFileReady(QString)), this, SLOT(LoadRupturesTable(QString)));
 
-    mainLayout->setRowStretch(2, 1);
+    componentTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    componentTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    selectionModel = componentTableWidget->selectionModel();
+    // Update sourceIDLE and ruptureIDLE based on selection on componentTableWidget
+    QObject::connect(selectionModel, &QItemSelectionModel::selectionChanged, [&]() {
+        QStringList tableHeaders = componentTableWidget->getTableModel()->getHeaderStringList();
+        int rupColIndex = 0;
+        int srcColIndex = 0;
+        for (int i = 0; i < tableHeaders.size(); ++i) {
+            if (tableHeaders[i]=="Rupture") {
+                rupColIndex = i;
+            }
+            if (tableHeaders[i]=="Source"){
+                srcColIndex = i;
+            }
+        }
+        int rupID;
+        int srcID;
+        if (!selectionModel->hasSelection()){
+            return;
+        }
+        QModelIndexList indices = selectionModel->selectedIndexes();
+        if (indices.size()<1){
+            return;
+        }
+        QModelIndex firstIndex = indices[0];
+        int row = firstIndex.row();
+        rupID = (componentTableWidget->item(row, rupColIndex)).toInt();
+        srcID = (componentTableWidget->item(row, srcColIndex)).toInt();
+//        qDebug() <<"row: "<<row;
+//        qDebug() <<"rupColIndex: "<<rupColIndex<<" rupID: "<<rupID;
+//        qDebug() <<"srcColIndex: "<<srcColIndex<<" srcID: "<<srcID;
+        sourceIDLE->setText(QString::number(srcID));
+        ruptureIDLE->setText(QString::number(rupID));
+    });
 }
 
 
@@ -69,12 +109,55 @@ bool SpecificScenarioWidget::inputFromJSON(QJsonObject& /*obj*/)
     return true;
 }
 
+bool SpecificScenarioWidget::LoadRupturesTable(QString pathToRuptureFile){
+    QFile jsonFile(pathToRuptureFile);
+    if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)){
+        QString text = jsonFile.readAll();
+        QJsonDocument exDoc = QJsonDocument::fromJson(text.toUtf8());
+        QJsonObject jsonObject = exDoc.object();
+        QJsonArray features = jsonObject["features"].toArray();
+        QVector<QStringList> data;
+        if (features.size()<1){
+            return false;
+        }
+        QJsonObject firstFeat = features[0].toObject();
+        QJsonObject firstProp = firstFeat["properties"].toObject();
+        QStringList keys = firstProp.keys();
+        int index = 1; // rupture index starts from 1 to be consistent with QGIS attribute table
+        for (const QJsonValue& valueIt : features) {
+            QJsonObject feat = valueIt.toObject();
+            QJsonObject prop = feat["properties"].toObject();
+            QStringList row;
+            row.append(QString::number(index));
+            index++;
+            for (const QString& key:keys){
+                QString value = prop[key].toVariant().toString();
+                if (value == ""){
+                    QJsonDocument jsonDoc(prop[key].toObject());
+                    if (jsonDoc.toJson()!="{\n}\n"){
+                        value = jsonDoc.toJson(QJsonDocument::Compact);
+                    }
+                }
+                row.append(value);
+            }
+            data.append(row);
+        }
+        keys.prepend("index");
+        componentTableWidget->getTableModel()->populateData(data, keys);
+        componentTableWidget->show();
+        componentTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+
+    }
+    return true;
+}
+
 
 bool SpecificScenarioWidget::outputToJSON(QJsonObject& obj)
 {
 
     ruptureIDLE->outputToJSON(obj);
     sourceIDLE->outputToJSON(obj);
+    obj.insert("method", "ScenarioSpecific");
 
     return true;
 }

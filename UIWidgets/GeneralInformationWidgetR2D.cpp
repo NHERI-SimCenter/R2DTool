@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "GeneralInformationWidgetR2D.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 #include "SimCenterPreferences.h"
 #include "SimCenterUnitsCombo.h"
 
@@ -350,3 +350,4 @@ void GeneralInformationWidgetR2D::clear(void)
     AIMCheckBox->setChecked(false);
     IMCheckBox->setChecked(false);
 }
+

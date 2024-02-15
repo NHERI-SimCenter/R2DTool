@@ -143,11 +143,11 @@ GMWidget::GMWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCen
 
     // Create the earthquake rupture forecast widget
     erfWidget = new GMERFWidget(theVisualizationWidget, m_appConfig,"Scenario");
-    theTabWidget->addTab(erfWidget, "Earthquake Rupture Forecasting");
+    theTabWidget->addTab(erfWidget, "Earthquake Rupture");
 
 //    erfWidget->processRuptureScenarioResults();
 
-    scenarioSelectWidget = new ScenarioSelectionWidget("Generator");
+    scenarioSelectWidget = new ScenarioSelectionWidget("Generator", erfWidget);
     theTabWidget->addTab(scenarioSelectWidget, "Scenario Selection");
 
     groundMotionModelsWidget = new GroundMotionModelsWidget();
@@ -156,7 +156,7 @@ GMWidget::GMWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCen
     QWidget *imWidget = new QWidget();
     QVBoxLayout *imLayout=new QVBoxLayout();
     imLayout->addWidget(m_selectionWidget);
-    imLayout->addWidget(m_eventGMDir);
+//    imLayout->addWidget(m_eventGMDir);
     imLayout->addLayout(buttonsLayout);
     imLayout->addStretch();
     
@@ -623,6 +623,7 @@ void GMWidget::runHazardSimulation(void)
 
     auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
     auto pathToOutputDir = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+    auto pathToWorkDir = m_appConfig->getWorkDirectoryPath() + QDir::separator();
 
     //TODO: Check to see if the scenario SIM ran before this!!
     // Get the previous scenario object
@@ -633,7 +634,7 @@ void GMWidget::runHazardSimulation(void)
         return;
     }
 
-    auto pathToRupFile = pathToOutputDir+"Output" + QDir::separator() + "RupFile.geojson";
+    auto pathToRupFile = pathToOutputDir + "RupFile.geojson";
     if(!QFile::exists(pathToRupFile))
     {
         this->errorMessage("Missing the earthquake ruptures (RupFile.geojson). Please run rupture scenarios first");
@@ -641,24 +642,17 @@ void GMWidget::runHazardSimulation(void)
     }
 
 
-    auto pathToSiteModelFile = pathToOutputDir+"Input" + QDir::separator() + "OpenQuakeSiteModel.csv";
+    auto pathToSiteModelFile = pathToInputDir + "SimCenterSiteModel.csv";
     if(!QFile::exists(pathToSiteModelFile))
     {
-        this->errorMessage("Missing the earthquake site model file (OpenQuakeSiteModel.csv). Please run rupture scenarios first");
+        this->errorMessage("Missing the earthquake site model file (SimCenterSiteModel.csv). Please run rupture scenarios first");
         return;
     }
 
 
-    // kz: only contact PEER NGA when the databse is set to "NGA West"
-    if(this->m_selectionconfig->getDatabase().compare("NGAWest2")==0) {
-        QString userName = getPEERUserName();
-        QString password = getPEERPassWord();
-        peerClient.signIn(userName, password);
-    }
-
     QJsonObject configFile;
 
-    configFile["Directory"] = pathToOutputDir;
+    configFile["Directory"] = pathToWorkDir;
     QJsonObject siteObj;
     siteObj["siteFile"] = pathToSiteModelFile;
     configFile["Site"] = siteObj;
@@ -675,6 +669,15 @@ void GMWidget::runHazardSimulation(void)
     // Some hardcoded things
     eventObj["SaveIM"]=true;
     eventObj["OutputFormat"]="SimCenterEvent";
+
+
+    // kz: only contact PEER NGA when the databse is set to "NGA West"
+    if(this->m_selectionconfig->getDatabase().compare("NGAWest2")==0) {
+        QString userName = getPEERUserName();
+        QString password = getPEERPassWord();
+        peerClient.signIn(userName, password);
+//        eventObj["Database"] = "NGAWest2";
+    }
 
     configFile["Event"]=eventObj;
 
@@ -708,7 +711,7 @@ void GMWidget::runHazardSimulation(void)
 
     QString scriptPath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
                          + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-                         + "regionalGroundMotion" + QDir::separator() + "HazardSimulation.py";
+                         + "regionalGroundMotion" + QDir::separator() + "HazardSimulationEQ.py";
 
 
     QStringList scriptArgs;
@@ -1445,6 +1448,7 @@ bool GMWidget::getSimulationStatus()
 void GMWidget::runScenarioForecast(void)
 {
 
+    QString sitefile = "";
     // Get the type of site definition, i.e., single or grid
     auto type = siteWidget->siteConfig()->getType();
 
@@ -1457,16 +1461,15 @@ void GMWidget::runScenarioForecast(void)
         {
             QString msg = "Please set the latitude and longitude in the Sites panel";
             this->infoMessage(msg);
+            return;
         }
-
-        return;
     }
     else if(type == SiteConfig::SiteType::Grid)
     {
         if(!siteWidget->siteConfigWidget()->getSiteGridWidget()->getGridCreated())
         {
             QString msg = "Please select a grid before continuing in the Sites panel";
-            this->statusMessage(msg);
+            this->errorMessage(msg);
             return;
         }
     }
@@ -1475,27 +1478,42 @@ void GMWidget::runScenarioForecast(void)
         if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->siteFileExists())
         {
             QString msg = "Please choose a site file before continuing in the Sites panel";
-            this->statusMessage(msg);
+            this->errorMessage(msg);
+            return;
+        }
+    }
+    else if(type == SiteConfig::SiteType::UserCSV)
+    {
+        sitefile = siteWidget->siteConfigWidget()->getCsvSiteWidget()->getPathToComponentFile();
+        QFileInfo fileInfo;
+        if(!fileInfo.exists(sitefile)){
+            QString msg = "Please choose a site file before continuing in the Sites panel";
+            this->errorMessage(msg);
             return;
         }
     }
 
 
-    auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
+    auto pathToInputDir = m_appConfig->getInputDirectoryPath();
+    auto pathToOutputDir = m_appConfig->getOutputDirectoryPath();
+    QDir inputDir(pathToInputDir);
+    inputDir.removeRecursively();
+    QDir outputDir(pathToOutputDir);
+    outputDir.removeRecursively();
 
-    // Remove old csv files in the output folder
-    const QFileInfo existingFilesInfo(pathToInputDir);
+//    // Remove old csv files in the output folder
+//    const QFileInfo existingFilesInfo(pathToInputDir);
 
-    // Get the existing files in the folder to see if we already have the record
-    QStringList acceptableFileExtensions = {"*.csv", "EQScenarioConfiguration.json"};
-    QStringList existingCSVFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+//    // Get the existing files in the folder to see if we already have the record
+//    QStringList acceptableFileExtensions = {"*.csv", "EQScenarioConfiguration.json"};
+//    QStringList existingCSVFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
 
-    // Remove the csv files - in case we have less sites that previous and they are not overwritten
-    for(auto&& it : existingCSVFiles)
-    {
-        QFile file(pathToInputDir + it);
-        file.remove();
-    }
+//    // Remove the csv files - in case we have less sites that previous and they are not overwritten
+//    for(auto&& it : existingCSVFiles)
+//    {
+//        QFile file(pathToInputDir + it);
+//        file.remove();
+//    }
 
 
     // Remove the grid from the visualization screen
@@ -1513,33 +1531,28 @@ void GMWidget::runScenarioForecast(void)
     //int maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
     int minID = 0;
     int maxID = 1;
+    QString filter = QString::number(minID) + "-" + QString::number(maxID);
     if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Grid)
     {
         maxID = siteWidget->siteConfig()->siteGrid().getNumSites() - 1;
+        filter = QString::number(minID) + "-" + QString::number(maxID);
     }
-    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::Scatter)
+    else if(siteWidget->siteConfig()->getType() == SiteConfig::SiteType::UserCSV)
     {
-        minID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMinID();
-        maxID = siteWidget->siteConfigWidget()->getSiteScatterWidget()->getMaxID();
+        filter = siteWidget->siteConfigWidget()->getFilter();
     }
 
 
-    QString pathToSiteLocationFile = pathToInputDir + QDir::separator() + "SiteFile.csv";
-
-    QJsonObject siteObj;
-    siteObj.insert("Type", "From_CSV");
-    siteObj.insert("input_file", pathToSiteLocationFile);
-    siteObj.insert("min_ID", minID);
-    siteObj.insert("max_ID", maxID);
-
-    // Get the vs 30
-    siteWidget->outputToJson(siteObj);
-    // add an output_file field for preparing OpenQuake site model
-    siteObj.insert("output_file", "OpenQuakeSiteModel.csv");
-
-    if(type == SiteConfig::SiteType::Scatter)
+    QString pathToSiteLocationFile;
+    if(type == SiteConfig::SiteType::UserCSV)
     {
-        if(!siteWidget->siteConfigWidget()->getSiteScatterWidget()->copySiteFile(pathToInputDir))
+        QFileInfo siteFileInfo(sitefile);
+        pathToSiteLocationFile = pathToInputDir + QDir::separator() + siteFileInfo.fileName();
+        QFile siteFileWorkDir(pathToSiteLocationFile);
+        if(siteFileWorkDir.exists()){
+            siteFileWorkDir.remove();
+        }
+        if(!QFile::copy(siteFileInfo.absoluteFilePath(), pathToSiteLocationFile))
         {
             this->errorMessage("Error copying site file to inputput directory");
             return;
@@ -1547,6 +1560,7 @@ void GMWidget::runScenarioForecast(void)
     }
     else
     {
+        pathToSiteLocationFile = pathToInputDir + QDir::separator() + "SiteFile.csv";
         QVector<QStringList> gridData;
 
         if(type == SiteConfig::SiteType::Single)
@@ -1563,6 +1577,15 @@ void GMWidget::runScenarioForecast(void)
             return;
         }
     }
+
+    QJsonObject siteObj;
+    siteObj.insert("Type", "From_CSV");
+    siteObj.insert("input_file", pathToSiteLocationFile);
+    siteObj.insert("filter", filter);
+    // Get the vs 30
+    siteWidget->outputToJson(siteObj);
+    // add an output_file field for preparing OpenQuake site model
+    siteObj.insert("output_file", "SimCenterSiteModel.csv");
 
 
     erfWidget->run_button_pressed(siteObj);

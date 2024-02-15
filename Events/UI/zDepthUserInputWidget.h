@@ -46,8 +46,8 @@ class zDepthUserInputWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit zDepthUserInputWidget(QWidget *parent = nullptr);
-
+    explicit zDepthUserInputWidget(QString type, QWidget *parent = nullptr);
+    double getValue();
 
 signals:
 

@@ -50,7 +50,7 @@ public:
     explicit PointSourceRuptureWidget(QWidget *parent = nullptr, Qt::Orientation orientation = Qt::Horizontal);
 
     void setLocation(const double latitude, const double longitude);
-
+    bool outputToJSON(QJsonObject &jsonObject);
     PointSourceRupture* getRuptureSource() const;
 
 private:

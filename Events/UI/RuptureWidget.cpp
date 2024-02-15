@@ -52,7 +52,7 @@ RuptureWidget::RuptureWidget(QString jsonKey, QWidget *parent) : SimCenterAppSel
     this->setContentsMargins(0,0,0,0);
 
     ucerfWidget = new UCERF2Widget();
-    meanUcerfWidget = new MeanUCERFWidget("ModelType");
+    meanUcerfWidget = new MeanUCERFWidget("ModelParameters");
 
     ucerfWidget->setObjectName("WGCEP (2007) UCERF2 - Single Branch");
     meanUcerfWidget->setObjectName("Mean UCERF3");
@@ -60,7 +60,7 @@ RuptureWidget::RuptureWidget(QString jsonKey, QWidget *parent) : SimCenterAppSel
     this->addComponent(ucerfWidget->objectName(),"UCERF2",ucerfWidget);
     this->addComponent(meanUcerfWidget->objectName(),"MEANUCERF2",meanUcerfWidget);
 
-    auto maxDistLabel = new QLabel("Maximum Distance [km]");
+    auto maxDistLabel = new QLabel("Maximum Distance (km)");
     auto maxMagLabel= new QLabel("Maximum Magnitude");
     auto minMagLabel= new QLabel("Minimum Magnitude");
 

@@ -39,6 +39,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "qjsonobject.h"
+#include "ComponentTableView.h"
+#include "ComponentTableModel.h"
+#include "GMERFWidget.h"
+#include <QFile>
+#include <QList>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QHeaderView>
 
 class AssetInputDelegate;
 
@@ -47,17 +56,61 @@ class ConventionalScenarioWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit ConventionalScenarioWidget(QWidget *parent = nullptr);
+    explicit ConventionalScenarioWidget(GMERFWidget* gmerf, QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
 
 
 public slots:
+    bool LoadRupturesTable(QString pathToRuptureFile);
 
+protected slots:
+    void selectComponents(void);
 private:
 
     AssetInputDelegate* ruptureLineEdit = nullptr;
+    ComponentTableView* componentTableWidget = nullptr;
+    QItemSelectionModel *selectionModel;
+    // A function to convert the selected indices to filter string
+    QString convertToFirstLast(const QVector<int>& sequence) {
+        if (sequence.isEmpty()) {
+            return "Sequence is empty.";
+        }
+        QString result;
+        int start = sequence.first();
+        int end = sequence.first();
+        for (int i = 1; i < sequence.size(); ++i) {
+            if (sequence.at(i) == end + 1) {
+                // Current number is consecutive to the previous one
+                end = sequence.at(i);
+            } else {
+                // Current number is not consecutive
+                if (!result.isEmpty()) {
+                    result += ", ";
+                }
+                if (start == end) {
+                    // Only one number in the range
+                    result += QString::number(start);
+                } else {
+                    // Range of consecutive numbers
+                    result += QString::number(start) + "-" + QString::number(end);
+                }
+                // Start a new range
+                start = end = sequence.at(i);
+            }
+        }
+        // Append the last range
+        if (!result.isEmpty()) {
+            result += ", ";
+        }
+        if (start == end) {
+            result += QString::number(start);
+        } else {
+            result += QString::number(start) + "-" + QString::number(end);
+        }
+        return result;
+    }
 
 };
 

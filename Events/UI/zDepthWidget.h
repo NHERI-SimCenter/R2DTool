@@ -39,6 +39,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include <QWidget>
+#include "zDepthUserInputWidget.h"
+#include "JsonSerializable.h"
 
 class QComboBox;
 class QStackedWidget;
@@ -48,6 +50,7 @@ class zDepthWidget : public QWidget
     Q_OBJECT
 public:
     explicit zDepthWidget(QString type, QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
 signals:
 
@@ -57,6 +60,7 @@ private:
     QComboBox* m_z1Combo = nullptr;
     QStackedWidget* z1StackedWidget = nullptr;
     QString type;
+    zDepthUserInputWidget* userInputZ1;
 };
 
 #endif // zDepthWidget_H

@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterAppSelection.h"
+#include "GMERFWidget.h"
 
 class QComboBox;
 class QStackedWidget;
@@ -52,7 +53,7 @@ class ScenarioSelectionWidget : public SimCenterAppSelection
     Q_OBJECT
 
 public:
-    explicit ScenarioSelectionWidget(QString jsonKey, QWidget *parent = nullptr);
+    explicit ScenarioSelectionWidget(QString jsonKey, GMERFWidget* gmerf, QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);

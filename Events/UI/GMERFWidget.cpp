@@ -75,8 +75,8 @@ GMERFWidget::GMERFWidget(QGISVisualizationWidget* visWidget, GmAppConfig* appCon
 
     this->addComponent("OpenSHA ERF","OpenSHAEQ", ERFruptureWidget);
     this->addComponent("Point Source","PointEQ", pointSourceWidget);
-    this->addComponent("OpenQuake Source Model","OpenQSource", oqcpuWidget);
-    this->addComponent("OpenQuake Scenario-based","OpenQScenario", oqsbWidget);
+//    this->addComponent("OpenQuake Source Model","OpenQSource", oqcpuWidget);
+    this->addComponent("OpenQuake ERF","OpenQScenario", oqsbWidget);
     //    theStackedWidget->addWidget(oqcpWidget);
     //    theStackedWidget->addWidget(hoWidget);
 
@@ -134,11 +134,27 @@ void GMERFWidget::run_button_pressed(const QJsonObject& siteObj)
 
     auto pathToInputDir = m_appConfig->getInputDirectoryPath() + QDir::separator();
     auto pathToOutputDir = m_appConfig->getOutputDirectoryPath() + QDir::separator();
+    auto workDir = m_appConfig->getWorkDirectoryPath() + QDir::separator();
 
-    configFile["Directory"] = pathToOutputDir;
+    if (this->getCurrentComboName() == "OpenQuake ERF"){
+        QString providedSourceFilePath = oqsbWidget->getRupFile();
+        QFileInfo providedSourceFileInfo(providedSourceFilePath);
+        QString pathToCopiedSourceFile = pathToInputDir + providedSourceFileInfo.fileName();
+        QFile copiedSourceFile(pathToCopiedSourceFile);
+        if(copiedSourceFile.exists()){
+            copiedSourceFile.remove();
+        }
+        if(!QFile::copy(providedSourceFileInfo.absoluteFilePath(), pathToCopiedSourceFile)){
+            this->errorMessage("Error copying OpenQuake Source file to inputput directory");
+            return;
+        }
+
+    }
+
+    configFile["Directory"] = workDir;
 
     // Assemble the path and save the config file
-    QString pathToConfigFile = pathToInputDir + QDir::separator() + "EQScenarioConfiguration.json";
+    QString pathToConfigFile = pathToInputDir  + "EQScenarioConfiguration.json";
 
     QFile file(pathToConfigFile);
 
@@ -207,11 +223,10 @@ void GMERFWidget::clear(void)
 
 void GMERFWidget::processRuptureScenarioResults(void)
 {
-    auto pathToRupturesFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + "Output" + QDir::separator() + "RupFile.geojson";
-
+    auto pathToRupturesFile = m_appConfig->getOutputDirectoryPath() + QDir::separator() + "RupFile.geojson";
     if(!QFile::exists(pathToRupturesFile))
     {
-        this->errorMessage("Error, could not find the rupture files");
+        this->errorMessage("Error, could not find the rupture file " + pathToRupturesFile);
         return;
     }
 
@@ -231,4 +246,7 @@ void GMERFWidget::processRuptureScenarioResults(void)
     auto numFeat = mainLayer->featureCount();
 
     this->infoMessage("Loaded "+QString::number(numFeat)+" ruptures ");
+
+    // emit the ruptureFileReady signal for scenario selection widget to load tables
+    emit ruptureFileReady(pathToRupturesFile);
 }

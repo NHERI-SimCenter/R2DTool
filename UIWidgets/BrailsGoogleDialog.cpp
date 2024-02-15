@@ -81,6 +81,7 @@ BrailsGoogleDialog::startBrails(void){
 	     << QString("--latMax")  << QString::number(brailsData.maxLat)
 	     << QString("--longMin") << QString::number(brailsData.minLong)
 	     << QString("--longMax") << QString::number(brailsData.maxLong)
+	     << QString("--lengthUnit") << brailsData.units 
 	     << QString("--seed")    << QString::number(seed->getInt())
 	     << "--numBuildings" << QString::number(numBuildings->getInt())
 	     << "--googKey" << apiKey->text()

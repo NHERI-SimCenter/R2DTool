@@ -290,8 +290,8 @@ bool GeojsonAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     QString fileName;
 
-    if (appData.contains("assetFile")){
-        fileName = appData["assetFile"].toString();
+    if (appData.contains("assetSourceFile")){
+        fileName = appData["assetSourceFile"].toString();
     }
 
     QFileInfo fileInfo(fileName);
@@ -403,7 +403,8 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
     QJsonObject crs;
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
 
-        QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
+        QString data = jsonFile.readAll();
+        QJsonDocument exDoc = QJsonDocument::fromJson(data.toUtf8());
         QJsonObject jsonObject = exDoc.object();
 
         if(jsonObject.contains("crs"))
@@ -414,7 +415,7 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
             qgsCRS.createFromOgcWmsCrs(crsString);
         }
         if (!qgsCRS.isValid()){
-            QString msg = "The CRS defined in " + pathGeojson + "is invalid and ignored";
+            QString msg = "The CRS: " + crsString + " defined in " + pathGeojson + " is invalid and ignored";
             errorMessage(msg);
         }
         crsSelectorWidget->setCRS(qgsCRS);
