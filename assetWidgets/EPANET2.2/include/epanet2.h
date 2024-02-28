@@ -36,19 +36,9 @@ function in epanet2_2.h.
   #define EN_API_FLOAT_TYPE float
 #endif
 
-#ifndef DLLEXPORT
-  #ifdef _WIN32
-    #ifdef epanet2_EXPORTS
-      #define DLLEXPORT __declspec(dllexport) __stdcall
-    #else
-      #define DLLEXPORT __declspec(dllimport) __stdcall
-    #endif
-  #elif defined(__CYGWIN__)
-    #define DLLEXPORT __stdcall
-  #else
-    #define DLLEXPORT
-  #endif
-#endif
+
+#define DLLEXPORT //__declspec(dllimport) __stdcall
+
 
 #include "epanet2_enums.h"
 

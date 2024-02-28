@@ -1,5 +1,5 @@
-#ifndef REWET_RECOVERY_H
-#define REWET_RECOVERY_H
+#ifndef SimCenterTimeIntLineEdit_H
+#define SimCenterTimeIntLineEdit_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -37,76 +37,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: fmk, Sina Naeimi
+// Written: Sina Naeimi
 
-#include <SimCenterAppWidget.h>
+#include <SC_IntLineEdit.h>
 
-
-class SC_FileEdit;
-class SC_DoubleLineEdit;
-class SC_IntLineEdit;
-class SC_ComboBox;
-class SC_CheckBox;
-class SC_IntLineEdit;
-class SC_TableEdit;
-class QRadioButton;
-
-
-class RewetRecovery : public SimCenterAppWidget
-{
-public:
-    RewetRecovery(QWidget *parent = 0);
-    ~RewetRecovery();
-
-    bool inputFromJSON(QJsonObject &rvObject);
-    bool outputToJSON(QJsonObject &rvObject);  
-    bool outputAppDataToJSON(QJsonObject &rvObject);
-    bool inputAppDataFromJSON(QJsonObject &rvObject);
-    bool copyFiles(QString &dirName);
-
-signals:
-
-public slots:
-   void clear(void);
-
-private:
-
-  // simulation
-  SC_IntLineEdit *simulationTime;
-  SC_IntLineEdit *simulationTimeStep;
-  SC_CheckBox        *lastTerminationCheckBox;
-  SC_CheckBox        *demandMetTerminationCheckBox;
-  SC_IntLineEdit *demandMetTerminationTimeWindow;
-  SC_DoubleLineEdit  *demandMetCriteriaRatio;
-
-  // hydraulics
-  // Solver GroupBox
-  //SC_ComboBox *solver;
-  SC_DoubleLineEdit *solverPDARequired;
-  SC_ComboBox *solverSelection;
-  SC_DoubleLineEdit *solverPDAMin;
-  // damage Modeling GroupBox
-  SC_TableEdit *pipeDamageModelingTable;
-  SC_TableEdit *nodeDamageModelingTable;
-
-  // restoration
-  SC_CheckBox *restorationOnCheckBox;
-  SC_FileEdit *policyDefinitionFile;
-  SC_IntLineEdit *minimumJobTimeLineEdit;
-  QRadioButton *pipeLeakBasedRadioButton;
-  QRadioButton *pipeTimeBasedRadioButton;
-  SC_DoubleLineEdit *pipeDiscoveryLeakAmountLineEdit;
-  SC_IntLineEdit *pipeDiscoveryTimeWindowLineEdit;
-  SC_TableEdit *pipeTimeBasedDiscoveryTable;
-  QRadioButton *nodeLeakBasedRadioButton;
-  QRadioButton *nodeTimeBasedRadioButton;
-  SC_DoubleLineEdit *nodeDiscoveryLeakAmountLineEdit;
-  SC_IntLineEdit *nodeDiscoveryTimeWindowLineEdit;
-  SC_TableEdit *nodeTimeBasedDiscoveryTable;
-  SC_TableEdit *tankTimeBasedDiscoveryTable;
-  SC_TableEdit *pumpTimeBasedDiscoveryTable;
-
+class SC_intLineEdit : public SC_IntLineEdit{
+   public:
+   SC_intLineEdit(QString key, int initValue);
+   SC_intLineEdit(QString key, int initValue, QString toolTip);
+   ~SC_intLineEdit();
+   
+   private:
+   QString key;
 };
 
-
-#endif // REWET_RECOVERY_H
+#endif // SimCenterTimeIntLineEdit_H

@@ -1,6 +1,3 @@
-#ifndef REWET_RECOVERY_H
-#define REWET_RECOVERY_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,77 +33,38 @@ PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
+// Written: Sina Naeimi
 
-// Written: fmk, Sina Naeimi
+#include <QJsonObject>
+#include <QIntValidator>
 
-#include <SimCenterAppWidget.h>
+#include <SC_IntLineEdit.h>
+#include "SC_intLineEdit.h"
 
-
-class SC_FileEdit;
-class SC_DoubleLineEdit;
-class SC_IntLineEdit;
-class SC_ComboBox;
-class SC_CheckBox;
-class SC_IntLineEdit;
-class SC_TableEdit;
-class QRadioButton;
-
-
-class RewetRecovery : public SimCenterAppWidget
+SC_intLineEdit::SC_intLineEdit(QString theKey, int initValue)
+  :SC_IntLineEdit(theKey, initValue)
 {
-public:
-    RewetRecovery(QWidget *parent = 0);
-    ~RewetRecovery();
+  QIntValidator* theValidator = new QIntValidator(0, 2147483647);
+  this->setValidator(theValidator);
+  
+  key = theKey;
+  this->setText(QString::number(initValue));
 
-    bool inputFromJSON(QJsonObject &rvObject);
-    bool outputToJSON(QJsonObject &rvObject);  
-    bool outputAppDataToJSON(QJsonObject &rvObject);
-    bool inputAppDataFromJSON(QJsonObject &rvObject);
-    bool copyFiles(QString &dirName);
-
-signals:
-
-public slots:
-   void clear(void);
-
-private:
-
-  // simulation
-  SC_IntLineEdit *simulationTime;
-  SC_IntLineEdit *simulationTimeStep;
-  SC_CheckBox        *lastTerminationCheckBox;
-  SC_CheckBox        *demandMetTerminationCheckBox;
-  SC_IntLineEdit *demandMetTerminationTimeWindow;
-  SC_DoubleLineEdit  *demandMetCriteriaRatio;
-
-  // hydraulics
-  // Solver GroupBox
-  //SC_ComboBox *solver;
-  SC_DoubleLineEdit *solverPDARequired;
-  SC_ComboBox *solverSelection;
-  SC_DoubleLineEdit *solverPDAMin;
-  // damage Modeling GroupBox
-  SC_TableEdit *pipeDamageModelingTable;
-  SC_TableEdit *nodeDamageModelingTable;
-
-  // restoration
-  SC_CheckBox *restorationOnCheckBox;
-  SC_FileEdit *policyDefinitionFile;
-  SC_IntLineEdit *minimumJobTimeLineEdit;
-  QRadioButton *pipeLeakBasedRadioButton;
-  QRadioButton *pipeTimeBasedRadioButton;
-  SC_DoubleLineEdit *pipeDiscoveryLeakAmountLineEdit;
-  SC_IntLineEdit *pipeDiscoveryTimeWindowLineEdit;
-  SC_TableEdit *pipeTimeBasedDiscoveryTable;
-  QRadioButton *nodeLeakBasedRadioButton;
-  QRadioButton *nodeTimeBasedRadioButton;
-  SC_DoubleLineEdit *nodeDiscoveryLeakAmountLineEdit;
-  SC_IntLineEdit *nodeDiscoveryTimeWindowLineEdit;
-  SC_TableEdit *nodeTimeBasedDiscoveryTable;
-  SC_TableEdit *tankTimeBasedDiscoveryTable;
-  SC_TableEdit *pumpTimeBasedDiscoveryTable;
-
-};
+  this->setMaximumWidth(200);
+}
 
 
-#endif // REWET_RECOVERY_H
+SC_intLineEdit::SC_intLineEdit(QString theKey, int initValue, QString toolTip)
+  :SC_IntLineEdit(theKey, initValue, toolTip)
+{
+  QIntValidator* theValidator = new QIntValidator(0, 2147483647);
+  this->setValidator(theValidator);
+  
+  key = theKey;
+  this->setText(QString::number(initValue));
+}
+
+SC_intLineEdit::~SC_intLineEdit()
+{
+
+}
