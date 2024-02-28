@@ -37,7 +37,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk, Stevan Gavrilovic
+// Written by: Barbaros Cetiner, Frank McKenna, Stevan Gavrilovic
+
 #include "SimCenterAppWidget.h"
 
 class SimCenterMapcanvasWidget;
@@ -54,6 +55,9 @@ typedef struct BrailsDataStruct {
   double maxLat;
   double minLong;
   double maxLong;
+  QString locationStr;
+  QString fpSource;
+  QString fpSourceAttrMap;
   QString outputFile;
   QString imageSource;
   QString imputationAlgo;
@@ -86,8 +90,21 @@ private:
   
   SC_ComboBox *units;  
   SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
+<<<<<<< Updated upstream
   SC_FileEdit *theOutputFile;
   GIS_Selection *theSelectionWidget;  
+=======
+  QLabel* regionNameLabel;
+  QLineEdit *locationName, *locationStr;
+  QLabel* regionGeojsonLabel;
+  QLineEdit *regionGeojson;
+  QPushButton* browseGeojsonButton;
+  SC_ComboBox *footprintSource;
+  SC_ComboBox *baselineInvSelection;
+  SC_ComboBox *attributeSelected;
+  SC_FileEdit *theOutputFile, *fpGeojsonFile, *fpAttrGeojsonFile, *invGeojsonFile, *invAttrGeojsonFile;
+  GIS_Selection *theSelectionWidget;
+>>>>>>> Stashed changes
 
   QString imageSource;
   QString imputationAlgo;
