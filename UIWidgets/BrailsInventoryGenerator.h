@@ -45,7 +45,10 @@ class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
 class VisualizationWidget;
 class GIS_Selection;
+class QLabel;
 class SC_DoubleLineEdit;
+class QLineEdit;
+class QPushButton;
 class SC_FileEdit;
 class SC_ComboBox;
 class BrailsGoogleDialog;
@@ -61,7 +64,8 @@ typedef struct BrailsDataStruct {
   QString outputFile;
   QString imageSource;
   QString imputationAlgo;
-  QString units;      
+  QString units;
+  QString location;
 } BrailsData;
 
 
@@ -88,12 +92,9 @@ private:
   std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
   QGISVisualizationWidget* theVisualizationWidget = nullptr;
   
-  SC_ComboBox *units;  
+  SC_ComboBox *units;
+  SC_ComboBox *location;
   SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
-<<<<<<< Updated upstream
-  SC_FileEdit *theOutputFile;
-  GIS_Selection *theSelectionWidget;  
-=======
   QLabel* regionNameLabel;
   QLineEdit *locationName, *locationStr;
   QLabel* regionGeojsonLabel;
@@ -104,7 +105,6 @@ private:
   SC_ComboBox *attributeSelected;
   SC_FileEdit *theOutputFile, *fpGeojsonFile, *fpAttrGeojsonFile, *invGeojsonFile, *invAttrGeojsonFile;
   GIS_Selection *theSelectionWidget;
->>>>>>> Stashed changes
 
   QString imageSource;
   QString imputationAlgo;

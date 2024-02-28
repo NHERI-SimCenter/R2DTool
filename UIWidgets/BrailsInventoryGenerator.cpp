@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISVisualizationWidget.h"
 #include "SimCenterMapcanvasWidget.h"
 #include "GIS_Selection.h"
+#include "qstackedwidget.h"
 #include <qgsmapcanvas.h>
 #include <PlainRectangle.h>
 #include <BrailsGoogleDialog.h>
@@ -47,12 +48,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterPreferences.h>
 
 #include <QLabel>
+#include <QComboBox>
 #include <QPushButton>
 #include <QStandardPaths>
 #include <QGroupBox>
 #include <QGridLayout>
 #include <SC_DoubleLineEdit.h>
 #include <QComboBox>
+
 #include <SC_FileEdit.h>
 #include <SC_ComboBox.h>
 #include <SC_IntLineEdit.h>
@@ -66,18 +69,11 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
-<<<<<<< Updated upstream
-    minLat  = new SC_DoubleLineEdit("minLat",0.0);
-    maxLat  = new SC_DoubleLineEdit("maxLat",0.0);
-    minLong = new SC_DoubleLineEdit("minLong",0.0);
-    maxLong = new SC_DoubleLineEdit("maxLong",0.0);    
-=======
     minLat  = new SC_DoubleLineEdit("minLat",37.8227);
     maxLat  = new SC_DoubleLineEdit("maxLat",37.9739);
     minLong = new SC_DoubleLineEdit("minLong",-122.432);
     maxLong = new SC_DoubleLineEdit("maxLong",-122.156);
     locationStr = new QLineEdit("");
->>>>>>> Stashed changes
     theOutputFile = new SC_FileEdit("outputFile");
 
     QString appDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
@@ -88,9 +84,6 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 
     QString brailsOutput = brailsDir + "/inventory.geojson";
     theOutputFile->setFilename(brailsOutput);
-<<<<<<< Updated upstream
-    
-=======
 
     fpGeojsonFile = new SC_FileEdit("fpGeojsonFile");
     fpGeojsonFile->setFilename(brailsDir);
@@ -170,40 +163,17 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     stackedWidgetInventorySource->addWidget(dummyInvSourceWidget2);
     stackedWidgetInventorySource->addWidget(baselineInvWidget);
 
->>>>>>> Stashed changes
     QGridLayout *mainLayout = new QGridLayout(this);
 
     // Define the combo box that prompts for outputs units:
     int numRow = 0;
     QStringList unitList; unitList << "m" << "ft";    
     units = new SC_ComboBox("units", unitList);
-    mainLayout->addWidget(new QLabel("Output Units"),numRow,0);    
+    mainLayout->addWidget(new QLabel("Output units"),numRow,0);
     mainLayout->addWidget(units,numRow,1);
 
     // Define the combo box that prompts for query area definition:
     numRow++;
-<<<<<<< Updated upstream
-    mainLayout->addWidget(new QLabel("Latitude:"),numRow,0);
-    numRow++;
-    mainLayout->addWidget(new QLabel("min:"),numRow,0);
-    mainLayout->addWidget(minLat,numRow,1);    
-    mainLayout->addWidget(new QLabel("max:"),numRow,2);
-    mainLayout->addWidget(maxLat,numRow,3);
-
-    numRow = 1;    
-    mainLayout->addWidget(new QLabel("Longitude:"),numRow,4);
-    numRow = 2;
-    mainLayout->addWidget(new QLabel("min:"),numRow,4);
-    mainLayout->addWidget(minLong,numRow,5);    
-    mainLayout->addWidget(new QLabel("max:"),numRow,6);
-    mainLayout->addWidget(maxLong,numRow,7);
-
-    numRow++;
-    
-    mainLayout->addWidget(new QLabel("Export BRAILS file"),numRow,0);
-    mainLayout->addWidget(theOutputFile,numRow,1,1,7);
-
-=======
     QStringList locationList; locationList << "Bounding box" << "Region name";
     location = new SC_ComboBox("location", locationList);
     mainLayout->addWidget(new QLabel("Query area definition"),numRow,0);
@@ -243,7 +213,6 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     mainLayout->addWidget(attributeSelected,numRow,1);
 
     /*
->>>>>>> Stashed changes
     numRow++;
     mainLayout->addWidget(new QLabel("Image Source"),numRow,0);
     QComboBox *imageSourceCombo = new QComboBox();
@@ -256,30 +225,19 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     connect(imageSourceCombo, &QComboBox::currentTextChanged, this, [=](QString text) {
       imageSource = text;
     });
-<<<<<<< Updated upstream
-    
-    mainLayout->addWidget(new QLabel("Imputation Algorithm"),4,0);
-=======
     */
 
     // Define the combo box for selecting the imputation algorithm:
     numRow++;
     mainLayout->addWidget(new QLabel("Imputation algorithm"),numRow,0);
->>>>>>> Stashed changes
     QComboBox *imputationAlgoCombo = new QComboBox();
     imputationAlgoCombo->addItem("None");    
-    mainLayout->addWidget(imputationAlgoCombo,4,1,1,3);
+    mainLayout->addWidget(imputationAlgoCombo,numRow,1,1,3);
 
     connect(imputationAlgoCombo, &QComboBox::currentTextChanged, this, [=](QString text) {
       imputationAlgo = text;
     });
 
-<<<<<<< Updated upstream
-    QPushButton *runButton = new QPushButton(tr("Run BRAILS"));
-    mainLayout->addWidget(runButton, 5,0,1,8);
-    connect(runButton,SIGNAL(clicked()),this,SLOT(runBRAILS()));    
-    
-=======
     // Create the directory selector for BRAILS inventory output:
     numRow++;
     mainLayout->addWidget(new QLabel("BRAILS output file directory"),numRow,0);
@@ -293,16 +251,15 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 
     // Show the GIS selection window for obtaining bounding box coordinates:
     numRow++;
->>>>>>> Stashed changes
     theSelectionWidget = new GIS_Selection(theVisualizationWidget);
-    mainLayout->addWidget(theSelectionWidget,6,0,1,8);
+    mainLayout->addWidget(theSelectionWidget,numRow,0,1,8);
     connect(theSelectionWidget,SIGNAL(selectionGeometryChanged()), this, SLOT(coordsChanged()));
 
     // set current selections
-    imageSource=imageSourceCombo->currentText();
+    //imageSource=imageSourceCombo->currentText();
+    imageSource="Google";
     imputationAlgo=imputationAlgoCombo->currentText();
 }
-
 
 BrailsInventoryGenerator::~BrailsInventoryGenerator()
 {
@@ -356,12 +313,8 @@ void BrailsInventoryGenerator::runBRAILS(void)
   brailsData.imputationAlgo = imputationAlgo;
   brailsData.units = units->currentText();
 
-<<<<<<< Updated upstream
-  
-=======
->>>>>>> Stashed changes
   if (imageSource == "Google") {
-    errorMessage("Starting Brails .. ");
+    errorMessage("Starting BRAILS .. ");
     if (theGoogleDialog == 0) {
       theGoogleDialog = new BrailsGoogleDialog(this);
     }
@@ -374,7 +327,6 @@ void BrailsInventoryGenerator::runBRAILS(void)
 }
 
 
-
 void BrailsInventoryGenerator::coordsChanged(void)
 {
   QVector<double> points = theSelectionWidget->getSelectedPoints();
@@ -383,8 +335,3 @@ void BrailsInventoryGenerator::coordsChanged(void)
   maxLat->setText(QString::number(points.at(6)));
   maxLong->setText(QString::number(points.at(7)));    
 }
-
-
-
-
-

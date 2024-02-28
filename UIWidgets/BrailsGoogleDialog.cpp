@@ -58,7 +58,7 @@ BrailsGoogleDialog::BrailsGoogleDialog(QWidget *parent)
 
     layout->addWidget(new QLabel("Google API Key"), 0, 0, 1, 2);
     auto apiKeyLabel =
-      new QLabel("If you dont have a Google API key, you can <a href=\"https://developers.google.com/maps/documentation/embed/get-api-key#:~:text=Go%20to%20the%20Googlele%20Maps%20Platform%20%3E%20Credentials%20page.&text=On%20the%20Credentials%20page%2C%20click,your%20newly%20created%20API%20key\">follow the instructions</a>");
+      new QLabel("If you do not have a Google API key, please follow the instructions <a href=\"https://developers.google.com/maps/documentation/embed/get-api-key#:~:text=Go%20to%20the%20Googlele%20Maps%20Platform%20%3E%20Credentials%20page.&text=On%20the%20Credentials%20page%2C%20click,your%20newly%20created%20API%20key\">here</a>");
     apiKeyLabel->setTextFormat(Qt::RichText);
     apiKeyLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
     apiKeyLabel->setOpenExternalLinks(true);
@@ -84,15 +84,15 @@ BrailsGoogleDialog::BrailsGoogleDialog(QWidget *parent)
       settings.setValue("GoogleAPI", apiKey->text());
     });
     
-    layout->addWidget(new QLabel("# Images"),3,0);
-    numBuildings = new SC_IntLineEdit("numBuildings",10);
+    layout->addWidget(new QLabel("Number of buildings"),3,0);
+    numBuildings = new SC_IntLineEdit("numBuildings",100);
     layout->addWidget(numBuildings, 3,1);
 
-    layout->addWidget(new QLabel("Seed"),4,0);
-    seed = new SC_IntLineEdit("seed",10);
+    layout->addWidget(new QLabel("Random seed"),4,0);
+    seed = new SC_IntLineEdit("seed",7);
     layout->addWidget(seed, 4,1);
 
-    QPushButton *runButton = new QPushButton(tr("Get Images and Process"));
+    QPushButton *runButton = new QPushButton(tr("Get building inventory"));
     layout->addWidget(runButton, 5,0,1,3);
     connect(runButton,SIGNAL(clicked()),this,SLOT(startBrails()));
 }
@@ -141,5 +141,5 @@ BrailsGoogleDialog::startBrails(void){
 
 void
 BrailsGoogleDialog::handleBrailsFinished(){
-  qDebug() << "Brails Finished!\n";
+  qDebug() << "BRAILS successfully generated the requested building inventory!\n";
 }
