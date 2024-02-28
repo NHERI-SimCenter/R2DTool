@@ -39,16 +39,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "SimCenterAppWidget.h"
+#include <QLabel>
 
 class SC_ComboBox;
 class QLineEdit;
-class QLabel;
 
 class SpatialCorrelationWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit SpatialCorrelationWidget(QWidget *parent = nullptr);
+    explicit SpatialCorrelationWidget(QStringList* selectedIMTypes, QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
@@ -56,14 +56,27 @@ public:
 signals:
 
 public slots:
-    void handleAvailableModel(const QString sourceType);
+//    void handleAvailableModel(const QString sourceType);
+    void toggleIMselection(QStringList* selectedIMTypes);
 
 private:
-    SC_ComboBox* m_correlationBoxInter = nullptr;
-    SC_ComboBox* m_correlationBoxIntra = nullptr;
+    SC_ComboBox* PGAcorrelationBoxInter = nullptr;
+    SC_ComboBox* PGAcorrelationBoxIntra = nullptr;
+    SC_ComboBox* SAcorrelationBoxInter = nullptr;
+    SC_ComboBox* SAcorrelationBoxIntra = nullptr;
+    SC_ComboBox* PGVcorrelationBoxInter = nullptr;
+    SC_ComboBox* PGVcorrelationBoxIntra = nullptr;
 
     QLabel* spatialCorrelationInterLabel;
     QLabel* spatialCorrelationIntraLabel;
+
+    QStringList* _selectedIMTypes;
+    QLabel* PGVtypeLabelInter = new QLabel(tr("PGV:"));
+    QLabel* PGAtypeLabelInter = new QLabel(tr("PGA:"));
+    QLabel* SAtypeLabelInter = new QLabel(tr("SA:"));
+    QLabel* PGVtypeLabelIntra = new QLabel(tr("PGV:"));
+    QLabel* PGAtypeLabelIntra = new QLabel(tr("PGA:"));
+    QLabel* SAtypeLabelIntra = new QLabel(tr("SA:"));
 
 };
 
