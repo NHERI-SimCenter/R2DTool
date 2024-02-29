@@ -42,45 +42,81 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGroupBox>
-#include <QLabel>
 #include <QStringListModel>
 
-GMPEWidget::GMPEWidget(GMPE& gmpe, QWidget *parent): SimCenterAppWidget(parent), m_gmpe(gmpe)
+GMPEWidget::GMPEWidget(GMPE& gmpe, QStringList* selectedIMTypes, QWidget *parent): SimCenterAppWidget(parent), m_gmpe(gmpe)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     gmpeGroupBox = new QGroupBox();
-    gmpeGroupBox->setTitle("Ground Motion Prediction Equation");
+    gmpeGroupBox->setTitle("Ground Motion Model");
 
     const QStringList validType = this->m_gmpe.validTypes();
 
 
-    QHBoxLayout* formLayout = new QHBoxLayout(gmpeGroupBox);
-    m_typeBox = new SC_ComboBox("Type",validType);
+    QGridLayout* formLayout = new QGridLayout(gmpeGroupBox);
+    PGAtypeBox = new SC_ComboBox("Type",validType);
+    PGAtypeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    PGVtypeBox = new SC_ComboBox("Type",validType);
+    PGVtypeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    SAtypeBox = new SC_ComboBox("Type",validType);
+    SAtypeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
-    m_typeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    formLayout->addWidget(PGAtypeLabel,0, 0);
+    formLayout->addWidget(PGAtypeBox,0,1);
 
-    QLabel* typeLabel = new QLabel(tr("Type:"));
+    formLayout->addWidget(SAtypeLabel,1, 0);
+    formLayout->addWidget(SAtypeBox,1,1);
 
-    formLayout->addWidget(typeLabel);
-    formLayout->addWidget(m_typeBox);
+    formLayout->addWidget(PGVtypeLabel,2, 0);
+    formLayout->addWidget(PGVtypeBox,2,1);
+
+
+    toggleIMselection(selectedIMTypes);
+    _selectedIMTypes = selectedIMTypes;
 
     layout->addWidget(gmpeGroupBox);
 
 
     QStringListModel* typeModel = new QStringListModel(validType);
-    m_typeBox->setModel(typeModel);
-    m_typeBox->setCurrentIndex(validType.indexOf(m_gmpe.type()));
+    PGAtypeBox->setModel(typeModel);
+    PGAtypeBox->setCurrentIndex(validType.indexOf(m_gmpe.type()));
+    PGVtypeBox->setModel(typeModel);
+    PGVtypeBox->setCurrentIndex(validType.indexOf(m_gmpe.type()));
+    SAtypeBox->setModel(typeModel);
+    SAtypeBox->setCurrentIndex(validType.indexOf(m_gmpe.type()));
     this->setupConnections();
 }
 
+void GMPEWidget::toggleIMselection(QStringList* selectedIMTypes){
+    PGAtypeLabel->hide();
+    PGAtypeBox->hide();
+    SAtypeLabel->hide();
+    SAtypeBox->hide();
+    PGVtypeLabel->hide();
+    PGVtypeBox->hide();
+    _selectedIMTypes = selectedIMTypes;
+    if (selectedIMTypes->contains("PGA")){
+        PGAtypeLabel->show();
+        PGAtypeBox->show();
+    }
+    if (selectedIMTypes->contains("SA")){
+        SAtypeLabel->show();
+        SAtypeBox->show();
+    }
+    if (selectedIMTypes->contains("PGV")){
+        PGVtypeLabel->show();
+        PGVtypeBox->show();
+    }
+    return;
+}
 
 void GMPEWidget::setupConnections()
 {
-    connect(this->m_typeBox, &QComboBox::currentTextChanged,
+    connect(this->PGAtypeBox, &QComboBox::currentTextChanged,
             &this->m_gmpe, &GMPE::setType);
 
     connect(&this->m_gmpe, &GMPE::typeChanged,
-            this->m_typeBox, &QComboBox::setCurrentText);
+            this->PGAtypeBox, &QComboBox::setCurrentText);
 }
 
 
@@ -93,8 +129,33 @@ bool GMPEWidget::inputFromJSON(QJsonObject& /*obj*/)
 
 bool GMPEWidget::outputToJSON(QJsonObject& obj)
 {
-    m_typeBox->outputToJSON(obj);
-
+    if (_selectedIMTypes->size()==1){
+        if (_selectedIMTypes->contains("PGA")){
+            PGAtypeBox->outputToJSON(obj);
+        }
+        if (_selectedIMTypes->contains("SA")){
+            SAtypeBox->outputToJSON(obj);
+        }
+        if (_selectedIMTypes->contains("PGV")){
+            PGVtypeBox->outputToJSON(obj);
+        }
+    } else {
+        if (_selectedIMTypes->contains("PGA")){
+            QJsonObject PGAgmpe;
+            PGAtypeBox->outputToJSON(PGAgmpe);
+            obj["PGA"] = PGAgmpe;
+        }
+        if (_selectedIMTypes->contains("SA")){
+            QJsonObject SAgmpe;
+            SAtypeBox->outputToJSON(SAgmpe);
+            obj["SA"] = SAgmpe;
+        }
+        if (_selectedIMTypes->contains("PGV")){
+            QJsonObject PGVgmpe;
+            PGVtypeBox->outputToJSON(PGVgmpe);
+            obj["PGV"] = PGVgmpe;
+        }
+    }
     obj["Parameters"] = QJsonObject();
 
     return true;
@@ -108,19 +169,19 @@ void GMPEWidget::handleAvailableGMPE(const QString sourceType)
     {
         // users are expected to upload a GMPE logic tree, so the GMPE
         // widget needs to be hiden
-        m_typeBox->hide();
+        PGAtypeBox->hide();
         gmpeGroupBox->hide();
         this->setVisible(false);
     }
     else if (sourceType.compare("OpenQuake User-Specified")==0)
     {
-        m_typeBox->hide();
+        PGAtypeBox->hide();
         gmpeGroupBox->hide();
         this->setVisible(false);
     }
     else
     {
-        m_typeBox->show();
+        PGAtypeBox->show();
         gmpeGroupBox->show();
         this->setVisible(true);
     }
