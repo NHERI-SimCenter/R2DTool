@@ -123,6 +123,28 @@ bool SpecificScenarioWidget::LoadRupturesTable(QString pathToRuptureFile){
         QJsonObject firstFeat = features[0].toObject();
         QJsonObject firstProp = firstFeat["properties"].toObject();
         QStringList keys = firstProp.keys();
+        // Reorder the keys:
+        int removed;
+        removed = keys.removeAll("MeanAnnualRate");
+        if (removed==1){
+            keys.prepend("MeanAnnualRate");
+        }
+        removed = keys.removeAll("Magnitude");
+        if (removed==1){
+            keys.prepend("Magnitude");
+        }
+        removed = keys.removeAll("Name");
+        if (removed==1){
+            keys.prepend("Name");
+        }
+        removed = keys.removeAll("Rupture");
+        if (removed==1){
+            keys.prepend("Rupture");
+        }
+        removed = keys.removeAll("Source");
+        if (removed==1){
+            keys.prepend("Source");
+        }
         int index = 1; // rupture index starts from 1 to be consistent with QGIS attribute table
         for (const QJsonValue& valueIt : features) {
             QJsonObject feat = valueIt.toObject();

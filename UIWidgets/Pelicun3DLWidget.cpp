@@ -34,7 +34,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: 
+//   Stevan Gavrilovic
+//   Adam Zsarnoczay
 
 #include "Pelicun3DLWidget.h"
 
@@ -56,43 +58,42 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* groupBox = new QGroupBox(this);
-    groupBox->setTitle("Pelicun Damage and Loss Prediction Methodology");
+    groupBox->setTitle("Pelicun Damage and Loss Simulation Engine");
 
     QGridLayout* gridLayout = new QGridLayout(groupBox);
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
     DLTypeComboBox->addItem("HAZUS MH EQ Story");
-
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
     DLTypeComboBox->addItem("HAZUS MH HU");
-    DLTypeComboBox->addItem("User-provided Fragilities");
+    DLTypeComboBox->addItem("User-provided Models");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     connect(DLTypeComboBox,&QComboBox::currentTextChanged, this, &Pelicun3DLWidget::handleComboBoxChanged);
 
-    QLabel* realizationsLabel = new QLabel(tr("Number of realizations:"));
+    QLabel* realizationsLabel = new QLabel(tr("Sample size:"));
     realizationsLineEdit = new QLineEdit();
 
     QIntValidator* validator = new QIntValidator(this);
     validator->setBottom(0);
     realizationsLineEdit->setValidator(validator);
-    realizationsLineEdit->setText("5");
 
+    /*
     QLabel* eventTimeLabel = new QLabel(tr("Event time:"));
     eventTimeComboBox = new QComboBox();
     eventTimeComboBox->addItem("on");
     eventTimeComboBox->addItem("off");
     eventTimeComboBox->setCurrentIndex(1);
+    */
 
     detailedResultsCheckBox = new QCheckBox("Output detailed results");
     logFileCheckBox = new QCheckBox("Log file",this);
-    logFileCheckBox->setChecked(true);
     coupledEDPCheckBox = new QCheckBox("Coupled EDP");
     groundFailureCheckBox= new QCheckBox("Include ground failure");
 
     autoPopulateScriptWidget = new QWidget();
-    auto autoPopScriptLabel = new QLabel("Auto-populate script:");
+    auto autoPopScriptLabel = new QLabel("Auto-population script:");
     autoPopulationScriptLineEdit = new QLineEdit();
     auto browseButton = new QPushButton("Browse");
     connect(browseButton,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton1Pressed);
@@ -102,23 +103,23 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     autoPopulateScriptLayout->addWidget(autoPopulationScriptLineEdit);
     autoPopulateScriptLayout->addWidget(browseButton);
 
-    fragDirWidget = new QWidget();
-    auto fragFolderLabel = new QLabel("Folder containing user-defined fragility function:");
-    fragilityDirLineEdit = new QLineEdit();
+    customModelDirWidget = new QWidget();
+    auto customModelDirLabel = new QLabel("Folder with user-provided model data:");
+    customModelDirLineEdit = new QLineEdit();
     auto browseButton2 = new QPushButton("Browse");
     connect(browseButton2,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton2Pressed);
 
-    auto fragDirLayout = new QHBoxLayout(fragDirWidget);
-    fragDirLayout->addWidget(fragFolderLabel);
-    fragDirLayout->addWidget(fragilityDirLineEdit);
-    fragDirLayout->addWidget(browseButton2);
+    auto customModelDirLayout = new QHBoxLayout(customModelDirWidget);
+    customModelDirLayout->addWidget(customModelDirLabel);
+    customModelDirLayout->addWidget(customModelDirLineEdit);
+    customModelDirLayout->addWidget(browseButton2);
 
     auto Vspacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     gridLayout->addWidget(typeLabel,0,0);
     gridLayout->addWidget(DLTypeComboBox,0,1);
-    gridLayout->addWidget(eventTimeLabel,1,0);
-    gridLayout->addWidget(eventTimeComboBox,1,1);
+    //gridLayout->addWidget(eventTimeLabel,1,0);
+    //gridLayout->addWidget(eventTimeComboBox,1,1);
     gridLayout->addWidget(realizationsLabel,2,0);
     gridLayout->addWidget(realizationsLineEdit,2,1);
 
@@ -127,14 +128,13 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     gridLayout->addWidget(coupledEDPCheckBox,5,0);
     gridLayout->addWidget(groundFailureCheckBox,6,0);
     gridLayout->addWidget(autoPopulateScriptWidget,7,0,1,2);
-    gridLayout->addWidget(fragDirWidget,8,0,1,2);
+    gridLayout->addWidget(customModelDirWidget,8,0,1,2);
 
     gridLayout->addItem(Vspacer,9,0,1,2);
 
     layout->addWidget(groupBox);
 
-    autoPopulateScriptWidget->hide();
-    fragDirWidget->hide();
+    this->clear();
 
     resultWidget = new Pelicun3PostProcessor(parent);
 }
@@ -152,46 +152,46 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("detailed_results",detailedResultsCheckBox->isChecked());
     appDataObj.insert("log_file",logFileCheckBox->isChecked());
     appDataObj.insert("coupled_EDP",coupledEDPCheckBox->isChecked());
-    appDataObj.insert("event_time",eventTimeComboBox->currentText());
+    //appDataObj.insert("event_time",eventTimeComboBox->currentText());
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
     appDataObj.insert("regional", "true");
-    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ IM")==0){
-        appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_IM.py");
-    }
-    if (DLTypeComboBox->currentText().compare("HAZUS MH EQ Story")==0){
-        appDataObj.insert("auto_script", "PelicunDefault/Hazus_Earthquake_Story.py");
-    }
-    // test separating the path and filename of auto-population codes (KZ)
-    QFileInfo test_auto(autoPopulationScriptLineEdit->text());
-    if(test_auto.exists())
-    {
-        appDataObj.insert("auto_script",test_auto.fileName());
-        appDataObj.insert("path_to_auto_script",test_auto.path());
-    }
 
+    QString autoScript = autoPopulationScriptLineEdit->text();
 
-    if(!fragDirWidget->isHidden())
-    {
-        auto sourcePath = fragilityDirLineEdit->text();
-        if(sourcePath.isEmpty())
-        {
-            this->errorMessage("Specify a folder with custom fragility functions");
+    if (autoScript.contains("PelicunDefault")){
+        appDataObj.insert("auto_script", autoScript);
+
+    } else {
+        QFileInfo test_auto(autoScript);        
+        if (test_auto.exists()) {
+            appDataObj.insert("auto_script", test_auto.fileName());
+            appDataObj.insert("path_to_auto_script", test_auto.path());
+        } else {
+            this->errorMessage(
+                "Missing auto-population script file or the specified "
+                "auto-population script does not exist: " + autoScript);
             return false;
         }
-
-        // Fixed folder name
-        QFileInfo test_fragDir(sourcePath);
-        if(test_fragDir.exists())
-        {
-            appDataObj.insert("custom_fragility_dir","CustomFragilities");
-        }
     }
 
+    // only deal with the custom model dir if needed
+    if(!customModelDirWidget->isHidden())
+    {
+        auto customModelDir = customModelDirLineEdit->text();
 
-    /*
-    if(!scriptPath.isEmpty())
-        appDataObj.insert("auto_script",scriptPath);
-    */
+        QFileInfo test_auto(customModelDir);        
+        if (test_auto.exists()) {
+            // custom_model_dir holds the relative location of these files in the input_dir
+            appDataObj.insert("custom_model_dir", "CustomDLModels");
+            // the path_to_custom_model dir is the path to the source 
+            appDataObj.insert("path_to_custom_model_dir", customModelDir);
+        } else {
+            this->errorMessage(
+                "Missing user-provided model data or the specified data "
+                "location does not exist: " + customModelDir);
+            return false;
+        }
+    }
 
     jsonObject.insert("ApplicationData",appDataObj);
 
@@ -205,14 +205,27 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     {
         QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
+        QString dlMethod;
         if (appData.contains("DL_Method"))
         {
-            auto dlMethod = appData["DL_Method"].toString();
+            dlMethod = appData["DL_Method"].toString();
+
+            // The following two checks are only for backwards compatibility
+            if (dlMethod.contains("User-provided Fragilities")){
+                dlMethod = "User-provided Models";
+            }
+
+            if (dlMethod.compare("HAZUS MH EQ") == 0) {
+                dlMethod = "HAZUS MH EQ Story";
+            }
+
             auto index = DLTypeComboBox->findText(dlMethod);
 
             if(index == -1)
             {
-                this->errorMessage("Could not find the damage and loss method "+dlMethod);
+                this->errorMessage(
+                    "The Damage and Loss method specified in the input file is "
+                    "not available in this version of R2D:"+dlMethod);
                 return false;
             }
 
@@ -239,92 +252,61 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (appData.contains("log_file"))
             logFileCheckBox->setChecked(appData["log_file"].toBool());
 
-        if (appData.contains("event_time"))
-            eventTimeComboBox->setCurrentText(appData["event_time"].toString());
+        //if (appData.contains("event_time"))
+        //    eventTimeComboBox->setCurrentText(appData["event_time"].toString());
 
-        if (appData.contains("auto_script"))
-        {
-            auto pathToScript = appData["auto_script"].toString();
+        if (appData.contains("auto_script")){
+            auto autoScript = appData["auto_script"].toString();
 
-            QFileInfo fileInfo;
+            if (autoScript.startsWith("PelicunDefault")){
+                autoPopulationScriptLineEdit->setText(autoScript);
+            } else {
 
-            if (fileInfo.exists(pathToScript))
-            {
-                autoPopulationScriptLineEdit->setText(pathToScript);
-            }
-            else
-            {
-                // test separating the path and filename of auto-population codes (KZ)
-                QString currPath;
-                if (appData.contains("path_to_auto_script"))
-                    currPath = appData["path_to_auto_script"].toString();
-                else
-                    currPath = QDir::currentPath();
+                QString autoScriptPath;
 
-                auto pathToComponentInfoFile = currPath + QDir::separator() + pathToScript;
+                if (appData.contains("path_to_auto_script")) {
+                    autoScriptPath = appData["path_to_auto_script"].toString();
 
-                if (fileInfo.exists(pathToComponentInfoFile))
-                {
-                    autoPopulationScriptLineEdit->setText(pathToComponentInfoFile);
+                } else {
+                    autoScriptPath = QDir::currentPath();
                 }
-                else
-                {
-                    // adam .. adam .. adam
-                    pathToComponentInfoFile = currPath + QDir::separator()
-                            + "input_data" + QDir::separator() + pathToScript;
-                    if (pathToScript.startsWith("PelicunDefault")){
-                        // Do nothing, the rwhale knows where to find PelicunDefault dir
-                    }
-                    else if (fileInfo.exists(pathToComponentInfoFile))
-                        autoPopulationScriptLineEdit->setText(pathToComponentInfoFile); 
-                    else{
-                        this->infoMessage("Warning: the script file "+pathToScript+ " does not exist");
-                    }
+
+                auto fullPathToAutoScript = autoScriptPath + QDir::separator() + autoScript;
+
+                QFileInfo test_auto(fullPathToAutoScript);
+                if (test_auto.exists()) {
+                    autoPopulationScriptLineEdit->setText(fullPathToAutoScript);
+                } else {
+                    this->infoMessage(
+                        "Warning: the auto-population script file does not "
+                        "exist: "+fullPathToAutoScript);
                 }
             }
         }
 
-        if (appData.contains("custom_fragility_dir"))
-        {
-            QString fragilityDir = appData["custom_fragility_dir"].toString();
+        // only check the custom model dir when we have user-provided models
+        if (dlMethod == "User-provided Models"){
 
-            QDir fileInfo;
+            // Note that custom_model_dir is only used in the backend, we do not
+            // need to load it here
 
-            if (fileInfo.exists(fragilityDir))
-            {
-                fragilityDirLineEdit->setText(fragilityDir);
-            }
-            else
-            {
-                // Try the current path
-                QString currPath = QDir::currentPath();
+            if (appData.contains("path_to_custom_model_dir")){
 
-                QString fullPathToFragilityDir = currPath + QDir::separator() + fragilityDir;
+                QString customModelDir = appData["path_to_custom_model_dir"].toString();
 
-                if (fileInfo.exists(fullPathToFragilityDir))
-                {
-                    fragilityDirLineEdit->setText(fullPathToFragilityDir);
+                QDir fileInfo;
+                if (fileInfo.exists(customModelDir)){
+                    customModelDirLineEdit->setText(customModelDir);
+
+                } else {
+                    this->infoMessage(
+                        "Warning: the directory for custom model files does not "
+                        "exist: "+customModelDir);
+
                 }
-                else
-                {
-                    // adam .. adam .. adam
-                    fullPathToFragilityDir = currPath + QDir::separator()
-                            + "input_data" + QDir::separator() + fragilityDir;
 
-                    if (fileInfo.exists(fullPathToFragilityDir))
-                        fragilityDirLineEdit->setText(fullPathToFragilityDir);
-                    else {
-                        errorMessage("Warning: the fargility dir does not seem to exist: " + fragilityDir);
-                        errorMessage("Warning: the fargility dir does not seem to exist: " + fragilityDir);
-			errorMessage("tried: " + fullPathToFragilityDir);
-			fullPathToFragilityDir = currPath + QDir::separator() + fragilityDir;
-			errorMessage("and: " + fullPathToFragilityDir);			
-		    }
-                }
             }
         }
-
-
     }
 
     return true;
@@ -334,84 +316,121 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 void Pelicun3DLWidget::clear(void)
 {
     DLTypeComboBox->setCurrentIndex(0);
-    realizationsLineEdit->clear();
-    eventTimeComboBox->setCurrentIndex(1);
+
+    realizationsLineEdit->setText("500");
+
+    //eventTimeComboBox->setCurrentIndex(1);
     detailedResultsCheckBox->setChecked(false);
-    logFileCheckBox->setChecked(false);
-    coupledEDPCheckBox->setChecked(false);
-    groundFailureCheckBox->setChecked(false);
-    autoPopulationScriptLineEdit->clear();
-    fragilityDirLineEdit->clear();
+    logFileCheckBox->setChecked(true);
+    coupledEDPCheckBox->setChecked(true);
+
+    this->handleComboBoxChanged(DLTypeComboBox->currentText());
+
 }
 
 void Pelicun3DLWidget::clearParams(void)
-{
-    realizationsLineEdit->clear();
-    eventTimeComboBox->setCurrentIndex(1);
-    detailedResultsCheckBox->setChecked(false);
-    logFileCheckBox->setChecked(false);
-    coupledEDPCheckBox->setChecked(false);
+{   
+    groundFailureCheckBox->hide();
     groundFailureCheckBox->setChecked(false);
+    
     autoPopulationScriptLineEdit->clear();
-    fragilityDirLineEdit->clear();
+
+    customModelDirWidget->hide();
+    customModelDirLineEdit->clear();
 }
 
 
 
 bool Pelicun3DLWidget::copyFiles(QString &destName)
 {
-    auto compLineEditText = autoPopulationScriptLineEdit->text();
+    auto autoScript = autoPopulationScriptLineEdit->text();
 
-    if(compLineEditText.isEmpty())
-        return true;
+    if (autoScript.contains("PelicunDefault")){
+        // pass
 
-    QFileInfo componentFile(compLineEditText);
+    } else if (autoScript.isEmpty()) {
 
-    if (!componentFile.exists()) {
-        QString msg = QString("Could not find auto script file: ") + compLineEditText;
-        this->errorMessage(msg);
-        return false;
-    }
-
-    QDir fileDir(componentFile.absolutePath());
-    QString lastDir = fileDir.dirName();
-    if (lastDir != QString("input_data")) {
-
-        bool res = this->copyPath(componentFile.absolutePath(), destName, false);
-        if (!res) {
-            QString msg = QString("Could not copy dir containing auto script file: ") + compLineEditText;
-            this->errorMessage(msg);
-            return res;
-        }
+        this->errorMessage(
+            "The auto-population script for damage and loss assessment is "
+            "missing");
+            return false;
 
     } else {
 
-        // Do not copy the file, output a new csv which will have the changes that the user makes in the table
-        bool res = this->copyFile(compLineEditText, destName);
-        if (!res) {
-            QString msg = QString("Could not copy auto script file: ") + compLineEditText;
-            this->errorMessage(msg);
-            return res;
-        }
-    }
+        QFileInfo autoScriptFile(autoScript);
 
-    if(!fragDirWidget->isHidden())
-    {
-        auto sourcePath = fragilityDirLineEdit->text();
-
-        if(sourcePath.isEmpty())
-        {
-            this->errorMessage("Specify a folder with custom fragility functions");
+        if (!autoScriptFile.exists()) {
+            this->errorMessage(
+                "Could not find auto script file: "+ autoScript);
             return false;
         }
 
-        // Folder path fixed Fixed do not change
-        auto destinationDirectory = destName + QDir::separator() + "CustomFragilities";
+        QDir fileDir(autoScriptFile.absolutePath());
+        QString lastDir = fileDir.dirName();
+        if (lastDir != QString("input_data")) {
 
-        auto res = recursiveCopy(sourcePath,destinationDirectory);
+            bool res = this->copyPath(
+                autoScriptFile.absolutePath(), destName, false);
 
-        if(!res)
-            return res;
+            if (!res) {
+                this->errorMessage(
+                    "Could not copy the directory containing auto script file: "
+                    + autoScript);
+                return res;
+            }
+
+        } else {
+
+            // Do not copy the file, output a new csv which will have the 
+            // changes that the user makes in the table
+            // WHAT DOES THE ABOVE COMMENT MEAN??? /azs
+            bool res = this->copyFile(autoScript, destName);
+
+            if (!res) {
+                this->errorMessage(
+                    "Could not copy auto script file: " + autoScript);
+                return res;
+            }
+        }
+    }
+
+    // only copy model data if needed
+
+    if(!customModelDirWidget->isHidden())
+    {
+        auto customModelDirPath = customModelDirLineEdit->text();
+
+        if (customModelDirPath.isEmpty()){
+            this->errorMessage(
+                "The user-provided model data for damage and loss assessment is "
+                "missing");
+            return false;
+
+        } else {
+
+            QFileInfo customModelDir(customModelDirPath);
+
+            if (!customModelDir.exists()) {
+                this->errorMessage(
+                    "Could not find custom model directory: "
+                    + customModelDirPath);
+                return false;
+            }
+
+            // Destination folder path is hard-coded. 
+            // Edit only if you know what you're doing.
+            auto destinationDirectory = 
+                destName + QDir::separator() + "CustomDLModels";
+
+            auto res = recursiveCopy(customModelDirPath, destinationDirectory);
+
+            if (!res) {
+                this->errorMessage(
+                    "Could not copy the directory containing custom model files: "
+                    + customModelDirPath);
+                return res;
+            }
+        }
     }
 
     return true;
@@ -422,21 +441,22 @@ void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
 {
     this->clearParams();
 
-    if(text.compare("HAZUS MH EQ Story") == 0 || text.compare("HAZUS MH EQ IM") == 0)
-    {
+    if (text.compare("HAZUS MH EQ Story") == 0) {
         groundFailureCheckBox->show();
-        autoPopulateScriptWidget->hide();
-    }
-    else
-    {
-        groundFailureCheckBox->hide();
-        autoPopulateScriptWidget->show();
-    }
+        autoPopulationScriptLineEdit->setText(
+            "PelicunDefault/Hazus_Earthquake_Story.py");
 
-    if(text.compare("User-provided Fragilities") == 0)
-        fragDirWidget->show();
-    else
-        fragDirWidget->hide();
+    } else if (text.compare("HAZUS MH EQ IM") == 0) {
+        groundFailureCheckBox->show();
+        autoPopulationScriptLineEdit->setText(
+            "PelicunDefault/Hazus_Earthquake_IM.py");
+
+    } else if (text.compare("HAZUS MH HU") == 0) {
+        // placeholder
+
+    } else if (text.compare("User-provided Models") == 0) {
+        customModelDirWidget->show();
+    }
 }
 
 
@@ -481,7 +501,7 @@ bool Pelicun3DLWidget::recursiveCopy(const QString &sourcePath, const QString &d
 void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
 {
     QFileDialog dialog(this);
-    QString scriptFile = QFileDialog::getOpenFileName(this,tr("Auto-populate Script"));
+    QString scriptFile = QFileDialog::getOpenFileName(this,tr("Auto-population Script"));
     dialog.close();
 
     // Return if the user cancels or enters same file
@@ -495,14 +515,14 @@ void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
 void Pelicun3DLWidget::handleBrowseButton2Pressed(void)
 {
     QFileDialog dialog(this);
-    QString fragFolder = QFileDialog::getExistingDirectory(this,tr("Folder containing user-provided fragility data"));
+    QString customModelDir = QFileDialog::getExistingDirectory(this,tr("Folder with user-provided model data"));
     dialog.close();
 
     // Return if the user cancels or enters same file
-    if(fragFolder.isEmpty())
+    if(customModelDir.isEmpty())
         return;
 
-    fragilityDirLineEdit->setText(fragFolder);
+    customModelDirLineEdit->setText(customModelDir);
 }
 
 //QMainWindow* Pelicun3DLWidget::getPostProcessor(QWidget *parent, SimCenterAppWidget* visWidget){

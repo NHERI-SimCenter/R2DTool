@@ -46,18 +46,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QStackedWidget>
 #include <QComboBox>
+#include <QSet>
+#include <QMessageBox>
 
 GroundMotionModelsWidget::GroundMotionModelsWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     auto mainLayout = new QVBoxLayout(this);
 
-    spatialCorrWidget = new SpatialCorrelationWidget();
-
-    m_gmpe = new GMPE(this);
-    m_gmpeWidget = new GMPEWidget(*this->m_gmpe);
-
     m_intensityMeasure = new IntensityMeasure(this);
     m_intensityMeasureWidget = new IntensityMeasureWidget(*this->m_intensityMeasure);
+
+    spatialCorrWidget = new SpatialCorrelationWidget(m_intensityMeasureWidget->getSelectedIMTypes());
+
+    m_gmpe = new GMPE(this);
+    m_gmpeWidget = new GMPEWidget(*this->m_gmpe, m_intensityMeasureWidget->getSelectedIMTypes());
 
     // GMPE options (link between source type and GMPE options)
 //    connect(erfWidget->ruptureWidget(), SIGNAL(widgetTypeChanged(QString)),
@@ -75,6 +77,11 @@ GroundMotionModelsWidget::GroundMotionModelsWidget(QWidget *parent) : SimCenterA
     mainLayout->addWidget(m_gmpeWidget);
     mainLayout->addWidget(spatialCorrWidget);
     mainLayout->addStretch(0);
+
+    connect(m_intensityMeasureWidget, &IntensityMeasureWidget::IMSelectionChanged,
+            m_gmpeWidget, &GMPEWidget::toggleIMselection);
+    connect(m_intensityMeasureWidget, &IntensityMeasureWidget::IMSelectionChanged,
+            spatialCorrWidget, &SpatialCorrelationWidget::toggleIMselection);
 
 }
 
@@ -99,16 +106,20 @@ bool GroundMotionModelsWidget::inputFromJSON(QJsonObject& /*obj*/)
 
 bool GroundMotionModelsWidget::outputToJSON(QJsonObject& obj)
 {
+    QStringList* selectedIMtypes = m_intensityMeasureWidget->getSelectedIMTypes();
+    if (selectedIMtypes->size()==0){
+        errorMessage("Ground Motion Models: At least one intensity measure needs to be selected." );
+        return false;
+    }
+    bool vectorIM = selectedIMtypes->size()>1;
 
     // Get the correlation model Json object
     QJsonObject spatCorrObj;
     if (!spatialCorrWidget->outputToJSON(spatCorrObj))
         return false;
-
-
     // Get the intensity measure Json object
     QJsonObject IMObj;
-    if (!m_intensityMeasure->outputToJSON(IMObj))
+    if (!m_intensityMeasureWidget->outputToJSON(IMObj))
         return false;
 
 
@@ -117,10 +128,47 @@ bool GroundMotionModelsWidget::outputToJSON(QJsonObject& obj)
         return false;
 
 
+    if (vectorIM){
+        QSet<QString> intraEventCorrModels;
+        for(int i = 0; i < selectedIMtypes->size(); i++){
+            QString imType_i = selectedIMtypes->at(i);
+            QJsonObject gmpe_i = GMPEObj[imType_i].toObject();
+            GMPEObj.remove(imType_i);
+            QJsonObject spatCorr_i = spatCorrObj[imType_i].toObject();
+            spatCorrObj.remove(imType_i);
+            QJsonObject IMObj_i = IMObj[imType_i].toObject();
+            IMObj_i["GMPE"] = gmpe_i["Type"].toString();
+            IMObj_i["InterEventCorr"] = spatCorr_i["InterEventCorr"].toString();
+            IMObj_i["IntraEventCorr"] = spatCorr_i["IntraEventCorr"].toString();
+            IMObj[imType_i] = IMObj_i;
+            intraEventCorrModels.insert(spatCorr_i["IntraEventCorr"].toString());
+        }
+        if (intraEventCorrModels.size()>1){
+            QMessageBox msgBox;
+
+            msgBox.setText("Warning:\n"
+                           "Different Intra-event Spatial Correlation models are selected, and the cross correlation of the intra-event residuals between Intensity Measures can not be captured.\n"
+                           "Continue running?");
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+
+            auto res = msgBox.exec();
+
+            if(res != QMessageBox::Yes)
+                return false;
+//            errorMessage("Warning: The cross correlation of the intra-event residuals between Intensity Measures can not be captured if different intra-event spatial correlation models are chosen.");
+        }
+        GMPEObj.insert("Type", "Vector");
+        IMObj.insert("Type", "Vector");
+        spatCorrObj.insert("Type", "Vector");
+    }
     obj.insert("CorrelationModel", spatCorrObj);
     obj.insert("IntensityMeasure", IMObj);
     obj.insert("GMPE", GMPEObj);
 
     return true;
 }
+
+//void GroundMotionModelsWidget::addGMMforSA(bool SAenabled){
+
+//}
 

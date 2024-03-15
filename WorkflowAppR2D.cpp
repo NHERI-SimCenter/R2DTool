@@ -337,7 +337,7 @@ void WorkflowAppR2D::initialize(void)
     QMenu *toolsMenu = new QMenu(tr("&Tools"),menuBar);
 
     // Set the path to the input file
-    toolsMenu->addAction("&Earthquake Scenario Simulation", theToolDialog, &ToolDialog::handleShowEQGMSimTool);
+    toolsMenu->addAction("&Earthquake Event Generation", theToolDialog, &ToolDialog::handleShowEQGMSimTool);
     toolsMenu->addAction("&Hurricane Scenario Simulation", theToolDialog, &ToolDialog::handleShowHurricaneSimTool);
     toolsMenu->addAction("&Census Data Allocation", theToolDialog, &ToolDialog::handleShowCensusAppTool);
     toolsMenu->addAction("&OpenQuake Source Selection", theToolDialog, &ToolDialog::handleShowOpenquakeSelectionTool);

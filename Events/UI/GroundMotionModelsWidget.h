@@ -61,6 +61,8 @@ public:
     IntensityMeasure *intensityMeasure() const;
 
 public slots:
+//    void addGMMforSA(bool SAenabled);
+//    void addGMMforPGV(bool PGVenabled);
 
 private:
 

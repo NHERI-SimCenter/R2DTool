@@ -209,6 +209,7 @@ void GMWidget::setupConnections()
     connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, [this](QString statusUpdate)
             {
                 this->statusMessage(statusUpdate);
+        QApplication::processEvents();
             });
 
     //connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
@@ -415,7 +416,7 @@ GMWidget::outputAppDataToJSON(QJsonObject &jsonObj) {
 
     if(simulationComplete == false)
     {
-        this->errorMessage("Earthquake Scenario Simulation is not completed - please click \"Run Hazard Simulation\"");
+        this->errorMessage("Earthquake Event Generation is not completed - please click \"Run Hazard Simulation\"");
         return false;
     }
     QJsonObject appData;
@@ -661,10 +662,14 @@ void GMWidget::runHazardSimulation(void)
     QJsonObject eventObj;
 
     // get the spatial correlation, IM, and GMPEs
-    groundMotionModelsWidget->outputToJSON(eventObj);
+    if (!groundMotionModelsWidget->outputToJSON(eventObj)){
+        return;
+    }
 
     // Get the database, scaling, and number of events per site
-    m_selectionWidget->outputToJSON(eventObj);
+    if (!m_selectionWidget->outputToJSON(eventObj)){
+        return;
+    }
 
     // Some hardcoded things
     eventObj["SaveIM"]=true;

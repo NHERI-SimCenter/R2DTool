@@ -79,7 +79,7 @@ public slots:
 
 private:
     QWidget* autoPopulateScriptWidget;
-    QWidget* fragDirWidget;
+    QWidget* customModelDirWidget;
     Pelicun3PostProcessor* resultWidget;
 
     QComboBox* DLTypeComboBox;
@@ -90,7 +90,7 @@ private:
     QCheckBox* coupledEDPCheckBox;
     QCheckBox* groundFailureCheckBox;
     QLineEdit* autoPopulationScriptLineEdit;
-    QLineEdit* fragilityDirLineEdit;
+    QLineEdit* customModelDirLineEdit;
     void clearParams(void);
 };
 
