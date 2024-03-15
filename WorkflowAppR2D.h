@@ -39,8 +39,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, Frank McKenna
 
 #include "WorkflowAppWidget.h"
+#include "WidgetFactory.h"
 
 #include <QMap>
+#include <QJsonObject>
 
 class AnalysisWidget;
 class Application;
@@ -105,6 +107,11 @@ public:
     LocalApplication *getLocalApp() const;
     RandomVariablesWidget *getTheRandomVariableWidget() const;
 
+    // For OpenSRA widgets
+    QJsonObject getMethodsAndParamsObj() const;
+    QMap<QString, QString> getMethodsAndParamsMap() const;
+    WidgetFactory* getTheWidgetFactory() const;
+
 signals:
 
 public slots:  
@@ -161,6 +168,13 @@ private:
     QNetworkAccessManager *manager = nullptr;
     QString commonFilePath = nullptr;
     static WorkflowAppR2D *theInstance;
+
+    // For OpenSRA widgets
+    QJsonObject methodsAndParamsObj;
+    QMap<QString, QString> methodsParamsMap;
+    QJsonObject getMethodAndParamsObj(const QString& path, bool usingDefault=false);
+    std::unique_ptr<WidgetFactory> theWidgetFactory;
+
 
 };
 

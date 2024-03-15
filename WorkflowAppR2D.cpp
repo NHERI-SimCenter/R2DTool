@@ -83,7 +83,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QHostInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QJsonObject>
 #include <QLabel>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -178,6 +177,78 @@ WorkflowAppR2D::~WorkflowAppR2D()
 }
 
 
+QJsonObject WorkflowAppR2D::getMethodAndParamsObj(const QString& path, bool usingDefault)
+{
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists()){
+        if (usingDefault == true)
+            this->errorMessage(QString("The methods and params file does not exist! ") + path);
+        return QJsonObject();
+    }
+
+    QString dirPath = fileInfo.absoluteDir().absolutePath();
+    QDir::setCurrent(dirPath);
+
+    QFile file(path);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        this->errorMessage(QString("Could Not Open File: ") + path);
+        return QJsonObject();
+    }
+
+    //
+    // place contents of file into json object
+    //
+
+    QString val;
+    val=file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(val.toUtf8());
+    auto thisMethodsAndParamsObj = doc.object();
+
+    // close file
+    file.close();
+
+    if(thisMethodsAndParamsObj.isEmpty())
+    {
+        this->errorMessage("The methods and parameters file is empty");
+        return QJsonObject();
+    }
+
+    // Get the human read-able names of the json objects
+    std::function<void(const QJsonObject&)> recursiveObj = [&](const QJsonObject& objects){
+
+        QJsonObject::const_iterator objIt;
+        for (objIt = objects.begin(); objIt != objects.end(); ++objIt)
+        {
+            auto obj = objIt.value().toObject();
+
+            auto name = obj["ToDisplay"].toString();
+            if(!name.isEmpty())
+            {
+                auto key = objIt.key();
+
+                if(methodsParamsMap.contains(key))
+                {
+                    //                    this->errorMessage("Error, the methods and params map already contains the key "+key);
+                    //                    auto oldVal = methodsParamsMap.value(key);
+                    //                    auto newVal = name;
+                    //                    this->errorMessage("Old Val "+oldVal+" new val "+newVal);
+                    continue;
+                }
+
+                methodsParamsMap.insert(key,name);
+            }
+
+            if(!obj.isEmpty())
+                recursiveObj(objIt.value().toObject());
+        }
+    };
+
+    recursiveObj(thisMethodsAndParamsObj);
+
+    return thisMethodsAndParamsObj;
+}
+
+
 void WorkflowAppR2D::initialize(void)
 {
 
@@ -200,6 +271,53 @@ void WorkflowAppR2D::initialize(void)
             break;
         }
     }
+
+
+    auto methodParamsDir = QString(PATH_TO_OPENSRA_BACKEND) + QDir::separator() + "methods_params_doc";
+
+
+    // Load the common methods and params json file
+    QString commonPath = methodParamsDir + QDir::separator() + "common.json";
+
+    methodsAndParamsObj = getMethodAndParamsObj(commonPath, true);
+    if(methodsAndParamsObj.empty())
+    {
+        this->errorMessage("Error loading the methods and params file!");
+        return;
+    }
+
+    // Load the below ground methods and params json file
+    auto belowGroundPath = methodParamsDir + QDir::separator() + "below_ground.json";
+    auto belowGroundObj = getMethodAndParamsObj(belowGroundPath, true);
+    if(belowGroundObj.empty())
+    {
+        this->errorMessage("Error loading the below ground object file!");
+        return;
+    }
+
+    methodsAndParamsObj.insert("BelowGround",belowGroundObj);
+
+    // Load the above ground methods and params
+    auto aboveGroundPath = methodParamsDir + QDir::separator() + "above_ground.json";
+    auto aboveGroundObj = getMethodAndParamsObj(aboveGroundPath, true);
+    if(aboveGroundObj.empty())
+    {
+        this->errorMessage("Error loading the above ground object file!");
+        return;
+    }
+    methodsAndParamsObj.insert("AboveGround",aboveGroundObj);
+
+    // Load the wells and caprocks methods and params
+    auto wellsAndCaprocksPath = methodParamsDir + QDir::separator() + "wells_caprocks.json";
+    auto wellsCaprocksObj = getMethodAndParamsObj(wellsAndCaprocksPath, true);
+    if(wellsCaprocksObj.empty())
+    {
+        this->errorMessage("Error loading the wells and caprocks object file!");
+        return;
+    }
+    methodsAndParamsObj.insert("WellsCaprocks",wellsCaprocksObj);
+
+    theWidgetFactory = std::make_unique<WidgetFactory>();
 
     // Results menu
     QMenu *resultsMenu = new QMenu(tr("&Results"),menuBar);
@@ -229,8 +347,8 @@ void WorkflowAppR2D::initialize(void)
 
     theRVWidget = new RVWidget(this);
 
-
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
+
     theHazardToAssetWidget = new HazardToAssetWidget(this, theVisualizationWidget);
     theModelingWidget = new ModelWidget(this);
     theAnalysisWidget = new AnalysisWidget(this);
@@ -286,6 +404,8 @@ void WorkflowAppR2D::initialize(void)
 
     // for RDT select Buildings in GeneralInformation by default
     theGeneralInformationWidgetR2D->setAssetTypeState("Buildings", true);
+
+
 }
 
 
@@ -311,6 +431,25 @@ QGISVisualizationWidget *WorkflowAppR2D::getVisualizationWidget() const
 {
     return theVisualizationWidget;
 }
+
+
+QJsonObject WorkflowAppR2D::getMethodsAndParamsObj() const
+{
+    return methodsAndParamsObj;
+}
+
+
+QMap<QString, QString> WorkflowAppR2D::getMethodsAndParamsMap() const
+{
+    return methodsParamsMap;
+}
+
+
+WidgetFactory* WorkflowAppR2D::getTheWidgetFactory() const
+{
+    return theWidgetFactory.get();
+}
+
 
 
 void WorkflowAppR2D::setActiveWidget(SimCenterAppWidget* widget)

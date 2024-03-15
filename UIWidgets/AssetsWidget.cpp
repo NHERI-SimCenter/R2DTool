@@ -153,6 +153,12 @@ void AssetsWidget::clear(void)
 }
 
 
+MultiComponentR2D *AssetsWidget::getGasInfrastructureWidget() const
+{
+    return gasInfrastructureWidget;
+}
+
+
 
 
 

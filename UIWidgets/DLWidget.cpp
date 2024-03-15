@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "DLWidget.h"
 #include "PelicunDLWidget.h"
 #include "Pelicun3DLWidget.h"
+#include "PipelineDLWidget.h"
 #include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "NoArgSimCenterApp.h"
@@ -71,7 +72,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
   QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
   
     buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
-    pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("NaturalGasPipelines"), this);
+    pipelineWidget = new PipelineDLWidget(this);
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
     QList<QString> transportExtraKeys;
     transportExtraKeys.append("TransportRoads");
@@ -89,10 +90,6 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-    // Natural gas pipeline apps
-    SimCenterAppWidget *noneWidget2 = new NoneWidget(this);
-
-    pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget2);
 
     // Water distribution network apps
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);

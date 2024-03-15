@@ -40,12 +40,23 @@
 
 INCLUDEPATH += $$PATH_TO_OPENSRA/ModelViewItems \
                $$PATH_TO_OPENSRA/UIWidgets \
+               $$PATH_TO_OPENSRA/JsonWidgets \
 
 
 
 SOURCES +=  $$PATH_TO_OPENSRA/OpenSRAPreferences.cpp \
             $$PATH_TO_OPENSRA/UIWidgets/PipelineNetworkWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/PipelineDLWidget.cpp \
             $$PATH_TO_OPENSRA/UIWidgets/RandomVariablesWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/MultiComponentDMWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/MultiComponentDVWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/MultiComponentEDPWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/WidgetFactory.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/AddToRunListWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/GenericModelWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/DamageMeasureWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/DecisionVariableWidget.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/EngineeringDemandParameterWidget.cpp \
             $$PATH_TO_OPENSRA/ModelViewItems/ComboBoxDelegate.cpp \
             $$PATH_TO_OPENSRA/ModelViewItems/ButtonDelegate.cpp \
             $$PATH_TO_OPENSRA/ModelViewItems/LineEditDelegate.cpp \
@@ -55,11 +66,30 @@ SOURCES +=  $$PATH_TO_OPENSRA/OpenSRAPreferences.cpp \
             $$PATH_TO_OPENSRA/ModelViewItems/MixedDelegate.cpp \
             $$PATH_TO_OPENSRA/ModelViewItems/RVTableView.cpp \
             $$PATH_TO_OPENSRA/ModelViewItems/RVTableModel.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/SimCenterJsonWidget.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonDefinedWidget.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonWidget.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonCheckBox.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonComboBox.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonLineEdit.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonLabel.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonGroupBoxWidget.cpp \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonStackedWidget.cpp \
 
 
 HEADERS +=  $$PATH_TO_OPENSRA/OpenSRAPreferences.h \
             $$PATH_TO_OPENSRA/UIWidgets/PipelineNetworkWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/PipelineDLWidget.h \
             $$PATH_TO_OPENSRA/UIWidgets/RandomVariablesWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/MultiComponentDMWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/MultiComponentDVWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/MultiComponentEDPWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/WidgetFactory.h \
+            $$PATH_TO_OPENSRA/UIWidgets/AddToRunListWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/GenericModelWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/DamageMeasureWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/DecisionVariableWidget.h \
+            $$PATH_TO_OPENSRA/UIWidgets/EngineeringDemandParameterWidget.h \
             $$PATH_TO_OPENSRA/ModelViewItems/ComboBoxDelegate.h \
             $$PATH_TO_OPENSRA/ModelViewItems/ButtonDelegate.h \
             $$PATH_TO_OPENSRA/ModelViewItems/LineEditDelegate.h \
@@ -69,7 +99,14 @@ HEADERS +=  $$PATH_TO_OPENSRA/OpenSRAPreferences.h \
             $$PATH_TO_OPENSRA/ModelViewItems/MixedDelegate.h \
             $$PATH_TO_OPENSRA/ModelViewItems/RVTableView.h \
             $$PATH_TO_OPENSRA/ModelViewItems/RVTableModel.h \
-
-
+            $$PATH_TO_OPENSRA/JsonWidgets/SimCenterJsonWidget.h \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonDefinedWidget.h \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonWidget.h \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonCheckBox.h \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonComboBox.h \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonLineEdit.h \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonLabel.h \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonGroupBoxWidget.h \
+            $$PATH_TO_OPENSRA/JsonWidgets/JsonStackedWidget.h \
 
 

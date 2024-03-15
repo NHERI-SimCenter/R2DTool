@@ -44,6 +44,7 @@ INCLUDEPATH += $$PWD \
                $$PWD/UIWidgets \
                $$PWD/ModelViewItems \
                $$PWD/GraphicElements \
+               $$PWD/Events \
                $$PWD/Events/UI \
                $$PWD/Tools \
 

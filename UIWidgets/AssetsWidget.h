@@ -53,6 +53,8 @@ public:
 
     void clear(void);
 
+    MultiComponentR2D *getGasInfrastructureWidget() const;
+
 private:
 
     MultiComponentR2D* gasInfrastructureWidget = nullptr;
