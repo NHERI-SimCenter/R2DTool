@@ -182,6 +182,9 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     // Connect the query area definition combo box to the stacked widget for location input:
     QObject::connect(location, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetLocation, &QStackedWidget::setCurrentIndex);
     mainLayout->addWidget(stackedWidgetLocation,numRow,3);
+    QPushButton *showRegionButton = new QPushButton(tr("Show region"));
+    mainLayout->addWidget(showRegionButton, numRow, 4);
+
 
     // Define the combo box that prompts for footprints source:
     numRow++;
@@ -193,6 +196,9 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     // Connect the footprint input combo box to the stacked widget for footprint source:
     QObject::connect(footprintSource, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetFootprintSource, &QStackedWidget::setCurrentIndex);
     mainLayout->addWidget(stackedWidgetFootprintSource,numRow,3);
+    QPushButton *showFootprintsButton = new QPushButton(tr("Show footprints"));
+    mainLayout->addWidget(showFootprintsButton, numRow, 2);
+
 
     // Define the combo box that prompts for a baseline inventory selection:
     numRow++;
@@ -314,7 +320,7 @@ void BrailsInventoryGenerator::runBRAILS(void)
   brailsData.units = units->currentText();
 
   if (imageSource == "Google") {
-    errorMessage("Starting BRAILS .. ");
+    statusMessage("Starting BRAILS...");
     if (theGoogleDialog == 0) {
       theGoogleDialog = new BrailsGoogleDialog(this);
     }
@@ -322,7 +328,7 @@ void BrailsInventoryGenerator::runBRAILS(void)
     theGoogleDialog->show();
     theGoogleDialog->raise();
     theGoogleDialog->activateWindow();
-    errorMessage("Window shown and activated .. ");    
+    statusMessage("BRAILS-Buildings widget window is activated");
   }
 }
 
