@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Barbaros Cetiner, Frank McKenna, Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include "qgsrectangle.h"
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
@@ -52,6 +53,15 @@ class QPushButton;
 class SC_FileEdit;
 class SC_ComboBox;
 class BrailsGoogleDialog;
+
+typedef struct regionInputStruct {
+    double minLat;
+    double maxLat;
+    double minLong;
+    double maxLong;
+    QString location;
+    QString outputFile;
+} regionData;
 
 typedef struct BrailsDataStruct {
   double minLat;
@@ -87,6 +97,8 @@ protected:
 private slots:
   void runBRAILS(void);
   void coordsChanged(void);
+  void getLocationBoundary(void);
+  void handleBoundaryObtained();
   
 private:
   std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
@@ -106,6 +118,7 @@ private:
   SC_FileEdit *theOutputFile, *fpGeojsonFile, *fpAttrGeojsonFile, *invGeojsonFile, *invAttrGeojsonFile;
   GIS_Selection *theSelectionWidget;
 
+  QgsRectangle zoomRectangle;
   QString imageSource;
   QString imputationAlgo;
 

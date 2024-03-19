@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_DoubleLineEdit.h>
 #include <QComboBox>
 
+#include "ModularPython.h"
 #include <SC_FileEdit.h>
 #include <SC_ComboBox.h>
 #include <SC_IntLineEdit.h>
@@ -64,7 +65,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
 {
+    // Initialize QGIS visualization with map extent defined in destination (EPSG 3857) coordinates for a rectangle
+    // with EPSG 4326 corner coordinates of (37.8227, -122.432) and (37.9739, -122.156):
     theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
+    QgsRectangle zoomRectangle(QgsPointXY(-13629067.89, 4554409.45), QgsPointXY(-13598343.72, 4575739.41));
+    theVisualizationWidget->zoomToExtent(zoomRectangle);
     assert(visWidget);
     
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
@@ -184,7 +189,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     mainLayout->addWidget(stackedWidgetLocation,numRow,3);
     QPushButton *showRegionButton = new QPushButton(tr("Show region"));
     mainLayout->addWidget(showRegionButton, numRow, 4);
-
+    connect(showRegionButton,SIGNAL(clicked()),this,SLOT(getLocationBoundary()));
 
     // Define the combo box that prompts for footprints source:
     numRow++;
@@ -277,6 +282,57 @@ void BrailsInventoryGenerator::clear(void)
 
 }
 
+void
+BrailsInventoryGenerator::getLocationBoundary(void)
+{
+    regionData regionInp;
+    if (location->currentText()=="Bounding box") {
+      regionInp.minLat = minLat->getDouble();
+      regionInp.maxLat = maxLat->getDouble();
+      regionInp.minLong = minLong->getDouble();
+      regionInp.maxLong = maxLong->getDouble();
+      regionInp.location = "";
+    } else if (location->currentText()=="Region name") {
+      regionInp.minLat = 0.0;
+      regionInp.maxLat = 0.0;
+      regionInp.minLong = 0.0;
+      regionInp.maxLong = 0.0;
+      regionInp.location = locationStr->text();
+    }
+    regionInp.outputFile = theOutputFile->getFilename();
+
+    QString appDir = SimCenterPreferences::getInstance()->getAppDir();
+    QDir scriptDir(appDir + QDir::separator());
+    scriptDir.cd("applications");
+    scriptDir.cd("tools");
+    scriptDir.cd("BRAILS");
+    QString locationBoundaryScript = scriptDir.absoluteFilePath("getBRAILSLocationBoundary.py");
+
+    QStringList scriptArgs;
+    scriptArgs << QString("--latMin")  << QString::number(regionInp.minLat)
+               << QString("--latMax")  << QString::number(regionInp.maxLat)
+               << QString("--longMin") << QString::number(regionInp.minLong)
+               << QString("--longMax") << QString::number(regionInp.maxLong)
+               << QString("--location") << regionInp.location
+               << QString("--outputFile") << regionInp.outputFile;
+
+    QFileInfo fileInfo(regionInp.outputFile);
+    QString outputPath = fileInfo.absolutePath();
+    qDebug() << "BRAILS script: " << locationBoundaryScript;
+    qDebug() << "BRAILS args: " << scriptArgs;
+    ModularPython *thePy = new ModularPython(outputPath);
+    thePy->run(locationBoundaryScript,scriptArgs);
+
+    this->hide();
+
+}
+
+void
+BrailsInventoryGenerator::handleBoundaryObtained(){
+    qDebug() << "BRAILS successfully obtained the boundary polygon for the defined region\n";
+}
+
+
 void BrailsInventoryGenerator::runBRAILS(void)
 {
 
@@ -314,7 +370,7 @@ void BrailsInventoryGenerator::runBRAILS(void)
     brailsData.fpSource = fpGeojsonFile->getFilename();
     brailsData.fpSourceAttrMap = fpAttrGeojsonFile->getFilename();
   }
-  brailsData.outputFile =theOutputFile->getFilename();
+  brailsData.outputFile = theOutputFile->getFilename();
   brailsData.imageSource = imageSource;
   brailsData.imputationAlgo = imputationAlgo;
   brailsData.units = units->currentText();
