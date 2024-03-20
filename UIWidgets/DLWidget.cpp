@@ -68,7 +68,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
 : MultiComponentR2D(QString("DL"), parent), visualizationWidget(visWidget)
 {
 
-  QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
+  QList<QString> waterExtraKeys; //waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
   
     buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
     pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("NaturalGasPipelines"), this);
