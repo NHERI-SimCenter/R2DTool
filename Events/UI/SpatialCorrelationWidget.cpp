@@ -43,46 +43,143 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QGroupBox>
 #include "SC_ComboBox.h"
+#include <QJsonObject>
 
 
-SpatialCorrelationWidget::SpatialCorrelationWidget(QWidget *parent): SimCenterAppWidget(parent)
+SpatialCorrelationWidget::SpatialCorrelationWidget(QStringList* selectedIMTypes, QWidget *parent):
+    SimCenterAppWidget(parent), _selectedIMTypes(selectedIMTypes)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
 
-    QGroupBox* spatCorrGroupBox = new QGroupBox(this);
-    spatCorrGroupBox->setTitle("Spatial Correlation");
-    spatCorrGroupBox->setContentsMargins(0,0,0,0);
+    QGroupBox* interCorrGroupBox = new QGroupBox(this);
+    interCorrGroupBox->setTitle("Inter-event Spatial Correlation");
+    interCorrGroupBox->setContentsMargins(0,0,0,0);
 
     this->setMinimumWidth(375);
 
-    QGridLayout* gridLayout = new QGridLayout(spatCorrGroupBox);
-    spatCorrGroupBox->setLayout(gridLayout);
+    QGridLayout* gridLayoutInter = new QGridLayout(interCorrGroupBox);
+    interCorrGroupBox->setLayout(gridLayoutInter);
 
-    spatialCorrelationInterLabel = new QLabel(tr("Inter-event\nSpatial Correlation Model:"),this);
-    spatialCorrelationIntraLabel = new QLabel(tr("Intra-event\nSpatial Correlation Model:"),this);
+//    spatialCorrelationInterLabel = new QLabel(tr("Inter-event Spatial Correlation Model:"),this);
+//    spatialCorrelationIntraLabel = new QLabel(tr("Intra-event Spatial Correlation Model:"),this);
 
-    m_correlationBoxInter = new SC_ComboBox("SaInterEvent",QStringList({"Baker & Jayaram (2008)"}));
-    m_correlationBoxIntra = new SC_ComboBox("SaIntraEvent",QStringList({"Markhvida et al. (2017)",
+    PGAcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Jayaram (2008)"}));
+    SAcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Jayaram (2008)"}));
+    PGVcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Bradley (2017)"}));
+
+
+    gridLayoutInter->addWidget(PGAtypeLabelInter, 0, 0);
+    gridLayoutInter->addWidget(PGAcorrelationBoxInter,0,1);
+    gridLayoutInter->addWidget(SAtypeLabelInter,1,0);
+    gridLayoutInter->addWidget(SAcorrelationBoxInter,1,1);
+    gridLayoutInter->addWidget(PGVtypeLabelInter,2,0);
+    gridLayoutInter->addWidget(PGVcorrelationBoxInter,2,1);
+    gridLayoutInter->setColumnStretch(1,1);
+
+    QGroupBox* intraCorrGroupBox = new QGroupBox(this);
+    intraCorrGroupBox->setTitle("Intra-event Spatial Correlation");
+    intraCorrGroupBox->setContentsMargins(0,0,0,0);
+
+    this->setMinimumWidth(375);
+
+    QGridLayout* gridLayoutIntra = new QGridLayout(intraCorrGroupBox);
+    intraCorrGroupBox->setLayout(gridLayoutInter);
+
+    PGAcorrelationBoxIntra = new SC_ComboBox("IntraEventCorr",QStringList({"Markhvida et al. (2017)",
                                                                          "Jayaram & Baker (2009)",
-                                                                         "Loth & Baker (2013)"}));
+                                                                         "Loth & Baker (2013)",
+                                                                            "Du & Ning (2021)"}));
+    SAcorrelationBoxIntra = new SC_ComboBox("IntraEventCorr",QStringList({"Markhvida et al. (2017)",
+                                                                          "Jayaram & Baker (2009)",
+                                                                          "Loth & Baker (2013)",
+                                                                           "Du & Ning (2021)"}));
+    PGVcorrelationBoxIntra = new SC_ComboBox("IntraEventCorr",QStringList({"Du & Ning (2021)"}));
 
+    gridLayoutIntra->addWidget(PGAtypeLabelIntra, 0, 0);
+    gridLayoutIntra->addWidget(PGAcorrelationBoxIntra,0,1);
+    gridLayoutIntra->addWidget(SAtypeLabelIntra,1,0);
+    gridLayoutIntra->addWidget(SAcorrelationBoxIntra,1,1);
+    gridLayoutIntra->addWidget(PGVtypeLabelIntra,2,0);
+    gridLayoutIntra->addWidget(PGVcorrelationBoxIntra,2,1);
+    gridLayoutIntra->setColumnStretch(1,1);
 
-    gridLayout->addWidget(spatialCorrelationInterLabel,1,0);
-    gridLayout->addWidget(m_correlationBoxInter,1,1);
-    gridLayout->addWidget(spatialCorrelationIntraLabel,2,0);
-    gridLayout->addWidget(m_correlationBoxIntra,2,1);
+    toggleIMselection(selectedIMTypes);
 
-
-    layout->addWidget(spatCorrGroupBox);
+    layout->addWidget(interCorrGroupBox);
+    layout->addWidget(intraCorrGroupBox);
 
     this->setLayout(layout);
 }
 
-
+void SpatialCorrelationWidget::toggleIMselection(QStringList* selectedIMTypes){
+    PGAtypeLabelInter->hide();
+    PGAtypeLabelIntra->hide();
+    SAtypeLabelInter->hide();
+    SAtypeLabelIntra->hide();
+    PGVtypeLabelInter->hide();
+    PGVtypeLabelIntra->hide();
+    PGAcorrelationBoxIntra->hide();
+    PGAcorrelationBoxInter->hide();
+    SAcorrelationBoxIntra->hide();
+    SAcorrelationBoxInter->hide();
+    PGVcorrelationBoxIntra->hide();
+    PGVcorrelationBoxInter->hide();
+    _selectedIMTypes = selectedIMTypes;
+    if (selectedIMTypes->contains("PGA")){
+        PGAtypeLabelInter->show();
+        PGAtypeLabelIntra->show();
+        PGAcorrelationBoxIntra->show();
+        PGAcorrelationBoxInter->show();
+    }
+    if (selectedIMTypes->contains("SA")){
+        SAtypeLabelInter->show();
+        SAtypeLabelIntra->show();
+        SAcorrelationBoxIntra->show();
+        SAcorrelationBoxInter->show();
+    }
+    if (selectedIMTypes->contains("PGV")){
+        PGVtypeLabelInter->show();
+        PGVtypeLabelIntra->show();
+        PGVcorrelationBoxIntra->show();
+        PGVcorrelationBoxInter->show();
+    }
+    return;
+}
 bool SpatialCorrelationWidget::outputToJSON(QJsonObject& obj)
 {
-    m_correlationBoxInter->outputToJSON(obj);
-    m_correlationBoxIntra->outputToJSON(obj);
+    if (_selectedIMTypes->size()==1){
+        if (_selectedIMTypes->contains("PGA")){
+            obj["SaInterEvent"] = PGAcorrelationBoxInter->currentText();
+            obj["SaIntraEvent"] = PGAcorrelationBoxIntra->currentText();
+        }
+        if (_selectedIMTypes->contains("SA")){
+            obj["SaInterEvent"] = SAcorrelationBoxInter->currentText();
+            obj["SaIntraEvent"] = SAcorrelationBoxIntra->currentText();
+        }
+        if (_selectedIMTypes->contains("PGV")){
+            obj["SaInterEvent"] = PGVcorrelationBoxInter->currentText();
+            obj["SaIntraEvent"] = PGVcorrelationBoxIntra->currentText();
+        }
+    } else {
+        if (_selectedIMTypes->contains("PGA")){
+            QJsonObject PGAgmpe;
+            PGAcorrelationBoxInter->outputToJSON(PGAgmpe);
+            PGAcorrelationBoxIntra->outputToJSON(PGAgmpe);
+            obj["PGA"] = PGAgmpe;
+        }
+        if (_selectedIMTypes->contains("SA")){
+            QJsonObject SAgmpe;
+            SAcorrelationBoxInter->outputToJSON(SAgmpe);
+            SAcorrelationBoxIntra->outputToJSON(SAgmpe);
+            obj["SA"] = SAgmpe;
+        }
+        if (_selectedIMTypes->contains("PGV")){
+            QJsonObject PGVgmpe;
+            PGVcorrelationBoxInter->outputToJSON(PGVgmpe);
+            PGVcorrelationBoxIntra->outputToJSON(PGVgmpe);
+            obj["PGV"] = PGVgmpe;
+        }
+    }
 
     return true;
 }
@@ -96,22 +193,22 @@ bool SpatialCorrelationWidget::inputFromJSON(QJsonObject& /*obj*/)
 
 
 
-void SpatialCorrelationWidget::handleAvailableModel(const QString sourceType)
-{
-    if (sourceType.compare("OpenQuake Classical")==0 || sourceType.compare("OpenQuake User-Specified")==0)
-    {
-        // No IM correlation is considered for UHS in Classical PSHA
-        m_correlationBoxInter->hide();
-        m_correlationBoxIntra->hide();
-        spatialCorrelationIntraLabel->hide();
-        spatialCorrelationInterLabel->hide();
-    }
-    else
-    {
-        m_correlationBoxInter->show();
-        m_correlationBoxIntra->show();
-        spatialCorrelationIntraLabel->show();
-        spatialCorrelationInterLabel->show();
-    }
-}
+//void SpatialCorrelationWidget::handleAvailableModel(const QString sourceType)
+//{
+//    if (sourceType.compare("OpenQuake Classical")==0 || sourceType.compare("OpenQuake User-Specified")==0)
+//    {
+//        // No IM correlation is considered for UHS in Classical PSHA
+//        m_correlationBoxInter->hide();
+//        m_correlationBoxIntra->hide();
+//        spatialCorrelationIntraLabel->hide();
+//        spatialCorrelationInterLabel->hide();
+//    }
+//    else
+//    {
+//        m_correlationBoxInter->show();
+//        m_correlationBoxIntra->show();
+//        spatialCorrelationIntraLabel->show();
+//        spatialCorrelationInterLabel->show();
+//    }
+//}
 
