@@ -58,7 +58,7 @@ BrailsGoogleDialog::BrailsGoogleDialog(QWidget *parent)
     auto layout = new QGridLayout(this);
     
     // Add the text and help elements for Google API key:
-    layout->addWidget(new QLabel("API Key"), 2, 0);
+    layout->addWidget(new QLabel("Google API Key"), 2, 0);
     HelpWidget* helpWidget = new HelpWidget();
     layout->addWidget(helpWidget, 2, 1);
 
