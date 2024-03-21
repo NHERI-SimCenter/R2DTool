@@ -36,16 +36,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Barbaros Cetiner, Frank McKenna, Stevan Gavrilovic
 
+#include <stdio.h>
 #include "BrailsInventoryGenerator.h"
 #include "QGISVisualizationWidget.h"
 #include "SimCenterMapcanvasWidget.h"
 #include "GIS_Selection.h"
+#include "qgsvectorlayer.h"
 #include "qstackedwidget.h"
 #include <qgsmapcanvas.h>
 #include <PlainRectangle.h>
 #include <BrailsGoogleDialog.h>
 //#include <PythonProcessHandler.h>
 #include <SimCenterPreferences.h>
+#include "ModularPython.h"
 
 #include <QLabel>
 #include <QComboBox>
@@ -53,15 +56,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStandardPaths>
 #include <QGroupBox>
 #include <QGridLayout>
-#include <SC_DoubleLineEdit.h>
 #include <QComboBox>
+#include <QSettings>
 
-#include "ModularPython.h"
+#include <SC_DoubleLineEdit.h>
 #include <SC_FileEdit.h>
 #include <SC_ComboBox.h>
 #include <SC_IntLineEdit.h>
 #include <SC_DoubleLineEdit.h>
-#include <QSettings>
 
 BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -93,13 +95,15 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     fpGeojsonFile = new SC_FileEdit("fpGeojsonFile");
     fpGeojsonFile->setFilename(brailsDir);
     fpAttrGeojsonFile = new SC_FileEdit("fpGeojsonFile");
-    fpAttrGeojsonFile->setFilename(brailsDir);
+    QString emptystr = "";
+    fpAttrGeojsonFile->setFilename(emptystr);
 
     invGeojsonFile = new SC_FileEdit("invGeojsonFile");
     invGeojsonFile->setFilename(brailsDir);
     invAttrGeojsonFile = new SC_FileEdit("invGeojsonFile");
     invAttrGeojsonFile->setFilename(brailsDir);
 
+    // Put together the stacked widget for location input:
     QWidget *bboxWidget = new QWidget;
     QVBoxLayout *bboxWidgetLayout = new QVBoxLayout(bboxWidget);
     QHBoxLayout* bboxTopLayout = new QHBoxLayout();
@@ -122,57 +126,98 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     locationNameWidgetLayout->addWidget(new QLabel("Region name"));
     locationNameWidgetLayout->addWidget(locationStr);
 
-    // Put together the stacked widget for footprint input:
     QStackedWidget *stackedWidgetLocation = new QStackedWidget;
     stackedWidgetLocation->addWidget(bboxWidget);
     stackedWidgetLocation->addWidget(locationNameWidget);
-    stackedWidgetLocation->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
+    // Put together the stacked widget for footprint input:
+    QPushButton *showFootprintsButton1 = new QPushButton(tr("Show footprints"));
     QWidget *dummyFpSourceWidget1 = new QWidget;
-    QWidget *dummyFpSourceWidget2 = new QWidget;
-    QWidget *dummyFpSourceWidget3 = new QWidget;
-    QWidget *geojsonFootprintWidget1 = new QWidget;
-    QVBoxLayout *geojsonFootprintWidget1Layout = new QVBoxLayout(geojsonFootprintWidget1);
-    QHBoxLayout* geojsonFpTopLayout = new QHBoxLayout();
-    geojsonFpTopLayout->addWidget(new QLabel("GeoJSON file directory"));
-    geojsonFpTopLayout->addWidget(fpGeojsonFile);
-    QHBoxLayout* geojsonFpBottomLayout = new QHBoxLayout();
-    geojsonFpBottomLayout->addWidget(new QLabel("Attribute mapping file"));
-    geojsonFpBottomLayout->addWidget(fpAttrGeojsonFile);
+    QHBoxLayout* dummyFpWidget1Layout = new QHBoxLayout(dummyFpSourceWidget1);
+    dummyFpWidget1Layout->addWidget(showFootprintsButton1);
+    dummyFpWidget1Layout->addStretch();
+    dummyFpWidget1Layout->addStretch();
 
-    geojsonFootprintWidget1Layout->addLayout(geojsonFpTopLayout);
-    geojsonFootprintWidget1Layout->addLayout(geojsonFpBottomLayout);
+    QPushButton *showFootprintsButton2 = new QPushButton(tr("Show footprints"));
+    QWidget *dummyFpSourceWidget2 = new QWidget;
+    QHBoxLayout* dummyFpWidget2Layout = new QHBoxLayout(dummyFpSourceWidget2);
+    dummyFpWidget2Layout->addWidget(showFootprintsButton2);
+    dummyFpWidget2Layout->addStretch();
+    dummyFpWidget2Layout->addStretch();
+
+    QPushButton *showFootprintsButton3 = new QPushButton(tr("Show footprints"));
+    QWidget *dummyFpSourceWidget3 = new QWidget;
+    QHBoxLayout* dummyFpWidget3Layout = new QHBoxLayout(dummyFpSourceWidget3);
+    dummyFpWidget3Layout->addWidget(showFootprintsButton3);
+    dummyFpWidget3Layout->addStretch();
+    dummyFpWidget3Layout->addStretch();
+
+    QPushButton *showFootprintsButton4 = new QPushButton(tr("Show footprints"));
+    QWidget *geojsonFootprintWidget = new QWidget;
+    QHBoxLayout *geojsonFootprintWidget1Layout = new QHBoxLayout(geojsonFootprintWidget);
+    QVBoxLayout* geojsonFpLeftLayout = new QVBoxLayout();
+    geojsonFpLeftLayout->addWidget(new QLabel("GeoJSON file directory"));
+    geojsonFpLeftLayout->addWidget(new QLabel("Attribute mapping file"));
+    QVBoxLayout* geojsonFpMidLayout = new QVBoxLayout();
+    geojsonFpMidLayout->addWidget(fpGeojsonFile);
+    geojsonFpMidLayout->addWidget(fpAttrGeojsonFile);
+    QHBoxLayout* geojsonFpRightLayout = new QHBoxLayout();
+    geojsonFpRightLayout->addWidget(showFootprintsButton4);
+    geojsonFootprintWidget1Layout->addLayout(geojsonFpLeftLayout);
+    geojsonFootprintWidget1Layout->addLayout(geojsonFpMidLayout);
+    geojsonFootprintWidget1Layout->addLayout(geojsonFpRightLayout);
 
     QStackedWidget *stackedWidgetFootprintSource = new QStackedWidget;
     stackedWidgetFootprintSource->addWidget(dummyFpSourceWidget1);
     stackedWidgetFootprintSource->addWidget(dummyFpSourceWidget2);
     stackedWidgetFootprintSource->addWidget(dummyFpSourceWidget3);
-    stackedWidgetFootprintSource->addWidget(geojsonFootprintWidget1);
+    stackedWidgetFootprintSource->addWidget(geojsonFootprintWidget);
 
+    // Put together the stacked widget for baseline inventory input:
+    QWidget *baselineNoneWidget = new QWidget;
+    QHBoxLayout* baselineNoneWidgetLayout = new QHBoxLayout(baselineNoneWidget);
+    baselineNoneWidgetLayout->addStretch();
+    baselineNoneWidgetLayout->addStretch();
+    baselineNoneWidgetLayout->addStretch();
 
-    QWidget *dummyInvSourceWidget1 = new QWidget;
-    QWidget *dummyInvSourceWidget2 = new QWidget;
-    QWidget *baselineInvWidget = new QWidget;
-    QVBoxLayout *geojsonInvWidgetLayout = new QVBoxLayout(baselineInvWidget);
-    QHBoxLayout* geojsonInvTopLayout = new QHBoxLayout();
-    geojsonInvTopLayout->addWidget(new QLabel("GeoJSON file directory"));
-    geojsonInvTopLayout->addWidget(invGeojsonFile);
-    QHBoxLayout* geojsonInvBottomLayout = new QHBoxLayout();
-    geojsonInvBottomLayout->addWidget(new QLabel("Attribute mapping file"));
-    geojsonInvBottomLayout->addWidget(invAttrGeojsonFile);
-    geojsonInvWidgetLayout->addLayout(geojsonInvTopLayout);
-    geojsonInvWidgetLayout->addLayout(geojsonInvBottomLayout);
+    QPushButton *RawNSIInventoryButton = new QPushButton(tr("Show raw inventory data"));
+    QPushButton *ProcessedNSIInventoryButton = new QPushButton(tr("Show processed inventory data"));
+    QWidget *baselineInvNSIWidget = new QWidget;
+    QHBoxLayout* baselineInvNSILayout = new QHBoxLayout(baselineInvNSIWidget);
+    QVBoxLayout* NSIBaselineLeftLayout = new QVBoxLayout();
+    NSIBaselineLeftLayout->addWidget(RawNSIInventoryButton);
+    NSIBaselineLeftLayout->addWidget(ProcessedNSIInventoryButton);
+    baselineInvNSILayout->addLayout(NSIBaselineLeftLayout);
+    baselineInvNSILayout->addStretch();
+    baselineInvNSILayout->addStretch();
+
+    QPushButton *RawUserInventoryButton = new QPushButton(tr("Show raw inventory data"));
+    QPushButton *ProcessedUserInventoryButton = new QPushButton(tr("Show processed inventory data"));
+    QWidget *baselineInvUserDefinedWidget = new QWidget;
+    QHBoxLayout *geojsonInvWidgetLayout = new QHBoxLayout(baselineInvUserDefinedWidget);
+    QVBoxLayout* geojsonInvLeftLayout = new QVBoxLayout();
+    geojsonInvLeftLayout->addWidget(new QLabel("GeoJSON file directory"));
+    geojsonInvLeftLayout->addWidget(new QLabel("Attribute mapping file"));
+    QVBoxLayout* geojsonInvCenterLayout = new QVBoxLayout();
+    geojsonInvCenterLayout->addWidget(invGeojsonFile);
+    geojsonInvCenterLayout->addWidget(invAttrGeojsonFile);
+    QVBoxLayout* geojsonInvRightLayout = new QVBoxLayout();
+    geojsonInvRightLayout->addWidget(RawUserInventoryButton);
+    geojsonInvRightLayout->addWidget(ProcessedUserInventoryButton);
+    geojsonInvWidgetLayout->addLayout(geojsonInvLeftLayout);
+    geojsonInvWidgetLayout->addLayout(geojsonInvCenterLayout);
+    geojsonInvWidgetLayout->addLayout(geojsonInvRightLayout);
 
     QStackedWidget *stackedWidgetInventorySource = new QStackedWidget;
-    stackedWidgetInventorySource->addWidget(dummyInvSourceWidget1);
-    stackedWidgetInventorySource->addWidget(dummyInvSourceWidget2);
-    stackedWidgetInventorySource->addWidget(baselineInvWidget);
+    stackedWidgetInventorySource->addWidget(baselineNoneWidget);
+    stackedWidgetInventorySource->addWidget(baselineInvNSIWidget);
+    stackedWidgetInventorySource->addWidget(baselineInvUserDefinedWidget);
 
     QGridLayout *mainLayout = new QGridLayout(this);
 
     // Define the combo box that prompts for outputs units:
     int numRow = 0;
-    QStringList unitList; unitList << "m" << "ft";    
+    QStringList unitList; unitList << "m" << "ft";
     units = new SC_ComboBox("units", unitList);
     mainLayout->addWidget(new QLabel("Output units"),numRow,0);
     mainLayout->addWidget(units,numRow,1);
@@ -201,9 +246,10 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     // Connect the footprint input combo box to the stacked widget for footprint source:
     QObject::connect(footprintSource, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetFootprintSource, &QStackedWidget::setCurrentIndex);
     mainLayout->addWidget(stackedWidgetFootprintSource,numRow,3);
-    QPushButton *showFootprintsButton = new QPushButton(tr("Show footprints"));
-    mainLayout->addWidget(showFootprintsButton, numRow, 2);
-
+    connect(showFootprintsButton1,SIGNAL(clicked()),this,SLOT(getFootprints()));
+    connect(showFootprintsButton2,SIGNAL(clicked()),this,SLOT(getFootprints()));
+    connect(showFootprintsButton3,SIGNAL(clicked()),this,SLOT(getFootprints()));
+    connect(showFootprintsButton4,SIGNAL(clicked()),this,SLOT(getFootprints()));
 
     // Define the combo box that prompts for a baseline inventory selection:
     numRow++;
@@ -218,7 +264,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 
     // Define the combo box for selecting the building attributes that will be generated by BRAILS:
     numRow++;
-    QStringList requestedAttributes; requestedAttributes << "All" << "HAZUS seismic attributes" << "Select from enabled attributes" << "Footprints only";
+    QStringList requestedAttributes; requestedAttributes << "All" << "HAZUS seismic attributes" << "Select from enabled attributes";
     attributeSelected = new SC_ComboBox("baseline", requestedAttributes);
     mainLayout->addWidget(new QLabel("Requested attributes"),numRow,0);
     mainLayout->addWidget(attributeSelected,numRow,1);
@@ -256,7 +302,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 
     // Create the Run BRAILS button:
     numRow++;
-    QPushButton *runButton = new QPushButton(tr("Run BRAILS"));
+    QPushButton *runButton = new QPushButton(tr("Run BRAILS Inventory Generator"));
     mainLayout->addWidget(runButton,numRow,0,1,8);
     connect(runButton,SIGNAL(clicked()),this,SLOT(runBRAILS()));
 
@@ -299,7 +345,12 @@ BrailsInventoryGenerator::getLocationBoundary(void)
       regionInp.maxLong = 0.0;
       regionInp.location = locationStr->text();
     }
-    regionInp.outputFile = theOutputFile->getFilename();
+    QFileInfo fileInfo(theOutputFile->getFilename());
+    QString outputPath = fileInfo.absolutePath();
+    QDir dir(outputPath);
+    if (!dir.exists())
+      dir.mkpath(outputPath);
+    regionInp.outputFile = outputPath + "/regionBoundary.geojson";
 
     QString appDir = SimCenterPreferences::getInstance()->getAppDir();
     QDir scriptDir(appDir + QDir::separator());
@@ -316,22 +367,92 @@ BrailsInventoryGenerator::getLocationBoundary(void)
                << QString("--location") << regionInp.location
                << QString("--outputFile") << regionInp.outputFile;
 
-    QFileInfo fileInfo(regionInp.outputFile);
-    QString outputPath = fileInfo.absolutePath();
     qDebug() << "BRAILS script: " << locationBoundaryScript;
     qDebug() << "BRAILS args: " << scriptArgs;
     ModularPython *thePy = new ModularPython(outputPath);
     thePy->run(locationBoundaryScript,scriptArgs);
 
-    this->hide();
-
+    // Load the vector layer
+    theVisualizationWidget->addVectorLayer(regionInp.outputFile, "RegionBoundary", "ogr");
+    theVisualizationWidget->zoomToActiveLayer();
+    theVisualizationWidget->setActiveLayerFillNull();
 }
 
 void
-BrailsInventoryGenerator::handleBoundaryObtained(){
-    qDebug() << "BRAILS successfully obtained the boundary polygon for the defined region\n";
-}
+BrailsInventoryGenerator::getFootprints(void)
+{
+    fpData fpInp;
+    if (location->currentText()=="Bounding box") {
+      fpInp.minLat = minLat->getDouble();
+      fpInp.maxLat = maxLat->getDouble();
+      fpInp.minLong = minLong->getDouble();
+      fpInp.maxLong = maxLong->getDouble();
+      fpInp.location = "";
+    } else if (location->currentText()=="Region name") {
+      fpInp.minLat = 0.0;
+      fpInp.maxLat = 0.0;
+      fpInp.minLong = 0.0;
+      fpInp.maxLong = 0.0;
+      fpInp.location = locationStr->text();
+    }
 
+    fpInp.fpSourceAttrMap = "";
+    if (footprintSource->currentText()=="Microsoft Global Building Footprints") {
+      fpInp.fpSource = "ms";
+    } else if (footprintSource->currentText()=="OpenStreetMap") {
+      fpInp.fpSource = "osm";
+    } else if (footprintSource->currentText()=="FEMA USA Structures") {
+      fpInp.fpSource = "usastr";
+    } else if (footprintSource->currentText()=="User-defined") {
+      fpInp.fpSource = fpGeojsonFile->getFilename();
+      fpInp.fpSourceAttrMap = fpAttrGeojsonFile->getFilename();
+    }
+
+    QFileInfo fileInfo(theOutputFile->getFilename());
+    QString outputPath = fileInfo.absolutePath();
+    QDir dir(outputPath);
+    if (!dir.exists())
+      dir.mkpath(outputPath);
+
+    QString printSuffix;
+    if (fpInp.fpSource.contains("geojson")==NULL&&fpInp.fpSource.contains("csv")==NULL){
+      printSuffix = fpInp.fpSource;
+    } else {
+      printSuffix = "userdefined";
+    }
+
+    fpInp.outputFile = outputPath + "/footprints_" + printSuffix + ".geojson";
+    fpInp.units = units->currentText();
+
+    QString appDir = SimCenterPreferences::getInstance()->getAppDir();
+    QDir scriptDir(appDir + QDir::separator());
+    scriptDir.cd("applications");
+    scriptDir.cd("tools");
+    scriptDir.cd("BRAILS");
+    QString fpDownloadScript = scriptDir.absoluteFilePath("getBRAILSFootprints.py");
+
+    QStringList scriptArgs;
+    scriptArgs << QString("--latMin")  << QString::number(fpInp.minLat)
+               << QString("--latMax")  << QString::number(fpInp.maxLat)
+               << QString("--longMin") << QString::number(fpInp.minLong)
+               << QString("--longMax") << QString::number(fpInp.maxLong)
+               << QString("--location") << fpInp.location
+               << QString("--fpSource") << fpInp.fpSource
+               << QString("--fpSourceAttrMap") << fpInp.fpSourceAttrMap
+               << QString("--outputFile") << fpInp.outputFile
+               << QString("--lengthUnit") << fpInp.units;
+
+    qDebug() << "BRAILS script: " << fpDownloadScript;
+    qDebug() << "BRAILS args: " << scriptArgs;
+    ModularPython *thePy = new ModularPython(outputPath);
+    thePy->run(fpDownloadScript,scriptArgs);
+
+
+    // Load the vector layer
+    QString layerName = "BuildingFootprints_" + printSuffix;
+    theVisualizationWidget->addVectorLayer(fpInp.outputFile, layerName, "ogr");
+    theVisualizationWidget->zoomToActiveLayer();
+}
 
 void BrailsInventoryGenerator::runBRAILS(void)
 {

@@ -63,6 +63,18 @@ typedef struct regionInputStruct {
     QString outputFile;
 } regionData;
 
+typedef struct fpInputStruct {
+    double minLat;
+    double maxLat;
+    double minLong;
+    double maxLong;
+    QString location;
+    QString outputFile;
+    QString fpSource;
+    QString fpSourceAttrMap;
+    QString units;
+} fpData;
+
 typedef struct BrailsDataStruct {
   double minLat;
   double maxLat;
@@ -98,7 +110,7 @@ private slots:
   void runBRAILS(void);
   void coordsChanged(void);
   void getLocationBoundary(void);
-  void handleBoundaryObtained();
+  void getFootprints(void);
   
 private:
   std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
@@ -119,6 +131,7 @@ private:
   GIS_Selection *theSelectionWidget;
 
   QgsRectangle zoomRectangle;
+  QString printSuffix;
   QString imageSource;
   QString imputationAlgo;
 
