@@ -37,11 +37,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna, Barbaros Cetiner
+// Written by: Barbaros Cetiner, Frank McKenna
 
+#include "qcheckbox.h"
+#include "qevent.h"
+#include "qstyle.h"
 #include <QDialog>
 #include <QJsonObject>
 #include <BrailsInventoryGenerator.h>
+#include <QApplication>
+#include <QLabel>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <QIcon>
+#include <QCursor>
+#include <QDebug>
 
 class SC_IntLineEdit;
 class QLineEdit;
@@ -57,13 +68,59 @@ signals:
 
 public slots:
   void startBrails(void);
+  void disableNumBuildings(bool checked);
   void handleBrailsFinished();
   
 private:
   SC_IntLineEdit *numBuildings;
+  QCheckBox numBldgCheckbox;
+  bool getAllBuildings;
   SC_IntLineEdit *seed;
+  QLabel *seedLabel;
   BrailsData brailsData;
   QLineEdit *apiKey;
+};
+
+class ClickableLabel : public QLabel {
+  Q_OBJECT
+  public:
+  explicit ClickableLabel(const QString& text = "", QWidget* parent = nullptr) : QLabel(text, parent) {}
+
+  signals:
+  void clicked();
+
+  protected:
+  void mousePressEvent(QMouseEvent* event) override {
+      if (event->button() == Qt::LeftButton) {
+          emit clicked();
+      }
+      QLabel::mousePressEvent(event);
+  }
+};
+
+class HelpWidget : public QWidget {
+  Q_OBJECT
+  public:
+  HelpWidget(QWidget* parent = nullptr) : QWidget(parent) {
+      QHBoxLayout* layout = new QHBoxLayout(this);
+
+      helpIcon = new ClickableLabel("", this);
+      helpIcon->setPixmap(style()->standardPixmap(QStyle::SP_MessageBoxQuestion));
+      helpIcon->setToolTip("Click for help on getting a Google API Key");
+      helpIcon->setCursor(Qt::PointingHandCursor);
+
+      connect(helpIcon, &ClickableLabel::clicked, this, &HelpWidget::showHelpMessage);
+
+      layout->addWidget(helpIcon);
+  }
+
+  private slots:
+  void showHelpMessage() {
+      QMessageBox::question(this, "Help", "If you do not have a Google API key, please follow the instructions <a href='https://developers.google.com/maps/documentation/embed/get-api-key'>here</a>", QMessageBox::Ok);
+  }
+
+  private:
+  ClickableLabel* helpIcon;
 };
 
 #endif // BRAILS_GOOGLE_DIALOG_H

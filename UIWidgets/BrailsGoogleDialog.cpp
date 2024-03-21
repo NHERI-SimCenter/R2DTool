@@ -53,47 +53,49 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 BrailsGoogleDialog::BrailsGoogleDialog(QWidget *parent)
   : QDialog(parent)
 {
-    this->setWindowTitle("Using Google API");
+    // Initiate a grid layout:
+    this->setWindowTitle("Using Google Imagery");
     auto layout = new QGridLayout(this);
-
-    layout->addWidget(new QLabel("Google API Key"), 0, 0, 1, 2);
-    auto apiKeyLabel =
-      new QLabel("If you do not have a Google API key, please follow the instructions <a href=\"https://developers.google.com/maps/documentation/embed/get-api-key#:~:text=Go%20to%20the%20Googlele%20Maps%20Platform%20%3E%20Credentials%20page.&text=On%20the%20Credentials%20page%2C%20click,your%20newly%20created%20API%20key\">here</a>");
-    apiKeyLabel->setTextFormat(Qt::RichText);
-    apiKeyLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    apiKeyLabel->setOpenExternalLinks(true);
-    layout->addWidget(apiKeyLabel, 1, 0, 1, 2);
     
+    // Add the text and help elements for Google API key:
     layout->addWidget(new QLabel("API Key"), 2, 0);
+    HelpWidget* helpWidget = new HelpWidget();
+    layout->addWidget(helpWidget, 2, 1);
 
-    // fill in key if already saved
+    // Fill in API key if previously saved:
     apiKey = new QLineEdit();
     apiKey->setEchoMode(QLineEdit::Password);
-    layout->addWidget(apiKey, 2, 1);
-
+    layout->addWidget(apiKey, 2, 2);
     QSettings settings;
     auto googleAPISetting = settings.value("GoogleAPI");
     if(googleAPISetting.isValid() && !googleAPISetting.isNull())
         apiKey->setText(googleAPISetting.toString());
    
-    //Save Password
+    // Create a push button to save Google API key:
     auto savePassword = new QPushButton("Save Key");
-    layout->addWidget(savePassword,2,2);
+    layout->addWidget(savePassword,2,3);
     connect(savePassword,&QPushButton::clicked, this, [=]() {
       QSettings settings;
       settings.setValue("GoogleAPI", apiKey->text());
     });
-    
+
+    // Define the row prompting number of buildings:
     layout->addWidget(new QLabel("Number of buildings"),3,0);
     numBuildings = new SC_IntLineEdit("numBuildings",100);
-    layout->addWidget(numBuildings, 3,1);
+    layout->addWidget(numBuildings, 3,2);
+    QCheckBox *numBldgCheckbox = new QCheckBox("All buildings", this);
+    layout->addWidget(numBldgCheckbox, 3,3);
+    connect(numBldgCheckbox, SIGNAL(clicked(bool)), this, SLOT(disableNumBuildings(bool)));
 
-    layout->addWidget(new QLabel("Random seed"),4,0);
+    // Define the row prompting random seed:
+    seedLabel = new QLabel("Random seed");
+    layout->addWidget(seedLabel,4,0);
     seed = new SC_IntLineEdit("seed",7);
-    layout->addWidget(seed, 4,1);
+    layout->addWidget(seed, 4,2);
 
+    // Create a push button to run BRAILS:
     QPushButton *runButton = new QPushButton(tr("Get building inventory"));
-    layout->addWidget(runButton, 5,0,1,3);
+    layout->addWidget(runButton, 5,0,1,4);
     connect(runButton,SIGNAL(clicked()),this,SLOT(startBrails()));
 }
 
@@ -102,6 +104,21 @@ BrailsGoogleDialog::setData(BrailsData &theData){
   brailsData = theData;
 }
 
+void
+BrailsGoogleDialog::disableNumBuildings(bool checked){
+  if (checked){
+        numBuildings->setEnabled(false);
+        seedLabel->setVisible(false);
+        seed->setVisible(false);
+        getAllBuildings = true;
+  }
+  else {
+        numBuildings->setEnabled(true);
+        seedLabel->setVisible(true);
+        seed->setVisible(true);
+        getAllBuildings = false;
+  }
+}
 
 void
 BrailsGoogleDialog::startBrails(void){
@@ -125,12 +142,12 @@ BrailsGoogleDialog::startBrails(void){
 	     << QString("--lengthUnit") << brailsData.units 
 	     << QString("--seed")    << QString::number(seed->getInt())
 	     << "--numBuildings" << QString::number(numBuildings->getInt())
+         << "--getAllBuildings" << QString::number(getAllBuildings)
 	     << "--googKey" << apiKey->text()
 	     << "--outputFile" << brailsData.outputFile;
 			      
   QFileInfo fileInfo(brailsData.outputFile);
   QString outputPath = fileInfo.absolutePath();
-  QString fileName = fileInfo.baseName();
   qDebug() << "BRAILS script: " << brailsScript;
   qDebug() << "BRAILS args: " << scriptArgs;
   ModularPython *thePy = new ModularPython(outputPath);
