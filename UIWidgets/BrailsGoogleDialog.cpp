@@ -152,8 +152,6 @@ BrailsGoogleDialog::startBrails(void){
   qDebug() << "BRAILS args: " << scriptArgs;
   ModularPython *thePy = new ModularPython(outputPath);
   thePy->run(brailsScript,scriptArgs);
-
-  this->hide();
 }
 
 void
