@@ -50,6 +50,10 @@ INCLUDEPATH += $$PWD \
 
 SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Events/UI/BedrockDepthWidget.cpp \
+    $$PWD/Events/UI/GroundFailureWidget.cpp \
+    $$PWD/Events/UI/LiqLateralHazus2020.cpp \
+    $$PWD/Events/UI/LiqTriggerHazus2020.cpp \
+    $$PWD/Events/UI/LiqVerticalHazus2020.cpp \
             $$PWD/Events/UI/UCERF2Widget.cpp \
             $$PWD/Events/UI/HazardConsistentScenarioWidget.cpp \
             $$PWD/Events/UI/ConventionalScenarioWidget.cpp \
@@ -105,6 +109,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Events/UI/SpatialCorrelationWidget.cpp \
             $$PWD/Events/UI/Vs30.cpp \
             $$PWD/Events/UI/Vs30Widget.cpp \
+    $$PWD/Events/UI/LiqTriggerZhuEtAl2017.cpp \
             $$PWD/Events/UI/zDepthWidget.cpp \
             $$PWD/Events/UI/zDepthUserInputWidget.cpp \
             $$PWD/ModelViewItems/ComponentTableModel.cpp \
@@ -191,6 +196,10 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
 
 HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Events/UI/BedrockDepthWidget.h \
+    $$PWD/Events/UI/GroundFailureWidget.h \
+    $$PWD/Events/UI/LiqLateralHazus2020.h \
+    $$PWD/Events/UI/LiqTriggerHazus2020.h \
+    $$PWD/Events/UI/LiqVerticalHazus2020.h \
             $$PWD/Events/UI/UCERF2Widget.h \
             $$PWD/Events/UI/HazardConsistentScenarioWidget.h \
             $$PWD/Events/UI/ConventionalScenarioWidget.h \
@@ -244,6 +253,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Events/UI/SpatialCorrelationWidget.h \
             $$PWD/Events/UI/Vs30.h \
             $$PWD/Events/UI/Vs30Widget.h \
+    $$PWD/Events/UI/LiqTriggerZhuEtAl2017.h \
             $$PWD/Events/UI/zDepthWidget.h \
             $$PWD/Events/UI/zDepthUserInputWidget.h \
             $$PWD/Tools/AssetInputDelegate.h \
