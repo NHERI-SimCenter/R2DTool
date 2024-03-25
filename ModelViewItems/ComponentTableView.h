@@ -63,6 +63,8 @@ public:
 
     QVariant item(int row, int col);
 
+    void setComponenetTableModel(ComponentTableModel* compTableModel);
+
 private:
 
     ComponentTableModel* tableModel;

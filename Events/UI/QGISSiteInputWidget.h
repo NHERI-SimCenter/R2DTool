@@ -44,6 +44,7 @@ class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
 class QStringList;
+class ComponentTableView;
 
 class QGISSiteInputWidget : public AssetInputWidget
 {
@@ -65,6 +66,7 @@ signals:
 
 public slots:
     void setSiteFilter(QString filter);
+    void showSiteTableWindow();
 
 private:
 
@@ -86,6 +88,7 @@ private:
     // Soil model attributes completeness
     bool soilParamComplete = false;
 
+    ComponentTableView* componentTableView;
 };
 
 #endif // QGISSITEINPUTWIDGET_H
