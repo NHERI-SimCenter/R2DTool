@@ -56,6 +56,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMimeData>
 #include "qgis/qgsrasterlayer.h"
 #include "qgis/qgscoordinatereferencesystem.h"
+#include <QGroupBox>
+#include <QGridLayout>
+#include <QJsonArray>
+
 
 LiqTriggerZhuEtAl2017::LiqTriggerZhuEtAl2017(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -70,6 +74,8 @@ LiqTriggerZhuEtAl2017::LiqTriggerZhuEtAl2017(QWidget *parent) : SimCenterAppWidg
     DistWaterBrowseFileButton->setText(tr("Browse"));
     DistWaterBrowseFileButton->setMaximumWidth(150);
     DistWaterComboBox = new SC_ComboBox("DistWater", QStringList({"Defined (\"distWater\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
+//    QCheckBox* DistWaterSaveCheckBox = new QCheckBox("distWater");
+//    outputSaveCheckBoxes.insert("distWater", DistWaterSaveCheckBox);
 
     QLabel* DistCoastfilenameLabel = new QLabel(tr("Distance (km) to Coast:"),this);
     DistCoastFilenameLineEdit = new QLineEdit(this);
@@ -77,6 +83,8 @@ LiqTriggerZhuEtAl2017::LiqTriggerZhuEtAl2017(QWidget *parent) : SimCenterAppWidg
     DistCoastBrowseFileButton->setText(tr("Browse"));
     DistCoastBrowseFileButton->setMaximumWidth(150);
     DistCoastComboBox = new SC_ComboBox("DistCoast", QStringList({"Defined (\"distCoast\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
+//    QCheckBox* DistCoastSaveCheckBox = new QCheckBox("distCoast");
+//    outputSaveCheckBoxes.insert("distCoast", DistCoastSaveCheckBox);
 
     QLabel* DistRiverfilenameLabel = new QLabel(tr("Distance (km) to River (raster):"),this);
     DistRiverFilenameLineEdit = new QLineEdit(this);
@@ -84,6 +92,8 @@ LiqTriggerZhuEtAl2017::LiqTriggerZhuEtAl2017(QWidget *parent) : SimCenterAppWidg
     DistRiverBrowseFileButton->setText(tr("Browse"));
     DistRiverBrowseFileButton->setMaximumWidth(150);
     DistRiverComboBox = new SC_ComboBox("DistRiver", QStringList({"Defined (\"distRiver\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
+//    QCheckBox* DistRiverSaveCheckBox = new QCheckBox("distRiver");
+//    outputSaveCheckBoxes.insert("distRiver", DistRiverSaveCheckBox);
 
     QLabel* GwDepthfilenameLabel = new QLabel(tr("Ground Water Table Depth (m):"),this);
     GwDepthFilenameLineEdit = new QLineEdit(this);
@@ -91,6 +101,9 @@ LiqTriggerZhuEtAl2017::LiqTriggerZhuEtAl2017(QWidget *parent) : SimCenterAppWidg
     GwDepthBrowseFileButton->setText(tr("Browse"));
     GwDepthBrowseFileButton->setMaximumWidth(150);
     GwDepthComboBox = new SC_ComboBox("GwDepth", QStringList({"Defined (\"gwDepth\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
+//    QCheckBox* GwDepthSaveCheckBox = new QCheckBox("gwDepth");
+//    outputSaveCheckBoxes.insert("gwDepth", GwDepthSaveCheckBox);
+
 
     QLabel* PrecipitationfilenameLabel = new QLabel(tr("Mean Annual Precipitation (mm):"),this);
     PrecipitationFilenameLineEdit = new QLineEdit(this);
@@ -98,6 +111,8 @@ LiqTriggerZhuEtAl2017::LiqTriggerZhuEtAl2017(QWidget *parent) : SimCenterAppWidg
     PrecipitationBrowseFileButton->setText(tr("Browse"));
     PrecipitationBrowseFileButton->setMaximumWidth(150);
     PrecipitationComboBox = new SC_ComboBox("Precipitation", QStringList({"Defined (\"precipitation\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
+//    QCheckBox* PrecipitationSaveCheckBox = new QCheckBox("Precipitation");
+//    outputSaveCheckBoxes.insert("Precipitation", PrecipitationSaveCheckBox);
 
     resetToDefaultButton = new QPushButton();
     resetToDefaultButton->setText(tr("Reset to Default"));
@@ -122,6 +137,23 @@ LiqTriggerZhuEtAl2017::LiqTriggerZhuEtAl2017(QWidget *parent) : SimCenterAppWidg
     connect(resetToDefaultButton, &QPushButton::clicked, this, &LiqTriggerZhuEtAl2017::setDefaultFilePath);
 
     crsSelectorWidget = new CRSSelectionWidget();
+
+    QCheckBox* LiqSuscSaveCheckBox = new QCheckBox("liq_susc");
+    outputSaveCheckBoxes.insert("liq_susc", LiqSuscSaveCheckBox);
+    QCheckBox* LiqProbSaveCheckBox = new QCheckBox("liq_prob");
+    outputSaveCheckBoxes.insert("liq_prob", LiqProbSaveCheckBox);
+
+    outputSaveGroupBox = new QGroupBox(this);
+    outputSaveGroupBox->setTitle(tr("Save Output"));
+    outputSaveGroupBox->setContentsMargins(0,0,0,0);
+    QGridLayout* outputSaveGroupBoxLayout = new QGridLayout(outputSaveGroupBox);
+    outputSaveGroupBox->setLayout(outputSaveGroupBoxLayout);
+    int checkBoxCount = 0;
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        outputSaveGroupBoxLayout->addWidget(it.value(), 0, checkBoxCount);
+        checkBoxCount ++;
+    }
+//    outputSaveGroupBox->setFlat(true);
 
     // Add to layout
     layout->addWidget(DistWaterfilenameLabel,0,0);
@@ -149,13 +181,13 @@ LiqTriggerZhuEtAl2017::LiqTriggerZhuEtAl2017(QWidget *parent) : SimCenterAppWidg
     layout->addWidget(PrecipitationFilenameLineEdit,4,2,1,3);
     layout->addWidget(PrecipitationBrowseFileButton,4,5);
 
-    layout->addWidget(crsSelectorWidget,5,0, 1, 5);
-
-    layout->addWidget(resetToDefaultButton,6,5);
+    layout->addWidget(crsSelectorWidget,5,0, 1, 6);
+    layout->addWidget(outputSaveGroupBox, 6, 0, 1, 6);
+    layout->addWidget(resetToDefaultButton,7,5);
 
     layout->setColumnStretch(2,3);
     layout->setColumnStretch(1,1);
-    layout->setRowStretch(7,1);
+    layout->setRowStretch(8,1);
 
     this->setLayout(layout);
 
@@ -271,6 +303,13 @@ bool LiqTriggerZhuEtAl2017::outputToJSON(QJsonObject &jsonObject){
         crsSelectorWidget->outputAppDataToJSON(crsObj);
         parameterObj["inputCRS"] = crsObj["CRS"].toString();
     }
+    QJsonArray outputArray;
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        if (it.value()->isChecked()){
+            outputArray.append(it.key());
+        }
+    }
+    jsonObject["Output"] = outputArray;
     jsonObject["Model"] = "ZhuEtal2017";
     jsonObject["Parameters"] = parameterObj;
     return true;
@@ -314,6 +353,10 @@ void LiqTriggerZhuEtAl2017::setDefaultFilePath(){
     this->DistRiverComboBox->setCurrentIndex(1);
     this->GwDepthComboBox->setCurrentIndex(1);
     this->PrecipitationComboBox->setCurrentIndex(1);
+
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        it.value()->setChecked(true);
+    }
 }
 
 

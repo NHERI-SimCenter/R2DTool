@@ -51,6 +51,9 @@ class CRSSelectionWidget;
 class QSignalMapper;
 class SC_ComboBox;
 class QLabel;
+class QGroupBox;
+class QCheckBox;
+
 
 class LiqTriggerHazus2020 : public SimCenterAppWidget
 {
@@ -85,6 +88,9 @@ private:
     QString LiqSuscKey;
 
     QLabel* LiqSuscKeyLabel;
+
+    QGroupBox* outputSaveGroupBox = nullptr;
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
 
     void setupConnections();
 //    void setRupFile(QString dirPath);

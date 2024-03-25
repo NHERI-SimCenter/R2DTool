@@ -57,6 +57,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "qgis/qgsvectorlayer.h"
 #include "qgis/qgscoordinatereferencesystem.h"
 #include "qgis/qgsvectorfilewriter.h"
+#include <QMap>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QJsonArray>
+
 
 LiqTriggerHazus2020::LiqTriggerHazus2020(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -102,7 +107,23 @@ LiqTriggerHazus2020::LiqTriggerHazus2020(QWidget *parent) : SimCenterAppWidget(p
 
     crsSelectorWidget = new CRSSelectionWidget();
 
-    // Add to layout]
+    QCheckBox* LiqSuscSaveCheckBox = new QCheckBox("liq_susc");
+    outputSaveCheckBoxes.insert("liq_susc", LiqSuscSaveCheckBox);
+    QCheckBox* LiqProbSaveCheckBox = new QCheckBox("liq_prob");
+    outputSaveCheckBoxes.insert("liq_prob", LiqProbSaveCheckBox);
+
+    outputSaveGroupBox = new QGroupBox(this);
+    outputSaveGroupBox->setTitle(tr("Save Output"));
+    outputSaveGroupBox->setContentsMargins(0,0,0,0);
+    QGridLayout* outputSaveGroupBoxLayout = new QGridLayout(outputSaveGroupBox);
+    outputSaveGroupBox->setLayout(outputSaveGroupBoxLayout);
+    int checkBoxCount = 0;
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        outputSaveGroupBoxLayout->addWidget(it.value(), 0, checkBoxCount);
+        checkBoxCount ++;
+    }
+
+    // Add to layout
     layout->addWidget(GwDepthfilenameLabel,0,0);
     layout->addWidget(GwDepthDefineMethodComboBox,0,1,1,1);
     layout->addWidget(GwDepthFilenameLineEdit,0,2,1,3);
@@ -116,13 +137,14 @@ LiqTriggerHazus2020::LiqTriggerHazus2020(QWidget *parent) : SimCenterAppWidget(p
     layout->addWidget(LiqSuscKeyLabel,2,0);
     layout->addWidget(LiqSuscKeyLineEdit,2,1,1,1);
 
-    layout->addWidget(crsSelectorWidget,3,0, 1, 5);
+    layout->addWidget(crsSelectorWidget,3,0, 1, 6);
+    layout->addWidget(outputSaveGroupBox, 4, 0, 1, 6);
 
-    layout->addWidget(resetToDefaultButton,4,5);
+    layout->addWidget(resetToDefaultButton,5,5);
 
     layout->setColumnStretch(2,3);
     layout->setColumnStretch(1,1);
-    layout->setRowStretch(5,1);
+    layout->setRowStretch(6,1);
 
     this->setLayout(layout);
 
@@ -233,6 +255,13 @@ bool LiqTriggerHazus2020::outputToJSON(QJsonObject &jsonObject){
         crsSelectorWidget->outputAppDataToJSON(crsObj);
         parameterObj["inputCRS"] = crsObj["CRS"].toString();
     }
+    QJsonArray outputArray;
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        if (it.value()->isChecked()){
+            outputArray.append(it.key());
+        }
+    }
+    jsonObject["Output"] = outputArray;
     jsonObject["Model"] = "Hazus2020";
     jsonObject["Parameters"] = parameterObj;
     return true;
@@ -263,4 +292,8 @@ void LiqTriggerHazus2020::setDefaultFilePath(){
 
     this->GwDepthDefineMethodComboBox->setCurrentIndex(1);
     this->GeoMapDefineMethodComboBox->setCurrentIndex(1);
+
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        it.value()->setChecked(true);
+    }
 }

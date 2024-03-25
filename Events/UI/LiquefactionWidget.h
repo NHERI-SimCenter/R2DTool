@@ -1,6 +1,5 @@
-#ifndef LiqVerticalHazus2020_H
-#define LiqVerticalHazus2020_H
-
+#ifndef LiquefactionWidget_H
+#define LiquefactionWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -40,42 +39,39 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Jinyan Zhao
 
 #include "SimCenterAppWidget.h"
-#include "SC_DoubleLineEdit.h"
 
-
-class QComboBox;
-class QLineEdit;
-class QPushButton;
-class CRSSelectionWidget;
-class QSignalMapper;
-class QLabel;
 class QGroupBox;
 class QCheckBox;
-
-class LiqVerticalHazus2020 : public SimCenterAppWidget
+class SimCenterAppSelection;
+class LiquefactionWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit LiqVerticalHazus2020(QWidget *parent = nullptr);
-    bool outputToJSON(QJsonObject &jsonObject);
+    explicit LiquefactionWidget(QWidget *parent = nullptr);
 
-signals:
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
+
+    void reset(void);
+
 
 public slots:
-    void setDefaultFilePath();
+//    void addGMMforSA(bool SAenabled);
+//    void addGMMforPGV(bool PGVenabled);
 
 private:
-    QLabel* messageLabel;
-
-    QPushButton* resetToDefaultButton;
-
-    QGroupBox* outputSaveGroupBox = nullptr;
-
-    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
 
 
+    SimCenterAppSelection* liqTriggerSelection;
+    SimCenterAppSelection* liqLateralSelection;
+    SimCenterAppSelection* liqVerticalSelection;
+
+
+//    void createLiquefactionGroupBox();
+//    void setConnections();
+//    void handleSourceSelectionChanged();
 
 };
 
-#endif // LiqVerticalHazus2020_H
+#endif // LiquefactionWidget_H

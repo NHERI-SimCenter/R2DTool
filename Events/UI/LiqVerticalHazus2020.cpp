@@ -51,6 +51,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMessageBox>
 #include <QSignalMapper>
 #include <QDir>
+#include <QGroupBox>
+#include <QPushButton>
+#include <QJsonArray>
 
 
 LiqVerticalHazus2020::LiqVerticalHazus2020(QWidget *parent) : SimCenterAppWidget(parent)
@@ -60,6 +63,30 @@ LiqVerticalHazus2020::LiqVerticalHazus2020(QWidget *parent) : SimCenterAppWidget
     //We use a grid layout for the Rupture widget
     QGridLayout* layout = new QGridLayout(this);
     layout->addWidget(messageLabel, 0, 0);
+
+    resetToDefaultButton = new QPushButton();
+    resetToDefaultButton->setText(tr("Reset to Default"));
+    resetToDefaultButton->setMaximumWidth(150);
+
+    connect(resetToDefaultButton, &QPushButton::clicked, this, &LiqVerticalHazus2020::setDefaultFilePath);
+
+    QCheckBox* SaveCheckBox = new QCheckBox("liq_PGD_v");
+    outputSaveCheckBoxes.insert("liq_PGD_v", SaveCheckBox);
+
+    outputSaveGroupBox = new QGroupBox(this);
+    outputSaveGroupBox->setTitle(tr("Save Output"));
+    outputSaveGroupBox->setContentsMargins(0,0,0,0);
+    QGridLayout* outputSaveGroupBoxLayout = new QGridLayout(outputSaveGroupBox);
+    outputSaveGroupBox->setLayout(outputSaveGroupBoxLayout);
+    int checkBoxCount = 0;
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        outputSaveGroupBoxLayout->addWidget(it.value(), 0, checkBoxCount);
+        checkBoxCount ++;
+    }
+    layout->addWidget(outputSaveGroupBox, 1, 0);
+
+    this->setDefaultFilePath();
+
     this->setLayout(layout);
 
 }
@@ -67,8 +94,20 @@ LiqVerticalHazus2020::LiqVerticalHazus2020(QWidget *parent) : SimCenterAppWidget
 
 bool LiqVerticalHazus2020::outputToJSON(QJsonObject &jsonObject){
     QJsonObject parameterObj;
+    QJsonArray outputArray;
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        if (it.value()->isChecked()){
+            outputArray.append(it.key());
+        }
+    }
+    jsonObject["Output"] = outputArray;
     jsonObject["Model"] = "Hazus2020Vertical";
     jsonObject["Parameters"] = parameterObj;
     return true;
 }
 
+void LiqVerticalHazus2020::setDefaultFilePath(){
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        it.value()->setChecked(true);
+    }
+}

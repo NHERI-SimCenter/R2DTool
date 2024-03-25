@@ -51,6 +51,8 @@ class CRSSelectionWidget;
 class QSignalMapper;
 class QLabel;
 class SC_ComboBox;
+class QGroupBox;
+class QCheckBox;
 
 class LiqLateralHazus2020 : public SimCenterAppWidget
 {
@@ -80,6 +82,10 @@ private:
     QString DistWaterFilePath;
 
     SC_ComboBox* DistWaterComboBox = nullptr;
+
+    QGroupBox* outputSaveGroupBox = nullptr;
+
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
 
     void setupConnections();
 

@@ -44,6 +44,9 @@ class QGroupBox;
 class QCheckBox;
 class SimCenterAppSelection;
 class SimCenterUnitsCombo;
+class LiquefactionWidget;
+class QTabWidget;
+
 class GroundFailureWidget : public SimCenterAppWidget
 {
     Q_OBJECT
@@ -58,8 +61,6 @@ public:
 
 
 public slots:
-//    void addGMMforSA(bool SAenabled);
-//    void addGMMforPGV(bool PGVenabled);
 
 private:
     QGroupBox* gfGroupBox;
@@ -67,22 +68,16 @@ private:
     QGroupBox* landslideGroupBox;
     QGroupBox* faultDispGroupBox;
 
+    QTabWidget *theTabWidget;
+
     QCheckBox* liquefactionCheckBox;
     QCheckBox* landslideCheckBox;
     QCheckBox* faultDispCheckBox;
-//    SimCenterAppWidget* liquefactionWidget = nullptr;
-//    IntensityMeasure* m_intensityMeasure = nullptr;
-//    IntensityMeasureWidget* m_intensityMeasureWidget = nullptr;
-//    GMPEWidget* m_gmpeWidget = nullptr;
-//    GMPE* m_gmpe = nullptr;
-
-    SimCenterAppSelection* liqTriggerSelection;
-    SimCenterAppSelection* liqLateralSelection;
-    SimCenterAppSelection* liqVerticalSelection;
 
     SimCenterUnitsCombo* unitsCombo;
 
-    void createLiquefactionGroupBox();
+    LiquefactionWidget* liquefactionWidget;
+
     void setConnections();
     void handleSourceSelectionChanged();
 

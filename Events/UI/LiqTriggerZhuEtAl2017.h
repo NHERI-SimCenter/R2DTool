@@ -50,6 +50,8 @@ class QPushButton;
 class CRSSelectionWidget;
 class QSignalMapper;
 class SC_ComboBox;
+class QGroupBox;
+class QCheckBox;
 
 class LiqTriggerZhuEtAl2017 : public SimCenterAppWidget
 {
@@ -93,6 +95,10 @@ private:
     SC_ComboBox* DistRiverComboBox = nullptr;
     SC_ComboBox* GwDepthComboBox = nullptr;
     SC_ComboBox* PrecipitationComboBox = nullptr;
+
+    QGroupBox* outputSaveGroupBox = nullptr;
+
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
 
     void setupConnections();
 //    void setRupFile(QString dirPath);

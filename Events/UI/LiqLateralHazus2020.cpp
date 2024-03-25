@@ -55,6 +55,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMimeData>
 #include "qgis/qgsrasterlayer.h"
 #include "qgis/qgscoordinatereferencesystem.h"
+#include <QJsonArray>
+#include <QMap>
+#include <QGroupBox>
 
 LiqLateralHazus2020::LiqLateralHazus2020(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -86,18 +89,33 @@ LiqLateralHazus2020::LiqLateralHazus2020(QWidget *parent) : SimCenterAppWidget(p
 
     crsSelectorWidget = new CRSSelectionWidget();
 
+    QCheckBox* SaveCheckBox = new QCheckBox("liq_PGD_h");
+    outputSaveCheckBoxes.insert("liq_PGD_h", SaveCheckBox);
+
+    outputSaveGroupBox = new QGroupBox(this);
+    outputSaveGroupBox->setTitle(tr("Save Output"));
+    outputSaveGroupBox->setContentsMargins(0,0,0,0);
+    QGridLayout* outputSaveGroupBoxLayout = new QGridLayout(outputSaveGroupBox);
+    outputSaveGroupBox->setLayout(outputSaveGroupBoxLayout);
+    int checkBoxCount = 0;
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        outputSaveGroupBoxLayout->addWidget(it.value(), 0, checkBoxCount);
+        checkBoxCount ++;
+    }
+
     // Add to layout
     layout->addWidget(DistWaterfilenameLabel,0,0);
     layout->addWidget(DistWaterComboBox,0,1,1,1);
     layout->addWidget(DistWaterFilenameLineEdit,0,2,1,3);
     layout->addWidget(DistWaterBrowseFileButton,0,5);
 
-    layout->addWidget(crsSelectorWidget,1,0, 1, 5);
-    layout->addWidget(resetToDefaultButton,2,5);
+    layout->addWidget(crsSelectorWidget,1,0, 1, 6);
+    layout->addWidget(outputSaveGroupBox, 2, 0, 1, 6);
+    layout->addWidget(resetToDefaultButton,3,5);
 
     layout->setColumnStretch(2,3);
     layout->setColumnStretch(1,1);
-    layout->setRowStretch(3,1);
+    layout->setRowStretch(4,1);
 
     this->setLayout(layout);
 
@@ -164,6 +182,13 @@ bool LiqLateralHazus2020::outputToJSON(QJsonObject &jsonObject){
         crsSelectorWidget->outputAppDataToJSON(crsObj);
         parameterObj["inputCRS"] = crsObj["CRS"].toString();
     }
+    QJsonArray outputArray;
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        if (it.value()->isChecked()){
+            outputArray.append(it.key());
+        }
+    }
+    jsonObject["Output"] = outputArray;
     jsonObject["Model"] = "Hazus2020Lateral";
     jsonObject["Parameters"] = parameterObj;
     return true;
@@ -186,6 +211,11 @@ void LiqLateralHazus2020::setDefaultFilePath(){
     QgsCoordinateReferenceSystem defaultCRS("EPSG:4326");
     crsSelectorWidget->setCRS(defaultCRS);
     this->DistWaterComboBox->setCurrentIndex(1);
+
+
+    for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
+        it.value()->setChecked(true);
+    }
 }
 
 void LiqLateralHazus2020::handleInputTypeChanged(){
