@@ -37,27 +37,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk, Stevan Gavrilovic
+// Written by: Barbaros Cetiner, Frank McKenna, Stevan Gavrilovic
+
 #include "SimCenterAppWidget.h"
+#include "qgsrectangle.h"
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
 class VisualizationWidget;
 class GIS_Selection;
+class QLabel;
 class SC_DoubleLineEdit;
+class QLineEdit;
+class QPushButton;
 class SC_FileEdit;
 class SC_ComboBox;
 class BrailsGoogleDialog;
+
+typedef struct regionInputStruct {
+    double minLat;
+    double maxLat;
+    double minLong;
+    double maxLong;
+    QString location;
+    QString outputFile;
+} regionData;
+
+typedef struct fpInputStruct {
+    double minLat;
+    double maxLat;
+    double minLong;
+    double maxLong;
+    QString location;
+    QString outputFile;
+    QString fpSource;
+    QString fpSourceAttrMap;
+    QString units;
+} fpData;
 
 typedef struct BrailsDataStruct {
   double minLat;
   double maxLat;
   double minLong;
   double maxLong;
+  QString locationStr;
+  QString fpSource;
+  QString fpSourceAttrMap;
   QString outputFile;
   QString imageSource;
   QString imputationAlgo;
-  QString units;      
+  QString units;
+  QString location;
 } BrailsData;
 
 
@@ -79,16 +109,29 @@ protected:
 private slots:
   void runBRAILS(void);
   void coordsChanged(void);
+  void getLocationBoundary(void);
+  void getFootprints(void);
   
 private:
   std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
   QGISVisualizationWidget* theVisualizationWidget = nullptr;
   
-  SC_ComboBox *units;  
+  SC_ComboBox *units;
+  SC_ComboBox *location;
   SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
-  SC_FileEdit *theOutputFile;
-  GIS_Selection *theSelectionWidget;  
+  QLabel* regionNameLabel;
+  QLineEdit *locationName, *locationStr;
+  QLabel* regionGeojsonLabel;
+  QLineEdit *regionGeojson;
+  QPushButton* browseGeojsonButton;
+  SC_ComboBox *footprintSource;
+  SC_ComboBox *baselineInvSelection;
+  SC_ComboBox *attributeSelected;
+  SC_FileEdit *theOutputFile, *fpGeojsonFile, *fpAttrGeojsonFile, *invGeojsonFile, *invAttrGeojsonFile;
+  GIS_Selection *theSelectionWidget;
 
+  QgsRectangle zoomRectangle;
+  QString printSuffix;
   QString imageSource;
   QString imputationAlgo;
 
