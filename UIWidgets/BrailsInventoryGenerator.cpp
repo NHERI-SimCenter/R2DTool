@@ -92,16 +92,16 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     QString brailsOutput = brailsDir + "/inventory.geojson";
     theOutputFile->setFilename(brailsOutput);
 
-    fpGeojsonFile = new SC_FileEdit("fpGeojsonFile");
-    fpGeojsonFile->setFilename(brailsDir);
-    fpAttrGeojsonFile = new SC_FileEdit("fpGeojsonFile");
     QString emptystr = "";
+    fpGeojsonFile = new SC_FileEdit("fpGeojsonFile");
+    fpGeojsonFile->setFilename(emptystr);
+    fpAttrGeojsonFile = new SC_FileEdit("fpGeojsonFile");
     fpAttrGeojsonFile->setFilename(emptystr);
 
     invGeojsonFile = new SC_FileEdit("invGeojsonFile");
-    invGeojsonFile->setFilename(brailsDir);
+    invGeojsonFile->setFilename(emptystr);
     invAttrGeojsonFile = new SC_FileEdit("invGeojsonFile");
-    invAttrGeojsonFile->setFilename(brailsDir);
+    invAttrGeojsonFile->setFilename(emptystr);
 
     // Put together the stacked widget for location input:
     QWidget *bboxWidget = new QWidget;
@@ -180,8 +180,8 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     baselineNoneWidgetLayout->addStretch();
     baselineNoneWidgetLayout->addStretch();
 
-    QPushButton *RawNSIInventoryButton = new QPushButton(tr("Show raw inventory data"));
-    QPushButton *ProcessedNSIInventoryButton = new QPushButton(tr("Show processed inventory data"));
+    QPushButton *RawNSIInventoryButton = new QPushButton(tr("Show raw data"));
+    QPushButton *ProcessedNSIInventoryButton = new QPushButton(tr("Show processed data"));
     QWidget *baselineInvNSIWidget = new QWidget;
     QHBoxLayout* baselineInvNSILayout = new QHBoxLayout(baselineInvNSIWidget);
     QVBoxLayout* NSIBaselineLeftLayout = new QVBoxLayout();
@@ -191,8 +191,8 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     baselineInvNSILayout->addStretch();
     baselineInvNSILayout->addStretch();
 
-    QPushButton *RawUserInventoryButton = new QPushButton(tr("Show raw inventory data"));
-    QPushButton *ProcessedUserInventoryButton = new QPushButton(tr("Show processed inventory data"));
+    QPushButton *RawUserInventoryButton = new QPushButton(tr("Show raw data"));
+    QPushButton *ProcessedUserInventoryButton = new QPushButton(tr("Show processed data"));
     QWidget *baselineInvUserDefinedWidget = new QWidget;
     QHBoxLayout *geojsonInvWidgetLayout = new QHBoxLayout(baselineInvUserDefinedWidget);
     QVBoxLayout* geojsonInvLeftLayout = new QVBoxLayout();
@@ -257,6 +257,10 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     baselineInvSelection = new SC_ComboBox("baseline", baselineInventories);
     mainLayout->addWidget(new QLabel("Baseline inventory selection"),numRow,0);
     mainLayout->addWidget(baselineInvSelection,numRow,1);
+    connect(RawNSIInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("raw");});
+    connect(ProcessedNSIInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("processed");});
+    connect(RawUserInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("raw");});
+    connect(ProcessedUserInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("processed");});
 
     // Connect the baseline inventory selection combo box to the stacked widget for baseline inventories:
     QObject::connect(baselineInvSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetInventorySource, &QStackedWidget::setCurrentIndex);
@@ -451,6 +455,100 @@ BrailsInventoryGenerator::getFootprints(void)
     // Load the vector layer
     QString layerName = "BuildingFootprints_" + printSuffix;
     theVisualizationWidget->addVectorLayer(fpInp.outputFile, layerName, "ogr");
+    theVisualizationWidget->zoomToActiveLayer();
+}
+
+void
+BrailsInventoryGenerator::getBaselineInv(QString outputDataType)
+{
+    binvData binvInp;
+
+    QString printSuffix1;
+    if (baselineInvSelection->currentText()=="National Structure Inventory") {
+      binvInp.invInput = "NSI";
+      binvInp.invAttributeMap = "";
+      printSuffix1 = "NSI";
+    } else {
+      binvInp.invInput = invGeojsonFile->getFilename();
+      binvInp.invAttributeMap = invAttrGeojsonFile->getFilename();
+      printSuffix1 = "UserDefined";
+    }
+
+    QString printSuffix2;
+    if (outputDataType=="raw"){
+      printSuffix2 = "Raw";
+    } else {
+      printSuffix2 = "Processed";
+    }
+
+    if (printSuffix1=="UserDefined" && printSuffix2=="Raw"){
+      binvInp.outputFile = binvInp.invInput;
+    }
+    else {
+      if (location->currentText()=="Bounding box") {
+          binvInp.minLat = minLat->getDouble();
+          binvInp.maxLat = maxLat->getDouble();
+          binvInp.minLong = minLong->getDouble();
+          binvInp.maxLong = maxLong->getDouble();
+          binvInp.location = "";
+      } else if (location->currentText()=="Region name") {
+          binvInp.minLat = 0.0;
+          binvInp.maxLat = 0.0;
+          binvInp.minLong = 0.0;
+          binvInp.maxLong = 0.0;
+          binvInp.location = locationStr->text();
+      }
+
+      if (footprintSource->currentText()=="Microsoft Global Building Footprints") {
+          binvInp.fpSource = "ms";
+      } else if (footprintSource->currentText()=="OpenStreetMap") {
+          binvInp.fpSource = "osm";
+      } else if (footprintSource->currentText()=="FEMA USA Structures") {
+          binvInp.fpSource = "usastr";
+      } else if (footprintSource->currentText()=="User-defined") {
+          binvInp.fpSource = fpGeojsonFile->getFilename();
+      }
+
+      binvInp.outputDataType = outputDataType;
+
+      QFileInfo fileInfo(theOutputFile->getFilename());
+      QString outputPath = fileInfo.absolutePath();
+      QDir dir(outputPath);
+      if (!dir.exists())
+          dir.mkpath(outputPath);
+
+      binvInp.outputFile = outputPath + "/BaselineInventory_" + printSuffix1 + printSuffix2 + ".geojson";
+      binvInp.units = units->currentText();
+
+      QString appDir = SimCenterPreferences::getInstance()->getAppDir();
+      QDir scriptDir(appDir + QDir::separator());
+      scriptDir.cd("applications");
+      scriptDir.cd("tools");
+      scriptDir.cd("BRAILS");
+      QString fpDownloadScript = scriptDir.absoluteFilePath("getBRAILSBaselineInv.py");
+
+      QStringList scriptArgs;
+      scriptArgs << QString("--latMin")  << QString::number(binvInp.minLat)
+                 << QString("--latMax")  << QString::number(binvInp.maxLat)
+                 << QString("--longMin") << QString::number(binvInp.minLong)
+                 << QString("--longMax") << QString::number(binvInp.maxLong)
+                 << QString("--location") << binvInp.location
+                 << QString("--fpSource") << binvInp.fpSource
+                 << QString("--invInput") << binvInp.invInput
+                 << QString("--invAttributeMap") << binvInp.invAttributeMap
+                 << QString("--outputDataType") << binvInp.outputDataType
+                 << QString("--outputFile") << binvInp.outputFile
+                 << QString("--lengthUnit") << binvInp.units;
+
+      qDebug() << "BRAILS script: " << fpDownloadScript;
+      qDebug() << "BRAILS args: " << scriptArgs;
+      ModularPython *thePy = new ModularPython(outputPath);
+      thePy->run(fpDownloadScript,scriptArgs);
+
+    }
+    // Load the vector layer
+    QString layerName = "BaselineInventory_" + printSuffix1 + printSuffix2;
+    theVisualizationWidget->addVectorLayer(binvInp.outputFile, layerName, "ogr");
     theVisualizationWidget->zoomToActiveLayer();
 }
 

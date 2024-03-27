@@ -75,6 +75,20 @@ typedef struct fpInputStruct {
     QString units;
 } fpData;
 
+typedef struct baselineInvInputStruct {
+    double minLat;
+    double maxLat;
+    double minLong;
+    double maxLong;
+    QString location;
+    QString fpSource;
+    QString invInput;
+    QString invAttributeMap;
+    QString outputDataType;
+    QString outputFile;
+    QString units;
+} binvData;
+
 typedef struct BrailsDataStruct {
   double minLat;
   double maxLat;
@@ -111,6 +125,7 @@ private slots:
   void coordsChanged(void);
   void getLocationBoundary(void);
   void getFootprints(void);
+  void getBaselineInv(QString outputDataType);
   
 private:
   std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
