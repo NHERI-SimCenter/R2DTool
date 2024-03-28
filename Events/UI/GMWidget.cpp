@@ -68,7 +68,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GroundFailureWidget.h"
 
 
-#define INCLUDE_USER_PASS = true;
 #ifdef INCLUDE_USER_PASS
 #include "R2DUserPass.h"
 #else
