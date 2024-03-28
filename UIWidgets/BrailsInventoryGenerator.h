@@ -152,7 +152,6 @@ private:
 	QDir scriptDir;
 
 	QString imageSource;
-	QString imputationAlgo;
 
 	BrailsGoogleDialog* theGoogleDialog = 0;
 };

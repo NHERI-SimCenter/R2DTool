@@ -336,15 +336,17 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	*/
 
 	// Define the combo box for selecting the imputation algorithm:
-	numRow++;
-	mainLayout->addWidget(new QLabel("Imputation algorithm"), numRow, 0);
-	QComboBox* imputationAlgoCombo = new QComboBox();
-	imputationAlgoCombo->addItem("None");
-	mainLayout->addWidget(imputationAlgoCombo, numRow, 1, 1, 3);
+    numRow++;
+    QStringList imputationAlgos; imputationAlgos << "None";
+    imputationAlgoCombo = new SC_ComboBox("imputation", imputationAlgos);
+    mainLayout->addWidget(new QLabel("Imputation algorithm"), numRow, 0);
+    mainLayout->addWidget(imputationAlgoCombo, numRow, 1, 1, 3);
 
+    /*
 	connect(imputationAlgoCombo, &QComboBox::currentTextChanged, this, [=](QString text) {
 		imputationAlgo = text;
 		});
+    */
 
 	// Create the directory selector for BRAILS inventory output:
 	numRow++;
