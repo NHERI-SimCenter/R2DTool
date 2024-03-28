@@ -386,7 +386,13 @@ BrailsInventoryGenerator::getBRAILSAttributes(void) {
 	std::time_t now;
 	std::time(&now);
 	std::tm ptm;
-	localtime_s(&ptm, &now);
+	
+#ifdef _WIN32
+        localtime_s(&ptm, &now);
+#else
+        localtime_r(&now, &ptm);
+#endif
+
 	std::string datestr = std::to_string(ptm.tm_year + 1900) + "-" + std::to_string(ptm.tm_mon + 1) + "-" + std::to_string(ptm.tm_mday);
 	QString date = QString::fromStdString(datestr);
 
