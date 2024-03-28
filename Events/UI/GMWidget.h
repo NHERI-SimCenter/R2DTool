@@ -63,6 +63,7 @@ class SpatialCorrelationWidget;
 class QGISVisualizationWidget;
 class ScenarioSelectionWidget;
 class GroundMotionModelsWidget;
+class GroundFailureWidget;
 
 class QPushButton;
 class QStatusBar;
@@ -142,6 +143,7 @@ private:
     RecordSelectionWidget* m_selectionWidget = nullptr;
     ScenarioSelectionWidget* scenarioSelectWidget = nullptr;
     GroundMotionModelsWidget* groundMotionModelsWidget = nullptr;
+    GroundFailureWidget* groundFailureWidget = nullptr;
 
     GMSiteWidget *siteWidget = nullptr;
     GMERFWidget *erfWidget = nullptr;

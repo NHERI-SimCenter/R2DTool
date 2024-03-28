@@ -1,5 +1,5 @@
-#ifndef QGISSITEINPUTWIDGET_H
-#define QGISSITEINPUTWIDGET_H
+#ifndef LiquefactionWidget_H
+#define LiquefactionWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,59 +36,42 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Kuanshi Zhong
+// Written by: Jinyan Zhao
 
-#include "AssetInputWidget.h"
+#include "SimCenterAppWidget.h"
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
-class QStringList;
-class ComponentTableView;
-
-class QGISSiteInputWidget : public AssetInputWidget
+class QGroupBox;
+class QCheckBox;
+class SimCenterAppSelection;
+class LiquefactionWidget : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
+    explicit LiquefactionWidget(QWidget *parent = nullptr);
 
-    int loadAssetVisualization();
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
 
-    void reloadComponentData(QString newDataFile);
+    void reset(void);
 
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
-    void clear();
-
-signals:
-    void soilDataCompleteSignal(bool flag);
-    void activateSoilModelWidget(bool flag);
 
 public slots:
-    void setSiteFilter(QString filter);
-    void showSiteTableWindow();
+//    void addGMMforSA(bool SAenabled);
+//    void addGMMforPGV(bool PGVenabled);
 
 private:
 
-    void checkSoilPropComplete(void);
-    int checkSoilParamComplete(void);
-    void checkSoilDataComplete(void);
 
-    // minimum required attributes
-    QStringList attrbMinReqSite = {"Latitude", "Longitude"}; // componentType = site
-    QStringList attrbMinReqSoil = {"Latitude", "Longitude", "SoilModel"}; // componentType = soil
+    SimCenterAppSelection* liqTriggerSelection;
+    SimCenterAppSelection* liqLateralSelection;
+    SimCenterAppSelection* liqVerticalSelection;
 
-    // Soil properties attributes completeness
-    bool soilPropComplete = false;
 
-    // Soil model full attributes
-    QStringList attrbFullSoilEI = {"Den"}; // soil model = EI
-    QStringList attrbFullSoilBA = {"Den", "Su_rat", "h/G", "m", "h0", "chi"}; // soil model = BA
+//    void createLiquefactionGroupBox();
+//    void setConnections();
+//    void handleSourceSelectionChanged();
 
-    // Soil model attributes completeness
-    bool soilParamComplete = false;
-
-    ComponentTableView* componentTableView;
 };
 
-#endif // QGISSITEINPUTWIDGET_H
+#endif // LiquefactionWidget_H
