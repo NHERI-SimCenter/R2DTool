@@ -45,7 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QComboBox>
 
-ScenarioSelectionWidget::ScenarioSelectionWidget(QString jsonKey, GMERFWidget* gmerf, QWidget *parent) : SimCenterAppSelection("OpenSHA",jsonKey,parent), jsonKey(jsonKey)
+ScenarioSelectionWidget::ScenarioSelectionWidget(QString jsonKey, GMERFWidget* gmerf, QWidget *parent) : SimCenterAppSelection("Scenario Selection Method",jsonKey,parent), jsonKey(jsonKey)
 {
     specificScenarioWidget = new SpecificScenarioWidget(gmerf);
     convenScenarioWidget = new ConventionalScenarioWidget(gmerf);

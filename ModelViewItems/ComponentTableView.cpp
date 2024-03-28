@@ -67,6 +67,13 @@ void ComponentTableView::clear(void)
     tableModel->clear();
 }
 
+void ComponentTableView::setComponenetTableModel(ComponentTableModel* compTableModel)
+{
+    tableModel = compTableModel;
+    this->setModel(tableModel);
+
+}
+
 
 int ComponentTableView::columnCount(void)
 {
