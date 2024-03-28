@@ -40,7 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Barbaros Cetiner, Frank McKenna, Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
-#include "qgsrectangle.h"
+#include <QDir>
+#include <QGridLayout>
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
@@ -50,92 +51,110 @@ class QLabel;
 class SC_DoubleLineEdit;
 class QLineEdit;
 class QPushButton;
+class QGridLayout;
+class QDir;
 class SC_FileEdit;
 class SC_ComboBox;
 class BrailsGoogleDialog;
 
 typedef struct regionInputStruct {
-    double minLat;
-    double maxLat;
-    double minLong;
-    double maxLong;
-    QString location;
-    QString outputFile;
+	double minLat;
+	double maxLat;
+	double minLong;
+	double maxLong;
+	QString location;
+	QString outputFile;
 } regionData;
 
 typedef struct fpInputStruct {
-    double minLat;
-    double maxLat;
-    double minLong;
-    double maxLong;
-    QString location;
-    QString outputFile;
-    QString fpSource;
-    QString fpSourceAttrMap;
-    QString units;
+	double minLat;
+	double maxLat;
+	double minLong;
+	double maxLong;
+	QString location;
+	QString outputFile;
+	QString fpSource;
+	QString fpSourceAttrMap;
+	QString units;
 } fpData;
 
+typedef struct baselineInvInputStruct {
+	double minLat;
+	double maxLat;
+	double minLong;
+	double maxLong;
+	QString location;
+	QString fpSource;
+	QString invInput;
+	QString invAttributeMap;
+	QString outputDataType;
+	QString outputFile;
+	QString units;
+} binvData;
+
 typedef struct BrailsDataStruct {
-  double minLat;
-  double maxLat;
-  double minLong;
-  double maxLong;
-  QString locationStr;
-  QString fpSource;
-  QString fpSourceAttrMap;
-  QString outputFile;
-  QString imageSource;
-  QString imputationAlgo;
-  QString units;
-  QString location;
+	double minLat;
+	double maxLat;
+	double minLong;
+	double maxLong;
+	QString units;
+	QString location;
+	QString fpSource;
+	QString fpSourceAttrMap;
+	QString invInput;
+	QString invAttributeMap;
+	QString attrRequested;
+	QString imputationAlgo;
+    QString outputFile;
+    QString imageSource;
 } BrailsData;
 
 
 class BrailsInventoryGenerator : public SimCenterAppWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~BrailsInventoryGenerator();
+	BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget* parent = nullptr);
+	~BrailsInventoryGenerator();
 
 public slots:
-    void clear(void);
+	void clear(void);
 
 signals:
 
 protected:
 
 private slots:
-  void runBRAILS(void);
-  void coordsChanged(void);
-  void getLocationBoundary(void);
-  void getFootprints(void);
-  
+	void runBRAILS(void);
+	void coordsChanged(void);
+	void getLocationBoundary(void);
+	void getFootprints(void);
+	void getBaselineInv(QString outputDataType);
+	QStringList getBRAILSAttributes(void);
+
 private:
-  std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
-  QGISVisualizationWidget* theVisualizationWidget = nullptr;
-  
-  SC_ComboBox *units;
-  SC_ComboBox *location;
-  SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
-  QLabel* regionNameLabel;
-  QLineEdit *locationName, *locationStr;
-  QLabel* regionGeojsonLabel;
-  QLineEdit *regionGeojson;
-  QPushButton* browseGeojsonButton;
-  SC_ComboBox *footprintSource;
-  SC_ComboBox *baselineInvSelection;
-  SC_ComboBox *attributeSelected;
-  SC_FileEdit *theOutputFile, *fpGeojsonFile, *fpAttrGeojsonFile, *invGeojsonFile, *invAttrGeojsonFile;
-  GIS_Selection *theSelectionWidget;
+	std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+	QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-  QgsRectangle zoomRectangle;
-  QString printSuffix;
-  QString imageSource;
-  QString imputationAlgo;
+	SC_ComboBox* units;
+	SC_ComboBox* location;
+	SC_DoubleLineEdit* minLat, * maxLat, * minLong, * maxLong;
+	QLineEdit* locationName, * locationStr;
+	SC_ComboBox* footprintSource;
+	SC_ComboBox* baselineInvSelection;
+	SC_ComboBox* attributeSelection;
+	SC_ComboBox* imputationAlgoCombo;
+	SC_FileEdit* theOutputFile, * fpGeojsonFile, * fpAttrGeojsonFile, * invGeojsonFile, * invAttrGeojsonFile;
+	GIS_Selection* theSelectionWidget;
+	QGridLayout* enabledAttributesWidgetLayout;
+	QString brailsDir;
+	QDir scriptDir;
 
-  BrailsGoogleDialog *theGoogleDialog = 0;
+	QString imageSource;
+	QString imputationAlgo;
+
+	BrailsGoogleDialog* theGoogleDialog = 0;
 };
 
 #endif // BrailsInventoryGenerator_H
