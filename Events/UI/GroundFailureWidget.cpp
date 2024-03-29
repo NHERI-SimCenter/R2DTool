@@ -46,6 +46,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "NoneWidget.h"
 #include "SimCenterUnitsCombo.h"
 #include "LiquefactionWidget.h"
+#include "SimCenterPreferences.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -57,6 +59,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 #include <QTabWidget>
 #include <QMessageBox>
+#include <QApplication>
+#include <QDir>
 
 
 GroundFailureWidget::GroundFailureWidget(QWidget *parent) : SimCenterAppWidget(parent)
@@ -99,6 +103,8 @@ GroundFailureWidget::GroundFailureWidget(QWidget *parent) : SimCenterAppWidget(p
     mainLayout->addStretch(0);
     this->setLayout(mainLayout);
 
+    downloadManager = std::make_unique<NetworkDownloadManager>(this);
+
 }
 
 void GroundFailureWidget::reset(void)
@@ -118,7 +124,51 @@ void GroundFailureWidget::handleSourceSelectionChanged()
         theTabWidget->removeTab(i);
     }
     if (liquefactionCheckBox->isChecked()){
+        this->checkAndDownloadDataBase();
         theTabWidget->addTab(liquefactionWidget, tr("Liquefaction"));
+
+
+    }
+}
+
+void GroundFailureWidget::checkAndDownloadDataBase(){
+    QString dataFolderPath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+                         + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
+                         + "regionalGroundMotion" + QDir::separator() + "database" + QDir::separator() + "groundFailure";
+    QDir dataFolder(dataFolderPath);
+    if(dataFolder.exists()){
+        return;
+    }else{
+        QMessageBox msgBox;
+        msgBox.setText("Warning:\n"
+                       "SimCenter Liquefaction Database needs to be downloaded to use SimCenter default California geospatial data.\n"
+                       "If don't download, geospatial data needs to be provided in GIS or Site File (.csv) format.\n"
+                       "If download, please continue analysis after downloading completes.\n"
+                       "Download the database?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+
+        auto res = msgBox.exec();
+        if (res != QMessageBox::Yes){
+            return;
+        } else {
+            QString msg = "Downloading... May take a while... Please wait.";
+            ProgramOutputDialog* statusDialog = ProgramOutputDialog::getInstance();
+            statusDialog->appendText(msg);
+            QApplication::processEvents();
+
+            QStringList urls = {"https://zenodo.org/api/records/10892461"};
+            QStringList names = {"groundFailure"};
+            QString pathTodatabaseFolder = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
+                                           + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
+                                           + "regionalGroundMotion" + QDir::separator() + "database";
+            downloadManager->downloadData(urls, names, "ground failure model data", pathTodatabaseFolder);
+
+//            downloadManager->downloadExamples();
+            // DownloadSingleFileInfo
+            //            QString infoUrl = "https://zenodo.org/api/records/10892461";
+            //            QNetworkRequest request(url);
+            //            QNetwork
+        }
     }
 }
 

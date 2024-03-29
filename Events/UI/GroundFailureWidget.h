@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Jinyan Zhao
 
 #include "SimCenterAppWidget.h"
+#include "NetworkDownloadManager.h"
 
 class QGroupBox;
 class QCheckBox;
@@ -78,8 +79,11 @@ private:
 
     LiquefactionWidget* liquefactionWidget;
 
+    std::unique_ptr<NetworkDownloadManager> downloadManager;
+
     void setConnections();
     void handleSourceSelectionChanged();
+    void checkAndDownloadDataBase();
 
 };
 
