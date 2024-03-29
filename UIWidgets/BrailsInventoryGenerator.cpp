@@ -52,13 +52,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ModularPython.h"
 
 #include <QLabel>
-#include <QComboBox>
 #include <QPushButton>
 #include <QStandardPaths>
-#include <QGroupBox>
 #include <QGridLayout>
-#include <QComboBox>
-#include <QSettings>
 
 #include <SC_DoubleLineEdit.h>
 #include <SC_FileEdit.h>
@@ -235,7 +231,6 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	QWidget* enabledAttributesWidget = new QWidget;
 	enabledAttributesWidgetLayout = new QGridLayout(enabledAttributesWidget);
 
-	QSettings settings("SimCenter", "BRAILS-Buildings_Widget");
 	int counter = 0;
 	foreach(QString attr, attributes) {
 		int nrow = counter / 6;
@@ -243,7 +238,6 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 		++counter;
 
 		QCheckBox* checkbox = new QCheckBox(attr, enabledAttributesWidget);
-		settings.setValue(attr, checkbox->isChecked());
 		checkbox->setChecked(false);
 		enabledAttributesWidgetLayout->addWidget(checkbox, nrow, ncol);
 	}
@@ -262,6 +256,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	int numRow = 0;
 	QStringList unitList; unitList << "m" << "ft";
 	units = new SC_ComboBox("units", unitList);
+    units->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	mainLayout->addWidget(new QLabel("Output units"), numRow, 0);
 	mainLayout->addWidget(units, numRow, 1);
 
@@ -269,7 +264,8 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	numRow++;
 	QStringList locationList; locationList << "Bounding box" << "Region name";
 	location = new SC_ComboBox("location", locationList);
-	mainLayout->addWidget(new QLabel("Query area definition"), numRow, 0);
+    location->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    mainLayout->addWidget(new QLabel("Query area definition"), numRow, 0);
 	mainLayout->addWidget(location, numRow, 1);
 
 	// Connect the query area definition combo box to the stacked widget for location input:
@@ -283,6 +279,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	numRow++;
 	QStringList footprintSources; footprintSources << "Microsoft Global Building Footprints" << "OpenStreetMap" << "FEMA USA Structures" << "User-defined";
 	footprintSource = new SC_ComboBox("footprint", footprintSources);
+    footprintSource->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	mainLayout->addWidget(new QLabel("Footprint source"), numRow, 0);
 	mainLayout->addWidget(footprintSource, numRow, 1);
 
@@ -298,6 +295,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	numRow++;
 	QStringList baselineInventories; baselineInventories << "None" << "National Structure Inventory" << "User-defined";
 	baselineInvSelection = new SC_ComboBox("baseline", baselineInventories);
+    baselineInvSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	mainLayout->addWidget(new QLabel("Baseline inventory selection"), numRow, 0);
 	mainLayout->addWidget(baselineInvSelection, numRow, 1);
 	connect(RawNSIInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("raw"); });
@@ -313,6 +311,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	numRow++;
 	QStringList requestedAttributes; requestedAttributes << "All" << "HAZUS seismic attributes" << "Select from enabled attributes";
 	attributeSelection = new SC_ComboBox("attributes", requestedAttributes);
+    attributeSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	mainLayout->addWidget(new QLabel("Requested attributes"), numRow, 0);
 	mainLayout->addWidget(attributeSelection, numRow, 1);
 
@@ -339,6 +338,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     numRow++;
     QStringList imputationAlgos; imputationAlgos << "None";
     imputationAlgoCombo = new SC_ComboBox("imputation", imputationAlgos);
+    imputationAlgoCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     mainLayout->addWidget(new QLabel("Imputation algorithm"), numRow, 0);
     mainLayout->addWidget(imputationAlgoCombo, numRow, 1, 1, 3);
 
@@ -387,11 +387,11 @@ BrailsInventoryGenerator::getBRAILSAttributes(void) {
 	std::time(&now);
 	std::tm ptm;
 	
-#ifdef _WIN32
-        localtime_s(&ptm, &now);
-#else
-        localtime_r(&now, &ptm);
-#endif
+    #ifdef _WIN32
+            localtime_s(&ptm, &now);
+    #else
+            localtime_r(&now, &ptm);
+    #endif
 
 	std::string datestr = std::to_string(ptm.tm_year + 1900) + "-" + std::to_string(ptm.tm_mon + 1) + "-" + std::to_string(ptm.tm_mday);
 	QString date = QString::fromStdString(datestr);
