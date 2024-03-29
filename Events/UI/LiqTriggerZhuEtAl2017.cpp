@@ -318,10 +318,7 @@ bool LiqTriggerZhuEtAl2017::outputToJSON(QJsonObject &jsonObject){
 
 void LiqTriggerZhuEtAl2017::setDefaultFilePath(){
 
-    QString backendDataBasePath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-                                  + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-                                  + "regionalGroundMotion" + QDir::separator() + "database" +
-                                  QDir::separator() + "groundFailure";
+    QString backendDataBasePath = QCoreApplication::applicationDirPath() + QDir::separator() + "Databases"+ QDir::separator() + "groundFailure";
 
     DistWaterFilePath = backendDataBasePath + QDir::separator() +
                         "CA_DistAnyWaterWB_1km_WGS84_km" + QDir::separator() +
