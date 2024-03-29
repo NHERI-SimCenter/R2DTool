@@ -197,10 +197,7 @@ bool LiqLateralHazus2020::outputToJSON(QJsonObject &jsonObject){
 
 void LiqLateralHazus2020::setDefaultFilePath(){
 
-    QString backendDataBasePath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-                                  + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-                                  + "regionalGroundMotion" + QDir::separator() + "database" +
-                                  QDir::separator() + "groundFailure";
+    QString backendDataBasePath = QCoreApplication::applicationDirPath() + QDir::separator() + "Databases"+ QDir::separator() + "groundFailure";
 
     DistWaterFilePath = backendDataBasePath + QDir::separator() +
                         "CA_DistAnyWaterNoWB_1km_WGS84_km" + QDir::separator() +

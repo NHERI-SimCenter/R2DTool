@@ -132,9 +132,7 @@ void GroundFailureWidget::handleSourceSelectionChanged()
 }
 
 void GroundFailureWidget::checkAndDownloadDataBase(){
-    QString dataFolderPath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-                         + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-                         + "regionalGroundMotion" + QDir::separator() + "database" + QDir::separator() + "groundFailure";
+    QString dataFolderPath = QCoreApplication::applicationDirPath() + QDir::separator() + "Databases"+ QDir::separator() + "groundFailure";
     QDir dataFolder(dataFolderPath);
     if(dataFolder.exists()){
         return;
@@ -158,9 +156,8 @@ void GroundFailureWidget::checkAndDownloadDataBase(){
 
             QStringList urls = {"https://zenodo.org/api/records/10892461"};
             QStringList names = {"groundFailure"};
-            QString pathTodatabaseFolder = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-                                           + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-                                           + "regionalGroundMotion" + QDir::separator() + "database";
+            QString pathTodatabaseFolder = QCoreApplication::applicationDirPath() +
+                                           QDir::separator() + "Databases";
             downloadManager->downloadData(urls, names, "ground failure model data", pathTodatabaseFolder);
 
 //            downloadManager->downloadExamples();
