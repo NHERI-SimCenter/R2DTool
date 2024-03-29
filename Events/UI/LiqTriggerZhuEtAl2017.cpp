@@ -54,8 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSignalMapper>
 #include <QDir>
 #include <QMimeData>
-#include "qgis/qgsrasterlayer.h"
-#include "qgis/qgscoordinatereferencesystem.h"
+#include "qgsrasterlayer.h"
+#include "qgscoordinatereferencesystem.h"
 #include <QGroupBox>
 #include <QGridLayout>
 #include <QJsonArray>

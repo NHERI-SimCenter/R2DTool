@@ -53,15 +53,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSignalMapper>
 #include <QDir>
 #include <QMimeData>
-#include "qgis/qgsrasterlayer.h"
-#include "qgis/qgsvectorlayer.h"
-#include "qgis/qgscoordinatereferencesystem.h"
-#include "qgis/qgsvectorfilewriter.h"
+#include "qgsrasterlayer.h"
+#include "qgsvectorlayer.h"
+#include "qgscoordinatereferencesystem.h"
+#include "qgsvectorfilewriter.h"
 #include <QMap>
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QJsonArray>
-
 
 LiqTriggerHazus2020::LiqTriggerHazus2020(QWidget *parent) : SimCenterAppWidget(parent)
 {
