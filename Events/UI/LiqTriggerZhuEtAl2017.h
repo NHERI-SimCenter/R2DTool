@@ -1,5 +1,6 @@
-#ifndef QGISSITEINPUTWIDGET_H
-#define QGISSITEINPUTWIDGET_H
+#ifndef LiqTriggerZhuEtAl2017_H
+#define LiqTriggerZhuEtAl2017_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,59 +37,72 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Kuanshi Zhong
+// Written by: Jinyan Zhao
 
-#include "AssetInputWidget.h"
+#include "SimCenterAppWidget.h"
+#include "SC_DoubleLineEdit.h"
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
-class QStringList;
-class ComponentTableView;
+class OpenQuakeScenario;
 
-class QGISSiteInputWidget : public AssetInputWidget
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class CRSSelectionWidget;
+class QSignalMapper;
+class SC_ComboBox;
+class QGroupBox;
+class QCheckBox;
+
+class LiqTriggerZhuEtAl2017 : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-
-    int loadAssetVisualization();
-
-    void reloadComponentData(QString newDataFile);
-
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
-    void clear();
+    explicit LiqTriggerZhuEtAl2017(QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
 signals:
-    void soilDataCompleteSignal(bool flag);
-    void activateSoilModelWidget(bool flag);
 
 public slots:
-    void setSiteFilter(QString filter);
-    void showSiteTableWindow();
-
+    void loadFile(QString fieldKey);
+    void setDefaultFilePath();
+    void handleInputTypeChanged();
 private:
 
-    void checkSoilPropComplete(void);
-    int checkSoilParamComplete(void);
-    void checkSoilDataComplete(void);
+    QLineEdit* DistWaterFilenameLineEdit = nullptr;
+    QLineEdit* DistCoastFilenameLineEdit = nullptr;
+    QLineEdit* DistRiverFilenameLineEdit = nullptr;
+    QLineEdit* GwDepthFilenameLineEdit = nullptr;
+    QLineEdit* PrecipitationFilenameLineEdit = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
 
-    // minimum required attributes
-    QStringList attrbMinReqSite = {"Latitude", "Longitude"}; // componentType = site
-    QStringList attrbMinReqSoil = {"Latitude", "Longitude", "SoilModel"}; // componentType = soil
 
-    // Soil properties attributes completeness
-    bool soilPropComplete = false;
+    QPushButton* DistWaterBrowseFileButton;
+    QPushButton* DistCoastBrowseFileButton;
+    QPushButton* DistRiverBrowseFileButton;
+    QPushButton* GwDepthBrowseFileButton;
+    QPushButton* PrecipitationBrowseFileButton;
+    QPushButton* resetToDefaultButton;
 
-    // Soil model full attributes
-    QStringList attrbFullSoilEI = {"Den"}; // soil model = EI
-    QStringList attrbFullSoilBA = {"Den", "Su_rat", "h/G", "m", "h0", "chi"}; // soil model = BA
+    QString DistWaterFilePath;
+    QString DistCoastFilePath;
+    QString DistRiverFilePath;
+    QString GwDepthFilePath;
+    QString PrecipitationFilePath;
 
-    // Soil model attributes completeness
-    bool soilParamComplete = false;
+    SC_ComboBox* DistWaterComboBox = nullptr;
+    SC_ComboBox* DistCoastComboBox = nullptr;
+    SC_ComboBox* DistRiverComboBox = nullptr;
+    SC_ComboBox* GwDepthComboBox = nullptr;
+    SC_ComboBox* PrecipitationComboBox = nullptr;
 
-    ComponentTableView* componentTableView;
+    QGroupBox* outputSaveGroupBox = nullptr;
+
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+    void setupConnections();
+//    void setRupFile(QString dirPath);
+
 };
 
-#endif // QGISSITEINPUTWIDGET_H
+#endif // LiqTriggerZhuEtAl2017_H

@@ -1,5 +1,6 @@
-#ifndef QGISSITEINPUTWIDGET_H
-#define QGISSITEINPUTWIDGET_H
+#ifndef LiqTriggerHazus2020_H
+#define LiqTriggerHazus2020_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,59 +37,64 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Kuanshi Zhong
+// Written by: Jinyan Zhao
 
-#include "AssetInputWidget.h"
+#include "SimCenterAppWidget.h"
+#include "SC_DoubleLineEdit.h"
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
-class QStringList;
-class ComponentTableView;
+class OpenQuakeScenario;
 
-class QGISSiteInputWidget : public AssetInputWidget
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class CRSSelectionWidget;
+class QSignalMapper;
+class SC_ComboBox;
+class QLabel;
+class QGroupBox;
+class QCheckBox;
+
+
+class LiqTriggerHazus2020 : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-
-    int loadAssetVisualization();
-
-    void reloadComponentData(QString newDataFile);
-
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
-    void clear();
+    explicit LiqTriggerHazus2020(QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
 signals:
-    void soilDataCompleteSignal(bool flag);
-    void activateSoilModelWidget(bool flag);
 
 public slots:
-    void setSiteFilter(QString filter);
-    void showSiteTableWindow();
-
+    void loadFile(QString fieldKey);
+    void setDefaultFilePath();
+    void handleInputTypeChanged();
 private:
 
-    void checkSoilPropComplete(void);
-    int checkSoilParamComplete(void);
-    void checkSoilDataComplete(void);
+    QLineEdit* GwDepthFilenameLineEdit = nullptr;
+    QLineEdit* GeologicMapFilenameLineEdit = nullptr;
+    QLineEdit* LiqSuscKeyLineEdit = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
 
-    // minimum required attributes
-    QStringList attrbMinReqSite = {"Latitude", "Longitude"}; // componentType = site
-    QStringList attrbMinReqSoil = {"Latitude", "Longitude", "SoilModel"}; // componentType = soil
+    QPushButton* GwDepthBrowseFileButton;
+    QPushButton* GeologicMapBrowseFileButton;
+    QPushButton* resetToDefaultButton;
 
-    // Soil properties attributes completeness
-    bool soilPropComplete = false;
+    SC_ComboBox* GwDepthDefineMethodComboBox = nullptr;
+    SC_ComboBox* GeoMapDefineMethodComboBox = nullptr;
 
-    // Soil model full attributes
-    QStringList attrbFullSoilEI = {"Den"}; // soil model = EI
-    QStringList attrbFullSoilBA = {"Den", "Su_rat", "h/G", "m", "h0", "chi"}; // soil model = BA
+    QString GwDepthFilePath;
+    QString GeologicMapFilePath;
+    QString LiqSuscKey;
 
-    // Soil model attributes completeness
-    bool soilParamComplete = false;
+    QLabel* LiqSuscKeyLabel;
 
-    ComponentTableView* componentTableView;
+    QGroupBox* outputSaveGroupBox = nullptr;
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+    void setupConnections();
+//    void setRupFile(QString dirPath);
+
 };
 
-#endif // QGISSITEINPUTWIDGET_H
+#endif // LiqTriggerHazus2020_H

@@ -1,5 +1,6 @@
-#ifndef QGISSITEINPUTWIDGET_H
-#define QGISSITEINPUTWIDGET_H
+#ifndef LiqLateralHazus2020_H
+#define LiqLateralHazus2020_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,59 +37,58 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Kuanshi Zhong
+// Written by: Jinyan Zhao
 
-#include "AssetInputWidget.h"
+#include "SimCenterAppWidget.h"
+#include "SC_DoubleLineEdit.h"
 
-class QgsVectorLayer;
-class QgsFeature;
-class QgsGeometry;
-class QStringList;
-class ComponentTableView;
+class OpenQuakeScenario;
 
-class QGISSiteInputWidget : public AssetInputWidget
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class CRSSelectionWidget;
+class QSignalMapper;
+class QLabel;
+class SC_ComboBox;
+class QGroupBox;
+class QCheckBox;
+
+class LiqLateralHazus2020 : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = QString());
-
-    int loadAssetVisualization();
-
-    void reloadComponentData(QString newDataFile);
-
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
-    void clear();
+    explicit LiqLateralHazus2020(QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
 signals:
-    void soilDataCompleteSignal(bool flag);
-    void activateSoilModelWidget(bool flag);
 
 public slots:
-    void setSiteFilter(QString filter);
-    void showSiteTableWindow();
-
+    void loadFile(QString fieldKey);
+//    void distWaterShow(bool ifshow);
+    void setDefaultFilePath();
+    void handleInputTypeChanged();
 private:
 
-    void checkSoilPropComplete(void);
-    int checkSoilParamComplete(void);
-    void checkSoilDataComplete(void);
+    QLineEdit* DistWaterFilenameLineEdit = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+    QLabel* DistWaterfilenameLabel;
+    bool hasDistToWater = false;
 
-    // minimum required attributes
-    QStringList attrbMinReqSite = {"Latitude", "Longitude"}; // componentType = site
-    QStringList attrbMinReqSoil = {"Latitude", "Longitude", "SoilModel"}; // componentType = soil
+    QPushButton* DistWaterBrowseFileButton;
+    QPushButton* resetToDefaultButton;
 
-    // Soil properties attributes completeness
-    bool soilPropComplete = false;
+    QString DistWaterFilePath;
 
-    // Soil model full attributes
-    QStringList attrbFullSoilEI = {"Den"}; // soil model = EI
-    QStringList attrbFullSoilBA = {"Den", "Su_rat", "h/G", "m", "h0", "chi"}; // soil model = BA
+    SC_ComboBox* DistWaterComboBox = nullptr;
 
-    // Soil model attributes completeness
-    bool soilParamComplete = false;
+    QGroupBox* outputSaveGroupBox = nullptr;
 
-    ComponentTableView* componentTableView;
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+    void setupConnections();
+
 };
 
-#endif // QGISSITEINPUTWIDGET_H
+#endif // LiqLateralHazus2020_H

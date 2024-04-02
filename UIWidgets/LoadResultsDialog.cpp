@@ -11,6 +11,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QStandardPaths>
+#include <QDebug>
 
 LoadResultsDialog::LoadResultsDialog(WorkflowAppWidget* parent) : QDialog(parent), workflowWidget(parent)
 {
@@ -177,6 +178,7 @@ void LoadResultsDialog::handleLoadResults(void)
 #endif
 
     statusDialog->appendText("Done loading the results");
+    qDebug()<< "last line loading the results";
 }
 
 
