@@ -53,15 +53,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSignalMapper>
 #include <QDir>
 #include <QMimeData>
-#include "qgis/qgsrasterlayer.h"
-#include "qgis/qgsvectorlayer.h"
-#include "qgis/qgscoordinatereferencesystem.h"
-#include "qgis/qgsvectorfilewriter.h"
+#include "qgsrasterlayer.h"
+#include "qgsvectorlayer.h"
+#include "qgscoordinatereferencesystem.h"
+#include "qgsvectorfilewriter.h"
 #include <QMap>
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QJsonArray>
-
 
 LiqTriggerHazus2020::LiqTriggerHazus2020(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -270,10 +269,7 @@ bool LiqTriggerHazus2020::outputToJSON(QJsonObject &jsonObject){
 
 void LiqTriggerHazus2020::setDefaultFilePath(){
 
-    QString backendDataBasePath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-                                  + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-                                  + "regionalGroundMotion" + QDir::separator() + "database" +
-                                  QDir::separator() + "groundFailure";
+    QString backendDataBasePath = QCoreApplication::applicationDirPath() + QDir::separator() + "Databases"+ QDir::separator() + "groundFailure";
     GwDepthFilePath = backendDataBasePath + QDir::separator() +
                       "CA_WaterTableDepth_1km_WGS84_meter" + QDir::separator() +
                       "CA_WaterTableDepth_1km_WGS84_meter.tif";

@@ -54,8 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSignalMapper>
 #include <QDir>
 #include <QMimeData>
-#include "qgis/qgsrasterlayer.h"
-#include "qgis/qgscoordinatereferencesystem.h"
+#include "qgsrasterlayer.h"
+#include "qgscoordinatereferencesystem.h"
 #include <QGroupBox>
 #include <QGridLayout>
 #include <QJsonArray>
@@ -318,10 +318,7 @@ bool LiqTriggerZhuEtAl2017::outputToJSON(QJsonObject &jsonObject){
 
 void LiqTriggerZhuEtAl2017::setDefaultFilePath(){
 
-    QString backendDataBasePath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
-                                  + "applications" + QDir::separator() + "performRegionalEventSimulation" + QDir::separator()
-                                  + "regionalGroundMotion" + QDir::separator() + "database" +
-                                  QDir::separator() + "groundFailure";
+    QString backendDataBasePath = QCoreApplication::applicationDirPath() + QDir::separator() + "Databases"+ QDir::separator() + "groundFailure";
 
     DistWaterFilePath = backendDataBasePath + QDir::separator() +
                         "CA_DistAnyWaterWB_1km_WGS84_km" + QDir::separator() +
