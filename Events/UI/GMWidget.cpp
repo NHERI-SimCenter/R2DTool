@@ -1002,6 +1002,10 @@ void GMWidget::handleProcessStarted(void)
     this->m_runButton->setEnabled(false);
 }
 
+void GMWidget::clear(){
+    siteWidget->clear();
+}
+
 
 int GMWidget::downloadRecords(void)
 {
