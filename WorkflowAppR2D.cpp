@@ -472,10 +472,10 @@ void WorkflowAppR2D::clear(void)
     thePerformanceWidget->clear();
     ****************************** Performance ***************************** */    
     theResultsWidget->clear();
+    theToolDialog->clear();
     theVisualizationWidget->clear();
     // progressDialog->clear();
     theComponentSelection->displayComponent("VIZ");
-    theToolDialog->clear();
 }
 
 

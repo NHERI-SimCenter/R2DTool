@@ -84,6 +84,7 @@ public:
     void resetAppSettings(void);
     bool copyFiles(QString &destDir);
     bool getSimulationStatus(void);
+    void clear();
 
 
     GmAppConfig *appConfig() const;
