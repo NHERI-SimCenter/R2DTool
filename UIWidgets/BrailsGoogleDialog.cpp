@@ -37,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna, Barbaros Cetiner
 
 #include "BrailsGoogleDialog.h"
+#include "BrailsInventoryGenerator.h"
 #include <QGridLayout>
 #include <QLabel>
 #include <QDir>
@@ -50,8 +51,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #include "SC_IntLineEdit.h"
 
-BrailsGoogleDialog::BrailsGoogleDialog(QWidget* parent)
-	: QDialog(parent)
+BrailsGoogleDialog::BrailsGoogleDialog(BrailsInventoryGenerator* parent)
+    : QDialog(parent), parent(parent)
 {
 	// Initiate a grid layout:
 	this->setWindowTitle("Using Google Imagery");
@@ -85,7 +86,8 @@ BrailsGoogleDialog::BrailsGoogleDialog(QWidget* parent)
 	layout->addWidget(numBuildings, 3, 2);
 	QCheckBox* numBldgCheckbox = new QCheckBox("All buildings", this);
 	layout->addWidget(numBldgCheckbox, 3, 3);
-	connect(numBldgCheckbox, SIGNAL(clicked(bool)), this, SLOT(disableNumBuildings(bool)));
+    getAllBuildings = false;
+    connect(numBldgCheckbox, SIGNAL(clicked(bool)), this, SLOT(disableNumBuildings(bool)));
 
 	// Define the row prompting random seed:
 	seedLabel = new QLabel("Random seed");
@@ -155,6 +157,7 @@ BrailsGoogleDialog::startBrails(void) {
 	qDebug() << "BRAILS args: " << scriptArgs;
 	ModularPython* thePy = new ModularPython(outputPath);
 	thePy->run(brailsScript, scriptArgs);
+    parent->loadVectorLayer(brailsData.outputFile, "BRAILSGeneratedInventory");
 }
 
 void

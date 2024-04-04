@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 #include <QDir>
 #include <QGridLayout>
+#include <QStackedWidget>
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
@@ -109,6 +110,23 @@ typedef struct BrailsDataStruct {
     QString imageSource;
 } BrailsData;
 
+class StackedWidget : public QStackedWidget
+{
+public:
+    QSize sizeHint() const override
+    {
+        if (currentWidget())
+            return currentWidget()->sizeHint();
+        return QStackedWidget::sizeHint();
+    }
+
+    QSize minimumSizeHint() const override
+    {
+        if (currentWidget())
+            return currentWidget()->minimumSizeHint();
+        return QStackedWidget::minimumSizeHint();
+    }
+};
 
 class BrailsInventoryGenerator : public SimCenterAppWidget
 {
@@ -116,8 +134,9 @@ class BrailsInventoryGenerator : public SimCenterAppWidget
 
 public:
 	BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget* parent = nullptr);
-	~BrailsInventoryGenerator();
+    ~BrailsInventoryGenerator();
 
+    void loadVectorLayer(QString outputFile, QString layerName);
 public slots:
 	void clear(void);
 
@@ -126,7 +145,7 @@ signals:
 protected:
 
 private slots:
-	void runBRAILS(void);
+    void runBRAILS(void);
 	void coordsChanged(void);
 	void getLocationBoundary(void);
 	void getFootprints(void);
@@ -151,7 +170,7 @@ private:
 	QString brailsDir;
 	QDir scriptDir;
 
-	QString imageSource;
+    QString imageSource;
 
 	BrailsGoogleDialog* theGoogleDialog = 0;
 };

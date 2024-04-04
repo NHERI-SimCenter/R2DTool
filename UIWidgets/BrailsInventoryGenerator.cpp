@@ -64,14 +64,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget* parent) : SimCenterAppWidget(parent)
 {
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
 	// Initialize QGIS visualization with map extent defined in destination (EPSG 3857) coordinates for a rectangle
 	// with EPSG 4326 corner coordinates of (37.8227, -122.432) and (37.9739, -122.156):
 	theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
 	QgsRectangle zoomRectangle(QgsPointXY(-13629067.89, 4554409.45), QgsPointXY(-13598343.72, 4575739.41));
 	theVisualizationWidget->zoomToExtent(zoomRectangle);
 	assert(visWidget);
-
-	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
 	minLat = new SC_DoubleLineEdit("minLat", 37.8227);
 	maxLat = new SC_DoubleLineEdit("maxLat", 37.9739);
@@ -104,7 +104,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	invAttrGeojsonFile->setFilename(emptystr);
 
 	// Put together the stacked widget for location input:
-	QWidget* bboxWidget = new QWidget;
+    QWidget* bboxWidget = new QWidget;
 	QVBoxLayout* bboxWidgetLayout = new QVBoxLayout(bboxWidget);
 	QHBoxLayout* bboxTopLayout = new QHBoxLayout();
 	bboxTopLayout->addWidget(new QLabel("Latitude"));
@@ -121,39 +121,39 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	bboxWidgetLayout->addLayout(bboxTopLayout);
 	bboxWidgetLayout->addLayout(bboxBottomLayout);
 
-	QWidget* locationNameWidget = new QWidget;
+    QWidget* locationNameWidget = new QWidget;
 	QHBoxLayout* locationNameWidgetLayout = new QHBoxLayout(locationNameWidget);
 	locationNameWidgetLayout->addWidget(new QLabel("Region name"));
 	locationNameWidgetLayout->addWidget(locationStr);
 
-	QStackedWidget* stackedWidgetLocation = new QStackedWidget;
+    StackedWidget* stackedWidgetLocation = new StackedWidget;
 	stackedWidgetLocation->addWidget(bboxWidget);
 	stackedWidgetLocation->addWidget(locationNameWidget);
 
 	// Put together the stacked widget for footprint input:
 	QPushButton* showFootprintsButton1 = new QPushButton(tr("Show footprints"));
-	QWidget* dummyFpSourceWidget1 = new QWidget;
+    QWidget* dummyFpSourceWidget1 = new QWidget;
 	QHBoxLayout* dummyFpWidget1Layout = new QHBoxLayout(dummyFpSourceWidget1);
 	dummyFpWidget1Layout->addWidget(showFootprintsButton1);
 	dummyFpWidget1Layout->addStretch();
 	dummyFpWidget1Layout->addStretch();
 
 	QPushButton* showFootprintsButton2 = new QPushButton(tr("Show footprints"));
-	QWidget* dummyFpSourceWidget2 = new QWidget;
+    QWidget* dummyFpSourceWidget2 = new QWidget;
 	QHBoxLayout* dummyFpWidget2Layout = new QHBoxLayout(dummyFpSourceWidget2);
 	dummyFpWidget2Layout->addWidget(showFootprintsButton2);
 	dummyFpWidget2Layout->addStretch();
 	dummyFpWidget2Layout->addStretch();
 
 	QPushButton* showFootprintsButton3 = new QPushButton(tr("Show footprints"));
-	QWidget* dummyFpSourceWidget3 = new QWidget;
+    QWidget* dummyFpSourceWidget3 = new QWidget;
 	QHBoxLayout* dummyFpWidget3Layout = new QHBoxLayout(dummyFpSourceWidget3);
 	dummyFpWidget3Layout->addWidget(showFootprintsButton3);
 	dummyFpWidget3Layout->addStretch();
 	dummyFpWidget3Layout->addStretch();
 
 	QPushButton* showFootprintsButton4 = new QPushButton(tr("Show footprints"));
-	QWidget* geojsonFootprintWidget = new QWidget;
+    QWidget* geojsonFootprintWidget = new QWidget;
 	QHBoxLayout* geojsonFootprintWidget1Layout = new QHBoxLayout(geojsonFootprintWidget);
 	QVBoxLayout* geojsonFpLeftLayout = new QVBoxLayout();
 	geojsonFpLeftLayout->addWidget(new QLabel("GeoJSON file directory"));
@@ -167,14 +167,14 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	geojsonFootprintWidget1Layout->addLayout(geojsonFpMidLayout);
 	geojsonFootprintWidget1Layout->addLayout(geojsonFpRightLayout);
 
-	QStackedWidget* stackedWidgetFootprintSource = new QStackedWidget;
+    StackedWidget* stackedWidgetFootprintSource = new StackedWidget;
 	stackedWidgetFootprintSource->addWidget(dummyFpSourceWidget1);
 	stackedWidgetFootprintSource->addWidget(dummyFpSourceWidget2);
 	stackedWidgetFootprintSource->addWidget(dummyFpSourceWidget3);
 	stackedWidgetFootprintSource->addWidget(geojsonFootprintWidget);
 
 	// Put together the stacked widget for baseline inventory input:
-	QWidget* baselineNoneWidget = new QWidget;
+    QWidget* baselineNoneWidget = new QWidget;
 	QHBoxLayout* baselineNoneWidgetLayout = new QHBoxLayout(baselineNoneWidget);
 	baselineNoneWidgetLayout->addStretch();
 	baselineNoneWidgetLayout->addStretch();
@@ -182,7 +182,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 
 	QPushButton* RawNSIInventoryButton = new QPushButton(tr("Show raw data"));
 	QPushButton* ProcessedNSIInventoryButton = new QPushButton(tr("Show processed data"));
-	QWidget* baselineInvNSIWidget = new QWidget;
+    QWidget* baselineInvNSIWidget = new QWidget;
 	QHBoxLayout* baselineInvNSILayout = new QHBoxLayout(baselineInvNSIWidget);
 	QVBoxLayout* NSIBaselineLeftLayout = new QVBoxLayout();
 	NSIBaselineLeftLayout->addWidget(RawNSIInventoryButton);
@@ -193,7 +193,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 
 	QPushButton* RawUserInventoryButton = new QPushButton(tr("Show raw data"));
 	QPushButton* ProcessedUserInventoryButton = new QPushButton(tr("Show processed data"));
-	QWidget* baselineInvUserDefinedWidget = new QWidget;
+    QWidget* baselineInvUserDefinedWidget = new QWidget;
 	QHBoxLayout* geojsonInvWidgetLayout = new QHBoxLayout(baselineInvUserDefinedWidget);
 	QVBoxLayout* geojsonInvLeftLayout = new QVBoxLayout();
 	geojsonInvLeftLayout->addWidget(new QLabel("GeoJSON file directory"));
@@ -208,27 +208,27 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	geojsonInvWidgetLayout->addLayout(geojsonInvCenterLayout);
 	geojsonInvWidgetLayout->addLayout(geojsonInvRightLayout);
 
-	QStackedWidget* stackedWidgetInventorySource = new QStackedWidget;
+    StackedWidget* stackedWidgetInventorySource = new StackedWidget;
 	stackedWidgetInventorySource->addWidget(baselineNoneWidget);
 	stackedWidgetInventorySource->addWidget(baselineInvNSIWidget);
 	stackedWidgetInventorySource->addWidget(baselineInvUserDefinedWidget);
 
 	// Put together the stacked widget for baseline inventory input:
-	QWidget* allAttrWidget = new QWidget;
+    QWidget* allAttrWidget = new QWidget;
 	QHBoxLayout* allAttrWidgetLayout = new QHBoxLayout(allAttrWidget);
 	allAttrWidgetLayout->addStretch();
 	allAttrWidgetLayout->addStretch();
 	allAttrWidgetLayout->addStretch();
 	allAttrWidgetLayout->addStretch();
 
-	QWidget* allHazusSeismicWidget = new QWidget;
+    QWidget* allHazusSeismicWidget = new QWidget;
 	QHBoxLayout* allHazusSeismicWidgetLayout = new QHBoxLayout(allHazusSeismicWidget);
 	allHazusSeismicWidgetLayout->addStretch();
 	allHazusSeismicWidgetLayout->addStretch();
 	allHazusSeismicWidgetLayout->addStretch();
 	allHazusSeismicWidgetLayout->addStretch();
 
-	QWidget* enabledAttributesWidget = new QWidget;
+    QWidget* enabledAttributesWidget = new QWidget;
 	enabledAttributesWidgetLayout = new QGridLayout(enabledAttributesWidget);
 
 	int counter = 0;
@@ -244,7 +244,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	enabledAttributesWidget->setLayout(enabledAttributesWidgetLayout);
 	enabledAttributesWidget->show();
 
-	QStackedWidget* stackedAttributesWidget = new QStackedWidget;
+    StackedWidget* stackedAttributesWidget = new StackedWidget;
 	stackedAttributesWidget->addWidget(allAttrWidget);
 	stackedAttributesWidget->addWidget(allHazusSeismicWidget);
 	stackedAttributesWidget->addWidget(enabledAttributesWidget);
@@ -255,69 +255,65 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	// Define the combo box that prompts for outputs units:
 	int numRow = 0;
 	QStringList unitList; unitList << "m" << "ft";
-	units = new SC_ComboBox("units", unitList);
-    units->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    units = new SC_ComboBox("units", unitList);
 	mainLayout->addWidget(new QLabel("Output units"), numRow, 0);
 	mainLayout->addWidget(units, numRow, 1);
 
 	// Define the combo box that prompts for query area definition:
 	numRow++;
 	QStringList locationList; locationList << "Bounding box" << "Region name";
-	location = new SC_ComboBox("location", locationList);
-    location->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    location = new SC_ComboBox("location", locationList);
     mainLayout->addWidget(new QLabel("Query area definition"), numRow, 0);
-	mainLayout->addWidget(location, numRow, 1);
+    mainLayout->addWidget(location, numRow, 1);
 
 	// Connect the query area definition combo box to the stacked widget for location input:
-	QObject::connect(location, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetLocation, &QStackedWidget::setCurrentIndex);
-	mainLayout->addWidget(stackedWidgetLocation, numRow, 3);
-	QPushButton* showRegionButton = new QPushButton(tr("Show region"));
-	mainLayout->addWidget(showRegionButton, numRow, 4);
-	connect(showRegionButton, SIGNAL(clicked()), this, SLOT(getLocationBoundary()));
+    QObject::connect(location, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetLocation, &QStackedWidget::setCurrentIndex);
+    mainLayout->addWidget(stackedWidgetLocation, numRow, 3);
+    QPushButton* showRegionButton = new QPushButton(tr("Show region"));
+    mainLayout->addWidget(showRegionButton, numRow, 4);
+    connect(showRegionButton, SIGNAL(clicked()), this, SLOT(getLocationBoundary()));
 
 	// Define the combo box that prompts for footprints source:
 	numRow++;
 	QStringList footprintSources; footprintSources << "Microsoft Global Building Footprints" << "OpenStreetMap" << "FEMA USA Structures" << "User-defined";
 	footprintSource = new SC_ComboBox("footprint", footprintSources);
-    footprintSource->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	mainLayout->addWidget(new QLabel("Footprint source"), numRow, 0);
-	mainLayout->addWidget(footprintSource, numRow, 1);
+    mainLayout->addWidget(new QLabel("Footprint source"), numRow, 0);
+    mainLayout->addWidget(footprintSource, numRow, 1);
 
 	// Connect the footprint input combo box to the stacked widget for footprint source:
-	QObject::connect(footprintSource, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetFootprintSource, &QStackedWidget::setCurrentIndex);
-	mainLayout->addWidget(stackedWidgetFootprintSource, numRow, 3);
-	connect(showFootprintsButton1, SIGNAL(clicked()), this, SLOT(getFootprints()));
+    QObject::connect(footprintSource, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetFootprintSource, &QStackedWidget::setCurrentIndex);
+
+    mainLayout->addWidget(stackedWidgetFootprintSource, numRow, 3);
+    connect(showFootprintsButton1, SIGNAL(clicked()), this, SLOT(getFootprints()));
 	connect(showFootprintsButton2, SIGNAL(clicked()), this, SLOT(getFootprints()));
 	connect(showFootprintsButton3, SIGNAL(clicked()), this, SLOT(getFootprints()));
-	connect(showFootprintsButton4, SIGNAL(clicked()), this, SLOT(getFootprints()));
+    connect(showFootprintsButton4, SIGNAL(clicked()), this, SLOT(getFootprints()));
 
 	// Define the combo box that prompts for a baseline inventory selection:
 	numRow++;
 	QStringList baselineInventories; baselineInventories << "None" << "National Structure Inventory" << "User-defined";
 	baselineInvSelection = new SC_ComboBox("baseline", baselineInventories);
-    baselineInvSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	mainLayout->addWidget(new QLabel("Baseline inventory selection"), numRow, 0);
-	mainLayout->addWidget(baselineInvSelection, numRow, 1);
-	connect(RawNSIInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("raw"); });
+    mainLayout->addWidget(baselineInvSelection, numRow, 1);
+    connect(RawNSIInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("raw"); });
 	connect(ProcessedNSIInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("processed"); });
 	connect(RawUserInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("raw"); });
 	connect(ProcessedUserInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("processed"); });
 
 	// Connect the baseline inventory selection combo box to the stacked widget for baseline inventories:
-	QObject::connect(baselineInvSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetInventorySource, &QStackedWidget::setCurrentIndex);
-	mainLayout->addWidget(stackedWidgetInventorySource, numRow, 3);
+    QObject::connect(baselineInvSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetInventorySource, &QStackedWidget::setCurrentIndex);
+    mainLayout->addWidget(stackedWidgetInventorySource, numRow, 3);
 
 	// Define the combo box for selecting the building attributes that will be generated by BRAILS:
 	numRow++;
 	QStringList requestedAttributes; requestedAttributes << "All" << "HAZUS seismic attributes" << "Select from enabled attributes";
-	attributeSelection = new SC_ComboBox("attributes", requestedAttributes);
-    attributeSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    attributeSelection = new SC_ComboBox("attributes", requestedAttributes);
 	mainLayout->addWidget(new QLabel("Requested attributes"), numRow, 0);
-	mainLayout->addWidget(attributeSelection, numRow, 1);
+    mainLayout->addWidget(attributeSelection, numRow, 1);
 
 	// Connect the attribute selection combo box to the stacked widget for attributes:
-	QObject::connect(attributeSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedAttributesWidget, &QStackedWidget::setCurrentIndex);
-	mainLayout->addWidget(stackedAttributesWidget, numRow, 3);
+    QObject::connect(attributeSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedAttributesWidget, &QStackedWidget::setCurrentIndex);
+    mainLayout->addWidget(stackedAttributesWidget, numRow, 3);
 
 	/*
 	numRow++;
@@ -338,7 +334,6 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     numRow++;
     QStringList imputationAlgos; imputationAlgos << "None";
     imputationAlgoCombo = new SC_ComboBox("imputation", imputationAlgos);
-    imputationAlgoCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     mainLayout->addWidget(new QLabel("Imputation algorithm"), numRow, 0);
     mainLayout->addWidget(imputationAlgoCombo, numRow, 1, 1, 3);
 
@@ -351,18 +346,18 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	// Create the directory selector for BRAILS inventory output:
 	numRow++;
 	mainLayout->addWidget(new QLabel("BRAILS output file directory"), numRow, 0);
-	mainLayout->addWidget(theOutputFile, numRow, 1, 1, 7);
+    mainLayout->addWidget(theOutputFile, numRow, 1, 1, 7);
 
 	// Create the Run BRAILS button:
 	numRow++;
 	QPushButton* runButton = new QPushButton(tr("Run BRAILS Inventory Generator"));
-	mainLayout->addWidget(runButton, numRow, 0, 1, 8);
+    mainLayout->addWidget(runButton, numRow, 0, 1, 8);
 	connect(runButton, SIGNAL(clicked()), this, SLOT(runBRAILS()));
 
 	// Show the GIS selection window for obtaining bounding box coordinates:
 	numRow++;
-	theSelectionWidget = new GIS_Selection(theVisualizationWidget);
-	mainLayout->addWidget(theSelectionWidget, numRow, 0, 1, 8);
+    theSelectionWidget = new GIS_Selection(theVisualizationWidget);
+    mainLayout->addWidget(theSelectionWidget, numRow, 0, 1, 8);
 	connect(theSelectionWidget, SIGNAL(selectionGeometryChanged()), this, SLOT(coordsChanged()));
 
 	// set current selections
@@ -378,6 +373,12 @@ BrailsInventoryGenerator::~BrailsInventoryGenerator()
 void BrailsInventoryGenerator::clear(void)
 {
 
+}
+
+void
+BrailsInventoryGenerator::loadVectorLayer(QString outputFile, QString layerName){
+    theVisualizationWidget->addVectorLayer(outputFile, layerName, "ogr");
+    theVisualizationWidget->zoomToActiveLayer();
 }
 
 QStringList
@@ -477,9 +478,8 @@ BrailsInventoryGenerator::getLocationBoundary(void)
 	ModularPython* thePy = new ModularPython(brailsDir);
 	thePy->run(locationBoundaryScript, scriptArgs);
 
-	// Load the vector layer:
-	theVisualizationWidget->addVectorLayer(regionInp.outputFile, "RegionBoundary", "ogr");
-	theVisualizationWidget->zoomToActiveLayer();
+    // Load the vector layer:
+    loadVectorLayer(regionInp.outputFile, "RegionBoundary");
 	theVisualizationWidget->setActiveLayerFillNull();
 }
 
@@ -553,8 +553,7 @@ BrailsInventoryGenerator::getFootprints(void)
 
 	// Load the vector layer:
 	QString layerName = "BuildingFootprints_" + printSuffix;
-	theVisualizationWidget->addVectorLayer(fpInp.outputFile, layerName, "ogr");
-	theVisualizationWidget->zoomToActiveLayer();
+    loadVectorLayer(fpInp.outputFile, layerName);
 }
 
 void
@@ -646,9 +645,8 @@ BrailsInventoryGenerator::getBaselineInv(QString outputDataType)
 	}
 
 	// Load the vector layer:
-	QString layerName = "BaselineInventory_" + printSuffix1 + printSuffix2;
-	theVisualizationWidget->addVectorLayer(binvInp.outputFile, layerName, "ogr");
-	theVisualizationWidget->zoomToActiveLayer();
+    QString layerName = "BaselineInventory_" + printSuffix1 + printSuffix2;
+    loadVectorLayer(binvInp.outputFile, layerName);
 }
 
 void BrailsInventoryGenerator::runBRAILS(void)
@@ -692,7 +690,7 @@ void BrailsInventoryGenerator::runBRAILS(void)
 
 	// Parse baseline inventory selection:
 	brailsData.invAttributeMap = "";
-	if (baselineInvSelection->currentText() == "National Structure Inventory") {
+    if (baselineInvSelection->currentText() == "None") {
 		brailsData.invInput = "None";
 	}
 	else if (baselineInvSelection->currentText() == "National Structure Inventory") {
