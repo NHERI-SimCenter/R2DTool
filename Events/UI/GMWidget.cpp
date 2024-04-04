@@ -1115,8 +1115,8 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
     // Account for the different directory structure if only want IMs
-    if(m_selectionconfig->getDatabase().size() == 0)
-        pathToOutputDirectory += "IMs" + QString(QDir::separator());
+//    if(m_selectionconfig->getDatabase().size() == 0)
+    pathToOutputDirectory += "IMs" + QString(QDir::separator());
 
     pathToOutputDirectory += "EventGrid.csv";
 
