@@ -12,9 +12,21 @@
 #include <QVBoxLayout>
 #include <QStackedWidget>
 #include <QPushButton>
+#include <QGuiApplication>
+#include <QScreen>
 
 ToolDialog::ToolDialog(WorkflowAppWidget* parent, QGISVisualizationWidget* visWidget) : QDialog(parent), visualizationWidget(visWidget)
 {
+  
+#ifndef OpenSRA
+  QRect rec = QGuiApplication::primaryScreen()->geometry();
+  int height = this->height()<int(rec.height())?int(rec.height()):this->height();
+  int width  = this->width()<int(rec.width())?int(rec.width()):this->width();
+  height = abs(0.75*height);
+  width = abs(0.75*width);
+  this->resize(width, height);
+#endif
+  
     mainLayout = new QVBoxLayout(this);
     mainWidget = new QStackedWidget();
     mainLayout->addWidget(mainWidget);
