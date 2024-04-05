@@ -64,7 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget* parent) : SimCenterAppWidget(parent)
 {
-    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  //    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	// Initialize QGIS visualization with map extent defined in destination (EPSG 3857) coordinates for a rectangle
 	// with EPSG 4326 corner coordinates of (37.8227, -122.432) and (37.9739, -122.156):
@@ -104,7 +104,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	invAttrGeojsonFile->setFilename(emptystr);
 
 	// Put together the stacked widget for location input:
-    QWidget* bboxWidget = new QWidget;
+        QWidget* bboxWidget = new QWidget;
 	QVBoxLayout* bboxWidgetLayout = new QVBoxLayout(bboxWidget);
 	QHBoxLayout* bboxTopLayout = new QHBoxLayout();
 	bboxTopLayout->addWidget(new QLabel("Latitude"));
@@ -263,7 +263,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	numRow++;
 	QStringList locationList; locationList << "Bounding box" << "Region name";
     location = new SC_ComboBox("location", locationList);
-    mainLayout->addWidget(new QLabel("Query area definition"), numRow, 0);
+    mainLayout->addWidget(new QLabel("Area definition"), numRow, 0);
     mainLayout->addWidget(location, numRow, 1);
 
 	// Connect the query area definition combo box to the stacked widget for location input:
@@ -273,12 +273,13 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
     mainLayout->addWidget(showRegionButton, numRow, 4);
     connect(showRegionButton, SIGNAL(clicked()), this, SLOT(getLocationBoundary()));
 
-	// Define the combo box that prompts for footprints source:
+    // Define the combo box that prompts for footprints source:
 	numRow++;
 	QStringList footprintSources; footprintSources << "Microsoft Global Building Footprints" << "OpenStreetMap" << "FEMA USA Structures" << "User-defined";
 	footprintSource = new SC_ComboBox("footprint", footprintSources);
     mainLayout->addWidget(new QLabel("Footprint source"), numRow, 0);
     mainLayout->addWidget(footprintSource, numRow, 1);
+    mainLayout->setColumnStretch(1,1);
 
 	// Connect the footprint input combo box to the stacked widget for footprint source:
     QObject::connect(footprintSource, QOverload<int>::of(&QComboBox::currentIndexChanged), stackedWidgetFootprintSource, &QStackedWidget::setCurrentIndex);
@@ -293,7 +294,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	numRow++;
 	QStringList baselineInventories; baselineInventories << "None" << "National Structure Inventory" << "User-defined";
 	baselineInvSelection = new SC_ComboBox("baseline", baselineInventories);
-	mainLayout->addWidget(new QLabel("Baseline inventory selection"), numRow, 0);
+	mainLayout->addWidget(new QLabel("Baseline inventory"), numRow, 0);
     mainLayout->addWidget(baselineInvSelection, numRow, 1);
     connect(RawNSIInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("raw"); });
 	connect(ProcessedNSIInventoryButton, &QPushButton::clicked, this, [this]() {getBaselineInv("processed"); });
@@ -345,7 +346,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 
 	// Create the directory selector for BRAILS inventory output:
 	numRow++;
-	mainLayout->addWidget(new QLabel("BRAILS output file directory"), numRow, 0);
+	mainLayout->addWidget(new QLabel("Output directory"), numRow, 0);
     mainLayout->addWidget(theOutputFile, numRow, 1, 1, 7);
 
 	// Create the Run BRAILS button:
