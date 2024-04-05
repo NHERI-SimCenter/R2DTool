@@ -51,6 +51,11 @@ void ToolDialog::clear()
 
     if(theHurricaneSimWidget)
         theHurricaneSimWidget->clear();
+
+    if(theEQSSWidget != nullptr)
+    {
+        theEQSSWidget->clear();
+    }
 }
 
 

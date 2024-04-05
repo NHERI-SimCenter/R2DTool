@@ -60,6 +60,7 @@ public:
     SiteConfigWidget *siteConfigWidget() const;
 
     void outputToJson(QJsonObject& obj);
+    void clear();
 
 private:
     SiteConfig* m_siteConfig = nullptr;

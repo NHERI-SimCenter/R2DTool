@@ -56,12 +56,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class SC_IntLineEdit;
 class QLineEdit;
+class BrailsInventoryGenerator;
 
 class BrailsGoogleDialog : public QDialog
 {
 	Q_OBJECT
 public:
-	explicit BrailsGoogleDialog(QWidget* parent);
+    explicit BrailsGoogleDialog(BrailsInventoryGenerator* parent = nullptr);
 	void setData(BrailsData&);
 
 signals:
@@ -79,6 +80,7 @@ private:
 	QLabel* seedLabel;
 	BrailsData brailsData;
 	QLineEdit* apiKey;
+    BrailsInventoryGenerator *parent;
 };
 
 class ClickableLabel : public QLabel {
