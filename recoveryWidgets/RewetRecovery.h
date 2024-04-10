@@ -47,9 +47,9 @@ class SC_DoubleLineEdit;
 class SC_IntLineEdit;
 class SC_ComboBox;
 class SC_CheckBox;
-class SC_IntLineEdit;
+//class SC_IntLineEdit;
 class SC_TableEdit;
-class QRadioButton;
+class SC_QRadioButton;
 
 
 class RewetRecovery : public SimCenterAppWidget
@@ -93,13 +93,13 @@ private:
   SC_CheckBox *restorationOnCheckBox;
   SC_FileEdit *policyDefinitionFile;
   SC_IntLineEdit *minimumJobTimeLineEdit;
-  QRadioButton *pipeLeakBasedRadioButton;
-  QRadioButton *pipeTimeBasedRadioButton;
+  SC_QRadioButton *pipeLeakBasedRadioButton;
+  SC_QRadioButton *pipeTimeBasedRadioButton;
   SC_DoubleLineEdit *pipeDiscoveryLeakAmountLineEdit;
   SC_IntLineEdit *pipeDiscoveryTimeWindowLineEdit;
   SC_TableEdit *pipeTimeBasedDiscoveryTable;
-  QRadioButton *nodeLeakBasedRadioButton;
-  QRadioButton *nodeTimeBasedRadioButton;
+  SC_QRadioButton *nodeLeakBasedRadioButton;
+  SC_QRadioButton *nodeTimeBasedRadioButton;
   SC_DoubleLineEdit *nodeDiscoveryLeakAmountLineEdit;
   SC_IntLineEdit *nodeDiscoveryTimeWindowLineEdit;
   SC_TableEdit *nodeTimeBasedDiscoveryTable;

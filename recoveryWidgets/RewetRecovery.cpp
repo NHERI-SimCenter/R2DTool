@@ -38,7 +38,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RewetRecovery.h"
 #include <QScrollArea>
 #include <QLineEdit>
-#include <QRadioButton>
 #include <QTabWidget>
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -48,6 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QDoubleValidator>
 
+#include <SC_QRadioButton.h>
 #include <SC_DoubleLineEdit.h>
 #include <SC_FileEdit.h>
 #include <SC_IntLineEdit.h>
@@ -76,7 +76,7 @@ RewetRecovery::RewetRecovery(QWidget *parent)
 
     // 1.1 Simulation End Time
     int numRow = 0;
-    simulationTime = new SC_IntLineEdit("simulationTime", 0, 3600*24*10, 3600*24*10000);
+    simulationTime = new SC_IntLineEdit("simulationTime", 3600*24*10, 0, 3600*24*10000);
     simLayout->addWidget(new QLabel("Simulation End Time"), numRow, 0);
     simLayout->addWidget(simulationTime, numRow, 1);
     simLayout->addWidget(new QLabel("Seconds"), numRow++, 2);
@@ -162,13 +162,13 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     solverSelection = new SC_ComboBox("Solver", {"ModifiedEPANETV2.2"});
     
     // 2.1.2 PDA Min
-    QLabel *solverPDAMinLabel = new QLabel("Min Pressure Override (0 for ignore)"); 
-    solverPDAMin = new SC_DoubleLineEdit("minimum_pressure", 0);
+    QLabel *solverPDAMinLabel = new QLabel("Min Pressure Override (-1 for ignore)"); 
+    solverPDAMin = new SC_DoubleLineEdit("minimum_pressure", -1);
     QLabel *solverPDAMinUnitLabel = new QLabel("Meter");
 
     // 2.1.3 PDA Required
-    QLabel *solverPDARequiredLabel = new QLabel("Required Pressure Override (0 for ignore)");
-    solverPDARequired = new SC_DoubleLineEdit("required_pressure", 0);
+    QLabel *solverPDARequiredLabel = new QLabel("Required Pressure Override (-1 for ignore)");
+    solverPDARequired = new SC_DoubleLineEdit("required_pressure", -1);
     QLabel *solverPDARequiredUnitLabel = new QLabel("Meter");
 
     // (2.1) add Solver widgets to the hydraulic solver layout
@@ -290,8 +290,8 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     pumpDiscoveryWidget->setLayout(pumpDiscoveryLayout);
 
     // adding pipe discovery widgets
-    pipeLeakBasedRadioButton = new QRadioButton("Leak Based", pipeDiscoveryWidget);
-    pipeTimeBasedRadioButton = new QRadioButton("Time Based", pipeDiscoveryWidget);
+    pipeLeakBasedRadioButton = new SC_QRadioButton("Pipe_Leak_Based", pipeDiscoveryWidget);
+    pipeTimeBasedRadioButton = new SC_QRadioButton("Pipe_Time_Based", pipeDiscoveryWidget);
 
     pipeDiscoveryLeakAmountLineEdit = new SC_DoubleLineEdit("pipe_leak_amount", 0.025, 0, 1000000, 0.0001);
     pipeDiscoveryTimeWindowLineEdit = new SC_IntLineEdit("pipe_leak_time", 43200, 1, 3600*24*10000);
@@ -313,20 +313,20 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     pipeDiscoveryLayout->addWidget(new QWidget(), 3, 0, 1, 1);
     pipeDiscoveryLayout->addWidget(pipeTimeBasedDiscoveryTable, 3, 1, 1, 4);
 
-    connect( pipeLeakBasedRadioButton, &QRadioButton::toggled, pipeDiscoveryLeakAmountLineEdit, &SC_DoubleLineEdit::setEnabled);
-    connect( pipeLeakBasedRadioButton, &QRadioButton::toggled, pipeDiscoveryTimeWindowLineEdit, &SC_DoubleLineEdit::setEnabled);
-    connect( pipeLeakBasedRadioButton, &QRadioButton::toggled, pipeDiscoveryLeakAmountLabel, &QLabel::setEnabled);
-    connect( pipeLeakBasedRadioButton, &QRadioButton::toggled, pipeDiscoveryTimeWindowLabel, &QLabel::setEnabled);
+    connect( pipeLeakBasedRadioButton, &SC_QRadioButton::toggled, pipeDiscoveryLeakAmountLineEdit, &SC_DoubleLineEdit::setEnabled);
+    connect( pipeLeakBasedRadioButton, &SC_QRadioButton::toggled, pipeDiscoveryTimeWindowLineEdit, &SC_DoubleLineEdit::setEnabled);
+    connect( pipeLeakBasedRadioButton, &SC_QRadioButton::toggled, pipeDiscoveryLeakAmountLabel, &QLabel::setEnabled);
+    connect( pipeLeakBasedRadioButton, &SC_QRadioButton::toggled, pipeDiscoveryTimeWindowLabel, &QLabel::setEnabled);
 
-    connect( pipeTimeBasedRadioButton, &QRadioButton::toggled, pipeTimeBasedDiscoveryTable, &SC_TableEdit::setEnabled);
+    connect( pipeTimeBasedRadioButton, &SC_QRadioButton::toggled, pipeTimeBasedDiscoveryTable, &SC_TableEdit::setEnabled);
     pipeLeakBasedRadioButton->setChecked(true);
     pipeTimeBasedDiscoveryTable->setEnabled(false);
 
     // adding node discovery widgets
-    nodeLeakBasedRadioButton = new QRadioButton("Leak Based", nodeDiscoveryWidget);
-    nodeTimeBasedRadioButton = new QRadioButton("Time Based", nodeDiscoveryWidget);
+    nodeLeakBasedRadioButton = new SC_QRadioButton("Node_Leak_Based", nodeDiscoveryWidget);
+    nodeTimeBasedRadioButton = new SC_QRadioButton("Node_Time_Based", nodeDiscoveryWidget);
 
-    nodeDiscoveryLeakAmountLineEdit = new SC_DoubleLineEdit("node_leak_amount", 0.025, 0, 1000000, 0.0001);
+    nodeDiscoveryLeakAmountLineEdit = new SC_DoubleLineEdit("node_leak_amount", 0.001, 0, 1000000, 0.0001);
     nodeDiscoveryTimeWindowLineEdit = new SC_IntLineEdit("node_leak_time", 43200, 1, 3600*24*10000);
     nodeTimeBasedDiscoveryTable = new SC_TableEdit("node_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, true, 0);
 
@@ -347,12 +347,12 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     nodeDiscoveryLayout->addWidget(new QWidget(), 3, 0, 1, 1);
     nodeDiscoveryLayout->addWidget(nodeTimeBasedDiscoveryTable, 3, 1, 1, 4);
 
-    connect( nodeLeakBasedRadioButton, &QRadioButton::toggled, nodeDiscoveryLeakAmountLineEdit, &SC_DoubleLineEdit::setEnabled);
-    connect( nodeLeakBasedRadioButton, &QRadioButton::toggled, nodeDiscoveryTimeWindowLineEdit, &SC_DoubleLineEdit::setEnabled);
-    connect( nodeLeakBasedRadioButton, &QRadioButton::toggled, nodeDiscoveryLeakAmountLabel, &QLabel::setEnabled);
-    connect( nodeLeakBasedRadioButton, &QRadioButton::toggled, nodeDiscoveryTimeWindowLabel, &QLabel::setEnabled);
+    connect( nodeLeakBasedRadioButton, &SC_QRadioButton::toggled, nodeDiscoveryLeakAmountLineEdit, &SC_DoubleLineEdit::setEnabled);
+    connect( nodeLeakBasedRadioButton, &SC_QRadioButton::toggled, nodeDiscoveryTimeWindowLineEdit, &SC_DoubleLineEdit::setEnabled);
+    connect( nodeLeakBasedRadioButton, &SC_QRadioButton::toggled, nodeDiscoveryLeakAmountLabel, &QLabel::setEnabled);
+    connect( nodeLeakBasedRadioButton, &SC_QRadioButton::toggled, nodeDiscoveryTimeWindowLabel, &QLabel::setEnabled);
 
-    connect( nodeTimeBasedRadioButton, &QRadioButton::toggled, nodeTimeBasedDiscoveryTable, &SC_TableEdit::setEnabled);
+    connect( nodeTimeBasedRadioButton, &SC_QRadioButton::toggled, nodeTimeBasedDiscoveryTable, &SC_TableEdit::setEnabled);
     nodeLeakBasedRadioButton->setChecked(true);
     nodeTimeBasedDiscoveryTable->setEnabled(false);
 
@@ -414,10 +414,40 @@ bool RewetRecovery::inputFromJSON(QJsonObject &jsonObject)
 {
   this->clear();
   
-  //   inputSettings->inputFromJSON(jsonObject);
+  // inputSettings->inputFromJSON(jsonObject);
+  // simulationTime->inputFromJSON(jsonObject);
+  // solver->inputFromJSON(jsonObject);
+  // policyDefinitionFile->inputFromJSON(jsonObject);
+
   simulationTime->inputFromJSON(jsonObject);
-  //solver->inputFromJSON(jsonObject);
-  //policyDefinitionFile->inputFromJSON(jsonObject);  
+  simulationTimeStep->inputFromJSON(jsonObject);
+  lastTerminationCheckBox->inputFromJSON(jsonObject);
+  demandMetTerminationCheckBox->inputFromJSON(jsonObject);
+  demandMetTerminationTimeWindow->inputFromJSON(jsonObject);
+  demandMetCriteriaRatio->inputFromJSON(jsonObject);
+  solverPDARequired->inputFromJSON(jsonObject);
+  solverSelection->inputFromJSON(jsonObject);
+  solverPDAMin->inputFromJSON(jsonObject);
+  // damage Modeling GroupBox
+  pipeDamageModelingTable->inputFromJSON(jsonObject);
+  nodeDamageModelingTable->inputFromJSON(jsonObject);
+
+  // restoration
+  restorationOnCheckBox->inputFromJSON(jsonObject);
+  policyDefinitionFile->inputFromJSON(jsonObject);
+  minimumJobTimeLineEdit->inputFromJSON(jsonObject);
+  pipeLeakBasedRadioButton->inputFromJSON(jsonObject);
+  pipeTimeBasedRadioButton->inputFromJSON(jsonObject);
+  pipeDiscoveryLeakAmountLineEdit->inputFromJSON(jsonObject);
+  pipeDiscoveryTimeWindowLineEdit->inputFromJSON(jsonObject);
+  pipeTimeBasedDiscoveryTable->inputFromJSON(jsonObject);
+  nodeLeakBasedRadioButton->inputFromJSON(jsonObject);
+  nodeTimeBasedRadioButton->inputFromJSON(jsonObject);
+  nodeDiscoveryLeakAmountLineEdit->inputFromJSON(jsonObject);
+  nodeDiscoveryTimeWindowLineEdit->inputFromJSON(jsonObject);
+  nodeTimeBasedDiscoveryTable->inputFromJSON(jsonObject);
+  tankTimeBasedDiscoveryTable->inputFromJSON(jsonObject);
+  pumpTimeBasedDiscoveryTable->inputFromJSON(jsonObject);  
   
   return true;
 }
@@ -442,13 +472,13 @@ bool RewetRecovery::outputToJSON(QJsonObject &jsonObject)
   restorationOnCheckBox->outputToJSON(jsonObject);
   policyDefinitionFile->outputToJSON(jsonObject);
   minimumJobTimeLineEdit->outputToJSON(jsonObject);
-  //pipeLeakBasedRadioButton->outputToJSON(jsonObject);
-  //pipeTimeBasedRadioButton->outputToJSON(jsonObject);
+  pipeLeakBasedRadioButton->outputToJSON(jsonObject);
+  pipeTimeBasedRadioButton->outputToJSON(jsonObject);
   pipeDiscoveryLeakAmountLineEdit->outputToJSON(jsonObject);
   pipeDiscoveryTimeWindowLineEdit->outputToJSON(jsonObject);
   pipeTimeBasedDiscoveryTable->outputToJSON(jsonObject);
-  //nodeLeakBasedRadioButton->outputToJSON(jsonObject);
-  //nodeTimeBasedRadioButton->outputToJSON(jsonObject);
+  nodeLeakBasedRadioButton->outputToJSON(jsonObject);
+  nodeTimeBasedRadioButton->outputToJSON(jsonObject);
   nodeDiscoveryLeakAmountLineEdit->outputToJSON(jsonObject);
   nodeDiscoveryTimeWindowLineEdit->outputToJSON(jsonObject);
   nodeTimeBasedDiscoveryTable->outputToJSON(jsonObject);
