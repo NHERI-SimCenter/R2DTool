@@ -70,7 +70,7 @@ RecoveryWidget::RecoveryWidget(QWidget *parent)
   SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
   SimCenterAppWidget *rewetRecovery = new RewetRecovery(this);
   WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
-  WDNWidget->addComponent(QString("RewetRecovery"), QString("Rewet"), rewetRecovery);  
+  WDNWidget->addComponent(QString("RewetRecovery"), QString("RewetRecovery"), rewetRecovery);  
 
   // Transportation network apps
   SimCenterAppWidget *noneWidget4 = new NoneWidget(this);
