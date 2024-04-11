@@ -72,6 +72,7 @@ public slots:
 private:
 
   // simulation
+  SC_IntLineEdit *eventTime;
   SC_IntLineEdit *simulationTime;
   SC_IntLineEdit *simulationTimeStep;
   SC_CheckBox        *lastTerminationCheckBox;

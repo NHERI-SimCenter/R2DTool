@@ -74,8 +74,16 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     QGridLayout *simLayout = new QGridLayout();
     simulationWidget->setLayout(simLayout);
 
-    // 1.1 Simulation End Time
+    
     int numRow = 0;
+
+    // 1.0 Event Time
+    eventTime = new SC_IntLineEdit("eventTime", 3600*2, 0, 3600*24*10000);
+    simLayout->addWidget(new QLabel("Event Time"), numRow, 0);
+    simLayout->addWidget(eventTime, numRow, 1);
+    simLayout->addWidget(new QLabel("Seconds"), numRow++, 2);
+    
+    // 1.1 Simulation End Time
     simulationTime = new SC_IntLineEdit("simulationTime", 3600*24*10, 0, 3600*24*10000);
     simLayout->addWidget(new QLabel("Simulation End Time"), numRow, 0);
     simLayout->addWidget(simulationTime, numRow, 1);
@@ -419,6 +427,7 @@ bool RewetRecovery::inputFromJSON(QJsonObject &jsonObject)
   // solver->inputFromJSON(jsonObject);
   // policyDefinitionFile->inputFromJSON(jsonObject);
 
+  eventTime->inputFromJSON(jsonObject);
   simulationTime->inputFromJSON(jsonObject);
   simulationTimeStep->inputFromJSON(jsonObject);
   lastTerminationCheckBox->inputFromJSON(jsonObject);
@@ -454,7 +463,8 @@ bool RewetRecovery::inputFromJSON(QJsonObject &jsonObject)
 
 bool RewetRecovery::outputToJSON(QJsonObject &jsonObject)
 {
-  jsonObject["Application"] = "RewetRecovery";
+  jsonObject["Application"] = "REWETRecovery";
+  eventTime->outputToJSON(jsonObject);
   simulationTime->outputToJSON(jsonObject);
   simulationTimeStep->outputToJSON(jsonObject);
   lastTerminationCheckBox->outputToJSON(jsonObject);
@@ -501,7 +511,7 @@ bool RewetRecovery::outputAppDataToJSON(QJsonObject &jsonObject) {
     // and all data to be used in ApplicationDate
     //
 
-    jsonObject["Application"] = "RewetRecovery";
+    jsonObject["Application"] = "REWETRecovery";
     QJsonObject dataObj;
     jsonObject["ApplicationData"] = dataObj;
 

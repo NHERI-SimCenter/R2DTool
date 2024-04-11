@@ -49,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 
 RecoveryWidget::RecoveryWidget(QWidget *parent)
-  : MultiComponentR2D(QString("Recovery"), parent)
+  : MultiComponentR2D(QString("SystemPerformance"), parent)
 {
 
   //QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
@@ -70,7 +70,7 @@ RecoveryWidget::RecoveryWidget(QWidget *parent)
   SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
   SimCenterAppWidget *rewetRecovery = new RewetRecovery(this);
   WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
-  WDNWidget->addComponent(QString("RewetRecovery"), QString("RewetRecovery"), rewetRecovery);  
+  WDNWidget->addComponent(QString("REWETRecovery"), QString("REWETRecovery"), rewetRecovery);  
 
   // Transportation network apps
   SimCenterAppWidget *noneWidget4 = new NoneWidget(this);

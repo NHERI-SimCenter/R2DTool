@@ -69,7 +69,7 @@ int outputJSON(Project *theProjectPtr, const char *fileName) {
     Snode *theNode = &theProjectPtr->network.Node[i];
     if (theNode->Type == JUNCTION) {
       if (i == 1) // the == 1 is needed to for no initial comma
-	fprintf(jsonFile,"\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"Point\", \"coordinates\":[%f,%f]},\"id\":1, \"properties\":{\"type\":\"Junction\",\"id\":\"%s\", \"El\":%f, \"C0\":%f, \"Ke\":%f}}",
+	fprintf(jsonFile,"\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"Point\", \"coordinates\":[%f,%f]},\"id\":\"1\", \"properties\":{\"type\":\"Junction\",\"InpID\":\"%s\", \"El\":%f, \"C0\":%f, \"Ke\":%f}}",
 		theNode->X,
 		theNode->Y,
 		theNode->ID,
@@ -77,7 +77,7 @@ int outputJSON(Project *theProjectPtr, const char *fileName) {
 		theNode->C0,
 		theNode->Ke);
       else
-	fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"Point\", \"coordinates\":[%f,%f]}, \"id\":%d, \"properties\":{\"type\":\"Junction\",\"id\":\"%s\", \"El\":%f, \"C0\":%f, \"Ke\":%f}}",
+	fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"Point\", \"coordinates\":[%f,%f]}, \"id\":\"%d\", \"properties\":{\"type\":\"Junction\",\"InpID\":\"%s\", \"El\":%f, \"C0\":%f, \"Ke\":%f}}",
 		theNode->X,
 		theNode->Y,
 		i,
@@ -97,7 +97,7 @@ int outputJSON(Project *theProjectPtr, const char *fileName) {
     Slink *theLink = &theProjectPtr->network.Link[thePump->Link];
     Snode *startNode= &theProjectPtr->network.Node[theLink->N1];
     Snode *endNode = &theProjectPtr->network.Node[theLink->N2];
-    fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"LineString\", \"coordinates\":[[%f,%f],[%f,%f]]},\"id\":%d, \"properties\":{\"type\":\"Pump\",\"id\":\"%s\", \"Ptype\":\"%s\", \"Q0\":%f, \"Qmax\":%f, \"Hmax\": %f, \"H0\":%f, \"R\":%f, \"N\":%f, \"Hcurve\":%d, \"Ecurve\":%d, \"Upat\":%d,\"Epat\":%d, \"Ecost\":%f,\"startNode\":\"%s\", \"endNode\":\"%s\"}}",
+    fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"LineString\", \"coordinates\":[[%f,%f],[%f,%f]]},\"id\":\"%d\", \"properties\":{\"type\":\"Pump\",\"InpID\":\"%s\", \"Ptype\":\"%s\", \"Q0\":%f, \"Qmax\":%f, \"Hmax\": %f, \"H0\":%f, \"R\":%f, \"N\":%f, \"Hcurve\":%d, \"Ecurve\":%d, \"Upat\":%d,\"Epat\":%d, \"Ecost\":%f,\"startNode\":\"%s\", \"endNode\":\"%s\"}}",
 	    startNode->X,
 	    startNode->Y,
 	    endNode->X,
@@ -132,7 +132,7 @@ int outputJSON(Project *theProjectPtr, const char *fileName) {
     Snode *startNode = &theProjectPtr->network.Node[theLink->N1];
     Snode *endNode = &theProjectPtr->network.Node[theLink->N2];
     if (theLink->Type == PIPE) {
-      fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"LineString\", \"coordinates\":[[%f,%f],[%f,%f]]},\"id\": %d, \"properties\":{\"type\":\"Pipe\",\"id\":\"%s\", \"Diam\":%f, \"Kc\":%f, \"Len\":%f, \"Status\":\"%s\", \"Km\":%f, \"Kb\":%f, \"Kw\":%f, \"R\":%f,\"Rc\":%f,\"startNode\":\"%s\", \"endNode\":\"%s\"}}",
+      fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"LineString\", \"coordinates\":[[%f,%f],[%f,%f]]},\"id\": \"%d\", \"properties\":{\"type\":\"Pipe\",\"InpID\":\"%s\", \"Diam\":%f, \"Kc\":%f, \"Len\":%f, \"Status\":\"%s\", \"Km\":%f, \"Kb\":%f, \"Kw\":%f, \"R\":%f,\"Rc\":%f,\"startNode\":\"%s\", \"endNode\":\"%s\"}}",
 	      startNode->X,
 	      startNode->Y,
 	      endNode->X,
@@ -171,7 +171,7 @@ int outputJSON(Project *theProjectPtr, const char *fileName) {
     double A = theTank->A;
     Snode *theNode = &theProjectPtr->network.Node[nodeID];      
     if (A == 0) {   // keeping tanks and resrvoirs seperate for now .. might not want all the stuff in the structure depending on type
-      fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"Point\", \"coordinates\":[%f,%f]},\"id\":%d, \"properties\":{\"type\":\"Reservoir\",\"id\":\"%s\", \"H0\":%f, \"Vmin\":%f, \"Vmax\":%f, \"V0\": %f, \"Kb\":%f, \"V\":%f, \"C\":%f, \"Pat\":%d, \"Vcurve\":%d, \"MixModel\":\"%s\", \"V1Max\":%f, \"CanOverflow\":%d}}",
+      fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"Point\", \"coordinates\":[%f,%f]},\"id\":\"%d\", \"properties\":{\"type\":\"Reservoir\",\"InpID\":\"%s\", \"H0\":%f, \"Vmin\":%f, \"Vmax\":%f, \"V0\": %f, \"Kb\":%f, \"V\":%f, \"C\":%f, \"Pat\":%d, \"Vcurve\":%d, \"MixModel\":\"%s\", \"V1Max\":%f, \"CanOverflow\":%d}}",
 	      theNode->X,
 	      theNode->Y,
 	      i,
@@ -189,7 +189,7 @@ int outputJSON(Project *theProjectPtr, const char *fileName) {
 	      theTank->V1max,
 	      theTank->CanOverflow);		    
     } else {
-      fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"Point\", \"coordinates\":[%f,%f]}, \"id\":%d, \"properties\":{\"type\":\"Tank\",\"id\":\"%s\", \"H0\":%f, \"Vmin\":%f, \"Vmax\":%f, \"V0\": %f, \"Kb\":%f, \"V\":%f, \"C\":%f, \"Pat\":%d, \"Vcurve\":%d, \"MixModel\":\"%s\", \"V1Max\":%f, \"CanOverflow\":%d}}",
+      fprintf(jsonFile,",\n {\"type\":\"Feature\",\"geometry\":{ \"type\":\"Point\", \"coordinates\":[%f,%f]}, \"id\":\"%d\", \"properties\":{\"type\":\"Tank\",\"InpID\":\"%s\", \"H0\":%f, \"Vmin\":%f, \"Vmax\":%f, \"V0\": %f, \"Kb\":%f, \"V\":%f, \"C\":%f, \"Pat\":%d, \"Vcurve\":%d, \"MixModel\":\"%s\", \"V1Max\":%f, \"CanOverflow\":%d}}",
 	      theNode->X,
 	      theNode->Y,
 	      i,
