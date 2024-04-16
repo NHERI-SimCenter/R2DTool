@@ -37,14 +37,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: fmk
+// Written: fmk, Sina Naeimi
 
 #include <SimCenterAppWidget.h>
+
 
 class SC_FileEdit;
 class SC_DoubleLineEdit;
 class SC_IntLineEdit;
 class SC_ComboBox;
+class SC_CheckBox;
+//class SC_IntLineEdit;
+class SC_TableEdit;
+class SC_QRadioButton;
+
 
 class RewetRecovery : public SimCenterAppWidget
 {
@@ -66,14 +72,42 @@ public slots:
 private:
 
   // simulation
-  SC_DoubleLineEdit *simulationTime;
+  SC_IntLineEdit *eventTime;
+  SC_IntLineEdit *simulationTime;
+  SC_IntLineEdit *simulationTimeStep;
+  SC_CheckBox        *lastTerminationCheckBox;
+  SC_CheckBox        *demandMetTerminationCheckBox;
+  SC_IntLineEdit *demandMetTerminationTimeWindow;
+  SC_DoubleLineEdit  *demandMetCriteriaRatio;
 
   // hydraulics
-  SC_ComboBox *solver;
+  // Solver GroupBox
+  //SC_ComboBox *solver;
+  SC_DoubleLineEdit *solverPDARequired;
+  SC_ComboBox *solverSelection;
+  SC_DoubleLineEdit *solverPDAMin;
+  // damage Modeling GroupBox
+  SC_TableEdit *pipeDamageModelingTable;
+  SC_TableEdit *nodeDamageModelingTable;
 
   // restoration
-  SC_FileEdit *policyFile;
-  
+  SC_CheckBox *restorationOnCheckBox;
+  SC_FileEdit *policyDefinitionFile;
+  SC_IntLineEdit *minimumJobTimeLineEdit;
+  SC_QRadioButton *pipeLeakBasedRadioButton;
+  SC_QRadioButton *pipeTimeBasedRadioButton;
+  SC_DoubleLineEdit *pipeDiscoveryLeakAmountLineEdit;
+  SC_IntLineEdit *pipeDiscoveryTimeWindowLineEdit;
+  SC_TableEdit *pipeTimeBasedDiscoveryTable;
+  SC_QRadioButton *nodeLeakBasedRadioButton;
+  SC_QRadioButton *nodeTimeBasedRadioButton;
+  SC_DoubleLineEdit *nodeDiscoveryLeakAmountLineEdit;
+  SC_IntLineEdit *nodeDiscoveryTimeWindowLineEdit;
+  SC_TableEdit *nodeTimeBasedDiscoveryTable;
+  SC_TableEdit *tankTimeBasedDiscoveryTable;
+  SC_TableEdit *pumpTimeBasedDiscoveryTable;
+
 };
+
 
 #endif // REWET_RECOVERY_H

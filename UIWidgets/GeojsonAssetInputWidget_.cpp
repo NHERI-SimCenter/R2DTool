@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "InpFileWaterInputWidget.h"
+#include "GeojsonAssetInputWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "GISAssetInputWidget.h"
 #include "MultiComponentR2D.h"
@@ -53,13 +53,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QJsonArray>
-#include <QApplication>
-#include <QStandardPaths>
-#include <QJsonObject>
-#include <QFile>
-#include <QJsonDocument>
 
-InpFileWaterInputWidget::InpFileWaterInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
+GeojsonAssetInputWidget::GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType)
+    : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
@@ -68,10 +64,10 @@ InpFileWaterInputWidget::InpFileWaterInputWidget(QWidget *parent, VisualizationW
 
     auto pathTextLabel = new QLabel("Path to file:");
 
-    inpFileLineEdit = new QLineEdit();
-    //    inpFileLineEdit->setMaximumWidth(750);
-    inpFileLineEdit->setMinimumWidth(400);
-    inpFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    componentFileLineEdit = new QLineEdit();
+    //    componentFileLineEdit->setMaximumWidth(750);
+    componentFileLineEdit->setMinimumWidth(400);
+    componentFileLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
 
     auto browseFileButton = new QPushButton();
@@ -81,14 +77,14 @@ InpFileWaterInputWidget::InpFileWaterInputWidget(QWidget *parent, VisualizationW
 
     auto pathLayout = new QHBoxLayout();
     pathLayout->addWidget(pathTextLabel);
-    pathLayout->addWidget(inpFileLineEdit);
+    pathLayout->addWidget(componentFileLineEdit);
     pathLayout->addWidget(browseFileButton);
 
     mainLayout->addLayout(pathLayout);
 
-        // The CRS selection
+    // The CRS selection
     crsSelectorWidget = new CRSSelectionWidget();
-    connect(crsSelectorWidget,&CRSSelectionWidget::crsChanged,this,&InpFileWaterInputWidget::handleLayerCrsChanged);
+    connect(crsSelectorWidget,&CRSSelectionWidget::crsChanged,this,&GeojsonAssetInputWidget::handleLayerCrsChanged);
     mainLayout->addWidget(crsSelectorWidget);
 
     mainAssetWidget = new MultiComponentR2D("Assets", nullptr);
@@ -99,13 +95,13 @@ InpFileWaterInputWidget::InpFileWaterInputWidget(QWidget *parent, VisualizationW
     mainLayout->insertStretch(-1);
 
 //    // Testing to remove start
-//    inpFileLineEdit->setText("/Users/steve/Desktop/sinna.geojson");
+//    componentFileLineEdit->setText("/Users/steve/Desktop/sinna.geojson");
 //    this->loadAssetData();
 //    // Testing to remove end
 }
 
 
-InpFileWaterInputWidget::~InpFileWaterInputWidget()
+GeojsonAssetInputWidget::~GeojsonAssetInputWidget()
 {
 
 }
@@ -120,7 +116,7 @@ InpFileWaterInputWidget::~InpFileWaterInputWidget()
  * @param *LineEdit A pointer to the QLineEdit widget in the widget
  * @return void.
  */
-void InpFileWaterInputWidget::insertLineEditToMainLayout(int index, QWidget* widget, QLineEdit* LineEdit, QString componentType, QString FieldName){
+void GeojsonAssetInputWidget::insertLineEditToMainLayout(int index, QWidget* widget, QLineEdit* LineEdit, QString componentType, QString FieldName){
     mainLayout -> insertWidget(index, widget);
     widget -> hide();
     LineEditList.append(LineEdit);
@@ -141,10 +137,8 @@ void InpFileWaterInputWidget::insertLineEditToMainLayout(int index, QWidget* wid
 
 }
 
-void InpFileWaterInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
+void GeojsonAssetInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
 {
-    crsAuthID = val.authid();
-    
     QList<QString> activeComponents = mainAssetWidget->getActiveComponents();
     if (!activeComponents.isEmpty()){
         for(QString it : activeComponents)
@@ -160,7 +154,7 @@ void InpFileWaterInputWidget::handleLayerCrsChanged(const QgsCoordinateReference
 }
 
 
-bool InpFileWaterInputWidget::copyFiles(QString &destDir)
+bool GeojsonAssetInputWidget::copyFiles(QString &destDir)
 {
     // create dir and copy motion files
     QDir destDIR(destDir);
@@ -169,10 +163,9 @@ bool InpFileWaterInputWidget::copyFiles(QString &destDir)
         return false;
     }
 
-    auto compLineEditText = inpFileLineEdit->text();
+    auto compLineEditText = componentFileLineEdit->text();
 
     QFileInfo componentFile(compLineEditText);
-    QFileInfo geoJSONFile(geoJsonFileName);    
 
     if (!componentFile.exists())
     {
@@ -180,86 +173,50 @@ bool InpFileWaterInputWidget::copyFiles(QString &destDir)
         return false;
     }
 
-    if (!geoJSONFile.exists())
-    {
-        this->errorMessage("The geoJSON file does not exist! Please report the bug to SimCenter.");
-        return false;
-    }   else {
-      
-      // add crs to geoJSON file
-      
-      QFile fileJSON(geoJsonFileName);          
-      if(fileJSON.open( QIODevice::ReadOnly)) {
-
-        QByteArray bytes = fileJSON.readAll();
-        fileJSON.close();
-
-        QJsonParseError jsonError;
-        QJsonDocument document = QJsonDocument::fromJson(bytes, &jsonError);
-        if(jsonError.error != QJsonParseError::NoError) {
-	  qDebug() << "InpFileWater::copyFiles failed to open file to read: " << jsonError.errorString();
-	  return false;
-        }
-        if(document.isObject()) {
-	  QJsonObject jsonObj = document.object();
-	  jsonObj.remove(QString("crs"));
-	  jsonObj.remove(QString("CRS"));
-	  QJsonObject crsObject;
-	  QJsonObject propertiesObject;
-	  propertiesObject.insert(QString("name"), crsAuthID);
-	  crsObject.insert(QString("type"), QString("name"));
-	  crsObject.insert(QString("properties"), propertiesObject);
-	  jsonObj.insert("crs", crsObject);
-	  crsSelectorWidget->outputAppDataToJSON(crsObject);
-	  document.setObject(jsonObj);
-	  if(!fileJSON.open( QIODevice::WriteOnly)) {
-	    qDebug() << "InpFileWaater::copyFILES failed to open file to write:  " << jsonError.errorString();
-	    return false;	    
-	  }
-	  fileJSON.write(document.toJson());
-	  fileJSON.close();
-	}
-      }
-    }
-    
     QList<QString> activeComponents = mainAssetWidget->getActiveComponents();
     if (!activeComponents.isEmpty()){
-      for(QString it : activeComponents)
+        for(QString it : activeComponents)
         {
-	  auto activeComp = dynamic_cast<GISAssetInputWidget*>(mainAssetWidget->getComponent(it));
+            auto activeComp = dynamic_cast<GISAssetInputWidget*>(mainAssetWidget->getComponent(it));
 
-	  if(activeComp == nullptr)
-	    continue;
+            if(activeComp == nullptr)
+                continue;
+// Try to write a geojson file containing only the selected features
+//            QgsVectorLayer* mainLayer = activeComp->getMainLayer();
+//            int numerFeature = mainLayer->featureCount();
+//            QgsFeature feat = mainLayer->getFeature(0);
+//            QgsJsonExporter exportor = QgsJsonExporter(mainLayer);
+//            QString featString = exportor.exportFeature(feat);
+//            QgsFeature feat2 = mainLayer->getFeature(1);
+//            QString featString2 = exportor.exportFeature(feat2);
+//            this->errorMessage(featString2);
+
         }
     }
-    
-    this->copyFile(geoJsonFileName, destDir);
+
+
+//    auto pathToSaveFile = destName + QDir::separator() + componentFile.fileName();
     return this->copyFile(compLineEditText, destDir);
+
 }
 
 
-bool InpFileWaterInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool GeojsonAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
 
     jsonObject["Application"]="GEOJSON_TO_ASSET";
 
     QJsonObject data;
 
-    QFileInfo inpFile(inpFileLineEdit->text());
-    if (inpFile.exists()){
-        data.insert("inpFile", inpFile.absoluteFilePath());
-    } else {
-        this->errorMessage("Cannot find inp file" + inpFileLineEdit->text());
-	return false;
-    }
-
-    QFileInfo componentFile(geoJsonFileName);
+    QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()){
         data.insert("assetSourceFile", componentFile.absoluteFilePath());
     } else {
-        this->errorMessage("Cannot find the tmp GeoJSON file created: " + geoJsonFileName + " This is a bug contact SimCenter");
+        this->errorMessage("Cannot find GeoJSON file" + componentFileLineEdit->text());
     }
-    
+
+//    data.insert("assetType",componentType);
+
     QList<QString> activeComponents = mainAssetWidget->getActiveComponents();
 
     if (!activeComponents.isEmpty()){
@@ -311,12 +268,13 @@ bool InpFileWaterInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 }
 
 
-bool InpFileWaterInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool GeojsonAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
+
     // Check the app type
     if (jsonObject.contains("Application")) {
         if ("GEOJSON_TO_ASSET" != jsonObject["Application"].toString()) {
-            this->errorMessage("InpFileWaterInputWidget::inputFRommJSON app name conflict");
+            this->errorMessage("GeojsonAssetInputWidget::inputFRommJSON app name conflict");
             return false;
         }
     }
@@ -324,7 +282,7 @@ bool InpFileWaterInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     if (!jsonObject.contains("ApplicationData"))
     {
-        this->errorMessage("Could not find the 'ApplicationData' key in 'InpFileWaterInputWidget' input");
+        this->errorMessage("Could not find the 'ApplicationData' key in 'GeojsonAssetInputWidget' input");
         return false;
     }
 
@@ -332,15 +290,15 @@ bool InpFileWaterInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     QString fileName;
 
-    if (appData.contains("assetFile")){
-        fileName = appData["assetFile"].toString();
+    if (appData.contains("assetSourceFile")){
+        fileName = appData["assetSourceFile"].toString();
     }
 
     QFileInfo fileInfo(fileName);
 
     if (fileInfo.exists()) {
 
-        inpFileLineEdit->setText(fileInfo.absoluteFilePath());
+        componentFileLineEdit->setText(fileInfo.absoluteFilePath());
 
         if(this->loadAssetData() == false)
             return false;
@@ -349,7 +307,7 @@ bool InpFileWaterInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString pathToComponentInputFile = QDir::currentPath() + QDir::separator() +
             "input_data" + QDir::separator() + fileName;
         if (fileInfo.exists(pathToComponentInputFile)) {
-            inpFileLineEdit->setText(pathToComponentInputFile);
+            componentFileLineEdit->setText(pathToComponentInputFile);
 
             if(this->loadAssetData() == false)
                return false;
@@ -394,12 +352,12 @@ bool InpFileWaterInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 }
 
 
-void InpFileWaterInputWidget::clear()
+void GeojsonAssetInputWidget::clear()
 {
     theAssetInputWidgetList.clear();
     theAssetLayerList.clear();
     mainAssetWidget->removeAllComponents();
-    inpFileLineEdit->clear();
+    componentFileLineEdit->clear();
     for(auto field : FieldNameToLineEdit.keys())
     {
         FieldNameToLineEdit.value(field)->clear();
@@ -414,7 +372,7 @@ void InpFileWaterInputWidget::clear()
 }
 
 
-void InpFileWaterInputWidget::chooseAssetFileDialog(void)
+void GeojsonAssetInputWidget::chooseAssetFileDialog(void)
 {
     auto newPathToComponentInputFile = QFileDialog::getOpenFileName(this,tr("Geojson Asset File"));
 
@@ -426,67 +384,40 @@ void InpFileWaterInputWidget::chooseAssetFileDialog(void)
     mainAssetWidget->removeAllComponents();
 
     // Set file name & entry in qLine edit
-    inpFileLineEdit->setText(newPathToComponentInputFile);
+    componentFileLineEdit->setText(newPathToComponentInputFile);
 
     this->loadAssetData();
 
     return;
 }
 
-extern "C" int createJSON(const char *, const char *, const char *, const char *);
 
-bool InpFileWaterInputWidget::loadAssetData(void)
+
+bool GeojsonAssetInputWidget::loadAssetData(void)
 {
-    QString pathInpFileWater = inpFileLineEdit->text();
-
-    //
-    // fmk - create a tmp geoJSON file and then use that file subequently in Steves code
-    //
-
-    //    QFile inpFile(pathInpFileWater);
-    
-    QString writableLocation = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppLocalDataLocation);
-    QDir writableDir(writableLocation);
-    if(!writableDir.exists())
-        writableDir.mkpath(".");
-    
-    geoJsonFileName = writableDir.filePath("sc_inpFileGeoJSON.json");
-    QString tmp1 = writableDir.filePath("SimCenter.thing1");
-    QString tmp2 = writableDir.filePath("SimCenter.thing2");
-    
-    qDebug() << pathInpFileWater;
-    qDebug() << tmp1;
-    qDebug() << tmp2;
-    qDebug() << geoJsonFileName;    
-    
-    createJSON(pathInpFileWater.toStdString().c_str(),
-	       tmp1.toStdString().c_str(),
-	       tmp2.toStdString().c_str(),
-	       geoJsonFileName.toStdString().c_str());
-
-    QFile jsonFile(geoJsonFileName);
-    // back to Stevan    
+    QString pathGeojson = componentFileLineEdit->text();
+      QFile jsonFile(pathGeojson);
 
     QMap<QString, QList<QJsonObject>> assetDictionary;
 
     QJsonObject crs;
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
-      
-      QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
-      QJsonObject jsonObject = exDoc.object();
-      
-      if(jsonObject.contains("crs"))
-	crs = jsonObject["crs"].toObject();
-      QString crsString = crs["properties"].toObject()["name"].toString();
-      QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
-      if (!qgsCRS.isValid()){
-	qgsCRS.createFromOgcWmsCrs(crsString);
-      }
-      if (!qgsCRS.isValid()){
-	QString msg = "The CRS defined in " + geoJsonFileName + "is invalid and ignored";
-	errorMessage(msg);
-      }
-	
+
+        QString data = jsonFile.readAll();
+        QJsonDocument exDoc = QJsonDocument::fromJson(data.toUtf8());
+        QJsonObject jsonObject = exDoc.object();
+
+        if(jsonObject.contains("crs"))
+            crs = jsonObject["crs"].toObject();
+        QString crsString = crs["properties"].toObject()["name"].toString();
+        QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
+        if (!qgsCRS.isValid()){
+            qgsCRS.createFromOgcWmsCrs(crsString);
+        }
+        if (!qgsCRS.isValid()){
+            QString msg = "The CRS: " + crsString + " defined in " + pathGeojson + " is invalid and ignored";
+            errorMessage(msg);
+        }
         crsSelectorWidget->setCRS(qgsCRS);
         QJsonArray features = jsonObject["features"].toArray();
 
@@ -516,7 +447,7 @@ bool InpFileWaterInputWidget::loadAssetData(void)
         }
     }
     else{
-        this->errorMessage("Failed to open file at location: "+ geoJsonFileName);
+        this->errorMessage("Failed to open file at location: "+pathGeojson);
         return false;
     }
 
@@ -543,7 +474,7 @@ bool InpFileWaterInputWidget::loadAssetData(void)
         QFile file(outputFile);
         if (!file.open(QFile::WriteOnly | QFile::Text))
         {
-            this->errorMessage("Error creating the asset output json file in InpFileWaterInputWidget");
+            this->errorMessage("Error creating the asset output json file in GeojsonAssetInputWidget");
             return false;
         }
 
@@ -554,21 +485,25 @@ bool InpFileWaterInputWidget::loadAssetData(void)
 
         this->statusMessage("Loading asset type "+assetType+" with "+ QString::number(features.size())+" features");
 
-        auto thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
+        GISAssetInputWidget *thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
 
         // Hide the first label
+        /*
         thisAssetWidget->getLabel1()->hide();
-
         thisAssetWidget->getCRSSelectorWidget()->hide();
 
         // Hide the file input widgets in the asset file path layout
         auto pathLayout = thisAssetWidget->getAssetFilePathLayout();
-        //for (int i = 0; i < pathLayout->count(); ++i) {
-            //QWidget *widget = pathLayout->itemAt(i)->widget();
-            //if (widget) {
-                //widget->hide();
-            //}
-        //}
+        for (int i = 0; i < pathLayout->count(); ++i) {
+            QWidget *widget = pathLayout->itemAt(i)->widget();
+            if (widget) {
+                widget->hide();
+            }
+        }
+        */
+	
+        thisAssetWidget->hideCRS_Selection();
+        thisAssetWidget->hideAssetFilePath();
 
         thisAssetWidget->setPathToComponentInputFile(outputFile);
         if (!thisAssetWidget->loadAssetData(false)) {
@@ -589,7 +524,13 @@ bool InpFileWaterInputWidget::loadAssetData(void)
                 it->show();
             }
         }
+
     }
+
+
+
     return true;
+
+
 }
 

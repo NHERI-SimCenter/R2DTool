@@ -199,7 +199,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
 	    $$PWD/RunWidget.cpp \
             $$PWD/WorkflowAppR2D.cpp \
             $$PWD/recoveryWidgets/RecoveryWidget.cpp \
-            $$PWD/recoveryWidgets/RewetRecovery.cpp \	    	    
+            $$PWD/recoveryWidgets/RewetRecovery.cpp \
             $$PWD/assetWidgets/InpFileWaterInputWidget.cpp \
 	    $$PWD/assetWidgets/EPANET2.2/geoJSON.c \
 	    $$PWD/assetWidgets/EPANET2.2/src/inpfile.c \
