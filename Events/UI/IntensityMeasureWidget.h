@@ -12,23 +12,27 @@ class QLineEdit;
 class QRegExpValidator;
 class QDoubleSpinBox;
 class QGroupBox;
+class QJsonObject;
 
-class IntensityMeasureWidget : public QWidget
+class IntensityMeasureWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
     explicit IntensityMeasureWidget(IntensityMeasure& im, QWidget *parent = nullptr);
 
     QComboBox *typeBox() const;
+    QStringList* getSelectedIMTypes(void);
+    bool outputToJSON(QJsonObject &jsonObject);
 
 signals:
+    void IMSelectionChanged(QStringList* selectedIMs);
 
 public slots:
     QString checkPeriodsValid(const QString& input) const;
 
     void commitPeriods();
 
-    void handleTypeChanged(const QString &val);
+    void handleTypeChanged(int state);
 
     void handleIntensityMeasureLevels(const QString sourceType);
 
@@ -39,6 +43,12 @@ private:
     QLineEdit* periodsLineEdit;
     QRegExpValidator* LEValidator;
     QLabel* periodLabel;
+
+    QCheckBox* PGACheckBox;
+    QCheckBox* SACheckBox;
+    QCheckBox* PGVCheckBox;
+    QStringList* selectedIMTypes = new QStringList();
+    QList<double> SAperiods;
 
     QLineEdit* imtLevelLineEdit;
     QLabel* imtLevelLabel;

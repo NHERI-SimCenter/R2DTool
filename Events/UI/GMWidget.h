@@ -63,6 +63,7 @@ class SpatialCorrelationWidget;
 class QGISVisualizationWidget;
 class ScenarioSelectionWidget;
 class GroundMotionModelsWidget;
+class GroundFailureWidget;
 
 class QPushButton;
 class QStatusBar;
@@ -83,6 +84,7 @@ public:
     void resetAppSettings(void);
     bool copyFiles(QString &destDir);
     bool getSimulationStatus(void);
+    void clear();
 
 
     GmAppConfig *appConfig() const;
@@ -142,6 +144,7 @@ private:
     RecordSelectionWidget* m_selectionWidget = nullptr;
     ScenarioSelectionWidget* scenarioSelectWidget = nullptr;
     GroundMotionModelsWidget* groundMotionModelsWidget = nullptr;
+    GroundFailureWidget* groundFailureWidget = nullptr;
 
     GMSiteWidget *siteWidget = nullptr;
     GMERFWidget *erfWidget = nullptr;

@@ -86,7 +86,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
     
     buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);
-    buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
+    //buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
     // Natural gas pipeline apps

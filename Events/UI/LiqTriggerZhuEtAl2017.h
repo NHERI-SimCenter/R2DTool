@@ -1,5 +1,6 @@
-#ifndef GMSiteWidget_H
-#define GMSiteWidget_H
+#ifndef LiqTriggerZhuEtAl2017_H
+#define LiqTriggerZhuEtAl2017_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,40 +37,72 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Jinyan Zhao
 
-#include "Site.h"
+#include "SimCenterAppWidget.h"
+#include "SC_DoubleLineEdit.h"
 
-#include <QWidget>
+class OpenQuakeScenario;
 
-class Vs30; // vs30 info
-class Vs30Widget; // vs30 setup widget
-class zDepthWidget;
-class SiteConfig;
-class SiteConfigWidget;
-class QGISVisualizationWidget;
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class CRSSelectionWidget;
+class QSignalMapper;
+class SC_ComboBox;
+class QGroupBox;
+class QCheckBox;
 
-class GMSiteWidget : public QWidget
+class LiqTriggerZhuEtAl2017 : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    explicit GMSiteWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit LiqTriggerZhuEtAl2017(QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
-    SiteConfig *siteConfig() const;
+signals:
 
-    SiteConfigWidget *siteConfigWidget() const;
-
-    void outputToJson(QJsonObject& obj);
-    void clear();
-
+public slots:
+    void loadFile(QString fieldKey);
+    void setDefaultFilePath();
+    void handleInputTypeChanged();
 private:
-    SiteConfig* m_siteConfig = nullptr;
-    SiteConfigWidget* m_siteConfigWidget = nullptr;
-    Vs30* m_vs30 = nullptr;
-    Vs30Widget* m_vs30Widget = nullptr;
-    zDepthWidget* m_z1DepthWidget = nullptr;
-    zDepthWidget* m_z2DepthWidget = nullptr;
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    QLineEdit* DistWaterFilenameLineEdit = nullptr;
+    QLineEdit* DistCoastFilenameLineEdit = nullptr;
+    QLineEdit* DistRiverFilenameLineEdit = nullptr;
+    QLineEdit* GwDepthFilenameLineEdit = nullptr;
+    QLineEdit* PrecipitationFilenameLineEdit = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+
+
+    QPushButton* DistWaterBrowseFileButton;
+    QPushButton* DistCoastBrowseFileButton;
+    QPushButton* DistRiverBrowseFileButton;
+    QPushButton* GwDepthBrowseFileButton;
+    QPushButton* PrecipitationBrowseFileButton;
+    QPushButton* resetToDefaultButton;
+
+    QString DistWaterFilePath;
+    QString DistCoastFilePath;
+    QString DistRiverFilePath;
+    QString GwDepthFilePath;
+    QString PrecipitationFilePath;
+
+    SC_ComboBox* DistWaterComboBox = nullptr;
+    SC_ComboBox* DistCoastComboBox = nullptr;
+    SC_ComboBox* DistRiverComboBox = nullptr;
+    SC_ComboBox* GwDepthComboBox = nullptr;
+    SC_ComboBox* PrecipitationComboBox = nullptr;
+
+    QGroupBox* outputSaveGroupBox = nullptr;
+
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+    void setupConnections();
+//    void setRupFile(QString dirPath);
+
 };
 
-#endif // GMSiteWidget_H
+#endif // LiqTriggerZhuEtAl2017_H

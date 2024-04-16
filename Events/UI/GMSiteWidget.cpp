@@ -107,3 +107,7 @@ void GMSiteWidget::outputToJson(QJsonObject& obj)
 
 }
 
+void GMSiteWidget::clear(){
+    m_siteConfigWidget->clear();
+}
+

@@ -65,6 +65,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GroundMotionModelsWidget.h"
 #include "IntensityMeasure.h"
 #include "ModularPython.h"
+#include "GroundFailureWidget.h"
+
 
 #ifdef INCLUDE_USER_PASS
 #include "R2DUserPass.h"
@@ -85,6 +87,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QString>
 #include <QTabWidget>
 #include <QScrollArea>
+#include <QtGlobal>
 
 // GIS includes
 #include "SimCenterMapcanvasWidget.h"
@@ -153,6 +156,9 @@ GMWidget::GMWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCen
     groundMotionModelsWidget = new GroundMotionModelsWidget();
     theTabWidget->addTab(groundMotionModelsWidget, "Ground Motion Models");
 
+    groundFailureWidget = new GroundFailureWidget();
+    theTabWidget->addTab(groundFailureWidget, "Ground Failure Models");
+
     QWidget *imWidget = new QWidget();
     QVBoxLayout *imLayout=new QVBoxLayout();
     imLayout->addWidget(m_selectionWidget);
@@ -161,7 +167,9 @@ GMWidget::GMWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCen
     imLayout->addStretch();
     
     imWidget->setLayout(imLayout);
-    theTabWidget->addTab(imWidget, "Record Selection");
+    theTabWidget->addTab(imWidget, "Record Selection and Run");
+
+
     
     mainLayout->addWidget(theTabWidget);
 
@@ -209,6 +217,7 @@ void GMWidget::setupConnections()
     connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, [this](QString statusUpdate)
             {
                 this->statusMessage(statusUpdate);
+        QApplication::processEvents();
             });
 
     //connect(m_settingButton, &QPushButton::clicked, this, &GMWidget::setAppConfig);
@@ -415,7 +424,7 @@ GMWidget::outputAppDataToJSON(QJsonObject &jsonObj) {
 
     if(simulationComplete == false)
     {
-        this->errorMessage("Earthquake Scenario Simulation is not completed - please click \"Run Hazard Simulation\"");
+        this->errorMessage("Earthquake Event Generation is not completed - please click \"Run Hazard Simulation\"");
         return false;
     }
     QJsonObject appData;
@@ -661,10 +670,18 @@ void GMWidget::runHazardSimulation(void)
     QJsonObject eventObj;
 
     // get the spatial correlation, IM, and GMPEs
-    groundMotionModelsWidget->outputToJSON(eventObj);
+    if (!groundMotionModelsWidget->outputToJSON(eventObj)){
+        return;
+    }
+
+    if(!groundFailureWidget->outputToJSON(eventObj)){
+        return;
+    }
 
     // Get the database, scaling, and number of events per site
-    m_selectionWidget->outputToJSON(eventObj);
+    if (!m_selectionWidget->outputToJSON(eventObj)){
+        return;
+    }
 
     // Some hardcoded things
     eventObj["SaveIM"]=true;
@@ -985,6 +1002,10 @@ void GMWidget::handleProcessStarted(void)
     this->m_runButton->setEnabled(false);
 }
 
+void GMWidget::clear(){
+    siteWidget->clear();
+}
+
 
 int GMWidget::downloadRecords(void)
 {
@@ -1080,8 +1101,6 @@ void GMWidget::downloadRecordBatch(void)
         recordsListToDownload = recordsListToDownload.mid(maxBatchSize-1,recordsListToDownload.size()-1);
     }
 }
-
-
 int GMWidget::processDownloadedRecords(QString& errorMessage)
 {
 
@@ -1096,8 +1115,8 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     QString pathToOutputDirectory = m_appConfig->getOutputDirectoryPath() + QDir::separator();
 
     // Account for the different directory structure if only want IMs
-    if(m_selectionconfig->getDatabase().size() == 0)
-        pathToOutputDirectory += "IMs" + QString(QDir::separator());
+//    if(m_selectionconfig->getDatabase().size() == 0)
+    pathToOutputDirectory += "IMs" + QString(QDir::separator());
 
     pathToOutputDirectory += "EventGrid.csv";
 
@@ -1178,10 +1197,6 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     attribFields.push_back(QgsField("Latitude", QVariant::Double));
     attribFields.push_back(QgsField("Longitude", QVariant::Double));
 
-    for(auto&& it : stationDataHeadings)
-        attribFields.push_back(QgsField(it, QVariant::String));
-
-
     // Pop off the row that contains the header information
     data.pop_front();
 
@@ -1233,7 +1248,57 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
         auto stationData = GMStation.getStationData();
 
+        // The number of headings in the file
+        auto numParams = stationData.front().size();
+
+        maxToDisp = (maxToDisp<stationData.size() ? maxToDisp : stationData.size());
+
+        QVector<QString> dataStrs(numParams);
+        QVector<double> dataDouble(numParams);
+        int num_rows = stationData.size();
+        for (int j = 0; j<numParams; j++){
+            double value = 0;
+            for(int row_i = 0; row_i<num_rows; row_i++){
+                auto stationParams = stationData[row_i];
+                QString valString = stationParams[j];
+                bool isNumber;
+                double valDouble = valString.toDouble(&isNumber);
+                if (isNumber && (stationDataHeadings[j].compare("factor")!=0)){
+                    value += valDouble;
+                } else {
+                    value = qQNaN();
+                }
+            }
+            value = value/num_rows;
+            dataDouble[j] = value;
+        }
+
+        for(int ii = 0; ii<maxToDisp-1; ++ii)
+        {
+            auto stationParams = stationData[ii];
+
+            for(int j = 0; j<numParams; ++j)
+            {
+                if (qIsNaN(dataDouble[j])){
+                    dataStrs[j] += stationParams[j] + ", ";
+                } else {
+//                    dataStrs[j] = QString::number(dataDouble[j]);
+                    break;
+                }
+
+            }
+        }
         // create the feature attributes
+        if (i==0){
+            for(int j = 0; j<numParams; ++j){
+                if (qIsNaN(dataDouble[j])){
+                    attribFields.push_back(QgsField(stationDataHeadings[j], QVariant::String));
+                } else {
+                    attribFields.push_back(QgsField(stationDataHeadings[j], QVariant::Double));
+                }
+            }
+        }
+
         QgsAttributes featAttributes(attribFields.size());
 
         auto latitude = GMStation.getLatitude();
@@ -1244,35 +1309,20 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
         featAttributes[2] = stationName;                 // "Station Name"
         featAttributes[3] = latitude;                    // "Latitude"
         featAttributes[4] = longitude;                   // "Longitude"
-
-        // The number of headings in the file
-        auto numParams = stationData.front().size();
-
-        maxToDisp = (maxToDisp<stationData.size() ? maxToDisp : stationData.size());
-
-        QVector<QString> dataStrs(numParams);
-
-        for(int i = 0; i<maxToDisp-1; ++i)
-        {
-            auto stationParams = stationData[i];
-
-            for(int j = 0; j<numParams; ++j)
-            {
-                dataStrs[j] += stationParams[j] + ", ";
-            }
-        }
-
         for(int j = 0; j<numParams; ++j)
         {
-            auto str = dataStrs[j] ;
-            str += stationData[maxToDisp-1][j];
+            if(qIsNaN(dataDouble[j])){
+                auto str = dataStrs[j] ;
+                str += stationData[maxToDisp-1][j];
+                if((qIsNaN(dataDouble[j]))&&(maxToDisp<stationData.size())){
+                    str += "...";
+                }
+                featAttributes[5+j] = str;
+            } else {
+                featAttributes[5+j] = dataDouble[j];
+            }
 
-            if(maxToDisp<stationData.size())
-                str += "...";
-
-            featAttributes[5+j] = str;
         }
-
         // Create the feature
         QgsFeature feature;
         feature.setGeometry(QgsGeometry::fromPointXY(QgsPointXY(longitude,latitude)));

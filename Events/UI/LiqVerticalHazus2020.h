@@ -1,5 +1,6 @@
-#ifndef GMSiteWidget_H
-#define GMSiteWidget_H
+#ifndef LiqVerticalHazus2020_H
+#define LiqVerticalHazus2020_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,40 +37,45 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Jinyan Zhao
 
-#include "Site.h"
+#include "SimCenterAppWidget.h"
+#include "SC_DoubleLineEdit.h"
 
-#include <QWidget>
 
-class Vs30; // vs30 info
-class Vs30Widget; // vs30 setup widget
-class zDepthWidget;
-class SiteConfig;
-class SiteConfigWidget;
-class QGISVisualizationWidget;
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class CRSSelectionWidget;
+class QSignalMapper;
+class QLabel;
+class QGroupBox;
+class QCheckBox;
 
-class GMSiteWidget : public QWidget
+class LiqVerticalHazus2020 : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    explicit GMSiteWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit LiqVerticalHazus2020(QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
-    SiteConfig *siteConfig() const;
+signals:
 
-    SiteConfigWidget *siteConfigWidget() const;
-
-    void outputToJson(QJsonObject& obj);
-    void clear();
+public slots:
+    void setDefaultFilePath();
 
 private:
-    SiteConfig* m_siteConfig = nullptr;
-    SiteConfigWidget* m_siteConfigWidget = nullptr;
-    Vs30* m_vs30 = nullptr;
-    Vs30Widget* m_vs30Widget = nullptr;
-    zDepthWidget* m_z1DepthWidget = nullptr;
-    zDepthWidget* m_z2DepthWidget = nullptr;
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    QLabel* messageLabel;
+
+    QPushButton* resetToDefaultButton;
+
+    QGroupBox* outputSaveGroupBox = nullptr;
+
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+
+
 };
 
-#endif // GMSiteWidget_H
+#endif // LiqVerticalHazus2020_H

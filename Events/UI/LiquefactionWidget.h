@@ -1,5 +1,5 @@
-#ifndef GMSiteWidget_H
-#define GMSiteWidget_H
+#ifndef LiquefactionWidget_H
+#define LiquefactionWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,40 +36,42 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Jinyan Zhao
 
-#include "Site.h"
+#include "SimCenterAppWidget.h"
 
-#include <QWidget>
-
-class Vs30; // vs30 info
-class Vs30Widget; // vs30 setup widget
-class zDepthWidget;
-class SiteConfig;
-class SiteConfigWidget;
-class QGISVisualizationWidget;
-
-class GMSiteWidget : public QWidget
+class QGroupBox;
+class QCheckBox;
+class SimCenterAppSelection;
+class LiquefactionWidget : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    explicit GMSiteWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit LiquefactionWidget(QWidget *parent = nullptr);
 
-    SiteConfig *siteConfig() const;
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
 
-    SiteConfigWidget *siteConfigWidget() const;
+    void reset(void);
 
-    void outputToJson(QJsonObject& obj);
-    void clear();
+
+public slots:
+//    void addGMMforSA(bool SAenabled);
+//    void addGMMforPGV(bool PGVenabled);
 
 private:
-    SiteConfig* m_siteConfig = nullptr;
-    SiteConfigWidget* m_siteConfigWidget = nullptr;
-    Vs30* m_vs30 = nullptr;
-    Vs30Widget* m_vs30Widget = nullptr;
-    zDepthWidget* m_z1DepthWidget = nullptr;
-    zDepthWidget* m_z2DepthWidget = nullptr;
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+
+    SimCenterAppSelection* liqTriggerSelection;
+    SimCenterAppSelection* liqLateralSelection;
+    SimCenterAppSelection* liqVerticalSelection;
+
+
+//    void createLiquefactionGroupBox();
+//    void setConnections();
+//    void handleSourceSelectionChanged();
+
 };
 
-#endif // GMSiteWidget_H
+#endif // LiquefactionWidget_H

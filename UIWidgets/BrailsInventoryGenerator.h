@@ -37,62 +37,142 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk, Stevan Gavrilovic
+// Written by: Barbaros Cetiner, Frank McKenna, Stevan Gavrilovic
+
 #include "SimCenterAppWidget.h"
+#include <QDir>
+#include <QGridLayout>
+#include <QStackedWidget>
 
 class SimCenterMapcanvasWidget;
 class QGISVisualizationWidget;
 class VisualizationWidget;
 class GIS_Selection;
+class QLabel;
 class SC_DoubleLineEdit;
+class QLineEdit;
+class QPushButton;
+class QGridLayout;
+class QDir;
 class SC_FileEdit;
 class SC_ComboBox;
 class BrailsGoogleDialog;
 
+typedef struct regionInputStruct {
+	double minLat;
+	double maxLat;
+	double minLong;
+	double maxLong;
+	QString location;
+	QString outputFile;
+} regionData;
+
+typedef struct fpInputStruct {
+	double minLat;
+	double maxLat;
+	double minLong;
+	double maxLong;
+	QString location;
+	QString outputFile;
+	QString fpSource;
+	QString fpSourceAttrMap;
+	QString units;
+} fpData;
+
+typedef struct baselineInvInputStruct {
+	double minLat;
+	double maxLat;
+	double minLong;
+	double maxLong;
+	QString location;
+	QString fpSource;
+	QString invInput;
+	QString invAttributeMap;
+	QString outputDataType;
+	QString outputFile;
+	QString units;
+} binvData;
+
 typedef struct BrailsDataStruct {
-  double minLat;
-  double maxLat;
-  double minLong;
-  double maxLong;
-  QString outputFile;
-  QString imageSource;
-  QString imputationAlgo;
-  QString units;      
+	double minLat;
+	double maxLat;
+	double minLong;
+	double maxLong;
+	QString units;
+	QString location;
+	QString fpSource;
+	QString fpSourceAttrMap;
+	QString invInput;
+	QString invAttributeMap;
+	QString attrRequested;
+	QString imputationAlgo;
+    QString outputFile;
+    QString imageSource;
 } BrailsData;
 
+class StackedWidget : public QStackedWidget
+{
+public:
+    QSize sizeHint() const override
+    {
+        if (currentWidget())
+            return currentWidget()->sizeHint();
+        return QStackedWidget::sizeHint();
+    }
+
+    QSize minimumSizeHint() const override
+    {
+        if (currentWidget())
+            return currentWidget()->minimumSizeHint();
+        return QStackedWidget::minimumSizeHint();
+    }
+};
 
 class BrailsInventoryGenerator : public SimCenterAppWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+	BrailsInventoryGenerator(VisualizationWidget* visWidget, QWidget* parent = nullptr);
     ~BrailsInventoryGenerator();
 
+    void loadVectorLayer(QString outputFile, QString layerName);
 public slots:
-    void clear(void);
+	void clear(void);
 
 signals:
 
 protected:
 
 private slots:
-  void runBRAILS(void);
-  void coordsChanged(void);
-  
+    void runBRAILS(void);
+	void coordsChanged(void);
+	void getLocationBoundary(void);
+	void getFootprints(void);
+	void getBaselineInv(QString outputDataType);
+	QStringList getBRAILSAttributes(void);
+
 private:
-  std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
-  QGISVisualizationWidget* theVisualizationWidget = nullptr;
-  
-  SC_ComboBox *units;  
-  SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong;
-  SC_FileEdit *theOutputFile;
-  GIS_Selection *theSelectionWidget;  
+	std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
+	QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-  QString imageSource;
-  QString imputationAlgo;
+	SC_ComboBox* units;
+	SC_ComboBox* location;
+	SC_DoubleLineEdit* minLat, * maxLat, * minLong, * maxLong;
+	QLineEdit* locationName, * locationStr;
+	SC_ComboBox* footprintSource;
+	SC_ComboBox* baselineInvSelection;
+	SC_ComboBox* attributeSelection;
+	SC_ComboBox* imputationAlgoCombo;
+	SC_FileEdit* theOutputFile, * fpGeojsonFile, * fpAttrGeojsonFile, * invGeojsonFile, * invAttrGeojsonFile;
+	GIS_Selection* theSelectionWidget;
+	QGridLayout* enabledAttributesWidgetLayout;
+	QString brailsDir;
+	QDir scriptDir;
 
-  BrailsGoogleDialog *theGoogleDialog = 0;
+    QString imageSource;
+
+	BrailsGoogleDialog* theGoogleDialog = 0;
 };
 
 #endif // BrailsInventoryGenerator_H

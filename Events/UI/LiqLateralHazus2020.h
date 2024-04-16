@@ -1,5 +1,6 @@
-#ifndef GMSiteWidget_H
-#define GMSiteWidget_H
+#ifndef LiqLateralHazus2020_H
+#define LiqLateralHazus2020_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,40 +37,58 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Jinyan Zhao
 
-#include "Site.h"
+#include "SimCenterAppWidget.h"
+#include "SC_DoubleLineEdit.h"
 
-#include <QWidget>
+class OpenQuakeScenario;
 
-class Vs30; // vs30 info
-class Vs30Widget; // vs30 setup widget
-class zDepthWidget;
-class SiteConfig;
-class SiteConfigWidget;
-class QGISVisualizationWidget;
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class CRSSelectionWidget;
+class QSignalMapper;
+class QLabel;
+class SC_ComboBox;
+class QGroupBox;
+class QCheckBox;
 
-class GMSiteWidget : public QWidget
+class LiqLateralHazus2020 : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    explicit GMSiteWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit LiqLateralHazus2020(QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
-    SiteConfig *siteConfig() const;
+signals:
 
-    SiteConfigWidget *siteConfigWidget() const;
-
-    void outputToJson(QJsonObject& obj);
-    void clear();
-
+public slots:
+    void loadFile(QString fieldKey);
+//    void distWaterShow(bool ifshow);
+    void setDefaultFilePath();
+    void handleInputTypeChanged();
 private:
-    SiteConfig* m_siteConfig = nullptr;
-    SiteConfigWidget* m_siteConfigWidget = nullptr;
-    Vs30* m_vs30 = nullptr;
-    Vs30Widget* m_vs30Widget = nullptr;
-    zDepthWidget* m_z1DepthWidget = nullptr;
-    zDepthWidget* m_z2DepthWidget = nullptr;
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    QLineEdit* DistWaterFilenameLineEdit = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
+    QLabel* DistWaterfilenameLabel;
+    bool hasDistToWater = false;
+
+    QPushButton* DistWaterBrowseFileButton;
+    QPushButton* resetToDefaultButton;
+
+    QString DistWaterFilePath;
+
+    SC_ComboBox* DistWaterComboBox = nullptr;
+
+    QGroupBox* outputSaveGroupBox = nullptr;
+
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+    void setupConnections();
+
 };
 
-#endif // GMSiteWidget_H
+#endif // LiqLateralHazus2020_H

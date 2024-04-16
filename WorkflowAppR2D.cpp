@@ -217,19 +217,19 @@ void WorkflowAppR2D::initialize(void)
     theVisualizationWidget = new QGISVisualizationWidget(theMainWindow);
 
     theToolDialog = new ToolDialog(this, theVisualizationWidget);
+    
 
     // Tools menu
     QMenu *toolsMenu = new QMenu(tr("&Tools"),menuBar);
 
     // Set the path to the input file
-    toolsMenu->addAction("&Earthquake Scenario Simulation", theToolDialog, &ToolDialog::handleShowEQGMSimTool);
+    toolsMenu->addAction("&Earthquake Event Generation", theToolDialog, &ToolDialog::handleShowEQGMSimTool);
     toolsMenu->addAction("&Hurricane Scenario Simulation", theToolDialog, &ToolDialog::handleShowHurricaneSimTool);
     toolsMenu->addAction("&Census Data Allocation", theToolDialog, &ToolDialog::handleShowCensusAppTool);
     toolsMenu->addAction("&OpenQuake Source Selection", theToolDialog, &ToolDialog::handleShowOpenquakeSelectionTool);
     toolsMenu->addAction("&BRAILS-Buildings", theToolDialog, &ToolDialog::handleBrailsInventoryTool);
     toolsMenu->addAction("&BRAILS-Transportation", theToolDialog, &ToolDialog::handleBrailsTranspInventoryTool);
     menuBar->insertMenu(menuAfter, toolsMenu);
-
 
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
     theHazardToAssetWidget = new HazardToAssetWidget(this, theVisualizationWidget);
@@ -240,7 +240,7 @@ void WorkflowAppR2D::initialize(void)
     
     theLocalEvent = new SimCenterAppEventSelection(QString("Events"), QString("Events"),this);
     SimCenterAppWidget *simcenterEvent = new SimCenterEventRegional();
-    theLocalEvent->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);							
+    theLocalEvent->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
     
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
     theRecoveryWidget = new RecoveryWidget(this);
@@ -248,8 +248,6 @@ void WorkflowAppR2D::initialize(void)
     theUQWidget = new UQWidget(this);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
     thePerformanceWidget = new PerformanceWidget(this,theRVs);
-
-
 
     connect(theGeneralInformationWidgetR2D, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
@@ -453,6 +451,11 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     defaultValues["rvFiles"]= rvFiles;
     defaultValues["edpFiles"]=edpFiles;
     jsonObjectTop["DefaultValues"]=defaultValues;    
+
+    QJsonObject citations;
+
+    this->createCitation(citations);
+    jsonObjectTop.insert("citations",citations);
     
     return result;
 }
@@ -485,10 +488,10 @@ void WorkflowAppR2D::clear(void)
     thePerformanceWidget->clear();
     ****************************** Performance ***************************** */    
     theResultsWidget->clear();
+    theToolDialog->clear();
     theVisualizationWidget->clear();
     // progressDialog->clear();
     theComponentSelection->displayComponent("VIZ");
-    theToolDialog->clear();
 }
 
 
@@ -716,7 +719,6 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
         destinationDirectory.mkpath(tmpDirectory);
 
     theResultsWidget->clear();
-    //qDebug() << "WorkflowAppR2D is changinging subDir to input_data";
     subDir = "input_data";
 
     QString templateDirectory  = destinationDirectory.absoluteFilePath(subDir);
@@ -1008,3 +1010,38 @@ void WorkflowAppR2D::loadResults(void)
     resultsDialog->show();
 }
 
+int
+WorkflowAppR2D::createCitation(QJsonObject &citation) {
+
+  QString cit("{\"EE-UQ\": { \"citations\": [{\"citation\": \"Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sang-ri Yi, Pedro Arduino, & Wael Elhaddad. (2024). NHERI-SimCenter/R2DTool: Version 4.1.0 (v4.1.0). Zenodo. https://doi.org/10.5281/zenodo.10902064\"},{\"citation\": \"Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Mat J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389\/fbuil.2020.558706\",\"description\": \" This marker paper describes the SimCenter application framework, which was designed to simulate the impacts of natural hazards on the built environment.It  is a necessary attribute for publishing work resulting from the use of SimCenter tools, software, and datasets.\"}]}}");
+
+  QJsonDocument docC = QJsonDocument::fromJson(cit.toUtf8());
+  if(!docC.isNull()) {
+    if(docC.isObject()) {
+      citation = docC.object();        
+    }  else {
+      qDebug() << "WorkflowdAppR2D citation text is not valid JSON: \n" << cit << endl;
+    }
+  }
+
+  /*
+  QFile file(citeFile);
+  if (!file.open(QFile::WriteOnly | QFile::Text)) {
+    //errorMessage();
+    progressDialog->hideProgressBar();
+    return 0;
+  }
+  QJsonDocument doc(citation);
+  file.write(doc.toJson());
+  file.close();
+
+  theSIM->outputCitation(citation);
+  theEventSelection->outputCitation(citation);
+  theAnalysisSelection->outputCitation(citation);
+  theUQ_Selection->outputCitation(citation);
+  theEDP_Selection->outputCitation(citation);
+  */
+
+  
+  return 0;    
+}

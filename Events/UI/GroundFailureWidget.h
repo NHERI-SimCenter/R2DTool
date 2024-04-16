@@ -1,5 +1,5 @@
-#ifndef GMSiteWidget_H
-#define GMSiteWidget_H
+#ifndef GroundFailureWidget_H
+#define GroundFailureWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,40 +36,55 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Jinyan Zhao
 
-#include "Site.h"
+#include "SimCenterAppWidget.h"
+#include "NetworkDownloadManager.h"
 
-#include <QWidget>
+class QGroupBox;
+class QCheckBox;
+class SimCenterAppSelection;
+class SimCenterUnitsCombo;
+class LiquefactionWidget;
+class QTabWidget;
 
-class Vs30; // vs30 info
-class Vs30Widget; // vs30 setup widget
-class zDepthWidget;
-class SiteConfig;
-class SiteConfigWidget;
-class QGISVisualizationWidget;
-
-class GMSiteWidget : public QWidget
+class GroundFailureWidget : public SimCenterAppWidget
 {
     Q_OBJECT
+
 public:
-    explicit GMSiteWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
+    explicit GroundFailureWidget(QWidget *parent = nullptr);
 
-    SiteConfig *siteConfig() const;
+    bool outputToJSON(QJsonObject& obj);
+    bool inputFromJSON(QJsonObject& obj);
 
-    SiteConfigWidget *siteConfigWidget() const;
+    void reset(void);
 
-    void outputToJson(QJsonObject& obj);
-    void clear();
+
+public slots:
 
 private:
-    SiteConfig* m_siteConfig = nullptr;
-    SiteConfigWidget* m_siteConfigWidget = nullptr;
-    Vs30* m_vs30 = nullptr;
-    Vs30Widget* m_vs30Widget = nullptr;
-    zDepthWidget* m_z1DepthWidget = nullptr;
-    zDepthWidget* m_z2DepthWidget = nullptr;
-    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    QGroupBox* gfGroupBox;
+    QGroupBox* liquefactionGroupBox;
+    QGroupBox* landslideGroupBox;
+    QGroupBox* faultDispGroupBox;
+
+    QTabWidget *theTabWidget;
+
+    QCheckBox* liquefactionCheckBox;
+    QCheckBox* landslideCheckBox;
+    QCheckBox* faultDispCheckBox;
+
+    SimCenterUnitsCombo* unitsCombo;
+
+    LiquefactionWidget* liquefactionWidget;
+
+    std::unique_ptr<NetworkDownloadManager> downloadManager;
+
+    void setConnections();
+    void handleSourceSelectionChanged();
+    void checkAndDownloadDataBase();
+
 };
 
-#endif // GMSiteWidget_H
+#endif // GroundMotionModelsWidget_H
