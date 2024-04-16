@@ -47,7 +47,7 @@ INCLUDEPATH += $$PWD \
                $$PWD/Events/UI \
                $$PWD/Tools \
                $$PWD/assetWidgets \
-               $$PWD/recoveryWidgets \	       
+               $$PWD/systemPerformanceWidgets \	       
                $$PWD/assetWidgets/EPANET2.2/include \
 	       $$PWD/assetWidgets/EPANET2.2/src \
 	       $$PWD/dlWidgets
@@ -198,8 +198,8 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/GraphicElements/GIS_Selection.cpp \
 	    $$PWD/RunWidget.cpp \
             $$PWD/WorkflowAppR2D.cpp \
-            $$PWD/recoveryWidgets/RecoveryWidget.cpp \
-            $$PWD/recoveryWidgets/RewetRecovery.cpp \
+            $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.cpp \
+            $$PWD/systemPerformanceWidgets/RewetRecovery.cpp \
             $$PWD/assetWidgets/InpFileWaterInputWidget.cpp \
 	    $$PWD/assetWidgets/EPANET2.2/geoJSON.c \
 	    $$PWD/assetWidgets/EPANET2.2/src/inpfile.c \
@@ -374,8 +374,8 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/GraphicElements/GIS_Selection.h \
             $$PWD/WorkflowAppR2D.h \
             $$PWD/RunWidget.h \
-            $$PWD/recoveryWidgets/RecoveryWidget.h \	    	    
-            $$PWD/recoveryWidgets/RewetRecovery.h \
+            $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.h \	    	    
+            $$PWD/systemPerformanceWidgets/RewetRecovery.h \
             $$PWD/assetWidgets/InpFileWaterInputWidget.h \	    
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2.h \
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2_2.h \

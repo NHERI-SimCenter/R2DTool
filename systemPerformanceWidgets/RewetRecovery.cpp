@@ -198,13 +198,13 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     
     // (2.2.1.2) creating the table
     QStringList pipeDamageModelColumns = {"name", "alpha", "beta", "gamma", "a", "b"};
-    pipeDamageModelingTable = new SC_TableEdit("pipe_damage_model", pipeDamageModelColumns, 1, pipeDamageModelDataValues, true, 1);
+    pipeDamageModelingTable = new SC_TableEdit("pipe_damage_model", pipeDamageModelColumns, 1, pipeDamageModelDataValues, NULL, true, 1);
 
     // (2.2.2) Pipe Damage Modeling (i.e., Material)
     QLabel *nodeDamageModelLabel = new QLabel("Node Damage Modeling");
     QStringList nodeDamageModelDataValues = {"0.0036", "1", "0", "0", "-0.877", "1", "0", "0", "0.0248", "1", "1", "0", "0", "0"};
     QStringList nodeDamageModelColumns = {"a", "aa", "b", "bb", "c", "cc", "d", "dd", "e", "ee1", "ee2", "f", "ff1", "ff2"};
-    nodeDamageModelingTable = new SC_TableEdit("node_damage_model", nodeDamageModelColumns, 1, nodeDamageModelDataValues, true, 0, false);
+    nodeDamageModelingTable = new SC_TableEdit("node_damage_model", nodeDamageModelColumns, 1, nodeDamageModelDataValues, NULL, true, 0, false);
 
 
 
@@ -303,7 +303,7 @@ RewetRecovery::RewetRecovery(QWidget *parent)
 
     pipeDiscoveryLeakAmountLineEdit = new SC_DoubleLineEdit("pipe_leak_amount", 0.025, 0, 1000000, 0.0001);
     pipeDiscoveryTimeWindowLineEdit = new SC_IntLineEdit("pipe_leak_time", 43200, 1, 3600*24*10000);
-    pipeTimeBasedDiscoveryTable = new SC_TableEdit("pipe_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, true, 0);
+    pipeTimeBasedDiscoveryTable = new SC_TableEdit("pipe_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, NULL, true, 0);
 
     QLabel *pipeDiscoveryLeakAmountLabel= new QLabel("Leak Amount");
     pipeDiscoveryLayout->addWidget(pipeLeakBasedRadioButton, 0, 0, 1, 1);
@@ -336,7 +336,7 @@ RewetRecovery::RewetRecovery(QWidget *parent)
 
     nodeDiscoveryLeakAmountLineEdit = new SC_DoubleLineEdit("node_leak_amount", 0.001, 0, 1000000, 0.0001);
     nodeDiscoveryTimeWindowLineEdit = new SC_IntLineEdit("node_leak_time", 43200, 1, 3600*24*10000);
-    nodeTimeBasedDiscoveryTable = new SC_TableEdit("node_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, true, 0);
+    nodeTimeBasedDiscoveryTable = new SC_TableEdit("node_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, NULL, true, 0);
 
     QLabel *nodeDiscoveryLeakAmountLabel= new QLabel("Leak Amount");
     nodeDiscoveryLayout->addWidget(nodeLeakBasedRadioButton, 0, 0, 1, 1);
@@ -365,7 +365,7 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     nodeTimeBasedDiscoveryTable->setEnabled(false);
 
     // adding tank discovery widgets
-    tankTimeBasedDiscoveryTable = new SC_TableEdit("tank_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, true, 0);
+    tankTimeBasedDiscoveryTable = new SC_TableEdit("tank_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, NULL, true, 0);
 
     //tankDiscoveryLayout->addWidget(new QWidget(), 1, 0, 1, 1);
     tankDiscoveryLayout->addWidget(new QLabel("Time Based"), 0, 0, 1, 1);
@@ -374,7 +374,7 @@ RewetRecovery::RewetRecovery(QWidget *parent)
     tankDiscoveryLayout->setColumnStretch(3,1);
 
     // adding tank discovery widgets
-    pumpTimeBasedDiscoveryTable = new SC_TableEdit("pump_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, true, 0);
+    pumpTimeBasedDiscoveryTable = new SC_TableEdit("pump_time_discovery_ratio", {"Time", "Ratio"}, 1, {"0", "1"}, NULL, true, 0);
 
     //pumpDiscoveryLayout->addWidget(new QWidget(), 1, 0, 1, 1);
     pumpDiscoveryLayout->addWidget(new QLabel("Time Based"), 0, 0, 1, 1);

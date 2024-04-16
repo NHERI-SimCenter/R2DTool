@@ -1,5 +1,5 @@
-﻿#ifndef RecoveryWidget_H
-#define RecoveryWidget_H
+﻿#ifndef SYSTEM_PERFORMANCE_WIDGET_H
+#define SYSTEM_PERFORMANCE_WIDGET_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -42,13 +42,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class SimCenterAppSelection;
 
-class RecoveryWidget : public  MultiComponentR2D
+class SystemPerformanceWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
 public:
-    explicit RecoveryWidget(QWidget *parent = 0);
-    ~RecoveryWidget();
+    explicit SystemPerformanceWidget(QWidget *parent = 0);
+    ~SystemPerformanceWidget();
 
     void clear(void);
 
@@ -59,4 +59,4 @@ private:
     SimCenterAppSelection *transportWidget = nullptr;
 };
 
-#endif // RecoveryWidget_H
+#endif // SYSTEM_PERFORMANCE_WIDGET_H

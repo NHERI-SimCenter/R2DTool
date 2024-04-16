@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetsWidget.h"
 #include "CustomizedItemModel.h"
 #include "DLWidget.h"
-#include "RecoveryWidget.h"
+#include "SystemPerformanceWidget.h"
 #include "DakotaResultsSampling.h"
 #include "GeneralInformationWidgetR2D.h"
 #include "GoogleAnalytics.h"
@@ -243,7 +243,7 @@ void WorkflowAppR2D::initialize(void)
     theLocalEvent->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
     
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
-    theRecoveryWidget = new RecoveryWidget(this);
+    theSystemPerformanceWidget = new SystemPerformanceWidget(this);
     
     theUQWidget = new UQWidget(this);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
@@ -275,7 +275,7 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("MOD"), theModelingWidget);
     theComponentSelection->addComponent(tr("ANA"), theAnalysisWidget);
     theComponentSelection->addComponent(tr("DL"),  theDamageAndLossWidget);
-    theComponentSelection->addComponent(tr("SYS"), theRecoveryWidget);    
+    theComponentSelection->addComponent(tr("SP"), theSystemPerformanceWidget);    
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
@@ -369,7 +369,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
         result = false;
     }
 
-    if (theRecoveryWidget->outputAppDataToJSON(apps) == false) {
+    if (theSystemPerformanceWidget->outputAppDataToJSON(apps) == false) {
         this->errorMessage("Error writing DL data to output");
         result = false;
     }    
@@ -423,7 +423,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     theHazardsWidget->outputToJSON(jsonObjectTop);
     theAnalysisWidget->outputToJSON(jsonObjectTop);
     theDamageAndLossWidget->outputToJSON(jsonObjectTop);
-    theRecoveryWidget->outputToJSON(jsonObjectTop);    
+    theSystemPerformanceWidget->outputToJSON(jsonObjectTop);    
     theHazardToAssetWidget->outputToJSON(jsonObjectTop);
     /* **************************** Performance *****************************
     thePerformanceWidget->outputToJSON(jsonObjectTop);       
@@ -483,7 +483,7 @@ void WorkflowAppR2D::clear(void)
     theAssetsWidget->clear();
     theHazardsWidget->clear();
     theDamageAndLossWidget->clear();
-    theRecoveryWidget->clear();    
+    theSystemPerformanceWidget->clear();    
     /* **************************** Performance *****************************    
     thePerformanceWidget->clear();
     ****************************** Performance ***************************** */    
@@ -560,9 +560,9 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
             result = false;
         }
 
-        if (theRecoveryWidget->inputAppDataFromJSON(apps) == false) {
+        if (theSystemPerformanceWidget->inputAppDataFromJSON(apps) == false) {
             this->errorMessage("REC failed to read input data");
-	    theRecoveryWidget->clear();
+	    theSystemPerformanceWidget->clear();
             result = false;
         }	
 
@@ -631,7 +631,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
       result = false;
     }
 
-    if (theRecoveryWidget->inputFromJSON(jsonObject) == false) {
+    if (theSystemPerformanceWidget->inputFromJSON(jsonObject) == false) {
       this->errorMessage("DL failed to read app specific data");
       result = false;
     }    
@@ -795,9 +795,9 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
         return;
     }
 
-    res = theRecoveryWidget->copyFiles(templateDirectory);
+    res = theSystemPerformanceWidget->copyFiles(templateDirectory);
     if(!res) {
-        errorMessage("Error in copy files in "+theRecoveryWidget->objectName());
+        errorMessage("Error in copy files in "+theSystemPerformanceWidget->objectName());
         progressDialog->hideProgressBar();
         return;
     }    
@@ -938,7 +938,7 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         thePerformanceWidget->show(text);
 	* *********************************/
         theDamageAndLossWidget->show(text);
-        theRecoveryWidget->show(text);	
+        theSystemPerformanceWidget->show(text);	
         theUQWidget->show(text);
     }
     else
@@ -952,7 +952,7 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         thePerformanceWidget->hide(text);
 	*********************************** */	
         theDamageAndLossWidget->hide(text);
-        theRecoveryWidget->hide(text);	
+        theSystemPerformanceWidget->hide(text);	
         theUQWidget->hide(text);
     }
 

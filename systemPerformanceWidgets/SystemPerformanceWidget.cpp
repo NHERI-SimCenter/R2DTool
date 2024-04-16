@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Frank McKenna
 
-#include "RecoveryWidget.h"
+#include "SystemPerformanceWidget.h"
 #include "NoneWidget.h"
 #include "RewetRecovery.h"
 
@@ -48,7 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Qt headers
 #include <QDebug>
 
-RecoveryWidget::RecoveryWidget(QWidget *parent)
+SystemPerformanceWidget::SystemPerformanceWidget(QWidget *parent)
   : MultiComponentR2D(QString("SystemPerformance"), parent)
 {
 
@@ -84,13 +84,13 @@ RecoveryWidget::RecoveryWidget(QWidget *parent)
 }
 
 
-RecoveryWidget::~RecoveryWidget()
+SystemPerformanceWidget::~SystemPerformanceWidget()
 {
 
 }
 
 
-void RecoveryWidget::clear(void)
+void SystemPerformanceWidget::clear(void)
 {
   buildingWidget->clear();
   pipelineWidget->clear();
