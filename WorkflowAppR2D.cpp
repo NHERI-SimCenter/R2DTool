@@ -277,7 +277,7 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("MOD"), theModelingWidget);
     theComponentSelection->addComponent(tr("ANA"), theAnalysisWidget);
     theComponentSelection->addComponent(tr("DL"),  theDamageAndLossWidget);
-    theComponentSelection->addComponent(tr("REC"), theRecoveryWidget);    
+    theComponentSelection->addComponent(tr("SYS"), theRecoveryWidget);    
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
