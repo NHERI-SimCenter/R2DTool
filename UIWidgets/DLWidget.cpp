@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "NoArgSimCenterApp.h"
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 
 // Qt headers
 #include <QCheckBox>
@@ -68,7 +68,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
 : MultiComponentR2D(QString("DL"), parent), visualizationWidget(visWidget)
 {
 
-  QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
+  QList<QString> waterExtraKeys; //waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
   
     buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
     pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("NaturalGasPipelines"), this);
@@ -97,9 +97,12 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     // Water distribution network apps
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
     SimCenterAppWidget *WDNDL = new NoArgSimCenterApp(QString("CBCitiesDL"));
+    //    SimCenterAppWidget *waterPelicun = new ReWetWidget;
+    SimCenterAppWidget *waterPelicun = new Pelicun3DLWidget;        
 
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
+    WDNWidget->addComponent(QString("ReWet"), QString("Pelicun3"), waterPelicun);
 
     // Transportation widget apps
     SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;

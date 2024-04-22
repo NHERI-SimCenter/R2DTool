@@ -162,6 +162,8 @@ if [ ! -f "$userID" ]; then
     exit
 fi
 
+exit
+
 source $userID
 echo $appleID
 
@@ -250,20 +252,13 @@ fi
 #
 
 echo "Issue the following: " 
-echo "xcrun altool --notarize-app -u $appleID -p $appleAppPassword -f ./$DMG_FILENAME --primary-bundle-id altool"
-echo "xcrun notarytool submit ./$DMG_FILENAME --apple-id $appleID --password $appleAppPassword --teamID $appleCredential"
+echo "xcrun notarytool submit ./$DMG_FILENAME --apple-id $appleID --password $appleAppPassword --team-id $appleCredential"
+echo "xcrun notarytool log ID --apple-id $appleID --team-id $appleCredential  --password $appleAppPAssword"
 
-#ditto -ck --rsrc --sequesterRsrc $APP_FILE $APP_NAME.zip
 #echo "https://appleid.apple.com/account/"
 #echo "under security generate app specific password: $APP_NAME"
 #echo "xcrun altool --notarize-app -u appleID -p appleAppPassword -f ./$APP_NAME.zip --primary-bundle-id altool"
 #echo "returns id: ID"
 
-echo ""
-echo "returns id: ID .. wait for email indicating success"
-echo "To check status"
-echo "xcrun altool --notarization-info ID  -u $appleID  -p $appleAppPassword"
-echo ""
 echo "Finally staple the dmg"
-
 echo "xcrun stapler staple \"$APP_NAME\" $DMG_FILENAME"

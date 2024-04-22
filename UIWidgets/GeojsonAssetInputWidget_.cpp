@@ -53,7 +53,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QJsonArray>
-#include <QTemporaryFile>
 
 GeojsonAssetInputWidget::GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType)
     : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
@@ -469,30 +468,27 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
         if(!crs.isEmpty())
             assetDictionary["crs"]=crs;
 
-        QTemporaryFile tempFile;
+        QDir tempDir(QDir::tempPath());
+        QString outputFile = tempDir.absolutePath() + QDir::separator() + assetType + ".geojson";
 
-        // Set a file template with a suffix
-        tempFile.setFileTemplate(tempFile.fileTemplate() + "_" + assetType + ".geojson");
-
-        // Open the temporary file in ReadWrite mode
-        if (tempFile.open())
+        QFile file(outputFile);
+        if (!file.open(QFile::WriteOnly | QFile::Text))
         {
+            this->errorMessage("Error creating the asset output json file in GeojsonAssetInputWidget");
+            return false;
+        }
 
-            QString outputFile = tempFile.fileName();
+        // Write the file to the folder
+        QJsonDocument doc(assetDictionary);
+        file.write(doc.toJson());
+        file.close();
 
-            // Write the file to the folderd
-            QJsonDocument doc(assetDictionary);
-            tempFile.write(doc.toJson());
+        this->statusMessage("Loading asset type "+assetType+" with "+ QString::number(features.size())+" features");
 
-            // Close the file
-            tempFile.close();
+        GISAssetInputWidget *thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
 
-            this->statusMessage("Loading asset type "+assetType+" with "+ QString::number(features.size())+" features");
-
-            GISAssetInputWidget *thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
-
-            // Hide the first label
-            /*
+        // Hide the first label
+        /*
         thisAssetWidget->getLabel1()->hide();
         thisAssetWidget->getCRSSelectorWidget()->hide();
 
@@ -505,28 +501,23 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
             }
         }
         */
+	
+        thisAssetWidget->hideCRS_Selection();
+        thisAssetWidget->hideAssetFilePath();
 
-            thisAssetWidget->hideCRS_Selection();
-            thisAssetWidget->hideAssetFilePath();
-
-            thisAssetWidget->setPathToComponentInputFile(outputFile);
-            if (!thisAssetWidget->loadAssetData(false)) {
-                this->errorMessage("Failed to load asset data for asset type" + assetType);
-                return false;
-            }
-
-            theAssetLayerList.append(thisAssetWidget->getMainLayer());
-
-            mainAssetWidget->addComponent(assetType, thisAssetWidget);
-
-
-            // Automatically delete the temporary file when it goes out of scope or when the application exits
-            tempFile.setAutoRemove(true);
-        }
-        else {
-            this->errorMessage("Failed to create temporary file for " + assetType);
+        thisAssetWidget->setPathToComponentInputFile(outputFile);
+        if (!thisAssetWidget->loadAssetData(false)) {
+            this->errorMessage("Failed to load asset data for asset type" + assetType);
+            return false;
         }
 
+        theAssetLayerList.append(thisAssetWidget->getMainLayer());
+
+        mainAssetWidget->addComponent(assetType, thisAssetWidget);
+
+        if (!file.remove()) {
+            this->errorMessage("Warning, failed to remove the temporary file "+outputFile);
+        }
 
         if (ComponentTypeToAdditionalWidget.contains(assetType)){
             for (QWidget* it:ComponentTypeToAdditionalWidget[assetType]){

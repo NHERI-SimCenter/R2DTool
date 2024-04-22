@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetsWidget.h"
 #include "CustomizedItemModel.h"
 #include "DLWidget.h"
+#include "SystemPerformanceWidget.h"
 #include "DakotaResultsSampling.h"
 #include "GeneralInformationWidgetR2D.h"
 #include "GoogleAnalytics.h"
@@ -131,7 +132,9 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     localApp = new LocalApplication("rWHALE.py");
     remoteApp = new RemoteApplication("rWHALE.py", theService);
 
-    theJobManager = new RemoteJobManager(theService);
+    QStringList filesToDownload;
+    //    theJobManager = new RemoteJobManager(theService, filesToDownload);
+    theJobManager = new RemoteJobManager(theService);    
 
     SimCenterWidget *theWidgets[1];
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
@@ -240,6 +243,8 @@ void WorkflowAppR2D::initialize(void)
     theLocalEvent->addComponent(QString("SimCenterEvent"), QString("SimCenterEvent"), simcenterEvent);
     
     theDamageAndLossWidget = new DLWidget(this, theVisualizationWidget);
+    theSystemPerformanceWidget = new SystemPerformanceWidget(this);
+    
     theUQWidget = new UQWidget(this);
     theResultsWidget = new ResultsWidget(this, theVisualizationWidget);
     thePerformanceWidget = new PerformanceWidget(this,theRVs);
@@ -270,6 +275,7 @@ void WorkflowAppR2D::initialize(void)
     theComponentSelection->addComponent(tr("MOD"), theModelingWidget);
     theComponentSelection->addComponent(tr("ANA"), theAnalysisWidget);
     theComponentSelection->addComponent(tr("DL"),  theDamageAndLossWidget);
+    theComponentSelection->addComponent(tr("SP"), theSystemPerformanceWidget);    
     theComponentSelection->addComponent(tr("UQ"), theUQWidget);
     theComponentSelection->addComponent(tr("RV"), theRVs);
     theComponentSelection->addComponent(tr("RES"), theResultsWidget);
@@ -363,6 +369,11 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
         result = false;
     }
 
+    if (theSystemPerformanceWidget->outputAppDataToJSON(apps) == false) {
+        this->errorMessage("Error writing DL data to output");
+        result = false;
+    }    
+
     /* **************************** Performance ***************************** 
     if (thePerformanceWidget->outputAppDataToJSON(apps) == false) {
         this->errorMessage("Error writing PRF data to output");
@@ -412,6 +423,7 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     theHazardsWidget->outputToJSON(jsonObjectTop);
     theAnalysisWidget->outputToJSON(jsonObjectTop);
     theDamageAndLossWidget->outputToJSON(jsonObjectTop);
+    theSystemPerformanceWidget->outputToJSON(jsonObjectTop);    
     theHazardToAssetWidget->outputToJSON(jsonObjectTop);
     /* **************************** Performance *****************************
     thePerformanceWidget->outputToJSON(jsonObjectTop);       
@@ -471,6 +483,7 @@ void WorkflowAppR2D::clear(void)
     theAssetsWidget->clear();
     theHazardsWidget->clear();
     theDamageAndLossWidget->clear();
+    theSystemPerformanceWidget->clear();    
     /* **************************** Performance *****************************    
     thePerformanceWidget->clear();
     ****************************** Performance ***************************** */    
@@ -547,6 +560,12 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
             result = false;
         }
 
+        if (theSystemPerformanceWidget->inputAppDataFromJSON(apps) == false) {
+            this->errorMessage("REC failed to read input data");
+	    theSystemPerformanceWidget->clear();
+            result = false;
+        }	
+
 	/* **************************** Performance *****************************
 	  if (thePerformanceWidget->inputAppDataFromJSON(apps) == false) {
             this->errorMessage("PRF failed to read input data");
@@ -611,6 +630,11 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
       this->errorMessage("DL failed to read app specific data");
       result = false;
     }
+
+    if (theSystemPerformanceWidget->inputFromJSON(jsonObject) == false) {
+      this->errorMessage("DL failed to read app specific data");
+      result = false;
+    }    
     /* **************************** Performance *****************************	       
     if (thePerformanceWidget->inputFromJSON(jsonObject) == false) {
       this->errorMessage("PRF failed to read app specific data");
@@ -765,14 +789,19 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
     }
 
     res = theDamageAndLossWidget->copyFiles(templateDirectory);
-    if(!res)
-    {
+    if(!res) {
         errorMessage("Error in copy files in "+theDamageAndLossWidget->objectName());
         progressDialog->hideProgressBar();
         return;
     }
-    //    theEDP_Selection->copyFiles(templateDirectory);
 
+    res = theSystemPerformanceWidget->copyFiles(templateDirectory);
+    if(!res) {
+        errorMessage("Error in copy files in "+theSystemPerformanceWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }    
+    
 
     // Generate the input file
     this->statusMessage("Generating .json input file");
@@ -909,6 +938,7 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         thePerformanceWidget->show(text);
 	* *********************************/
         theDamageAndLossWidget->show(text);
+        theSystemPerformanceWidget->show(text);	
         theUQWidget->show(text);
     }
     else
@@ -922,6 +952,7 @@ void WorkflowAppR2D::assetSelectionChanged(QString text, bool value)
         thePerformanceWidget->hide(text);
 	*********************************** */	
         theDamageAndLossWidget->hide(text);
+        theSystemPerformanceWidget->hide(text);	
         theUQWidget->hide(text);
     }
 

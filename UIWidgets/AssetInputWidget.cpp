@@ -456,6 +456,7 @@ void AssetInputWidget::createComponentsBox(void)
 #endif
 
     this->setLayout(mainWidgetLayout);    
+
 }
 
 

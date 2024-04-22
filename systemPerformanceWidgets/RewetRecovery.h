@@ -1,7 +1,8 @@
-#ifndef GISAssetInputWidget_H
-#define GISAssetInputWidget_H
+#ifndef REWET_RECOVERY_H
+#define REWET_RECOVERY_H
+
 /* *****************************************************************************
-Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,60 +37,77 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written: fmk, Sina Naeimi
 
-#include "AssetInputWidget.h"
-#include "qgsvectorfilewriter.h"
+#include <SimCenterAppWidget.h>
 
-class QgsVectorLayer;
-class CRSSelectionWidget;
 
-class GISAssetInputWidget : public  AssetInputWidget
+class SC_FileEdit;
+class SC_DoubleLineEdit;
+class SC_IntLineEdit;
+class SC_ComboBox;
+class SC_CheckBox;
+//class SC_IntLineEdit;
+class SC_TableEdit;
+class SC_QRadioButton;
+
+
+class RewetRecovery : public SimCenterAppWidget
 {
-    Q_OBJECT
-
 public:
-    explicit GISAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType = "GIS_to_AIM");
-    virtual ~GISAssetInputWidget();
+    RewetRecovery(QWidget *parent = 0);
+    ~RewetRecovery();
 
-    int loadAssetVisualization();
-
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
-    bool copyFiles(QString &destName);
-    bool copyFilesGeoJSON(QString &destName);
-
-    void clear(void);
-
-#ifdef OpenSRA
-    bool loadFileFromPath(const QString& filePath);
-
-    // Map the OpenSRA inputs and outputs to the SimCenter inputs and outputs
     bool inputFromJSON(QJsonObject &rvObject);
-    bool outputToJSON(QJsonObject &rvObject);
-#endif
+    bool outputToJSON(QJsonObject &rvObject);  
+    bool outputAppDataToJSON(QJsonObject &rvObject);
+    bool inputAppDataFromJSON(QJsonObject &rvObject);
+    bool copyFiles(QString &dirName);
 
-    bool isEmpty();
-
-    // Set the coordinate reference system for the layer
-    void setCRS(const QgsCoordinateReferenceSystem & val);
-
-    // All features in QGIS set/get by their feature id (id set internally by QGIS). e.g., layer->getFeature(feature_id)
-    // Problem is that the feature id may be different than the id given by the user. Hence, need to calcualte the offset to reconcile the difference
-    int getOffset(void);
-    CRSSelectionWidget* getCRSSelectorWidget(void);
+signals:
 
 public slots:
-    bool loadAssetData(bool message = true);
+   void clear(void);
 
-private slots:
-    void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
+private:
 
-protected:
+  // simulation
+  SC_IntLineEdit *eventTime;
+  SC_IntLineEdit *simulationTime;
+  SC_IntLineEdit *simulationTimeStep;
+  SC_CheckBox        *lastTerminationCheckBox;
+  SC_CheckBox        *demandMetTerminationCheckBox;
+  SC_IntLineEdit *demandMetTerminationTimeWindow;
+  SC_DoubleLineEdit  *demandMetCriteriaRatio;
 
-    CRSSelectionWidget* crsSelectorWidget = nullptr;
+  // hydraulics
+  // Solver GroupBox
+  //SC_ComboBox *solver;
+  SC_DoubleLineEdit *solverPDARequired;
+  SC_ComboBox *solverSelection;
+  SC_DoubleLineEdit *solverPDAMin;
+  // damage Modeling GroupBox
+  SC_TableEdit *pipeDamageModelingTable;
+  SC_TableEdit *nodeDamageModelingTable;
+
+  // restoration
+  SC_CheckBox *restorationOnCheckBox;
+  SC_FileEdit *policyDefinitionFile;
+  SC_IntLineEdit *minimumJobTimeLineEdit;
+  SC_QRadioButton *pipeLeakBasedRadioButton;
+  SC_QRadioButton *pipeTimeBasedRadioButton;
+  SC_DoubleLineEdit *pipeDiscoveryLeakAmountLineEdit;
+  SC_IntLineEdit *pipeDiscoveryTimeWindowLineEdit;
+  SC_TableEdit *pipeTimeBasedDiscoveryTable;
+  SC_QRadioButton *nodeLeakBasedRadioButton;
+  SC_QRadioButton *nodeTimeBasedRadioButton;
+  SC_DoubleLineEdit *nodeDiscoveryLeakAmountLineEdit;
+  SC_IntLineEdit *nodeDiscoveryTimeWindowLineEdit;
+  SC_TableEdit *nodeTimeBasedDiscoveryTable;
+  SC_TableEdit *tankTimeBasedDiscoveryTable;
+  SC_TableEdit *pumpTimeBasedDiscoveryTable;
 
 };
 
-#endif // GISAssetInputWidget_H
+
+#endif // REWET_RECOVERY_H
