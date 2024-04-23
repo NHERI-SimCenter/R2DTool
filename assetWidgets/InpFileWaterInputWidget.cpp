@@ -144,7 +144,7 @@ void InpFileWaterInputWidget::insertLineEditToMainLayout(int index, QWidget* wid
 void InpFileWaterInputWidget::handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val)
 {
     crsAuthID = val.authid();
-    
+    defaultCRS = crsAuthID;
     QList<QString> activeComponents = mainAssetWidget->getActiveComponents();
     if (!activeComponents.isEmpty()){
         for(QString it : activeComponents)
@@ -333,9 +333,16 @@ bool InpFileWaterInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     QJsonObject appData = jsonObject["ApplicationData"].toObject();
 
+    //qDebug() << "------------ alani -------------\n"<<jsonObject["ApplicationData"] <<"\n";
+    if (appData.contains("Default_CRS")){
+        defaultCRS = appData["Default_CRS"].toString();
+    }
+    else defaultCRS = "";
+
+    qDebug() << "Khodaaaaaa: "<<defaultCRS <<"\n";
+
     QString fileName;
 
-    //qDebug() << "------------ alani -------------\n"<<jsonObject["ApplicationData"] <<"\n";
     if (appData.contains("inpFile")){
         fileName = appData["inpFile"].toString();
     }
@@ -439,7 +446,7 @@ void InpFileWaterInputWidget::chooseAssetFileDialog(void)
 
 extern "C" int createJSON(const char *, const char *, const char *, const char *);
 
-bool InpFileWaterInputWidget::loadAssetData(void)
+bool InpFileWaterInputWidget::loadAssetData()
 {
     QString pathInpFileWater = inpFileLineEdit->text();
 
@@ -467,7 +474,7 @@ bool InpFileWaterInputWidget::loadAssetData(void)
 	       tmp1.toStdString().c_str(),
 	       tmp2.toStdString().c_str(),
 	       geoJsonFileName.toStdString().c_str());
-	qDebug() << "SINA JSON FILE: "<< geoJsonFileName<<"\n";
+	
     QFile jsonFile(geoJsonFileName);
     // back to Stevan    
 
@@ -479,19 +486,21 @@ bool InpFileWaterInputWidget::loadAssetData(void)
       QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
       QJsonObject jsonObject = exDoc.object();
       
-      if(jsonObject.contains("crs"))
-	crs = jsonObject["crs"].toObject();
-      QString crsString = crs["properties"].toObject()["name"].toString();
-      QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
+      //if(jsonObject.contains("crs"))
+        //crs = jsonObject["crs"].toObject();
+      //QString crsString = crs["properties"].toObject()["name"].toString();
+      //QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(inputCRS);
+      QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(defaultCRS);
       if (!qgsCRS.isValid()){
-	qgsCRS.createFromOgcWmsCrs(crsString);
-      }
+	        qgsCRS.createFromOgcWmsCrs(defaultCRS);
+       }
+        
       if (!qgsCRS.isValid()){
-	QString msg = "INP File does not have a CRS defined. Choose an existing CRS. ";
-	//QString msg = "The CRS: " + crsString + " defined in " + geoJsonFileName + " is invalid and ignored.";
-	errorMessage(msg);
-      }
-	
+	        QString msg = "INP File does not have a CRS defined. Choose an existing CRS.";
+	        //QString msg = "The CRS: " + crsString + " defined in " + geoJsonFileName + " is invalid and ignored.";
+	        errorMessage(msg);
+        }
+
         crsSelectorWidget->setCRS(qgsCRS);
         QJsonArray features = jsonObject["features"].toArray();
 
