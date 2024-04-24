@@ -55,6 +55,7 @@ class HazardToAssetWidget;
 class RandomVariablesWidget;
 class HazardsWidget;
 class UQWidget;
+class SystemPerformanceWidget;
 class ModelWidget;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -94,7 +95,8 @@ public:
     void onRemoteGetButtonClicked();
     void onExitButtonClicked();
     int getMaxNumParallelTasks();
-
+    //int createCitation(QJsonObject &citation, QString &citeFile);
+    int createCitation(QJsonObject &citation);  
     void initialize(void);
     
     void setActiveWidget(SimCenterAppWidget* widget);
@@ -149,10 +151,12 @@ private:
     AnalysisWidget *theAnalysisWidget = nullptr;
     DLWidget* theDamageAndLossWidget = nullptr;
     UQWidget* theUQWidget = nullptr;
+    SystemPerformanceWidget *theSystemPerformanceWidget = nullptr;
     RVWidget* theRVWidget = nullptr;
     ResultsWidget* theResultsWidget = nullptr;
     LoadResultsDialog* resultsDialog = nullptr;
     PerformanceWidget* thePerformanceWidget = nullptr;
+
     //LocalMappingWidget* theLocalMappingWidget;  
     SimCenterAppEventSelection* theLocalEvent = nullptr;
     //

@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QFileInfo>
 #include <QDir>
+#include <QScreen>
 
 QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType) : AssetInputWidget(parent, visWidget, componentType, appType)
 {
@@ -63,6 +64,12 @@ QGISSiteInputWidget::QGISSiteInputWidget(QWidget *parent, VisualizationWidget* v
 //    while ((child = mainWidgetLayout->takeAt(3)) != nullptr) {
 //        child->widget()->hide(); // delete the widget
 //    }
+    QPushButton *showSiteTableButton = new QPushButton();
+    showSiteTableButton->setText(tr("Show Site File (.csv) Table"));
+//    showSiteTableButton->setMaximumWidth(150);
+    mainWidgetLayout->addWidget(showSiteTableButton,3, 0, 1,4);
+    connect(showSiteTableButton,SIGNAL(clicked()),this,SLOT(showSiteTableWindow()));
+
 }
 
 
@@ -327,10 +334,21 @@ int QGISSiteInputWidget::loadAssetVisualization()
     // check soil data
     if (assetType.compare("Soil")==0)
         this->checkSoilDataComplete();
-
+    //JZ
+    componentTableWidget->hide();
     return 0;
 }
 
+void QGISSiteInputWidget::showSiteTableWindow(){
+    if (componentTableView == nullptr){
+        componentTableView = new ComponentTableView(this);
+    //    QAbstractItemModel* tableModel = componentTableWidget->getTableModel();
+        componentTableView->setComponenetTableModel(componentTableWidget->getTableModel());
+        componentTableView->setWindowFlag(Qt::Window);
+        componentTableView->move(screen()->geometry().center() - frameGeometry().center());
+    }
+    componentTableView->show();
+}
 
 void QGISSiteInputWidget::reloadComponentData(QString newDataFile)
 {

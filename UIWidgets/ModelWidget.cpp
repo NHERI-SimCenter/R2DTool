@@ -45,7 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SecondaryComponentSelection.h"
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 
 // Qt headers
 #include <QCheckBox>

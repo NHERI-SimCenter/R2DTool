@@ -86,6 +86,7 @@ MultiComponentR2D::MultiComponentR2D(QString key, QWidget *parent)
     theMainLayout = new QVBoxLayout(this);
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
+    
     theSelectionWidget = new QFrame();
     theSelectionLayout = new QVBoxLayout();
 
@@ -127,6 +128,8 @@ MultiComponentR2D::MultiComponentR2D(QString key, QWidget *parent)
             emit selectionChangedSignal(theNames.at(idx));
     });
 
+    // QSpacerItem *spacer = new QSpacerItem(10,10);
+    // horizontalLayout->addStretch();
     theMainLayout->addLayout(horizontalLayout);
 
     // nothing yet added, do not display anything!

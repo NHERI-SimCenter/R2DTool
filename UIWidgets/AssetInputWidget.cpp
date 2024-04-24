@@ -363,6 +363,7 @@ void AssetInputWidget::createComponentsBox(void)
 
 
     this->setLayout(mainWidgetLayout);    
+
 }
 
 
