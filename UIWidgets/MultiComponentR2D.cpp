@@ -231,14 +231,28 @@ bool MultiComponentR2D::outputAppDataToJSON(QJsonObject &jsonObject)
 
 bool MultiComponentR2D::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
-  if (!jsonObject.contains(jsonKeyword)) {
-    QString errorMsg(QString("MultiComponentR2D::inputAppData keyWord: ")
-		     + jsonKeyword + QString(" not in json"));
-    errorMessage(errorMsg);
-    return false;
-  }
-  
-    QJsonObject dataObj = jsonObject[jsonKeyword].toObject();
+    QJsonObject dataObj;
+    if (jsonObject.contains(jsonKeyword)) {
+        dataObj = jsonObject[jsonKeyword].toObject();
+    }
+    else if (jsonObject.contains("Application")) {
+        auto appName = jsonObject["Application"].toString();
+        if(appName != jsonKeyword)
+        {
+            auto  errMsg = QString(QString("The application name ") + appName + QString(" does not match the json keyword ") + jsonKeyword);
+            errorMessage(errMsg);
+            return false;
+        }
+        dataObj = jsonObject["ApplicationData"].toObject();
+
+    }
+    else {
+            QString errorMsg(QString("MultiComponentR2D::inputAppData keyWord: ")
+                             + jsonKeyword + QString(" not in json, nor does it contain an application field"));
+            errorMessage(errorMsg);
+            return false;
+    }
+
     
     bool res = true;
     int length = theNames.length();

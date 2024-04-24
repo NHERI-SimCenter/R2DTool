@@ -62,7 +62,7 @@ public:
 
 private:
     SimCenterAppSelection *buildingWidget = nullptr;
-    MultiComponentR2D *pipelineWidget = nullptr;
+    SimCenterAppSelection *pipelineWidget = nullptr;
     SimCenterAppSelection *WDNWidget = nullptr;
     SimCenterAppSelection *transportWidget = nullptr;
 

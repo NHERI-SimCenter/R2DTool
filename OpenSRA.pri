@@ -45,6 +45,7 @@ INCLUDEPATH += $$PATH_TO_OPENSRA/ModelViewItems \
 
 
 SOURCES +=  $$PATH_TO_OPENSRA/OpenSRAPreferences.cpp \
+            $$PATH_TO_OPENSRA/UIWidgets/OpenSRAPostProcessor.cpp \
             $$PATH_TO_OPENSRA/UIWidgets/PipelineNetworkWidget.cpp \
             $$PATH_TO_OPENSRA/UIWidgets/PipelineDLWidget.cpp \
             $$PATH_TO_OPENSRA/UIWidgets/RandomVariablesWidget.cpp \
@@ -78,6 +79,7 @@ SOURCES +=  $$PATH_TO_OPENSRA/OpenSRAPreferences.cpp \
 
 
 HEADERS +=  $$PATH_TO_OPENSRA/OpenSRAPreferences.h \
+            $$PATH_TO_OPENSRA/UIWidgets/OpenSRAPostProcessor.h \
             $$PATH_TO_OPENSRA/UIWidgets/PipelineNetworkWidget.h \
             $$PATH_TO_OPENSRA/UIWidgets/PipelineDLWidget.h \
             $$PATH_TO_OPENSRA/UIWidgets/RandomVariablesWidget.h \

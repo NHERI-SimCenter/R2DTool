@@ -46,7 +46,7 @@ class AssetInputDelegate;
 class PelicunPostProcessor;
 class VisualizationWidget;
 class CBCitiesPostProcessor;
-
+class OpenSRAPostProcessor;
 
 class QTabWidget;
 class QStackedWidget;
@@ -104,6 +104,7 @@ private:
 
     std::unique_ptr<PelicunPostProcessor> thePelicunPostProcessor;
     std::unique_ptr<CBCitiesPostProcessor> theCBCitiesPostProcessor;
+    std::unique_ptr<OpenSRAPostProcessor> theOpenSRAPostProcessor;
 
 };
 

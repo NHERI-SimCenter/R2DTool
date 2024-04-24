@@ -42,8 +42,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <qgslinesymbol.h>
 #include <qgsmarkersymbol.h>
+#include "Utils/FileOperations.h"
 
 #include <QFileDialog>
+#include <QDir>
 #include <QSplitter>
 #include <QGroupBox>
 #include <QVBoxLayout>
@@ -96,9 +98,32 @@ bool GISGasNetworkInputWidget::copyFiles(QString &destName)
 {
 
     // The file containing the network pipelines
-    auto res = thePipelinesWidget->copyFiles(destName);
+    if (!thePipelinesWidget->copyFiles(destName))
+        return false;
 
-    return res;
+    if (pathToGISfiles != "")
+    {
+
+        // Clean the path and remove the trailing slash
+        QString cleanPath = QDir::cleanPath(pathToGISfiles);
+        QDir cleanDir(cleanPath);
+
+        // Get the last folder name by extracting the last segment of the clean path
+        QString folderName = cleanDir.dirName();
+
+        auto currShakeMapInputPath = pathToGISfiles;
+        auto currShakeMapDestPath = destName + QDir::separator() + folderName;
+        if(!SCUtils::recursiveCopy(currShakeMapInputPath, currShakeMapDestPath))
+        {
+            QString msg = "Error copying GIS files over to the directory "+folderName;
+            errorMessage(msg);
+
+            return false;
+        }
+    }
+
+
+    return true;
 }
 
 #ifdef OpenSRA
@@ -120,14 +145,21 @@ bool GISGasNetworkInputWidget::inputFromJSON(QJsonObject &rvObject)
 
 bool GISGasNetworkInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    jsonObject["Application"]="GIS_to_GasNETWORK";
-
-    QJsonObject data;
 
     // The file containing the network pipelines
-    thePipelinesWidget->outputAppDataToJSON(data);
+    thePipelinesWidget->outputAppDataToJSON(jsonObject);
 
-    jsonObject["ApplicationData"] = data;
+    // Get the json object
+    auto appData = jsonObject["ApplicationData"].toObject();
+
+    if (!siteLocationParams.empty())
+        appData["siteLocationParams"] = siteLocationParams;
+
+    if ("pathToGISFiles" != "")
+        appData["pathToGISFiles"] = pathToGISfiles;
+
+
+    jsonObject["ApplicationData"] = appData;
 
     return true;
 }
@@ -138,7 +170,7 @@ bool GISGasNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     // Check the app type
     if (jsonObject.contains("Application")) {
-        if ("GIS_to_GasNETWORK" != jsonObject["Application"].toString()) {
+        if ("GIS_to_PIPELINE" != jsonObject["Application"].toString()) {
             this->errorMessage("GISGasNetworkInputWidget::inputFRommJSON app name conflict");
             return false;
         }
@@ -151,24 +183,21 @@ bool GISGasNetworkInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    QJsonObject appData = jsonObject["ApplicationData"].toObject();
-
-
-    if (!appData.contains("GasNetworkPipelines"))
-    {
-        this->errorMessage("GISGasNetworkInputWidget needs GasNetworkPipelines");
-        return false;
-    }
-
-
-    QJsonObject pipelinesData = appData["GasNetworkPipelines"].toObject();
-
+    jsonObject["Application"] = "GIS_to_AIM";
 
     // Input the pipes
-    auto res = thePipelinesWidget->inputAppDataFromJSON(pipelinesData);
+    auto res = thePipelinesWidget->inputAppDataFromJSON(jsonObject);
 
     if(!res)
         return res;
+
+    auto appData=jsonObject["ApplicationData"].toObject();
+
+    if (appData.contains("siteLocationParams"))
+        siteLocationParams = appData["siteLocationParams"].toObject();
+
+    if (appData.contains("pathToGISFiles"))
+        pathToGISfiles = appData["pathToGISFiles"].toString();
 
 
     return true;
@@ -206,6 +235,9 @@ void GISGasNetworkInputWidget::clear()
     thePipelinesWidget->clear();
 
     emit headingValuesChanged(QStringList{"N/A"});
+
+    pathToGISfiles.clear();
+    siteLocationParams = QJsonObject();
 }
 
 

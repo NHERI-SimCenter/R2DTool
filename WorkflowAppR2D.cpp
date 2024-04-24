@@ -652,7 +652,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
             this->errorMessage("LocalModeling failed to read input data");
             theLocalEvent->clear();
             result = false;
-        }	
+        }
 	
         if (theAnalysisWidget->inputAppDataFromJSON(apps) == false) {
             this->errorMessage("ANA failed to read input data");
@@ -710,9 +710,9 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
       this->errorMessage("UQ failed to read app specific data");
       result = false;
     }
-    
+
     if (theRVWidget->inputFromJSON(jsonObject) == false)
-      return false;    
+        return false;
 
     if (theModelingWidget->inputFromJSON(jsonObject) == false) {
       this->errorMessage("MOD failed to read app specific data");
@@ -722,7 +722,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     if (theLocalEvent->inputFromJSON(jsonObject) == false) {
       this->errorMessage("LocalModeling failed to read app specific data");
       result = false;
-    }    
+    }
     
     if (theAnalysisWidget->inputFromJSON(jsonObject) == false) {
       this->errorMessage("ANA failed to read app specific data");
@@ -915,8 +915,14 @@ void WorkflowAppR2D::setUpForApplicationRun(QString &workingDir, QString &subDir
         progressDialog->hideProgressBar();
         return;
     }
-    //    theEDP_Selection->copyFiles(templateDirectory);
 
+    res = theRVWidget->copyFiles(templateDirectory);
+    if(!res)
+    {
+        errorMessage("Error in copy files in "+theRVWidget->objectName());
+        progressDialog->hideProgressBar();
+        return;
+    }
 
     // Generate the input file
     this->statusMessage("Generating .json input file");
@@ -1003,6 +1009,12 @@ int WorkflowAppR2D::loadFile(QString &fileName){
 
     // close file
     file.close();
+
+    if (jsonObj.size() == 0)
+    {
+        this->errorMessage("The provided json file has zero objects, check if it is valid.");
+        return -1;
+    }
 
     //
     // Clean up and find the relative paths if the paths are wrong

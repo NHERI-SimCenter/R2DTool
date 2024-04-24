@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SiteSpecifiedMapping.h"
 #include "GISBasedMapping.h"
 #include "NoArgSimCenterApp.h"
+#include "NoneWidget.h"
 
 #include "HazardToAssetWidget.h"
 #include "SecondaryComponentSelection.h"
@@ -57,7 +58,7 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   transportExtraKeys.append("TransportBridges");
   transportExtraKeys.append("TransportTunnels");
   buildingWidget = new SimCenterAppSelection(QString("Building Mapping"), QString("Buildings"), this);
-  gasWidget = new SimCenterAppSelection(QString("Gas Network Mapping"), QString("NaturalGasPipelines"), this);
+  gasWidget = new SimCenterAppSelection(QString("Gas Network Mapping"), QString("GasNetwork"), this);
   wdnWidget = new SimCenterAppSelection(QString("Water Distribution Network Mapping"), QString("WaterDistributionNetwork"), waterExtraKeys);
 //  transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), transportExtraKeys);
   transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), this);
@@ -65,7 +66,7 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   NearestNeighbourMapping *theNNMapB = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapB = new SiteSpecifiedMapping();
   GISBasedMapping *theGISMapB = new GISBasedMapping();
-  
+
   buildingWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapB);
   buildingWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapB);
   buildingWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapB);
@@ -73,10 +74,12 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   NearestNeighbourMapping *theNNMapG = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapG = new SiteSpecifiedMapping();
   GISBasedMapping *theGISMapG = new GISBasedMapping();
-  
+  SimCenterAppWidget *noneWidget = new NoneWidget(this);
+
   gasWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapG);
   gasWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapG);
-  gasWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapG);      
+  gasWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapG);
+  gasWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
   NearestNeighbourMapping *theNNMapWDN = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapWDN = new SiteSpecifiedMapping();

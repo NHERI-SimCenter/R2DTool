@@ -87,6 +87,7 @@ signals:
 protected:
     virtual bool displayComponent(QString text);
     QVBoxLayout *theMainLayout = nullptr;
+    QString jsonKeyword;
 
 private:
     int numHidden;
@@ -95,7 +96,6 @@ private:
     QVBoxLayout *theSelectionLayout = nullptr;
     QStackedWidget *theStackedWidget = nullptr;
 
-    QString jsonKeyword;
     QList<QString> theNames;
     QList<QPushButton *>thePushButtons;
     QList<SimCenterAppWidget *> theComponents;

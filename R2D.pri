@@ -112,6 +112,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/ModelViewItems/ComponentTableView.cpp \
             $$PWD/ModelViewItems/ListTreeModel.cpp \
             $$PWD/ModelViewItems/CustomListWidget.cpp \
+            $$PWD/ModelViewItems/MutuallyExclusiveListWidget.cpp \
             $$PWD/Tools/AssetInputDelegate.cpp \
             $$PWD/Tools/AssetFilterDelegate.cpp \
             $$PWD/Tools/ComponentDatabase.cpp \
@@ -335,6 +336,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/UserInputHurricaneWidget.h \
             $$PWD/UIWidgets/HurricaneObject.h \
             $$PWD/ModelViewItems/CustomListWidget.h \
+            $$PWD/ModelViewItems/MutuallyExclusiveListWidget.h \
             $$PWD/ModelViewItems/ComponentTableModel.h \
             $$PWD/ModelViewItems/ComponentTableView.h \
             $$PWD/ModelViewItems/ListTreeModel.h \

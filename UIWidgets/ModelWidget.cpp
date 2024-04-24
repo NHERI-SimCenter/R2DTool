@@ -75,7 +75,7 @@ ModelWidget::ModelWidget(QWidget *parent)
   transportExtraKeys.append("TransportBridges");
   transportExtraKeys.append("TransportTunnels");
   buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Buildings"), this);
-    pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("NaturalGasPipelines"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("GasNetwork"), this);
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("WaterDistributionNetwork"), waterExtraKeys);
 //    transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), transportExtraKeys);
     transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), this);

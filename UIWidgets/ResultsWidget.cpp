@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GeneralInformationWidget.h"
 #include "PelicunPostProcessor.h"
 #include "CBCitiesPostProcessor.h"
+#include "OpenSRAPostProcessor.h"
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include <WorkflowAppR2D.h>
@@ -121,8 +122,8 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     resultsPlaceHolderLayout->addStretch();
 
     thePelicunPostProcessor = std::make_unique<PelicunPostProcessor>(parent,theVisualizationWidget);
-
     theCBCitiesPostProcessor = std::make_unique<CBCitiesPostProcessor>(parent,theVisualizationWidget);
+    theOpenSRAPostProcessor = std::make_unique<OpenSRAPostProcessor>(parent,theVisualizationWidget);
 
     resTabWidget = new QTabWidget();
 
@@ -468,6 +469,12 @@ int ResultsWidget::processResults(QString resultsDirectory)
             resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Network");
             theCBCitiesPostProcessor->importResults(resultsDirectory);
         }
+        if(activeAssetDLappMap.contains("Gas Network") && activeAssetDLappMap["Gas Network"].compare("OpenSRA")==0)
+        {
+            resTabWidget->addTab(theOpenSRAPostProcessor.get(),"Gas Network");
+            theOpenSRAPostProcessor->importResults(resultsDirectory);
+        }
+
 
         this->resultsShow(true);
 

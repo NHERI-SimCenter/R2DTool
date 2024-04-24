@@ -75,7 +75,7 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   transportExtraKeys.append("TransportBridges");
   transportExtraKeys.append("TransportTunnels");
   buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Buildings"), this);
-  pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("NaturalGasPipelines"), this);
+  pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("GasNetwork"), this);
   WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("WaterDistributionNetwork"), waterExtraKeys);
 //  transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), transportExtraKeys);
   transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), this);

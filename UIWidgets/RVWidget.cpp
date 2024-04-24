@@ -50,7 +50,7 @@ RVWidget::RVWidget(QWidget *parent)
     theOSRARandomVariableWidget = new RandomVariablesWidget(this);
 
     theRVContainer->setObjectName("RVCONTAINER");
-    theOSRARandomVariableWidget->setObjectName("OPENSRA");
+    theOSRARandomVariableWidget->setObjectName("GasNetwork");
 
     this->addComponent("Buildings", theRVContainer);
 //    this->addComponent("Water Network", theRVContainer);

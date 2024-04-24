@@ -53,7 +53,7 @@ UQWidget::UQWidget(QWidget *parent)
     buildingWidget = new UQ_EngineSelection(true, QString("Buildings"), ForwardOnly, this);
   
     SimCenterAppWidget *noneWidget1 = new NoneWidget(this);
-    pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("PipelineUQ"), this);
+    pipelineWidget = new SimCenterAppSelection(QString("UQ Application"), QString("GasNetwork"), this);
     pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget1);
 
     SimCenterAppWidget *noneWidget2 = new NoneWidget(this);

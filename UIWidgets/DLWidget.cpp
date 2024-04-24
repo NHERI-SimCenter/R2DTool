@@ -72,7 +72,8 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
   QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
   
     buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
-    pipelineWidget = new PipelineDLWidget(this);
+    pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("GasNetwork"), this);
+
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
     QList<QString> transportExtraKeys;
     transportExtraKeys.append("TransportRoads");
@@ -105,6 +106,11 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     transportWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3_trans);
 //    transportWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun_trans);
     transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
+
+    auto OSRADLWidget = new PipelineDLWidget(this);
+    SimCenterAppWidget *noneWidget4 = new NoneWidget(this);
+    pipelineWidget->addComponent(QString("OpenSRA"), QString("OpenSRA"), OSRADLWidget);
+    pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);

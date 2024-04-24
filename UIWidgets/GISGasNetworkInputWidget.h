@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Dr. Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
+#include <QJsonObject>
 
 class QGISVisualizationWidget;
 class VisualizationWidget;
@@ -86,6 +87,11 @@ protected:
     GISAssetInputWidget* thePipelinesWidget = nullptr;
 
     QgsVectorLayer* pipelinesMainLayer = nullptr;
+
+private:
+
+    QJsonObject siteLocationParams;
+    QString pathToGISfiles;
 
 };
 

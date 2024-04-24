@@ -473,7 +473,7 @@ bool GISAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     else
     {
         appData["assetSourceFile"] = sourceDir+QDir::separator()+baseNameCSV;
-        appData["assetGISFile"] = componentFile.fileName();
+        appData["assetGISFile"] =  sourceDir+QDir::separator()+componentFile.fileName();
     }
 
     jsonObject["ApplicationData"] = appData;
