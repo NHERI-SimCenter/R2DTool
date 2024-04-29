@@ -378,8 +378,10 @@ void BrailsInventoryGenerator::clear(void)
 
 void
 BrailsInventoryGenerator::loadVectorLayer(QString outputFile, QString layerName){
-    theVisualizationWidget->addVectorLayer(outputFile, layerName, "ogr");
-    theVisualizationWidget->zoomToActiveLayer();
+    auto layer = theVisualizationWidget->addVectorLayer(outputFile, layerName, "ogr");
+    if (layer != nullptr) {
+        theVisualizationWidget->zoomToActiveLayer();
+    }
 }
 
 QStringList
@@ -467,6 +469,9 @@ BrailsInventoryGenerator::getLocationBoundary(void)
 	QString locationBoundaryScript = scriptDir.absoluteFilePath("getBRAILSLocationBoundary.py");
 
 	QStringList scriptArgs;
+    if (regionInp.location.isEmpty()){
+        regionInp.location = "\"\"";
+    }
     scriptArgs << QString("--latMin") << QString::number(regionInp.minLat)
                << QString("--latMax") << QString::number(regionInp.maxLat)
                << QString("--longMin") << QString::number(regionInp.minLong)
@@ -503,7 +508,7 @@ BrailsInventoryGenerator::getFootprints(void)
 		fpInp.location = locationStr->text();
 	}
 
-	fpInp.fpSourceAttrMap = "";
+    fpInp.fpSourceAttrMap = "\"\"";
 	if (footprintSource->currentText() == "Microsoft Global Building Footprints") {
 		fpInp.fpSource = "ms";
 	}
@@ -537,6 +542,9 @@ BrailsInventoryGenerator::getFootprints(void)
 	QString fpDownloadScript = scriptDir.absoluteFilePath("getBRAILSFootprints.py");
 
 	QStringList scriptArgs;
+    if (fpInp.location.isEmpty()){
+        fpInp.location = "\"\"";
+    }
 	scriptArgs << QString("--latMin") << QString::number(fpInp.minLat)
                << QString("--latMax") << QString::number(fpInp.maxLat)
                << QString("--longMin") << QString::number(fpInp.minLong)
@@ -626,7 +634,16 @@ BrailsInventoryGenerator::getBaselineInv(QString outputDataType)
 		scriptDir.cd("BRAILS");
 		QString fpDownloadScript = scriptDir.absoluteFilePath("getBRAILSBaselineInv.py");
 
-		QStringList scriptArgs;
+        QStringList scriptArgs;
+        if (binvInp.invAttributeMap.isEmpty()){
+            binvInp.invAttributeMap = "\"\"";
+        }
+        if (binvInp.invAttributeMap.isEmpty()){
+            binvInp.invAttributeMap = "\"\"";
+        }
+        if (binvInp.location.isEmpty()){
+            binvInp.location = "\"\"";
+        }
 		scriptArgs << QString("--latMin") << QString::number(binvInp.minLat)
                    << QString("--latMax") << QString::number(binvInp.maxLat)
                    << QString("--longMin") << QString::number(binvInp.minLong)
