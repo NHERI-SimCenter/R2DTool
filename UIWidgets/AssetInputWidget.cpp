@@ -141,6 +141,14 @@ bool AssetInputWidget::loadAssetData(bool message)
     // Test to remove
     // auto start = high_resolution_clock::now();
 
+    QFileInfo fileInfo(pathToComponentInputFile);
+    QString extension = fileInfo.suffix().toLower();
+    if (extension != "csv"){
+        errorMessage("The loaded (\""+extension+"\") file is not permitted.  Please load a file with \"csv\" extension.");
+        pathToComponentInputFile = "NULL";
+        return false;
+    }
+
     CSVReaderWriter csvTool;
     
     QString err;
