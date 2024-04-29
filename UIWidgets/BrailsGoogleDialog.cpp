@@ -132,7 +132,15 @@ BrailsGoogleDialog::startBrails(void) {
 	scriptDir.cd("BRAILS");
 	QString brailsScript = scriptDir.absoluteFilePath("runBrails.py");
 
-
+    if (brailsData.fpSourceAttrMap.isEmpty()){
+        brailsData.fpSourceAttrMap = "\"\"";
+        }
+    if (brailsData.invAttributeMap.isEmpty()){
+        brailsData.invAttributeMap = "\"\"";
+    }
+    if (brailsData.location.isEmpty()){
+        brailsData.location = "\"\"";
+    }
 	QStringList scriptArgs;
     scriptArgs << QString("--latMin") << QString::number(brailsData.minLat)
                << QString("--latMax") << QString::number(brailsData.maxLat)
