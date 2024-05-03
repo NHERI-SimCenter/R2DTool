@@ -102,7 +102,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
 
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
-    WDNWidget->addComponent(QString("ReWet"), QString("Pelicun3"), waterPelicun);
+    WDNWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), waterPelicun);
 
     // Transportation widget apps
     SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;

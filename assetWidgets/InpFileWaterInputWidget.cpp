@@ -247,6 +247,14 @@ bool InpFileWaterInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     QJsonObject data;
 
+    QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(defaultCRS);
+    if (!qgsCRS.isValid()){
+        data.insert("Default_CRS", defaultCRS);
+    } else {
+        this->errorMessage("The CRS is not valid" + inpFileLineEdit->text());
+	return false;
+    }
+    
     QFileInfo inpFile(inpFileLineEdit->text());
     if (inpFile.exists()){
         data.insert("inpFile", inpFile.absoluteFilePath());
@@ -496,7 +504,7 @@ bool InpFileWaterInputWidget::loadAssetData()
        }
         
       if (!qgsCRS.isValid()){
-	        QString msg = "INP File does not have a CRS defined. Choose an existing CRS.";
+	        QString msg = "Default CRS is not valid. Choose an existing CRS.";
 	        //QString msg = "The CRS: " + crsString + " defined in " + geoJsonFileName + " is invalid and ignored.";
 	        errorMessage(msg);
         }
