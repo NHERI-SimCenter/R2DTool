@@ -463,9 +463,9 @@ int ResultsWidget::processResults(QString resultsDirectory)
             resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings");
             thePelicunPostProcessor->importResults(resultsDirectory);
         }
-        if(activeAssetDLappMap.contains("Water Network") && activeAssetDLappMap["Water Network"].compare("CBCitiesDL")==0)
+        if(activeAssetDLappMap.contains("Water Distribution Network") && activeAssetDLappMap["Water Distribution Network"].compare("CBCitiesDL")==0)
         {
-            resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Network");
+            resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Distribution Network");
             theCBCitiesPostProcessor->importResults(resultsDirectory);
         }
 
