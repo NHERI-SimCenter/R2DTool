@@ -121,6 +121,16 @@ ModelWidget::~ModelWidget()
 
 }
 
+bool ModelWidget::outputCitation(QJsonObject &citation){
+    QJsonObject ModelingCitations;
+    buildingWidget->outputCitation(ModelingCitations);
+    pipelineWidget->outputCitation(ModelingCitations);
+    WDNWidget->outputCitation(ModelingCitations);
+    transportWidget->outputCitation(ModelingCitations);
+    citation.insert("Model", ModelingCitations);
+    return true;
+}
+
 
 void ModelWidget::clear(void)
 {

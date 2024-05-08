@@ -990,3 +990,8 @@ void ShakeMapWidget::clear()
     pathToEventFile.clear();
     shakeMapList.clear();
 }
+
+bool ShakeMapWidget::outputCitation(QJsonObject &jsonObject){
+    jsonObject.insert("citation", QString("Wald, D. J., Worden, B. C., Quitoriano, V., & Pankow, K. L. (2006). ShakeMap® manual. Technical Manual, users guide, and software guide Version."));
+    jsonObject.insert("description", QString("Please cite this if USGS ShakeMap product is used"));
+}

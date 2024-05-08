@@ -484,3 +484,18 @@ void SurrogatePyFilter::removeAllMods(void)
       delete theModel;
     }
 }
+
+bool SurrogatePyFilter::outputCitation(QJsonObject &jsonObject) {
+    QJsonArray citations;
+    QJsonObject jsonObject1;
+    jsonObject1.insert("citation",QString("Frank McKenna, Sang-ri Yi, Aakash Bangalore Satish, Adam Zsarnoczay, Kuanshi Zhong, Michael Gardner, & Wael Elhaddad. (2023). NHERI-SimCenter/quoFEM: Version 3.5.0 (v3.5.0). Zenodo. https://doi.org/10.5281/zenodo.10443180"));
+    jsonObject1.insert("description",QString("Please cite if you used quoFEM to generate your pre-trained surrogate models"));
+    citations.append(jsonObject1);
+    QJsonObject jsonObject2;
+    jsonObject2.insert("citation",QString("Frank McKenna, Kuanshi Zhong, Michael Gardner, Adam Zsarnoczay, Sang-ri Yi, Aakash Bangalore Satish, Charles Wang, & Wael Elhaddad. (2024). NHERI-SimCenter/EE-UQ: Version 3.5.0 (v3.5.0). Zenodo. https://doi.org/10.5281/zenodo.10902075"));
+    jsonObject2.insert("description",QString("Please cite if you used EE-UQ to generate your pre-trained surrogate models."));
+    citations.append(jsonObject2);
+    jsonObject["citations"] = citations;
+    return true;
+}
+

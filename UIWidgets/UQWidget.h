@@ -49,6 +49,7 @@ class UQWidget : public  MultiComponentR2D
 public:
     explicit UQWidget(QWidget *parent);
     ~UQWidget();
+    bool outputCitation(QJsonObject &citation) override;
 
     void clear(void);
     int getNumParallelTasks(void);

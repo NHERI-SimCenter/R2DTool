@@ -67,6 +67,8 @@ public:
 
     bool recursiveCopy(const QString &sourcePath, const QString &destPath);
 
+    bool outputCitation(QJsonObject &jsonObject);
+
 
     SC_ResultsWidget* getResultsWidget(QWidget* parent = nullptr);
 

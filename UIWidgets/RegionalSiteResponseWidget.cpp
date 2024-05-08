@@ -1514,3 +1514,16 @@ void RegionalSiteResponseWidget::activateSoilModelWidget(bool flag)
         soilModelFlag = false;
     }
 }
+
+bool RegionalSiteResponseWidget::outputCitation(QJsonObject &jsonObject) {
+    QJsonArray citations;
+    QJsonObject jsonObject1;
+    m_vs30Widget->outputCitation(jsonObject1);
+    citations.append(jsonObject1);
+
+    QJsonObject jsonObject2;
+    m_bedrockDepthWidget->outputCitation(jsonObject2);
+    citations.append(jsonObject2);
+    jsonObject.insert("citations", citations);
+}
+

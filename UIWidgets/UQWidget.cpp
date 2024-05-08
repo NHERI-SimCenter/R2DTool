@@ -100,6 +100,15 @@ int UQWidget::getNumParallelTasks(void) {
     return 1;
 }
 
+bool UQWidget::outputCitation(QJsonObject &citation){
+    QJsonObject ModelingCitations;
+    buildingWidget->outputCitation(ModelingCitations);
+    pipelineWidget->outputCitation(ModelingCitations);
+    WDNWidget->outputCitation(ModelingCitations);
+    transportWidget->outputCitation(ModelingCitations);
+    citation.insert("UQ", ModelingCitations);
+    return true;
+}
 
 
 

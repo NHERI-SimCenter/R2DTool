@@ -100,6 +100,7 @@ public:
     bool outputToJSON(QJsonObject &jsonObj);
     bool inputAppDataFromJSON(QJsonObject &jsonObj);
     bool outputAppDataToJSON(QJsonObject &jsonObj);
+    bool outputCitation(QJsonObject &jsonObject) override;
 
     bool copyFiles(QString &destDir);
 

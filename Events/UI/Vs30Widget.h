@@ -50,6 +50,7 @@ class Vs30Widget : public QWidget
     Q_OBJECT
 public:
     explicit Vs30Widget(Vs30& vs30, SiteConfig& siteConfig, QWidget *parent = nullptr);
+    bool outputCitation(QJsonObject &jsonObject);
 
 signals:
 

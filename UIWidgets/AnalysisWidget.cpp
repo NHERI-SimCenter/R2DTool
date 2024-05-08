@@ -133,6 +133,15 @@ AnalysisWidget::~AnalysisWidget()
 
 }
 
+bool AnalysisWidget::outputCitation(QJsonObject &citation){
+  QJsonObject ModelingCitations;
+  buildingWidget->outputCitation(ModelingCitations);
+  pipelineWidget->outputCitation(ModelingCitations);
+  WDNWidget->outputCitation(ModelingCitations);
+  transportWidget->outputCitation(ModelingCitations);
+  citation.insert("Analysis", ModelingCitations);
+  return true;
+}
 
 void AnalysisWidget::clear(void)
 {

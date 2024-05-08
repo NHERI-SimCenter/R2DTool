@@ -534,3 +534,13 @@ SC_ResultsWidget* Pelicun3DLWidget::getResultsWidget(QWidget* parent){
     resultWidget->setParent(parent);
     return resultWidget;
 }
+
+bool Pelicun3DLWidget::outputCitation(QJsonObject &jsonObject){
+    QJsonArray citations;
+    QJsonObject jsonObject1;
+    jsonObject1["Citation"] = QString("Adam Zsarnoczay, John Vouvakis Manousakis, Pouria Kourehpaz, Jinyan Zhao, Kuanshi Zhong, Frank McKenna, Barbaros Cetiner, & kanwardhindsa. (2024). NHERI-SimCenter/pelicun: v3.2 (v3.2). Zenodo. https://doi.org/10.5281/zenodo.10720557");
+    jsonObject1["description"] = QString("Please cite if Pelicun is selected as damage and loss analysis engine.");
+    citations.append(jsonObject1);
+    jsonObject["citations"] = citations;
+}
+
