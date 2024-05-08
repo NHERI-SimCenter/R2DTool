@@ -51,6 +51,7 @@ class HazardCurveInputWidget;
 class IntensityMeasure;
 class SC_StringLineEdit;
 class QRegExpValidator;
+class QCheckBox;
 
 // CustomValidator class for custom validation logic
 class CustomRPValidator : public QValidator
@@ -81,9 +82,12 @@ public:
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
+    void handleModelChanged(const QString &val);
+    QJsonArray getDoubleArray(const QString& doubleListString);
 
 public slots:
     void handleTypeChanged(const QString &val);
+    void handleSetLassoChanged();
 
 private:
 
@@ -95,6 +99,9 @@ private:
     SC_IntLineEdit* scenarioSampleSizeLE = nullptr;
     SC_IntLineEdit* gmSampleSizeLE = nullptr;
     SC_StringLineEdit* return_periods_lineEdit = nullptr;
+    QLabel* lassoTuningParameterLabel = nullptr;
+    SC_StringLineEdit* lassoTuningParameterLE = nullptr;
+    QCheckBox* setLassoTuning;
     // intensity measure type
     QComboBox* IMT_Combo;
     // period lineedit

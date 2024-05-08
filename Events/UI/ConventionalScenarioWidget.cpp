@@ -182,3 +182,11 @@ bool ConventionalScenarioWidget::LoadRupturesTable(QString pathToRuptureFile){
     return true;
 }
 
+
+void ConventionalScenarioWidget::clear(){
+    ruptureLineEdit->clear();
+    componentTableWidget->clear();
+    componentTableWidget->hide();
+}
+
+

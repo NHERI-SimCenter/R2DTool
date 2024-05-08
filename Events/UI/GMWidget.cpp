@@ -1004,6 +1004,8 @@ void GMWidget::handleProcessStarted(void)
 
 void GMWidget::clear(){
     siteWidget->clear();
+    erfWidget->clear();
+    scenarioSelectWidget->clear();
 }
 
 
@@ -1116,15 +1118,15 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
     // Account for the different directory structure if only want IMs
 //    if(m_selectionconfig->getDatabase().size() == 0)
-    pathToOutputDirectory += "IMs" + QString(QDir::separator());
+    QString pathToOutputEventGrid = pathToOutputDirectory+ "IMs" + QString(QDir::separator());
 
-    pathToOutputDirectory += "EventGrid.csv";
+    pathToOutputEventGrid += "EventGrid.csv";
 
-    const QFileInfo inputFile(pathToOutputDirectory);
+    const QFileInfo inputFile(pathToOutputEventGrid);
 
     if (!inputFile.exists() || !inputFile.isFile())
     {
-        errorMessage ="A file does not exist at the path: " + pathToOutputDirectory;
+        errorMessage ="A file does not exist at the path: " + pathToOutputEventGrid;
         return -1;
     }
 
@@ -1134,8 +1136,69 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
     if(inputFiles.empty())
     {
-        errorMessage ="No files with .csv extensions were found at the path: "+pathToOutputDirectory;
+        errorMessage ="No files with .csv extensions were found at the path: "+pathToOutputEventGrid;
         return -1;
+    }
+
+    // Load the downsampling errors
+    QList<double> RupSampledError;
+    QList<double> GMSampledError;
+    qDebug() << this->scenarioSelectWidget->getCurrentComboName();
+    if (this->scenarioSelectWidget->getCurrentComboName().compare("Hazard Consistant Downsampling")==0){
+        QString pathToRupSampled = pathToOutputDirectory + "RupSampled.json";
+        QFile RupSampleFile(pathToRupSampled);
+        if (!RupSampleFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Failed to open file :" <<pathToRupSampled<< " " << RupSampleFile.errorString();
+        } else {
+            // Load the JSON data into a QJsonDocument
+            QByteArray jsonData = RupSampleFile.readAll();
+            QJsonDocument jsonDocument = QJsonDocument::fromJson(jsonData);
+            if (!jsonDocument.isNull()){
+                QJsonObject RupSampled = jsonDocument.object();
+                try
+                {
+                    QJsonArray RupSampledArray = RupSampled["MeanSquareError"].toArray();
+                    for (const QJsonValue &value : RupSampledArray) {
+                        RupSampledError.append(value.toDouble());
+                        qDebug() << "RupSampledError defined." << value.toDouble();
+                        qDebug() << "RupSampledError defined." << QString::number(value.toDouble());
+                    }
+                    qDebug() << "RupSampledError defined." << RupSampledArray.size();
+
+                }
+                catch(QString msg)
+                {
+                    errorMessage = "Error getting sampled rupture error array with msg: " + msg;
+                    return -1;
+                }
+            }
+            RupSampleFile.close();
+        }
+        QString pathToGMSampled = pathToOutputDirectory + "InfoSampledGM.json";
+        QFile GMSampleFile(pathToGMSampled);
+        if (!GMSampleFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Failed to open file:" <<pathToRupSampled<< " " << GMSampleFile.errorString();
+        } else {
+            // Load the JSON data into a QJsonDocument
+            QByteArray jsonData = GMSampleFile.readAll();
+            QJsonDocument jsonDocument = QJsonDocument::fromJson(jsonData);
+            if (!jsonDocument.isNull()){
+                QJsonObject InfoSampledGM = jsonDocument.object();
+                try
+                {
+                    QJsonArray GMSampledArray = InfoSampledGM["MeanSquareError"].toArray();
+                    for (const QJsonValue &value : GMSampledArray) {
+                        GMSampledError.append(value.toDouble());
+                    }
+                }
+                catch(QString msg)
+                {
+                    errorMessage = "Error getting sampled ground motion error array with msg: " + msg;
+                    return -1;
+                }
+            }
+            GMSampleFile.close();
+        }
     }
 
     // QString fileName = inputFile.fileName();
@@ -1143,7 +1206,7 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
     CSVReaderWriter csvTool;
 
     QString err;
-    QVector<QStringList> data = csvTool.parseCSVFile(pathToOutputDirectory,err);
+    QVector<QStringList> data = csvTool.parseCSVFile(pathToOutputEventGrid,err);
 
     if(!err.isEmpty())
     {
@@ -1188,6 +1251,14 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
 
     // Get the header file
     auto stationDataHeadings = sampleStationData.first();
+    if (!RupSampledError.isEmpty()){
+        qDebug() << "RupSampleMSE appended before." << stationDataHeadings.size();
+        stationDataHeadings.append("RupSampleMSE");
+        qDebug() << "RupSampleMSE appended after." << stationDataHeadings.size();
+    }
+    if (!GMSampledError.isEmpty()){
+        stationDataHeadings.append("GMSampleMSE");
+    }
 
     // Create the fields
     QList<QgsField> attribFields;
@@ -1247,6 +1318,21 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
         }
 
         auto stationData = GMStation.getStationData();
+        qDebug() << "station data size before: "<<stationData.front().size();
+        if (!RupSampledError.isEmpty()){
+//            QString stationRupError = RupSampledError[i];
+//            qDebug() << "GMStation: "<< i<< " Rup Sample Error: " << stationRupError;
+            for (int rlz_i = 0; rlz_i < stationData.size(); ++rlz_i) {
+                stationData[rlz_i].append("0"); // place holder
+            }
+        }
+        if (!GMSampledError.isEmpty()){
+//            QString stationGMError = GMSampledError[i];
+//            qDebug() << "GMStation: "<< i<< " Rup GM Error: " << stationGMError;
+            for (int rlz_i = 0; rlz_i < stationData.size(); ++rlz_i) {
+                stationData[rlz_i].append("0"); // place holder
+            }
+        }
 
         // The number of headings in the file
         auto numParams = stationData.front().size();
@@ -1270,6 +1356,12 @@ int GMWidget::processDownloadedRecords(QString& errorMessage)
                 }
             }
             value = value/num_rows;
+            if (stationDataHeadings[j].compare("RupSampleMSE")==0){
+                value = RupSampledError[i];
+            }
+            if (stationDataHeadings[j].compare("GMSampleMSE")==0){
+                value = GMSampledError[i];
+            }
             dataDouble[j] = value;
         }
 

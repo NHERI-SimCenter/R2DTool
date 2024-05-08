@@ -59,6 +59,7 @@ public:
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
+    void clear();
 
 public slots:
     bool LoadRupturesTable(QString pathToRuptureFile);

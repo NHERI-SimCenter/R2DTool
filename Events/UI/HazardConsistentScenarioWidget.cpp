@@ -48,6 +48,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QLabel>
+#include <QCheckBox>
 
 HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -55,7 +56,7 @@ HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) 
     auto mainLayout = new QGridLayout(this);
 
     auto DownSamplingAlgoLabel = new QLabel("Downsampling Algorithm");
-    downSamplingCombo = new SC_ComboBox("Model",QStringList({"Manzour & Davidson (2016)"}));
+    downSamplingCombo = new SC_ComboBox("Model",QStringList({"Manzour & Davidson (2016)", "Wang et al. (2023)"}));
 
     downSamplingCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
@@ -91,6 +92,10 @@ HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) 
     return_periods_lineEdit = new SC_StringLineEdit("ReturnPeriods","50, 224, 475, 975, 2475");
     return_periods_lineEdit->setValidator(new CustomRPValidator(return_periods_lineEdit));
 
+    lassoTuningParameterLabel = new QLabel(tr("LASSO Tuning Parameters: "));
+    lassoTuningParameterLE =  new SC_StringLineEdit("LassoTuningParameter","");
+    setLassoTuning = new QCheckBox("Set LASSO Tuning Parameter");
+
     mainLayout->addWidget(DownSamplingAlgoLabel,0,0);
     mainLayout->addWidget(downSamplingCombo,0,1);
     mainLayout->addWidget(hazCurveWidget,1,0,1,4);
@@ -106,10 +111,26 @@ HazardConsistentScenarioWidget::HazardConsistentScenarioWidget(QWidget *parent) 
     mainLayout->addWidget(gmSampleSizeLE,4,1);
     mainLayout->addWidget(return_period_label,5,0);
     mainLayout->addWidget(return_periods_lineEdit,5,1);
-    mainLayout->setRowStretch(6,1);
+    mainLayout->addWidget(setLassoTuning, 6, 0);
+    mainLayout->addWidget(lassoTuningParameterLabel,6,1);
+    mainLayout->addWidget(lassoTuningParameterLE,6,2,1,2);
+    mainLayout->setRowStretch(7,1);
+    mainLayout->setColumnStretch(4,3);
+    mainLayout->setColumnStretch(1,2);
+    mainLayout->setAlignment(lassoTuningParameterLabel, Qt::AlignRight);
 
     connect(this->IMT_Combo, &QComboBox::currentTextChanged,
             this, &HazardConsistentScenarioWidget::handleTypeChanged);
+
+    connect(this->downSamplingCombo, &QComboBox::currentTextChanged,
+            this, &HazardConsistentScenarioWidget::handleModelChanged);
+
+    connect(this->setLassoTuning, &QCheckBox::stateChanged, this,
+            &HazardConsistentScenarioWidget::handleSetLassoChanged);
+
+    setLassoTuning->hide();
+    lassoTuningParameterLabel->hide();
+    lassoTuningParameterLE->hide();
 
 }
 
@@ -144,6 +165,27 @@ QJsonArray HazardConsistentScenarioWidget::getRPArray(const QString& integerList
     return jsonArray;
 }
 
+QJsonArray HazardConsistentScenarioWidget::getDoubleArray(const QString& doubleListString)
+{
+    // Split the string into a QStringList using commas as the delimiter
+    QStringList doubleStringList = doubleListString.split(", ");
+
+    // Convert the QStringList to a QJsonArray of integers
+    QJsonArray jsonArray;
+    for (const QString &doubleString : doubleStringList) {
+        bool conversionOk;
+        double value = doubleString.toDouble(&conversionOk);
+        if (conversionOk) {
+            jsonArray.append(value);
+        } else {
+            qDebug() << "Invalid double value:" << doubleString;
+            // Handle the error as needed
+        }
+    }
+
+    return jsonArray;
+}
+
 
 bool HazardConsistentScenarioWidget::outputToJSON(QJsonObject& obj)
 {
@@ -155,20 +197,20 @@ bool HazardConsistentScenarioWidget::outputToJSON(QJsonObject& obj)
     gmSampleSizeLE->outputToJSON(paramObj);
     hazCurveWidget->outputToJSON(paramObj);
 
-//    QJsonObject im;
-//    m_intensityMeasure->outputToJSON(im);
-
-//    paramObj["IntensityMeasure"] = im["Type"];
-
-//    if (im["Type"]=="PGA")
-//        paramObj["Period"] = im["Period"];
-//    else
-//        paramObj["Periods"] = im["Periods"];
     paramObj.insert("IntensityMeasure", IMT_Combo->currentText());
     paramObj.insert("Period", PeriodEdit->text().toDouble());
 
     auto rpArr = getRPArray(return_periods_lineEdit->text());
     paramObj["ReturnPeriods"] = rpArr;
+
+    if(downSamplingCombo->currentText().compare("Wang et al. (2023)") == 0)
+    {
+        QJsonArray tpArr;
+        if (setLassoTuning->isChecked()){
+            tpArr = getDoubleArray(lassoTuningParameterLE->text());
+        }
+        paramObj["LassoTuningParameter"] = tpArr;
+    }
 
     obj["Parameters"] = paramObj;
 
@@ -188,5 +230,37 @@ void HazardConsistentScenarioWidget::handleTypeChanged(const QString &val)
         PeriodEdit->setText("0.0");
         PeriodEdit->setDisabled(1);
         PeriodEdit->setStyleSheet("background-color: lightgray");
+    }
+}
+
+void HazardConsistentScenarioWidget::handleModelChanged(const QString &val)
+{
+    if(val.compare("Wang et al. (2023)") == 0)
+    {
+        setLassoTuning->show();
+        lassoTuningParameterLabel->hide();
+        lassoTuningParameterLE->hide();
+    }
+    else
+    {
+        setLassoTuning->hide();
+        lassoTuningParameterLabel->hide();
+        lassoTuningParameterLE->hide();
+    }
+    setLassoTuning->setChecked(false);
+}
+
+void HazardConsistentScenarioWidget::handleSetLassoChanged()
+{
+    if(setLassoTuning->isChecked())
+    {
+        lassoTuningParameterLabel->show();
+        lassoTuningParameterLE->show();
+        lassoTuningParameterLE->setText("0.001, 0.01, 0.1, 1, 10");
+    }
+    else
+    {
+        lassoTuningParameterLabel->hide();
+        lassoTuningParameterLE->hide();
     }
 }

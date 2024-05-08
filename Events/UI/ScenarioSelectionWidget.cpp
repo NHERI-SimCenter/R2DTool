@@ -67,6 +67,12 @@ bool ScenarioSelectionWidget::inputFromJSON(QJsonObject& /*obj*/)
     return true;
 }
 
+void ScenarioSelectionWidget::clear(){
+    specificScenarioWidget->clear();
+    convenScenarioWidget->clear();
+    hazConsistentScenarioWidget->clear();
+}
+
 
 bool ScenarioSelectionWidget::outputToJSON(QJsonObject& obj)
 {

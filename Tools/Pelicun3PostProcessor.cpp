@@ -213,18 +213,23 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 
         QStringList extractAttributes = {"AIM_id"};
         QStringList comboBoxHeadings = {"AIM_id"};
-        QJsonObject ft = features.at(0).toObject();
-        QJsonObject properties = ft["properties"].toObject();
-        QStringList keys = properties.keys();
-        foreach (const QString &key, keys) {
-            if (key.startsWith("R2Dres_")){
-                QString resultName = key.section('_', 1);
-                if (!resultName.startsWith("MostLikelyDamageState")){
-                    extractAttributes.append(key);
-                    comboBoxHeadings.append(key.section('_', 1));
+
+        for (int i = 0; i < features.size(); i++){
+            QJsonObject ft = features.at(i).toObject();
+            QJsonObject properties = ft["properties"].toObject();
+            QStringList keys = properties.keys();
+            foreach (const QString &key, keys) {
+                if (key.startsWith("R2Dres_")){
+                    QString resultName = key.section('_', 1);
+                    if (!resultName.startsWith("MostLikelyDamageState") &&
+                        !extractAttributes.contains(key)){
+                        extractAttributes.append(key);
+                        comboBoxHeadings.append(key.section('_', 1));
+                    }
                 }
             }
         }
+
 
 //        QStringList comboBoxHeadings = {"Asset ID","Mean Repair Cost","Mean Repair Time, Parallel [days]","Mean Repair Time, Sequential [days]", "Most Likely Critical Damage State"};
         QComboBox* sortComboBox = new QComboBox(typeDockWidget);
