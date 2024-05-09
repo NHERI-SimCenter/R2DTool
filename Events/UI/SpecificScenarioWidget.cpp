@@ -173,6 +173,13 @@ bool SpecificScenarioWidget::LoadRupturesTable(QString pathToRuptureFile){
     return true;
 }
 
+void SpecificScenarioWidget::clear(){
+    ruptureIDLE->clear();
+    sourceIDLE->clear();
+    componentTableWidget->clear();
+    componentTableWidget->hide();
+}
+
 
 bool SpecificScenarioWidget::outputToJSON(QJsonObject& obj)
 {

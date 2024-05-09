@@ -53,6 +53,7 @@ class DLWidget : public  MultiComponentR2D
 public:
     explicit DLWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~DLWidget();
+    bool outputCitation(QJsonObject &jsonObject) override;
 
     void clear(void);
 

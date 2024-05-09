@@ -50,7 +50,7 @@ class BedrockDepthWidget : public QWidget
     Q_OBJECT
 public:
     explicit BedrockDepthWidget(BedrockDepth& bedrockDepth, SiteConfig& siteConfig, QWidget *parent = nullptr);
-
+    bool outputCitation(QJsonObject &jsonObject);
 signals:
 
 public slots:

@@ -86,3 +86,12 @@ void BedrockDepthWidget::setupConnections()
     connect(&this->m_bedrockDpeth, &BedrockDepth::typeChanged,
             this->m_typeBox, &QComboBox::setCurrentText);
 }
+
+bool BedrockDepthWidget::outputCitation(QJsonObject &jsonObject){
+    QJsonObject outputToJsonObj;
+    m_bedrockDpeth.outputToJSON(outputToJsonObj);
+    QString bedrockDepthType = outputToJsonObj["Type"].toString();
+    if (bedrockDepthType == "SoilGrid250 (Hengl et al., 2017)"){
+        jsonObject.insert("citation", QString("Hengl T, Mendes de Jesus J, Heuvelink GBM, Ruiperez Gonzalez M, Kilibarda M, Blagotić A, et al. (2017) SoilGrids250m: Global gridded soil information based on machine learning. PLoS ONE 12(2): e0169748."));
+    }
+}

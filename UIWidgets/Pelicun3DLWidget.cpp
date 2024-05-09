@@ -535,6 +535,7 @@ SC_ResultsWidget* Pelicun3DLWidget::getResultsWidget(QWidget* parent){
     return resultWidget;
 }
 
+
 bool
 Pelicun3DLWidget::outputCitation(QJsonObject &jsonObject)
 {
@@ -565,3 +566,4 @@ tools.");
   
   return true;
 }
+

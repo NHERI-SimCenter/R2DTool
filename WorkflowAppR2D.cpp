@@ -1014,6 +1014,14 @@ WorkflowAppR2D::createCitation(QJsonObject &citation, QString &citeFile) {
   }
 
 
+  theAssetsWidget->outputCitation(citation);
+  theHazardsWidget->outputCitation(citation);
+  theModelingWidget->outputCitation(citation);
+  theAnalysisWidget->outputCitation(citation);
+  theDamageAndLossWidget->outputCitation(citation);  
+  theUQWidget->outputCitation(citation);
+  theSystemPerformanceWidget->outputCitation(citation);
+
   QFile file(citeFile);
   if (!file.open(QFile::WriteOnly | QFile::Text)) {
     //errorMessage();
@@ -1023,14 +1031,6 @@ WorkflowAppR2D::createCitation(QJsonObject &citation, QString &citeFile) {
   QJsonDocument doc(citation);
   file.write(doc.toJson());
   file.close();
-
-  theAssetsWidget->outputCitation(citation);
-  theHazardsWidget->outputCitation(citation);
-  theModelingWidget->outputCitation(citation);
-  theAnalysisWidget->outputCitation(citation);
-  theDamageAndLossWidget->outputCitation(citation);  
-  theUQWidget->outputCitation(citation);
-  theSystemPerformanceWidget->outputCitation(citation);    
 
   
   return 0;    

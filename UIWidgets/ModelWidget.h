@@ -48,6 +48,7 @@ class ModelWidget : public  MultiComponentR2D
 
 public:
     explicit ModelWidget(QWidget *parent = 0);
+    bool outputCitation(QJsonObject &citation);
     ~ModelWidget();
 
     void clear(void);

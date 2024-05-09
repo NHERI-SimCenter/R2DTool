@@ -82,11 +82,9 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), this);
     // Building widget apps
     SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget;    
-    SimCenterAppWidget *buildingPelicun = new PelicunDLWidget;
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
     
     buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);
-    //buildingWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
     // Natural gas pipeline apps
@@ -106,10 +104,8 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
 
     // Transportation widget apps
     SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;
-    SimCenterAppWidget *buildingPelicun_trans = new PelicunDLWidget;
     SimCenterAppWidget *noneWidget_trans = new NoneWidget(this);
     transportWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3_trans);
-//    transportWidget->addComponent(QString("Pelicun"), QString("pelicun"), buildingPelicun_trans);
     transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
 
     this->addComponent("Buildings", buildingWidget);
@@ -210,6 +206,15 @@ QMap<QString, QString> DLWidget::getActiveAssetDLMap(void)
     return activeMap;
 }
 
+bool DLWidget::outputCitation(QJsonObject &citation){
+    QJsonObject ModelingCitations;
+    buildingWidget->outputCitation(ModelingCitations);
+    pipelineWidget->outputCitation(ModelingCitations);
+    WDNWidget->outputCitation(ModelingCitations);
+    transportWidget->outputCitation(ModelingCitations);
+    citation.insert("Damage & Loss", ModelingCitations);
+    return true;
+}
 
 void DLWidget::clear(void)
 {
