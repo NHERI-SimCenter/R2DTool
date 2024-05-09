@@ -110,7 +110,7 @@ ModelWidget::ModelWidget(QWidget *parent)
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network", pipelineWidget);
-    this->addComponent("Water Network", WDNWidget);
+    this->addComponent("Water Distribution Network", WDNWidget);
     this->addComponent("Transportation Network", transportWidget);
     this->hideAll();
 }

@@ -181,6 +181,29 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
             features = jsonObject["features"].toArray();
         }
 
+        QStringList extractAttributes = {"AIM_id"};
+        QStringList comboBoxHeadings = {"AIM_id"};
+        bool hasR2DresToShow = false;
+        for (int i = 0; i < features.size(); i++){
+            QJsonObject ft = features.at(i).toObject();
+            QJsonObject properties = ft["properties"].toObject();
+            QStringList keys = properties.keys();
+            foreach (const QString &key, keys) {
+                if (key.startsWith("R2Dres_")){
+                    QString resultName = key.section('_', 1);
+                    if (!resultName.startsWith("MostLikelyDamageState") &&
+                        !extractAttributes.contains(key)){
+                        extractAttributes.append(key);
+                        comboBoxHeadings.append(key.section('_', 1));
+                        hasR2DresToShow = true;
+                    }
+                }
+            }
+        }
+        if (!hasR2DresToShow) {
+            continue;
+        }
+
 //        totalRepairCostValue += calculateTotal(features, "mean repair_cost-");
 //        totalRepairTimeSequentialValue += calculateTotal(features, "mean repair_time-sequential");
 //        totalRepairTimeParallelValue += calculateTotal(features, "mean repair_time-parallel");
@@ -211,6 +234,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         // Combo box to select how to sort the table
         QHBoxLayout* comboLayout = new QHBoxLayout();
 
+
         QStringList extractAttributes = {"AIM_id"};
         QStringList comboBoxHeadings = {"AIM_id"};
 
@@ -229,6 +253,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
                 }
             }
         }
+
 
 
 //        QStringList comboBoxHeadings = {"Asset ID","Mean Repair Cost","Mean Repair Time, Parallel [days]","Mean Repair Time, Sequential [days]", "Most Likely Critical Damage State"};
@@ -331,8 +356,19 @@ int Pelicun3PostProcessor::extractDataAddToTable(QJsonArray& features, QStringLi
         for (int n = 0; n < attributes.count(); n++){
             QString attri = attributes.at(n);
             if (!properties.contains(attri)){
-                this->errorMessage(attri + QString(" dose not exist in R2D_results.geojson"));
-                return -1;
+                if (!properties.contains("type")) {
+//                    this->errorMessage(attri + QString("dose not exist in R2D_results.geojson"));
+                    return -1;
+                } else {
+//                    this->errorMessage(attri + QString("for") + properties["type"].toString() + QString(" ") + ft["id"].toString() + QString(" dose not exist in R2D_results.geojson"));
+                    if (attri.compare("AIM_id")==0){
+                        auto item = new TableNumberItem(QString::number(m));
+                        table->setItem(m, n, item);
+                    } else {
+                        auto item = new TableNumberItem("");
+                        table->setItem(m, n, item);
+                    }
+                }
             }
             else{
                 if (attri.compare("AIM_id")==0){

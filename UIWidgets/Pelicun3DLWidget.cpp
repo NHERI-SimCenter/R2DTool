@@ -535,12 +535,35 @@ SC_ResultsWidget* Pelicun3DLWidget::getResultsWidget(QWidget* parent){
     return resultWidget;
 }
 
-bool Pelicun3DLWidget::outputCitation(QJsonObject &jsonObject){
-    QJsonArray citations;
-    QJsonObject jsonObject1;
-    jsonObject1["Citation"] = QString("Adam Zsarnoczay, John Vouvakis Manousakis, Pouria Kourehpaz, Jinyan Zhao, Kuanshi Zhong, Frank McKenna, Barbaros Cetiner, & kanwardhindsa. (2024). NHERI-SimCenter/pelicun: v3.2 (v3.2). Zenodo. https://doi.org/10.5281/zenodo.10720557");
-    jsonObject1["description"] = QString("Please cite if Pelicun is selected as damage and loss analysis engine.");
-    citations.append(jsonObject1);
-    jsonObject["citations"] = citations;
+
+bool
+Pelicun3DLWidget::outputCitation(QJsonObject &jsonObject)
+{
+  QJsonObject citationPelicun;
+  citationPelicun.insert("citation",
+"Adam Zsarnoczay, John Vouvakis Manousakis, Jinyan Zhao, Kuanshi Zhong, \
+Pouria Kourehpaz (2024). NHERI-SimCenter/pelicun: v3.3. \
+Zenodo. https://doi.org/10.5281/zenodo.10896145");
+  citationPelicun.insert("description",
+"This reference indicates the version of the tool used for the simulation.");
+
+  QJsonObject citationPelicunMarker;
+  citationPelicunMarker.insert("citation",
+"Adam Zsarnoczay, Gregory G. Deierlein, \
+PELICUN - A Computational Framework for Estimating Damage, Loss, and Community \
+Resilience, \
+Proceedings of the 17th World Conference on Earthquake Engineering, Japan, 2020");
+  citationPelicunMarker.insert("description",
+"This paper describes the Pelicun damage and loss assessment framework. Please \
+reference it if your work results from using the Pelicun engine in the SimCenter \
+tools.");
+
+  QJsonArray citationsArray;
+  citationsArray.push_back(citationPelicun);
+  citationsArray.push_back(citationPelicunMarker);
+
+  jsonObject.insert("citations", citationsArray);
+  
+  return true;
 }
 

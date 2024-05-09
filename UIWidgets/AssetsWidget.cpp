@@ -133,7 +133,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",gasPipelineWidget);
-    this->addComponent("Water Network",waterNetworkWidget);
+    this->addComponent("Water Distribution Network",waterNetworkWidget);
     this->addComponent("Transportation Network", transportNetworkWidget);
     this->hideAll();
 }

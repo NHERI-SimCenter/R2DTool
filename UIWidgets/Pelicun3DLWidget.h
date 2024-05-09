@@ -69,7 +69,6 @@ public:
 
     bool outputCitation(QJsonObject &jsonObject);
 
-
     SC_ResultsWidget* getResultsWidget(QWidget* parent = nullptr);
 
     QMainWindow* getPostProcessor(void);

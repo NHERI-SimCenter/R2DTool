@@ -74,7 +74,7 @@ PerformanceWidget::PerformanceWidget(QWidget *parent, RandomVariablesContainer *
     waterNetworkWidget->addComponent(QString("Water Network Performance"), QString("WaterNetworkPerformance"), waterNetworkPerfModel);
     waterNetworkWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
-    this->addComponent("Water Network",waterNetworkWidget);
+    this->addComponent("Water Distribution Network",waterNetworkWidget);
 
     this->hideAll();
 }

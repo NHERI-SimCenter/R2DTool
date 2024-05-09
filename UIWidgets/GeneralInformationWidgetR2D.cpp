@@ -221,7 +221,7 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
     buildingsCheckBox = new QCheckBox("Buildings");
     soilCheckBox = new QCheckBox("Soil");
     gasCheckBox = new QCheckBox("Gas Network");
-    waterCheckBox = new QCheckBox("Water Network");
+    waterCheckBox = new QCheckBox("Water Distribution Network");
     sewerCheckBox = new QCheckBox("Waste Network");
     transportationCheckBox = new QCheckBox("Transportation Network");
 
@@ -247,7 +247,7 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
         emit assetChanged("Gas Network",gasCheckBox->isChecked());
     });
     connect(waterCheckBox, &QCheckBox::stateChanged, this, [=](){
-        emit assetChanged("Water Network",waterCheckBox->isChecked());
+        emit assetChanged("Water Distribution Network",waterCheckBox->isChecked());
     });
     connect(sewerCheckBox, &QCheckBox::stateChanged, this, [=](){
        emit assetChanged("Sewer Network",sewerCheckBox->isChecked());
