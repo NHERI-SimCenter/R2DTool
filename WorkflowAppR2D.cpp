@@ -1013,19 +1013,12 @@ WorkflowAppR2D::createCitation(QJsonObject &citation, QString citeFile) {
     }
   }
 
-  qDebug() << "1";
   theAssetsWidget->outputCitation(citation);
-  qDebug() << "2";  
   theHazardsWidget->outputCitation(citation);
-  qDebug() << "3";    
   theModelingWidget->outputCitation(citation);
-  qDebug() << "4";      
   theAnalysisWidget->outputCitation(citation);
-  qDebug() << "5";      
   theDamageAndLossWidget->outputCitation(citation);
-  qDebug() << "6";      
   theUQWidget->outputCitation(citation);
-  qDebug() << "7";      
   theSystemPerformanceWidget->outputCitation(citation);
 
   QFile file(citeFile);
