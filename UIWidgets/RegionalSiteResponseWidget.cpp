@@ -1525,5 +1525,6 @@ bool RegionalSiteResponseWidget::outputCitation(QJsonObject &jsonObject) {
     m_bedrockDepthWidget->outputCitation(jsonObject2);
     citations.append(jsonObject2);
     jsonObject.insert("citations", citations);
+    return true;
 }
 
