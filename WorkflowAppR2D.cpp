@@ -1000,7 +1000,7 @@ void WorkflowAppR2D::loadResults(void)
 }
 
 int
-WorkflowAppR2D::createCitation(QJsonObject &citation, QString &citeFile) {
+WorkflowAppR2D::createCitation(QJsonObject &citation, QString citeFile) {
 
   QString cit("{\"R2D\": { \"citations\": [{\"citation\": \"Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sang-ri Yi, Pedro Arduino, & Wael Elhaddad. (2024). NHERI-SimCenter/R2DTool: Version 4.1.0 (v4.1.0). Zenodo. https://doi.org/10.5281/zenodo.10902064\"},{\"citation\": \"Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Mat J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389\/fbuil.2020.558706\",\"description\": \" This marker paper describes the SimCenter application framework, which was designed to simulate the impacts of natural hazards on the built environment.It  is a necessary attribute for publishing work resulting from the use of SimCenter tools, software, and datasets.\"}]}}");
 
@@ -1013,13 +1013,19 @@ WorkflowAppR2D::createCitation(QJsonObject &citation, QString &citeFile) {
     }
   }
 
-
+  qDebug() << "1";
   theAssetsWidget->outputCitation(citation);
+  qDebug() << "2";  
   theHazardsWidget->outputCitation(citation);
+  qDebug() << "3";    
   theModelingWidget->outputCitation(citation);
+  qDebug() << "4";      
   theAnalysisWidget->outputCitation(citation);
-  theDamageAndLossWidget->outputCitation(citation);  
+  qDebug() << "5";      
+  theDamageAndLossWidget->outputCitation(citation);
+  qDebug() << "6";      
   theUQWidget->outputCitation(citation);
+  qDebug() << "7";      
   theSystemPerformanceWidget->outputCitation(citation);
 
   QFile file(citeFile);

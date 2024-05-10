@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("4.2.0.a");
+    QCoreApplication::setApplicationVersion("4.2.0");
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
