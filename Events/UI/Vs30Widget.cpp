@@ -137,5 +137,6 @@ bool Vs30Widget::outputCitation(QJsonObject &jsonObject){
     if (vs30Type == "Global Vs30 (Heath et al., 2020)"){
         jsonObject.insert("citation", QString("THeath, D. C., Wald, D. J., Worden, C. B., Thompson, E. M., & Smoczyk, G. M. (2020). A global hybrid VS30 map with a topographic slope–based default and regional map insets. Earthquake Spectra, 36(3), 1570–1584."));
     }
-
+	
+	return true;
 }
