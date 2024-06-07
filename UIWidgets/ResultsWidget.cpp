@@ -440,6 +440,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
     qDebug() << resultsDirectory;
 
     QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
+    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
 
 
     try {
@@ -449,6 +450,43 @@ int ResultsWidget::processResults(QString resultsDirectory)
             QString resultFile = assetType + QString(".geojson");
             QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
             activeDLResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+        }
+    } catch (const QString msg)
+    {
+        this->errorMessage(msg);
+
+        return -1;
+    }
+
+    try {
+        for (QString assetType : activeSPResultsWidgets.keys()){
+            activeSPResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
+            // check if assetType is in resTabWidget
+            // If yes, add new tab
+            // if not, add to the tab
+            bool tabExist = false;
+            int existTabIndex = 0;
+            for (int tab_i = 0; tab_i < resTabWidget->count(); tab_i++){
+                if (resTabWidget->tabText(tab_i) == assetType){
+                    tabExist = true;
+                    existTabIndex = tab_i;
+                    break;
+                }
+            }
+            if(!tabExist){
+                resTabWidget->addTab(activeSPResultsWidgets[assetType], assetType);
+                QString resultFile = assetType + QString(".geojson");
+                QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+                activeSPResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+            }else{
+                SC_ResultsWidget* currResultsTab = dynamic_cast<SC_ResultsWidget*>(resTabWidget->widget(existTabIndex));
+                if(currResultsTab==nullptr){
+                    qDebug() << "Failed to cast current results to Pelicun3PostProcessor";
+                }
+//                QMainWindow* curMainWindow = currResultsTab->getMainWindow();
+                activeSPResultsWidgets[assetType]->addResults(currResultsTab);
+            }
+
 
         }
     } catch (const QString msg)
@@ -457,6 +495,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
 
         return -1;
     }
+
     try
     {
         if (activeAssetDLappMap.contains("Buildings") && activeAssetDLappMap["Buildings"].compare("pelicun")==0){

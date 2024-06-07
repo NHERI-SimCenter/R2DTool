@@ -984,6 +984,11 @@ DLWidget *WorkflowAppR2D::getTheDamageAndLossWidget() const
     return theDamageAndLossWidget;
 }
 
+SystemPerformanceWidget *WorkflowAppR2D::getTheSystemPerformanceWidget() const
+{
+    return theSystemPerformanceWidget;
+}
+
 
 LocalApplication *WorkflowAppR2D::getLocalApp() const
 {

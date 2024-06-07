@@ -132,6 +132,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/PelicunPostProcessor.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
+    $$PWD/Tools/ResidualDemandResults.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
@@ -299,6 +300,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/PelicunPostProcessor.h \
             $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
+    $$PWD/Tools/ResidualDemandResults.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \

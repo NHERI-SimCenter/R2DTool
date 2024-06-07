@@ -101,6 +101,7 @@ public:
     AssetsWidget *getAssetsWidget() const;
     GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
     DLWidget *getTheDamageAndLossWidget() const;
+    SystemPerformanceWidget *getTheSystemPerformanceWidget() const;
 
     LocalApplication *getLocalApp() const;
 
