@@ -1005,9 +1005,9 @@ void WorkflowAppR2D::loadResults(void)
 }
 
 int
-WorkflowAppR2D::createCitation(QJsonObject &citation, QString &citeFile) {
+WorkflowAppR2D::createCitation(QJsonObject &citation, QString citeFile) {
 
-  QString cit("{\"R2D\": { \"citations\": [{\"citation\": \"Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sang-ri Yi, Pedro Arduino, & Wael Elhaddad. (2024). NHERI-SimCenter/R2DTool: Version 4.1.0 (v4.1.0). Zenodo. https://doi.org/10.5281/zenodo.10902064\"},{\"citation\": \"Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Mat J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389\/fbuil.2020.558706\",\"description\": \" This marker paper describes the SimCenter application framework, which was designed to simulate the impacts of natural hazards on the built environment.It  is a necessary attribute for publishing work resulting from the use of SimCenter tools, software, and datasets.\"}]}}");
+  QString cit("{\"R2D\": { \"citations\": [{\"citation\": \"Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sang-ri Yi, Aakash Bangalore Satish, Sina Naeimi, & Pedro Arduino. (2024). NHERI-SimCenter/R2DTool: Version 4.2.0 (v4.2.0). Zenodo. https://doi.org/10.5281/zenodo.11175489\",\"description\": \"This is the overall tool reference used to indicate the version of the tool.\"}},{\"citation\": \"Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matthew J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389\/fbuil.2020.558706\",\"description\": \" This marker paper describes the SimCenter application framework, which was designed to simulate the impacts of natural hazards on the built environment.It  is a necessary attribute for publishing work resulting from the use of SimCenter tools, software, and datasets.\"}]}}");
 
   QJsonDocument docC = QJsonDocument::fromJson(cit.toUtf8());
   if(!docC.isNull()) {
@@ -1018,12 +1018,11 @@ WorkflowAppR2D::createCitation(QJsonObject &citation, QString &citeFile) {
     }
   }
 
-
   theAssetsWidget->outputCitation(citation);
   theHazardsWidget->outputCitation(citation);
   theModelingWidget->outputCitation(citation);
   theAnalysisWidget->outputCitation(citation);
-  theDamageAndLossWidget->outputCitation(citation);  
+  theDamageAndLossWidget->outputCitation(citation);
   theUQWidget->outputCitation(citation);
   theSystemPerformanceWidget->outputCitation(citation);
 

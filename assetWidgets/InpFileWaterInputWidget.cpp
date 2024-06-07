@@ -241,8 +241,6 @@ bool InpFileWaterInputWidget::copyFiles(QString &destDir)
 
 bool InpFileWaterInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
-    qDebug()<<"--------------\n"<<"Sina in outputAppDataToJSON\n";
-    //jsonObject["Application"]="GEOJSON_TO_ASSET";
     jsonObject["Application"]="INP_FILE";
 
     QJsonObject data;

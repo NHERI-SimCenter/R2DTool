@@ -350,5 +350,7 @@ bool OpenSeesPyBuildingModel::outputCitation(QJsonObject &jsonObject) {
     jsonObject1["description"] = QString("Please cite this paper when the OpenSeesPy Script Generator is selected as building model.");
     citations.append(jsonObject1);
     jsonObject["citations"] = citations;
+
+    return true;
 }
 

@@ -92,7 +92,7 @@ public:
     void onExitButtonClicked();
     int getMaxNumParallelTasks();
     //int createCitation(QJsonObject &citation, QString &citeFile);
-  int createCitation(QJsonObject &citation, QString &citeFile);  
+    int createCitation(QJsonObject &citation, QString citeFile);  
     void initialize(void);
     
     void setActiveWidget(SimCenterAppWidget* widget);

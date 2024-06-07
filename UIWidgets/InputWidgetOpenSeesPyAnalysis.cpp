@@ -522,6 +522,8 @@ bool InputWidgetOpenSeesPyAnalysis::outputCitation(QJsonObject &jsonObject){
     jsonObject1["description"] = QString("Please cite this paper when OpenSeesPy is selected as analysis engine.");
     citations.append(jsonObject1);
     jsonObject["citations"] = citations;
+	
+	return true;
 }
 
 void InputWidgetOpenSeesPyAnalysis::toleranceEditingFinished() {
