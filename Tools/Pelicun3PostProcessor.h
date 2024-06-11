@@ -123,7 +123,6 @@ public:
     int processResults(QString &outputFile, QString &dirName, QString &assetType,
                        QList<QString> typesInAssetType);
 
-    QMainWindow* mainWindow;
 private slots:
 
     int assemblePDF(QImage screenShot);
@@ -141,8 +140,6 @@ private:
     double calculateTotal(QJsonArray& featArray, QString field);
 
     QString outputFilePath;
-
-    QMenu* viewMenu;
 
 //    QLabel* totalRepairCostLabel;
 //    QLabel* totalRepairTimeSequentialLabel;
@@ -170,8 +167,6 @@ private:
     VisualizationWidget* theVisualizationWidget;
 
     QComboBox* sortComboBox;
-
-    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
 
     QGraphicsView* mapViewMainWidget;
 

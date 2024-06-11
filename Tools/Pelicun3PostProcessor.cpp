@@ -148,10 +148,9 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 
     // Get the map view widget
     auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
-    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
+    mapViewSubWidget = std::shared_ptr<SimCenterMapcanvasWidget>(mapView);
     QgsMapCanvas* mapCanvas = mapViewSubWidget->mapCanvas();
     QList<QgsMapLayer*> allLayers= mapCanvas->layers();
-    QList<QgsMapLayer*> neededLayers;
     for (int map_i = 0; map_i < allLayers.count(); ++map_i) {
         QString layerName = allLayers.at(map_i)->name();
         for (int type_i = 0; type_i < typesInAssetType.count(); ++type_i){
