@@ -49,6 +49,7 @@ class SystemPerformanceWidget : public  MultiComponentR2D
 public:
     explicit SystemPerformanceWidget(QWidget *parent = 0);
     ~SystemPerformanceWidget();
+    QMap<QString, SC_ResultsWidget*> getActiveSPResultsWidgets(QWidget *parent);
 
     void clear(void);
 

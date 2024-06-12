@@ -69,7 +69,8 @@ public:
     int processResults(QString &outputFile, QString &dirName, QString &assetType,
                        QList<QString> typesInAssetType);
 
-    int addResults(SC_ResultsWidget* resultsTab);
+    int addResults(SC_ResultsWidget* resultsTab, QString &outputFile, QString &dirName,
+                   QString &assetType, QList<QString> typesInAssetType);
 
 private slots:
 
