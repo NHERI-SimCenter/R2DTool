@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetInputDelegate.h"
 #include "DLWidget.h"
+#include "SystemPerformanceWidget.h"
 #include "GeneralInformationWidget.h"
 #include "PelicunPostProcessor.h"
 #include "CBCitiesPostProcessor.h"
@@ -235,8 +236,6 @@ bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 
 int ResultsWidget::processResults(QString resultsDirectory)
 {
-    //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
-
   //
   // clear current results
   //
@@ -446,11 +445,6 @@ int ResultsWidget::processResults(QString resultsDirectory)
     }
 
 
-    auto activeComponents = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLApps();
-    auto activeAssetDLappMap = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveAssetDLMap();
-    if(activeComponents.isEmpty())
-        return -1;
-
     qDebug() << resultsDirectory;
 
     //
@@ -458,7 +452,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
     //
     
     QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
-    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
+    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent);
 
 
     try {
@@ -507,11 +501,12 @@ int ResultsWidget::processResults(QString resultsDirectory)
 	      
                 SC_ResultsWidget* currResultsTab = dynamic_cast<SC_ResultsWidget*>(resTabWidget->widget(existTabIndex));
                 if(currResultsTab==nullptr){
-                    qDebug() << "Failed to cast current results to Pelicun3PostProcessor";
+                    this->errorMessage("Failed to cast current results to SC_ResultsWidget");
+                } else {
+                    QString resultFile = assetType + QString(".geojson");
+                    QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+                    activeSPResultsWidgets[assetType]->addResults(currResultsTab,resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
                 }
-//                QMainWindow* curMainWindow = currResultsTab->getMainWindow();
-                activeSPResultsWidgets[assetType]->addResults(currResultsTab);
-		
             }
 
 
@@ -525,10 +520,8 @@ int ResultsWidget::processResults(QString resultsDirectory)
 
     try
     {
-        if (activeAssetDLappMap.contains("Buildings") && activeAssetDLappMap["Buildings"].compare("pelicun")==0){
-            resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings");
-            thePelicunPostProcessor->importResults(resultsDirectory);
-        }
+        auto activeAssetDLappMap = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveAssetDLMap();
+
         if(activeAssetDLappMap.contains("Water Distribution Network") && activeAssetDLappMap["Water Distribution Network"].compare("CBCitiesDL")==0)
         {
             resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Distribution Network");

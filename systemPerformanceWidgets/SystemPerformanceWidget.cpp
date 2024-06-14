@@ -83,6 +83,30 @@ SystemPerformanceWidget::SystemPerformanceWidget(QWidget *parent)
   this->hideAll();
 }
 
+QMap<QString, SC_ResultsWidget*>  SystemPerformanceWidget::getActiveSPResultsWidgets(QWidget *parent)
+{
+  QMap<QString, SC_ResultsWidget*> activePostProcessors;
+  auto activeList = this->getActiveComponents();
+
+  for(auto&& it : activeList)
+  {
+      auto activeComp = dynamic_cast<SimCenterAppSelection*>(this->getComponent(it));
+
+      if(activeComp == nullptr)
+          return activePostProcessors;
+
+      QString currComp = activeComp->getCurrentSelectionName();
+      SimCenterAppWidget* currSelection = activeComp->getCurrentSelection();
+      SC_ResultsWidget* currResultWidget = currSelection->getResultsWidget(parent);
+      if(!currResultWidget){
+          qDebug()<<QString("The SP widget of "+currComp+ " used by " + it+ " does not have a resultWidget");
+      } else {
+          activePostProcessors.insert(it, currResultWidget);
+      }
+  }
+
+  return activePostProcessors;
+}
 
 SystemPerformanceWidget::~SystemPerformanceWidget()
 {

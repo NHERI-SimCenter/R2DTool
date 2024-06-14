@@ -104,13 +104,14 @@ int ResidualDemandResults::processResults(QString &outputFile, QString &dirName,
     // See Pelicun3PostProcessor as an example
 }
 
-int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab){
+int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab, QString &outputFile, QString &dirName,
+                                      QString &assetType, QList<QString> typesInAssetType){
     //Initiate pointers from resultsTab
-    mainWindow = resultsTab->mainWindow;
-    dockList = resultsTab->dockList;
-    mapViewSubWidget = resultsTab->mapViewSubWidget;
-    uiState = resultsTab->uiState;
-    neededLayers = resultsTab->neededLayers;
+    mainWindow = resultsTab->getMainWindow();
+    dockList = resultsTab->getDockList();
+    mapViewSubWidget = resultsTab->getMapViewSubWidget();
+    uiState = resultsTab->getUiState();
+    neededLayers = resultsTab->getNeededLayers();
     // Add visualization
 //    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*> (theVizWidget);
 //    if (theVisualizationWidget == nullptr || theVisualizationWidget==0){
@@ -131,10 +132,10 @@ int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab){
 //    residualDemandDockWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
 //    mainWindow->addDockWidget(Qt::RightDockWidgetArea, residualDemandDockWidget);
 //    dockList.append(residualDemandDockWidget);
-//    if (dockList.count()>1){
-//        QDockWidget* base = dockList.at(0);
-//        for (int dock_i = 1; dock_i<dockList.count(); dock_i++){
-//            mainWindow->tabifyDockWidget(base,dockList.at(dock_i));
+//    if (dockList->count()>1){
+//        QDockWidget* base = dockList->at(0);
+//        for (int dock_i = 1; dock_i<dockList->count(); dock_i++){
+//            mainWindow->tabifyDockWidget(base,dockList->at(dock_i));
 //        }
 //    }
 //    // resize docks
@@ -145,7 +146,7 @@ int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab){
 //        float windowHeight = mainWindow->size().height();
 //        QList<int> dockWidthes = {int(0.7*windowWidth)};
 //        QList<int> dockHeights = {int(windowHeight)};
-//        for (int dock_i = 0; dock_i<dockList.count(); dock_i++){
+//        for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
 //            alldocks.append(dockList.at(dock_i));
 //            dockWidthes.append(int(0.3*windowWidth));
 //            dockHeights.append(int(0.7*windowHeight));
@@ -158,6 +159,8 @@ int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab){
 //    }
 
 //    uiState = mainWindow->saveState();
+//    resultsTab->setUiState(uiState);
+    return true;
 
 }
 

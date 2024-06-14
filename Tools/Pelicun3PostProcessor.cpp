@@ -155,11 +155,11 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         QString layerName = allLayers.at(map_i)->name();
         for (int type_i = 0; type_i < typesInAssetType.count(); ++type_i){
             if (layerName.compare(typesInAssetType.at(type_i)) == 0){
-                neededLayers.append(allLayers.at(map_i));
+                neededLayers->append(allLayers.at(map_i));
             }
         }
     }
-    mapCanvas->setLayers(neededLayers);
+    mapCanvas->setLayers(*neededLayers);
 
     mapViewDock->setObjectName("MapViewDock");
     mapViewDock->setAllowedAreas(Qt::LeftDockWidgetArea);
@@ -252,7 +252,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 
 //        QStringList extractAttributes = {"AIM_id","mean repair_cost-","mean repair_time-parallel","mean repair_time-sequential", "highest_DMG"};
         extractDataAddToTable(features, extractAttributes,typeResultsTableWidget, comboBoxHeadings);
-        dockList.append(typeDockWidget);
+        dockList->append(typeDockWidget);
 
         typeDockWidget->setWidget(typetableWidget);
         typeDockWidget->setMinimumWidth(475);
@@ -265,10 +265,10 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 //    totalRepairTimeSequentialValueLabel->setText(QString::number(totalRepairTimeSequentialValue));
 //    totalRepairTimeParallelValueLabel->setText(QString::number(totalRepairTimeParallelValue));
     // tabify dock widgets
-    if (dockList.count()>1){
-        QDockWidget* base = dockList.at(0);
-        for (int dock_i = 1; dock_i<dockList.count(); dock_i++){
-            mainWindow->tabifyDockWidget(base,dockList.at(dock_i));
+    if (dockList->count()>1){
+        QDockWidget* base = dockList->at(0);
+        for (int dock_i = 1; dock_i<dockList->count(); dock_i++){
+            mainWindow->tabifyDockWidget(base,dockList->at(dock_i));
         }
     }
     // resize docks
@@ -277,8 +277,8 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
     float windowHeight = mainWindow->size().height();
     QList<int> dockWidthes = {int(0.7*windowWidth)};
     QList<int> dockHeights = {int(windowHeight)};
-    for (int dock_i = 0; dock_i<dockList.count(); dock_i++){
-        alldocks.append(dockList.at(dock_i));
+    for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
+        alldocks.append(dockList->at(dock_i));
         dockWidthes.append(int(0.3*windowWidth));
         dockHeights.append(int(0.7*windowHeight));
     }
@@ -309,8 +309,8 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         viewMenu->addAction(tr("&Restore"), this, &Pelicun3PostProcessor::restoreUI);
 //        viewMenu->addAction(summaryDock->toggleViewAction());
         viewMenu->addAction(mapViewDock->toggleViewAction());
-        for (int dock_i = 0; dock_i<dockList.count(); dock_i++){
-            viewMenu->addAction(dockList.at(dock_i)->toggleViewAction());
+        for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
+            viewMenu->addAction(dockList->at(dock_i)->toggleViewAction());
         }
         uiState = mainWindow->saveState();
 
@@ -564,12 +564,12 @@ void Pelicun3PostProcessor::clear(void)
         parentWidget->clear();
     }
     tableList.clear();
-    for (int i = 0; i < dockList.count(); i++){
-        QDockWidget* parentWidget = dockList.at(i);
+    for (int i = 0; i < dockList->count(); i++){
+        QDockWidget* parentWidget = dockList->at(i);
         qDeleteAll(parentWidget->findChildren<QWidget*>("", Qt::FindDirectChildrenOnly));
-        delete dockList.at(i);
+        delete dockList->at(i);
     }
-    dockList.clear();
+    dockList->clear();
 
     mapViewSubWidget->clear();
 }

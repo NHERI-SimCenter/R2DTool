@@ -161,7 +161,7 @@ private:
     QWidget *tableWidget;
     QVBoxLayout* layout;
 
-    QList<QDockWidget*> dockList;
+//    QList<QDockWidget*> dockList;
     QList<QTableWidget*> tableList;
 
     VisualizationWidget* theVisualizationWidget;
@@ -173,7 +173,7 @@ private:
 
     int extractDataAddToTable(QJsonArray& features, QStringList& attributes, QTableWidget* table, QStringList headings);
 
-    QByteArray uiState;
+//    QByteArray uiState;
 
     // kz: adding a dock layer under detailed results for different assets
     QDockWidget* tableDock;
