@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISVisualizationWidget.h"
 #include "GISAssetInputWidget.h"
 #include "MultiComponentR2D.h"
+#include "SimCenterPreferences.h"
 
 #include <qgslinesymbol.h>
 #include <qgsmarkersymbol.h>
@@ -469,33 +470,55 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
         if(!crs.isEmpty())
             assetDictionary["crs"]=crs;
 
-        QTemporaryFile tempFile;
+        QString workingDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
+        QDir dirWork(workingDir);
+        if (!dirWork.exists()){
+            if (!dirWork.mkpath(workingDir))
+            {
+                QString errorMessage = QString("Could not load the Working Directory: ") + workingDir
+                                       + QString(". Change the Local Jobs Directory location in preferences.");
 
-        // Set a file template with a suffix
-        tempFile.setFileTemplate(tempFile.fileTemplate() + "_" + assetType + ".geojson");
+                this->errorMessage(errorMessage);
 
-        // Open the temporary file in ReadWrite mode
-        if (tempFile.open())
+                return false;
+            }
+        }
+        // Store data in a ground motions folder under hazard simulation
+        workingDir += QDir::separator() + QString("temp_files");
+        QDir tempDir(workingDir);
+        if (!tempDir.exists()){
+            if (!tempDir.mkpath(workingDir))
+            {
+                QString errorMessage = QString("Could not make the temp_files directory in ") + workingDir
+                                       + QString(". Change the Local Jobs Directory location in preferences.");
+
+                this->errorMessage(errorMessage);
+
+                return false;
+            }
+        }
+        QString outputFile = tempDir.absolutePath() + QDir::separator() + assetType + ".geojson";
+
+        QFile file(outputFile);
+        if (!file.open(QFile::WriteOnly | QFile::Text))
         {
+            this->errorMessage("Error creating the asset output json file in GeojsonAssetInputWidget");
+            return false;
+        }
 
-            QString outputFile = tempFile.fileName();
+        // Write the file to the folder
+        QJsonDocument doc(assetDictionary);
+        file.write(doc.toJson());
+        file.close();
 
-            // Write the file to the folderd
-            QJsonDocument doc(assetDictionary);
-            tempFile.write(doc.toJson());
+        this->statusMessage("Loading asset type "+assetType+" with "+ QString::number(features.size())+" features");
 
-            // Close the file
-            tempFile.close();
+        GISAssetInputWidget *thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
 
-            this->statusMessage("Loading asset type "+assetType+" with "+ QString::number(features.size())+" features");
-
-            GISAssetInputWidget *thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
-
-            // Hide the first label
-            /*
+        // Hide the first label
+        /*
         thisAssetWidget->getLabel1()->hide();
         thisAssetWidget->getCRSSelectorWidget()->hide();
-
         // Hide the file input widgets in the asset file path layout
         auto pathLayout = thisAssetWidget->getAssetFilePathLayout();
         for (int i = 0; i < pathLayout->count(); ++i) {
@@ -506,26 +529,22 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
         }
         */
 
-            thisAssetWidget->hideCRS_Selection();
-            thisAssetWidget->hideAssetFilePath();
+        thisAssetWidget->hideCRS_Selection();
+        thisAssetWidget->hideAssetFilePath();
 
-            thisAssetWidget->setPathToComponentInputFile(outputFile);
-            if (!thisAssetWidget->loadAssetData(false)) {
-                this->errorMessage("Failed to load asset data for asset type" + assetType);
-                return false;
-            }
-
-            theAssetLayerList.append(thisAssetWidget->getMainLayer());
-
-            mainAssetWidget->addComponent(assetType, thisAssetWidget);
-
-
-            // Automatically delete the temporary file when it goes out of scope or when the application exits
-            tempFile.setAutoRemove(true);
+        thisAssetWidget->setPathToComponentInputFile(outputFile);
+        if (!thisAssetWidget->loadAssetData(false)) {
+            this->errorMessage("Failed to load asset data for asset type" + assetType);
+            return false;
         }
-        else {
-            this->errorMessage("Failed to create temporary file for " + assetType);
-        }
+
+        theAssetLayerList.append(thisAssetWidget->getMainLayer());
+
+        mainAssetWidget->addComponent(assetType, thisAssetWidget);
+
+//        if (!file.remove()) {
+//            this->errorMessage("Warning, failed to remove the temporary file "+outputFile);
+//        }
 
 
         if (ComponentTypeToAdditionalWidget.contains(assetType)){
