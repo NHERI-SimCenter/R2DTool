@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SurrogatePyFilter.h"
 #include "OpenSeesParser.h"
 #include "RandomVariablesContainer.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 
 #include <QDebug>
 #include <QFileDialog>

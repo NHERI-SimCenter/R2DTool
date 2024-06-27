@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "BuildingDMEQWidget.h"
 #include "PelicunDLWidget.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>

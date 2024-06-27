@@ -155,7 +155,8 @@ DISTFILES += \
 
 # External libraries
 macos:LIBS += -lcurl -llapack -lblas
-linux:LIBS += /usr/lib/libcurl.so
+linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
+
 
 # Path to build directory
 win32 {

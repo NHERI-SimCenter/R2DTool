@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "MultiComponentR2D.h"
 #include "SecondaryComponentSelection.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 #include "VisualizationWidget.h"
 
 // Qt headers
