@@ -134,6 +134,26 @@ Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget * parent) : SC_ResultsWidge
 
 }
 
+
+//Constructor
+Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget *parent, ResultsWidget *resWidget, QMap<QString, QList<QString>> assetTypeToType)
+    : SC_ResultsWidget(parent,resWidget,assetTypeToType){};
+// AddResultTab
+int Pelicun3PostProcessor::addResultTab(QString tabName){
+    repeat current processResults;
+
+ }
+// AddResultSubtab
+int Pelicun3PostProcessor::addResultSubtab(QString name, QWidget* existTab){
+    if dynamic_cast<QWidget> to SC_ResultsWidget
+        create the new sub tab widget
+                existTab->addResultSubtab()
+    else
+        add existTab to docklist...
+}
+
+
+
 int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName, QString &assetType,
                                           QList<QString> typesInAssetType){
 

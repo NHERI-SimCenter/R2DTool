@@ -454,6 +454,20 @@ int ResultsWidget::processResults(QString resultsDirectory)
     QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
     QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent);
 
+    /*
+    QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent, this, assetTypeToType);
+    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent, this, assetTypeToType);
+    for (QString assetType : activeDLResultsWidgets.keys()){
+        activeDLResultsWidgets[assetType]->addResultTab(assetType);
+    }
+    for (QString assetType : activeSPResultsWidgets.keys()){
+        // If not exsit
+        activeSPResultsWidgets[assetType]->addResultTab(assetType);
+        // If exsits
+        activeSPResultsWidgets[assetType]->addResultSubTab(assetType, activeDLResultsWidgets[assetType]);
+    }
+    */
+
 
     try {
         for (QString assetType : activeDLResultsWidgets.keys()){
