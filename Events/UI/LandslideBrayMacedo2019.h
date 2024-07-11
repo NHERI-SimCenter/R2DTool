@@ -1,5 +1,6 @@
-#ifndef GroundFailureWidget_H
-#define GroundFailureWidget_H
+#ifndef LandslideBrayMacedo2019_H
+#define LandslideBrayMacedo2019_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,54 +40,69 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Jinyan Zhao
 
 #include "SimCenterAppWidget.h"
-#include "NetworkDownloadManager.h"
+#include "SC_DoubleLineEdit.h"
 
+class OpenQuakeScenario;
+
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class CRSSelectionWidget;
+class QSignalMapper;
+class SC_ComboBox;
 class QGroupBox;
 class QCheckBox;
-class SimCenterAppSelection;
-class SimCenterUnitsCombo;
-class LiquefactionWidget;
-class LandslideWidget;
-class QTabWidget;
 
-class GroundFailureWidget : public SimCenterAppWidget
+class LandslideBrayMacedo2019 : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit GroundFailureWidget(QWidget *parent = nullptr);
+    explicit LandslideBrayMacedo2019(QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
-    bool outputToJSON(QJsonObject& obj);
-    bool inputFromJSON(QJsonObject& obj);
-
-    void reset(void);
-
+signals:
 
 public slots:
-
+    void loadFile(QString fieldKey);
+    void setDefaultFilePath();
+    void handleInputTypeChanged();
 private:
-    QGroupBox* gfGroupBox;
-    QGroupBox* liquefactionGroupBox;
-    QGroupBox* landslideGroupBox;
-    QGroupBox* faultDispGroupBox;
 
-    QTabWidget *theTabWidget;
+    QLineEdit* DistWaterFilenameLineEdit = nullptr;
+    QLineEdit* DistCoastFilenameLineEdit = nullptr;
+    QLineEdit* DistRiverFilenameLineEdit = nullptr;
+    QLineEdit* GwDepthFilenameLineEdit = nullptr;
+    QLineEdit* PrecipitationFilenameLineEdit = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
 
-    QCheckBox* liquefactionCheckBox;
-    QCheckBox* landslideCheckBox;
-    QCheckBox* faultDispCheckBox;
 
-    SimCenterUnitsCombo* unitsCombo;
+    QPushButton* DistWaterBrowseFileButton;
+    QPushButton* DistCoastBrowseFileButton;
+    QPushButton* DistRiverBrowseFileButton;
+    QPushButton* GwDepthBrowseFileButton;
+    QPushButton* PrecipitationBrowseFileButton;
+    QPushButton* resetToDefaultButton;
 
-    LiquefactionWidget* liquefactionWidget;
-    LandslideWidget* landslideWidget;
+    QString DistWaterFilePath;
+    QString DistCoastFilePath;
+    QString DistRiverFilePath;
+    QString GwDepthFilePath;
+    QString PrecipitationFilePath;
 
-    std::unique_ptr<NetworkDownloadManager> downloadManager;
+    SC_ComboBox* DistWaterComboBox = nullptr;
+    SC_ComboBox* DistCoastComboBox = nullptr;
+    SC_ComboBox* DistRiverComboBox = nullptr;
+    SC_ComboBox* GwDepthComboBox = nullptr;
+    SC_ComboBox* PrecipitationComboBox = nullptr;
 
-    void setConnections();
-    void handleSourceSelectionChanged();
-    void checkAndDownloadDataBase();
+    QGroupBox* outputSaveGroupBox = nullptr;
+
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+    void setupConnections();
+//    void setRupFile(QString dirPath);
 
 };
 
-#endif // GroundMotionModelsWidget_H
+#endif // LandslideBrayMacedo2019_H

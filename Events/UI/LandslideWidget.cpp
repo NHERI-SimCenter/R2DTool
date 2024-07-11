@@ -37,12 +37,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Jinyan Zhao
 
 
-#include "LiquefactionWidget.h"
+#include "LandslideWidget.h"
 #include "SimCenterAppSelection.h"
-#include "LiqTriggerZhuEtAl2017.h"
-#include "LiqLateralHazus2020.h"
-#include "LiqVerticalHazus2020.h"
-#include "LiqTriggerHazus2020.h"
+#include "LandslideBrayMacedo2019.h"
 #include "NoneWidget.h"
 #include "SimCenterUnitsCombo.h"
 
@@ -57,69 +54,44 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMessageBox>
 
 
-LiquefactionWidget::LiquefactionWidget(QWidget *parent) : SimCenterAppWidget(parent)
+LandslideWidget::LandslideWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     auto mainLayout = new QVBoxLayout(this);
 
-    liqTriggerSelection = new SimCenterAppSelection(QString("Liquefaction Triggering Model"), QString("Triggering"), this);
-    liqLateralSelection = new SimCenterAppSelection(QString("Liquefaction Lateral Spreading Model"), QString("LateralSpreading"), this);
-    liqVerticalSelection = new SimCenterAppSelection(QString("Liquefaction Settlement Model"), QString("Settlement"), this);
+    lsdModelSelection = new SimCenterAppSelection(QString("Landslide Ground Displacement Model"), QString("Landslide"), this);
 
-    SimCenterAppWidget* liqTriggerZhuEtAl2017 = new LiqTriggerZhuEtAl2017;
-    //    Hazus2020_with_ZhuEtal2017 and ZhuEtal2017 use the same UI widget
-    SimCenterAppWidget* liqTriggerHazus2020withZhuEtAl2017 = new LiqTriggerZhuEtAl2017;
-    SimCenterAppWidget* liqTriggerHazus2020 = new LiqTriggerHazus2020;
-    liqTriggerSelection->addComponent(QString("Zhu et al. (2017)"), QString("ZhuEtal2017"), liqTriggerZhuEtAl2017);
-    liqTriggerSelection->addComponent(QString("Zhu et al. (2017) susceptibility and Hazus (2020) probability"), QString("Hazus2020_with_ZhuEtal2017"), liqTriggerHazus2020withZhuEtAl2017);
-    liqTriggerSelection->addComponent(QString("Geologic Map and Hazus (2020)"), QString("Hazus2020"), liqTriggerHazus2020);
+    SimCenterAppWidget* landslideBrayMacedo2019 = new LandslideBrayMacedo2019(this);
+    lsdModelSelection->addComponent(QString("Bray & Macedo (2019)"), QString("BrayMacedo2019"), landslideBrayMacedo2019);
 
-    SimCenterAppWidget *noneWidgetLiqLat = new NoneWidget(this);
-    SimCenterAppWidget* liqLateralHazus2020 = new LiqLateralHazus2020;
-    liqLateralSelection->addComponent(QString("None"), QString("None"), noneWidgetLiqLat);
-    liqLateralSelection->addComponent(QString("Hazus (2020)"), QString("Hazus2020Lateral"), liqLateralHazus2020);
-    liqLateralSelection->selectComponent("Hazus (2020)");
-
-    SimCenterAppWidget *noneWidgetLiqVer = new NoneWidget(this);
-    SimCenterAppWidget* liqVerticalHazus2020 = new LiqVerticalHazus2020;
-    liqVerticalSelection->addComponent(QString("None"), QString("None"), noneWidgetLiqVer);
-    liqVerticalSelection->addComponent(QString("Hazus (2020)"), QString("Hazus2020Vertical"), liqVerticalHazus2020);
-    liqVerticalSelection->selectComponent("Hazus (2020)");
-
-    mainLayout->addWidget(liqTriggerSelection);
-    mainLayout->addWidget(liqLateralSelection);
-    mainLayout->addWidget(liqVerticalSelection);
+    mainLayout->addWidget(lsdModelSelection);
     mainLayout->addStretch(0);
     this->setLayout(mainLayout);
-//    liquefactionWidget = new LiquefactionWidget();
-//    mainLayout->addWidget(liquefactionWidget);
 
 }
 
 
-void LiquefactionWidget::reset(void)
+void LandslideWidget::reset(void)
 {
 
 }
 
 
-bool LiquefactionWidget::inputFromJSON(QJsonObject& /*obj*/)
+bool LandslideWidget::inputFromJSON(QJsonObject& /*obj*/)
 {
     return true;
 }
 
 
-bool LiquefactionWidget::outputToJSON(QJsonObject& obj)
+bool LandslideWidget::outputToJSON(QJsonObject& obj)
 {
-    liqTriggerSelection->outputToJSON(obj);
+    lsdModelSelection->outputToJSON(obj);
     //Hazus2020_with_ZhuEtal2017 triggerin model uses the same widget with ZhuEtal2017
     //So the model name needs to be replaced
-    if (liqTriggerSelection->getCurrentSelectionName().compare("Hazus2020_with_ZhuEtal2017")==0){
+    if (lsdModelSelection->getCurrentSelectionName().compare("Hazus2020_with_ZhuEtal2017")==0){
         QJsonObject triggeringObj = obj["Triggering"].toObject();
         triggeringObj["Model"] = "Hazus2020_with_ZhuEtal2017";
         obj["Triggering"] = triggeringObj;
     }
-    liqLateralSelection->outputToJSON(obj);
-    liqVerticalSelection->outputToJSON(obj);
 
     bool calcSettlement = true;
     if (obj["Settlement"].toObject().isEmpty()){
@@ -146,8 +118,4 @@ bool LiquefactionWidget::outputToJSON(QJsonObject& obj)
 
     return true;
 }
-
-//void GroundMotionModelsWidget::addGMMforSA(bool SAenabled){
-
-//}
 

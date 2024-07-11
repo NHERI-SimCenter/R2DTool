@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "NoneWidget.h"
 #include "SimCenterUnitsCombo.h"
 #include "LiquefactionWidget.h"
+#include "LandslideWidget.h"
 #include "SimCenterPreferences.h"
 #include "Utils/ProgramOutputDialog.h"
 
@@ -75,10 +76,9 @@ GroundFailureWidget::GroundFailureWidget(QWidget *parent) : SimCenterAppWidget(p
     gfGroupBox->setLayout(groupBoxLayout);
 
     liquefactionCheckBox = new QCheckBox("Liquefaction");
-//    liquefactionCheckBox->setChecked(true);
 
     landslideCheckBox = new QCheckBox("Landslide");
-    landslideCheckBox->setEnabled(false);
+
     faultDispCheckBox = new QCheckBox("Fault Displacement");
     faultDispCheckBox->setEnabled(false);
 
@@ -95,8 +95,14 @@ GroundFailureWidget::GroundFailureWidget(QWidget *parent) : SimCenterAppWidget(p
 
     theTabWidget = new QTabWidget();
     liquefactionWidget = new LiquefactionWidget(this);
+    landslideWidget = new LandslideWidget(this);
+    theTabWidget->addTab(liquefactionWidget, tr("Liquefaction"));
+    theTabWidget->addTab(landslideWidget, tr("Landslide"));
 
     this->setConnections();
+    liquefactionCheckBox->setChecked(false);
+    landslideCheckBox->setChecked(false);
+    this->handleSourceSelectionChanged();
 
     mainLayout->addWidget(gfGroupBox);
     mainLayout->addWidget(theTabWidget);
@@ -114,20 +120,23 @@ void GroundFailureWidget::reset(void)
 
 void GroundFailureWidget::setConnections()
 {
-    connect(this->liquefactionCheckBox, &QCheckBox::stateChanged, this, &GroundFailureWidget::handleSourceSelectionChanged);    
+    connect(this->liquefactionCheckBox, &QCheckBox::stateChanged, this, &GroundFailureWidget::handleSourceSelectionChanged);
+    connect(this->landslideCheckBox, &QCheckBox::stateChanged, this, &GroundFailureWidget::handleSourceSelectionChanged);
 }
 
 
 void GroundFailureWidget::handleSourceSelectionChanged()
 {
-    for (int i = 0; i < theTabWidget->count(); i++){
-        theTabWidget->removeTab(i);
+    while (theTabWidget->count() > 0) {
+        theTabWidget->removeTab(0);
     }
     if (liquefactionCheckBox->isChecked()){
         this->checkAndDownloadDataBase();
         theTabWidget->addTab(liquefactionWidget, tr("Liquefaction"));
-
-
+    }
+    if (landslideCheckBox->isChecked()){
+        this->checkAndDownloadDataBase();
+        theTabWidget->addTab(landslideWidget, tr("Landslide"));
     }
 }
 
@@ -182,6 +191,11 @@ bool GroundFailureWidget::outputToJSON(QJsonObject& obj)
         QJsonObject liquefactionObj;
         liquefactionWidget->outputToJSON(liquefactionObj);
         groundFailureObj["Liquefaction"] = liquefactionObj;
+    }
+    if (landslideCheckBox->isChecked()){
+        QJsonObject landslideObj;
+        landslideWidget->outputToJSON(landslideObj);
+        groundFailureObj["Landslide"] = landslideObj;
     }
     obj["GroundFailure"] = groundFailureObj;
 //    obj["PGDunit"] = unitsCombo->currentText();
