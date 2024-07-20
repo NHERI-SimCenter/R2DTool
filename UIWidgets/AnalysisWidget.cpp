@@ -45,7 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <CustomPySimulation.h>
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 #include "SurrogatePyFilter.h"
 // Qt headers
 #include <QCheckBox>
