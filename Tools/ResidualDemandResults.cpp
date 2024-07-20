@@ -102,10 +102,11 @@ int ResidualDemandResults::processResults(QString &outputFile, QString &dirName,
     // Create visualization
     // Create table widget
     // See Pelicun3PostProcessor as an example
+    return 0;
 }
 
 int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab, QString &outputFile, QString &dirName,
-                                      QString &assetType, QList<QString> typesInAssetType){
+                                      //QString &assetType, QList<QString> typesInAssetType){
     //Initiate pointers from resultsTab
     mainWindow = resultsTab->getMainWindow();
     dockList = resultsTab->getDockList();
@@ -160,7 +161,7 @@ int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab, QString &out
 
 //    uiState = mainWindow->saveState();
 //    resultsTab->setUiState(uiState);
-    return true;
+      return 0;
 
 }
 

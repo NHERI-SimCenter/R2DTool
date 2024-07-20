@@ -212,7 +212,8 @@ bool GeojsonAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     QFileInfo componentFile(componentFileLineEdit->text());
     if (componentFile.exists()){
-        data.insert("assetSourceFile", componentFile.absoluteFilePath());
+        data.insert("assetSourceFile", componentFile.fileName());
+        data["pathToSource"]=componentFile.absoluteDir().path();
     } else {
         this->errorMessage("Cannot find GeoJSON file" + componentFileLineEdit->text());
     }

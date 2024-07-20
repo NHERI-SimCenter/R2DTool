@@ -74,7 +74,7 @@ equals(QT_MAJOR_VERSION, 5) {
         }
 }
 
-DEFINES += Q_GIS
+DEFINES += Q_GIS _R2D
 
 win32:DEFINES +=  CURL_STATICLIB
 
