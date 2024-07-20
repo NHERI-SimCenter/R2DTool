@@ -154,7 +154,7 @@ void GroundFailureWidget::checkAndDownloadDataBase(){
             statusDialog->appendText(msg);
             QApplication::processEvents();
 
-            QStringList urls = {"https://zenodo.org/api/records/10892461"};
+            QStringList urls = {"https://zenodo.org/api/records/12785151"};
             QStringList names = {"groundFailure"};
             QString pathTodatabaseFolder = QCoreApplication::applicationDirPath() +
                                            QDir::separator() + "Databases";

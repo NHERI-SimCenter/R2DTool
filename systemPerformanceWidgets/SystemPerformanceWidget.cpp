@@ -83,7 +83,7 @@ SystemPerformanceWidget::SystemPerformanceWidget(QWidget *parent)
   this->hideAll();
 }
 
-QMap<QString, SC_ResultsWidget*>  SystemPerformanceWidget::getActiveSPResultsWidgets(QWidget *parent)
+QMap<QString, SC_ResultsWidget*>  SystemPerformanceWidget::getActiveSPResultsWidgets(QWidget *parent, ResultsWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
 {
   QMap<QString, SC_ResultsWidget*> activePostProcessors;
   auto activeList = this->getActiveComponents();
@@ -97,7 +97,7 @@ QMap<QString, SC_ResultsWidget*>  SystemPerformanceWidget::getActiveSPResultsWid
 
       QString currComp = activeComp->getCurrentSelectionName();
       SimCenterAppWidget* currSelection = activeComp->getCurrentSelection();
-      SC_ResultsWidget* currResultWidget = currSelection->getResultsWidget(parent);
+      SC_ResultsWidget* currResultWidget = currSelection->getResultsWidget(parent, R2DresWidget, assetTypeToType);
       if(!currResultWidget){
           qDebug()<<QString("The SP widget of "+currComp+ " used by " + it+ " does not have a resultWidget");
       } else {

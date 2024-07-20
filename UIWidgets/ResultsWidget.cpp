@@ -451,86 +451,100 @@ int ResultsWidget::processResults(QString resultsDirectory)
     // Get results widgets from each of DL asset types and system performance & add to Tabbed widget
     //
     
-    QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
-    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent);
+//    QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
+//    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent);
 
-    /*
+
     QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent, this, assetTypeToType);
     QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent, this, assetTypeToType);
     for (QString assetType : activeDLResultsWidgets.keys()){
-        activeDLResultsWidgets[assetType]->addResultTab(assetType);
+        resTabWidget->addTab(activeDLResultsWidgets[assetType], assetType);
+        activeDLResultsWidgets[assetType]->addResultTab(assetType, resultsDirectory);
     }
     for (QString assetType : activeSPResultsWidgets.keys()){
+        // check if assetType is in resTabWidget
+        // If yes, add new tab
+        // if not, add to the tab
+        bool tabExist = false;
+        for (int tab_i = 0; tab_i < resTabWidget->count(); tab_i++){
+            if (resTabWidget->tabText(tab_i) == assetType){
+                tabExist = true;
+                break;
+            }
+        }
         // If not exsit
-        activeSPResultsWidgets[assetType]->addResultTab(assetType);
-        // If exsits
-        activeSPResultsWidgets[assetType]->addResultSubTab(assetType, activeDLResultsWidgets[assetType]);
-    }
-    */
-
-
-    try {
-        for (QString assetType : activeDLResultsWidgets.keys()){
-            activeDLResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
-            resTabWidget->addTab(activeDLResultsWidgets[assetType], assetType);
-            QString resultFile = assetType + QString(".geojson");
-            QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
-            activeDLResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+        if (!tabExist){
+            activeSPResultsWidgets[assetType]->addResultTab(assetType, resultsDirectory);
+        } else {
+            // If exsits
+            activeSPResultsWidgets[assetType]->addResultSubtab(assetType, activeDLResultsWidgets[assetType], resultsDirectory);
         }
-    } catch (const QString msg)
-    {
-        this->errorMessage(msg);
-
-        return -1;
     }
 
-    try {
-        for (QString assetType : activeSPResultsWidgets.keys()){
-            activeSPResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
-            // check if assetType is in resTabWidget
-            // If yes, add new tab
-            // if not, add to the tab
-            bool tabExist = false;
-            int existTabIndex = 0;
-            for (int tab_i = 0; tab_i < resTabWidget->count(); tab_i++){
-                if (resTabWidget->tabText(tab_i) == assetType){
-                    tabExist = true;
-                    existTabIndex = tab_i;
-                    break;
-                }
-            }
 
-	    //
-	    // add tab .. if new process results, if existing addResults
-	    //
+
+//    try {
+//        for (QString assetType : activeDLResultsWidgets.keys()){
+//            activeDLResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
+//            resTabWidget->addTab(activeDLResultsWidgets[assetType], assetType);
+//            QString resultFile = assetType + QString(".geojson");
+//            QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+//            activeDLResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+//        }
+//    } catch (const QString msg)
+//    {
+//        this->errorMessage(msg);
+
+//        return -1;
+//    }
+
+//    try {
+//        for (QString assetType : activeSPResultsWidgets.keys()){
+//            activeSPResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
+//            // check if assetType is in resTabWidget
+//            // If yes, add new tab
+//            // if not, add to the tab
+//            bool tabExist = false;
+//            int existTabIndex = 0;
+//            for (int tab_i = 0; tab_i < resTabWidget->count(); tab_i++){
+//                if (resTabWidget->tabText(tab_i) == assetType){
+//                    tabExist = true;
+//                    existTabIndex = tab_i;
+//                    break;
+//                }
+//            }
+
+//	    //
+//	    // add tab .. if new process results, if existing addResults
+//	    //
 	    
-            if( !tabExist ){
+//            if( !tabExist ){
 	      
-                resTabWidget->addTab(activeSPResultsWidgets[assetType], assetType);
-                QString resultFile = assetType + QString(".geojson");
-                QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
-                activeSPResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+//                resTabWidget->addTab(activeSPResultsWidgets[assetType], assetType);
+//                QString resultFile = assetType + QString(".geojson");
+//                QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+//                activeSPResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
 		
-            } else {
+//            } else {
 	      
-                SC_ResultsWidget* currResultsTab = dynamic_cast<SC_ResultsWidget*>(resTabWidget->widget(existTabIndex));
-                if(currResultsTab==nullptr){
-                    this->errorMessage("Failed to cast current results to SC_ResultsWidget");
-                } else {
-                    QString resultFile = assetType + QString(".geojson");
-                    QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
-                    activeSPResultsWidgets[assetType]->addResults(currResultsTab,resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
-                }
-            }
+//                SC_ResultsWidget* currResultsTab = dynamic_cast<SC_ResultsWidget*>(resTabWidget->widget(existTabIndex));
+//                if(currResultsTab==nullptr){
+//                    this->errorMessage("Failed to cast current results to SC_ResultsWidget");
+//                } else {
+//                    QString resultFile = assetType + QString(".geojson");
+//                    QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+//                    activeSPResultsWidgets[assetType]->addResults(currResultsTab,resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+//                }
+//            }
 
 
-        }
-    } catch (const QString msg)
-    {
-        this->errorMessage(msg);
+//        }
+//    } catch (const QString msg)
+//    {
+//        this->errorMessage(msg);
 
-        return -1;
-    }
+//        return -1;
+//    }
 
     try
     {
@@ -691,6 +705,14 @@ void ResultsWidget::clear(void)
     }
 
     resultsShow(false);
+}
+
+VisualizationWidget* ResultsWidget::getVisualizationWidget(){
+    return theVisualizationWidget;
+}
+
+QTabWidget* ResultsWidget::getTabWidget(){
+    return resTabWidget;
 }
 
 

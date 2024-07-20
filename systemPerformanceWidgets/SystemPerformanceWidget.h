@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "MultiComponentR2D.h"
+#include "ResultsWidget.h"
 
 class SimCenterAppSelection;
 
@@ -49,7 +50,7 @@ class SystemPerformanceWidget : public  MultiComponentR2D
 public:
     explicit SystemPerformanceWidget(QWidget *parent = 0);
     ~SystemPerformanceWidget();
-    QMap<QString, SC_ResultsWidget*> getActiveSPResultsWidgets(QWidget *parent);
+    QMap<QString, SC_ResultsWidget*> getActiveSPResultsWidgets(QWidget *parent, ResultsWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
 
     void clear(void);
 

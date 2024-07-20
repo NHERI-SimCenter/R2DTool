@@ -73,6 +73,7 @@ class Pelicun3PostProcessor : public SC_ResultsWidget
 
 public:
     Pelicun3PostProcessor(QWidget *parent);
+    Pelicun3PostProcessor(QWidget *parent, QWidget *resWidget, QMap<QString, QList<QString>> assetTypeToType);
 //    Pelicun3PostProcessor(QWidget *parent, VisualizationWidget* visWidget);
 
     int printToPDF(const QString& outputPath);
@@ -120,8 +121,13 @@ public:
 
     void setIsVisible(const bool value);
 
+    int addResultTab(QString tabName, QString &dirName);
+
+    int addResultSubtab(QString name, QWidget* existTab, QString &dirName);
+
     int processResults(QString &outputFile, QString &dirName, QString &assetType,
                        QList<QString> typesInAssetType);
+
 
 private slots:
 
@@ -141,19 +147,6 @@ private:
 
     QString outputFilePath;
 
-//    QLabel* totalRepairCostLabel;
-//    QLabel* totalRepairTimeSequentialLabel;
-//    QLabel* totalRepairTimeParallelLabel;
-
-//    QLabel* totalRepairCostValueLabel;
-//    QLabel* totalRepairTimeSequentialValueLabel;
-//    QLabel* totalRepairTimeParallelValueLabel;
-
-//    QLabel* totalCostNoteLabel;
-//    QWidget* totalsWidget;
-//    QWidget* totalAndFootNoteWidget;
-//    QVBoxLayout* totalAndFootNoteLayout;
-
 
     QDockWidget* mapViewDock;
 //    QDockWidget* summaryDock;
@@ -163,8 +156,6 @@ private:
 
 //    QList<QDockWidget*> dockList;
     QList<QTableWidget*> tableList;
-
-    VisualizationWidget* theVisualizationWidget;
 
     QComboBox* sortComboBox;
 
