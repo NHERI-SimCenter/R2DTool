@@ -101,22 +101,6 @@ void LiquefactionWidget::reset(void)
 
 }
 
-//void LiquefactionWidget::setConnections()
-//{
-//    connect(this->liquefactionCheckBox, &QCheckBox::stateChanged, this, &GroundFailureWidget::handleSourceSelectionChanged);
-//}
-
-
-/*void LiquefactionWidget::handleSourceSelectionChanged()
-{
-    liquefactionGroupBox->hide();
-//    landslideGroupBox->hide();
-//    faultDispGroupBox->hide();
-    if (liquefactionCheckBox->isChecked()){
-        liquefactionGroupBox->show();
-    }
-
-}*/
 
 bool LiquefactionWidget::inputFromJSON(QJsonObject& /*obj*/)
 {

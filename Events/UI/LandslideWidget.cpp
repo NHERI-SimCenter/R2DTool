@@ -1,5 +1,3 @@
-#ifndef GroundFailureWidget_H
-#define GroundFailureWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -38,55 +36,56 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Jinyan Zhao
 
-#include "SimCenterAppWidget.h"
-#include "NetworkDownloadManager.h"
 
-class QGroupBox;
-class QCheckBox;
-class SimCenterAppSelection;
-class SimCenterUnitsCombo;
-class LiquefactionWidget;
-class LandslideWidget;
-class QTabWidget;
+#include "LandslideWidget.h"
+#include "SimCenterAppSelection.h"
+#include "LandslideBrayMacedo2019.h"
+#include "NoneWidget.h"
+#include "SimCenterUnitsCombo.h"
 
-class GroundFailureWidget : public SimCenterAppWidget
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QStackedWidget>
+#include <QComboBox>
+#include <QSet>
+#include <QMessageBox>
+#include <QGroupBox>
+#include <QCheckBox>
+#include <QMessageBox>
+
+
+LandslideWidget::LandslideWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
-    Q_OBJECT
+    auto mainLayout = new QVBoxLayout(this);
 
-public:
-    explicit GroundFailureWidget(QWidget *parent = nullptr);
+    lsdModelSelection = new SimCenterAppSelection(QString("Landslide Ground Displacement Model"), QString("Landslide"), this);
 
-    bool outputToJSON(QJsonObject& obj);
-    bool inputFromJSON(QJsonObject& obj);
+    SimCenterAppWidget* landslideBrayMacedo2019 = new LandslideBrayMacedo2019(this);
+    lsdModelSelection->addComponent(QString("Bray & Macedo (2019)"), QString("BrayMacedo2019"), landslideBrayMacedo2019);
 
-    void reset(void);
+    mainLayout->addWidget(lsdModelSelection);
+    mainLayout->addStretch(0);
+    this->setLayout(mainLayout);
+
+}
 
 
-public slots:
+void LandslideWidget::reset(void)
+{
 
-private:
-    QGroupBox* gfGroupBox;
-    QGroupBox* liquefactionGroupBox;
-    QGroupBox* landslideGroupBox;
-    QGroupBox* faultDispGroupBox;
+}
 
-    QTabWidget *theTabWidget;
 
-    QCheckBox* liquefactionCheckBox;
-    QCheckBox* landslideCheckBox;
-    QCheckBox* faultDispCheckBox;
+bool LandslideWidget::inputFromJSON(QJsonObject& /*obj*/)
+{
+    return true;
+}
 
-    SimCenterUnitsCombo* unitsCombo;
 
-    LiquefactionWidget* liquefactionWidget;
-    LandslideWidget* landslideWidget;
+bool LandslideWidget::outputToJSON(QJsonObject& obj)
+{
+    lsdModelSelection->outputToJSON(obj);
 
-    std::unique_ptr<NetworkDownloadManager> downloadManager;
+    return true;
+}
 
-    void setConnections();
-    void handleSourceSelectionChanged();
-    void checkAndDownloadDataBase();
-
-};
-
-#endif // GroundMotionModelsWidget_H

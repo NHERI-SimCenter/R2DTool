@@ -1,5 +1,6 @@
-#ifndef GroundFailureWidget_H
-#define GroundFailureWidget_H
+#ifndef LandslideBrayMacedo2019_H
+#define LandslideBrayMacedo2019_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,54 +40,77 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Jinyan Zhao
 
 #include "SimCenterAppWidget.h"
-#include "NetworkDownloadManager.h"
+#include "SC_DoubleLineEdit.h"
 
+class OpenQuakeScenario;
+
+class QComboBox;
+class QLineEdit;
+class QPushButton;
+class CRSSelectionWidget;
+class QSignalMapper;
+class SC_ComboBox;
 class QGroupBox;
 class QCheckBox;
-class SimCenterAppSelection;
-class SimCenterUnitsCombo;
-class LiquefactionWidget;
-class LandslideWidget;
-class QTabWidget;
+class QLabel;
 
-class GroundFailureWidget : public SimCenterAppWidget
+class LandslideBrayMacedo2019 : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit GroundFailureWidget(QWidget *parent = nullptr);
+    explicit LandslideBrayMacedo2019(QWidget *parent = nullptr);
+    bool outputToJSON(QJsonObject &jsonObject);
 
-    bool outputToJSON(QJsonObject& obj);
-    bool inputFromJSON(QJsonObject& obj);
-
-    void reset(void);
-
+signals:
 
 public slots:
-
+    void loadFile(QString fieldKey);
+    void setDefaultFilePath();
+    void handleInputTypeChanged();
 private:
-    QGroupBox* gfGroupBox;
-    QGroupBox* liquefactionGroupBox;
-    QGroupBox* landslideGroupBox;
-    QGroupBox* faultDispGroupBox;
 
-    QTabWidget *theTabWidget;
+    QLineEdit* slopeFilenameLineEdit = nullptr;
+    QLineEdit* slopeThickFilenameLineEdit = nullptr;
+    QLineEdit* slopeThickConstLineEdit = nullptr;
+    QLineEdit* gammaSoilFilenameLineEdit = nullptr;
+    QLineEdit* gammaSoilConstLineEdit = nullptr;
+    QLineEdit* cohesionSoilConstLineEdit = nullptr;
+    QLineEdit* geologicMapFileLineEdit = nullptr;
+    QLineEdit* frictionSoilConstLineEdit = nullptr;
+    CRSSelectionWidget* crsSelectorWidget = nullptr;
 
-    QCheckBox* liquefactionCheckBox;
-    QCheckBox* landslideCheckBox;
-    QCheckBox* faultDispCheckBox;
 
-    SimCenterUnitsCombo* unitsCombo;
+    QPushButton* slopeBrowseFileButton;
+    QPushButton* slopeThickBrowseFileButton;
+    QPushButton* gammaSoilBrowseFileButton;
+    QPushButton* geologicMapBrowseFileButton;
+    QPushButton* resetToDefaultButton;
 
-    LiquefactionWidget* liquefactionWidget;
-    LandslideWidget* landslideWidget;
+    QString slopeFilePath;
+    QString slopeThickFilePath;
+    QString gammaSoilFilePath;
+    QString geologicMapFilePath;
 
-    std::unique_ptr<NetworkDownloadManager> downloadManager;
+    SC_ComboBox* slopeComboBox = nullptr;
+    SC_ComboBox* slopeThickComboBox = nullptr;
+    SC_ComboBox* gammaSoilComboBox = nullptr;
+    SC_ComboBox* cohesionComboBox = nullptr;
+    SC_ComboBox* frictionComboBox = nullptr;
 
-    void setConnections();
-    void handleSourceSelectionChanged();
-    void checkAndDownloadDataBase();
+    QLabel* geologicMapLabel;
+
+    QGroupBox* outputSaveGroupBox = nullptr;
+
+    QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+    //Default values used in OpenSRA level 1 analysis
+    double defaultSlopeThickness = 2.0;
+    double defaultGammaSoil = 17.0;
+
+    void setupConnections();
+//    void setRupFile(QString dirPath);
 
 };
 
-#endif // GroundMotionModelsWidget_H
+#endif // LandslideBrayMacedo2019_H

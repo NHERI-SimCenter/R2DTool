@@ -1,5 +1,5 @@
-#ifndef GroundFailureWidget_H
-#define GroundFailureWidget_H
+#ifndef LandslideWidget_H
+#define LandslideWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,22 +39,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Jinyan Zhao
 
 #include "SimCenterAppWidget.h"
-#include "NetworkDownloadManager.h"
 
 class QGroupBox;
 class QCheckBox;
 class SimCenterAppSelection;
-class SimCenterUnitsCombo;
-class LiquefactionWidget;
-class LandslideWidget;
-class QTabWidget;
-
-class GroundFailureWidget : public SimCenterAppWidget
+class LandslideWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit GroundFailureWidget(QWidget *parent = nullptr);
+    explicit LandslideWidget(QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
@@ -65,28 +59,11 @@ public:
 public slots:
 
 private:
-    QGroupBox* gfGroupBox;
-    QGroupBox* liquefactionGroupBox;
-    QGroupBox* landslideGroupBox;
-    QGroupBox* faultDispGroupBox;
 
-    QTabWidget *theTabWidget;
 
-    QCheckBox* liquefactionCheckBox;
-    QCheckBox* landslideCheckBox;
-    QCheckBox* faultDispCheckBox;
+    SimCenterAppSelection* lsdModelSelection;
 
-    SimCenterUnitsCombo* unitsCombo;
-
-    LiquefactionWidget* liquefactionWidget;
-    LandslideWidget* landslideWidget;
-
-    std::unique_ptr<NetworkDownloadManager> downloadManager;
-
-    void setConnections();
-    void handleSourceSelectionChanged();
-    void checkAndDownloadDataBase();
 
 };
 
-#endif // GroundMotionModelsWidget_H
+#endif // LandslideWidget_H
