@@ -501,3 +501,26 @@ void MultiComponentR2D::removeAllComponents(void)
     qDeleteAll(thePushButtons);
     thePushButtons.clear();
 }
+
+bool
+MultiComponentR2D::outputCitation(QJsonObject &jsonObject) {
+  qDebug() << "MultiComponentR2D::outputCitation(QJsonObject &jsonObject)";
+  QJsonObject allCitations;  
+  for (int i =0; i<theNames.length(); i++) {
+    QString key = theNames.at(i);
+    QPushButton *theButton = thePushButtons.at(i);
+    if (theButton->isHidden() == false) {
+      QJsonObject appSpecificCitation;
+      SimCenterAppWidget *theWidget = theComponents.at(i);
+      theWidget->outputCitation(appSpecificCitation);
+      if (!appSpecificCitation.isEmpty()) {
+	allCitations.insert(key, appSpecificCitation);
+      }
+    }
+  }
+  
+  if (!allCitations.isEmpty()) 
+    jsonObject[jsonKeyword] = allCitations;
+
+  return true;
+}
