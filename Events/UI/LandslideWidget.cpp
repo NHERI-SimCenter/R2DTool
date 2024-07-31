@@ -85,36 +85,6 @@ bool LandslideWidget::inputFromJSON(QJsonObject& /*obj*/)
 bool LandslideWidget::outputToJSON(QJsonObject& obj)
 {
     lsdModelSelection->outputToJSON(obj);
-    //Hazus2020_with_ZhuEtal2017 triggerin model uses the same widget with ZhuEtal2017
-    //So the model name needs to be replaced
-    if (lsdModelSelection->getCurrentSelectionName().compare("Hazus2020_with_ZhuEtal2017")==0){
-        QJsonObject triggeringObj = obj["Triggering"].toObject();
-        triggeringObj["Model"] = "Hazus2020_with_ZhuEtal2017";
-        obj["Triggering"] = triggeringObj;
-    }
-
-    bool calcSettlement = true;
-    if (obj["Settlement"].toObject().isEmpty()){
-        obj.remove("Settlement");
-        calcSettlement = false;
-    }
-    bool calcLateralSpread = true;
-    if (obj["LateralSpreading"].toObject().isEmpty()){
-        obj.remove("LateralSpreading");
-        calcLateralSpread = false;
-    }
-    if ((!calcSettlement) && (!calcLateralSpread)){
-        QMessageBox msgBox;
-        msgBox.setText("Warning:\n"
-                       "No models are selected for liquefaction lateral spreading nor settlement. Only triggering model will be run.\n"
-                       "Continue running?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-
-        auto res = msgBox.exec();
-
-        if(res != QMessageBox::Yes)
-            return false;
-    }
 
     return true;
 }

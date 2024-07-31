@@ -65,72 +65,69 @@ LandslideBrayMacedo2019::LandslideBrayMacedo2019(QWidget *parent) : SimCenterApp
 {
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    //We use a grid layout for the Rupture widget
+    //We use a grid layout for the landslide widget
     QGridLayout* layout = new QGridLayout(this);
 
-    QLabel* DistWaterfilenameLabel = new QLabel(tr("Distance (km) to Water Body:"),this);
-    DistWaterFilenameLineEdit = new QLineEdit(this);
-    DistWaterBrowseFileButton = new QPushButton();
-    DistWaterBrowseFileButton->setText(tr("Browse"));
-    DistWaterBrowseFileButton->setMaximumWidth(150);
-    DistWaterComboBox = new SC_ComboBox("DistWater", QStringList({"Defined (\"distWater\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
-//    QCheckBox* DistWaterSaveCheckBox = new QCheckBox("distWater");
-//    outputSaveCheckBoxes.insert("distWater", DistWaterSaveCheckBox);
+    //Slope input
+    QLabel* slopeInputLabel = new QLabel(tr("Slope (degree):"),this);
+    slopeFilenameLineEdit = new QLineEdit(this);
+    slopeBrowseFileButton = new QPushButton();
+    slopeBrowseFileButton->setText(tr("Browse"));
+    slopeBrowseFileButton->setMaximumWidth(150);
+    slopeComboBox = new SC_ComboBox("Slope", QStringList({"Defined (\"slope\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
 
-    QLabel* DistCoastfilenameLabel = new QLabel(tr("Distance (km) to Coast:"),this);
-    DistCoastFilenameLineEdit = new QLineEdit(this);
-    DistCoastBrowseFileButton = new QPushButton();
-    DistCoastBrowseFileButton->setText(tr("Browse"));
-    DistCoastBrowseFileButton->setMaximumWidth(150);
-    DistCoastComboBox = new SC_ComboBox("DistCoast", QStringList({"Defined (\"distCoast\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
-//    QCheckBox* DistCoastSaveCheckBox = new QCheckBox("distCoast");
-//    outputSaveCheckBoxes.insert("distCoast", DistCoastSaveCheckBox);
+    //Slope thickness
+    QLabel* slopeThickfilenameLabel = new QLabel(tr("Slope Thickness (m):"),this);
+    slopeThickFilenameLineEdit = new QLineEdit(this);
+    slopeThickConstLineEdit = new QLineEdit(this);
+    slopeThickBrowseFileButton = new QPushButton();
+    slopeThickBrowseFileButton->setText(tr("Browse"));
+    slopeThickBrowseFileButton->setMaximumWidth(150);
+    slopeThickComboBox = new SC_ComboBox("SlopeThickness", QStringList({"Use constant value (m)", "Defined (\"slopeThickness\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
 
-    QLabel* DistRiverfilenameLabel = new QLabel(tr("Distance (km) to River (raster):"),this);
-    DistRiverFilenameLineEdit = new QLineEdit(this);
-    DistRiverBrowseFileButton = new QPushButton();
-    DistRiverBrowseFileButton->setText(tr("Browse"));
-    DistRiverBrowseFileButton->setMaximumWidth(150);
-    DistRiverComboBox = new SC_ComboBox("DistRiver", QStringList({"Defined (\"distRiver\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
-//    QCheckBox* DistRiverSaveCheckBox = new QCheckBox("distRiver");
-//    outputSaveCheckBoxes.insert("distRiver", DistRiverSaveCheckBox);
+    //Gamma soil
+    QLabel* gammaSoilfilenameLabel = new QLabel(tr("Soil Unit Weight (kN/m^3):"),this);
+    gammaSoilFilenameLineEdit = new QLineEdit(this);
+    gammaSoilConstLineEdit = new QLineEdit(this);
+    gammaSoilBrowseFileButton = new QPushButton();
+    gammaSoilBrowseFileButton->setText(tr("Browse"));
+    gammaSoilBrowseFileButton->setMaximumWidth(150);
+    gammaSoilComboBox = new SC_ComboBox("GammaSoil", QStringList({"Use constant value (kN/m^3)", "Defined (\"gammaSoil\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
 
-    QLabel* GwDepthfilenameLabel = new QLabel(tr("Ground Water Table Depth (m):"),this);
-    GwDepthFilenameLineEdit = new QLineEdit(this);
-    GwDepthBrowseFileButton = new QPushButton();
-    GwDepthBrowseFileButton->setText(tr("Browse"));
-    GwDepthBrowseFileButton->setMaximumWidth(150);
-    GwDepthComboBox = new SC_ComboBox("GwDepth", QStringList({"Defined (\"gwDepth\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
-//    QCheckBox* GwDepthSaveCheckBox = new QCheckBox("gwDepth");
-//    outputSaveCheckBoxes.insert("gwDepth", GwDepthSaveCheckBox);
+    //Cohesion soil
+    QLabel* cohesionfilenameLabel = new QLabel(tr("Soil Cohesion (kPa):"),this);
+    cohesionSoilConstLineEdit = new QLineEdit(this);
+    cohesionComboBox = new SC_ComboBox("CohesionSoil", QStringList({"Use constant value (kPa)", "Defined (\"cohesionSoil\") in Site File (.csv)", "Infer from Geologic Map (Bain et al. 2022)"}));
 
+    //Friction soil
+    QLabel* frictionfilenameLabel = new QLabel(tr("Soil Friction Angle (degree):"),this);
+    frictionSoilConstLineEdit = new QLineEdit(this);
+    frictionComboBox = new SC_ComboBox("PhiSoil", QStringList({"Use constant value (degree)", "Defined (\"phiSoil\") in Site File (.csv)", "Infer from Geologic Map (Bain et al. 2022)"}));
 
-    QLabel* PrecipitationfilenameLabel = new QLabel(tr("Mean Annual Precipitation (mm):"),this);
-    PrecipitationFilenameLineEdit = new QLineEdit(this);
-    PrecipitationBrowseFileButton = new QPushButton();
-    PrecipitationBrowseFileButton->setText(tr("Browse"));
-    PrecipitationBrowseFileButton->setMaximumWidth(150);
-    PrecipitationComboBox = new SC_ComboBox("Precipitation", QStringList({"Defined (\"precipitation\") in Site File (.csv)", "Define with raster (nearest pixel)"}));
-//    QCheckBox* PrecipitationSaveCheckBox = new QCheckBox("Precipitation");
-//    outputSaveCheckBoxes.insert("Precipitation", PrecipitationSaveCheckBox);
+    //Geologic Map
+    geologicMapLabel = new QLabel(tr("Geologic Map File:"),this);
+    geologicMapFileLineEdit = new QLineEdit(this);
+    geologicMapBrowseFileButton = new QPushButton();
+    geologicMapBrowseFileButton->setText(tr("Browse"));
+    geologicMapBrowseFileButton->setMaximumWidth(150);
 
+    //reset
     resetToDefaultButton = new QPushButton();
     resetToDefaultButton->setText(tr("Reset to Default"));
     resetToDefaultButton->setMaximumWidth(150);
 
     // https://stackoverflow.com/questions/5153157/passing-an-argument-to-a-slot
     QSignalMapper* signalMapper = new QSignalMapper (this) ;
-    connect(DistWaterBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
-    connect(DistCoastBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
-    connect(DistRiverBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
-    connect(GwDepthBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
-    connect(PrecipitationBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
+    connect(slopeBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
+    connect(slopeThickBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
+    connect(gammaSoilBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
+    connect(geologicMapBrowseFileButton,SIGNAL(clicked()),signalMapper, SLOT(map()));
 
-    signalMapper->setMapping(DistWaterBrowseFileButton, QString("Distance to Water Body"));
-    signalMapper->setMapping(DistCoastBrowseFileButton, QString("Distance to Coast"));
-    signalMapper->setMapping(DistRiverBrowseFileButton, QString("Distance to River"));
-    signalMapper->setMapping(GwDepthBrowseFileButton, QString("Ground Water Table Depth"));
-    signalMapper->setMapping(PrecipitationBrowseFileButton, QString("Mean Annual Precipitation"));
+    signalMapper->setMapping(slopeBrowseFileButton, QString("Slope"));
+    signalMapper->setMapping(slopeThickBrowseFileButton, QString("Slope Thickness"));
+    signalMapper->setMapping(gammaSoilBrowseFileButton, QString("Gamma Soil"));
+    signalMapper->setMapping(geologicMapBrowseFileButton, QString("Geologic Map"));
+
 
     connect(signalMapper, SIGNAL(mappedString(QString)), this, SLOT(loadFile(QString)));
 
@@ -138,10 +135,8 @@ LandslideBrayMacedo2019::LandslideBrayMacedo2019(QWidget *parent) : SimCenterApp
 
     crsSelectorWidget = new CRSSelectionWidget();
 
-    QCheckBox* LiqSuscSaveCheckBox = new QCheckBox("liq_susc");
-    outputSaveCheckBoxes.insert("liq_susc", LiqSuscSaveCheckBox);
-    QCheckBox* LiqProbSaveCheckBox = new QCheckBox("liq_prob");
-    outputSaveCheckBoxes.insert("liq_prob", LiqProbSaveCheckBox);
+    QCheckBox* lsdPgdSaveCheckBox = new QCheckBox("lsd_PGD_h");
+    outputSaveCheckBoxes.insert("lsd_PGD_h", lsdPgdSaveCheckBox);
 
     outputSaveGroupBox = new QGroupBox(this);
     outputSaveGroupBox->setTitle(tr("Save Output"));
@@ -156,58 +151,62 @@ LandslideBrayMacedo2019::LandslideBrayMacedo2019(QWidget *parent) : SimCenterApp
 //    outputSaveGroupBox->setFlat(true);
 
     // Add to layout
-    layout->addWidget(DistWaterfilenameLabel,0,0);
-    layout->addWidget(DistWaterComboBox,0,1,1,1);
-    layout->addWidget(DistWaterFilenameLineEdit,0,2,1,3);
-    layout->addWidget(DistWaterBrowseFileButton,0,5);
+    layout->addWidget(slopeInputLabel,0,0);
+    layout->addWidget(slopeComboBox,0,1,1,1);
+    layout->addWidget(slopeFilenameLineEdit,0,2,1,3);
+    layout->addWidget(slopeBrowseFileButton,0,5);
 
-    layout->addWidget(DistCoastfilenameLabel,1,0);
-    layout->addWidget(DistCoastComboBox,1,1,1,1);
-    layout->addWidget(DistCoastFilenameLineEdit,1,2,1,3);
-    layout->addWidget(DistCoastBrowseFileButton,1,5);
+    layout->addWidget(slopeThickfilenameLabel,1,0);
+    layout->addWidget(slopeThickComboBox,1,1,1,1);
+    layout->addWidget(slopeThickFilenameLineEdit,1,2,1,3);
+    layout->addWidget(slopeThickConstLineEdit,1,2,1,1);
+    layout->addWidget(slopeThickBrowseFileButton,1,5);
 
-    layout->addWidget(DistRiverfilenameLabel,2,0);
-    layout->addWidget(DistRiverComboBox,2,1,1,1);
-    layout->addWidget(DistRiverFilenameLineEdit,2,2,1,3);
-    layout->addWidget(DistRiverBrowseFileButton,2,5);
+    layout->addWidget(gammaSoilfilenameLabel,2,0);
+    layout->addWidget(gammaSoilComboBox,2,1,1,1);
+    layout->addWidget(gammaSoilFilenameLineEdit,2,2,1,3);
+    layout->addWidget(gammaSoilConstLineEdit,2,2,1,1);
+    layout->addWidget(gammaSoilBrowseFileButton,2,5);
 
-    layout->addWidget(GwDepthfilenameLabel,3,0);
-    layout->addWidget(GwDepthComboBox,3,1,1,1);
-    layout->addWidget(GwDepthFilenameLineEdit,3,2,1,3);
-    layout->addWidget(GwDepthBrowseFileButton,3,5);
+    layout->addWidget(cohesionfilenameLabel,3,0);
+    layout->addWidget(cohesionComboBox,3,1,1,1);
+    layout->addWidget(cohesionSoilConstLineEdit,3,2,1,1);
 
-    layout->addWidget(PrecipitationfilenameLabel,4,0);
-    layout->addWidget(PrecipitationComboBox,4,1,1,1);
-    layout->addWidget(PrecipitationFilenameLineEdit,4,2,1,3);
-    layout->addWidget(PrecipitationBrowseFileButton,4,5);
+    layout->addWidget(frictionfilenameLabel,4,0);
+    layout->addWidget(frictionComboBox,4,1,1,1);
+    layout->addWidget(frictionSoilConstLineEdit,4,2,1,1);
 
-    layout->addWidget(crsSelectorWidget,5,0, 1, 6);
-    layout->addWidget(outputSaveGroupBox, 6, 0, 1, 6);
-    layout->addWidget(resetToDefaultButton,7,5);
+    layout->addWidget(geologicMapLabel, 5, 0);
+    layout->addWidget(geologicMapFileLineEdit,5,1,1,4);
+    layout->addWidget(geologicMapBrowseFileButton,5,5);
+
+    layout->addWidget(crsSelectorWidget,6,0, 1, 6);
+    layout->addWidget(outputSaveGroupBox, 7, 0, 1, 6);
+    layout->addWidget(resetToDefaultButton,8,5);
 
     layout->setColumnStretch(2,3);
     layout->setColumnStretch(1,1);
-    layout->setRowStretch(8,1);
+    layout->setRowStretch(9,1);
 
     this->setLayout(layout);
 
     //We need to set initial values
-    connect(this->DistWaterComboBox, &QComboBox::currentTextChanged,
+    connect(this->slopeComboBox, &QComboBox::currentTextChanged,
             this, &LandslideBrayMacedo2019::handleInputTypeChanged);
-    connect(this->DistCoastComboBox, &QComboBox::currentTextChanged,
+    connect(this->slopeThickComboBox, &QComboBox::currentTextChanged,
             this, &LandslideBrayMacedo2019::handleInputTypeChanged);
-    connect(this->DistRiverComboBox, &QComboBox::currentTextChanged,
+    connect(this->gammaSoilComboBox, &QComboBox::currentTextChanged,
             this, &LandslideBrayMacedo2019::handleInputTypeChanged);
-    connect(this->GwDepthComboBox, &QComboBox::currentTextChanged,
+    connect(this->cohesionComboBox, &QComboBox::currentTextChanged,
             this, &LandslideBrayMacedo2019::handleInputTypeChanged);
-    connect(this->PrecipitationComboBox, &QComboBox::currentTextChanged,
+    connect(this->frictionComboBox, &QComboBox::currentTextChanged,
             this, &LandslideBrayMacedo2019::handleInputTypeChanged);
 
-    DistWaterComboBox->setCurrentIndex(1);
-    DistCoastComboBox->setCurrentIndex(1);
-    DistRiverComboBox->setCurrentIndex(1);
-    GwDepthComboBox->setCurrentIndex(1);
-    PrecipitationComboBox->setCurrentIndex(1);
+    slopeComboBox->setCurrentIndex(1);
+    slopeThickComboBox->setCurrentIndex(0);
+    gammaSoilComboBox->setCurrentIndex(0);
+    cohesionComboBox->setCurrentIndex(2);
+    frictionComboBox->setCurrentIndex(2);
     this->setDefaultFilePath();
 
     this->setupConnections();
@@ -245,26 +244,22 @@ void LandslideBrayMacedo2019::loadFile(QString fieldKey)
         this->errorMessage(errMsg);
         return;
     }
-    if (fieldKey.compare("Ground Water Table Depth")==0)
+    if (fieldKey.compare("Slope Thickness")==0)
     {
-        this->GwDepthFilePath = newFilePath;
-        this->GwDepthFilenameLineEdit->setText(GwDepthFilePath);
-    } else if (fieldKey.compare("Distance to Coast")==0)
+        this->slopeThickFilePath = newFilePath;
+        this->slopeThickFilenameLineEdit->setText(slopeThickFilePath);
+    } else if (fieldKey.compare("Gamma Soil")==0)
     {
-        this->DistCoastFilePath = newFilePath;
-        this->DistCoastFilenameLineEdit->setText(DistCoastFilePath);
-    } else if (fieldKey.compare("Distance to River")==0)
+        this->gammaSoilFilePath = newFilePath;
+        this->gammaSoilFilenameLineEdit->setText(gammaSoilFilePath);
+    } else if (fieldKey.compare("Slope")==0)
     {
-        this->DistRiverFilePath = newFilePath;
-        this->DistRiverFilenameLineEdit->setText(DistRiverFilePath);
-    } else if (fieldKey.compare("Distance to Water Body")==0)
+        this->slopeFilePath = newFilePath;
+        this->slopeFilenameLineEdit->setText(slopeFilePath);
+    } else if (fieldKey.compare("Geologic Map")==0)
     {
-        this->DistWaterFilePath = newFilePath;
-        this->DistWaterFilenameLineEdit->setText(DistWaterFilePath);
-    } else if (fieldKey.compare("Mean Annual Precipitation")==0)
-    {
-        this->PrecipitationFilePath = newFilePath;
-        this->PrecipitationFilenameLineEdit->setText(PrecipitationFilePath);
+        this->geologicMapFilePath = newFilePath;
+        this->geologicMapFileLineEdit->setText(geologicMapFilePath);
     }
 
 }
@@ -273,35 +268,67 @@ bool LandslideBrayMacedo2019::outputToJSON(QJsonObject &jsonObject){
 
     QJsonObject parameterObj;
     bool CRSneeded = false;
-    DistWaterComboBox->outputToJSON(parameterObj);
-    if (DistWaterComboBox->currentIndex()==1){
-        parameterObj["DistWater"] = DistWaterFilePath;
+    bool geologicMapNeeded = false;
+    slopeComboBox->outputToJSON(parameterObj);
+    if (slopeComboBox->currentIndex()==1){
+        parameterObj["Slope"] = slopeFilePath;
         CRSneeded = true;
     }
-    DistCoastComboBox->outputToJSON(parameterObj);
-    if (DistCoastComboBox->currentIndex()==1){
-        parameterObj["DistCoast"] = DistCoastFilePath;
+    slopeThickComboBox->outputToJSON(parameterObj);
+    if (slopeThickComboBox->currentIndex()==2){
+        parameterObj["SlopeThickness"] = slopeThickFilePath;
         CRSneeded = true;
     }
-    DistRiverComboBox->outputToJSON(parameterObj);
-    if (DistRiverComboBox->currentIndex()==1){
-        parameterObj["DistRiver"] = DistRiverFilePath;
+    if (slopeThickComboBox->currentIndex()==0){
+        bool ok;
+        parameterObj["SlopeThicknessValue"] = slopeThickConstLineEdit->text().toDouble(&ok);
+        if (!ok) {
+            errorMessage("Slope thickness value input" + slopeThickConstLineEdit->text() + " is invalid, please input a plain number");
+        }
+    }
+    gammaSoilComboBox->outputToJSON(parameterObj);
+    if (gammaSoilComboBox->currentIndex()==2){
+        parameterObj["GammaSoil"] = gammaSoilFilePath;
         CRSneeded = true;
     }
-    GwDepthComboBox->outputToJSON(parameterObj);
-    if (GwDepthComboBox->currentIndex()==1){
-        parameterObj["GwDepth"] = GwDepthFilePath;
-        CRSneeded = true;
+    if (gammaSoilComboBox->currentIndex()==0){
+        bool ok;
+        parameterObj["GammaSoilValue"] = gammaSoilConstLineEdit->text().toDouble(&ok);
+        if (!ok) {
+            errorMessage("Soil Unit Weight value input" + gammaSoilConstLineEdit->text() + " is invalid, please input a plain number");
+        }
     }
-    PrecipitationComboBox->outputToJSON(parameterObj);
-    if (PrecipitationComboBox->currentIndex()==1){
-        parameterObj["Precipitation"] = PrecipitationFilePath;
+    cohesionComboBox->outputToJSON(parameterObj);
+    if (cohesionComboBox->currentIndex()==0){
+        bool ok;
+        parameterObj["CohesionSoilValue"] = cohesionSoilConstLineEdit->text().toDouble(&ok);
+        if (!ok) {
+            errorMessage("Soil cohesion value input" + cohesionSoilConstLineEdit->text() + " is invalid, please input a plain number");
+        }
+    }
+    if (cohesionComboBox->currentIndex()==2){
         CRSneeded = true;
+        geologicMapNeeded = true;
+    }
+    frictionComboBox->outputToJSON(parameterObj);
+    if (frictionComboBox->currentIndex()==0){
+        bool ok;
+        parameterObj["PhiSoilValue"] = frictionSoilConstLineEdit->text().toDouble(&ok);
+        if (!ok) {
+            errorMessage("Soil friction value input" + frictionSoilConstLineEdit->text() + " is invalid, please input a plain number");
+        }
+    }
+    if (frictionComboBox->currentIndex()==2){
+        CRSneeded = true;
+        geologicMapNeeded = true;
     }
     if (CRSneeded){
         QJsonObject crsObj;
         crsSelectorWidget->outputAppDataToJSON(crsObj);
         parameterObj["inputCRS"] = crsObj["CRS"].toString();
+    }
+    if (geologicMapNeeded){
+        parameterObj["GeologicMap"] = geologicMapFilePath;
     }
     QJsonArray outputArray;
     for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
@@ -310,7 +337,7 @@ bool LandslideBrayMacedo2019::outputToJSON(QJsonObject &jsonObject){
         }
     }
     jsonObject["Output"] = outputArray;
-    jsonObject["Model"] = "ZhuEtal2017";
+    jsonObject["Model"] = "BrayMacedo2019";
     jsonObject["Parameters"] = parameterObj;
     return true;
 }
@@ -320,36 +347,33 @@ void LandslideBrayMacedo2019::setDefaultFilePath(){
 
     QString backendDataBasePath = QCoreApplication::applicationDirPath() + QDir::separator() + "Databases"+ QDir::separator() + "groundFailure";
 
-    DistWaterFilePath = backendDataBasePath + QDir::separator() +
-                        "CA_DistAnyWaterWB_1km_WGS84_km" + QDir::separator() +
-                        "CA_DistAnyWaterWB_1km_WGS84_km.tif";
-    DistCoastFilePath = backendDataBasePath + QDir::separator() +
-                        "CA_DistCoast_1km_WGS84_km" + QDir::separator() +
-                        "CA_DistCoast_1km_WGS84_km.tif";
-    DistRiverFilePath = backendDataBasePath + QDir::separator() +
-                        "CA_DistRiver_1km_WGS84_km" + QDir::separator() +
-                        "CA_DistRiver_1km_WGS84_km.tif";
-    GwDepthFilePath = backendDataBasePath + QDir::separator() +
-                      "CA_WaterTableDepth_1km_WGS84_meter" + QDir::separator() +
-                      "CA_WaterTableDepth_1km_WGS84_meter.tif";
-    PrecipitationFilePath = backendDataBasePath + QDir::separator() +
-                            "CA_Precip_1981-2010_1km_WGS84_mm" + QDir::separator() +
-                            "CA_Precip_1981-2010_1km_WGS84_mm.tif";
+    slopeFilePath = backendDataBasePath + QDir::separator() +
+                        "CA_Slope_30m_WGS84_degree" + QDir::separator() +
+                        "CA_Slope_30m_WGS84_degree.tif";
+
+    slopeThickFilePath = "";
+
+    gammaSoilFilePath = "";
+
+    geologicMapFilePath = backendDataBasePath + QDir::separator() +
+                            "CA_GeologicMap_WillsEtal2015_WGS84" + QDir::separator() +
+                            "CA_GeologicMap_WillsEtal2015_WGS84.shp";
 
     QgsCoordinateReferenceSystem defaultCRS("EPSG:4326");
     crsSelectorWidget->setCRS(defaultCRS);
 
-    this->DistWaterFilenameLineEdit->setText(DistWaterFilePath);
-    this->DistCoastFilenameLineEdit->setText(DistCoastFilePath);
-    this->DistRiverFilenameLineEdit->setText(DistRiverFilePath);
-    this->GwDepthFilenameLineEdit->setText(GwDepthFilePath);
-    this->PrecipitationFilenameLineEdit->setText(PrecipitationFilePath);
+    this->slopeFilenameLineEdit->setText(slopeFilePath);
+    this->slopeThickFilenameLineEdit->setText(slopeThickFilePath);
+    this->slopeThickConstLineEdit->setText(QString::number(defaultSlopeThickness));
+    this->gammaSoilFilenameLineEdit->setText(gammaSoilFilePath);
+    this->gammaSoilConstLineEdit->setText(QString::number(defaultGammaSoil));
+    this->geologicMapFileLineEdit->setText(geologicMapFilePath);
 
-    this->DistWaterComboBox->setCurrentIndex(1);
-    this->DistCoastComboBox->setCurrentIndex(1);
-    this->DistRiverComboBox->setCurrentIndex(1);
-    this->GwDepthComboBox->setCurrentIndex(1);
-    this->PrecipitationComboBox->setCurrentIndex(1);
+    this->slopeComboBox->setCurrentIndex(1);
+    this->slopeThickComboBox->setCurrentIndex(0);
+    this->gammaSoilComboBox->setCurrentIndex(0);
+    this->cohesionComboBox->setCurrentIndex(2);
+    this->frictionComboBox->setCurrentIndex(2);
 
     for (auto it = outputSaveCheckBoxes.constBegin(); it != outputSaveCheckBoxes.constEnd(); ++it) {
         it.value()->setChecked(true);
@@ -360,59 +384,97 @@ void LandslideBrayMacedo2019::setDefaultFilePath(){
 void LandslideBrayMacedo2019::handleInputTypeChanged()
 {
     bool CRSneeded = false;
-    if (DistWaterComboBox->currentIndex() == 0){
+    bool geologicNeeded = false;
+    // Slope
+    if (slopeComboBox->currentIndex() == 0){
         // Define in Site File (.csv)
-        DistWaterFilenameLineEdit->hide();
-        DistWaterBrowseFileButton->hide();
-    } else if (DistWaterComboBox->currentIndex() == 1){
+        slopeFilenameLineEdit->hide();
+        slopeBrowseFileButton->hide();
+    } else if (slopeComboBox->currentIndex() == 1){
         // Define with raster file
-        DistWaterFilenameLineEdit->show();
-        DistWaterBrowseFileButton->show();
+        slopeFilenameLineEdit->show();
+        slopeBrowseFileButton->show();
         CRSneeded = true;
     }
-    if (DistCoastComboBox->currentIndex() == 0){
+    // Slope thickness
+    if (slopeThickComboBox->currentIndex() == 0){
+        // Use Constant value
+        slopeThickFilenameLineEdit->hide();
+        slopeThickBrowseFileButton->hide();
+        slopeThickConstLineEdit->show();
+    } else if (slopeThickComboBox->currentIndex() == 1){
         // Define in Site File (.csv)
-        DistCoastFilenameLineEdit->hide();
-        DistCoastBrowseFileButton->hide();
-    } else if (DistCoastComboBox->currentIndex() == 1){
+        slopeThickFilenameLineEdit->hide();
+        slopeThickBrowseFileButton->hide();
+        slopeThickConstLineEdit->hide();
+    } else if (slopeThickComboBox->currentIndex() == 2){
         // Define with raster file
-        DistCoastFilenameLineEdit->show();
-        DistCoastBrowseFileButton->show();
+        slopeThickFilenameLineEdit->show();
+        slopeThickBrowseFileButton->show();
+        slopeThickConstLineEdit->hide();
         CRSneeded = true;
     }
-    if (DistRiverComboBox->currentIndex() == 0){
+    // Gamma soil
+    if (gammaSoilComboBox->currentIndex() == 0){
+        // Use Constant value
+        gammaSoilFilenameLineEdit->hide();
+        gammaSoilBrowseFileButton->hide();
+        gammaSoilConstLineEdit->show();
+    } else if (gammaSoilComboBox->currentIndex() == 1){
         // Define in Site File (.csv)
-        DistRiverFilenameLineEdit->hide();
-        DistRiverBrowseFileButton->hide();
-    } else if (DistRiverComboBox->currentIndex() == 1){
+        gammaSoilFilenameLineEdit->hide();
+        gammaSoilBrowseFileButton->hide();
+        gammaSoilConstLineEdit->hide();
+    } else if (gammaSoilComboBox->currentIndex() == 2){
         // Define with raster file
-        DistRiverFilenameLineEdit->show();
-        DistRiverBrowseFileButton->show();
+        gammaSoilFilenameLineEdit->show();
+        gammaSoilBrowseFileButton->show();
+        gammaSoilConstLineEdit->hide();
         CRSneeded = true;
     }
-    if (GwDepthComboBox->currentIndex() == 0){
-        // Define in Site File (.csv)
-        GwDepthFilenameLineEdit->hide();
-        GwDepthBrowseFileButton->hide();
-    } else if (GwDepthComboBox->currentIndex() == 1){
-        // Define with raster file
-        GwDepthFilenameLineEdit->show();
-        GwDepthBrowseFileButton->show();
+
+    // Cohesion soil
+    if (cohesionComboBox->currentIndex() == 0){
+        // Define in as constant
+        cohesionSoilConstLineEdit->show();
+    } else if (cohesionComboBox->currentIndex() == 1){
+        // Define with site file
+        cohesionSoilConstLineEdit->hide();
+    } else if (cohesionComboBox->currentIndex() == 2){
+        // Define with geologic map
+        cohesionSoilConstLineEdit->hide();
         CRSneeded = true;
+        geologicNeeded = true;
     }
-    if (PrecipitationComboBox->currentIndex() == 0){
-        // Define in Site File (.csv)
-        PrecipitationFilenameLineEdit->hide();
-        PrecipitationBrowseFileButton->hide();
-    } else if (PrecipitationComboBox->currentIndex() == 1){
-        // Define with raster file
-        PrecipitationFilenameLineEdit->show();
-        PrecipitationBrowseFileButton->show();
+
+    // Friction soil
+    if (frictionComboBox->currentIndex() == 0){
+        // Define as constant
+        frictionSoilConstLineEdit->show();
+    } else if (frictionComboBox->currentIndex() == 1){
+        // Define with site file
+        frictionSoilConstLineEdit->hide();
+    } else if (frictionComboBox->currentIndex() == 2){
+        // Define with geologic map
+        frictionSoilConstLineEdit->hide();
         CRSneeded = true;
+        geologicNeeded = true;
     }
+
+
     if (!CRSneeded){
         crsSelectorWidget->hide();
     } else {
         crsSelectorWidget->show();
+    }
+
+    if (geologicNeeded){
+        geologicMapLabel->show();
+        geologicMapFileLineEdit->show();
+        geologicMapBrowseFileButton->show();
+    } else {
+        geologicMapLabel->hide();
+        geologicMapFileLineEdit->hide();
+        geologicMapBrowseFileButton->hide();
     }
 }

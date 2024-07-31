@@ -52,6 +52,7 @@ class QSignalMapper;
 class SC_ComboBox;
 class QGroupBox;
 class QCheckBox;
+class QLabel;
 
 class LandslideBrayMacedo2019 : public SimCenterAppWidget
 {
@@ -69,36 +70,43 @@ public slots:
     void handleInputTypeChanged();
 private:
 
-    QLineEdit* DistWaterFilenameLineEdit = nullptr;
-    QLineEdit* DistCoastFilenameLineEdit = nullptr;
-    QLineEdit* DistRiverFilenameLineEdit = nullptr;
-    QLineEdit* GwDepthFilenameLineEdit = nullptr;
-    QLineEdit* PrecipitationFilenameLineEdit = nullptr;
+    QLineEdit* slopeFilenameLineEdit = nullptr;
+    QLineEdit* slopeThickFilenameLineEdit = nullptr;
+    QLineEdit* slopeThickConstLineEdit = nullptr;
+    QLineEdit* gammaSoilFilenameLineEdit = nullptr;
+    QLineEdit* gammaSoilConstLineEdit = nullptr;
+    QLineEdit* cohesionSoilConstLineEdit = nullptr;
+    QLineEdit* geologicMapFileLineEdit = nullptr;
+    QLineEdit* frictionSoilConstLineEdit = nullptr;
     CRSSelectionWidget* crsSelectorWidget = nullptr;
 
 
-    QPushButton* DistWaterBrowseFileButton;
-    QPushButton* DistCoastBrowseFileButton;
-    QPushButton* DistRiverBrowseFileButton;
-    QPushButton* GwDepthBrowseFileButton;
-    QPushButton* PrecipitationBrowseFileButton;
+    QPushButton* slopeBrowseFileButton;
+    QPushButton* slopeThickBrowseFileButton;
+    QPushButton* gammaSoilBrowseFileButton;
+    QPushButton* geologicMapBrowseFileButton;
     QPushButton* resetToDefaultButton;
 
-    QString DistWaterFilePath;
-    QString DistCoastFilePath;
-    QString DistRiverFilePath;
-    QString GwDepthFilePath;
-    QString PrecipitationFilePath;
+    QString slopeFilePath;
+    QString slopeThickFilePath;
+    QString gammaSoilFilePath;
+    QString geologicMapFilePath;
 
-    SC_ComboBox* DistWaterComboBox = nullptr;
-    SC_ComboBox* DistCoastComboBox = nullptr;
-    SC_ComboBox* DistRiverComboBox = nullptr;
-    SC_ComboBox* GwDepthComboBox = nullptr;
-    SC_ComboBox* PrecipitationComboBox = nullptr;
+    SC_ComboBox* slopeComboBox = nullptr;
+    SC_ComboBox* slopeThickComboBox = nullptr;
+    SC_ComboBox* gammaSoilComboBox = nullptr;
+    SC_ComboBox* cohesionComboBox = nullptr;
+    SC_ComboBox* frictionComboBox = nullptr;
+
+    QLabel* geologicMapLabel;
 
     QGroupBox* outputSaveGroupBox = nullptr;
 
     QMap<QString, QCheckBox*> outputSaveCheckBoxes;
+
+    //Default values used in OpenSRA level 1 analysis
+    double defaultSlopeThickness = 2.0;
+    double defaultGammaSoil = 17.0;
 
     void setupConnections();
 //    void setRupFile(QString dirPath);
