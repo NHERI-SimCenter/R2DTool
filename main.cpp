@@ -188,7 +188,8 @@ int main(int argc, char *argv[])
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
     w.setDocumentationURL(manualURL);
 
-    QString messageBoardURL("http://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=8.0");
+  //    QString messageBoardURL("http://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=8.0");
+  QString messageBoardURL("https://github.com/orgs/NHERI-SimCenter/discussions/categories/r2d");  
     w.setFeedbackURL(messageBoardURL);
 
 
