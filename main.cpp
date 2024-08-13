@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "AgaveCurl.h"
+#include <TapisV3.h>
 #include "GoogleAnalytics.h"
 #include "MainWindowWorkflowApp.h"
 #include "WorkflowAppR2D.h"
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("4.2.2");
+    QCoreApplication::setApplicationVersion("5.0.0");
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -158,10 +158,12 @@ int main(int argc, char *argv[])
 
     // create a remote interface
     QString tenant("designsafe");
-    QString storage("agave://designsafe.storage.default/");
+    // QString storage("agave://designsafe.storage.default/");
+    QString storage("designsafe.storage.default/");        
     QString dirName("R2D");
 
-    AgaveCurl *theRemoteService = new AgaveCurl(tenant, storage, &dirName);
+    //AgaveCurl *theRemoteService = new AgaveCurl(tenant, storage, &dirName);
+    TapisV3 *theRemoteService = new TapisV3(tenant, storage, &dirName);        
 
 
     // Create the main window
@@ -186,7 +188,8 @@ int main(int argc, char *argv[])
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
     w.setDocumentationURL(manualURL);
 
-    QString messageBoardURL("http://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=8.0");
+  //    QString messageBoardURL("http://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=8.0");
+  QString messageBoardURL("https://github.com/orgs/NHERI-SimCenter/discussions/categories/r2d");  
     w.setFeedbackURL(messageBoardURL);
 
 
