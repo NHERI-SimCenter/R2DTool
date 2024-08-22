@@ -153,6 +153,8 @@ RESOURCES += \
 DISTFILES += \
     resources/docs/textAboutR2DT.html
 
+DEFINES += _R2D
+
 # External libraries
 macos:LIBS += -lcurl -llapack -lblas
 linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so

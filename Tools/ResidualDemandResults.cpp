@@ -94,76 +94,99 @@ ResidualDemandResults::ResidualDemandResults(QWidget * parent) : SC_ResultsWidge
 
 }
 
-int ResidualDemandResults::processResults(QString &outputFile, QString &dirName, QString &assetType,
-                                          QList<QString> typesInAssetType){
-
-    // If no results tab for Transportation exists
-    // Initiate the qmainwindow
-    // Create visualization
-    // Create table widget
-    // See Pelicun3PostProcessor as an example
+int ResidualDemandResults::addResultTab(QString tabName, QString &dirName){
+    QString resultFile = tabName + QString(".geojson");
+    QString assetTypeSimplified = tabName.simplified().replace( " ", "" );
+    R2DresWidget->getTabWidget()->addTab(this, tabName);
     return 0;
+    // Do the results processing here
+//    this->processResults(resultFile, dirName, tabName, theAssetTypeToType[assetTypeSimplified]);
+
 }
 
-int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab, QString &outputFile, QString &dirName,
-                                      QString &assetType, QList<QString> typesInAssetType){
-    //Initiate pointers from resultsTab
+int ResidualDemandResults::addResultSubtab(QString name, QWidget* existTab, QString &dirName){
+
+    SC_ResultsWidget* existingResult = dynamic_cast<SC_ResultsWidget*>(existTab);
+    if (existingResult){ // Make a subtab and add to existing result tab
+        // Do the visualizations
+        // Make the sub
+        // DL is always the first to be called, so no need to implement this
+        QWidget* subTab = new QWidget(this);
+        existingResult->addResultSubtab(QString("subTabName"), subTab, dirName);
+    }
+    else{ //Add the subtab to docklist
+        QDockWidget* subTabToAdd = dynamic_cast<QDockWidget*>(existTab);
+        dockList->append(subTabToAdd);
+        if (dockList->count()>1){
+            QDockWidget* base = dockList->at(0);
+            for (int dock_i = 1; dock_i<dockList->count(); dock_i++){
+                mainWindow->tabifyDockWidget(base,dockList->at(dock_i));
+            }
+        }
+    }
+    return 0;
+
+}
+
+//int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab, QString &outputFile, QString &dirName,
+//                                      QString &assetType, QList<QString> typesInAssetType){
+//    //Initiate pointers from resultsTab
 //    mainWindow = resultsTab->getMainWindow();
 //    dockList = resultsTab->getDockList();
 //    mapViewSubWidget = resultsTab->getMapViewSubWidget();
 //    uiState = resultsTab->getUiState();
 //    neededLayers = resultsTab->getNeededLayers();
-    // Add visualization
-//    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*> (theVizWidget);
-//    if (theVisualizationWidget == nullptr || theVisualizationWidget==0){
-//        this->errorMessage("Can't convert to the visualization widget");
-//        return -1;
-//    }
-//    // Create new GIS vis below:
-//    theVisualizationWidget->addVectorLayer();
-//    // Add the newly added layers to map displayed on the current resultsTab
-//    QgsMapCanvas* mapCanvas = mapViewSubWidget->mapCanvas();
-//    neededLayers.append();
-//    resultsTab->neededLayers = neededLayers;
-//    mapCanvas->setLayers(neededLayers);
-//    // Create new GIS vis below
-//    QDockWidget* residualDemandDockWidget = new QDockWidget("ResidualDemandResults",resultsTab->mainWindow);
-//    residualDemandDockWidget->setMinimumWidth(475);
-//    residualDemandDockWidget->setMaximumWidth(575);
-//    residualDemandDockWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
-//    mainWindow->addDockWidget(Qt::RightDockWidgetArea, residualDemandDockWidget);
-//    dockList.append(residualDemandDockWidget);
-//    if (dockList->count()>1){
-//        QDockWidget* base = dockList->at(0);
-//        for (int dock_i = 1; dock_i<dockList->count(); dock_i++){
-//            mainWindow->tabifyDockWidget(base,dockList->at(dock_i));
-//        }
-//    }
-//    // resize docks
-//    QDockWidget* mapViewDock = mainWindow->findChild<QDockWidget*>("MapViewDock");
-//    if(mapViewDock){
-//        QList<QDockWidget*> alldocks = {mapViewDock};
-//        float windowWidth = mainWindow->size().width();
-//        float windowHeight = mainWindow->size().height();
-//        QList<int> dockWidthes = {int(0.7*windowWidth)};
-//        QList<int> dockHeights = {int(windowHeight)};
-//        for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
-//            alldocks.append(dockList.at(dock_i));
-//            dockWidthes.append(int(0.3*windowWidth));
-//            dockHeights.append(int(0.7*windowHeight));
-//        }
-//        mainWindow->resizeDocks(alldocks, dockWidthes, Qt::Horizontal);
-//        mainWindow->resizeDocks(alldocks, dockHeights, Qt::Vertical);
-//    }
-//    if(viewMenu){
-//        viewMenu->addAction(residualDemandDockWidget->toggleViewAction());
-//    }
+//    // Add visualization
+////    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*> (theVizWidget);
+////    if (theVisualizationWidget == nullptr || theVisualizationWidget==0){
+////        this->errorMessage("Can't convert to the visualization widget");
+////        return -1;
+////    }
+////    // Create new GIS vis below:
+////    theVisualizationWidget->addVectorLayer();
+////    // Add the newly added layers to map displayed on the current resultsTab
+////    QgsMapCanvas* mapCanvas = mapViewSubWidget->mapCanvas();
+////    neededLayers.append();
+////    resultsTab->neededLayers = neededLayers;
+////    mapCanvas->setLayers(neededLayers);
+////    // Create new GIS vis below
+////    QDockWidget* residualDemandDockWidget = new QDockWidget("ResidualDemandResults",resultsTab->mainWindow);
+////    residualDemandDockWidget->setMinimumWidth(475);
+////    residualDemandDockWidget->setMaximumWidth(575);
+////    residualDemandDockWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Maximum);
+////    mainWindow->addDockWidget(Qt::RightDockWidgetArea, residualDemandDockWidget);
+////    dockList.append(residualDemandDockWidget);
+////    if (dockList->count()>1){
+////        QDockWidget* base = dockList->at(0);
+////        for (int dock_i = 1; dock_i<dockList->count(); dock_i++){
+////            mainWindow->tabifyDockWidget(base,dockList->at(dock_i));
+////        }
+////    }
+////    // resize docks
+////    QDockWidget* mapViewDock = mainWindow->findChild<QDockWidget*>("MapViewDock");
+////    if(mapViewDock){
+////        QList<QDockWidget*> alldocks = {mapViewDock};
+////        float windowWidth = mainWindow->size().width();
+////        float windowHeight = mainWindow->size().height();
+////        QList<int> dockWidthes = {int(0.7*windowWidth)};
+////        QList<int> dockHeights = {int(windowHeight)};
+////        for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
+////            alldocks.append(dockList.at(dock_i));
+////            dockWidthes.append(int(0.3*windowWidth));
+////            dockHeights.append(int(0.7*windowHeight));
+////        }
+////        mainWindow->resizeDocks(alldocks, dockWidthes, Qt::Horizontal);
+////        mainWindow->resizeDocks(alldocks, dockHeights, Qt::Vertical);
+////    }
+////    if(viewMenu){
+////        viewMenu->addAction(residualDemandDockWidget->toggleViewAction());
+////    }
 
-//    uiState = mainWindow->saveState();
-//    resultsTab->setUiState(uiState);
-//      return 0;
+////    uiState = mainWindow->saveState();
+////    resultsTab->setUiState(uiState);
+  //    return 0;
 
-}
+//}
 
 
 void ResidualDemandResults::restoreUI(void)

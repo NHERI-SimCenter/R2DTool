@@ -136,7 +136,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     this->clear();
 
-    resultWidget = new Pelicun3PostProcessor(parent);
+
 }
 
 
@@ -530,8 +530,11 @@ void Pelicun3DLWidget::handleBrowseButton2Pressed(void)
 //    QMainWindow* returnPtr = dynamic_cast<QMainWindow*> (new Pelicun3PostProcessor());
 //    return returnPtr;
 //};
-SC_ResultsWidget* Pelicun3DLWidget::getResultsWidget(QWidget* parent){
-    resultWidget->setParent(parent);
+SC_ResultsWidget* Pelicun3DLWidget::getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
+{
+    if (resultWidget==nullptr){
+        resultWidget = new Pelicun3PostProcessor(parent, R2DresWidget, assetTypeToType);
+    }
     return resultWidget;
 }
 

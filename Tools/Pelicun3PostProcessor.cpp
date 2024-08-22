@@ -134,12 +134,56 @@ Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget * parent) : SC_ResultsWidge
 
 }
 
+
+//Constructor
+Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget *parent, QWidget *resWidget, QMap<QString, QList<QString>> assetTypeToType)
+    : SC_ResultsWidget(parent,resWidget,assetTypeToType)
+    {
+    layout = new QVBoxLayout(this);
+    mainWindow = new QMainWindow(parent);
+    mainWindow->show();
+    layout->addWidget(mainWindow);
+    mapViewDock = new QDockWidget("Regional Map",mainWindow);
+    }
+// AddResultTab
+int Pelicun3PostProcessor::addResultTab(QString tabName, QString &dirName){
+    QString resultFile = tabName + QString(".geojson");
+    QString assetTypeSimplified = tabName.simplified().replace( " ", "" );
+    this->processResults(resultFile, dirName, tabName, theAssetTypeToType[assetTypeSimplified]);
+    R2DresWidget->getTabWidget()->addTab(this, tabName);
+    return 0;
+ }
+// AddResultSubtab
+int Pelicun3PostProcessor::addResultSubtab(QString name, QWidget* existTab, QString &dirName){
+    SC_ResultsWidget* existingResult = dynamic_cast<SC_ResultsWidget*>(existTab);
+    if (existingResult){ // Make a subtab and add to existing result tab
+        // DL is always the first to be called, so no need to implement this
+        QWidget* subTab = new QWidget(this);
+        existingResult->addResultSubtab(QString("subTabName"), subTab, dirName);
+    }
+    else{ //Add the subtab to docklist
+        QDockWidget* subTabToAdd = dynamic_cast<QDockWidget*>(existTab);
+        dockList->append(subTabToAdd);
+        if (dockList->count()>1){
+            QDockWidget* base = dockList->at(0);
+            for (int dock_i = 1; dock_i<dockList->count(); dock_i++){
+                mainWindow->tabifyDockWidget(base,dockList->at(dock_i));
+            }
+        }
+    }
+    return 0;
+
+}
+
+
+
+
 int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName, QString &assetType,
                                           QList<QString> typesInAssetType){
 
-    theVisualizationWidget = dynamic_cast<VisualizationWidget*> (theVizWidget);
-    if (theVisualizationWidget == nullptr || theVisualizationWidget==0){
-        this->errorMessage("Can't convert to the visualization widget");
+
+    if (theVizWidget == nullptr || theVizWidget==0){
+        this->errorMessage("Can't find visualization widget");
         return -1;
     }
     // AssemblePDF is not implemented
@@ -147,7 +191,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 
 
     // Get the map view widget
-    auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
+    auto mapView = theVizWidget->getMapViewWidget("ResultsWidget");
     mapViewSubWidget = std::shared_ptr<SimCenterMapcanvasWidget>(mapView);
     QgsMapCanvas* mapCanvas = mapViewSubWidget->mapCanvas();
     QList<QgsMapLayer*> allLayers= mapCanvas->layers();
