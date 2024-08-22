@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "NoneWidget.h"
 #include "SimCenterUnitsCombo.h"
 #include "LiquefactionWidget.h"
+#include "LandslideWidget.h"
 #include "SimCenterPreferences.h"
 #include "Utils/ProgramOutputDialog.h"
 
@@ -75,10 +76,9 @@ GroundFailureWidget::GroundFailureWidget(QWidget *parent) : SimCenterAppWidget(p
     gfGroupBox->setLayout(groupBoxLayout);
 
     liquefactionCheckBox = new QCheckBox("Liquefaction");
-//    liquefactionCheckBox->setChecked(true);
 
     landslideCheckBox = new QCheckBox("Landslide");
-    landslideCheckBox->setEnabled(false);
+
     faultDispCheckBox = new QCheckBox("Fault Displacement");
     faultDispCheckBox->setEnabled(false);
 
@@ -95,8 +95,14 @@ GroundFailureWidget::GroundFailureWidget(QWidget *parent) : SimCenterAppWidget(p
 
     theTabWidget = new QTabWidget();
     liquefactionWidget = new LiquefactionWidget(this);
+    landslideWidget = new LandslideWidget(this);
+    theTabWidget->addTab(liquefactionWidget, tr("Liquefaction"));
+    theTabWidget->addTab(landslideWidget, tr("Landslide"));
 
     this->setConnections();
+    liquefactionCheckBox->setChecked(false);
+    landslideCheckBox->setChecked(false);
+    this->handleSourceSelectionChanged();
 
     mainLayout->addWidget(gfGroupBox);
     mainLayout->addWidget(theTabWidget);
@@ -114,20 +120,23 @@ void GroundFailureWidget::reset(void)
 
 void GroundFailureWidget::setConnections()
 {
-    connect(this->liquefactionCheckBox, &QCheckBox::stateChanged, this, &GroundFailureWidget::handleSourceSelectionChanged);    
+    connect(this->liquefactionCheckBox, &QCheckBox::stateChanged, this, &GroundFailureWidget::handleSourceSelectionChanged);
+    connect(this->landslideCheckBox, &QCheckBox::stateChanged, this, &GroundFailureWidget::handleSourceSelectionChanged);
 }
 
 
 void GroundFailureWidget::handleSourceSelectionChanged()
 {
-    for (int i = 0; i < theTabWidget->count(); i++){
-        theTabWidget->removeTab(i);
+    while (theTabWidget->count() > 0) {
+        theTabWidget->removeTab(0);
     }
     if (liquefactionCheckBox->isChecked()){
         this->checkAndDownloadDataBase();
         theTabWidget->addTab(liquefactionWidget, tr("Liquefaction"));
-
-
+    }
+    if (landslideCheckBox->isChecked()){
+        this->checkAndDownloadDataBase();
+        theTabWidget->addTab(landslideWidget, tr("Landslide"));
     }
 }
 
@@ -138,14 +147,26 @@ void GroundFailureWidget::checkAndDownloadDataBase(){
         return;
     }else{
         QMessageBox msgBox;
-        msgBox.setText("Warning:\n"
-                       "SimCenter Liquefaction Database needs to be downloaded to use SimCenter default California geospatial data.\n"
-                       "If don't download, geospatial data needs to be provided in GIS or Site File (.csv) format.\n"
-                       "If download, please continue analysis after downloading completes.\n"
-                       "Download the database?");
+        msgBox.setWindowTitle("Download supplement data");
+        QString message("<p><strong>Warning:</strong><br>"
+                        "The SimCenter ground failure dataset must be downloaded to use SimCenter's default California geospatial data.<br>"
+                        "The default dataset is available at <a href=\"https://zenodo.org/records/13357384\"> https://zenodo.org/records/13357384</a>.<br>"
+                        "If you prefer not to download the dataset, you must provide user-defined geospatial data in GIS or Site File (.csv) format.<br>"
+                        "To use the default geospatial data, please click \"yes\" to start the download automatically.<br>"
+                        "Please continue with the analysis after the download is complete.<br>"
+                        "Note: Additional steps are required to use the default landslide dataset, please refer to <a href=\"https://nheri-simcenter.github.io/R2D-Documentation/common/user_manual/usage/desktop/R2DTool/tools.html#ground-failure-models\"> R2D documentation</a>.<br>"
+                        "Do you want to download the dataset?</p>");
+        msgBox.setText(message);
+        msgBox.setTextFormat(Qt::RichText);
+
+//        <p>This is a <a href=\"https://www.example.com\">link</a> to a website.</p>"
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+//        msgBox.setStandardButtons(QMessageBox::Close);
+
 
         auto res = msgBox.exec();
+//        return;
+
         if (res != QMessageBox::Yes){
             return;
         } else {
@@ -182,6 +203,11 @@ bool GroundFailureWidget::outputToJSON(QJsonObject& obj)
         QJsonObject liquefactionObj;
         liquefactionWidget->outputToJSON(liquefactionObj);
         groundFailureObj["Liquefaction"] = liquefactionObj;
+    }
+    if (landslideCheckBox->isChecked()){
+        QJsonObject landslideObj;
+        landslideWidget->outputToJSON(landslideObj);
+        groundFailureObj["Landslide"] = landslideObj;
     }
     obj["GroundFailure"] = groundFailureObj;
 //    obj["PGDunit"] = unitsCombo->currentText();

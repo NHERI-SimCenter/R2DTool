@@ -2,6 +2,8 @@
 
 [![DOI](https://zenodo.org/badge/329111097.svg)](https://zenodo.org/badge/latestdoi/329111097)
 
+[![Run R2D tests](https://github.com/NHERI-SimCenter/R2DTool/actions/workflows/nightly_build.yml/badge.svg)](https://github.com/NHERI-SimCenter/R2DTool/actions/workflows/nightly_build.yml)
+
 This open-source research application provides an application
 researchers can use to predict regional damage and loss estimates
 for a region subjected to a natural hazard.
