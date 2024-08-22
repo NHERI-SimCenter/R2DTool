@@ -106,13 +106,13 @@ int ResidualDemandResults::processResults(QString &outputFile, QString &dirName,
 }
 
 int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab, QString &outputFile, QString &dirName,
-                                      //QString &assetType, QList<QString> typesInAssetType){
+                                      QString &assetType, QList<QString> typesInAssetType){
     //Initiate pointers from resultsTab
-    mainWindow = resultsTab->getMainWindow();
-    dockList = resultsTab->getDockList();
-    mapViewSubWidget = resultsTab->getMapViewSubWidget();
-    uiState = resultsTab->getUiState();
-    neededLayers = resultsTab->getNeededLayers();
+//    mainWindow = resultsTab->getMainWindow();
+//    dockList = resultsTab->getDockList();
+//    mapViewSubWidget = resultsTab->getMapViewSubWidget();
+//    uiState = resultsTab->getUiState();
+//    neededLayers = resultsTab->getNeededLayers();
     // Add visualization
 //    theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*> (theVizWidget);
 //    if (theVisualizationWidget == nullptr || theVisualizationWidget==0){
@@ -161,7 +161,7 @@ int ResidualDemandResults::addResults(SC_ResultsWidget* resultsTab, QString &out
 
 //    uiState = mainWindow->saveState();
 //    resultsTab->setUiState(uiState);
-      return 0;
+//      return 0;
 
 }
 
