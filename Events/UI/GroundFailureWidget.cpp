@@ -147,14 +147,25 @@ void GroundFailureWidget::checkAndDownloadDataBase(){
         return;
     }else{
         QMessageBox msgBox;
-        msgBox.setText("Warning:\n"
-                       "SimCenter Liquefaction Database needs to be downloaded to use SimCenter default California geospatial data.\n"
-                       "If don't download, geospatial data needs to be provided in GIS or Site File (.csv) format.\n"
-                       "If download, please continue analysis after downloading completes.\n"
-                       "Download the database?");
+        msgBox.setWindowTitle("Download supplement data");
+        QString message("<p>Warning:<br>"
+                        "SimCenter ground failure Dataset needs to be downloaded to use SimCenter's default California geospatial data.<br>"
+                        "The default dataset is at <a href=\"https://zenodo.org/records/13357384\"> https://zenodo.org/records/13357384</a>.<br>"
+                        "To use the ground failure models without downloading, user-defined geospatial data in GIS or Site File (.csv) format needs to be provided.<br>"
+                        "To use the default geospatial data, please click yee and continue analysis after downloading completes.<br>"
+                        "Note: additional steps are required to use the default landslide dataset, please refer to <a href=\"https://nheri-simcenter.github.io/R2D-Documentation/common/user_manual/usage/desktop/R2DTool/tools.html#ground-failure-models\"> R2D documentation</a>.<br>"
+                        "Do you want to download the dataset?</p>");
+        msgBox.setText(message);
+        msgBox.setTextFormat(Qt::RichText);
+
+//        <p>This is a <a href=\"https://www.example.com\">link</a> to a website.</p>"
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+//        msgBox.setStandardButtons(QMessageBox::Close);
+
 
         auto res = msgBox.exec();
+//        return;
+
         if (res != QMessageBox::Yes){
             return;
         } else {
@@ -163,7 +174,7 @@ void GroundFailureWidget::checkAndDownloadDataBase(){
             statusDialog->appendText(msg);
             QApplication::processEvents();
 
-            QStringList urls = {"https://zenodo.org/api/records/10892461"};
+            QStringList urls = {"https://zenodo.org/api/records/12785151"};
             QStringList names = {"groundFailure"};
             QString pathTodatabaseFolder = QCoreApplication::applicationDirPath() +
                                            QDir::separator() + "Databases";

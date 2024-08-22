@@ -351,6 +351,11 @@ void LandslideBrayMacedo2019::setDefaultFilePath(){
                         "CA_Slope_30m_WGS84_degree" + QDir::separator() +
                         "CA_Slope_30m_WGS84_degree.tif";
 
+    QFile slopeFile(slopeFilePath);
+    if (!slopeFile.exists()){
+        slopeFilePath = "";
+    }
+
     slopeThickFilePath = "";
 
     gammaSoilFilePath = "";
@@ -358,6 +363,11 @@ void LandslideBrayMacedo2019::setDefaultFilePath(){
     geologicMapFilePath = backendDataBasePath + QDir::separator() +
                             "CA_GeologicMap_WillsEtal2015_WGS84" + QDir::separator() +
                             "CA_GeologicMap_WillsEtal2015_WGS84.shp";
+
+    QFile geologicMapFile(geologicMapFilePath);
+    if (!geologicMapFile.exists()){
+        geologicMapFilePath = "";
+    }
 
     QgsCoordinateReferenceSystem defaultCRS("EPSG:4326");
     crsSelectorWidget->setCRS(defaultCRS);
