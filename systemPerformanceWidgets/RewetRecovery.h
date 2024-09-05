@@ -47,6 +47,8 @@ class SC_DoubleLineEdit;
 class SC_IntLineEdit;
 class SC_ComboBox;
 class SC_CheckBox;
+class RewetResults;
+
 //class SC_IntLineEdit;
 class SC_TableEdit;
 class SC_QRadioButton;
@@ -65,7 +67,8 @@ public:
     bool copyFiles(QString &dirName);
     bool outputCitation(QJsonObject &citation);
 
-
+    SC_ResultsWidget* getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
+  
 signals:
 
 public slots:
@@ -109,6 +112,7 @@ private:
   SC_TableEdit *tankTimeBasedDiscoveryTable;
   SC_TableEdit *pumpTimeBasedDiscoveryTable;
 
+  RewetResults *resultWidget;
 };
 
 
