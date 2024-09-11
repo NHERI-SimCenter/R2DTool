@@ -629,8 +629,34 @@ bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     QJsonObject appData;
 
-    appData["Directory"] = pathToShakeMapDirectory;
+    auto currentItem = listWidget->getCurrentItem();
 
+    auto currItemName = currentItem->getName();
+
+    auto selectedShakeMap = shakeMapContainer.value(currItemName,nullptr);
+
+    if(selectedShakeMap == nullptr)
+    {
+        this->errorMessage("Could not find the ShakeMap "+currItemName);
+        return false;
+    }
+
+    QFileInfo inputDirInfo(pathToShakeMapDirectory);
+
+    if(!inputDirInfo.exists())
+    {
+        QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
+        errorMessage(errMsg);
+    }
+
+
+    auto inputDir = inputDirInfo.absoluteFilePath();
+
+    QDir dirInfo = QDir(inputDir);
+    auto sourceDir = dirInfo.dirName();
+
+    appData["Directory"] = sourceDir;
+    appData["EventPath"] = currItemName;
 
     QJsonArray IMType;
 
@@ -786,10 +812,12 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
         }
     }
 
-    emit outputDirectoryPathChanged(destPath, pathToEventFile);
 
     motionDir = destPath + QDir::separator();
-    pathToEventFile = motionDir + "EventGrid.csv";
+    pathToEventFile = sourceDir + QDir::separator()+ "EventGrid.gpkg";
+
+    emit outputDirectoryPathChanged(destPath, pathToEventFile);
+
 
 #ifdef OpenSRA
     // only copy over events in shakemap list
@@ -815,156 +843,6 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
         errorMessage(msg);
 
         return res;
-    }
-#endif
-
-#ifndef OpenSRA
-
-    auto currentItem = listWidget->getCurrentItem();
-
-    auto currItemName = currentItem->getName();
-
-    auto selectedShakeMap = shakeMapContainer.value(currItemName,nullptr);
-
-    if(selectedShakeMap == nullptr)
-    {
-        this->errorMessage("Could not find the ShakeMap "+currItemName);
-        return false;
-    }
-
-    CSVReaderWriter csvTool;
-
-    auto stationList = selectedShakeMap->stationList;
-
-    if(stationList.empty())
-    {
-        this->errorMessage("Error, the station list is empty for "+currItemName);
-        return false;
-    }
-
-    // First create the event grid file
-    QVector<QStringList> gridData;
-
-    QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
-    gridData.push_back(headerRow);
-
-    QStringList stationHeader;
-    for(int i = 0; i < IMListWidget->count(); ++i)
-    {
-        auto item = IMListWidget->item(i);
-
-        if(item->checkState() == Qt::Unchecked)
-            continue;
-
-        auto IMtag = item->text();
-
-        stationHeader.append(IMtag);
-    }
-
-    this->statusMessage("Creating ground motion station files from ShakeMap, this may take some time.");
-
-    QApplication::processEvents();
-
-    for(int i = 0; i<stationList.size(); ++i)
-    {
-        auto stationFile = "Site_"+QString::number(i)+".csv";
-
-        auto station = stationList.at(i);
-
-        auto lat = QString::number(station.getLatitude());
-        auto lon = QString::number(station.getLongitude());
-
-        QStringList stationRow = {stationFile, lat, lon};
-
-        gridData.push_back(stationRow);
-
-        QStringList IMstrList;
-
-        for(int i = 0; i < IMListWidget->count(); ++i)
-        {
-            auto item = IMListWidget->item(i);
-
-            if(item->checkState() == Qt::Unchecked)
-                continue;
-
-            auto IMtag = item->text();
-
-            if(IMtag.compare("PGA") == 0)
-            {
-                auto attribVal = station.getAttributeValue(IMtag);
-
-                if(attribVal.isNull())
-                {
-                    this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
-                    return false;
-                }
-
-                bool Ok = false;
-                auto PGAval = attribVal.toDouble(&Ok);
-
-                if(!Ok)
-                {
-                    this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
-                    return false;
-                }
-
-                // Convert from pct g into g
-                PGAval /= 100.0;
-
-                auto PGAstr = QString::number(PGAval);
-                IMstrList.append(PGAstr);
-
-            }
-            else if(IMtag.compare("PGV") == 0)
-            {
-                auto attribVal = station.getAttributeValue(IMtag);
-
-                if(attribVal.isNull())
-                {
-                    this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
-                    return false;
-                }
-
-                bool Ok = false;
-                auto IMVal = attribVal.toDouble(&Ok);
-
-                if(!Ok)
-                {
-                    this->errorMessage("Error getting the desired IM "+IMtag+" from ShakeMap grid data");
-                    return false;
-                }
-
-                // Units cmps
-                auto IMstr = QString::number(IMVal);
-                IMstrList.append(IMstr);
-            }
-            else
-            {
-                this->errorMessage("Could not recognize the provided intensity measure "+IMtag);
-            }
-        }
-
-        QVector<QStringList> stationData = {stationHeader,IMstrList};
-
-        QString pathToStationFile = motionDir + QDir::separator() + stationFile;
-
-        QString err;
-        auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
-        if(res2 != 0)
-        {
-            this->errorMessage(err);
-            return false;
-        }
-
-    }
-
-    // Now save the site grid .csv file
-    QString err2;
-    auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
-    if(res2 != 0)
-    {
-        this->errorMessage(err2);
-        return false;
     }
 #endif
 
