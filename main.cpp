@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, Frank McKenna
 
-#include "AgaveCurl.h"
+#include <TapisV3.h>
 #include "GoogleAnalytics.h"
 #include "MainWindowWorkflowApp.h"
 #include "WorkflowAppR2D.h"
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("4.1.0");
+    QCoreApplication::setApplicationVersion("5.0.0");
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -158,10 +158,12 @@ int main(int argc, char *argv[])
 
     // create a remote interface
     QString tenant("designsafe");
-    QString storage("agave://designsafe.storage.default/");
+    // QString storage("agave://designsafe.storage.default/");
+    QString storage("designsafe.storage.default/");        
     QString dirName("R2D");
 
-    AgaveCurl *theRemoteService = new AgaveCurl(tenant, storage, &dirName);
+    //AgaveCurl *theRemoteService = new AgaveCurl(tenant, storage, &dirName);
+    TapisV3 *theRemoteService = new TapisV3(tenant, storage, &dirName);        
 
 
     // Create the main window
@@ -180,13 +182,14 @@ int main(int argc, char *argv[])
 
     w.setVersion(version);
 
-    QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Zsarnoczay, A., Zhao, J., Zhong, K., Barbaros Cetiner, Yi, S.-. ri ., Elhaddad, W., & Arduino, P. (2024). NHERI-SimCenter/R2DTool: Version 4.0.0 (v4.0.0). Zenodo. https://doi.org/10.5281/zenodo.10448043 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matt J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
+    QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sang-ri Yi, Aakash Bangalore Satish, Sina Naeimi, & Pedro Arduino. (2024). NHERI-SimCenter/R2DTool: Version 5.0.0. Zenodo. https://doi.org/10.5281/zenodo.13367966 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matthew J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
     w.setDocumentationURL(manualURL);
 
-    QString messageBoardURL("http://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=8.0");
+  //    QString messageBoardURL("http://simcenter-messageboard.designsafe-ci.org/smf/index.php?board=8.0");
+  QString messageBoardURL("https://github.com/orgs/NHERI-SimCenter/discussions/categories/r2d");  
     w.setFeedbackURL(messageBoardURL);
 
 
@@ -238,7 +241,7 @@ int main(int argc, char *argv[])
     //Setting Google Analytics Tracking Information
     //
     
-    /* *******************************************************************
+    /* *******************************************************************/
 
     GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
     GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
@@ -251,7 +254,7 @@ int main(int argc, char *argv[])
     view.resize(1024, 750);
     view.show();
     view.hide();
-    ******************************************************************** */
+    /* ******************************************************************** */
     
 
     int res = a.exec();

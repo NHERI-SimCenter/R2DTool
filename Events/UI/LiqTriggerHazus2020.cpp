@@ -273,9 +273,17 @@ void LiqTriggerHazus2020::setDefaultFilePath(){
     GwDepthFilePath = backendDataBasePath + QDir::separator() +
                       "CA_WaterTableDepth_1km_WGS84_meter" + QDir::separator() +
                       "CA_WaterTableDepth_1km_WGS84_meter.tif";
+    // QFile GwDepthFile(GwDepthFilePath);
+    // if (!GwDepthFile.exists()){
+    //     GwDepthFilePath = "";
+    // }
     GeologicMapFilePath = backendDataBasePath + QDir::separator() +
                             "CA_GeologicMap_WillsEtal2015_WGS84" + QDir::separator() +
                             "CA_GeologicMap_WillsEtal2015_WGS84.shp";
+    // QFile GeologicMapFile(GeologicMapFilePath);
+    // if (!GeologicMapFile.exists()){
+    //     GeologicMapFilePath = "";
+    // }
 
     QgsCoordinateReferenceSystem defaultCRS("EPSG:4326");
     crsSelectorWidget->setCRS(defaultCRS);

@@ -629,8 +629,34 @@ bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     QJsonObject appData;
 
-    appData["Directory"] = pathToShakeMapDirectory;
+    auto currentItem = listWidget->getCurrentItem();
 
+    auto currItemName = currentItem->getName();
+
+    auto selectedShakeMap = shakeMapContainer.value(currItemName,nullptr);
+
+    if(selectedShakeMap == nullptr)
+    {
+        this->errorMessage("Could not find the ShakeMap "+currItemName);
+        return false;
+    }
+
+    QFileInfo inputDirInfo(pathToShakeMapDirectory);
+
+    if(!inputDirInfo.exists())
+    {
+        QString errMsg = "The directory "+ pathToShakeMapDirectory+" does not exist check your directory and try again.";
+        errorMessage(errMsg);
+    }
+
+
+    auto inputDir = inputDirInfo.absoluteFilePath();
+
+    QDir dirInfo = QDir(inputDir);
+    auto sourceDir = dirInfo.dirName();
+
+    appData["Directory"] = sourceDir;
+    appData["EventPath"] = currItemName;
 
     QJsonArray IMType;
 
@@ -786,10 +812,12 @@ bool ShakeMapWidget::copyFiles(QString &destDir)
         }
     }
 
-    emit outputDirectoryPathChanged(destPath, pathToEventFile);
 
     motionDir = destPath + QDir::separator();
-    pathToEventFile = motionDir + "EventGrid.csv";
+    pathToEventFile = sourceDir + QDir::separator()+ "EventGrid.gpkg";
+
+    emit outputDirectoryPathChanged(destPath, pathToEventFile);
+
 
 #ifdef OpenSRA
     // only copy over events in shakemap list
@@ -839,4 +867,11 @@ void ShakeMapWidget::clear()
     motionDir.clear();
     pathToEventFile.clear();
     shakeMapList.clear();
+}
+
+bool ShakeMapWidget::outputCitation(QJsonObject &jsonObject){
+    jsonObject.insert("citation", QString("Wald, D. J., Worden, B. C., Quitoriano, V., & Pankow, K. L. (2006). ShakeMap® manual. Technical Manual, users guide, and software guide Version."));
+    jsonObject.insert("description", QString("Please cite this if USGS ShakeMap product is used"));
+
+    return true;
 }

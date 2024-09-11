@@ -99,7 +99,7 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
 
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",gasWidget);
-  this->addComponent("Water Network", wdnWidget);
+  this->addComponent("Water Distribution Network", wdnWidget);
   this->addComponent("Transportation Network", transportWidget);
   this->hideAll();  
 }

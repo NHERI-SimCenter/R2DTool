@@ -73,7 +73,7 @@ UQWidget::UQWidget(QWidget *parent)
 
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network",pipelineWidget);
-    this->addComponent("Water Network", WDNWidget);
+    this->addComponent("Water Distribution Network", WDNWidget);
     this->addComponent("Transportation Network", transportWidget);
     
     this->hideAll();
@@ -100,6 +100,15 @@ int UQWidget::getNumParallelTasks(void) {
     return 1;
 }
 
+bool UQWidget::outputCitation(QJsonObject &citation){
+    QJsonObject ModelingCitations;
+    buildingWidget->outputCitation(ModelingCitations);
+    pipelineWidget->outputCitation(ModelingCitations);
+    WDNWidget->outputCitation(ModelingCitations);
+    transportWidget->outputCitation(ModelingCitations);
+    citation.insert("UQ", ModelingCitations);
+    return true;
+}
 
 
 

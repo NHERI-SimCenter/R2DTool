@@ -48,6 +48,7 @@ class AnalysisWidget : public  MultiComponentR2D
 
 public:
     explicit AnalysisWidget(QWidget *parent);
+    bool outputCitation(QJsonObject &citation);
     ~AnalysisWidget();
 
     void clear(void);

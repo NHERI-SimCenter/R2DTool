@@ -113,6 +113,7 @@ public:
     bool outputAppDataToJSON(QJsonObject &jsonObject);
     bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool copyFiles(QString &destDir);
+    bool outputCitation(QJsonObject &jsonObject) override;
   
     void clear();
     int getNumShakeMapsLoaded();

@@ -45,7 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <CustomPySimulation.h>
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 #include "SurrogatePyFilter.h"
 // Qt headers
 #include <QCheckBox>
@@ -122,7 +122,7 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
 
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",pipelineWidget);
-  this->addComponent("Water Network", WDNWidget);
+  this->addComponent("Water Distribution Network", WDNWidget);
   this->addComponent("Transportation Network", transportWidget);
   this->hideAll();
 }
@@ -133,6 +133,15 @@ AnalysisWidget::~AnalysisWidget()
 
 }
 
+bool AnalysisWidget::outputCitation(QJsonObject &citation){
+  QJsonObject ModelingCitations;
+  buildingWidget->outputCitation(ModelingCitations);
+  pipelineWidget->outputCitation(ModelingCitations);
+  WDNWidget->outputCitation(ModelingCitations);
+  transportWidget->outputCitation(ModelingCitations);
+  citation.insert("Analysis", ModelingCitations);
+  return true;
+}
 
 void AnalysisWidget::clear(void)
 {

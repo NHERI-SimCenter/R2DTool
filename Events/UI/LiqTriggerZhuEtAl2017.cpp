@@ -323,19 +323,38 @@ void LiqTriggerZhuEtAl2017::setDefaultFilePath(){
     DistWaterFilePath = backendDataBasePath + QDir::separator() +
                         "CA_DistAnyWaterWB_1km_WGS84_km" + QDir::separator() +
                         "CA_DistAnyWaterWB_1km_WGS84_km.tif";
+    // QFile DistWaterFile(DistWaterFilePath);
+    // if (!DistWaterFile.exists()){
+    //     DistWaterFilePath = "";
+    // }
     DistCoastFilePath = backendDataBasePath + QDir::separator() +
                         "CA_DistCoast_1km_WGS84_km" + QDir::separator() +
                         "CA_DistCoast_1km_WGS84_km.tif";
+    // QFile DistCoastFile(DistCoastFilePath);
+    // if (!DistCoastFile.exists()){
+    //     DistCoastFilePath = "";
+    // }
     DistRiverFilePath = backendDataBasePath + QDir::separator() +
                         "CA_DistRiver_1km_WGS84_km" + QDir::separator() +
                         "CA_DistRiver_1km_WGS84_km.tif";
+    // QFile DistRiverFile(DistRiverFilePath);
+    // if (!DistRiverFile.exists()){
+    //     DistRiverFilePath = "";
+    // }
     GwDepthFilePath = backendDataBasePath + QDir::separator() +
                       "CA_WaterTableDepth_1km_WGS84_meter" + QDir::separator() +
                       "CA_WaterTableDepth_1km_WGS84_meter.tif";
+    // QFile GwDepthFile(GwDepthFilePath);
+    // if (!GwDepthFile.exists()){
+    //     GwDepthFilePath = "";
+    // }
     PrecipitationFilePath = backendDataBasePath + QDir::separator() +
                             "CA_Precip_1981-2010_1km_WGS84_mm" + QDir::separator() +
                             "CA_Precip_1981-2010_1km_WGS84_mm.tif";
-
+    // QFile PrecipitationFile(PrecipitationFilePath);
+    // if (!PrecipitationFile.exists()){
+    //     PrecipitationFilePath = "";
+    // }
     QgsCoordinateReferenceSystem defaultCRS("EPSG:4326");
     crsSelectorWidget->setCRS(defaultCRS);
 

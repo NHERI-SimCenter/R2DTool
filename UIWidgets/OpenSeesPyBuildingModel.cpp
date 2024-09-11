@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "OpenSeesPyBuildingModel.h"
 #include "OpenSeesParser.h"
 #include "RandomVariablesContainer.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -339,6 +339,17 @@ bool OpenSeesPyBuildingModel::copyFiles(QString &dirName) {
     if (fileInfo.exists()) {
         return this->copyFile(fileName, dirName);
     }
+
+    return true;
+}
+
+bool OpenSeesPyBuildingModel::outputCitation(QJsonObject &jsonObject) {
+    QJsonArray citations;
+    QJsonObject jsonObject1;
+    jsonObject1["Citation"] = QString("Zhu, M., McKenna, F., & Scott, M. H. (2018). OpenSeesPy: Python library for the OpenSees finite element framework. SoftwareX, 7, 6-11.");
+    jsonObject1["description"] = QString("Please cite this paper when the OpenSeesPy Script Generator is selected as building model.");
+    citations.append(jsonObject1);
+    jsonObject["citations"] = citations;
 
     return true;
 }

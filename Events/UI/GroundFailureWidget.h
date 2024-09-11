@@ -46,6 +46,7 @@ class QCheckBox;
 class SimCenterAppSelection;
 class SimCenterUnitsCombo;
 class LiquefactionWidget;
+class LandslideWidget;
 class QTabWidget;
 
 class GroundFailureWidget : public SimCenterAppWidget
@@ -78,6 +79,7 @@ private:
     SimCenterUnitsCombo* unitsCombo;
 
     LiquefactionWidget* liquefactionWidget;
+    LandslideWidget* landslideWidget;
 
     std::unique_ptr<NetworkDownloadManager> downloadManager;
 

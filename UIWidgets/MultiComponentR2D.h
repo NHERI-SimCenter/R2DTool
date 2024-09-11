@@ -68,7 +68,8 @@ public:
     bool addComponent(QString text, SimCenterAppWidget *);
     SimCenterAppWidget *getComponent(QString text);
     void removeAllComponents(void);
-
+    bool outputCitation(QJsonObject &jsonObject);
+  
     // SG add
     SimCenterAppWidget* getCurrentComponent(void);
     void hideSelectionWidget(void);

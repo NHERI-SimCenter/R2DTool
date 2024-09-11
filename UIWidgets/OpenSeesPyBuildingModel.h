@@ -59,6 +59,7 @@ public:
     bool outputAppDataToJSON(QJsonObject &rvObject) override;
     bool inputAppDataFromJSON(QJsonObject &rvObject) override;
     bool copyFiles(QString &dirName) override;
+    bool outputCitation(QJsonObject &jsonObject) override;
 
     QString getMainInput();
 

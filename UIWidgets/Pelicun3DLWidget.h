@@ -67,8 +67,9 @@ public:
 
     bool recursiveCopy(const QString &sourcePath, const QString &destPath);
 
+    bool outputCitation(QJsonObject &jsonObject);
 
-    SC_ResultsWidget* getResultsWidget(QWidget* parent = nullptr);
+    SC_ResultsWidget* getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
 
     QMainWindow* getPostProcessor(void);
 public slots:
@@ -80,7 +81,7 @@ public slots:
 private:
     QWidget* autoPopulateScriptWidget;
     QWidget* customModelDirWidget;
-    Pelicun3PostProcessor* resultWidget;
+    Pelicun3PostProcessor* resultWidget = nullptr;
 
     QComboBox* DLTypeComboBox;
     QLineEdit* realizationsLineEdit;

@@ -134,12 +134,56 @@ Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget * parent) : SC_ResultsWidge
 
 }
 
+
+//Constructor
+Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget *parent, QWidget *resWidget, QMap<QString, QList<QString>> assetTypeToType)
+    : SC_ResultsWidget(parent,resWidget,assetTypeToType)
+    {
+    layout = new QVBoxLayout(this);
+    mainWindow = new QMainWindow(parent);
+    mainWindow->show();
+    layout->addWidget(mainWindow);
+    mapViewDock = new QDockWidget("Regional Map",mainWindow);
+    }
+// AddResultTab
+int Pelicun3PostProcessor::addResultTab(QString tabName, QString &dirName){
+    QString resultFile = tabName + QString(".geojson");
+    QString assetTypeSimplified = tabName.simplified().replace( " ", "" );
+    this->processResults(resultFile, dirName, tabName, theAssetTypeToType[assetTypeSimplified]);
+    R2DresWidget->getTabWidget()->addTab(this, tabName);
+    return 0;
+ }
+// AddResultSubtab
+int Pelicun3PostProcessor::addResultSubtab(QString name, QWidget* existTab, QString &dirName){
+    SC_ResultsWidget* existingResult = dynamic_cast<SC_ResultsWidget*>(existTab);
+    if (existingResult){ // Make a subtab and add to existing result tab
+        // DL is always the first to be called, so no need to implement this
+        QWidget* subTab = new QWidget(this);
+        existingResult->addResultSubtab(QString("subTabName"), subTab, dirName);
+    }
+    else{ //Add the subtab to docklist
+        QDockWidget* subTabToAdd = dynamic_cast<QDockWidget*>(existTab);
+        dockList->append(subTabToAdd);
+        if (dockList->count()>1){
+            QDockWidget* base = dockList->at(0);
+            for (int dock_i = 1; dock_i<dockList->count(); dock_i++){
+                mainWindow->tabifyDockWidget(base,dockList->at(dock_i));
+            }
+        }
+    }
+    return 0;
+
+}
+
+
+
+
 int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName, QString &assetType,
                                           QList<QString> typesInAssetType){
 
-    theVisualizationWidget = dynamic_cast<VisualizationWidget*> (theVizWidget);
-    if (theVisualizationWidget == nullptr || theVisualizationWidget==0){
-        this->errorMessage("Can't convert to the visualization widget");
+
+    if (theVizWidget == nullptr || theVizWidget==0){
+        this->errorMessage("Can't find visualization widget");
         return -1;
     }
     // AssemblePDF is not implemented
@@ -147,20 +191,19 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 
 
     // Get the map view widget
-    auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
-    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
+    auto mapView = theVizWidget->getMapViewWidget("ResultsWidget");
+    mapViewSubWidget = std::shared_ptr<SimCenterMapcanvasWidget>(mapView);
     QgsMapCanvas* mapCanvas = mapViewSubWidget->mapCanvas();
     QList<QgsMapLayer*> allLayers= mapCanvas->layers();
-    QList<QgsMapLayer*> neededLayers;
     for (int map_i = 0; map_i < allLayers.count(); ++map_i) {
         QString layerName = allLayers.at(map_i)->name();
         for (int type_i = 0; type_i < typesInAssetType.count(); ++type_i){
             if (layerName.compare(typesInAssetType.at(type_i)) == 0){
-                neededLayers.append(allLayers.at(map_i));
+                neededLayers->append(allLayers.at(map_i));
             }
         }
     }
-    mapCanvas->setLayers(neededLayers);
+    mapCanvas->setLayers(*neededLayers);
 
     mapViewDock->setObjectName("MapViewDock");
     mapViewDock->setAllowedAreas(Qt::LeftDockWidgetArea);
@@ -179,6 +222,29 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
             QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
             QJsonObject jsonObject = exDoc.object();
             features = jsonObject["features"].toArray();
+        }
+
+        QStringList extractAttributes = {"AIM_id"};
+        QStringList comboBoxHeadings = {"AIM_id"};
+        bool hasR2DresToShow = false;
+        for (int i = 0; i < features.size(); i++){
+            QJsonObject ft = features.at(i).toObject();
+            QJsonObject properties = ft["properties"].toObject();
+            QStringList keys = properties.keys();
+            foreach (const QString &key, keys) {
+                if (key.startsWith("R2Dres_")){
+                    QString resultName = key.section('_', 1);
+                    if (!resultName.startsWith("MostLikelyDamageState") &&
+                        !extractAttributes.contains(key)){
+                        extractAttributes.append(key);
+                        comboBoxHeadings.append(key.section('_', 1));
+                        hasR2DresToShow = true;
+                    }
+                }
+            }
+        }
+        if (!hasR2DresToShow) {
+            continue;
         }
 
 //        totalRepairCostValue += calculateTotal(features, "mean repair_cost-");
@@ -211,20 +277,6 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         // Combo box to select how to sort the table
         QHBoxLayout* comboLayout = new QHBoxLayout();
 
-        QStringList extractAttributes = {"AIM_id"};
-        QStringList comboBoxHeadings = {"AIM_id"};
-        QJsonObject ft = features.at(0).toObject();
-        QJsonObject properties = ft["properties"].toObject();
-        QStringList keys = properties.keys();
-        foreach (const QString &key, keys) {
-            if (key.startsWith("R2Dres_")){
-                QString resultName = key.section('_', 1);
-                if (!resultName.startsWith("MostLikelyDamageState")){
-                    extractAttributes.append(key);
-                    comboBoxHeadings.append(key.section('_', 1));
-                }
-            }
-        }
 
 //        QStringList comboBoxHeadings = {"Asset ID","Mean Repair Cost","Mean Repair Time, Parallel [days]","Mean Repair Time, Sequential [days]", "Most Likely Critical Damage State"};
         QComboBox* sortComboBox = new QComboBox(typeDockWidget);
@@ -244,7 +296,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 
 //        QStringList extractAttributes = {"AIM_id","mean repair_cost-","mean repair_time-parallel","mean repair_time-sequential", "highest_DMG"};
         extractDataAddToTable(features, extractAttributes,typeResultsTableWidget, comboBoxHeadings);
-        dockList.append(typeDockWidget);
+        dockList->append(typeDockWidget);
 
         typeDockWidget->setWidget(typetableWidget);
         typeDockWidget->setMinimumWidth(475);
@@ -257,10 +309,10 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 //    totalRepairTimeSequentialValueLabel->setText(QString::number(totalRepairTimeSequentialValue));
 //    totalRepairTimeParallelValueLabel->setText(QString::number(totalRepairTimeParallelValue));
     // tabify dock widgets
-    if (dockList.count()>1){
-        QDockWidget* base = dockList.at(0);
-        for (int dock_i = 1; dock_i<dockList.count(); dock_i++){
-            mainWindow->tabifyDockWidget(base,dockList.at(dock_i));
+    if (dockList->count()>1){
+        QDockWidget* base = dockList->at(0);
+        for (int dock_i = 1; dock_i<dockList->count(); dock_i++){
+            mainWindow->tabifyDockWidget(base,dockList->at(dock_i));
         }
     }
     // resize docks
@@ -269,8 +321,8 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
     float windowHeight = mainWindow->size().height();
     QList<int> dockWidthes = {int(0.7*windowWidth)};
     QList<int> dockHeights = {int(windowHeight)};
-    for (int dock_i = 0; dock_i<dockList.count(); dock_i++){
-        alldocks.append(dockList.at(dock_i));
+    for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
+        alldocks.append(dockList->at(dock_i));
         dockWidthes.append(int(0.3*windowWidth));
         dockHeights.append(int(0.7*windowHeight));
     }
@@ -301,8 +353,8 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         viewMenu->addAction(tr("&Restore"), this, &Pelicun3PostProcessor::restoreUI);
 //        viewMenu->addAction(summaryDock->toggleViewAction());
         viewMenu->addAction(mapViewDock->toggleViewAction());
-        for (int dock_i = 0; dock_i<dockList.count(); dock_i++){
-            viewMenu->addAction(dockList.at(dock_i)->toggleViewAction());
+        for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
+            viewMenu->addAction(dockList->at(dock_i)->toggleViewAction());
         }
         uiState = mainWindow->saveState();
 
@@ -326,8 +378,19 @@ int Pelicun3PostProcessor::extractDataAddToTable(QJsonArray& features, QStringLi
         for (int n = 0; n < attributes.count(); n++){
             QString attri = attributes.at(n);
             if (!properties.contains(attri)){
-                this->errorMessage(attri + QString(" dose not exist in R2D_results.geojson"));
-                return -1;
+                if (!properties.contains("type")) {
+//                    this->errorMessage(attri + QString("dose not exist in R2D_results.geojson"));
+                    return -1;
+                } else {
+//                    this->errorMessage(attri + QString("for") + properties["type"].toString() + QString(" ") + ft["id"].toString() + QString(" dose not exist in R2D_results.geojson"));
+                    if (attri.compare("AIM_id")==0){
+                        auto item = new TableNumberItem(QString::number(m));
+                        table->setItem(m, n, item);
+                    } else {
+                        auto item = new TableNumberItem("");
+                        table->setItem(m, n, item);
+                    }
+                }
             }
             else{
                 if (attri.compare("AIM_id")==0){
@@ -545,12 +608,12 @@ void Pelicun3PostProcessor::clear(void)
         parentWidget->clear();
     }
     tableList.clear();
-    for (int i = 0; i < dockList.count(); i++){
-        QDockWidget* parentWidget = dockList.at(i);
+    for (int i = 0; i < dockList->count(); i++){
+        QDockWidget* parentWidget = dockList->at(i);
         qDeleteAll(parentWidget->findChildren<QWidget*>("", Qt::FindDirectChildrenOnly));
-        delete dockList.at(i);
+        delete dockList->at(i);
     }
-    dockList.clear();
+    dockList->clear();
 
     mapViewSubWidget->clear();
 }

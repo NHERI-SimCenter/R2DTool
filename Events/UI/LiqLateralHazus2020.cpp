@@ -200,8 +200,14 @@ void LiqLateralHazus2020::setDefaultFilePath(){
     QString backendDataBasePath = QCoreApplication::applicationDirPath() + QDir::separator() + "Databases"+ QDir::separator() + "groundFailure";
 
     DistWaterFilePath = backendDataBasePath + QDir::separator() +
-                        "CA_DistAnyWaterNoWB_1km_WGS84_km" + QDir::separator() +
-                        "CA_DistAnyWaterNoWB_1km_WGS84_km.tif";
+                        "CA_DistAnyWaterWB_1km_WGS84_km" + QDir::separator() +
+                        "CA_DistAnyWaterWB_1km_WGS84_km.tif";
+
+    // QFile DistWaterFile(DistWaterFilePath);
+    // if (!DistWaterFile.exists()){
+    //     qDebug() << DistWaterFilePath;
+    //     DistWaterFilePath = "";
+    // }
 
     this->DistWaterFilenameLineEdit->setText(DistWaterFilePath);
 

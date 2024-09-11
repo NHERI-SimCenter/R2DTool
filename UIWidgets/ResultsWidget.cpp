@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetInputDelegate.h"
 #include "DLWidget.h"
+#include "SystemPerformanceWidget.h"
 #include "GeneralInformationWidget.h"
 #include "PelicunPostProcessor.h"
 #include "CBCitiesPostProcessor.h"
@@ -45,7 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 #include "SimCenterPreferences.h"
 #include <WorkflowAppR2D.h>
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 
 #include <QCheckBox>
 #include <QApplication>
@@ -236,7 +237,10 @@ bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 
 int ResultsWidget::processResults(QString resultsDirectory)
 {
-    //auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.SimCenter" + QDir::separator() + "Results";
+  //
+  // clear current results
+  //
+  
     int tabCount = resTabWidget->count();
     for (int ind = 0; ind < tabCount; ind++){
         SC_ResultsWidget* tab = static_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
@@ -255,12 +259,18 @@ int ResultsWidget::processResults(QString resultsDirectory)
     }
     QgsProject *project = QgsProject::instance();
     for (QgsMapLayer *layer : project->mapLayers().values()) {
-//        QString
         if ((layer->name() == "Results")||(layer->name() == "Most Likely Critical Damage State")) {
             theVisualizationWidget->removeLayer(layer);
         }
     }
 
+    //
+    // opening large geojson file, create layers in main VIZ
+    //    1. first divide features into types
+    //    2. creating small geojson for each type    
+    //
+
+    // 1. first divide features into types
     QString pathGeojson = resultsDirectory + QDir::separator() +  QString("R2D_results.geojson");
     QFile jsonFile(pathGeojson);
     QMap<QString, QList<QJsonObject>> assetDictionary;
@@ -346,12 +356,8 @@ int ResultsWidget::processResults(QString resultsDirectory)
             }
         }
     }
-    else{
-        // for legacy pelicun 2 results
-//        this->errorMessage("Failed to open file at location: "+pathGeojson);
-//        return false;
-    }
 
+    // 2. creating small geojson for each type
     if (jsonFile.exists()){
     QVector<QgsMapLayer*> mapLayers;
     QVector<QgsMapLayer*> DMGLayers;
@@ -381,11 +387,17 @@ int ResultsWidget::processResults(QString resultsDirectory)
             return false;
         }
 
+	//
+
         // Write the file to the folder
         QJsonDocument doc(assetDictionary);
         file.write(doc.toJson());
         file.close();
 
+	//
+	// create layers in main VIZ
+	//
+	
         QgsVectorLayer* assetLayer;
         assetLayer = theVisualizationWidget->addVectorLayer(outputFile, assetType + QString("_results"), "ogr");
         if(assetLayer == nullptr)
@@ -433,40 +445,115 @@ int ResultsWidget::processResults(QString resultsDirectory)
         }
     }
 
-    auto activeComponents = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLApps();
-    auto activeAssetDLappMap = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveAssetDLMap();
-    if(activeComponents.isEmpty())
-        return -1;
 
     qDebug() << resultsDirectory;
 
-    QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
+    //
+    // Get results widgets from each of DL asset types and system performance & add to Tabbed widget
+    //
+    
+//    QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
+//    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent);
 
 
-    try {
-        for (QString assetType : activeDLResultsWidgets.keys()){
-            activeDLResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
-            resTabWidget->addTab(activeDLResultsWidgets[assetType], assetType);
-            QString resultFile = assetType + QString(".geojson");
-            QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
-            activeDLResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
-
-        }
-    } catch (const QString msg)
-    {
-        this->errorMessage(msg);
-
-        return -1;
+    QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent, this, assetTypeToType);
+    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent, this, assetTypeToType);
+    for (QString assetType : activeDLResultsWidgets.keys()){
+        resTabWidget->addTab(activeDLResultsWidgets[assetType], assetType);
+        activeDLResultsWidgets[assetType]->addResultTab(assetType, resultsDirectory);
     }
+    for (QString assetType : activeSPResultsWidgets.keys()){
+        // check if assetType is in resTabWidget
+        // If yes, add new tab
+        // if not, add to the tab
+        bool tabExist = false;
+        for (int tab_i = 0; tab_i < resTabWidget->count(); tab_i++){
+            if (resTabWidget->tabText(tab_i) == assetType){
+                tabExist = true;
+                break;
+            }
+        }
+        // If not exsit
+        if (!tabExist){
+            activeSPResultsWidgets[assetType]->addResultTab(assetType, resultsDirectory);
+        } else {
+            // If exsits
+            activeSPResultsWidgets[assetType]->addResultSubtab(assetType, activeDLResultsWidgets[assetType], resultsDirectory);
+        }
+    }
+
+
+
+//    try {
+//        for (QString assetType : activeDLResultsWidgets.keys()){
+//            activeDLResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
+//            resTabWidget->addTab(activeDLResultsWidgets[assetType], assetType);
+//            QString resultFile = assetType + QString(".geojson");
+//            QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+//            activeDLResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+//        }
+//    } catch (const QString msg)
+//    {
+//        this->errorMessage(msg);
+
+//        return -1;
+//    }
+
+//    try {
+//        for (QString assetType : activeSPResultsWidgets.keys()){
+//            activeSPResultsWidgets[assetType]->setVisualizationWidget(theVisualizationWidget);
+//            // check if assetType is in resTabWidget
+//            // If yes, add new tab
+//            // if not, add to the tab
+//            bool tabExist = false;
+//            int existTabIndex = 0;
+//            for (int tab_i = 0; tab_i < resTabWidget->count(); tab_i++){
+//                if (resTabWidget->tabText(tab_i) == assetType){
+//                    tabExist = true;
+//                    existTabIndex = tab_i;
+//                    break;
+//                }
+//            }
+
+//	    //
+//	    // add tab .. if new process results, if existing addResults
+//	    //
+	    
+//            if( !tabExist ){
+	      
+//                resTabWidget->addTab(activeSPResultsWidgets[assetType], assetType);
+//                QString resultFile = assetType + QString(".geojson");
+//                QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+//                activeSPResultsWidgets[assetType]->processResults(resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+		
+//            } else {
+	      
+//                SC_ResultsWidget* currResultsTab = dynamic_cast<SC_ResultsWidget*>(resTabWidget->widget(existTabIndex));
+//                if(currResultsTab==nullptr){
+//                    this->errorMessage("Failed to cast current results to SC_ResultsWidget");
+//                } else {
+//                    QString resultFile = assetType + QString(".geojson");
+//                    QString assetTypeSimplified = assetType.simplified().replace( " ", "" );
+//                    activeSPResultsWidgets[assetType]->addResults(currResultsTab,resultFile, resultsDirectory, assetType, assetTypeToType[assetTypeSimplified]);
+//                }
+//            }
+
+
+//        }
+//    } catch (const QString msg)
+//    {
+//        this->errorMessage(msg);
+
+//        return -1;
+//    }
+
     try
     {
-        if (activeAssetDLappMap.contains("Buildings") && activeAssetDLappMap["Buildings"].compare("pelicun")==0){
-            resTabWidget->addTab(thePelicunPostProcessor.get(),"Buildings");
-            thePelicunPostProcessor->importResults(resultsDirectory);
-        }
-        if(activeAssetDLappMap.contains("Water Network") && activeAssetDLappMap["Water Network"].compare("CBCitiesDL")==0)
+        auto activeAssetDLappMap = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveAssetDLMap();
+
+        if(activeAssetDLappMap.contains("Water Distribution Network") && activeAssetDLappMap["Water Distribution Network"].compare("CBCitiesDL")==0)
         {
-            resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Network");
+            resTabWidget->addTab(theCBCitiesPostProcessor.get(),"Water Distribution Network");
             theCBCitiesPostProcessor->importResults(resultsDirectory);
         }
         if(activeAssetDLappMap.contains("Gas Network") && activeAssetDLappMap["Gas Network"].compare("OpenSRA")==0)
@@ -625,6 +712,14 @@ void ResultsWidget::clear(void)
     }
 
     resultsShow(false);
+}
+
+VisualizationWidget* ResultsWidget::getVisualizationWidget(){
+    return theVisualizationWidget;
+}
+
+QTabWidget* ResultsWidget::getTabWidget(){
+    return resTabWidget;
 }
 
 

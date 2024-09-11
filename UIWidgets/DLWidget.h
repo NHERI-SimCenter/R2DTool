@@ -42,7 +42,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SC_ResultsWidget.h"
 #include "Pelicun3PostProcessor.h"
 #include "VisualizationWidget.h"
+#include "ResultsWidget.h"
 
+//#include <QMap>
 class VisualizationWidget;
 class SimCenterAppSelection;
 
@@ -53,12 +55,13 @@ class DLWidget : public  MultiComponentR2D
 public:
     explicit DLWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~DLWidget();
+    bool outputCitation(QJsonObject &jsonObject) override;
 
     void clear(void);
 
     QList<QString> getActiveDLApps(void);
     QMap<QString, QString> getActiveAssetDLMap(void);
-    QMap<QString, SC_ResultsWidget*> getActiveDLResultsWidgets(QWidget *parent);
+    QMap<QString, SC_ResultsWidget*> getActiveDLResultsWidgets(QWidget *parent, ResultsWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
 
 private:
     SimCenterAppSelection *buildingWidget = nullptr;

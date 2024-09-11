@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "BuildingEDPEQWidget.h"
 #include "StandardEarthquakeEDP.h"
 #include "UserDefinedEDPR.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>

@@ -123,3 +123,20 @@ void Vs30Widget::setupConnections()
 
 
 }
+
+bool Vs30Widget::outputCitation(QJsonObject &jsonObject){
+    QJsonObject outputToJsonObj;
+    m_vs30.outputToJSON(outputToJsonObj);
+    QString vs30Type = outputToJsonObj["Type"].toString();
+    if (vs30Type == "CGS/Wills Vs30 (Wills et al., 2015)"){
+        jsonObject.insert("citation", QString("Wills, C. J., Gutierrez, C. I., Perez, F. G., & Branum, D. M. (2015). A next generation VS 30 map for California based on geology and topography. Bulletin of the Seismological Society of America, 105(6), 3083-3091."));
+    }
+    if (vs30Type == "Thompson California Vs30 (Thompson et al., 2018)"){
+        jsonObject.insert("citation", QString("Thompson, E.M., 2018, An Updated Vs30 Map for California with Geologic and Topographic Constraints: U.S. Geological Survey data release."));
+    }
+    if (vs30Type == "Global Vs30 (Heath et al., 2020)"){
+        jsonObject.insert("citation", QString("THeath, D. C., Wald, D. J., Worden, C. B., Thompson, E. M., & Smoczyk, G. M. (2020). A global hybrid VS30 map with a topographic slope–based default and regional map insets. Earthquake Spectra, 36(3), 1570–1584."));
+    }
+	
+	return true;
+}

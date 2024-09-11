@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "EDP.h"
-#include "sectiontitle.h"
+#include "SectionTitle.h"
 #include "UserDefinedEDPR.h"
 
 #include <QDebug>

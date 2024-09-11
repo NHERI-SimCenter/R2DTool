@@ -55,6 +55,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <sstream>
 #include <iostream>
 #include <QSpinBox>
+class QJsonObject;
 
 using namespace std;
 
@@ -97,6 +98,7 @@ public:
     bool outputAppDataToJSON(QJsonObject &rvObject) override;
     bool inputAppDataFromJSON(QJsonObject &rvObject) override;
     bool copyFiles(QString &dirName) override;
+    bool outputCitation(QJsonObject &jsonObject) override;
     SimCenterAppSelection *buildingWidget;
 
     QString getMainInput();

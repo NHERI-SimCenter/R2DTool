@@ -96,7 +96,7 @@ public:
     void onExitButtonClicked();
     int getMaxNumParallelTasks();
     //int createCitation(QJsonObject &citation, QString &citeFile);
-    int createCitation(QJsonObject &citation);  
+    int createCitation(QJsonObject &citation, QString citeFile);  
     void initialize(void);
     
     void setActiveWidget(SimCenterAppWidget* widget);
@@ -105,6 +105,7 @@ public:
     AssetsWidget *getAssetsWidget() const;
     GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
     DLWidget *getTheDamageAndLossWidget() const;
+    SystemPerformanceWidget *getTheSystemPerformanceWidget() const;
 
     LocalApplication *getLocalApp() const;
     RandomVariablesWidget *getTheRandomVariableWidget() const;

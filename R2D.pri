@@ -56,6 +56,8 @@ INCLUDEPATH += $$PWD \
 SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Events/UI/BedrockDepthWidget.cpp \
     $$PWD/Events/UI/GroundFailureWidget.cpp \
+    $$PWD/Events/UI/LandslideBrayMacedo2019.cpp \
+    $$PWD/Events/UI/LandslideWidget.cpp \
     $$PWD/Events/UI/LiqLateralHazus2020.cpp \
     $$PWD/Events/UI/LiqTriggerHazus2020.cpp \
     $$PWD/Events/UI/LiqVerticalHazus2020.cpp \
@@ -134,6 +136,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/PelicunPostProcessor.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
+    $$PWD/Tools/ResidualDemandResults.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
@@ -236,6 +239,8 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
 HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Events/UI/BedrockDepthWidget.h \
     $$PWD/Events/UI/GroundFailureWidget.h \
+    $$PWD/Events/UI/LandslideBrayMacedo2019.h \
+    $$PWD/Events/UI/LandslideWidget.h \
     $$PWD/Events/UI/LiqLateralHazus2020.h \
     $$PWD/Events/UI/LiqTriggerHazus2020.h \
     $$PWD/Events/UI/LiqVerticalHazus2020.h \
@@ -307,6 +312,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/PelicunPostProcessor.h \
             $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
+    $$PWD/Tools/ResidualDemandResults.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \

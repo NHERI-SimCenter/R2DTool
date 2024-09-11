@@ -83,7 +83,7 @@ equals(QT_MAJOR_VERSION, 5) {
         }
 }
 
-DEFINES += Q_GIS
+DEFINES += Q_GIS _R2D
 
 win32:DEFINES +=  CURL_STATICLIB
 
@@ -162,9 +162,12 @@ RESOURCES += \
 DISTFILES += \
     resources/docs/textAboutR2DT.html
 
+DEFINES += _R2D
+
 # External libraries
 macos:LIBS += -lcurl -llapack -lblas
-linux:LIBS += /usr/lib/libcurl.so
+linux:LIBS += /usr/lib/x86_64-linux-gnu/libcurl.so
+
 
 # Path to build directory
 win32 {

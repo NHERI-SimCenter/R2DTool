@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QPushButton>
 #include <QStackedWidget>
+#include <QJsonArray>
 
 InputWidgetOpenSeesPyAnalysis::InputWidgetOpenSeesPyAnalysis(QWidget *parent)
     : SimCenterAppWidget(parent)
@@ -514,7 +515,16 @@ void InputWidgetOpenSeesPyAnalysis::dampingEditingFinished() {
 //        }
 //    }
 }
-
+bool InputWidgetOpenSeesPyAnalysis::outputCitation(QJsonObject &jsonObject){
+    QJsonArray citations;
+    QJsonObject jsonObject1;
+    jsonObject1["Citation"] = QString("Zhu, M., McKenna, F., & Scott, M. H. (2018). OpenSeesPy: Python library for the OpenSees finite element framework. SoftwareX, 7, 6-11.");
+    jsonObject1["description"] = QString("Please cite this paper when OpenSeesPy is selected as analysis engine.");
+    citations.append(jsonObject1);
+    jsonObject["citations"] = citations;
+	
+	return true;
+}
 
 void InputWidgetOpenSeesPyAnalysis::toleranceEditingFinished() {
 //    QString text = "BLAH"; // theTolerance->text();

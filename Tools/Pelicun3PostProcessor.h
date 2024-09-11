@@ -73,6 +73,7 @@ class Pelicun3PostProcessor : public SC_ResultsWidget
 
 public:
     Pelicun3PostProcessor(QWidget *parent);
+    Pelicun3PostProcessor(QWidget *parent, QWidget *resWidget, QMap<QString, QList<QString>> assetTypeToType);
 //    Pelicun3PostProcessor(QWidget *parent, VisualizationWidget* visWidget);
 
     int printToPDF(const QString& outputPath);
@@ -120,10 +121,14 @@ public:
 
     void setIsVisible(const bool value);
 
+    int addResultTab(QString tabName, QString &dirName);
+
+    int addResultSubtab(QString name, QWidget* existTab, QString &dirName);
+
     int processResults(QString &outputFile, QString &dirName, QString &assetType,
                        QList<QString> typesInAssetType);
 
-    QMainWindow* mainWindow;
+
 private slots:
 
     int assemblePDF(QImage screenShot);
@@ -142,21 +147,6 @@ private:
 
     QString outputFilePath;
 
-    QMenu* viewMenu;
-
-//    QLabel* totalRepairCostLabel;
-//    QLabel* totalRepairTimeSequentialLabel;
-//    QLabel* totalRepairTimeParallelLabel;
-
-//    QLabel* totalRepairCostValueLabel;
-//    QLabel* totalRepairTimeSequentialValueLabel;
-//    QLabel* totalRepairTimeParallelValueLabel;
-
-//    QLabel* totalCostNoteLabel;
-//    QWidget* totalsWidget;
-//    QWidget* totalAndFootNoteWidget;
-//    QVBoxLayout* totalAndFootNoteLayout;
-
 
     QDockWidget* mapViewDock;
 //    QDockWidget* summaryDock;
@@ -164,21 +154,17 @@ private:
     QWidget *tableWidget;
     QVBoxLayout* layout;
 
-    QList<QDockWidget*> dockList;
+//    QList<QDockWidget*> dockList;
     QList<QTableWidget*> tableList;
 
-    VisualizationWidget* theVisualizationWidget;
-
     QComboBox* sortComboBox;
-
-    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
 
     QGraphicsView* mapViewMainWidget;
 
 
     int extractDataAddToTable(QJsonArray& features, QStringList& attributes, QTableWidget* table, QStringList headings);
 
-    QByteArray uiState;
+//    QByteArray uiState;
 
     // kz: adding a dock layer under detailed results for different assets
     QDockWidget* tableDock;

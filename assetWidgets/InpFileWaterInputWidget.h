@@ -83,6 +83,7 @@ protected:
     QLineEdit* inpFileLineEdit = nullptr;
     QString    geoJsonFileName;
     QString    crsAuthID;
+    QString    defaultCRS;
   
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
     MultiComponentR2D* mainAssetWidget = nullptr;

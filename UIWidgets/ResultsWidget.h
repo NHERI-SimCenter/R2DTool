@@ -73,6 +73,9 @@ public:
 
     void resultsShow(bool value);
 
+    VisualizationWidget* getVisualizationWidget();
+    QTabWidget* getTabWidget();
+
 private slots:
 
     int printToPDF(void);
