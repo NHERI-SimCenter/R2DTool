@@ -36,7 +36,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "CSVReaderWriter.h"
 #include "LayerTreeView.h"
 #include "RasterHazardInputWidget.h"
 #include "VisualizationWidget.h"
@@ -92,7 +91,6 @@ RasterHazardInputWidget::RasterHazardInputWidget(QGISVisualizationWidget* visWid
     layout->addStretch();
     this->setLayout(layout);
 
-    eventFile = "EventGrid.csv";
 }
 
 
@@ -126,13 +124,12 @@ bool RasterHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 bool RasterHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
-    QFileInfo theFile(pathToEventFile);
+    QFileInfo theFile(rasterFilePath);
     if (theFile.exists()) {
         jsonObj["eventFile"]= theFile.fileName();
         jsonObj["eventFilePath"]=theFile.path();
     } else {
-      jsonObj["eventFile"]=eventFile; 
-        jsonObj["eventFilePath"]=QString("");
+        return false;
     }
 
     bool res = theIMs->outputToJSON(jsonObj);
@@ -144,9 +141,6 @@ bool RasterHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 bool RasterHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     // Set the units
-
-    if (jsonObject.contains("eventFile"))
-        eventFile = jsonObject["eventFile"].toString();
 
     bool res = theIMs->inputFromJSON(jsonObject);
     if (res == false) 
@@ -453,23 +447,6 @@ void RasterHazardInputWidget::handleLayerCrsChanged(const QgsCoordinateReference
 bool RasterHazardInputWidget::copyFiles(QString &destDir)
 {
 
-  // here we create the EventGris and Site files
-  if(eventFile.isEmpty())
-    {
-      eventFile = QString("EventFile.csv");
-    }
-
-    int  numBands = rasterlayer->bandCount();
-    QStringList selectedIMs = theIMs->getSelectedIMs();
-    
-    if(numBands != selectedIMs.size())
-    {
-        this->infoMessage("In raster hazard input widget, the number of bands in the raster is not equal to the number of band names from the IM Widget!!");
-	return false;
-    }
-
-    pathToEventFile = destDir + QDir::separator() + eventFile;
-
     QFileInfo rasterFileNameInfo(rasterFilePath);
 
     auto rasterFileName = rasterFileNameInfo.fileName();
@@ -477,148 +454,7 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
     if (!QFile::copy(rasterFilePath, destDir + QDir::separator() + rasterFileName))
         return false;
 
-    emit outputDirectoryPathChanged(destDir, pathToEventFile);
-
-    auto theAssetDBs = ComponentDatabaseManager::getInstance()->getAllAssetDatabases();
-
-    if(theAssetDBs.empty())
-    {
-        this->errorMessage("Error in copy files could not find any asset databases. Did you upload any assets?");
-        return false;
-    }
-
-
-    QVector<QStringList> pointDataVector;
-
-    // Iterate through the asset databases
-    for(auto&& theAssetDB :  theAssetDBs)
-    {
-
-        auto selectedAssetsLayer = theAssetDB->getSelectedLayer();
-
-        if (selectedAssetsLayer == nullptr)
-            continue;
-
-        auto numPoints = theAssetDB->getSelectedLayer()->featureCount();
-
-        pointDataVector.reserve(pointDataVector.size() + numPoints);
-
-        QgsFeatureIterator fit = theAssetDB->getSelectedLayer()->getFeatures();
-
-        QgsFeature feature;
-        while (fit.nextFeature(feature))
-        {
-
-            // Get the latitude and lon of the asset
-            auto featAtrb = feature.attributes();
-            auto latIndx = feature.fieldNameIndex("Latitude");
-            auto lonIndx = feature.fieldNameIndex("Longitude");
-
-            double x = 0.0;
-            double y = 0.0;
-
-            // First check if the lat/lon is explicitly provided
-            if(latIndx != -1 || lonIndx != -1)
-            {
-
-                bool OK = false;
-                x = featAtrb.at(lonIndx).toDouble(&OK);
-                if(!OK)
-                {
-                    this->errorMessage("Could not get the latitude from the asset");
-                    return false;
-                }
-                y = featAtrb.at(latIndx).toDouble(&OK);
-                if(!OK)
-                {
-                    this->errorMessage("Could not get the latitude from the asset");
-                    return false;
-                }
-            }
-            else // Get the centroid of the geometry and use that as asset location
-            {
-                // Sample the raster at the centroid of the geometry
-                auto centroid = feature.geometry().centroid().asPoint();
-                x = centroid.x();
-                y = centroid.y();
-            }
-
-            auto xstr = QString::number(x,'g', 10);
-            auto ystr = QString::number(y,'g', 10);
-
-            QStringList pointData;
-            pointData.append(xstr);
-            pointData.append(ystr);
-
-            for(int i = 0; i< selectedIMs.size(); ++i)
-            {
-                auto val = this->sampleRaster(x, y, i+1);
-                auto valStr = QString::number(val);
-
-                pointData.append(valStr);
-            }
-
-            pointDataVector.push_back(pointData);
-        }
-    }
-
-    // Save the hazards as a bunch of csv files
-    if(!asHdf5)
-    {
-        CSVReaderWriter csvTool;
-
-        // First create the event grid file
-        QVector<QStringList> gridData;
-
-        QStringList headerRow = {"GP_file", "Latitude", "Longitude"};
-        gridData.push_back(headerRow);
-
-        // QStringList stationHeader = bandNames;
-
-        QApplication::processEvents();
-
-        for(int i = 0; i<pointDataVector.size(); ++i)
-        {
-            auto stationFile = "Site_"+QString::number(i)+".csv";
-
-            auto point = pointDataVector.at(i);
-
-            auto lon = point.at(0);
-            auto lat = point.at(1);
-
-            // Get the grid row
-            QStringList gridRow = {stationFile, lat, lon};
-            gridData.push_back(gridRow);
-
-            QStringList stationRow = {point.begin()+2,point.end()};
-
-            // Save the station data
-            QVector<QStringList> stationData = {selectedIMs};
-						
-
-            stationData.push_back(stationRow);
-
-            QString pathToStationFile = destDir + QDir::separator() + stationFile;
-
-            QString err;
-            auto res2 = csvTool.saveCSVFile(stationData, pathToStationFile, err);
-            if(res2 != 0)
-            {
-                this->errorMessage(err);
-                return false;
-            }
-
-        }
-
-        // Now save the site grid .csv file
-        QString err2;
-        auto res2 = csvTool.saveCSVFile(gridData, pathToEventFile, err2);
-        if(res2 != 0)
-        {
-            this->errorMessage(err2);
-            return false;
-        }
-    }
+    emit outputDirectoryPathChanged(destDir, rasterFilePath);
 
 
     return true;
