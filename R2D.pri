@@ -134,9 +134,11 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/PelicunPostProcessor.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
-    $$PWD/Tools/ResidualDemandResults.cpp \
+            $$PWD/Tools/ResidualDemandResults.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
+            $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.cpp \
+            $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
             $$PWD/UIWidgets/AssetsWidget.cpp \
             $$PWD/UIWidgets/BuildingDMEQWidget.cpp \
@@ -290,7 +292,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Events/UI/SpatialCorrelationWidget.h \
             $$PWD/Events/UI/Vs30.h \
             $$PWD/Events/UI/Vs30Widget.h \
-    $$PWD/Events/UI/LiqTriggerZhuEtAl2017.h \
+            $$PWD/Events/UI/LiqTriggerZhuEtAl2017.h \
             $$PWD/Events/UI/zDepthWidget.h \
             $$PWD/Events/UI/zDepthUserInputWidget.h \
             $$PWD/Tools/AssetInputDelegate.h \
@@ -300,14 +302,16 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/GeoJSONReaderWriter.h \
             $$PWD/Tools/ComponentDatabaseManager.h \
             $$PWD/Tools/NGAW2Converter.h \
-    $$PWD/Tools/Pelicun3PostProcessor.h \
+            $$PWD/Tools/Pelicun3PostProcessor.h \
             $$PWD/Tools/PelicunPostProcessor.h \
             $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
-    $$PWD/Tools/ResidualDemandResults.h \
+            $$PWD/Tools/ResidualDemandResults.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \
+            $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.h \
+            $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.h \
             $$PWD/UIWidgets/AnalysisWidget.h \
             $$PWD/UIWidgets/AssetsWidget.h \
             $$PWD/UIWidgets/BuildingDMEQWidget.h \
