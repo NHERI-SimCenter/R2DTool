@@ -172,10 +172,10 @@ int RewetResults::addResultSubtab(QString name, QWidget* existTab, QString &dirN
         int ret_value =  extractDataFramJSON(jsonObj, allSeiries);
 
         // Set titles for the chart
-        QMap<QString, QString> titles;
-        titles.insert("title", "Network Performace");
-        titles.insert("hAxis", "time");
-        titles.insert("vAxis", "Percent");    
+        // QMap<QString, QString> titles;
+        // titles.insert("title", "Network Performace");
+        // titles.insert("hAxis", "time");
+        // titles.insert("vAxis", "Percent");    
 
         // sCreate SC_TimeSeries Widget
         chart = new SC_TimeSeriesResultChart(allSeiries, titles, rewetResultWidget);
