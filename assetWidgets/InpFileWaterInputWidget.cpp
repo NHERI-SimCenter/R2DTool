@@ -241,17 +241,20 @@ bool InpFileWaterInputWidget::copyFiles(QString &destDir)
 
 bool InpFileWaterInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 {
+    qDebug()<<"--------------\n"<<"Sina in outputAppDataToJSON\n";
     jsonObject["Application"]="INP_FILE";
 
     QJsonObject data;
 
     QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(defaultCRS);
-    if (!qgsCRS.isValid()){
+    qDebug() << "SINA: "<<qgsCRS.isValid()<< "  " << defaultCRS << "\n";
+    if (qgsCRS.isValid()){
         data.insert("Default_CRS", defaultCRS);
     } else {
-        this->errorMessage("The CRS is not valid" + inpFileLineEdit->text());
+        this->errorMessage("The CRS is not valid " + inpFileLineEdit->text());
 	return false;
     }
+    qDebug() << "SINA: "<<qgsCRS.isValid()<< "  " << defaultCRS << "\n";
     
     QFileInfo inpFile(inpFileLineEdit->text());
     if (inpFile.exists()){
@@ -322,7 +325,7 @@ bool InpFileWaterInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 bool InpFileWaterInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
     // Check the app type
-    qDebug() << "------------ sina -------------\n"<<jsonObject["Application"].toString() <<"\n";
+    //qDebug() << "------------ sina -------------\n"<<jsonObject["Application"].toString() <<"\n";
     if (jsonObject.contains("Application")) {
         if ("INP_FILE" != jsonObject["Application"].toString()) {
             this->errorMessage("InpFileWaterInputWidget::inputFRommJSON app name conflict");
@@ -345,7 +348,7 @@ bool InpFileWaterInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     }
     else defaultCRS = "";
 
-    qDebug() << "Khodaaaaaa: "<<defaultCRS <<"\n";
+    //qDebug() << "Khodaaaaaa: "<<defaultCRS <<"\n";
 
     QString fileName;
 
@@ -454,6 +457,7 @@ extern "C" int createJSON(const char *, const char *, const char *, const char *
 
 bool InpFileWaterInputWidget::loadAssetData()
 {
+    qDebug()<<"--------------\n"<<"Sina in loadAssetData\n";
     QString pathInpFileWater = inpFileLineEdit->text();
 
     //
@@ -471,10 +475,10 @@ bool InpFileWaterInputWidget::loadAssetData()
     QString tmp1 = writableDir.filePath("SimCenter.thing1");
     QString tmp2 = writableDir.filePath("SimCenter.thing2");
     
-    qDebug() << pathInpFileWater;
-    qDebug() << tmp1;
-    qDebug() << tmp2;
-    qDebug() << geoJsonFileName;    
+    //qDebug() << pathInpFileWater;
+    //qDebug() << tmp1;
+    //qDebug() << tmp2;
+    //qDebug() << geoJsonFileName;    
     
     createJSON(pathInpFileWater.toStdString().c_str(),
 	       tmp1.toStdString().c_str(),
@@ -497,6 +501,7 @@ bool InpFileWaterInputWidget::loadAssetData()
       //QString crsString = crs["properties"].toObject()["name"].toString();
       //QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(inputCRS);
       QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(defaultCRS);
+      qDebug() << "SINA: "<<qgsCRS.isValid()<< "  " << defaultCRS << "\n";
       if (!qgsCRS.isValid()){
 	        qgsCRS.createFromOgcWmsCrs(defaultCRS);
        }
