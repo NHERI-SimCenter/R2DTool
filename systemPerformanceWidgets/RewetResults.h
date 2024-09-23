@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: fmk
+// Written by: fmk, Sina Naeimi
 
 #include "ComponentDatabase.h"
 #include "SC_ResultsWidget.h"
@@ -47,17 +47,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMainWindow>
 #include <QJsonArray>
 #include <RewetResults.h>
-
+#include <QJsonObject>
 
 class QVBoxLayout;
 class QGISVisualizationWidget;
-
+class SC_TimeSeriesResultChart;
 
 namespace QtCharts
 {
-class QChartView;
-class QBarSet;
-class QChart;
+    class QChartView;
+    class QBarSet;
+    class QChart;
+    class QLineSeries;
 }
 
 class RewetResults : public SC_ResultsWidget
@@ -83,7 +84,10 @@ protected:
 
 private:
 
+    QMap<QString, QMap<QString, QLineSeries *>> *allSeiries;
     QGISVisualizationWidget* theVisualizationWidget;
+    int extractDataFramJSON(QJsonObject, QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries);
+    SC_TimeSeriesResultChart *chart;
 };
 
 #endif // REWET_RESULTS_H
