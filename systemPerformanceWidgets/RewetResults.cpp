@@ -178,7 +178,7 @@ int RewetResults::addResultSubtab(QString name, QWidget* existTab, QString &dirN
         // titles.insert("vAxis", "Percent");    
 
         // sCreate SC_TimeSeries Widget
-        chart = new SC_TimeSeriesResultChart(allSeiries, titles, rewetResultWidget);
+        chart = new SC_TimeSeriesResultChart(allSeiries, rewetResultWidget);
         // Add mean and 90th percentile lines
         chart->addMean("Mean", QColor("Black"), Qt::SolidLine, 3);
         chart->addPercentile("90th Percentile", 0.95, QColor("red"), Qt::CustomDashLine, 3);

@@ -84,7 +84,7 @@ protected:
 
 private:
 
-    QMap<QString, QMap<QString, QLineSeries *>> *allSeiries;
+    QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries;
     QGISVisualizationWidget* theVisualizationWidget;
     int extractDataFramJSON(QJsonObject, QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries);
     SC_TimeSeriesResultChart *chart;
