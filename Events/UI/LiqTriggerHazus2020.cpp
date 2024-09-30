@@ -217,15 +217,31 @@ void LiqTriggerHazus2020::loadFile(QString fieldKey)
     {
         return;
     }
-    // Check if raster
-    QString retError;
-    QgsVectorLayer testLayer = QgsVectorLayer(newFilePath, "testLayer", "ogr");
-    if(!testLayer.isValid()){
-        QString errMsg = "The file selected for " + fieldKey + "is not a valid vector file.";
-        qDebug() << errMsg;
-        this->errorMessage(errMsg);
-        return;
+    // Check if valid files
+    if (fieldKey.compare("Geologic Map") == 0){
+        QgsVectorLayer testLayer = QgsVectorLayer(newFilePath, "testLayer", "ogr");
+        if (!testLayer.isValid()) {
+                QString errMsg = "The file selected for " + fieldKey + "is not a valid vector file.";
+                qDebug() << errMsg;
+                this->errorMessage(errMsg);
+                return;
+        }
+    } else if (fieldKey.compare("Ground Water Table Depth")==0){
+//        QgsRaster;
+//        if (testLayer.isValid()){
+//            validFile = true;
+//        } else {
+//            qDebug() << testLayer.error().summary();
+//        }
+        QString retError;
+        if(!QgsRasterLayer::isValidRasterFileName(newFilePath, retError)){
+            QString errMsg = "The file selected for " + fieldKey + "is not a valid raster file.";
+            qDebug() << errMsg;
+            this->errorMessage(errMsg);
+            return;
+        }
     }
+
     if (fieldKey.compare("Ground Water Table Depth")==0)
     {
         this->GwDepthFilePath = newFilePath;
