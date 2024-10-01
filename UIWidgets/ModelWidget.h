@@ -58,6 +58,7 @@ private:
     SimCenterAppSelection *pipelineWidget = nullptr;
     SimCenterAppSelection *WDNWidget = nullptr;
     SimCenterAppSelection *transportWidget = nullptr;
+    SimCenterAppSelection *multiFidelityBuildingModel = nullptr;
 };
 
 #endif // ModelWidget_H

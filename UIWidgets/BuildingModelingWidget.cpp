@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "BuildingSimulationWidget.h"
 #include "CSVtoBIMModelingWidget.h"
 #include "StructuralModelingWidget.h"
+#include "MultiFidelityBuildingModel.h"
 
 #include <QGroupBox>
 #include <QComboBox>
