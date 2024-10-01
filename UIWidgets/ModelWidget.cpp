@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "MDOF_LU.h"
 #include "ModelWidget.h"
+#include "MultiFidelityBuildingModel.h"
 #include "NoArgSimCenterApp.h"
 #include "NoneWidget.h"
 #include "OpenSeesPyBuildingModel.h"
@@ -82,11 +83,13 @@ ModelWidget::ModelWidget(QWidget *parent)
 
     // Building widget apps
     SimCenterAppWidget *mdofLU = new MDOF_LU();
+    SimCenterAppWidget *multiFidelityBuildingModel = new MultiFidelityBuildingModel();
     SimCenterAppWidget *openSeesPy = new OpenSeesPyBuildingModel(this);
 
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
     buildingWidget->addComponent(QString("MDOF-LU"), QString("MDOF-LU"), mdofLU);
+    buildingWidget->addComponent(QString("High-Fidelity Models and MDOF-LU"), QString("multiFidelityBuildingModel"), multiFidelityBuildingModel);
     buildingWidget->addComponent(QString("OpenSeesPy Script Generator"), QString("OpenSeesPyInput"), openSeesPy);
     buildingWidget->addComponent(QString("None"), QString("None"), noneWidget);
 
