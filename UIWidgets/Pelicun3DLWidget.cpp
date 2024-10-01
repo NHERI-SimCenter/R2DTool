@@ -67,6 +67,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     DLTypeComboBox->addItem("HAZUS MH EQ Story");
     DLTypeComboBox->addItem("HAZUS MH EQ IM");
     DLTypeComboBox->addItem("HAZUS MH HU");
+    DLTypeComboBox->addItem("HAZUS MH EQ CSM");
     DLTypeComboBox->addItem("User-provided Models");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
@@ -450,6 +451,11 @@ void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
         groundFailureCheckBox->show();
         autoPopulationScriptLineEdit->setText(
             "PelicunDefault/Hazus_Earthquake_IM.py");
+
+    } else if (text.compare("HAZUS MH EQ CSM") == 0) {
+        groundFailureCheckBox->show();
+        autoPopulationScriptLineEdit->setText(
+            "PelicunDefault/Hazus_Earthquake_CSM.py");
 
     } else if (text.compare("HAZUS MH HU") == 0) {
         // placeholder

@@ -397,10 +397,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     if (theAnalysisBuildingComponent != nullptr) {
         SimCenterAppSelection *theAppSelection = dynamic_cast<SimCenterAppSelection *>(theAnalysisBuildingComponent);
         if (theAppSelection != nullptr) {
-            SimCenterAppWidget *theCurrentSelection = theAppSelection->getCurrentSelection();
-
-            NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
-            if (theNoArgWidget == nullptr || theNoArgWidget->getAppName() != "IMasEDP") {
+            QString ANAAppName = theAppSelection->getCurrentSelectionName();
+            QList<QString> noEDPAnalysisApps = {"IMasEDP", "CapacitySpectrumMethod"};
+            if(!noEDPAnalysisApps.contains(ANAAppName)){
                 QJsonObject buildingEdp;
                 QJsonObject edpData;
                 edpData["Application"]="StandardEarthquakeEDP";
@@ -409,6 +408,17 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
                 buildingEdp["Buildings"] = edpData;
                 apps["EDP"] = buildingEdp;
             }
+//            SimCenterAppWidget *theCurrentSelection = theAppSelection->getCurrentSelection();
+//            NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
+//            if (theNoArgWidget == nullptr || (!noEDPAnalysisApps.contains(theNoArgWidget->getAppName()))) {
+//                QJsonObject buildingEdp;
+//                QJsonObject edpData;
+//                edpData["Application"]="StandardEarthquakeEDP";
+//                QJsonObject edpAppData;
+//                edpData["ApplicationData"] = edpAppData;
+//                buildingEdp["Buildings"] = edpData;
+//                apps["EDP"] = buildingEdp;
+//            }
         }
     }
 
