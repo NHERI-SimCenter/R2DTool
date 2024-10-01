@@ -55,9 +55,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_CheckBox.h>
 #include <SC_TableEdit.h>
 //#include <SC_intLineEdit.h>
+#include <RewetResults.h>
+
 
 RewetRecovery::RewetRecovery(QWidget *parent)
-    : SimCenterAppWidget(parent)
+  : SimCenterAppWidget(parent), resultWidget(0)
 {
     int windowWidth = 800;
 
@@ -534,4 +536,12 @@ bool RewetRecovery::outputCitation(QJsonObject &citation){
   citation.insert(REWETCitationKey, REWETCitationValue);
   
   return true;
+}
+
+SC_ResultsWidget* RewetRecovery::getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
+{
+    if (resultWidget==nullptr){
+        resultWidget = new RewetResults(parent);
+    }
+    return resultWidget;
 }
