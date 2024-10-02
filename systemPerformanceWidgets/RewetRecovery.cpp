@@ -496,12 +496,6 @@ bool RewetRecovery::outputToJSON(QJsonObject &jsonObject)
   nodeTimeBasedDiscoveryTable->outputToJSON(jsonObject);
   tankTimeBasedDiscoveryTable->outputToJSON(jsonObject);
   pumpTimeBasedDiscoveryTable->outputToJSON(jsonObject);
-
-
-  //solver->outputToJSON(jsonObject);
-  //policyDefinitionFile->outputToJSON(jsonObject);
-  
-  // inputSettings->outputToJSON(jsonObject);
   
   return true;
 }
@@ -532,7 +526,7 @@ bool RewetRecovery::copyFiles(QString &destDir) {
 
 bool RewetRecovery::outputCitation(QJsonObject &citation){
   QString REWETCitationKey = "REWET";
-  QJsonValue REWETCitationValue( "\"citations\": [{\"citation\": \"Naeimi Dafchahi, Sina. 2023. “Post-Event Restoration Simulation of Water Distribution Systems: A Generally Applicable Approach.” ProQuest Dissertations Publishing. https://delcat.primo.exlibrisgroup.com/permalink/01UDEL_INST/1sm7l75/cdi_proquest_journals_2867955179\"},{\"citation\": \"Klise, K.A., Hart, D.B., Bynum, M., Hogge, J., Haxton, T., Murray, R., Burkhardt, J. (2020). Water Network Tool for Resilience (WNTR) User Manual: Version 0.2.3. U.S. EPA Office of Research and Development, Washington, DC, EPA/600/R-20/185, 82p.\"}, {\"Rossman, L., H. Woo, M. Tryby, F. Shang, R. Janke, AND T. Haxton. EPANET 2.2 User Manual. U.S. Environmental Protection Agency, Washington, DC, EPA/600/R-20/133, 2020.\"}]}");
+  QJsonValue REWETCitationValue( "\"citations\": [{\"citation\": \"Naeimi, Sina, and Rachel A. Davidson. “REWET: A Tool to Model System Functioning and Restoration of Damaged Water Supply Systems.” Journal of Infrastructure Systems 30.4 (2024): 04024024.},{\"citation\": \"Klise, K.A., Hart, D.B., Bynum, M., Hogge, J., Haxton, T., Murray, R., Burkhardt, J. (2020). Water Network Tool for Resilience (WNTR) User Manual: Version 0.2.3. U.S. EPA Office of Research and Development, Washington, DC, EPA/600/R-20/185, 82p.\"}, {\"Rossman, L., H. Woo, M. Tryby, F. Shang, R. Janke, AND T. Haxton. EPANET 2.2 User Manual. U.S. Environmental Protection Agency, Washington, DC, EPA/600/R-20/133, 2020.\"}]}");
   citation.insert(REWETCitationKey, REWETCitationValue);
   
   return true;

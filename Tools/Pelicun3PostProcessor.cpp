@@ -158,11 +158,15 @@ int Pelicun3PostProcessor::addResultSubtab(QString name, QWidget* existTab, QStr
     SC_ResultsWidget* existingResult = dynamic_cast<SC_ResultsWidget*>(existTab);
     if (existingResult){ // Make a subtab and add to existing result tab
         // DL is always the first to be called, so no need to implement this
-        QWidget* subTab = new QWidget(this);
+        QWidget* subTab = new QDockWidget(this);
         existingResult->addResultSubtab(QString("subTabName"), subTab, dirName);
     }
     else{ //Add the subtab to docklist
         QDockWidget* subTabToAdd = dynamic_cast<QDockWidget*>(existTab);
+        if (!subTabToAdd){
+            qDebug() << "Adding a tab named " + name +" which is not a QDockWidget";
+            return -1;
+        }
         dockList->append(subTabToAdd);
         if (dockList->count()>1){
             QDockWidget* base = dockList->at(0);
