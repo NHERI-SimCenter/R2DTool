@@ -6,12 +6,7 @@
 
 DMG_METHOD="NEW"
 
-for arg in "$@"
-do
-    if [ "$arg" == "--old" ] || [ "$arg" == "-o" ] || [ $arg == "-OLD" ]; then
-	DMG_METHOD="OLD"
-    fi
-done
+release=${1:-"NO_RELEASE"}
 
 #
 # Paramaters
@@ -20,11 +15,11 @@ done
 APP_NAME="R2D"
 APP_FILE=$APP_NAME".app"
 DMG_FILENAME=$APP_NAME"_Mac_Download.dmg"
+pathApp=`pwd`/build/$APP_FILE
 
 pathToBackendApps="/Users/fmckenna/NHERI/SimCenterBackendApplications"
 pathToOpenSees="/Users/fmckenna/bin/OpenSees3.6.0"
-pathToDakota="/Users/fmckenna/dakota-6.12.0"
-pathApp=`pwd`/build/$APP_FILE
+pathToDakota="/Users/fmckenna/dakota/dakota-6.16.0"
 
 
 QTDIR="/Users/fmckenna/Qt/5.15.2/clang_64/"
@@ -39,8 +34,24 @@ rm -fr ./build/$APP_FILE ./build/$DMG_FILENAME
 
 cd build
 conan install .. --build missing
-qmake ../$APP_NAME.pro
-make
+
+# qmake
+
+if [ -n "$release" ] && [ "$release" = "release" ]; then
+    echo "******** RELEASE BUILD *************"    
+    qmake QMAKE_CXXFLAGS+="-D_SC_RELEASE" ../$APP_NAME.pro
+else
+    echo "********* NON RELEASE BUILD ********"
+    qmake ../$APP_NAME.pro
+fi
+
+#
+# make the app
+#
+
+touch ../WorkflowAppR2D.cpp
+make -j 4
+
 
 #
 # Check to see if the app built
@@ -162,8 +173,6 @@ if [ ! -f "$userID" ]; then
     exit
 fi
 
-exit
-
 source $userID
 echo $appleID
 
@@ -172,7 +181,7 @@ echo $appleID
 #
 
 
-if [ "${DMG_METHOD}" == "NEW" ]; then
+if [ "${DMG_METHOD}" = "NEW" ]; then
     
     #
     # mv app into empty folder for create-dmg to work
@@ -181,7 +190,7 @@ if [ "${DMG_METHOD}" == "NEW" ]; then
 
     echo "codesign --deep --force --verbose --options=runtime  --sign "$appleCredential" $APP_FILE"
     codesign --deep --force --verbose --options=runtime  --sign "$appleCredential" $APP_FILE    
-    
+
     mkdir app
     mv $APP_FILE app
     
@@ -244,9 +253,6 @@ else
     
 fi
 
-
-
-
 #
 # notorize , create zip file & send to apple
 #
@@ -262,3 +268,5 @@ echo "xcrun notarytool log ID --apple-id $appleID --team-id $appleCredential  --
 
 echo "Finally staple the dmg"
 echo "xcrun stapler staple \"$APP_NAME\" $DMG_FILENAME"
+
+cd ..
