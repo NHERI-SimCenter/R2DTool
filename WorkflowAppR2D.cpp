@@ -96,7 +96,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
-
+#include <Stampede3Machine.h>
 #include <SimCenterAppSelection.h>
 #include <NoArgSimCenterApp.h>
 
@@ -129,47 +129,48 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     theInstance = this;
 
+    TapisMachine *theMachine = new Stampede3Machine();
+    
     localApp = new LocalApplication("rWHALE.py");
-    remoteApp = new RemoteApplication("rWHALE.py", theService);
+    remoteApp = new RemoteApplication("rWHALE.py", theService, theMachine);
 
-    QStringList filesToDownload;
-    //    theJobManager = new RemoteJobManager(theService, filesToDownload);
     theJobManager = new RemoteJobManager(theService);    
 
     SimCenterWidget *theWidgets[1];
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
 
-    // connect signals and slots - error messages and signals
+    //
+    // connect signals and slots 
+    //
+
+    connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
+    connect(localApp,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
+    connect(localApp,SIGNAL(runComplete()), this,SLOT(runComplete()));
+    connect(localApp,SIGNAL(runComplete()), progressDialog, SLOT(hideProgressBar()));
+    
     connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-    connect(localApp,SIGNAL(runComplete()), this,SLOT(runComplete()));
 
+    connect(remoteApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
+    connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));    
     connect(remoteApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(remoteApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(remoteApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
 
-    connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
-    connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
-    connect(localApp,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
-
-    connect(remoteApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(theJobManager,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
     connect(theJobManager,SIGNAL(loadFile(QString&)), this, SLOT(loadFile(QString&)));
     connect(theJobManager,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(theJobManager,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
+    connect(theJobManager,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));        
 
-    connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
-
-    connect(localApp,SIGNAL(runComplete()), progressDialog, SLOT(hideProgressBar()));
-
+    connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
+    
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
 
     connect(manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(replyFinished(QNetworkReply*)));
-
-    manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
 
 }
 
