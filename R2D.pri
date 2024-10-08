@@ -194,6 +194,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/UIWidgets/BrailsTranspInventoryGenerator.cpp \	
             $$PWD/UIWidgets/BrailsGoogleDialog.cpp \	    
             $$PWD/UIWidgets/UserInputHurricaneWidget.cpp \
+			$$PWD/UIWidgets/PyReCodesWidget.cpp \
             $$PWD/GraphicElements/NodeHandle.cpp \
             $$PWD/GraphicElements/RectangleGrid.cpp \
             $$PWD/GraphicElements/PlainRectangle.cpp \	    
@@ -359,6 +360,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/UQWidget.h \
             $$PWD/UIWidgets/UserDefinedEDPR.h \
             $$PWD/UIWidgets/UserInputGMWidget.h \
+			$$PWD/UIWidgets/PyReCodesWidget.h \
             $$PWD/Events/UI/ScenarioSelectionWidget.h \
             $$PWD/Events/UI/GroundMotionModelsWidget.h \
             $$PWD/UIWidgets/RegionalSiteResponseWidget.h \

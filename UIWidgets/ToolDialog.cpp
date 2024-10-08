@@ -7,6 +7,7 @@
 #include "OpenQuakeSelectionWidget.h"
 #include "BrailsInventoryGenerator.h"
 #include "BrailsTranspInventoryGenerator.h"
+#include "PyReCodesWidget.h"
 #include "GMWidget.h"
 
 #include <QVBoxLayout>
@@ -110,6 +111,18 @@ void ToolDialog::handleBrailsInventoryTool(void)
     }
 
     mainWidget->setCurrentWidget(theBrailsInventoryGeneratorWidget);
+
+    this->showMaximized();
+}
+
+void ToolDialog::handlePyrecodesTool(void){
+    if(thePyReCodesWidget == nullptr)
+    {
+        thePyReCodesWidget = new PyReCoDesWidget(visualizationWidget,this);
+        mainWidget->addWidget(thePyReCodesWidget);
+    }
+
+    mainWidget->setCurrentWidget(thePyReCodesWidget);
 
     this->showMaximized();
 }
