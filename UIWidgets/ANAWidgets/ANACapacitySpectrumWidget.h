@@ -1,5 +1,6 @@
-﻿#ifndef ModelWidget_H
-#define ModelWidget_H
+#ifndef ANACapacitySpectrumWidget_H
+#define ANACapacitySpectrumWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,29 +37,55 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Jinyan Zhao
 
-#include "MultiComponentR2D.h"
+#include "SimCenterAppWidget.h"
+#include <QMainWindow>
+#include <QMap>
 
+class QComboBox;
+class QCheckBox;
+class QLineEdit;
+class QHBoxLayout;
+class QWidget;
 class SimCenterAppSelection;
 
-class ModelWidget : public  MultiComponentR2D
+
+class ANACapacitySpectrumWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit ModelWidget(QWidget *parent = 0);
-    bool outputCitation(QJsonObject &citation);
-    ~ModelWidget();
+    explicit ANACapacitySpectrumWidget(QWidget *parent = nullptr);
+
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
 
     void clear(void);
 
+    bool copyFiles(QString &destName);
+
+    bool outputCitation(QJsonObject &jsonObject);
+
+public slots:
+
+
 private:
-    SimCenterAppSelection *buildingWidget = nullptr;
-    SimCenterAppSelection *pipelineWidget = nullptr;
-    SimCenterAppSelection *WDNWidget = nullptr;
-    SimCenterAppSelection *transportWidget = nullptr;
-    SimCenterAppSelection *multiFidelityBuildingModel = nullptr;
+
+//    QComboBox* DemandComboBox;
+//    QComboBox* CapacityComboBox;
+//    QComboBox* DampingComboBox;
+
+    SimCenterAppSelection* DemandSelection;
+    SimCenterAppSelection* CapacitySelection;
+    SimCenterAppSelection* DampingSelection;
+
+    QMap<QString, QString>* DemandAppNameToDisplayText;
+    QMap<QString, QString>* CapacityAppNameToDisplayText;
+    QMap<QString, QString>* DampingAppNameToDisplayText;
+
+
 };
 
-#endif // ModelWidget_H
+#endif // ANACapacitySpectrumWidget_H

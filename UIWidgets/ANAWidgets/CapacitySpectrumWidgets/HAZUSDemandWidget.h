@@ -1,5 +1,6 @@
-﻿#ifndef ModelWidget_H
-#define ModelWidget_H
+#ifndef HAZUSDemandWidget_H
+#define HAZUSDemandWidget_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,29 +37,44 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: Jinyan Zhao
 
-#include "MultiComponentR2D.h"
+#include "SimCenterAppWidget.h"
+#include <QMainWindow>
 
+class SC_DoubleLineEdit;
+class QGridLayout;
+class QLabel;
 class SimCenterAppSelection;
+class QDoubleValidator;
 
-class ModelWidget : public  MultiComponentR2D
+class HAZUSDemandWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit ModelWidget(QWidget *parent = 0);
-    bool outputCitation(QJsonObject &citation);
-    ~ModelWidget();
+    explicit HAZUSDemandWidget(QWidget *parent = nullptr);
+
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
 
     void clear(void);
 
+    bool copyFiles(QString &destName);
+
+    bool outputCitation(QJsonObject &jsonObject);
+
+public slots:
+
+
 private:
-    SimCenterAppSelection *buildingWidget = nullptr;
-    SimCenterAppSelection *pipelineWidget = nullptr;
-    SimCenterAppSelection *WDNWidget = nullptr;
-    SimCenterAppSelection *transportWidget = nullptr;
-    SimCenterAppSelection *multiFidelityBuildingModel = nullptr;
+    QGridLayout* layout;
+    QLabel* magnitudeLable;
+    SC_DoubleLineEdit* magnitudeLineEdit;
+    QDoubleValidator* magnitudeValidator;
+
+
 };
 
-#endif // ModelWidget_H
+#endif // HAZUSDemandWidget_H

@@ -485,8 +485,11 @@ BrailsInventoryGenerator::getLocationBoundary(void)
 	thePy->run(locationBoundaryScript, scriptArgs);
 
     // Load the vector layer:
-    loadVectorLayer(regionInp.outputFile, "RegionBoundary");
-	theVisualizationWidget->setActiveLayerFillNull();
+    QFile file(regionInp.outputFile);
+    if (file.exists()){
+        loadVectorLayer(regionInp.outputFile, "RegionBoundary");
+        theVisualizationWidget->setActiveLayerFillNull();
+    }
 }
 
 void
@@ -561,8 +564,11 @@ BrailsInventoryGenerator::getFootprints(void)
 	thePy->run(fpDownloadScript, scriptArgs);
 
 	// Load the vector layer:
-	QString layerName = "BuildingFootprints_" + printSuffix;
-    loadVectorLayer(fpInp.outputFile, layerName);
+    QFile file(fpInp.outputFile);
+    if (file.exists()){
+        QString layerName = "BuildingFootprints_" + printSuffix;
+        loadVectorLayer(fpInp.outputFile, layerName);
+    }
 }
 
 void
@@ -663,8 +669,13 @@ BrailsInventoryGenerator::getBaselineInv(QString outputDataType)
 	}
 
 	// Load the vector layer:
-    QString layerName = "BaselineInventory_" + printSuffix1 + printSuffix2;
-    loadVectorLayer(binvInp.outputFile, layerName);
+
+    QFile file(binvInp.outputFile);
+    if (file.exists()){
+        QString layerName = "BaselineInventory_" + printSuffix1 + printSuffix2;
+        loadVectorLayer(binvInp.outputFile, layerName);
+    }
+
 }
 
 void BrailsInventoryGenerator::runBRAILS(void)

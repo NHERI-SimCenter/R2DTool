@@ -134,9 +134,11 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/PelicunPostProcessor.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
-    $$PWD/Tools/ResidualDemandResults.cpp \
+            $$PWD/Tools/ResidualDemandResults.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
+            $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.cpp \
+            $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
             $$PWD/UIWidgets/AssetsWidget.cpp \
             $$PWD/UIWidgets/BuildingDMEQWidget.cpp \
@@ -204,6 +206,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/WorkflowAppR2D.cpp \
             $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.cpp \
             $$PWD/systemPerformanceWidgets/RewetRecovery.cpp \
+            $$PWD/systemPerformanceWidgets/RewetResults.cpp \	    
             $$PWD/assetWidgets/InpFileWaterInputWidget.cpp \
 	    $$PWD/assetWidgets/EPANET2.2/geoJSON.c \
 	    $$PWD/assetWidgets/EPANET2.2/src/inpfile.c \
@@ -291,7 +294,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Events/UI/SpatialCorrelationWidget.h \
             $$PWD/Events/UI/Vs30.h \
             $$PWD/Events/UI/Vs30Widget.h \
-    $$PWD/Events/UI/LiqTriggerZhuEtAl2017.h \
+            $$PWD/Events/UI/LiqTriggerZhuEtAl2017.h \
             $$PWD/Events/UI/zDepthWidget.h \
             $$PWD/Events/UI/zDepthUserInputWidget.h \
             $$PWD/Tools/AssetInputDelegate.h \
@@ -301,14 +304,16 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/GeoJSONReaderWriter.h \
             $$PWD/Tools/ComponentDatabaseManager.h \
             $$PWD/Tools/NGAW2Converter.h \
-    $$PWD/Tools/Pelicun3PostProcessor.h \
+            $$PWD/Tools/Pelicun3PostProcessor.h \
             $$PWD/Tools/PelicunPostProcessor.h \
             $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
-    $$PWD/Tools/ResidualDemandResults.h \
+            $$PWD/Tools/ResidualDemandResults.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \
+            $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.h \
+            $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.h \
             $$PWD/UIWidgets/AnalysisWidget.h \
             $$PWD/UIWidgets/AssetsWidget.h \
             $$PWD/UIWidgets/BuildingDMEQWidget.h \
@@ -384,6 +389,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/RunWidget.h \
             $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.h \	    	    
             $$PWD/systemPerformanceWidgets/RewetRecovery.h \
+            $$PWD/systemPerformanceWidgets/RewetResults.h \	    
             $$PWD/assetWidgets/InpFileWaterInputWidget.h \	    
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2.h \
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2_2.h \

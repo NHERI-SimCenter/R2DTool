@@ -95,11 +95,8 @@ private:
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
 
-    QString eventFile;
     QString rasterFilePath;
     QLineEdit* rasterPathLineEdit = nullptr;
-
-    QString pathToEventFile;
 
     QWidget* fileInputWidget = nullptr;
 

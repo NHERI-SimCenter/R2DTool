@@ -1,5 +1,6 @@
-﻿#ifndef ModelWidget_H
-#define ModelWidget_H
+#ifndef REWET_RESULTS_H
+#define REWET_RESULTS_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -36,29 +37,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Frank McKenna
+// Written by: fmk, Sina Naeimi
 
-#include "MultiComponentR2D.h"
+#include "ComponentDatabase.h"
+#include "SC_ResultsWidget.h"
+#include "SimCenterMapcanvasWidget.h"
 
-class SimCenterAppSelection;
+#include <QString>
+#include <QMainWindow>
+#include <QJsonArray>
+#include <RewetResults.h>
+#include <QJsonObject>
 
-class ModelWidget : public  MultiComponentR2D
+class QVBoxLayout;
+class QGISVisualizationWidget;
+class SC_TimeSeriesResultChart;
+
+namespace QtCharts
+{
+    class QChartView;
+    class QBarSet;
+    class QChart;
+    class QLineSeries;
+}
+
+class RewetResults : public SC_ResultsWidget
 {
     Q_OBJECT
 
 public:
-    explicit ModelWidget(QWidget *parent = 0);
-    bool outputCitation(QJsonObject &citation);
-    ~ModelWidget();
+    RewetResults(QWidget *parent);
 
     void clear(void);
 
+    int processResults(QString &outputFile, QString &dirName, QString &assetType,
+                       QList<QString> typesInAssetType);
+
+    int addResultTab(QString tabName, QString &dirName);
+    int addResultSubtab(QString name, QWidget* existTab, QString &dirName);
+
+private slots:
+
+    void restoreUI(void);
+
+protected:
+
 private:
-    SimCenterAppSelection *buildingWidget = nullptr;
-    SimCenterAppSelection *pipelineWidget = nullptr;
-    SimCenterAppSelection *WDNWidget = nullptr;
-    SimCenterAppSelection *transportWidget = nullptr;
-    SimCenterAppSelection *multiFidelityBuildingModel = nullptr;
+
+    QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries;
+    QGISVisualizationWidget* theVisualizationWidget;
+    int extractDataFramJSON(QJsonObject, QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries);
+    SC_TimeSeriesResultChart *chart;
 };
 
-#endif // ModelWidget_H
+#endif // REWET_RESULTS_H

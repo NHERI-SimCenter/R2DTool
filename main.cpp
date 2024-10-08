@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("5.0.0");
+    QCoreApplication::setApplicationVersion("5.1.0");
 
     // set up logging of output messages for user debugging
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 
     w.setVersion(version);
 
-    QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sang-ri Yi, Aakash Bangalore Satish, Sina Naeimi, & Pedro Arduino. (2024). NHERI-SimCenter/R2DTool: Version 5.0.0. Zenodo. https://doi.org/10.5281/zenodo.13367966 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matthew J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
+    QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sina Naeimi, Sang-ri Yi, Aakash Bangalore Satish, & Pedro Arduino. (2024). NHERI-SimCenter/R2DTool: Version 5.1.0 (v5.1.0). Zenodo. https://doi.org/10.5281/zenodo.13865393 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matthew J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");
@@ -241,8 +241,9 @@ int main(int argc, char *argv[])
     //Setting Google Analytics Tracking Information
     //
     
-    /* *******************************************************************/
-
+#ifdef _SC_RELEASE
+    
+    qDebug() << "Running a Release Version of R2D";   
     GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
     GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
     GoogleAnalytics::CreateSessionId();
@@ -254,11 +255,34 @@ int main(int argc, char *argv[])
     view.resize(1024, 750);
     view.show();
     view.hide();
-    /* ******************************************************************** */
+#endif
+
+#ifdef _ANALYTICS
+
+    qDebug() << "compiled with: ANALYTICS";    
+    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
+    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
+    GoogleAnalytics::CreateSessionId();
+    GoogleAnalytics::StartSession();
+
+#endif    
     
 
     int res = a.exec();
 
+
+#ifdef _GA_AFTER
+    
+    qDebug() << "compiled with: _GA_AFTER";    
+    // Opening a QWebEngineView and using github to get app geographic usage
+    QWebEngineView view;
+    view.setUrl(QUrl("https://nheri-simcenter.github.io/R2DTool/GA4.html"));
+    view.resize(1024, 750);
+    view.show();
+    view.hide();
+    
+#endif
+    
     // On done with event loop, logout & stop the thread
     theRemoteService->logout();
     thread->quit();

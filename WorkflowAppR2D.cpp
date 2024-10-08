@@ -96,7 +96,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
-
+#include <Stampede3Machine.h>
 #include <SimCenterAppSelection.h>
 #include <NoArgSimCenterApp.h>
 
@@ -129,47 +129,48 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     theInstance = this;
 
+    TapisMachine *theMachine = new Stampede3Machine();
+    
     localApp = new LocalApplication("rWHALE.py");
-    remoteApp = new RemoteApplication("rWHALE.py", theService);
+    remoteApp = new RemoteApplication("rWHALE.py", theService, theMachine);
 
-    QStringList filesToDownload;
-    //    theJobManager = new RemoteJobManager(theService, filesToDownload);
     theJobManager = new RemoteJobManager(theService);    
 
     SimCenterWidget *theWidgets[1];
     theRunWidget = new RunWidget(localApp, remoteApp, theWidgets, 0);
 
-    // connect signals and slots - error messages and signals
+    //
+    // connect signals and slots 
+    //
+
+    connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
+    connect(localApp,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
+    connect(localApp,SIGNAL(runComplete()), this,SLOT(runComplete()));
+    connect(localApp,SIGNAL(runComplete()), progressDialog, SLOT(hideProgressBar()));
+    
     connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
-    connect(localApp,SIGNAL(runComplete()), this,SLOT(runComplete()));
 
+    connect(remoteApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
+    connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));    
     connect(remoteApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(remoteApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
     connect(remoteApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
 
-    connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
-    connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
-    connect(localApp,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
-
-    connect(remoteApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(theJobManager,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
     connect(theJobManager,SIGNAL(loadFile(QString&)), this, SLOT(loadFile(QString&)));
     connect(theJobManager,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
     connect(theJobManager,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
+    connect(theJobManager,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));        
 
-    connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
-
-    connect(localApp,SIGNAL(runComplete()), progressDialog, SLOT(hideProgressBar()));
-
+    connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
+    
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
 
     connect(manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(replyFinished(QNetworkReply*)));
-
-    manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
 
 }
 
@@ -218,7 +219,6 @@ void WorkflowAppR2D::initialize(void)
 
     theToolDialog = new ToolDialog(this, theVisualizationWidget);
     
-
     // Tools menu
     QMenu *toolsMenu = new QMenu(tr("&Tools"),menuBar);
 
@@ -398,10 +398,9 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
     if (theAnalysisBuildingComponent != nullptr) {
         SimCenterAppSelection *theAppSelection = dynamic_cast<SimCenterAppSelection *>(theAnalysisBuildingComponent);
         if (theAppSelection != nullptr) {
-            SimCenterAppWidget *theCurrentSelection = theAppSelection->getCurrentSelection();
-
-            NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
-            if (theNoArgWidget == nullptr || theNoArgWidget->getAppName() != "IMasEDP") {
+            QString ANAAppName = theAppSelection->getCurrentSelectionName();
+            QList<QString> noEDPAnalysisApps = {"IMasEDP", "CapacitySpectrumMethod"};
+            if(!noEDPAnalysisApps.contains(ANAAppName)){
                 QJsonObject buildingEdp;
                 QJsonObject edpData;
                 edpData["Application"]="StandardEarthquakeEDP";
@@ -410,6 +409,17 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
                 buildingEdp["Buildings"] = edpData;
                 apps["EDP"] = buildingEdp;
             }
+//            SimCenterAppWidget *theCurrentSelection = theAppSelection->getCurrentSelection();
+//            NoArgSimCenterApp *theNoArgWidget = dynamic_cast<NoArgSimCenterApp *>(theCurrentSelection);
+//            if (theNoArgWidget == nullptr || (!noEDPAnalysisApps.contains(theNoArgWidget->getAppName()))) {
+//                QJsonObject buildingEdp;
+//                QJsonObject edpData;
+//                edpData["Application"]="StandardEarthquakeEDP";
+//                QJsonObject edpAppData;
+//                edpData["ApplicationData"] = edpAppData;
+//                buildingEdp["Buildings"] = edpData;
+//                apps["EDP"] = buildingEdp;
+//            }
         }
     }
 
@@ -1008,7 +1018,7 @@ void WorkflowAppR2D::loadResults(void)
 int
 WorkflowAppR2D::createCitation(QJsonObject &citation, QString citeFile) {
 
-  QString cit("{\"R2D\": { \"citations\": [{\"citation\": \"Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sang-ri Yi, Aakash Bangalore Satish, Sina Naeimi, & Pedro Arduino. (2024). NHERI-SimCenter/R2DTool: Version 5.0.0. Zenodo. https://doi.org/10.5281/zenodo.13367966\",\"description\": \"This is the overall tool reference used to indicate the version of the tool.\"}},{\"citation\": \"Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matthew J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389\/fbuil.2020.558706\",\"description\": \" This marker paper describes the SimCenter application framework, which was designed to simulate the impacts of natural hazards on the built environment.It  is a necessary attribute for publishing work resulting from the use of SimCenter tools, software, and datasets.\"}]}}");
+  QString cit("{\"R2D\": { \"citations\": [{\"citation\": \"Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sina Naeimi, Sang-ri Yi, Aakash Bangalore Satish, & Pedro Arduino. (2024). NHERI-SimCenter/R2DTool: Version 5.1.0 (v5.1.0). Zenodo. https://doi.org/10.5281/zenodo.13865393\",\"description\": \"This is the overall tool reference used to indicate the version of the tool.\"}},{\"citation\": \"Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matthew J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389\/fbuil.2020.558706\",\"description\": \" This marker paper describes the SimCenter application framework, which was designed to simulate the impacts of natural hazards on the built environment.It  is a necessary attribute for publishing work resulting from the use of SimCenter tools, software, and datasets.\"}]}}");
 
   QJsonDocument docC = QJsonDocument::fromJson(cit.toUtf8());
   if(!docC.isNull()) {
