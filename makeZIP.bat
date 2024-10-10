@@ -25,8 +25,12 @@ mkdir .\applications
 xcopy /s /e ..\..\..\SimCenterBackendApplications\applications  .\applications
 
 
+REM ## zip it up with 7zip
 
-
-
-
-
+set sevenzip_path="C:\Program Files\7-Zip\7z.exe"
+cd ..
+if exist .\R2D_Windows_Download.zip (
+    del .\R2D_Windows_Download.zip
+    echo File deleted.
+)
+%sevenzip_path% a -tzip .\R2D_Windows_Download.zip  .\R2D_Windows_Download
