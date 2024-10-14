@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextStream>
 #include <QStringList>
 #include <QFile>
+#include <iomanip>
 
 CSVReaderWriter::CSVReaderWriter()
 {
@@ -98,6 +99,87 @@ int CSVReaderWriter::saveCSVFile(const QVector<QStringList>& data, const QString
             return "\"" + newStr.toUtf8() + "\"";
         else
          return newStr.toUtf8();
+    };
+
+
+    for(auto&& row : data)
+    {
+        for(int i = 0; i<numCol; ++i)
+        {
+            csvFileOut<<strOutput(row[i]);
+
+            // Add the terminating character
+            if(i != numCol-1)
+                csvFileOut<<",";
+            else
+                csvFileOut<<"\n";
+        }
+    }
+
+
+    return 0;
+}
+
+int CSVReaderWriter::saveCSVFile(const QVector<QStringList>& data, const QString& pathToFile, QString& err, int precision)
+{
+
+    // Check the data for consistency
+    if(data.empty())
+    {
+        err = "Empty data vector came into the function save data.";
+        return -1;
+    }
+
+    auto numCol = data.first().size();
+
+    // Check that there are items in each row and that the number of items is consistent
+    if(numCol==0)
+    {
+        err = "Empty data vector came into the function save data.";
+        return -1;
+    }
+
+    for(auto&& row : data)
+    {
+        if(row.size() != numCol)
+        {
+            err = "Inconsistency between the column sizes in the data.";
+            return -1;
+        }
+    }
+
+    QFile file(pathToFile);
+
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        err = "Cannot create the file: " + pathToFile + "\n" +"Check your directory and try again.";
+        return -1;
+    }
+
+    QTextStream csvFileOut(&file);
+
+    // Function to handle the case where there are commas within a cell
+    auto strOutput = [](const QString& in)
+    {
+        auto newStr = in;
+
+        newStr = newStr.replace("\"","\"\"");
+        QString str;
+        if(newStr.contains(',')){
+            str = "\"" + newStr.toUtf8() + "\"";
+        }
+        else
+            str = newStr.toUtf8();
+        // Check if str is a number, if yes, convert to scientific notation with 15 significant digits
+        bool isdouble;
+        double value = str.toDouble(&isdouble);
+        if (isdouble){
+            QString formattedValue = QString::number(value, 'e', 15);  // 15 significant digits, trailing zeros are omitted
+            return formattedValue;
+        } else {
+            return str;
+        }
+
     };
 
 
