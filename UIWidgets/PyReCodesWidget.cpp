@@ -146,7 +146,7 @@ PyReCoDesWidget::PyReCoDesWidget(VisualizationWidget* visWidget, QWidget *parent
     filePath = dirPath + QDir::separator() + "waterNetwork.inp";
     pathWaterNetwork->setFilename(filePath);
 
-    realizationInputWidget->setText("0,");
+    realizationInputWidget->setText("1,");
 
 
 
