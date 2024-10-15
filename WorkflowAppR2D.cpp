@@ -165,6 +165,8 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     connect(theJobManager,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));        
 
     connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
+
+    connect(theJobManager,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
     
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
@@ -253,6 +255,7 @@ void WorkflowAppR2D::initialize(void)
     connect(theGeneralInformationWidgetR2D, SIGNAL(assetChanged(QString, bool)), this, SLOT(assetSelectionChanged(QString, bool)));
     connect(theHazardsWidget,SIGNAL(gridFileChangedSignal(QString, QString)), theHazardToAssetWidget, SLOT(hazardGridFileChangedSlot(QString,QString)));
     connect(theHazardsWidget,SIGNAL(eventTypeChangedSignal(QString)), theHazardToAssetWidget, SLOT(eventTypeChangedSlot(QString)));
+    connect(theToolDialog, SIGNAL(resultProduced), this, SLOT(processResults));
 
     // Create layout to hold component selection
     QHBoxLayout *horizontalLayout = new QHBoxLayout();

@@ -129,16 +129,24 @@ PyReCoDesWidget::PyReCoDesWidget(VisualizationWidget* visWidget, QWidget *parent
     mainLayout->setRowStretch(numRow, 1);
     mainLayout->setColumnStretch(5, 1);
 
-    QString dirPath = QString("C:/Users/naeim/Onedrive/Desktop/r2d_pyrecodes");
+    QString dirPath = QString("C:/Users/naeim/OneDrive/Desktop/input_data_PY/tmp.SimCenter_rwhale/input_data");
+
+    QString dirPath_damageStateDataSrource = QString("C:/Users/naeim/OneDrive/Documents/R2D/LocalWorkDir/tmp.SimCenter/Results");
+    QString dirPath_resultsDir = QString("C:/Users/naeim/OneDrive/Documents/R2D/LocalWorkDir/tmp.SimCenter/Results");
+    QString dirPath_pathConfigFile = dirPath + QDir::separator() + "Alameda_SystemConfiguration.json";\
+    QString dirPath_pathComponentLibrary = dirPath + QDir::separator() + "Alameda_ComponentLibrary.json";
+    QString dirPath_pathLocalityDefinition = dirPath + QDir::separator() + "Alameda_TravelAnalysisZones.geojson";
     
-    damageStateDataSrource->setDirName(dirPath);
-    resultsDir->setDirName(dirPath);
+    damageStateDataSrource->setDirName(dirPath_damageStateDataSrource);
+    resultsDir->setDirName(dirPath_resultsDir);
     QString filePath = dirPath + QDir::separator() + "Alameda_Case_Study" + QDir::separator() + "Alameda_Main.json";
-    pathConfigFile->setFilename(filePath);
-    pathComponentLibrary->setFilename(filePath);
-    pathLocalityDefinition->setFilename(filePath);
-    filePath = dirPath + QDir::separator() + "Alameda_Case_Study" + QDir::separator() + "water_distribution_network_Sina" + QDir::separator() + "waterNetwork.inp";
+    pathConfigFile->setFilename(dirPath_pathConfigFile);
+    pathComponentLibrary->setFilename(dirPath_pathComponentLibrary);
+    pathLocalityDefinition->setFilename(dirPath_pathLocalityDefinition);
+    filePath = dirPath + QDir::separator() + "waterNetwork.inp";
     pathWaterNetwork->setFilename(filePath);
+
+    realizationInputWidget->setText("0,");
 
 
 
@@ -162,6 +170,8 @@ void PyReCoDesWidget::runSimulation(void)
     
     // Check for any missing files and directories
 
+    QString realizationString = realizationInputWidget->text();
+    
     QDir dir(appInputDir);
     if (!dir.exists())
         dir.mkpath(appInputDir);
@@ -171,6 +181,11 @@ void PyReCoDesWidget::runSimulation(void)
 
     if (damageStateDataSrource_dir.isEmpty() || !dir.exists()){
         this->errorMessage("Missing the Damage State Data Source Directory. Please select a directory.");
+        return;
+    }
+
+    if (realizationString.isEmpty()){
+        this->errorMessage("Please select at least one realization.");
         return;
     }
 
@@ -193,8 +208,8 @@ void PyReCoDesWidget::runSimulation(void)
         return;
     }
 
-    auto LocalityDefinitionFile_path = pathLocalityDefinition->getFilename();
-    if (LocalityDefinitionFile_path.isEmpty() || !QFile::exists(LocalityDefinitionFile_path)){
+    auto localityDefinitionFile_path = pathLocalityDefinition->getFilename();
+    if (localityDefinitionFile_path.isEmpty() || !QFile::exists(localityDefinitionFile_path)){
         this->errorMessage("Missing the PyReCoDes Locality Definition file. Please select the PyReCoDes Locality Definition file.");
         return;
     }
@@ -217,7 +232,7 @@ void PyReCoDesWidget::runSimulation(void)
         return;
     }
 
-    if (!LocalityDefinitionFile_path.toLower().endsWith(".json")){
+    if (!localityDefinitionFile_path.toLower().endsWith(".geojson")){
         this->errorMessage("The PyReCoDes Locality Definition file must be a JSON file.");
         return;
     }
@@ -227,9 +242,7 @@ void PyReCoDesWidget::runSimulation(void)
         return;
     }
 
-    QString realizationsString = realizationInputWidget->getComponentAnalysisList();
     
-    qDebug() << "Realizations: " << realizationsString;
 
     // Create the PyReCoDes Main Input JSON file
 
@@ -237,10 +250,6 @@ void PyReCoDesWidget::runSimulation(void)
     QJsonObject componentLibraryJsonObject;
     QJsonObject systemConfigJsonObject;
     QJsonObject damageInputJsonObject;
-
-    mainFile.insert("ComponentLibrary", componentLibraryJsonObject);
-    mainFile.insert("ComponentLibrary", systemConfigJsonObject);
-    mainFile.insert("DamageInput", damageInputJsonObject);
 
     componentLibraryJsonObject.insert("ComponentLibraryCreatorFileName", "json_component_library_creator");
     componentLibraryJsonObject.insert("ComponentLibraryCreatorClassName", "JSONComponentLibraryCreator");
@@ -253,9 +262,13 @@ void PyReCoDesWidget::runSimulation(void)
     systemConfigJsonObject.insert("SystemConfigurationFile", pathConfigFile_path);
 
     QJsonObject damageinputParameterQObject;
-    damageinputParameterQObject.insert("Filter", "1"); // TODO: Add the filter
+    damageinputParameterQObject.insert("Filter", realizationString);
     damageInputJsonObject.insert("Parameters", damageinputParameterQObject);
     damageInputJsonObject.insert("Type", "SpecificRealization");
+
+    mainFile.insert("ComponentLibrary", componentLibraryJsonObject);
+    mainFile.insert("System", systemConfigJsonObject);
+    mainFile.insert("DamageInput", damageInputJsonObject);
 
     // Save the PyReCoDes Main Input JSON file
     QString pathToMainFile = appInputDir + QDir::separator() + "pyrecodes_main_input.json";
@@ -278,16 +291,16 @@ void PyReCoDesWidget::runSimulation(void)
 
     QStringList scriptArgs;
     scriptArgs << QString("--mainFile")  << pathToMainFile;
-    // scriptArgs << QString("--systemConfigFile")  << pathConfigFile_path;
-    // scriptArgs << QString("--componentLibraryFile")  << pathComponentLibraryFile_path;
-    scriptArgs << QString("--localityGeojsonFile")  << LocalityDefinitionFile_path;
-    scriptArgs << QString("--damageStateDataDir")  << damageStateDataSrource_dir;
-    scriptArgs << QString("--resultsDir")  << resultsDir_dir;
-    scriptArgs << QString("--inpFile")  << inpFile_path;
+    scriptArgs << QString("--systemConfigFile")  << pathConfigFile_path;
+    scriptArgs << QString("--componentLibraryFile")  << pathComponentLibraryFile_path;
+    scriptArgs << QString("--localityGeojsonFile")  << localityDefinitionFile_path;
+    scriptArgs << QString("--r2dRunDir")  << damageStateDataSrource_dir;
+    // scriptArgs << QString("--resultsDir")  << resultsDir_dir;
+    scriptArgs << QString("--INPFile")  << inpFile_path;
 
     QString scriptPath = SimCenterPreferences::getInstance()->getAppDir() + QDir::separator()
                          + "applications" + QDir::separator() + "performREC" + QDir::separator()
-                         + "pyrecodes" + QDir::separator() + "wrapper.py";
+                         + "pyrecodes" + QDir::separator() + "run_pyrecodes.py";
 
     std::unique_ptr<ModularPython> thePy = std::make_unique<ModularPython>(resultsDir_dir);
 
@@ -302,7 +315,7 @@ void PyReCoDesWidget::runSimulation(void)
 
 void PyReCoDesWidget::handleProcessStarted()
 {
-    // this->runButton->setEnabled(false);
+    this->runButton->setEnabled(false);
 }
 
 void PyReCoDesWidget::handleProcessFinished()
