@@ -134,7 +134,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/PelicunPostProcessor.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
-            $$PWD/Tools/ResidualDemandResults.cpp \
+            $$PWD/systemPerformanceWidgets/ResidualDemandResults.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
             $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.cpp \
@@ -159,6 +159,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.cpp \
             $$PWD/UIWidgets/GroundMotionStation.cpp \
             $$PWD/UIWidgets/LoadResultsDialog.cpp \
+    $$PWD/UIWidgets/ResidualDemandToolWidget.cpp \
             $$PWD/UIWidgets/ToolDialog.cpp \
             $$PWD/UIWidgets/SimCenterUnitsWidget.cpp \
             $$PWD/UIWidgets/SimCenterIMWidget.cpp \
@@ -206,7 +207,8 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/WorkflowAppR2D.cpp \
             $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.cpp \
             $$PWD/systemPerformanceWidgets/RewetRecovery.cpp \
-            $$PWD/systemPerformanceWidgets/RewetResults.cpp \	    
+            $$PWD/systemPerformanceWidgets/RewetResults.cpp \
+            $$PWD/systemPerformanceWidgets/ResidualDemandWidget.cpp \
             $$PWD/assetWidgets/InpFileWaterInputWidget.cpp \
 	    $$PWD/assetWidgets/EPANET2.2/geoJSON.c \
 	    $$PWD/assetWidgets/EPANET2.2/src/inpfile.c \
@@ -308,7 +310,8 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/PelicunPostProcessor.h \
             $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
-            $$PWD/Tools/ResidualDemandResults.h \
+            $$PWD/systemPerformanceWidgets/ResidualDemandResults.h \
+            $$PWD/systemPerformanceWidgets/ResidualDemandWidget.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \
@@ -335,6 +338,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.h \
             $$PWD/UIWidgets/GroundMotionStation.h \
             $$PWD/UIWidgets/LoadResultsDialog.h \
+    $$PWD/UIWidgets/ResidualDemandToolWidget.h \
             $$PWD/UIWidgets/ToolDialog.h \
             $$PWD/UIWidgets/SimCenterUnitsWidget.h \
             $$PWD/UIWidgets/SimCenterIMWidget.h \

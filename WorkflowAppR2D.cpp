@@ -230,6 +230,7 @@ void WorkflowAppR2D::initialize(void)
     toolsMenu->addAction("&BRAILS-Buildings", theToolDialog, &ToolDialog::handleBrailsInventoryTool);
     toolsMenu->addAction("&BRAILS-Transportation", theToolDialog, &ToolDialog::handleBrailsTranspInventoryTool);
     toolsMenu->addAction("&PyReCodes", theToolDialog, &ToolDialog::handlePyrecodesTool);
+    toolsMenu->addAction("&Residual Demand", theToolDialog, &ToolDialog::handleResidualDemandTool);
     menuBar->insertMenu(menuAfter, toolsMenu);
 
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
@@ -993,6 +994,10 @@ void WorkflowAppR2D::runComplete()
 DLWidget *WorkflowAppR2D::getTheDamageAndLossWidget() const
 {
     return theDamageAndLossWidget;
+}
+
+ResultsWidget* WorkflowAppR2D::getTheResultsWidget() const{
+    return theResultsWidget;
 }
 
 SystemPerformanceWidget *WorkflowAppR2D::getTheSystemPerformanceWidget() const
