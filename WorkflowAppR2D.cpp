@@ -229,7 +229,7 @@ void WorkflowAppR2D::initialize(void)
     toolsMenu->addAction("&OpenQuake Source Selection", theToolDialog, &ToolDialog::handleShowOpenquakeSelectionTool);
     toolsMenu->addAction("&BRAILS-Buildings", theToolDialog, &ToolDialog::handleBrailsInventoryTool);
     toolsMenu->addAction("&BRAILS-Transportation", theToolDialog, &ToolDialog::handleBrailsTranspInventoryTool);
-    toolsMenu->addAction("&PyReCodes", theToolDialog, &ToolDialog::handlePyrecodesTool);
+//    toolsMenu->addAction("&PyReCodes", theToolDialog, &ToolDialog::handlePyrecodesTool);
     toolsMenu->addAction("&Residual Demand", theToolDialog, &ToolDialog::handleResidualDemandTool);
     menuBar->insertMenu(menuAfter, toolsMenu);
 
