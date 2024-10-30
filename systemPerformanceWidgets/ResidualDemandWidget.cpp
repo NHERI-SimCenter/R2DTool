@@ -76,6 +76,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStringList>
 #include <QGroupBox>
 #include <ResultsWidget.h>
+#include "ResidualDemandResults.h"
 
 ResidualDemandWidget::ResidualDemandWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -111,7 +112,8 @@ ResidualDemandWidget::ResidualDemandWidget(QWidget *parent) : SimCenterAppWidget
     realizationToAnalyzeLabel = new QLabel("Realizations to Analyze:");
     mainLayout->addWidget(realizationToAnalyzeLabel, numRow, 2, 1, 1);
     realizationInputWidget = new AssetInputDelegate();
-    mainLayout->addWidget(realizationInputWidget, numRow, 3, 1, 3);
+    connect(realizationInputWidget,&QLineEdit::editingFinished,this,&ResidualDemandWidget::selectComponents);
+    mainLayout->addWidget(realizationInputWidget, numRow, 3, 1, 3); 
     connect(this->damageInputMethodComboBox, &QComboBox::currentTextChanged,
             this, &ResidualDemandWidget::handleInputTypeChanged);
     damageInputMethodComboBox->setCurrentIndex(1);
@@ -129,10 +131,23 @@ ResidualDemandWidget::ResidualDemandWidget(QWidget *parent) : SimCenterAppWidget
     mainLayout->addWidget(pathNodesFile, numRow, 1, 1, 4);
     numRow++;
 
-    // 4. Path To Nodes File
-    pathODFile = new SC_FileEdit("od_file");
-    mainLayout->addWidget(new QLabel("Traffic Demand File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(pathODFile, numRow, 1, 1, 4);
+    // 4. Path To pre-event OD File
+    pathODFilePre = new SC_FileEdit("od_file_pre");
+    mainLayout->addWidget(new QLabel("Pre-event traffic Demand File:"), numRow, 0, 1, 1);
+    mainLayout->addWidget(pathODFilePre, numRow, 1, 1, 4);
+    numRow++;
+
+    // 4. Path To post-event OD File
+    pathODFilePost = new SC_FileEdit("od_file_post");
+    postEventFileEditLable = new QLabel("Post-event traffic Demand File:");
+    mainLayout->addWidget(postEventFileEditLable, numRow, 0, 1, 1);
+    mainLayout->addWidget(pathODFilePost, numRow, 1, 1, 4);
+    numRow++;
+
+    //5. Post event OD checkbox
+    postEventODCheckBox = new SC_CheckBox("od_file_post", false);
+    mainLayout->addWidget(new QLabel("Use the same pre and post event traffic demand:"), numRow, 0, 1, 1);
+    mainLayout->addWidget(postEventODCheckBox, numRow, 1, 1, 1);
     numRow++;
 
     // 5. Path To Capacity Map File
@@ -161,6 +176,7 @@ ResidualDemandWidget::ResidualDemandWidget(QWidget *parent) : SimCenterAppWidget
     mainLayout->setRowStretch(numRow, 1);
     mainLayout->setColumnStretch(5, 1);
 
+    connect(postEventODCheckBox, &SC_CheckBox::stateChanged, this, &ResidualDemandWidget::togglePostEventODFileEdit);
 //    theR2DResultsWidget = WorkflowAppR2D::getInstance()->getTheResultsWidget();
 //    theResidualDemandResultsWidget = new ResidualDemandResults(theR2DResultsWidget);
 
@@ -171,10 +187,33 @@ ResidualDemandWidget::~ResidualDemandWidget()
 
 }
 
+void ResidualDemandWidget::togglePostEventODFileEdit(int state){
+    if (state == Qt::Checked){
+        postEventFileEditLable->hide();
+        pathODFilePost->hide();
+    } else {
+        postEventFileEditLable->show();
+        pathODFilePost->show();
+    }
+}
+
 void ResidualDemandWidget::clear(void)
 {
 
 }
+
+void ResidualDemandWidget::selectComponents(void)
+{
+    try
+    {
+        realizationInputWidget->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->errorMessage(msg);
+    }
+}
+
 void ResidualDemandWidget::handleInputTypeChanged(){
     if (damageInputMethodComboBox->currentIndex()==0){
         realizationToAnalyzeLabel->hide();
@@ -209,8 +248,8 @@ bool ResidualDemandWidget::copyFiles(QString &dirName){
         return false;
     }
     this->copyFile(fileText, dirName);
-    // traffic demand
-    fileText = pathODFile->getFilename();
+    // traffic demand pre
+    fileText = pathODFilePre->getFilename();
     fileInfo.setFile(fileText);
 
     if (!fileInfo.exists())
@@ -219,6 +258,18 @@ bool ResidualDemandWidget::copyFiles(QString &dirName){
         return false;
     }
     this->copyFile(fileText, dirName);
+    // traffic demand post
+    if (!postEventODCheckBox->isChecked()){
+        fileText = pathODFilePost->getFilename();
+        fileInfo.setFile(fileText);
+
+        if (!fileInfo.exists())
+        {
+            this->errorMessage("The traffic demand file path does not exist.");
+            return false;
+        }
+        this->copyFile(fileText, dirName);
+    }
     // Capacity reduction mapp
     fileText = pathCapacityMapFile->getFilename();
     fileInfo.setFile(fileText);
@@ -279,7 +330,17 @@ bool ResidualDemandWidget::copyFiles(QString &dirName){
     QStringList stringList = hourlist.split(',');
     QJsonArray jsonArray;
     for (const QString &str : stringList) {
-        jsonArray.append(str.toInt());
+        if (str.isEmpty()){
+            continue;
+        }
+        bool ok;
+        int strInt = str.toInt(&ok);
+        if (ok){
+            jsonArray.append(strInt);
+        } else {
+            this->errorMessage(QString("Invalide Hour List input: ") + str);
+            return false;
+        }
     }
     config.insert("HourList", jsonArray);
 
@@ -299,5 +360,173 @@ bool ResidualDemandWidget::copyFiles(QString &dirName){
         QTextStream out(&file); out << strFromObj;
         file.close();
     }
+    return true;
+}
+
+bool ResidualDemandWidget::inputAppDataFromJSON(QJsonObject &jsonObject) {
+    if (jsonObject.contains("Application")) {
+        if ("ResidualDemand" != jsonObject["Application"].toString()) {
+            this->errorMessage("ResidualDemandWidget::inputAppDataFromJSON app name conflict");
+            return false;
+        }
+    }
+
+    if (!jsonObject.contains("ApplicationData")) {
+        this->errorMessage("Could not find the 'ApplicationData' key in 'ResidualDemandWidget' input");
+        return false;
+    }
+
+    QJsonObject appData = jsonObject["ApplicationData"].toObject();
+
+    // Damage Input
+    if (appData.contains("DamageInput")) {
+        QJsonObject damageInputObj = appData["DamageInput"].toObject();
+        if (damageInputObj.contains("Type")) {
+            QString damageInputType = damageInputObj["Type"].toString();
+            if (damageInputType == "MostlikelyDamageState") {
+                damageInputMethodComboBox->setCurrentIndex(0);
+            } else if (damageInputType == "SpecificRealization") {
+                damageInputMethodComboBox->setCurrentIndex(1);
+                if (damageInputObj.contains("Parameters")) {
+                    QJsonObject damageInputPara = damageInputObj["Parameters"].toObject();
+                    if (damageInputPara.contains("Filter")) {
+                        realizationInputWidget->setText(damageInputPara["Filter"].toString());
+                        this->selectComponents();
+                    }
+                }
+            } else {
+                this->errorMessage(QString("The damage input method ") + damageInputType
+                                   + QString(" is not valid for Residual Demand."));
+                return false;
+            }
+        }
+    }
+
+    // TwoWay Assumption
+    if (appData.contains("TwoWayEdges")) {
+        twoWayEdgeCheckbox->setChecked(appData["TwoWayEdges"].toBool());
+    }
+
+    // Create Animation
+    if (appData.contains("CreateAnimation")) {
+        createAnimationCheckbox->setChecked(appData["CreateAnimation"].toBool());
+    }
+
+    // HourList
+    if (appData.contains("HourList")) {
+        QString hourListString = "";
+        if (appData["HourList"].isString()) {
+            simulationHourList->setText(appData["HourList"].toString());
+        } else if (appData["HourList"].isArray()) {
+            QJsonArray hourListArray = appData["HourList"].toArray();
+            for (const QJsonValue &value : hourListArray) {
+                if (value.isDouble()) {
+                    double num = value.toDouble();
+                    // Check if num is int
+                    if (num == static_cast<int>(num)) {
+                        int intNum = static_cast<int>(num);
+                        hourListString += QString::number(intNum);
+                        hourListString += ",";
+                    } else {
+                        this->errorMessage(QString("Only integers are allowed in hour list array of Residual Demand input."));
+                        return false;
+                    }
+                } else {
+                    this->errorMessage(QString("The hour list array is invalid in Residual Demand input"));
+                    return false;
+                }
+            }
+            // Remove the last ","
+            if (hourListString.endsWith(",")) {
+                hourListString.chop(1);
+            }
+            simulationHourList->setText(hourListString);
+        } else {
+            this->errorMessage(QString("The hour list array is invalid in Residual Demand input"));
+            return false;
+        }
+    }
+
+    // Capacity map
+    if (appData.contains("CapacityMap")) {
+        pathCapacityMap = appData["CapacityMap"].toString();
+        pathCapacityMapFile->setFilename(pathCapacityMap);
+    }
+
+    // NetworkEdgesGeojson
+    if (appData.contains("NetworkEdgesGeojson")) {
+        pathEdges = appData["NetworkEdgesGeojson"].toString();
+        pathEdgesFile->setFilename(pathEdges);
+    }
+
+    // NetworkNodesGeojson
+    if (appData.contains("NetworkNodesGeojson")) {
+        pathNodes = appData["NetworkNodesGeojson"].toString();
+        pathNodesFile->setFilename(pathNodes);
+    }
+
+    // PreEventDemand
+    if (appData.contains("PreEventDemand")) {
+        pathPreOD = appData["PreEventDemand"].toString();
+        pathODFilePre->setFilename(pathPreOD);
+    }
+
+    // PostEventDemand
+    if (appData.contains("PostEventDemand")) {
+        pathPostOD = appData["PostEventDemand"].toString();
+        pathODFilePost->setFilename(pathPostOD);
+    }
+
+    // PostEventDemand check
+    if (appData.contains("ConstantDemand")) {
+        postEventODCheckBox->setChecked(appData["ConstantDemand"].toBool());
+    }
+
+    return true;
+}
+
+QString getFileBaseName(QString fullPath){
+    QFileInfo fileInfo(fullPath);
+    QString fileName = fileInfo.fileName();
+    return fileName;
+}
+
+bool ResidualDemandWidget::outputAppDataToJSON(QJsonObject &jsonObject){
+    jsonObject.insert("Application","ResidualDemand");
+    QJsonObject appDataObj;
+    appDataObj.insert("edgeFile", getFileBaseName(pathEdgesFile->getFilename()));
+    appDataObj.insert("nodeFile", getFileBaseName(pathNodesFile->getFilename()));
+    appDataObj.insert("ODFilePre", getFileBaseName(pathODFilePre->getFilename()));
+    appDataObj.insert("ODFilePost", getFileBaseName(pathODFilePost->getFilename()));
+    appDataObj.insert("configFile", "residual_demand_config.json");
+    jsonObject.insert("ApplicationData",appDataObj);
+    return true;
+}
+
+SC_ResultsWidget* ResidualDemandWidget::getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
+{
+    if (resultWidget==nullptr){
+        resultWidget = new ResidualDemandResults(parent);
+    }
+    return resultWidget;
+}
+
+bool
+ResidualDemandWidget::outputCitation(QJsonObject &jsonObject)
+{
+  QJsonObject citation;
+  citation.insert("citation",
+"Zhao, Bingyu, Krishna Kumar, Gerry Casey, and Kenichi Soga. 2019. “Agent-Based Model (ABM) for City-Scale Traffic Simulation: A Case Study on San Francisco,” International Conference on Smart Infrastructure and Construction 2019 (ICSIC). January 2019, 203-212, https://doi.org/10.1680/icsic.64669.203");
+  citation.insert("description",
+"This reference described the development of the Residual Demand traffic flow simulator.");
+
+
+
+  QJsonArray citationsArray;
+  citationsArray.push_back(citation);
+
+  jsonObject.insert("citations", citationsArray);
+
+  return true;
 }
 

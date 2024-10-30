@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 #include "Utils/ProgramOutputDialog.h"
+#include "SC_MovieWidget.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
@@ -77,7 +78,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextCursor>
 #include <QTextTable>
 #include <QValueAxis>
-
+#include <QMovie>
 
 
 #include <qgsattributes.h>
@@ -110,9 +111,12 @@ int ResidualDemandResults::addResultSubtab(QString name, QWidget* existTab, QStr
     if (existingResult){ // Make a subtab and add to existing result tab
         // Do the visualizations
         // Make the sub
-        // DL is always the first to be called, so no need to implement this
-        QWidget* subTab = new QWidget(this);
-        existingResult->addResultSubtab(QString("subTabName"), subTab, dirName);
+//        QDockWidget* gifWidget = new QDockWidget(name, this);
+//        gifWidget->setObjectName(name + "Congestion");
+
+        // Add the gif
+        QDockWidget* gifWidget = createGIFWidget(this, name, dirName);
+        existingResult->addResultSubtab(QString("ResidualDemand"), gifWidget, dirName);
     }
     else{ //Add the subtab to docklist
         QDockWidget* subTabToAdd = dynamic_cast<QDockWidget*>(existTab);
@@ -125,6 +129,76 @@ int ResidualDemandResults::addResultSubtab(QString name, QWidget* existTab, QStr
         }
     }
     return 0;
+
+}
+
+QDockWidget* ResidualDemandResults::createGIFWidget(QWidget* parent, QString name, QString &dirName){
+    QDockWidget* gifWidget = new QDockWidget("Congestion Level", parent);
+
+    QWidget *congestionResultWidget = new QWidget(gifWidget);
+
+    QGridLayout *layout = new QGridLayout();
+    congestionResultWidget->setLayout(layout);
+
+    QLabel* selectRlzLabel = new QLabel("Realization to plot: ");
+
+    rlzSelectionComboBox = new QComboBox(this);
+
+    residualDemandResultsFolder = dirName + QDir::separator() + "ResidualDemand";
+    QDir dir(residualDemandResultsFolder);
+
+    QString undamaged_gif_path = residualDemandResultsFolder + QDir::separator() + "undamaged" + QDir::separator() + "congestion.gif";
+    QFileInfo undamaged_gif_fileInfo = QFileInfo(undamaged_gif_path);
+    if (undamaged_gif_fileInfo.exists()){
+        rlzSelectionComboBox->addItem("Undamaged");
+    }
+    // Set the filter to look only for directories
+    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+    // Set the name filter to match folders starting with "workdir"
+    QStringList nameFilter("workdir*");
+    dir.setNameFilters(nameFilter);
+    QStringList directories = dir.entryList();
+    QStringList availableRlzs;
+    for (const QString &directory : directories) {
+        QStringList parts = directory.split('.');
+        if (parts.count()!=2){
+            this->errorMessage(QString("Can not add ") + directory + QString(" to ResidualDemand Results."));
+        } else {
+            availableRlzs.append(parts.at(1));
+            rlzSelectionComboBox->addItem(parts.at(1));
+        }
+    }
+
+    connect(rlzSelectionComboBox,&QComboBox::currentTextChanged, this, &ResidualDemandResults::congestionRlzSelectChanged);
+    rlzSelectionComboBox->setCurrentIndex(0);
+
+    // For testing add the first realization
+    if (availableRlzs.count()==0){
+        this->errorMessage(QString("No ResidualDemand realization results exist."));
+        return gifWidget;
+    }
+
+//    QMovie *gif = new QMovie(gifPath);
+//    gif->start();
+//    QLabel *gifDisplay = new QLabel;
+//    gifDisplay->setMovie(gif);
+//    gifDisplay->setScaledContents(true);
+
+    gifDisplay = new SC_MovieWidget(this, undamaged_gif_path);
+
+    layout->addWidget(selectRlzLabel, 0, 0, 1, 1);
+    layout->addWidget(rlzSelectionComboBox, 0, 1, 1, 1);
+    layout->addWidget(gifDisplay, 1, 0, 1, 2);
+    layout->setColumnStretch(2,1);
+    layout->setRowStretch(2,1);
+
+    gifWidget->setMinimumWidth(475);
+    gifWidget->setMaximumWidth(575);
+    gifWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+
+    gifWidget->setWidget(congestionResultWidget);
+
+    return gifWidget;
 
 }
 
@@ -202,3 +276,16 @@ void ResidualDemandResults::clear(void)
     // See Pelicun3PostProcessor as an example
 }
 
+void ResidualDemandResults::congestionRlzSelectChanged(const QString &text){
+    QString gifPath;
+    if (text.compare("Undamaged")==0){
+        gifPath = residualDemandResultsFolder + QDir::separator() + "undamaged" + QDir::separator() + "congestion.gif";
+    } else {
+        gifPath = residualDemandResultsFolder + QDir::separator() + "workdir." + text + QDir::separator() +
+                          "damaged" + QDir::separator() + "congestion.gif";
+    }
+    bool updateSuccess = gifDisplay->updateGif(gifPath);
+    if (!updateSuccess){
+        this->errorMessage("Failed to display "+gifPath+".\n Check if the file exists");
+    }
+}

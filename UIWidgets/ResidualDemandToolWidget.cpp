@@ -192,9 +192,6 @@ ResidualDemandToolWidget::ResidualDemandToolWidget(VisualizationWidget* visWidge
     mainLayout->setRowStretch(numRow, 1);
     mainLayout->setColumnStretch(5, 1);
 
-//    theR2DResultsWidget = WorkflowAppR2D::getInstance()->getTheResultsWidget();
-//    theResidualDemandResultsWidget = new ResidualDemandResults(theR2DResultsWidget);
-
 }
 
 void ResidualDemandToolWidget::togglePostEventODFileEdit(int state){

@@ -48,14 +48,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QVBoxLayout;
 class QGISVisualizationWidget;
+class QDockWidget;
+class SC_MovieWidget;
+class QComboBox;
 
-
-namespace QtCharts
-{
-class QChartView;
-class QBarSet;
-class QChart;
-}
 
 class ResidualDemandResults : public SC_ResultsWidget
 {
@@ -76,12 +72,16 @@ public:
 private slots:
 
     void restoreUI(void);
+    void congestionRlzSelectChanged(const QString &text);
 
 protected:
 
 private:
-
+    QDockWidget* createGIFWidget(QWidget* parent, QString name, QString &dirName);
     QGISVisualizationWidget* theVisualizationWidget;
+    QComboBox* rlzSelectionComboBox;
+    SC_MovieWidget* gifDisplay;
+    QString residualDemandResultsFolder;
 };
 
 #endif // RESIDUALDEMANDRESULTS_H

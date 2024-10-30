@@ -569,7 +569,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
 
 	if (apps.contains("SystemPerformance")) {
 	  if (theSystemPerformanceWidget->inputAppDataFromJSON(apps) == false) {
-            this->errorMessage("REC failed to read input data");
+            this->errorMessage("SP failed to read input data");
 	    theSystemPerformanceWidget->clear();
             result = false;
 	  }

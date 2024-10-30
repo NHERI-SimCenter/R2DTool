@@ -56,6 +56,7 @@ class QGroupBox;
 class ResidualDemandResults;
 class ResultsWidget;
 
+
 class ResidualDemandWidget : public SimCenterAppWidget
 {
     Q_OBJECT
@@ -65,10 +66,11 @@ public:
     ~ResidualDemandWidget();
 //    bool inputFromJSON(QJsonObject &rvObject);
 //    bool outputToJSON(QJsonObject &rvObject);
-//    bool outputAppDataToJSON(QJsonObject &rvObject);
-//    bool inputAppDataFromJSON(QJsonObject &rvObject);
+    bool outputAppDataToJSON(QJsonObject &jsonObject);
+    bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool copyFiles(QString &dirName);
-//    bool outputCitation(QJsonObject &citation);
+    bool outputCitation(QJsonObject &citation);
+    SC_ResultsWidget* getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
 
 public slots:
     void clear(void);
@@ -79,6 +81,8 @@ protected:
 
 private slots:
   void handleInputTypeChanged(void);
+    void togglePostEventODFileEdit(int state);
+    void selectComponents(void);
 private:
 
 //SC_DirEdit *damageStateDataSrource;
@@ -87,8 +91,10 @@ SC_DirEdit *resultsDir;
 SC_FileEdit *pathEdgesFile;
 SC_FileEdit *pathNodesFile;
 SC_FileEdit *pathCapacityMapFile;
-SC_FileEdit *pathODFile;
+SC_FileEdit *pathODFilePre;
+SC_FileEdit *pathODFilePost;
 QLineEdit *simulationHourList;
+SC_CheckBox *postEventODCheckBox;
 SC_CheckBox *twoWayEdgeCheckbox;
 SC_CheckBox *createAnimationCheckbox;
 SC_ComboBox *damageInputMethodComboBox;
@@ -100,6 +106,15 @@ QString appOutputPath;
 ResidualDemandResults* theResidualDemandResultsWidget;
 ResultsWidget* theR2DResultsWidget;
 
+QLabel *postEventFileEditLable;
+
+QString pathCapacityMap = "";
+QString pathEdges = "";
+QString pathNodes= "";
+QString pathPreOD = "";
+QString pathPostOD = "";
+
+ResidualDemandResults *resultWidget;
 
 
 };
