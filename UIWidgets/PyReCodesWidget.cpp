@@ -83,41 +83,42 @@ PyReCoDesWidget::PyReCoDesWidget(VisualizationWidget* visWidget, QWidget *parent
     mainLayout->addWidget(new QLabel("Damage State Data Source Directory:"), numRow, 0, 1, 1);
     mainLayout->addWidget(damageStateDataSrource, numRow, 1, 1, 3);
     damageStateDataSrource->setDirName(inputDir);
+    numRow++;
 
     // 2. Realization Selection
     realizationInputWidget = new AssetInputDelegate();
-    mainLayout->addWidget(new QLabel("Damage Realization Selection:"), numRow, 4, 1, 1);
-    mainLayout->addWidget(realizationInputWidget, numRow, 5, 1, 2);
+    mainLayout->addWidget(new QLabel("Damage Realization Selection:"), numRow, 0, 1, 1);
+    mainLayout->addWidget(realizationInputWidget, numRow, 1, 1, 2);
     numRow++;
 
     // 3. Results Directory
-    resultsDir = new SC_DirEdit("Results_dir", true);
-    mainLayout->addWidget(new QLabel("Results Directory:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(resultsDir, numRow, 1, 1, 3);
-    numRow++;
+    // resultsDir = new SC_DirEdit("Results_dir", true);
+    // mainLayout->addWidget(new QLabel("Results Directory:"), numRow, 0, 1, 1);
+    // mainLayout->addWidget(resultsDir, numRow, 1, 1, 3);
+    // numRow++;
 
     // 4. Path To System Config File
     pathConfigFile = new SC_FileEdit("pyrecodes_config");
     mainLayout->addWidget(new QLabel("Config File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(pathConfigFile, numRow, 1, 1, 3);
+    mainLayout->addWidget(pathConfigFile, numRow, 1, 1, 4);
     numRow++;
 
     // 5. Path to the Component library
     pathComponentLibrary = new SC_FileEdit("pyrecodes_component_library");
     mainLayout->addWidget(new QLabel("Component library File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(pathComponentLibrary, numRow, 1, 1, 3);
+    mainLayout->addWidget(pathComponentLibrary, numRow, 1, 1, 4);
     numRow++;
     
     // 6. Path to the Component library
     pathLocalityDefinition = new SC_FileEdit("pyrecodes_locality_definitions");
     mainLayout->addWidget(new QLabel("Locality Definition File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(pathLocalityDefinition, numRow, 1, 1, 3);
+    mainLayout->addWidget(pathLocalityDefinition, numRow, 1, 1, 4);
     numRow++;
 
     // 7. Path to the Component library
     pathWaterNetwork = new SC_FileEdit("water_network_definition_file");
     mainLayout->addWidget(new QLabel("Water Network Definiton File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(pathWaterNetwork, numRow, 1, 1, 3);
+    mainLayout->addWidget(pathWaterNetwork, numRow, 1, 1, 4);
     numRow++;
 
     // 8. Run Simulation Button
@@ -138,7 +139,7 @@ PyReCoDesWidget::PyReCoDesWidget(VisualizationWidget* visWidget, QWidget *parent
     QString dirPath_pathLocalityDefinition = dirPath + QDir::separator() + "Alameda_TravelAnalysisZones.geojson";
     
     damageStateDataSrource->setDirName(dirPath_damageStateDataSrource);
-    resultsDir->setDirName(dirPath_resultsDir);
+    // resultsDir->setDirName(dirPath_resultsDir);
     QString filePath = dirPath + QDir::separator() + "Alameda_Case_Study" + QDir::separator() + "Alameda_Main.json";
     pathConfigFile->setFilename(dirPath_pathConfigFile);
     pathComponentLibrary->setFilename(dirPath_pathComponentLibrary);
@@ -189,12 +190,12 @@ void PyReCoDesWidget::runSimulation(void)
         return;
     }
 
-    auto resultsDir_dir = resultsDir->getDirName();
-    dir.setPath(resultsDir_dir);
-    if (resultsDir_dir.isEmpty() || !dir.exists()){
-        this->errorMessage("Missing the Result Directory. Please select a directory.");
-        return;
-    }
+    // auto resultsDir_dir = resultsDir->getDirName();
+    // dir.setPath(resultsDir_dir);
+    // if (resultsDir_dir.isEmpty() || !dir.exists()){
+        // this->errorMessage("Missing the Result Directory. Please select a directory.");
+        // return;
+    // }
 
     auto pathConfigFile_path = pathConfigFile->getFilename();
     if (pathConfigFile_path.isEmpty() || !QFile::exists(pathConfigFile_path)){
@@ -302,7 +303,7 @@ void PyReCoDesWidget::runSimulation(void)
                          + "applications" + QDir::separator() + "performREC" + QDir::separator()
                          + "pyrecodes" + QDir::separator() + "run_pyrecodes.py";
 
-    std::unique_ptr<ModularPython> thePy = std::make_unique<ModularPython>(resultsDir_dir);
+    std::unique_ptr<ModularPython> thePy = std::make_unique<ModularPython>(damageStateDataSrource_dir);
 
     connect(thePy.get(),SIGNAL(runComplete()),this,SLOT(handleProcessFinished()));
 

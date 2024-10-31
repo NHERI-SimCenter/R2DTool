@@ -1,8 +1,8 @@
-#ifndef PYRECODESTOOL_H
-#define PYRECODESTOOL_H
+#ifndef PYRECODES_H
+#define PYRECODES_H
 
 /* *****************************************************************************
-Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,51 +37,50 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Sina Naeimi
-#include "SimCenterAppWidget.h"
+// Written: Sina Naeimi
 
-class VisualizationWidget;
-class SC_DoubleLineEdit;
+#include <SimCenterAppWidget.h>
+
+
 class SC_FileEdit;
-class SC_DirEdit;
-class SC_CheckBox;
-class SC_ComboBox;
-class AssetInputDelegate;
-class QPushButton;
+// class SC_DoubleLineEdit;
+// class SC_IntLineEdit;
+// class SC_ComboBox;
+// class SC_CheckBox;
+class RewetResults;
+//class SC_DirEdit;
+class LineEditSelectTool;
 
 
-class PyReCoDesWidget : public SimCenterAppWidget
+class Pyrecodes : public SimCenterAppWidget
 {
-    Q_OBJECT
-
 public:
-    PyReCoDesWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~PyReCoDesWidget();
-    void handleProcessStarted();
+    Pyrecodes(QWidget *parent = 0);
+    ~Pyrecodes();
 
-public slots:
-    void clear(void);
-    void handleProcessFinished();
+    bool inputFromJSON(QJsonObject &rvObject);
+    bool outputToJSON(QJsonObject &rvObject);  
+    bool outputAppDataToJSON(QJsonObject &rvObject);
+    bool inputAppDataFromJSON(QJsonObject &rvObject);
+    bool copyFiles(QString &dirName);
+    bool outputCitation(QJsonObject &citation);
 
+    SC_ResultsWidget* getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
+  
 signals:
 
-protected:
+public slots:
+   void clear(void);
 
-private slots:
-  void runSimulation(void);
-  
 private:
+// TODO: THIS SHOULD BE LOOKED AT
+  RewetResults *resultWidget;
 
-SC_DirEdit *damageStateDataSrource;
-AssetInputDelegate *realizationInputWidget;
-// SC_DirEdit *resultsDir;
-SC_FileEdit *pathConfigFile;
-SC_FileEdit *pathComponentLibrary;
-SC_FileEdit *pathLocalityDefinition; 
-SC_FileEdit *pathWaterNetwork;
-QPushButton *runButton;
-
-
+  LineEditSelectTool *realizationInputWidget;
+  SC_FileEdit *pathConfigFile;
+  SC_FileEdit *pathComponentLibrary;
+  SC_FileEdit *pathLocalityDefinition;
 };
 
-#endif // PYRECODESTOOL_H
+
+#endif // PYRECODES_H

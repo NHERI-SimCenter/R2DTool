@@ -53,6 +53,7 @@ class HazardToAssetWidget;
 class HazardsWidget;
 class UQWidget;
 class SystemPerformanceWidget;
+class RecoveryWidget;
 class ModelWidget;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -102,6 +103,7 @@ public:
     GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
     DLWidget *getTheDamageAndLossWidget() const;
     SystemPerformanceWidget *getTheSystemPerformanceWidget() const;
+    RecoveryWidget *getTheRecoveryWidget() const;
 
     LocalApplication *getLocalApp() const;
 
@@ -146,6 +148,7 @@ private:
     ResultsWidget* theResultsWidget;
     LoadResultsDialog* resultsDialog;
     PerformanceWidget* thePerformanceWidget;
+    RecoveryWidget* theRecoveryWidget;
     //LocalMappingWidget* theLocalMappingWidget;  
     SimCenterAppEventSelection* theLocalEvent;  
     //

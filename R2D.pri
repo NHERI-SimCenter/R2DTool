@@ -47,7 +47,8 @@ INCLUDEPATH += $$PWD \
                $$PWD/Events/UI \
                $$PWD/Tools \
                $$PWD/assetWidgets \
-               $$PWD/systemPerformanceWidgets \	       
+               $$PWD/SystemPerformanceWidgets \
+			   $$PWD/RecoveryWidgets \			   
                $$PWD/assetWidgets/EPANET2.2/include \
 	       $$PWD/assetWidgets/EPANET2.2/src \
 	       $$PWD/dlWidgets
@@ -137,6 +138,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/ResidualDemandResults.cpp \
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
+			$$PWD/Tools/LineEditSelectTool.cpp \
             $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.cpp \
             $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
@@ -204,9 +206,11 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/GraphicElements/GIS_Selection.cpp \
 	    $$PWD/RunWidget.cpp \
             $$PWD/WorkflowAppR2D.cpp \
-            $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.cpp \
-            $$PWD/systemPerformanceWidgets/RewetRecovery.cpp \
-            $$PWD/systemPerformanceWidgets/RewetResults.cpp \	    
+            $$PWD/SystemPerformanceWidgets/SystemPerformanceWidget.cpp \
+            $$PWD/SystemPerformanceWidgets/RewetRecovery.cpp \
+            $$PWD/SystemPerformanceWidgets/RewetResults.cpp \
+            $$PWD/RecoveryWidgets/RecoveryWidget.cpp \
+			$$PWD/RecoveryWidgets/Pyrecodes.cpp \
             $$PWD/assetWidgets/InpFileWaterInputWidget.cpp \
 	    $$PWD/assetWidgets/EPANET2.2/geoJSON.c \
 	    $$PWD/assetWidgets/EPANET2.2/src/inpfile.c \
@@ -312,6 +316,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \
+			$$PWD/Tools/LineEditSelectTool.h \
             $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.h \
             $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.h \
             $$PWD/UIWidgets/AnalysisWidget.h \
@@ -387,9 +392,11 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/GraphicElements/GIS_Selection.h \
             $$PWD/WorkflowAppR2D.h \
             $$PWD/RunWidget.h \
-            $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.h \	    	    
-            $$PWD/systemPerformanceWidgets/RewetRecovery.h \
-            $$PWD/systemPerformanceWidgets/RewetResults.h \	    
+            $$PWD/SystemPerformanceWidgets/SystemPerformanceWidget.h \
+            $$PWD/SystemPerformanceWidgets/RewetRecovery.h \
+            $$PWD/SystemPerformanceWidgets/RewetResults.h \
+            $$PWD/RecoveryWidgets/RecoveryWidget.h \
+			$$PWD/RecoveryWidgets/Pyrecodes.h \
             $$PWD/assetWidgets/InpFileWaterInputWidget.h \	    
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2.h \
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2_2.h \
