@@ -278,79 +278,97 @@ int ResultsWidget::processResults(QString resultsDirectory)
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
         QString resultData = jsonFile.readAll();
 
-	// FMK - placing Nan inside quotes to validate
-	if (resultData.contains(" NaN"))
-	    resultData.replace("NaN", " \"NaN\"");
-	/* ******************************************
-	QFile fileNan(QString(pathGeojson + ".Nan"));
-	if(!fileNan.open(QIODevice::WriteOnly)){
-	  fileNan.close();
-	} else {
-	  QTextStream out(&fileNan); out << resultData;
-	  fileNan.close();
-	}
-	********************************************/
-	
-        QJsonDocument exDoc = QJsonDocument::fromJson(resultData.toUtf8());
-        QJsonObject jsonObject = exDoc.object();
+        // FMK - placing Nan inside quotes to validate
+        if (resultData.contains(" NaN"))
+            resultData.replace("NaN", "\"NaN\"");
 
-        if(jsonObject.contains("crs")) {
-            crs = jsonObject["crs"].toObject();
-	    QString crsString = crs["properties"].toObject()["name"].toString();
-	    
-	    QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
-	    if (!qgsCRS.isValid()){
-	      qgsCRS.createFromOgcWmsCrs(crsString);
-	    }
-	    if (!qgsCRS.isValid()){
-	      QString msg = "The CRS (" + crsString + ") defined in " + pathGeojson + " is invalid and ignored";
-	      errorMessage(msg);
-	    }
-	} else {
-	  QString msg = "No CRS info provided in " + pathGeojson;
-	  errorMessage(msg);
-	}
-	
-        QJsonArray features = jsonObject["features"].toArray();
-        for (const QJsonValue& valueIt : features) {
-            QJsonObject value = valueIt.toObject();
-            // Get the type
-            QJsonObject assetProperties = value["properties"].toObject();
-            if (!jsonObject.contains("type")) {
-                this->errorMessage("The Json object is missing the 'type' key that defines the asset type");
-                return false;
-            }
-            // type is Bridge/Tunnel/Road
-            QString type = assetProperties["type"].toString();
-            if (type.compare("")==0){
-                type = "Building";
-            }
-            if (!assetDictionary.contains(type))
-            {
-                assetDictionary[type] = QList<QJsonObject>({value});
-            }
-            else
-            {
-                QList<QJsonObject>& featList = assetDictionary[type];
-                featList.append(value);
-            }
-            // assetType is Transportation Network
-            QString assetType = assetProperties["assetType"].toString();
-            if (!assetTypeToType.contains(assetType))
-            {
-                assetTypeToType[assetType] = QList<QString>({type});
-            }
-            else
-            {
-                QList<QString>& typesList = assetTypeToType[assetType];
-                bool typeExists = false;
-                for (QString it : typesList){
-                    if (it.compare(type)==0){
-                        typeExists = true;
+        // Sina - Placing Infinity to "INF" (inside qoutes)
+        if (resultData.contains(" Infinity"))
+            resultData.replace("Infinity", "\"inf\"");
+
+
+        /* ******************************************
+        QFile fileNan(QString(pathGeojson + ".Nan"));
+        if(!fileNan.open(QIODevice::WriteOnly)){
+        fileNan.close();
+        } else {
+        QTextStream out(&fileNan); out << resultData;
+        fileNan.close();
+        }
+        ********************************************/
+        
+        QJsonParseError parseError;
+        QJsonDocument exDoc = QJsonDocument::fromJson(resultData.toUtf8(), &parseError);
+
+        // Sina - Added to handle when there is a parsling error gracefully. 
+        if (parseError.error != QJsonParseError::NoError) {
+            QString msg = "Error parsing JSON: " + parseError.errorString() + "\n File: " + pathGeojson;
+            qDebug() << "Error parsing JSON: " <<parseError.errorString() << "\n File: " << "OFSET" << parseError.offset;
+            errorMessage(msg);
+        }
+        else {
+
+            QJsonObject jsonObject = exDoc.object();
+
+            if(jsonObject.contains("crs")) {
+                crs = jsonObject["crs"].toObject();
+                QString crsString = crs["properties"].toObject()["name"].toString();
+
+                QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
+                if (!qgsCRS.isValid()){
+                    qgsCRS.createFromOgcWmsCrs(crsString);
                     }
+                if (!qgsCRS.isValid()){
+                    QString msg = "The CRS (" + crsString + ") defined in " + pathGeojson + " is invalid and ignored";
+                    errorMessage(msg);
                 }
-                if (!typeExists){
-                    typesList.append(type);
+            } 
+            else{
+                QString msg = "No CRS info provided in " + pathGeojson;
+                errorMessage(msg);
+            }
+        
+            QJsonArray features = jsonObject["features"].toArray();
+            for (const QJsonValue& valueIt : features) {
+                QJsonObject value = valueIt.toObject();
+                // Get the type
+                QJsonObject assetProperties = value["properties"].toObject();
+                if (!jsonObject.contains("type")) {
+                    this->errorMessage("The Json object is missing the 'type' key that defines the asset type");
+                    return false;
+                }
+                // type is Bridge/Tunnel/Road
+                QString type = assetProperties["type"].toString();
+                if (type.compare("")==0){
+                    type = "Building";
+                }
+                if (!assetDictionary.contains(type))
+                {
+                    assetDictionary[type] = QList<QJsonObject>({value});
+                }
+                else
+                {
+                    QList<QJsonObject>& featList = assetDictionary[type];
+                    featList.append(value);
+                }
+                // assetType is Transportation Network
+                QString assetType = assetProperties["assetType"].toString();
+                if (!assetTypeToType.contains(assetType))
+                {
+                    assetTypeToType[assetType] = QList<QString>({type});
+                }
+                else
+                {
+                    QList<QString>& typesList = assetTypeToType[assetType];
+                    bool typeExists = false;
+                    for (QString it : typesList){
+                        if (it.compare(type)==0){
+                            typeExists = true;
+                        }
+                    }
+                    if (!typeExists){
+                        typesList.append(type);
+                    }
                 }
             }
         }
@@ -445,7 +463,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
     }
 
 
-    qDebug() << resultsDirectory;
+    // qDebug() << resultsDirectory;
 
     //
     // Get results widgets from each of DL asset types and system performance & add to Tabbed widget
