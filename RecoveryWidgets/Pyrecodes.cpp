@@ -61,46 +61,37 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 Pyrecodes::Pyrecodes(QWidget *parent)
   : SimCenterAppWidget(parent), resultWidget(0)
 {
-    //int windowWidth = 800;
-
+    
     QGridLayout *mainLayout = new QGridLayout(this); // Set the parent to 'this'
 
     QWidget *mainWidget = new QWidget();
-    // mainLayout->addWidget(mainWidget);
-
+    
     QVBoxLayout *layout = new QVBoxLayout();
     mainWidget->setLayout(layout);
 
 
     int numRow = 0;
 
-    // 2. Realization Selection
-    realizationInputWidget = new LineEditSelectTool("Realization");
-    mainLayout->addWidget(new QLabel("Damage Realization Selection:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(realizationInputWidget, numRow, 1, 1, 2);
-    numRow++;
-
-    // 4. Path To System Config File
+    // 1. Path To System Config File
     pathConfigFile = new SC_FileEdit("systemConfigFile");
     mainLayout->addWidget(new QLabel("Configuration File:"), numRow, 0, 1, 1);
     mainLayout->addWidget(pathConfigFile, numRow, 1, 1, 4);
     numRow++;
 
-    // 5. Path to the Component library
+    // 2. Path to the Component library
     pathComponentLibrary = new SC_FileEdit("componentLibraryFile");
     mainLayout->addWidget(new QLabel("Component library File:"), numRow, 0, 1, 1);
     mainLayout->addWidget(pathComponentLibrary, numRow, 1, 1, 4);
     numRow++;
     
-    // 6. Path to the Component library
+    // 3. Path to the Component library
     pathLocalityDefinition = new SC_FileEdit("localityGeojsonFile");
     mainLayout->addWidget(new QLabel("Locality Definition File:"), numRow, 0, 1, 1);
     mainLayout->addWidget(pathLocalityDefinition, numRow, 1, 1, 4);
     numRow++;
 
     mainLayout->setRowStretch(numRow, 1);
-    //mainLayout->setColumnStretch(numRow, 1);
-
+    
 }
 
 
@@ -120,25 +111,15 @@ void Pyrecodes::clear(void)
 
 bool Pyrecodes::inputFromJSON(QJsonObject &jsonObject)
 {
-  this->clear();
-  
-  realizationInputWidget->inputFromJSON(jsonObject);
-  pathConfigFile->inputFromJSON(jsonObject);
-  pathComponentLibrary->inputFromJSON(jsonObject);
-  pathLocalityDefinition->inputFromJSON(jsonObject);
-  
+  Q_UNUSED(jsonObject); 
+
   return true;
 }
 
 bool Pyrecodes::outputToJSON(QJsonObject &jsonObject)
 {
   jsonObject["Application"] = "Pyrecodes";
-
-  realizationInputWidget->outputToJSON(jsonObject);
-  pathConfigFile->outputToJSON(jsonObject);
-  pathComponentLibrary->outputToJSON(jsonObject);
-  pathLocalityDefinition->outputToJSON(jsonObject);
-  
+    
   return true;
 }
 
@@ -151,20 +132,30 @@ bool Pyrecodes::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     jsonObject["Application"] = "Pyrecodes";
     QJsonObject dataObj;
+    pathConfigFile->outputToJSON(dataObj);
+    pathComponentLibrary->outputToJSON(dataObj);
+    pathLocalityDefinition->outputToJSON(dataObj);
     jsonObject["ApplicationData"] = dataObj;
 
     return true;
 }
 
 bool Pyrecodes::inputAppDataFromJSON(QJsonObject &jsonObject) {
-    Q_UNUSED(jsonObject);
+    this->clear();
+
+    if (jsonObject.contains("ApplicationData")) {
+        QJsonObject dataObj = jsonObject["ApplicationData"].toObject();
+        pathConfigFile->inputFromJSON(dataObj);
+        pathComponentLibrary->inputFromJSON(dataObj);
+        pathLocalityDefinition->inputFromJSON(dataObj);
+    }
+
     return true;
 }
 
 
 bool Pyrecodes::copyFiles(QString &destDir) {
 
-  realizationInputWidget->copyFile(destDir);
   pathConfigFile->copyFile(destDir);
   pathComponentLibrary->copyFile(destDir);
   pathLocalityDefinition->copyFile(destDir);
@@ -185,5 +176,6 @@ SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent, QWidget *R2DresWi
     if (resultWidget==nullptr){
         resultWidget = new RewetResults(parent);
     }
+    
     return resultWidget;
 }

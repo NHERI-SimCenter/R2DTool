@@ -50,15 +50,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 RecoveryWidget::RecoveryWidget(QWidget *parent)
   : SimCenterAppSelection(QString("Recovery"), QString("Recovery"), parent)
 {
-
-  //QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNewtworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
-  //RecWidget = new SimCenterAppSelection(QString("Recovery"), QString("Recovery"), this);
-    
-  // Water distribution network apps
+  // Create the widgets    
   SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
   SimCenterAppWidget *pyrecodesRecovery = new Pyrecodes(this);
   this->addComponent(QString("None"), QString("None"), noneWidget3);
-  addComponent(QString("Pyrecodes Recovery"), QString("Pyrecodes"), pyrecodesRecovery);  
+  addComponent(QString("Pyrecodes"), QString("Pyrecodes"), pyrecodesRecovery);  
 
   //addComponent("Recovery", RecWidget);
   // We shall not hide it since we want to have recovery at any time
