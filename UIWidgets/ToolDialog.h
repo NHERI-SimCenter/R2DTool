@@ -13,6 +13,8 @@ class HousingUnitAllocationWidget;
 class QGISHurricaneSelectionWidget;
 class GMWidget;
 class QStackedWidget;
+class PyReCoDesWidget;
+class ResidualDemandToolWidget;
 
 class ToolDialog : public QDialog
 {
@@ -32,6 +34,8 @@ public slots:
      void handleShowOpenquakeSelectionTool(void);
      void handleBrailsInventoryTool(void);
 	 void handleBrailsTranspInventoryTool(void);
+     void handlePyrecodesTool(void);
+     void handleResidualDemandTool(void);
 
 private:
 
@@ -46,6 +50,8 @@ private:
     OpenQuakeSelectionWidget* theOpenQuakeSelectionWidget = nullptr;
     BrailsInventoryGenerator* theBrailsInventoryGeneratorWidget = nullptr;
     BrailsTranspInventoryGenerator* theBrailsTranspInventoryGeneratorWidget = nullptr;
+    PyReCoDesWidget* thePyReCodesWidget = nullptr;
+    ResidualDemandToolWidget* theResidualDemandToolWidget = nullptr;
 
 };
 

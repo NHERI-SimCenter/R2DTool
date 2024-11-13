@@ -7,7 +7,9 @@
 #include "OpenQuakeSelectionWidget.h"
 #include "BrailsInventoryGenerator.h"
 #include "BrailsTranspInventoryGenerator.h"
+#include "PyReCodesWidget.h"
 #include "GMWidget.h"
+#include "ResidualDemandToolWidget.h"
 
 #include <QVBoxLayout>
 #include <QStackedWidget>
@@ -56,6 +58,11 @@ void ToolDialog::clear()
     {
         theEQSSWidget->clear();
     }
+
+    if(theResidualDemandToolWidget != nullptr){
+        theResidualDemandToolWidget->clear();
+    }
+
 }
 
 
@@ -86,6 +93,14 @@ void ToolDialog::handleShowEQGMSimTool(void)
     this->showMaximized();
 }
 
+void ToolDialog::handleResidualDemandTool(void){
+    if(theResidualDemandToolWidget == nullptr){
+        theResidualDemandToolWidget = new ResidualDemandToolWidget(visualizationWidget,this);
+        mainWidget->addWidget(theResidualDemandToolWidget);
+    }
+    mainWidget->setCurrentWidget(theResidualDemandToolWidget);
+    this->showMaximized();
+}
 
 void ToolDialog::handleShowOpenquakeSelectionTool(void)
 {
@@ -110,6 +125,18 @@ void ToolDialog::handleBrailsInventoryTool(void)
     }
 
     mainWidget->setCurrentWidget(theBrailsInventoryGeneratorWidget);
+
+    this->showMaximized();
+}
+
+void ToolDialog::handlePyrecodesTool(void){
+    if(thePyReCodesWidget == nullptr)
+    {
+        thePyReCodesWidget = new PyReCoDesWidget(visualizationWidget,this);
+        mainWidget->addWidget(thePyReCodesWidget);
+    }
+
+    mainWidget->setCurrentWidget(thePyReCodesWidget);
 
     this->showMaximized();
 }

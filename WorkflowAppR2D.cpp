@@ -229,6 +229,8 @@ void WorkflowAppR2D::initialize(void)
     toolsMenu->addAction("&OpenQuake Source Selection", theToolDialog, &ToolDialog::handleShowOpenquakeSelectionTool);
     toolsMenu->addAction("&BRAILS-Buildings", theToolDialog, &ToolDialog::handleBrailsInventoryTool);
     toolsMenu->addAction("&BRAILS-Transportation", theToolDialog, &ToolDialog::handleBrailsTranspInventoryTool);
+//    toolsMenu->addAction("&PyReCodes", theToolDialog, &ToolDialog::handlePyrecodesTool);
+    toolsMenu->addAction("&Residual Demand", theToolDialog, &ToolDialog::handleResidualDemandTool);
     menuBar->insertMenu(menuAfter, toolsMenu);
 
     theAssetsWidget = new AssetsWidget(this,theVisualizationWidget);
@@ -567,7 +569,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
 
 	if (apps.contains("SystemPerformance")) {
 	  if (theSystemPerformanceWidget->inputAppDataFromJSON(apps) == false) {
-            this->errorMessage("REC failed to read input data");
+            this->errorMessage("SP failed to read input data");
 	    theSystemPerformanceWidget->clear();
             result = false;
 	  }
@@ -992,6 +994,10 @@ void WorkflowAppR2D::runComplete()
 DLWidget *WorkflowAppR2D::getTheDamageAndLossWidget() const
 {
     return theDamageAndLossWidget;
+}
+
+ResultsWidget* WorkflowAppR2D::getTheResultsWidget() const{
+    return theResultsWidget;
 }
 
 SystemPerformanceWidget *WorkflowAppR2D::getTheSystemPerformanceWidget() const

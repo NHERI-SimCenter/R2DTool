@@ -471,6 +471,19 @@ BrailsInventoryGenerator::getLocationBoundary(void)
 	QStringList scriptArgs;
     if (regionInp.location.isEmpty()){
         regionInp.location = "\"\"";
+    } else {
+        QString location;
+        location.reserve(regionInp.location.size());
+        for (int i = 0; i < regionInp.location.size(); ++i) {
+            if (regionInp.location[i] == ' ' && (i == 0 || regionInp.location[i - 1] != '\\')) {
+                location.append('\\');  // Add a backslash to escape the space
+            }
+            if (regionInp.location[i] == ',' && (i == 0 || regionInp.location[i - 1] != '\\')) {
+                location.append('\\');  // Add a backslash to escape the space
+            }
+            location.append(regionInp.location[i]);  // Append the current character
+        }
+        regionInp.location = location;
     }
     scriptArgs << QString("--latMin") << QString::number(regionInp.minLat)
                << QString("--latMax") << QString::number(regionInp.maxLat)
@@ -547,6 +560,19 @@ BrailsInventoryGenerator::getFootprints(void)
 	QStringList scriptArgs;
     if (fpInp.location.isEmpty()){
         fpInp.location = "\"\"";
+    } else {
+        QString location;
+        location.reserve(fpInp.location.size());
+        for (int i = 0; i < fpInp.location.size(); ++i) {
+            if (fpInp.location[i] == ' ' && (i == 0 || fpInp.location[i - 1] != '\\')) {
+                location.append('\\');  // Add a backslash to escape the space
+            }
+            if (fpInp.location[i] == ',' && (i == 0 || fpInp.location[i - 1] != '\\')) {
+                location.append('\\');  // Add a backslash to escape the space
+            }
+            location.append(fpInp.location[i]);  // Append the current character
+        }
+        fpInp.location = location;
     }
 	scriptArgs << QString("--latMin") << QString::number(fpInp.minLat)
                << QString("--latMax") << QString::number(fpInp.maxLat)
@@ -644,11 +670,21 @@ BrailsInventoryGenerator::getBaselineInv(QString outputDataType)
         if (binvInp.invAttributeMap.isEmpty()){
             binvInp.invAttributeMap = "\"\"";
         }
-        if (binvInp.invAttributeMap.isEmpty()){
-            binvInp.invAttributeMap = "\"\"";
-        }
         if (binvInp.location.isEmpty()){
             binvInp.location = "\"\"";
+        } else {
+            QString location;
+            location.reserve(binvInp.location.size());
+            for (int i = 0; i < binvInp.location.size(); ++i) {
+                if (binvInp.location[i] == ' ' && (i == 0 || binvInp.location[i - 1] != '\\')) {
+                    location.append('\\');  // Add a backslash to escape the space
+                }
+                if (binvInp.location[i] == ',' && (i == 0 || binvInp.location[i - 1] != '\\')) {
+                    location.append('\\');  // Add a backslash to escape the space
+                }
+                location.append(binvInp.location[i]);  // Append the current character
+            }
+            binvInp.location = location;
         }
 		scriptArgs << QString("--latMin") << QString::number(binvInp.minLat)
                    << QString("--latMax") << QString::number(binvInp.maxLat)
