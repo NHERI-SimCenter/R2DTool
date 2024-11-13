@@ -82,6 +82,11 @@ private:
     QComboBox* rlzSelectionComboBox;
     SC_MovieWidget* gifDisplay;
     QString residualDemandResultsFolder;
+    QWidget* summaryDisplay;
+    QLabel* averageTravelTimeIncreaseLabel;
+    QLabel* averageTravelTimeIncreaseValue;
+    QLabel* averageTravelTimeIncreaseRatioLabel;
+    QLabel* averageTravelTimeIncreaseRatioValue;
 };
 
 #endif // RESIDUALDEMANDRESULTS_H

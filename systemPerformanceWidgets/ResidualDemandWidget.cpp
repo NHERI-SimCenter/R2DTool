@@ -497,7 +497,12 @@ bool ResidualDemandWidget::outputAppDataToJSON(QJsonObject &jsonObject){
     appDataObj.insert("edgeFile", getFileBaseName(pathEdgesFile->getFilename()));
     appDataObj.insert("nodeFile", getFileBaseName(pathNodesFile->getFilename()));
     appDataObj.insert("ODFilePre", getFileBaseName(pathODFilePre->getFilename()));
-    appDataObj.insert("ODFilePost", getFileBaseName(pathODFilePost->getFilename()));
+    if (postEventODCheckBox->isChecked()){
+        appDataObj.insert("ODFilePost", getFileBaseName(pathODFilePre->getFilename()));
+    } else {
+        appDataObj.insert("ODFilePost", getFileBaseName(pathODFilePost->getFilename()));
+    }
+
     appDataObj.insert("configFile", "residual_demand_config.json");
     jsonObject.insert("ApplicationData",appDataObj);
     return true;

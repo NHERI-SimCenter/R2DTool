@@ -178,6 +178,18 @@ QDockWidget* ResidualDemandResults::createGIFWidget(QWidget* parent, QString nam
         return gifWidget;
     }
 
+    summaryDisplay = new QWidget(gifWidget);
+    QGridLayout *summaryLayout = new QGridLayout();
+    summaryDisplay->setLayout(summaryLayout);
+    averageTravelTimeIncreaseLabel = new QLabel("Average travel time increase (s): ");
+    averageTravelTimeIncreaseValue = new QLabel("-");
+    averageTravelTimeIncreaseRatioLabel = new QLabel("Average travel time increase ratio: ");
+    averageTravelTimeIncreaseRatioValue = new QLabel("-");
+    summaryLayout->addWidget(averageTravelTimeIncreaseLabel, 0,0,1,1);
+    summaryLayout->addWidget(averageTravelTimeIncreaseValue, 0,1,1,1);
+    summaryLayout->addWidget(averageTravelTimeIncreaseRatioLabel, 0,2,1,1);
+    summaryLayout->addWidget(averageTravelTimeIncreaseRatioValue, 0,3,1,1);
+
 //    QMovie *gif = new QMovie(gifPath);
 //    gif->start();
 //    QLabel *gifDisplay = new QLabel;
@@ -186,11 +198,13 @@ QDockWidget* ResidualDemandResults::createGIFWidget(QWidget* parent, QString nam
 
     gifDisplay = new SC_MovieWidget(this, undamaged_gif_path);
 
+
     layout->addWidget(selectRlzLabel, 0, 0, 1, 1);
     layout->addWidget(rlzSelectionComboBox, 0, 1, 1, 1);
-    layout->addWidget(gifDisplay, 1, 0, 1, 2);
-    layout->setColumnStretch(2,1);
-    layout->setRowStretch(2,1);
+    layout->addWidget(summaryDisplay, 1, 0, 1, 2);
+    layout->addWidget(gifDisplay, 2, 0, 1, 2);
+    layout->setColumnStretch(3,1);
+    layout->setRowStretch(3,1);
 
     gifWidget->setMinimumWidth(475);
     gifWidget->setMaximumWidth(575);
@@ -278,14 +292,60 @@ void ResidualDemandResults::clear(void)
 
 void ResidualDemandResults::congestionRlzSelectChanged(const QString &text){
     QString gifPath;
+    QString meanTravelTimeIncrease = "-";
+    QString meanTravelTimeIncreaseRatio = "-";
     if (text.compare("Undamaged")==0){
         gifPath = residualDemandResultsFolder + QDir::separator() + "undamaged" + QDir::separator() + "congestion.gif";
     } else {
         gifPath = residualDemandResultsFolder + QDir::separator() + "workdir." + text + QDir::separator() +
                           "damaged" + QDir::separator() + "congestion.gif";
+        // Get the mean travel time increase
+        QString tripInfoFile = residualDemandResultsFolder + QDir::separator() + "workdir." + text + QDir::separator() +
+                                "trip_info_compare.csv";
+        QFile file(tripInfoFile);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            this->errorMessage( "Unable to open file: " + tripInfoFile);
+        } else {
+            QTextStream in(&file);
+            QVector<double> delayDurations;
+            QVector<double> delayRatios;
+            // Read the header to find column indices
+            QString headerLine = in.readLine();
+            QStringList headers = headerLine.split(",");
+            int delayDurationIndex = headers.indexOf("delay_duration");
+            int delayRatioIndex = headers.indexOf("delay_ratio");
+            if (delayDurationIndex == -1 || delayRatioIndex == -1) {
+                this->errorMessage( "Columns named \"delay_duration\" or \"delay_ratio\" not found in the CSV file");
+            } else {
+                // Read data lines
+                while (!in.atEnd()) {
+                    QString line = in.readLine();
+                    QStringList values = line.split(",");
+
+                    // Check if the line has enough columns
+                    if (values.size() > qMax(delayDurationIndex, delayRatioIndex)) {
+                        bool ok1, ok2;
+                        double delayDuration = values[delayDurationIndex].toDouble(&ok1);
+                        double delayRatio = values[delayRatioIndex].toDouble(&ok2);
+
+                        // Add values to vectors if they are valid numbers
+                        if (ok1) delayDurations.append(delayDuration);
+                        if (ok2) delayRatios.append(delayRatio);
+                    }
+                }
+                // Calculate mean values
+                double meanDelayDuration = std::accumulate(delayDurations.begin(), delayDurations.end(), 0.0) / delayDurations.size();
+                double meanDelayRatio = std::accumulate(delayRatios.begin(), delayRatios.end(), 0.0) / delayRatios.size();
+                meanTravelTimeIncrease = QString::number(meanDelayDuration);
+                meanTravelTimeIncreaseRatio = QString::number(meanDelayRatio);
+            }
+        }
     }
     bool updateSuccess = gifDisplay->updateGif(gifPath);
     if (!updateSuccess){
         this->errorMessage("Failed to display "+gifPath+".\n Check if the file exists");
     }
+
+    this->averageTravelTimeIncreaseValue->setText(meanTravelTimeIncrease);
+    this->averageTravelTimeIncreaseRatioValue->setText(meanTravelTimeIncreaseRatio);
 }
