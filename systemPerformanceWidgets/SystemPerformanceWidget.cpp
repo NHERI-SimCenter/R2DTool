@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppSelection.h"
 #include "VisualizationWidget.h"
 #include "SectionTitle.h"
+#include "ResidualDemandWidget.h"
 
 // Qt headers
 #include <QDebug>
@@ -74,7 +75,9 @@ SystemPerformanceWidget::SystemPerformanceWidget(QWidget *parent)
 
   // Transportation network apps
   SimCenterAppWidget *noneWidget4 = new NoneWidget(this);
+  SimCenterAppWidget *residualDemand = new ResidualDemandWidget(this);
   transportWidget->addComponent(QString("None"), QString("None"), noneWidget4);
+  transportWidget->addComponent(QString("Residual Demand Traffic Simulation"), QString("ResidualDemand"), residualDemand);
 
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network", pipelineWidget);

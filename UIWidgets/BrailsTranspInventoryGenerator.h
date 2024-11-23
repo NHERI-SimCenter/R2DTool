@@ -84,7 +84,8 @@ private:
   
   SC_DoubleLineEdit *minLat, *maxLat, *minLong, *maxLong, *maxRoadLength;
   SC_ComboBox *units;
-  SC_CheckBox *minHazus;  
+  SC_CheckBox *minHazus;
+  SC_CheckBox *connectivity;
   SC_FileEdit *theOutputDir;
   GIS_Selection *theSelectionWidget;  
 

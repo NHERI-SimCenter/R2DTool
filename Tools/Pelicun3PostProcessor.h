@@ -147,6 +147,8 @@ private:
 
     QString outputFilePath;
 
+    QString theAssetType;
+
 
     QDockWidget* mapViewDock;
 //    QDockWidget* summaryDock;
