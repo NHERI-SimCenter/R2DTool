@@ -87,6 +87,8 @@ private:
     QLabel* averageTravelTimeIncreaseValue;
     QLabel* averageTravelTimeIncreaseRatioLabel;
     QLabel* averageTravelTimeIncreaseRatioValue;
+    QLabel* numIncompleteTripsLabel;
+    QLabel* numIncompleteTripsValue;
 };
 
 #endif // RESIDUALDEMANDRESULTS_H

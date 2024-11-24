@@ -185,10 +185,14 @@ QDockWidget* ResidualDemandResults::createGIFWidget(QWidget* parent, QString nam
     averageTravelTimeIncreaseValue = new QLabel("-");
     averageTravelTimeIncreaseRatioLabel = new QLabel("Average travel time increase ratio: ");
     averageTravelTimeIncreaseRatioValue = new QLabel("-");
+    numIncompleteTripsLabel = new QLabel("Number of incomplete trips: ");
+    numIncompleteTripsValue = new QLabel("-");
     summaryLayout->addWidget(averageTravelTimeIncreaseLabel, 0,0,1,1);
     summaryLayout->addWidget(averageTravelTimeIncreaseValue, 0,1,1,1);
     summaryLayout->addWidget(averageTravelTimeIncreaseRatioLabel, 0,2,1,1);
     summaryLayout->addWidget(averageTravelTimeIncreaseRatioValue, 0,3,1,1);
+    summaryLayout->addWidget(numIncompleteTripsLabel, 1, 0, 1, 1);
+    summaryLayout->addWidget(numIncompleteTripsValue, 1, 1, 1, 1);
 
 //    QMovie *gif = new QMovie(gifPath);
 //    gif->start();
@@ -294,6 +298,7 @@ void ResidualDemandResults::congestionRlzSelectChanged(const QString &text){
     QString gifPath;
     QString meanTravelTimeIncrease = "-";
     QString meanTravelTimeIncreaseRatio = "-";
+    int numIncompleteTrip = 0;
     if (text.compare("Undamaged")==0){
         gifPath = residualDemandResultsFolder + QDir::separator() + "undamaged" + QDir::separator() + "congestion.gif";
     } else {
@@ -324,13 +329,17 @@ void ResidualDemandResults::congestionRlzSelectChanged(const QString &text){
 
                     // Check if the line has enough columns
                     if (values.size() > qMax(delayDurationIndex, delayRatioIndex)) {
-                        bool ok1, ok2;
-                        double delayDuration = values[delayDurationIndex].toDouble(&ok1);
-                        double delayRatio = values[delayRatioIndex].toDouble(&ok2);
+                        if (values[delayDurationIndex] == "inf"){
+                            numIncompleteTrip++;
+                        } else {
+                            bool ok1, ok2;
+                            double delayDuration = values[delayDurationIndex].toDouble(&ok1);
+                            double delayRatio = values[delayRatioIndex].toDouble(&ok2);
 
-                        // Add values to vectors if they are valid numbers
-                        if (ok1) delayDurations.append(delayDuration);
-                        if (ok2) delayRatios.append(delayRatio);
+                            // Add values to vectors if they are valid numbers
+                            if (ok1) delayDurations.append(delayDuration);
+                            if (ok2) delayRatios.append(delayRatio);
+                        }
                     }
                 }
                 // Calculate mean values
@@ -348,4 +357,5 @@ void ResidualDemandResults::congestionRlzSelectChanged(const QString &text){
 
     this->averageTravelTimeIncreaseValue->setText(meanTravelTimeIncrease);
     this->averageTravelTimeIncreaseRatioValue->setText(meanTravelTimeIncreaseRatio);
+    this->numIncompleteTripsValue->setText(QString::number(numIncompleteTrip, 'f', 0));
 }
