@@ -48,7 +48,8 @@ INCLUDEPATH += $$PWD \
                $$PWD/Tools \
                $$PWD/assetWidgets \
                $$PWD/SystemPerformanceWidgets \
-			   $$PWD/RecoveryWidgets \			   
+	       $$PWD/RecoveryWidgets \
+	       $$PWD/RecoveryWidgets/pyrecodes \
                $$PWD/assetWidgets/EPANET2.2/include \
 	       $$PWD/assetWidgets/EPANET2.2/src \
 	       $$PWD/dlWidgets
@@ -198,7 +199,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/UIWidgets/BrailsTranspInventoryGenerator.cpp \	
             $$PWD/UIWidgets/BrailsGoogleDialog.cpp \	    
             $$PWD/UIWidgets/UserInputHurricaneWidget.cpp \
-			$$PWD/UIWidgets/PyReCodesWidget.cpp \
+	    $$PWD/UIWidgets/PyReCodesWidget.cpp \
             $$PWD/GraphicElements/NodeHandle.cpp \
             $$PWD/GraphicElements/RectangleGrid.cpp \
             $$PWD/GraphicElements/PlainRectangle.cpp \	    
@@ -211,7 +212,9 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/SystemPerformanceWidgets/RewetResults.cpp \
             $$PWD/RecoveryWidgets/RecoveryWidget.cpp \
 	    $$PWD/RecoveryWidgets/Pyrecodes.cpp \
-	    $$PWD/RecoveryWidgets/Pyrecodes2.cpp \	    
+	    $$PWD/RecoveryWidgets/pyrecodes/Pyrecodes2.cpp \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesSystemConfig.cpp \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesLocality.cpp \
             $$PWD/assetWidgets/InpFileWaterInputWidget.cpp \
 	    $$PWD/assetWidgets/EPANET2.2/geoJSON.c \
 	    $$PWD/assetWidgets/EPANET2.2/src/inpfile.c \
@@ -371,7 +374,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/UQWidget.h \
             $$PWD/UIWidgets/UserDefinedEDPR.h \
             $$PWD/UIWidgets/UserInputGMWidget.h \
-			$$PWD/UIWidgets/PyReCodesWidget.h \
+	    $$PWD/UIWidgets/PyReCodesWidget.h \
             $$PWD/Events/UI/ScenarioSelectionWidget.h \
             $$PWD/Events/UI/GroundMotionModelsWidget.h \
             $$PWD/UIWidgets/RegionalSiteResponseWidget.h \
@@ -398,7 +401,9 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/SystemPerformanceWidgets/RewetResults.h \
             $$PWD/RecoveryWidgets/RecoveryWidget.h \
 	    $$PWD/RecoveryWidgets/Pyrecodes.h \
-	    $$PWD/RecoveryWidgets/Pyrecodes2.h \	    
+	    $$PWD/RecoveryWidgets/pyrecodes/Pyrecodes2.h \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesSystemConfig.h \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesLocality.h \	    
             $$PWD/assetWidgets/InpFileWaterInputWidget.h \	    
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2.h \
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2_2.h \

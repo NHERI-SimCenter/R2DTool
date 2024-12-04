@@ -44,7 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SC_FileEdit.h>
 #include <SimCenterWidget.h>
-
+#include <PyrecodesSystemConfig.h>
 
 Pyrecodes2::Pyrecodes2(QWidget *parent)
    : SimCenterAppWidget(parent)
@@ -109,11 +109,11 @@ Pyrecodes2::Pyrecodes2(QWidget *parent)
 	  });    
 
   //
-  // now the COmponentLibrary and SystemConfiguration
+  // now the ComponentLibrary and SystemConfiguration
   //
   
   theComponentLibrary = new SimCenterWidget();
-  theSystemConfiguration = new SimCenterWidget();    
+  theSystemConfiguration = new PyrecodesSystemConfig();    
   
 }
 

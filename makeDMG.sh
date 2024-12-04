@@ -22,6 +22,7 @@ pathToOpenSees="/Users/fmckenna/bin/OpenSees3.6.0"
 pathToDakota="/Users/fmckenna/dakota/dakota-6.16.0"
 
 
+
 QTDIR="/Users/fmckenna/Qt/5.15.2/clang_64/"
 
 #
@@ -49,7 +50,7 @@ fi
 # make the app
 #
 
-touch ../WorkflowAppR2D.cpp
+touch ../main.cpp
 make -j 4
 
 
@@ -158,18 +159,22 @@ done
 
 find ./$APP_FILE -name __pycache__ -exec rm -rf {} +;
 
+
+if [ "$release" = "quick" ]; then
+    exit 0
+fi
+
 #
 # now before we codesign and verify, check userID file exists
 #
+
+exit
 
 userID="../userID.sh"
 
 if [ ! -f "$userID" ]; then
     
-    echo "creating dmg $DMG_FILENAME"
-    hdiutil create $DMG_FILENAME -fs HFS+ -srcfolder ./$APP_FILE -format UDZO -volname $APP_NAME
-
-    echo "No password & credential file to continue with codesig and App store verification"
+    echo "no userID to codesign so might as well stop here"
     exit
 fi
 
@@ -189,6 +194,7 @@ if [ "${DMG_METHOD}" = "NEW" ]; then
     #
 
     echo "codesign --deep --force --verbose --options=runtime  --sign "$appleCredential" $APP_FILE"
+    
     codesign --deep --force --verbose --options=runtime  --sign "$appleCredential" $APP_FILE    
 
     mkdir app
@@ -254,19 +260,20 @@ else
 fi
 
 #
-# notorize , create zip file & send to apple
+# submit to apple store
 #
 
-echo "Issue the following: " 
-echo "xcrun notarytool submit ./$DMG_FILENAME --apple-id $appleID --password $appleAppPassword --team-id $appleCredential"
-echo "xcrun notarytool log ID --apple-id $appleID --team-id $appleCredential  --password $appleAppPAssword"
 
-#echo "https://appleid.apple.com/account/"
-#echo "under security generate app specific password: $APP_NAME"
-#echo "xcrun altool --notarize-app -u appleID -p appleAppPassword -f ./$APP_NAME.zip --primary-bundle-id altool"
-#echo "returns id: ID"
+if [ -n "$release" ] && [ "$release" = "release" ]; then
+    
 
-echo "Finally staple the dmg"
-echo "xcrun stapler staple \"$APP_NAME\" $DMG_FILENAME"
+    echo "xcrun notarytool submit ./$DMG_FILENAME --apple-id $appleID --password $appleAppPassword --team-id $appleCredential"
+    xcrun notarytool submit ./$DMG_FILENAME --apple-id $appleID --password $appleAppPassword --team-id $appleCredential
+    echo ""
+    echo "xcrun notarytool log ID --apple-id $appleID --team-id $appleCredential  --password $appleAppPassword"
+    
+    echo "Finally staple the dmg"
+    echo "xcrun stapler staple \"$APP_NAME\" $DMG_FILENAME"
 
-cd ..
+fi
+

@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterAppWidget.h>
 
 class SC_FileEdit;
-class SimCenterWidget;
+class PyrecodesSystemConfig;
 
 class Pyrecodes2 : public SimCenterAppWidget
 {
@@ -69,7 +69,7 @@ private:
   SC_FileEdit *theSystemConfigurationFile;
 
   SimCenterWidget *theComponentLibrary;
-  SimCenterWidget *theSystemConfiguration;
+  PyrecodesSystemConfig *theSystemConfiguration;
 };
 
 
