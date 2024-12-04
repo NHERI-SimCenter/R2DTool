@@ -86,6 +86,8 @@ BrailsTranspInventoryGenerator::BrailsTranspInventoryGenerator(VisualizationWidg
     maxRoadLength = new SC_DoubleLineEdit("maxRoadLength",100.0);
     QStringList unitList; unitList << "m" << "ft";
     units = new SC_ComboBox("units", unitList);
+    connectivity = new SC_CheckBox("roadConnectivity", false);
+
 
     int numRow = 0;    
     QGridLayout *mainLayout = new QGridLayout(this);
@@ -98,6 +100,9 @@ BrailsTranspInventoryGenerator::BrailsTranspInventoryGenerator(VisualizationWidg
     roadLengthLayout->addWidget(maxRoadLength);
     roadLengthLayout->addWidget(units);
     mainLayout->addLayout(roadLengthLayout,numRow,3);
+
+    mainLayout->addWidget(new QLabel("Save traffic simulation attributes"),numRow,4);
+    mainLayout->addWidget(connectivity,numRow,5);
     
     numRow++;
     mainLayout->addWidget(new QLabel("Latitude:"),numRow,0);
@@ -174,6 +179,9 @@ void BrailsTranspInventoryGenerator::runBRAILS(void)
   QString checkStatus = "false";
   if (minHazus->isChecked())
     checkStatus = "true";
+  QString trafficCheckStatus = "false";
+  if (connectivity->isChecked())
+    trafficCheckStatus = "true";
   
   scriptArgs << QString("--latMin")  << QString::number(brailsData.minLat)
 	     << QString("--latMax")  << QString::number(brailsData.maxLat)
@@ -182,14 +190,15 @@ void BrailsTranspInventoryGenerator::runBRAILS(void)
              << QString("--lengthUnit") << units->currentText()
 	     << QString("--minimumHAZUS") << checkStatus
 	     << QString("--maxRoadLength") << QString::number(maxRoadLength->getDouble())
-	     << "--outputFolder" << brailsData.outputFile;
+         << "--outputFolder" << brailsData.outputFile
+             << "--saveTrafficSimulationAttr" << trafficCheckStatus;
 
   qDebug() << "BRAILS script: " << brailsScript;
   qDebug() << "BRAILS args: " << scriptArgs;
   ModularPython *thePy = new ModularPython(outputPath);
   thePy->run(brailsScript,scriptArgs);
 
-  this->hide();		 
+//  this->hide();
 }
 
 void BrailsTranspInventoryGenerator::coordsChanged(void)

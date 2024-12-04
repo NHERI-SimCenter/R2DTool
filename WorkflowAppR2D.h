@@ -102,6 +102,7 @@ public:
     GeneralInformationWidgetR2D *getGeneralInformationWidget() const;
     DLWidget *getTheDamageAndLossWidget() const;
     SystemPerformanceWidget *getTheSystemPerformanceWidget() const;
+    ResultsWidget* getTheResultsWidget() const;
 
     LocalApplication *getLocalApp() const;
 

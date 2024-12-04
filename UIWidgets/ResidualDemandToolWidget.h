@@ -1,5 +1,6 @@
-#ifndef CSVREADERWRITER_H
-#define CSVREADERWRITER_H
+#ifndef RESIDUALDEMANDTOOL_H
+#define RESIDUALDEMANDTOOL_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +20,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,32 +37,74 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Jinyan Zhao, Sina Naeimi
+#include "SimCenterAppWidget.h"
 
-#include <QVector>
+class VisualizationWidget;
+class SC_DoubleLineEdit;
+class SC_FileEdit;
+class SC_DirEdit;
+class SC_CheckBox;
+class SC_ComboBox;
+class SC_CheckBox;
+class AssetInputDelegate;
+class QPushButton;
+class QLineEdit;
+class SC_ComboBox;
+class QLabel;
+class QGroupBox;
+class ResidualDemandResults;
+class ResultsWidget;
 
-class QString;
-class QStringList;
-
-class CSVReaderWriter
+class ResidualDemandToolWidget : public SimCenterAppWidget
 {
+    Q_OBJECT
+
 public:
-    CSVReaderWriter();
+    ResidualDemandToolWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~ResidualDemandToolWidget();
+    void handleProcessStarted();
 
-    // Saves data in the format of a CSV file
-    int saveCSVFile(const QVector<QStringList>& data, const QString& pathToFile, QString& err);
+public slots:
+    void clear(void);
+    void handleProcessFinished();
+    void togglePostEventODFileEdit(int state);
+    void selectComponents(void);
 
-    int saveCSVFile(const QVector<QStringList>& data, const QString& pathToFile, QString& err, int precision);
+signals:
 
-    // Parses a CSV file and returns the file as a vector of string lists
-    // Each item in the vector (string list) corresponds to a row of the csv file that is parsed
-    // The string list corresponds to the items within a row, i.e., the values in the cells. There are as many items in the string list as there are in the row of the CSV file
-    QVector<QStringList> parseCSVFile(const QString &pathToFile, QString& err);
+protected:
 
+private slots:
+  void runSimulation(void);
+  void handleInputTypeChanged(void);
 private:
+  bool initiateWorkDir(void);
 
-    QStringList parseLineCSV(const QString &csvString);
+//SC_DirEdit *damageStateDataSrource;
+AssetInputDelegate *realizationInputWidget;
+SC_DirEdit *resultsDir;
+SC_FileEdit *pathEdgesFile;
+SC_FileEdit *pathNodesFile;
+SC_FileEdit *pathCapacityMapFile;
+SC_FileEdit *pathODFilePre;
+SC_FileEdit *pathODFilePost;
+QLineEdit *simulationHourList;
+SC_CheckBox *postEventODCheckBox;
+SC_CheckBox *twoWayEdgeCheckbox;
+SC_CheckBox *createAnimationCheckbox;
+SC_ComboBox *damageInputMethodComboBox;
+QPushButton *runButton;
+QLabel *realizationToAnalyzeLabel;
+QGroupBox* theGroupBox;
+QString appInputPath;
+QString appOutputPath;
+ResidualDemandResults* theResidualDemandResultsWidget;
+ResultsWidget* theR2DResultsWidget;
+
+QLabel *postEventFileEditLable;
+
 
 };
 
-#endif // CSVREADERWRITER_H
+#endif // RESIDUALDEMANDTOOL_H

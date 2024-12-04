@@ -175,6 +175,55 @@ int Pelicun3PostProcessor::addResultSubtab(QString name, QWidget* existTab, QStr
             }
         }
     }
+    // resize docks
+    QList<QDockWidget*> alldocks = {mapViewDock};
+    float windowWidth = mainWindow->size().width();
+    float windowHeight = mainWindow->size().height();
+    QList<int> dockWidthes = {int(0.7*windowWidth)};
+    QList<int> dockHeights = {int(windowHeight)};
+    for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
+        alldocks.append(dockList->at(dock_i));
+        dockWidthes.append(int(0.3*windowWidth));
+        dockHeights.append(int(0.7*windowHeight));
+    }
+    mainWindow->resizeDocks(alldocks, dockWidthes, Qt::Horizontal);
+    mainWindow->resizeDocks(alldocks, dockHeights, Qt::Vertical);
+
+    // Set Menu Bar status
+    auto menuBar = WorkflowAppR2D::getInstance()->getTheMainWindow()->menuBar();
+    QMenu* resultsMenu = nullptr;
+    foreach (QAction *action, menuBar->actions()) {
+        auto actionMenu = action->menu();
+        if(actionMenu)
+        {
+            if(action->text().compare("&Results") == 0)
+                resultsMenu = actionMenu;
+        }
+    }
+    if(resultsMenu)
+    {
+        foreach(QAction* action, resultsMenu->actions()){
+            if (action->text().compare("&" + theAssetType) == 0){
+                auto actionMenu = action->menu();
+                actionMenu->clear();
+                resultsMenu->removeAction(action);
+            }
+        }
+        viewMenu = resultsMenu->addMenu("&" + theAssetType);
+        viewMenu->addAction(tr("&Restore"), this, &Pelicun3PostProcessor::restoreUI);
+        //        viewMenu->addAction(summaryDock->toggleViewAction());
+        viewMenu->addAction(mapViewDock->toggleViewAction());
+        for (int dock_i = 0; dock_i<dockList->count(); dock_i++){
+            viewMenu->addAction(dockList->at(dock_i)->toggleViewAction());
+        }
+        uiState = mainWindow->saveState();
+
+    }
+    else
+    {
+        ProgramOutputDialog::getInstance()->appendErrorMessage("Could not find the results menu bar in Pelicun3PostProcessor::");
+        return 1;
+    }
     return 0;
 
 }
@@ -185,6 +234,7 @@ int Pelicun3PostProcessor::addResultSubtab(QString name, QWidget* existTab, QStr
 int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName, QString &assetType,
                                           QList<QString> typesInAssetType){
 
+    theAssetType = assetType;
 
     if (theVizWidget == nullptr || theVizWidget==0){
         this->errorMessage("Can't find visualization widget");

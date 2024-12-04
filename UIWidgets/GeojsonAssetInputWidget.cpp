@@ -307,8 +307,13 @@ bool GeojsonAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
             return false;
 
     } else {
-        QString pathToComponentInputFile = QDir::currentPath() + QDir::separator() +
-            "input_data" + QDir::separator() + fileName;
+        QString pathToSource;
+        if (appData.contains("pathToSource")){
+            pathToSource = appData["pathToSource"].toString();
+        } else{
+            pathToSource = QDir::currentPath() + QDir::separator() + "input_data";
+        }
+        QString pathToComponentInputFile = pathToSource + QDir::separator() + fileName;
         if (fileInfo.exists(pathToComponentInputFile)) {
             componentFileLineEdit->setText(pathToComponentInputFile);
 
