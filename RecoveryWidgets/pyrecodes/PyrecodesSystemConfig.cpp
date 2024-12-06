@@ -56,7 +56,43 @@ PyrecodesSystemConfig::PyrecodesSystemConfig(QWidget *parent)
   QTabWidget *theTabbedWidget = new QTabWidget();
 
   //
-  //   locailities tab
+  // constants tab
+  //
+  
+  QWidget *constantsWidget = new QWidget();
+  QGridLayout *constantsLayout = new QGridLayout(constantsWidget);
+
+  // addConstant PushButton
+  QPushButton *addConstantButton = new QPushButton("Add Constant");  
+
+  QStringList headingsConstant; headingsConstant << "Name" << "Value";
+  theConstantsTable = new QTableWidget();
+  theConstantsTable->setColumnCount(2);
+  theConstantsTable->setHorizontalHeaderLabels(headingsConstant);
+  theConstantsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+  theConstantsTable->verticalHeader()->setVisible(false);
+  theConstantsTable->setShowGrid(true);
+  theConstantsTable->setStyleSheet("QTableWidget::item { border: 1px solid black; }");  
+    
+  
+  connect(addConstantButton, &QPushButton::clicked, this, [=]() {
+    
+    // add a row and set values to empty strings
+    int row = theConstantsTable->rowCount();
+    theConstantsTable->insertRow(row);
+    for (int col = 0; col < 2; ++col) {
+      QTableWidgetItem *item = new QTableWidgetItem(""); // Empty cell
+      theConstantsTable->setItem(row, col, item);
+    }
+    
+  });  
+
+  constantsLayout->addWidget(addConstantButton, 0,0);
+  constantsLayout->addWidget(theConstantsTable, 1, 0, 1, 4);  
+
+  
+  //
+  //   localities tab
   //
   
   QWidget *localitiesWidget = new QWidget();
@@ -65,18 +101,22 @@ PyrecodesSystemConfig::PyrecodesSystemConfig(QWidget *parent)
   // addLocality PushButton
   QPushButton *addLocalityButton = new QPushButton("Add Locality");
 
+
   connect(addLocalityButton, &QPushButton::clicked, this, [=]() {
     this->addLocality();
   });
-	  
+
   // locality table
+  
   QStringList headingsLocality; headingsLocality << "Locality" << "Coordinates" << "Components";
   theLocalityTable = new QTableWidget();
   theLocalityTable->setColumnCount(3);
   theLocalityTable->setHorizontalHeaderLabels(headingsLocality);
   theLocalityTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
   theLocalityTable->verticalHeader()->setVisible(false);
-
+  theLocalityTable->setShowGrid(true);
+  theLocalityTable->setStyleSheet("QTableWidget::item { border: 1px solid black; }");
+  
   layoutLocalities->addWidget(addLocalityButton, 0,0);
   layoutLocalities->addWidget(theLocalityTable, 1, 0, 1, 4);
   
@@ -89,20 +129,35 @@ PyrecodesSystemConfig::PyrecodesSystemConfig(QWidget *parent)
   
   QPushButton *addResourceButton = new QPushButton("Add Resourcse");
 
-  QStringList headingsResources; headingsResources << "Name" << "Coordinates" << "BLAH" << "BLAH";
+  QStringList headingsResources; headingsResources << "Name" << "Group" << "Distribution Model";
   theResourcesTable = new QTableWidget();
-  theResourcesTable->setColumnCount(4);
+  theResourcesTable->setColumnCount(3);
   theResourcesTable->setHorizontalHeaderLabels(headingsResources);
   theResourcesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
   theResourcesTable->verticalHeader()->setVisible(false);  
+  theResourcesTable->setShowGrid(true);
+  theResourcesTable->setStyleSheet("QTableWidget::item { border: 1px solid black; }");
+  
+  connect(addResourceButton, &QPushButton::clicked, this, [=]() {
+    
+    // add a row and set values to empty strings
+    int row = theResourcesTable->rowCount();
+    theResourcesTable->insertRow(row);
+    for (int col = 0; col < 3; ++col) {
+      QTableWidgetItem *item = new QTableWidgetItem(""); // Empty cell
+      theResourcesTable->setItem(row, col, item);
+    }
+  });  
 
+  
   layoutResources->addWidget(addResourceButton,0, 0);
   layoutResources->addWidget(theResourcesTable, 1, 0, 1, 4);
 
   //
   // add widgets to theTabbedWidget
   //
-  
+
+  theTabbedWidget->addTab(constantsWidget,"Constants");    
   theTabbedWidget->addTab(localitiesWidget,"Localities");  
   theTabbedWidget->addTab(resourcesWidget,"Resources");
 

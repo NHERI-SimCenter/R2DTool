@@ -1,5 +1,8 @@
+#ifndef PYRECODES_3_H
+#define PYRECODES_3_H
+
 /* *****************************************************************************
-Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -17,7 +20,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,44 +37,40 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Sina Naeimi
+// Written: fmk
 
-#include "RecoveryWidget.h"
-#include "NoneWidget.h"
-#include "Pyrecodes.h"
-#include "Pyrecodes2.h"
-#include "Pyrecodes3.h"
+#include <SimCenterAppWidget.h>
 
-#include "SecondaryComponentSelection.h"
-#include "VisualizationWidget.h"
-#include "SectionTitle.h"
+class SC_FileEdit;
+class PyrecodesSystemConfig;
 
-// Qt headers
-#include <QDebug>
-
-RecoveryWidget::RecoveryWidget(QWidget *parent)
-  : SimCenterAppSelection(QString("Recovery"), QString("Recovery"), parent)
+class Pyrecodes3 : public SimCenterAppWidget
 {
-  // Create the widgets    
-  SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
-  SimCenterAppWidget *pyrecodesRecovery = new Pyrecodes(this);
-  SimCenterAppWidget *pyrecodes2Recovery = new Pyrecodes2(this);
-  SimCenterAppWidget *pyrecodes3Recovery = new Pyrecodes3(this);    
-  this->addComponent(QString("None"), QString("None"), noneWidget3);
-  addComponent(QString("Pyrecodes"), QString("Pyrecodes"), pyrecodesRecovery);
-  addComponent(QString("Pyrecodes2"), QString("Pyrecodes2"), pyrecodes2Recovery);
-  addComponent(QString("Pyrecodes3"), QString("Pyrecodes3"), pyrecodes3Recovery);      
+public:
+    Pyrecodes3(QWidget *parent = 0);
+    ~Pyrecodes3();
 
-  //addComponent("Recovery", RecWidget);
-  // We shall not hide it since we want to have recovery at any time
-  //this->hideAll();
-}
+    bool inputFromJSON(QJsonObject &rvObject);
+    bool outputToJSON(QJsonObject &rvObject);  
+    bool outputAppDataToJSON(QJsonObject &rvObject);
+    bool inputAppDataFromJSON(QJsonObject &rvObject);
+    bool copyFiles(QString &dirName);
+    bool outputCitation(QJsonObject &citation);
 
-RecoveryWidget::~RecoveryWidget()
-{
+    SC_ResultsWidget* getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
+  
+signals:
 
-}
+public slots:
+  void clear(void);
+
+private:
+  SC_FileEdit *theComponentLibraryFile;
+  SC_FileEdit *theSystemConfigurationFile;
+
+  SimCenterWidget *theComponentLibrary;
+  PyrecodesSystemConfig *theSystemConfiguration;
+};
 
 
-
-
+#endif // PYRECODES_H

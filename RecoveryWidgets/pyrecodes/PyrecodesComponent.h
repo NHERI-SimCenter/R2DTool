@@ -1,5 +1,5 @@
-#ifndef PYRECODES_SYSTEM_CONFIG_H
-#define PYRECODES_SYSTEM_CONFIG_H
+#ifndef PYRECODES_COMPONENT_H
+#define PYRECODES_COMPONENT_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2023, The Regents of the University of California (Regents).
@@ -48,40 +48,40 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
 #include <SimCenterWidget.h>
-#include <QString>
-#include <QStringList>
 
-class QTableWidget;
-class PyrecodesLocality;
+class  SC_FileEdit;
+class  SC_StringLineEdit;
+class  SC_ComboBox;
+class  QTableWidget;
+class PyrecodesComponentLibrary;
 
-class PyrecodesSystemConfig : public SimCenterWidget
+
+class PyrecodesComponent : public SimCenterWidget
 {
     Q_OBJECT
 public:
   
-  PyrecodesSystemConfig(QWidget *parent = 0);
-  virtual ~PyrecodesSystemConfig();
+  PyrecodesComponent(PyrecodesComponentLibrary *theLibrary, QWidget *parent = 0);
+  virtual ~PyrecodesComponent();
   bool outputToJSON(QJsonObject &jsonObject);
   bool inputFromJSON(QJsonObject &jsonObject);
   bool copyFiles(QString &dirName);
   void clear(void);
-
-  void removeRow(QString id);
-  void updateRow(QString id, QString locaility, QString );  
-
-  void addLocality();
-
-  void addOrUpdateLocalityTableEntry(QString, QString, QStringList);
   
 signals:
 
 private:
 
-  QTableWidget *theConstantsTable;  
-  QTableWidget *theLocalityTable;
-  QTableWidget *theResourcesTable;  
-  QList<PyrecodesLocality *>theLocalities;
+  // name
+  SC_StringLineEdit  *theName;
+  SC_ComboBox        *theClass;
+  SC_ComboBox        *theDamageFunctionalRelation;  
 
+  QTableWidget *theRecoveryTable;  
+  QTableWidget *theSupplyTable;
+  QTableWidget *theOpDemandTable;
+  
+  PyrecodesComponentLibrary *theComponentLibrary;
 };
 
-#endif // PYRECODES_SYSTEM_CONFIG
+#endif // PYRECODES_COMPONENT_H
