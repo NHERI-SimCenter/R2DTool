@@ -63,44 +63,12 @@ if ! [ -x "$(command -v open ./$APP_FILE)" ]; then
 fi
 
 
+
 #
 # macdeployqt it
 #
 
 macdeployqt $APP_FILE
-
-#
-# now ESRI stuff from Steve
-#
-
-# Define the paths to the application and to libEsriCommonQt.dylib - this should not change
-#pathAppBin=$pathApp/Contents/MacOS/R2D
-#pathAppLib=$pathApp/Contents/Frameworks/libEsriCommonQt.dylib
-
-# Get the paths that are in the libraries - these paths will be changed to relative paths instead of the absolute paths
-#pathEsriCommonQt=$(otool -L $pathAppBin | grep libEsriCommonQt.dylib | awk '{print $1}')
-#pathLibruntimecore=$(otool -L $pathAppLib | grep libruntimecore.dylib | awk '{print $1}')
-
-#echo $pathEsriCommonQt
-#echo $pathLibruntimecore
-
-# Use install name tool to change these to relative paths
-#install_name_tool -change $pathEsriCommonQt @rpath/libEsriCommonQt.dylib $pathAppBin
-#install_name_tool -change $pathLibruntimecore @rpath/libruntimecore.dylib $pathAppLib
-
-# Check to make sure it worked
-#pathEsriCommonQt=$(otool -L $pathAppBin | grep libEsriCommonQt.dylib | awk '{print $1}')
-#pathLibruntimecore=$(otool -L $pathAppLib | grep libruntimecore.dylib | awk '{print $1}')
-
-#if [ "$pathEsriCommonQt" != "@rpath/libEsriCommonQt.dylib" ]; then
-#    echo "Failed to change the path $pathEsriCommonQt"
-#	exit
-#fi
-
-#if [ "$pathLibruntimecore" != "@rpath/libruntimecore.dylib" ]; then
-#    echo "Failed to change the path $pathLibruntimecore"
-#	exit
-#fi
 
 #
 # copy needed file from SimCenterBackendApplications
@@ -132,8 +100,7 @@ install_name_tool -change @loader_path/libz.1.2.11.dylib @rpath/libz.1.2.11.dyli
 
 # remove unwanted stuff
 
-declare -a notWantedApp=("createSAM/mdofBuildingModel/" 
-			 "createSAM/openSeesInput"
+declare -a notWantedApp=("createSAM/openSeesInput"
 			 "createSAM/AutoSDA"			 
 			 "createEVENT/ASCE7_WindSpeed"
 			 "createEVENT/CFDEvent"
