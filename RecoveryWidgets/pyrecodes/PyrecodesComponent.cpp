@@ -41,7 +41,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_ComboBox.h>
 #include <PyrecodesComponentLibrary.h>
 
-
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QLineEdit>
 #include <QGridLayout>
 #include <QLabel>
 #include <QGroupBox>
@@ -51,20 +54,42 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QListWidget>
 #include <QPushButton>
 #include <QWidget>
+#include <QJsonDocument>
 
-PyrecodesComponent::PyrecodesComponent(PyrecodesComponentLibrary *theCL, QWidget *parent)
+PyrecodesComponent::PyrecodesComponent(QString initName, PyrecodesComponentLibrary *theCL, QWidget *parent)
   :SimCenterWidget(parent), theComponentLibrary(theCL)
 {
-  theName = new SC_StringLineEdit("name");
+  theName = new QLineEdit("name");
+  theName->setText(initName);
 
-  QStringList classTypes; classTypes << "CompClass-1" << "CompClass-2";
+  QStringList classTypes;
+  classTypes << "StandardiReCoDeSComponent"
+	     << "BuildingWithEmergencyCalls"
+	     << "InfrastructureInterface"
+	     << "R2DBridge"
+	     << "R2DTunnel"
+	     << "R2DRoadway"
+	     << "R2DPipe";
+  
   theClass = new SC_ComboBox("componentClass", classTypes);
 
   //
   // Recovery Relation & Table
   //
 
-  QStringList functionTypes; functionTypes << "RecRel-1" << "RecRel-2";  
+  QStringList recoveryTypes;
+  recoveryTypes << "NoRecoveryActivityModel"
+		<< "ComponentLevelRecoveryActivitiesModel"
+		<< "InfrastructureInterfaceRecoveryModel";
+  
+  theRecoveryType = new SC_ComboBox("recoveryType", recoveryTypes);
+  
+  QStringList functionTypes;
+  functionTypes << ""
+		<< "Constant"
+		<< "ReverseBinary"
+		<< "MultipleSteps";
+  
   theDamageFunctionalRelation = new SC_ComboBox("damageRelation", functionTypes);
 
   
@@ -176,10 +201,12 @@ PyrecodesComponent::PyrecodesComponent(PyrecodesComponentLibrary *theCL, QWidget
 
     QGroupBox *groupRecovery = new QGroupBox("Recovery Model");
     QGridLayout *groupRecoveryLayout = new QGridLayout(groupRecovery);
-    groupRecoveryLayout->addWidget(new QLabel("Damage Functional Recovery:"), 0, 0);
-    groupRecoveryLayout->addWidget(theDamageFunctionalRelation, 0, 1);    
-    groupRecoveryLayout->addWidget(addRecoveryButton, 1, 0);
-    groupRecoveryLayout->addWidget(theRecoveryTable, 2, 0, 1, 4);
+    groupRecoveryLayout->addWidget(new QLabel("RecoveryType:"), 0, 0);
+    groupRecoveryLayout->addWidget(theRecoveryType, 0, 1);        
+    groupRecoveryLayout->addWidget(new QLabel("Damage Functional Recovery:"), 1, 0);
+    groupRecoveryLayout->addWidget(theDamageFunctionalRelation, 1, 1);    
+    groupRecoveryLayout->addWidget(addRecoveryButton, 2, 0);
+    groupRecoveryLayout->addWidget(theRecoveryTable, 3, 0, 1, 4);
     
     QGroupBox *groupSupply = new QGroupBox("Supply");
     QGridLayout *groupSupplyLayout = new QGridLayout(groupSupply);  
@@ -223,6 +250,198 @@ PyrecodesComponent::outputToJSON(QJsonObject &jsonObject)
 bool
 PyrecodesComponent::inputFromJSON(QJsonObject &jsonObject)
 {
+
+  //
+  // parse component class
+  //
+  
+  QJsonValue componentValue = jsonObject["ComponentClass"];
+  if (!componentValue.isNull() && componentValue.isObject()) {
+    
+    QJsonObject componentObject = componentValue.toObject();
+    QJsonValue compObjectClassValue = componentObject["ClassName"];
+    if (!compObjectClassValue.isNull() && compObjectClassValue.isString()) {
+      QString classString = compObjectClassValue.toString();
+      int index = theClass->findText(classString);
+      if (index != -1) {
+	theClass->setCurrentIndex(index);
+      }
+    }
+  }
+
+  //
+  // parse supply
+  // 
+
+  theSupplyTable->clearContents();
+  QJsonValue supplyValue = jsonObject["Supply"];
+  
+  if (!supplyValue.isNull() && supplyValue.isObject()) {
+    
+    QJsonObject supplyObject = supplyValue.toObject();
+    theSupplyTable->setRowCount(supplyObject.size());  
+
+    int row = 0;
+    for (const QString &key : supplyObject.keys()) {
+      
+      QJsonValue value = supplyObject.value(key);
+      if (!value.isNull() && value.isObject()) {
+	QJsonObject obj = value.toObject();
+	
+	QString amount, ftar, udtar;
+	QJsonValue amountValue = obj["Amount"];
+	QJsonValue ftarValue = obj["FunctionalityToAmountRelation"];
+	QJsonValue udtarValue = obj["UnmetDemandToAmountRelation"];
+	
+	if (!amountValue.isNull() && amountValue.isDouble()) 
+	  amount = QString::number(amountValue.toDouble());
+	if (!ftarValue.isNull() && ftarValue.isString())
+	  ftar = ftarValue.toString();
+	if (!udtarValue.isNull() && udtarValue.isString())
+	  udtar = udtarValue.toString();
+	
+	QTableWidgetItem *newName = new QTableWidgetItem(key);      
+	QTableWidgetItem *newAmount = new QTableWidgetItem(amount);
+	QTableWidgetItem *newFTAR = new QTableWidgetItem(ftar);
+	QTableWidgetItem *newUDTAR = new QTableWidgetItem(udtar);
+	theSupplyTable->setItem(row, 0, newName);
+	theSupplyTable->setItem(row, 1, newAmount);
+	theSupplyTable->setItem(row, 2, newFTAR);
+	theSupplyTable->setItem(row, 3, newUDTAR);
+	
+	row++;
+      }
+    }
+  }
+
+  //
+  // parse op demand
+  // 
+
+  theOpDemandTable->clearContents();
+  QJsonValue odValue = jsonObject["OperationDemand"];
+  
+  if (!odValue.isNull() && odValue.isObject()) {
+    
+    QJsonObject odObject = odValue.toObject();
+    theOpDemandTable->setRowCount(odObject.size());  
+
+    int row = 0;
+    for (const QString &key : odObject.keys()) {
+      
+      QJsonValue value = odObject.value(key);
+      if (!value.isNull() && value.isObject()) {
+	QJsonObject obj = value.toObject();
+	
+	QString amount, ftar;
+	QJsonValue amountValue = obj["Amount"];
+	QJsonValue ftarValue = obj["FunctionalityToAmountRelation"];
+	
+	if (!amountValue.isNull() && amountValue.isDouble()) 
+	  amount = QString::number(amountValue.toDouble());
+	if (!ftarValue.isNull() && ftarValue.isString())
+	  ftar = ftarValue.toString();
+	
+	QTableWidgetItem *newName = new QTableWidgetItem(key);      
+	QTableWidgetItem *newAmount = new QTableWidgetItem(amount);
+	QTableWidgetItem *newFTAR = new QTableWidgetItem(ftar);
+	theOpDemandTable->setItem(row, 0, newName);
+	theOpDemandTable->setItem(row, 1, newAmount);
+	theOpDemandTable->setItem(row, 2, newFTAR);
+	
+	row++;
+      }
+    }
+  }
+
+
+  //
+  // parse recovery model
+  // 
+
+  theRecoveryTable->clearContents();
+  QJsonValue recoveryValue = jsonObject["RecoveryModel"];
+  
+  if (!recoveryValue.isNull() && recoveryValue.isObject()) {
+    
+    QJsonObject recoveryObject = recoveryValue.toObject();
+
+    // type
+    QString className;
+    QJsonValue classValue = recoveryObject["ClassName"];
+    if (!classValue.isNull() && classValue.isString()) {
+      className = classValue.toString();
+      int index = theRecoveryType->findText(className);
+      if (index != -1) {
+	theRecoveryType->setCurrentIndex(index);
+      }
+    }
+
+
+    // damage functional relation
+    QString dfrName;
+    QJsonValue dfrValue = recoveryObject["DamageFunctionalityRelation"];
+    if (!dfrValue.isNull() && dfrValue.isObject()) {
+      QJsonValue typeValue = dfrValue.toObject()["Type"];
+      if (!typeValue.isNull() && typeValue.isString()) {
+	dfrName = typeValue.toString();
+	int index = theDamageFunctionalRelation->findText(dfrName);
+	if (index != -1) {
+	  theDamageFunctionalRelation->setCurrentIndex(index);
+	}
+      }
+    }    
+
+    QJsonValue parametersValue = recoveryObject["Parameters"];
+    QJsonObject parametersObject;
+    if (!parametersValue.isNull() && parametersValue.isObject())
+      parametersObject = parametersValue.toObject();
+
+    //
+    // fill in the recovery table
+    //
+    
+    int row = 0;
+    theRecoveryTable->setRowCount(parametersObject.size());  
+
+    for (const QString &key : parametersObject.keys()) {
+
+      QJsonValue value = parametersObject.value(key);
+      if (!value.isNull() && value.isObject()) {
+	QJsonObject obj = value.toObject();
+	
+	QString duration, demand, proceedingActivities;
+	QJsonValue durationValue = obj["Duration"];
+	QJsonValue demandValue = obj["Demand"];	
+	QJsonValue preceedingValue = obj["PrecedingActivities"];
+	
+	if (!durationValue.isNull() && durationValue.isObject()) 
+	  duration = QString(QJsonDocument(durationValue.toObject()).toJson(QJsonDocument::Compact));
+	if (!demandValue.isNull() && demandValue.isArray()) 
+	  demand = QString(QJsonDocument(demandValue.toArray()).toJson(QJsonDocument::Compact));
+	if (!preceedingValue.isNull() && preceedingValue.isArray()) 
+	  proceedingActivities = QString(QJsonDocument(preceedingValue.toArray()).toJson(QJsonDocument::Compact));
+
+	QTableWidgetItem *newName = new QTableWidgetItem(key);      	
+	QTableWidgetItem *newDuration = new QTableWidgetItem(duration);      
+	QTableWidgetItem *newDemand = new QTableWidgetItem(demand);
+	QTableWidgetItem *newProceeding = new QTableWidgetItem(proceedingActivities);
+	theRecoveryTable->setItem(row, 0, newName);	
+	theRecoveryTable->setItem(row, 1, newDuration);
+	theRecoveryTable->setItem(row, 2, newDemand);
+	theRecoveryTable->setItem(row, 3, newProceeding);
+	
+	row++;
+      }
+    }
+  }
+
+
+  
+  theComponentLibrary->addOrUpdateComponentTableEntry(theName->text(),
+						      theClass->currentText(),
+						      theDamageFunctionalRelation->currentText(),
+						      QString(""),QString(""));  
   return true;
 }
 

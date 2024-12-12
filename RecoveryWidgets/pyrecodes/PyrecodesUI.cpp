@@ -35,146 +35,106 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 // Written: fmk
 
-#include "Pyrecodes2.h"
+#include "PyrecodesUI.h"
 #include <QGridLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QJsonObject>
 #include <QFileDialog>
+#include <QTabWidget>
 
 #include <SC_FileEdit.h>
 #include <SimCenterWidget.h>
 #include <PyrecodesSystemConfig.h>
 #include <PyrecodesComponentLibrary.h>
 
-Pyrecodes2::Pyrecodes2(QWidget *parent)
+PyrecodesUI::PyrecodesUI(QWidget *parent)
    : SimCenterAppWidget(parent)
 {
   QGridLayout *mainLayout = new QGridLayout(this); // Set the parent to 'this'
   this->setLayout(mainLayout);
-  
-  QPushButton *showComponentLibrary = new QPushButton("Create/Show");
-  QPushButton *specifyComponentLibrary = new QPushButton("Select Existing File");
-  mainLayout->addWidget(new QLabel("Component Library:"), 0, 0, 1, 1);    
-  mainLayout->addWidget(showComponentLibrary, 0, 1, 1, 1);
-  mainLayout->addWidget(specifyComponentLibrary, 0, 2, 1, 1);
-  
-  QPushButton *showSystemConfiguration = new QPushButton("Create/Show");
-  QPushButton *specifySystemConfiguration = new QPushButton("Select Existing File");
-  mainLayout->addWidget(new QLabel("System Configuration:"), 1, 0, 1, 1);    
-  mainLayout->addWidget(showSystemConfiguration, 1, 1, 1, 1);
-  mainLayout->addWidget(specifySystemConfiguration, 1, 2, 1, 1);        
 
+  theComponentLibrary = new PyrecodesComponentLibrary();
+  theSystemConfiguration = new PyrecodesSystemConfig();
+
+  QTabWidget *theTabWidget = new QTabWidget();  
+  theTabWidget->addTab(theComponentLibrary, "Componet Library");
+  theTabWidget->addTab(theSystemConfiguration, "System Configuration");
+  
   // label for the citation
   QLabel *citation = new QLabel("Users should cite this as follows: "
 				"Blagojević, Nikola, and Stojadinović, Božidar. (2023). "
 				"pyrecodes: an open-source library for regional recovery simulation and disaster resilience assessment of the built environment (v0.1.0). Chair of Structural Dynamics and Earthquake Engineering, ETH Zurich. https://doi.org/10.5905/ethz-1007-700");
   
   citation->setWordWrap(true);
-  mainLayout->addWidget(citation, 4, 0, 1, 3);
-    
-  mainLayout->setRowStretch(5, 1);
 
-  //
-  // deal with the QPushButtons
-  //
-  
-  // simple file selections first
-  QStringList fileTypes;
-  QString fileTypeStr = QString("All files (*.*)");
-  if (fileTypes.count()>0){
-    fileTypeStr = QString("File (*." + fileTypes.join(" *.") + ")");
-  }
-  
-  
-  connect(showComponentLibrary, &QPushButton::clicked, this,
-	  [=]() {
-	    theComponentLibrary->show();
-	  });
-  
-  connect(showSystemConfiguration, &QPushButton::clicked, this,
-	  [=]() {
-	    theSystemConfiguration->show();
-	  });   
-  
-  connect(specifyComponentLibrary, &QPushButton::clicked, this,
-	  [=]() {
-	    QString fileName=QFileDialog::getOpenFileName(this,tr("Open File"),"", fileTypeStr); 
-	    theComponentLibraryFile->setFilename(fileName);
-	  });
-  
-  connect(specifySystemConfiguration, &QPushButton::clicked, this,
-	  [=]() {
-	    QString fileName=QFileDialog::getOpenFileName(this,tr("Open File"),"", fileTypeStr); 
-	    theSystemConfigurationFile->setFilename(fileName);
-	  });    
+  mainLayout->addWidget(theTabWidget, 0, 0, 1, 4);
+  mainLayout->addWidget(citation,     1, 0, 1, 2);
+  mainLayout->setRowStretch(0, 1);
 
-  //
-  // now the ComponentLibrary and SystemConfiguration
-  //
+
   
-  theComponentLibrary = new PyrecodesComponentLibrary();
-  theSystemConfiguration = new PyrecodesSystemConfig();    
+
   
 }
 
 
-Pyrecodes2::~Pyrecodes2()
+PyrecodesUI::~PyrecodesUI()
 {
 
 }
 
 
-void Pyrecodes2::clear(void)
+void PyrecodesUI::clear(void)
 {
 
 }
 
 
-bool Pyrecodes2::inputFromJSON(QJsonObject &jsonObject)
+bool PyrecodesUI::inputFromJSON(QJsonObject &jsonObject)
 {
   Q_UNUSED(jsonObject);
   return true;  
 }
 
 
-bool Pyrecodes2::outputToJSON(QJsonObject &jsonObject)
+bool PyrecodesUI::outputToJSON(QJsonObject &jsonObject)
 {
-  jsonObject["Application"] = "Pyrecodes2";
+  jsonObject["Application"] = "PyrecodesUI";
     
   return true;
 }
 
-bool Pyrecodes2::outputAppDataToJSON(QJsonObject &jsonObject) {
+bool PyrecodesUI::outputAppDataToJSON(QJsonObject &jsonObject) {
 
-  jsonObject["Application"] = "Pyrecodes2";
+  jsonObject["Application"] = "PyrecodesUI";
   QJsonObject dataObj;
   jsonObject["ApplicationData"] = dataObj;
   
   return true;
 }
 
-bool Pyrecodes2::inputAppDataFromJSON(QJsonObject &jsonObject) {
+bool PyrecodesUI::inputAppDataFromJSON(QJsonObject &jsonObject) {
   Q_UNUSED(jsonObject);    
   return true;
 }
 
 
-bool Pyrecodes2::copyFiles(QString &destDir) {
+bool PyrecodesUI::copyFiles(QString &destDir) {
 
   return true;
 }
 
-bool Pyrecodes2::outputCitation(QJsonObject &citation){
+bool PyrecodesUI::outputCitation(QJsonObject &citation){
   citation.insert("PyReCoDes",QString("Blagojević, Nikola, and Stojadinović, Božidar. (2023). pyrecodes: an open-source library for regional recovery simulation and disaster resilience assessment of the built environment (v0.1.0). Chair of Structural Dynamics and Earthquake Engineering, ETH Zurich. https://doi.org/10.5905/ethz-1007-700"));
   
   return true;
 }
 
-SC_ResultsWidget* Pyrecodes2::getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
+SC_ResultsWidget* PyrecodesUI::getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
 {
 
-  qDebug() << "ERROR: SC_ResultsWidget* Pyrecodes2::getResultsWidget()";
+  qDebug() << "ERROR: SC_ResultsWidget* PyrecodesUI::getResultsWidget()";
   return 0;
   
 }

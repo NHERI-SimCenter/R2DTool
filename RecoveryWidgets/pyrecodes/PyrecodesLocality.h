@@ -50,7 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterWidget.h>
 
 class  SC_FileEdit;
-class  SC_StringLineEdit;
+class  QLineEdit;
 class  SC_CheckBox;
 class  QListWidget;
 class PyrecodesSystemConfig;
@@ -61,7 +61,7 @@ class PyrecodesLocality : public SimCenterWidget
     Q_OBJECT
 public:
   
-  PyrecodesLocality(PyrecodesSystemConfig *theConfig, QWidget *parent = 0);
+  PyrecodesLocality(PyrecodesSystemConfig *theConfig, QString theName, QWidget *parent = 0);
   virtual ~PyrecodesLocality();
   bool outputToJSON(QJsonObject &jsonObject);
   bool inputFromJSON(QJsonObject &jsonObject);
@@ -73,11 +73,11 @@ signals:
 private:
 
   // name
-  SC_StringLineEdit  *theName;
+  QLineEdit  *theName;
   
   // coordinates
   SC_FileEdit        *coordinateFile;
-  SC_StringLineEdit  *boundingBox;
+  QLineEdit  *boundingBox;
 
   // components
   SC_CheckBox *buildingsCB;

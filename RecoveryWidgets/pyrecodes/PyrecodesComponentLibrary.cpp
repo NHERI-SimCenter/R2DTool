@@ -34,24 +34,144 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-
 #include <PyrecodesComponentLibrary.h>
+
 #include <QGridLayout>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QStringList>
 #include <QHeaderView>
+#include <QLineEdit>
+#include <QFileInfo>
+#include <QFile>
+#include <QJsonDocument>
+#include <QFileDialog>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QMessageBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QMenu>
 
+#include "Utils/RelativePathResolver.h"
+#include "Utils/FileOperations.h"
 #include <PyrecodesComponent.h>
 
 PyrecodesComponentLibrary::PyrecodesComponentLibrary(QWidget *parent)
   :SimCenterWidget(parent)
 {
 
-  QGridLayout *layout = new QGridLayout(this);
+  //
+  // first a QLineEdit to Load and Save the info to a file
+  //
+  
+  QLineEdit   *theComponentLibraryFile = new QLineEdit();
+  QPushButton *loadFileButton = new QPushButton("Load");
+  QPushButton *saveFileButton = new QPushButton("Save");  
 
+  //
+  // code for when user pushes the loadFileButton
+  //   - basically open file, load it into json, and then invoke inputFromJSON
+  //
+  
+  connect(loadFileButton, &QPushButton::clicked, this, [=]() {
+
+    // put up a dialog to allow user to get a file
+    QString fileTypeStr = QString("All files (*.*)");    
+    QString fileName=QFileDialog::getOpenFileName(this,tr("Open File"),"", fileTypeStr); 
+
+    // open file
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+      this->errorMessage(QString("Could Not Open File: ") + fileName);
+      return;
+    }
+
+    // read the file into a json object
+    QString val;
+    val=file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(val.toUtf8());
+    QJsonObject jsonObj = doc.object();
+
+    //Resolve absolute paths from relative ones in json objects
+    QFileInfo fileInfo(fileName);
+    SCUtils::ResolveAbsolutePaths(jsonObj, fileInfo.dir());    
+
+    // close file
+    file.close();
+
+    // clear current contents & invoke inputFromJSON
+    this->clear();
+    bool result = this->inputFromJSON(jsonObj);
+    
+    if (result == true)
+    theComponentLibraryFile->setText(fileName);
+    else {
+        this->errorMessage(QString("Error Parsing JSON file: ") + fileName);
+    }
+  });
+
+  //
+  // code for when user pushes the saveFileButton
+  //   - basically open file, create a JSON object and invoke outputToJSON, write that object to file
+  //
+  
+  connect(saveFileButton, &QPushButton::clicked, this, [=]() {
+
+    // use a dialog to get a file to open
+    
+    QFileDialog dialog(this, "Save System Config");
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    QStringList filters;
+    filters << "Json files (*.json)"
+            << "All files (*)";
+
+    dialog.setNameFilters(filters);
+
+    if (dialog.exec() == QDialog::Rejected) {
+      this->errorMessage("Save Dile dialog Rejected");
+      return;
+    }
+
+    QString fileName = dialog.selectedFiles().first();
+
+    // open file, make sure file not read only
+    
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("Application"),
+                             tr("Cannot write file %1:\n%2.")
+                             .arg(QDir::toNativeSeparators(fileName),
+                                  file.errorString()));
+        return;
+    }
+
+    //
+    // create a json object, fill it in & then use a QJsonDocument
+    // to write the contents of the object to the file in JSON format
+    //
+
+    QJsonObject json;
+    this->outputToJSON(json);
+
+    //Resolve relative paths before saving
+    QFileInfo fileInfo(fileName);
+    SCUtils::ResolveRelativePaths(json, fileInfo.dir());
+
+    QJsonDocument doc(json);
+    file.write(doc.toJson());
+
+    // close file
+    file.close();
+
+    // set current file
+    theComponentLibraryFile->setText(fileName);    
+    
+  });    
+  
+  
   // addConstant PushButton
-  QPushButton *addComponentButton = new QPushButton("Add ComponentTemplate");  
+  QPushButton *addComponentButton = new QPushButton("Add Component");  
 
   QStringList headingsComponent; headingsComponent << "Name" << "Class" << "Supply" << "Demand" << "Recovery Model";
   theComponentsTable = new QTableWidget();
@@ -66,8 +186,22 @@ PyrecodesComponentLibrary::PyrecodesComponentLibrary(QWidget *parent)
     this->addComponent();
   });  
 
-  layout->addWidget(addComponentButton, 0,0, 1, 2);
-  layout->addWidget(theComponentsTable, 1, 0, 1, 5);  
+  connect(theComponentsTable, SIGNAL(cellClicked(int,int)),this,SLOT(bringUpJobActionMenu(int,int)));
+  connect(theComponentsTable, SIGNAL(cellPressed(int,int)),this,SLOT(bringUpJobActionMenu(int,int)));  
+  
+  QGridLayout *layout = new QGridLayout(this);
+  layout->addWidget(new QLabel("Component Library File:"),0,0);
+  layout->addWidget(theComponentLibraryFile,0,1);
+  layout->addWidget(loadFileButton,0,2);
+  layout->addWidget(saveFileButton,0,3);
+  layout->setColumnStretch(1,1);
+
+  QGroupBox *theGroupBox = new QGroupBox("Component Library");
+  QGridLayout *groupLayout = new QGridLayout(theGroupBox);
+  groupLayout->addWidget(addComponentButton, 0,0, 1, 2);
+  groupLayout->addWidget(theComponentsTable, 1, 0, 1, 5);
+  
+  layout->addWidget(theGroupBox,1,0,1,4);  
 }
 
 
@@ -79,8 +213,10 @@ PyrecodesComponentLibrary::~PyrecodesComponentLibrary()
 
 void
 PyrecodesComponentLibrary::addComponent() {
-  PyrecodesComponent *theComponent = new PyrecodesComponent(this);
+  QString name;
+  PyrecodesComponent *theComponent = new PyrecodesComponent(name, this);
   theComponents.append(theComponent);
+  theComponent->resize(this->size());
   theComponent->show();
 }
 
@@ -99,6 +235,24 @@ PyrecodesComponentLibrary::outputToJSON(QJsonObject &jsonObject)
 bool
 PyrecodesComponentLibrary::inputFromJSON(QJsonObject &jsonObject)
 {
+  theComponents.clear();
+  theComponentsTable->clearContents();
+
+  for (const QString &key : jsonObject.keys()) {
+
+    QJsonValue value = jsonObject.value(key);
+    if (!value.isNull() && value.isObject()) {
+      QJsonObject componentObj = value.toObject();
+    
+      PyrecodesComponent *theComponent = new PyrecodesComponent(key, this);
+      theComponent->inputFromJSON(componentObj);
+      theComponents.append(theComponent);
+    } else {
+      QString msg(QString("Reading component ") + key + QString(". Not valid JSON"));
+      this->errorMessage(msg);
+    }
+  }
+  
   return true;
 }
 
@@ -141,3 +295,66 @@ PyrecodesComponentLibrary::addOrUpdateComponentTableEntry(QString name, QString 
   theComponentsTable->setItem(row, 2, newDemand);
   theComponentsTable->setItem(row, 2, newRecovery);        
 }
+
+void
+PyrecodesComponentLibrary::bringUpJobActionMenu(int row, int col){
+    Q_UNUSED(col);
+
+
+
+
+
+
+
+
+
+    triggeredRow = row;
+    QMenu jobMenu;
+
+    jobMenu.addAction("Edit Component", this, SLOT(editComponent()));
+    jobMenu.addAction("Delete Component", this, SLOT(deleteComponent()));
+
+
+    jobMenu.exec(QCursor::pos());
+}
+
+
+void
+PyrecodesComponentLibrary::deleteComponent() {
+  QTableWidgetItem *itemName = theComponentsTable->item(triggeredRow,0);
+  QString name = itemName->text();
+  qDebug() << "NAME: " << name;  
+  
+  // remove from QList
+  for (QList<PyrecodesComponent *>::iterator it = theComponents.begin(); it != theComponents.end(); ++it) {
+    PyrecodesComponent *theComponent = *it;    
+    if (theComponent->theName->text() == name) {
+      theComponents.erase(it);
+
+      // remove table row
+      theComponentsTable->removeRow(triggeredRow);
+  
+      
+      break;          
+    }
+  }
+}
+
+void
+PyrecodesComponentLibrary::editComponent() {
+  QTableWidgetItem *itemName = theComponentsTable->item(triggeredRow,0);
+  QString name = itemName->text();
+  qDebug() << "NAME: " << name;
+  for (QList<PyrecodesComponent *>::iterator it = theComponents.begin(); it != theComponents.end(); ++it) {
+    PyrecodesComponent *theComponent = *it;
+    qDebug() << "name: " << theComponent->theName->text();    
+    if (theComponent->theName->text() == name) {
+      theComponent->resize(this->size());
+      theComponent->show();
+      break;          // Exit the loop after removing
+    }
+  }
+}
+    
+
+

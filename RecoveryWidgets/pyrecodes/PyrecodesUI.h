@@ -1,5 +1,5 @@
-#ifndef PYRECODES_3_H
-#define PYRECODES_3_H
+#ifndef PYRECODES_UI_H
+#define PYRECODES_UI_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -44,11 +44,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class SC_FileEdit;
 class PyrecodesSystemConfig;
 
-class Pyrecodes3 : public SimCenterAppWidget
+class PyrecodesUI : public SimCenterAppWidget
 {
 public:
-    Pyrecodes3(QWidget *parent = 0);
-    ~Pyrecodes3();
+    PyrecodesUI(QWidget *parent = 0);
+    ~PyrecodesUI();
 
     bool inputFromJSON(QJsonObject &rvObject);
     bool outputToJSON(QJsonObject &rvObject);  
@@ -73,4 +73,4 @@ private:
 };
 
 
-#endif // PYRECODES_H
+#endif // PYRECODES_UI_H

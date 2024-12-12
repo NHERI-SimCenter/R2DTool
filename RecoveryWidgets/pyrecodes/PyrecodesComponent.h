@@ -50,7 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterWidget.h>
 
 class  SC_FileEdit;
-class  SC_StringLineEdit;
+class  QLineEdit;
 class  SC_ComboBox;
 class  QTableWidget;
 class PyrecodesComponentLibrary;
@@ -61,21 +61,23 @@ class PyrecodesComponent : public SimCenterWidget
     Q_OBJECT
 public:
   
-  PyrecodesComponent(PyrecodesComponentLibrary *theLibrary, QWidget *parent = 0);
+  PyrecodesComponent(QString name, PyrecodesComponentLibrary *theLibrary, QWidget *parent = 0);
   virtual ~PyrecodesComponent();
   bool outputToJSON(QJsonObject &jsonObject);
   bool inputFromJSON(QJsonObject &jsonObject);
   bool copyFiles(QString &dirName);
   void clear(void);
+
+
+  QLineEdit    *theName;
   
 signals:
 
 private:
 
-  // name
-  SC_StringLineEdit  *theName;
-  SC_ComboBox        *theClass;
-  SC_ComboBox        *theDamageFunctionalRelation;  
+  SC_ComboBox  *theClass;
+  SC_ComboBox  *theRecoveryType;    
+  SC_ComboBox  *theDamageFunctionalRelation;  
 
   QTableWidget *theRecoveryTable;  
   QTableWidget *theSupplyTable;

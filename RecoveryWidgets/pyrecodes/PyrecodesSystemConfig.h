@@ -53,6 +53,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QTableWidget;
 class PyrecodesLocality;
+class QLineEdit;
 
 class PyrecodesSystemConfig : public SimCenterWidget
 {
@@ -77,6 +78,7 @@ signals:
 
 private:
 
+  QLineEdit *theSystemFile;
   QTableWidget *theConstantsTable;  
   QTableWidget *theLocalityTable;
   QTableWidget *theResourcesTable;  

@@ -52,6 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStringList>
 #include <QList>
 
+class QLineEdit;
 class QTableWidget;
 class PyrecodesComponent;
 
@@ -73,11 +74,18 @@ public:
   void addComponent();
 
   void addOrUpdateComponentTableEntry(QString name, QString classT, QString supply, QString demand, QString recoveryModel);
+
+public slots:
+  void bringUpJobActionMenu(int row, int col);
+  void deleteComponent();
+  void editComponent();    
   
 signals:
 
 private:
 
+  int triggeredRow;
+  QLineEdit *theComponentLibraryFile;  
   QTableWidget *theComponentsTable;  
   QList<PyrecodesComponent *>theComponents;
 

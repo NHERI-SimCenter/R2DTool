@@ -39,8 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RecoveryWidget.h"
 #include "NoneWidget.h"
 #include "Pyrecodes.h"
-#include "Pyrecodes2.h"
-#include "Pyrecodes3.h"
+#include "PyrecodesUI.h"
 
 #include "SecondaryComponentSelection.h"
 #include "VisualizationWidget.h"
@@ -55,12 +54,10 @@ RecoveryWidget::RecoveryWidget(QWidget *parent)
   // Create the widgets    
   SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
   SimCenterAppWidget *pyrecodesRecovery = new Pyrecodes(this);
-  SimCenterAppWidget *pyrecodes2Recovery = new Pyrecodes2(this);
-  SimCenterAppWidget *pyrecodes3Recovery = new Pyrecodes3(this);    
+  SimCenterAppWidget *pyrecodesUI_Recovery = new PyrecodesUI(this);    
   this->addComponent(QString("None"), QString("None"), noneWidget3);
   addComponent(QString("Pyrecodes"), QString("Pyrecodes"), pyrecodesRecovery);
-  addComponent(QString("Pyrecodes2"), QString("Pyrecodes2"), pyrecodes2Recovery);
-  addComponent(QString("Pyrecodes3"), QString("Pyrecodes3"), pyrecodes3Recovery);      
+  addComponent(QString("PyrecodesUI"), QString("PyrecodesUI"), pyrecodesUI_Recovery);      
 
   //addComponent("Recovery", RecWidget);
   // We shall not hide it since we want to have recovery at any time

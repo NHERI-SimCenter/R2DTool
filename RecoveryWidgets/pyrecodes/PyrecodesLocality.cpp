@@ -41,10 +41,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <PyrecodesSystemConfig.h>
 
+
 #include <SC_CheckBox.h>
 #include <SC_FileEdit.h>
 #include <SC_StringLineEdit.h>
 
+#include <QLineEdit>
 
 #include <QDebug>
 #include <QComboBox>
@@ -52,16 +54,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QWidget>
+#include <QJsonObject>
 
-PyrecodesLocality::PyrecodesLocality(PyrecodesSystemConfig *theSC, QWidget *parent)
+PyrecodesLocality::PyrecodesLocality(PyrecodesSystemConfig *theSC, QString name, QWidget *parent)
   :SimCenterWidget(parent), theSystemConfig(theSC)
 {
-  theName = new SC_StringLineEdit("name");
+  theName = new QLineEdit();
+  theName->setText(name);
+  
   coordinateFile = new SC_FileEdit("coordinateFile");
-  boundingBox = new SC_StringLineEdit("boundingBox");
+  boundingBox = new QLineEdit();
   buildingsCB = new SC_CheckBox("buildings");
   infrastructureCB = new SC_CheckBox("infrastructure");
-  resourceSupplierCB = new SC_CheckBox("resourcseSupplier");
+  resourceSupplierCB = new SC_CheckBox("resourceSupplier");
   QPushButton *doneButton = new QPushButton("Done");
 
   //
@@ -137,12 +142,16 @@ PyrecodesLocality::PyrecodesLocality(PyrecodesSystemConfig *theSC, QWidget *pare
 	  componentsSelected << item->text();
 	}
       }
+    if (resourceSupplierCB->checkState() == Qt::Checked)	{
+      componentsSelected << "RecoveryResourceSupplier";
+      // stuff here
+      }      
     }
     
     // set table entries
     theSystemConfig->addOrUpdateLocalityTableEntry(theName->text(),
-					   coordinates,
-					   componentsSelected);
+						   coordinates,
+						   componentsSelected);
 
     // close the widget
     this->close();
@@ -187,6 +196,52 @@ PyrecodesLocality::outputToJSON(QJsonObject &jsonObject)
 bool
 PyrecodesLocality::inputFromJSON(QJsonObject &jsonObject)
 {
+  
+  QString coordinates;
+  QStringList componentsSelected;
+
+  QJsonValue coordsValue = jsonObject["Coordinates"];
+  
+  QJsonValue componentsValue = jsonObject["Components"];
+  if (!componentsValue.isNull() && componentsValue.isObject()) {
+    QJsonObject componentsObj = componentsValue.toObject();
+    QJsonValue buildingsValue = componentsObj["BuildingStock"];    
+    QJsonValue infrastructureValue = componentsObj["Infrastructure"];
+    QJsonValue resourcesValue = componentsObj["RecoveryResourceSuppliers"];    
+
+    if (!buildingsValue.isNull()) {
+      componentsSelected << "Buildings";
+      buildingsCB->setCheckState(Qt::Checked);
+    }
+    
+    if (!infrastructureValue.isNull()) {
+      componentsSelected << "Infrastructure";
+      infrastructureCB->setCheckState(Qt::Checked);
+      if (infrastructureValue.isObject()) {
+	QJsonObject infrastructureObj = infrastructureValue.toObject();
+	if (! infrastructureObj["TransportationSystem"].isNull()) {
+	  componentsSelected << "TransportationSystem";
+	  QListWidgetItem *item = infrastructureList->item(0);
+	  item->setCheckState(Qt::Checked);
+	}
+	if (! infrastructureObj["WaterSupplySystemSystem"].isNull()) {
+	  componentsSelected << "WaterSupplySystem";
+	  QListWidgetItem *item = infrastructureList->item(1);
+	  item->setCheckState(Qt::Checked);
+	}
+      }
+    }
+    
+    if (!resourcesValue.isNull()) {
+      componentsSelected << "RecoveryResourceSuppliers";
+      resourceSupplierCB->setCheckState(Qt::Checked);
+    }
+    
+  }
+  
+  theSystemConfig->addOrUpdateLocalityTableEntry(theName->text(),
+						 coordinates,
+						 componentsSelected);  
   return true;
 }
 
