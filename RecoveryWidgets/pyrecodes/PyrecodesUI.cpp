@@ -58,7 +58,7 @@ PyrecodesUI::PyrecodesUI(QWidget *parent)
   theSystemConfiguration = new PyrecodesSystemConfig();
 
   QTabWidget *theTabWidget = new QTabWidget();  
-  theTabWidget->addTab(theComponentLibrary, "Componet Library");
+  theTabWidget->addTab(theComponentLibrary, "Component Library");
   theTabWidget->addTab(theSystemConfiguration, "System Configuration");
   
   // label for the citation

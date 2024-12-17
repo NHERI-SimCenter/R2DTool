@@ -1,5 +1,5 @@
 /* *****************************************************************************
-Copyright (c) 2016-2023, The Regents of the University of California (Regents).
+Copyright 2016-2023, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -55,6 +55,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QWidget>
 #include <QJsonDocument>
+#include <QJsonParseError>
 
 PyrecodesComponent::PyrecodesComponent(QString initName, PyrecodesComponentLibrary *theCL, QWidget *parent)
   :SimCenterWidget(parent), theComponentLibrary(theCL)
@@ -244,6 +245,124 @@ void PyrecodesComponent::clear(void)
 bool
 PyrecodesComponent::outputToJSON(QJsonObject &jsonObject)
 {
+
+  QJsonObject componentObject;
+
+  QJsonObject componentClass;
+  componentClass["ClassName"] = theClass->currentText();
+  componentObject["ComponentClass"] = componentClass;  
+
+  //
+  // Fill in supplyObject
+  //
+  
+  QJsonObject supplyObject;
+  int numRows = theSupplyTable->rowCount();
+  
+  for (int i=0; i<numRows; i++) {
+
+    QJsonObject obj;
+    QTableWidgetItem *nameItem = theSupplyTable->item(i, 0);    
+    QTableWidgetItem *amountItem = theSupplyTable->item(i, 1);    
+    QTableWidgetItem *ftarItem = theSupplyTable->item(i, 2);
+    QTableWidgetItem *udtarItem = theSupplyTable->item(i, 3);
+    
+    QString name = nameItem->text();
+    QString udtar = udtarItem->text();
+    bool ok;
+    obj["Amount"] = amountItem->text().toDouble(&ok);
+    obj["FunctionalityToAmountRelation"] = ftarItem->text();
+    if (!udtar.isEmpty() && !udtar.isNull())
+      obj["UnmetDemandToAmountRelation"] = udtar;
+    supplyObject[name] = obj;
+    
+  }
+
+  componentObject["Supply"] = supplyObject;
+  
+  //
+  // parse op demand
+  // 
+
+  QJsonObject opDemandObject;
+  
+  numRows = theOpDemandTable->rowCount();
+  for (int i=0; i<numRows; i++) {
+    
+    QJsonObject obj;
+
+    QTableWidgetItem *nameItem = theOpDemandTable->item(i, 0);
+    QTableWidgetItem *amountItem = theOpDemandTable->item(i, 1);
+    QTableWidgetItem *ftarItem = theOpDemandTable->item(i, 2);
+    
+    QString name = nameItem->text();
+    bool ok;
+    obj["Amount"] = amountItem->text().toDouble(&ok);    
+    obj["FunctionalityToAmountRelation"] = ftarItem->text();
+    opDemandObject[name] = obj;
+    
+  }
+
+  // only ouput if nothing there
+  if (numRows != 0)
+    componentObject["OperationDemand"] = opDemandObject;
+  
+  //
+  // parse recovery model
+  // 
+
+  QJsonObject recObject;
+  
+  recObject["ClassName"] = theRecoveryType->currentText();
+
+
+  QJsonObject damageFunctionalityRelation;
+  damageFunctionalityRelation["Type"] = theDamageFunctionalRelation->currentText();
+  recObject["DamageFunctionalityRelation"] = damageFunctionalityRelation;  
+
+  QJsonObject parametersObject;
+
+  numRows = theRecoveryTable->rowCount();
+  for (int i=0; i<numRows; i++) {
+    QJsonObject obj;
+
+    QTableWidgetItem *nameItem = theRecoveryTable->item(i, 0);
+    QTableWidgetItem *durationItem = theRecoveryTable->item(i, 1);
+    QTableWidgetItem *demandItem = theRecoveryTable->item(i, 2);
+    QTableWidgetItem *precedingItem = theRecoveryTable->item(i, 3);            
+    
+    QString name = nameItem->text();
+    QJsonParseError parseError;
+
+    QJsonArray demandArray;
+    QJsonObject durationObject;
+    QJsonArray precedingArray;
+    
+    QJsonDocument jsonDocDemand = QJsonDocument::fromJson(demandItem->text().toUtf8(), &parseError);
+    if (jsonDocDemand.isArray()) 
+      demandArray = jsonDocDemand.array();
+    QJsonDocument jsonDocDuration = QJsonDocument::fromJson(durationItem->text().toUtf8(), &parseError);
+    if (jsonDocDuration.isObject()) 
+      durationObject = jsonDocDemand.object();
+    QJsonDocument jsonDocPreceding = QJsonDocument::fromJson(precedingItem->text().toUtf8(), &parseError);
+    if (jsonDocPreceding.isArray()) 
+      precedingArray = jsonDocPreceding.array();		
+    
+    obj["Duration"] = durationObject;
+    obj["Demand"] = demandArray;	
+    obj["PrecedingActivities"]  = precedingArray;
+    
+    parametersObject[name] = obj;
+
+  }
+  
+  recObject["Parameters"] = parametersObject;
+
+  componentObject["RecoveryModel"] = recObject;
+  
+  QString name = theName->text();  
+  jsonObject[name] = componentObject;  
+  
   return true;
 }
 

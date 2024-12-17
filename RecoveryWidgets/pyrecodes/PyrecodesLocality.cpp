@@ -190,6 +190,29 @@ void PyrecodesLocality::clear(void)
 bool
 PyrecodesLocality::outputToJSON(QJsonObject &jsonObject)
 {
+
+  QJsonObject obj;
+  
+  QJsonObject coordObj;    
+
+  obj["Coordinates"]=coordObj;  
+
+  QJsonObject componentsObj;
+
+  QJsonObject rrsObj;
+  
+  QJsonObject infrastructureObj;
+  QJsonObject buildingStockObj;
+
+
+  componentsObj["Infrastructure"] = infrastructureObj;    
+  componentsObj["BuildingStock"] = buildingStockObj;  
+  componentsObj["RecoveryResourceSuppliers"] = rrsObj;
+  obj["Components"]=componentsObj;
+
+  
+  jsonObject[theName->text()] = obj;
+  
   return true;
 }
 

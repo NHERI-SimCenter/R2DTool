@@ -123,8 +123,7 @@ PyrecodesComponentLibrary::PyrecodesComponentLibrary(QWidget *parent)
     QFileDialog dialog(this, "Save System Config");
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     QStringList filters;
-    filters << "Json files (*.json)"
-            << "All files (*)";
+    filters << "All files (*)";
 
     dialog.setNameFilters(filters);
 
@@ -134,6 +133,8 @@ PyrecodesComponentLibrary::PyrecodesComponentLibrary(QWidget *parent)
     }
 
     QString fileName = dialog.selectedFiles().first();
+
+    qDebug() << "SAVING FILE: " << fileName;
 
     // open file, make sure file not read only
     
@@ -229,6 +230,10 @@ void PyrecodesComponentLibrary::clear(void)
 bool
 PyrecodesComponentLibrary::outputToJSON(QJsonObject &jsonObject)
 {
+  for (int i = 0; i < theComponents.size(); ++i) {
+    PyrecodesComponent *theComponent = theComponents[i];
+    theComponent->outputToJSON(jsonObject);
+  }
   return true;
 }
 
@@ -300,20 +305,11 @@ void
 PyrecodesComponentLibrary::bringUpJobActionMenu(int row, int col){
     Q_UNUSED(col);
 
-
-
-
-
-
-
-
-
     triggeredRow = row;
     QMenu jobMenu;
 
     jobMenu.addAction("Edit Component", this, SLOT(editComponent()));
     jobMenu.addAction("Delete Component", this, SLOT(deleteComponent()));
-
 
     jobMenu.exec(QCursor::pos());
 }
@@ -333,7 +329,6 @@ PyrecodesComponentLibrary::deleteComponent() {
 
       // remove table row
       theComponentsTable->removeRow(triggeredRow);
-  
       
       break;          
     }
@@ -344,10 +339,10 @@ void
 PyrecodesComponentLibrary::editComponent() {
   QTableWidgetItem *itemName = theComponentsTable->item(triggeredRow,0);
   QString name = itemName->text();
-  qDebug() << "NAME: " << name;
+
   for (QList<PyrecodesComponent *>::iterator it = theComponents.begin(); it != theComponents.end(); ++it) {
     PyrecodesComponent *theComponent = *it;
-    qDebug() << "name: " << theComponent->theName->text();    
+
     if (theComponent->theName->text() == name) {
       theComponent->resize(this->size());
       theComponent->show();

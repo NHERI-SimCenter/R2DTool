@@ -322,11 +322,11 @@ void PyrecodesSystemConfig::clear(void)
 bool
 PyrecodesSystemConfig::outputToJSON(QJsonObject &jsonObject)
 {
-
   
   QJsonObject constantsObject;
-
-  for (int row = 0; row < theConstantsTable->rowCount(); ++row) {
+  qDebug() << "Constants";
+  
+  for (int row = 0; row < theConstantsTable->rowCount(); row++) {
     QJsonObject obj;
     QTableWidgetItem *keyItem = theConstantsTable->item(row, 0);
     QTableWidgetItem *valueItem = theConstantsTable->item(row, 1);
@@ -361,6 +361,42 @@ PyrecodesSystemConfig::outputToJSON(QJsonObject &jsonObject)
   }
 
   jsonObject["Constants"]=constantsObject;
+
+  //
+  // read resourcses data & fill the table
+  //
+
+  QJsonObject resourcesObject;  
+    
+  for (int row = 0; row < theResourcesTable->rowCount(); row++) {
+
+    QJsonObject obj;
+    QTableWidgetItem *keyItem = theResourcesTable->item(row, 0);
+    QTableWidgetItem *groupItem = theResourcesTable->item(row, 1);
+    QTableWidgetItem *distributionItem = theResourcesTable->item(row, 2);
+      
+    QString key = keyItem->text();
+    QString group = groupItem->text();
+    QString distributionClass = distributionItem->text();
+    
+    QJsonObject distrObj;
+    distrObj["ClassName"] = distributionClass;
+    obj["DistributionModel"] = distrObj;
+    obj["Group"]=group;
+    
+    resourcesObject[key] = obj;
+
+  }
+  jsonObject["Resources"]=resourcesObject;
+
+
+  QJsonObject contentObject;
+
+  for (int i = 0; i < theLocalities.size(); ++i) {
+    PyrecodesLocality *theLocality = theLocalities[i];
+    theLocality->outputToJSON(contentObject);
+  }
+  jsonObject["Content"] = contentObject;
   
   return true;
 }
