@@ -56,6 +56,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_CheckBox.h>
 #include <SC_TableEdit.h>
 #include <RewetResults.h>
+#include <QGroupBox>
+#include <QPushButton>
+
+#include <Utils/ProgramOutputDialog.h>
+#include <Utils/RelativePathResolver.h>
+#include <Utils/FileOperations.h>
+#include <GoogleAnalytics.h>
+#include <SimCenterPreferences.h>
+#include <RunPythonInThread.h>
 
 
 Pyrecodes::Pyrecodes(QWidget *parent)
@@ -72,24 +81,39 @@ Pyrecodes::Pyrecodes(QWidget *parent)
 
     int numRow = 0;
 
-    // 1. Path To System Config File
-    pathConfigFile = new SC_FileEdit("systemConfigFile");
-    mainLayout->addWidget(new QLabel("Configuration File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(pathConfigFile, numRow, 1, 1, 4);
-    numRow++;
-
-    // 2. Path to the Component library
-    pathComponentLibrary = new SC_FileEdit("componentLibraryFile");
-    mainLayout->addWidget(new QLabel("Component library File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(pathComponentLibrary, numRow, 1, 1, 4);
+    systemConfigFile = new SC_FileEdit("systemConfigFile");
+    mainLayout->addWidget(new QLabel("System Configuration File:"), numRow, 0, 1, 1);
+    mainLayout->addWidget(systemConfigFile, numRow, 1, 1, 4);
     numRow++;
     
-    // 3. Path to the Component library
-    pathLocalityDefinition = new SC_FileEdit("localityGeojsonFile");
-    mainLayout->addWidget(new QLabel("Locality Definition File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(pathLocalityDefinition, numRow, 1, 1, 4);
+    componentLibraryFile = new SC_FileEdit("componentLibraryFile");
+    mainLayout->addWidget(new QLabel("Component Library File:"), numRow, 0, 1, 1);
+    mainLayout->addWidget(componentLibraryFile, numRow, 1, 1, 4);
     numRow++;
 
+    QGroupBox *groupBox = new QGroupBox("Run Pyrecodes without Running a Workflow");
+    QGridLayout *boxLayout = new QGridLayout(groupBox);
+    
+    inventoryFile = new SC_FileEdit("assetFile");
+    damageFile = new SC_FileEdit("damageFileFile");
+    boxLayout->addWidget(new QLabel("Asset Inventory File:"),0,0);
+    boxLayout->addWidget(new QLabel("Asset Damage File:"), 1, 0);
+    boxLayout->addWidget(inventoryFile, 0,1 ,1,4);
+    boxLayout->addWidget(damageFile,    1,1, 1,4);
+
+    QPushButton *runLocal = new QPushButton("Run PyReCodes No Workflow");
+    boxLayout->addWidget(runLocal,2,1, 2,1);
+    boxLayout->setRowStretch(3,1);
+    
+    connect(runLocal, &QPushButton::clicked, this, &Pyrecodes::runPyReCodes);
+
+    QWidget *spacer = new QWidget();
+    spacer->setFixedHeight(20); // Adjust the height as needed
+    
+    mainLayout->addWidget(spacer, numRow++, 0);
+    
+    mainLayout->addWidget(groupBox, numRow++, 0, 1,4);
+    
     mainLayout->setRowStretch(numRow, 1);
     
 }
@@ -132,9 +156,8 @@ bool Pyrecodes::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     jsonObject["Application"] = "Pyrecodes";
     QJsonObject dataObj;
-    pathConfigFile->outputToJSON(dataObj);
-    pathComponentLibrary->outputToJSON(dataObj);
-    pathLocalityDefinition->outputToJSON(dataObj);
+    systemConfigFile->outputToJSON(dataObj);
+    componentLibraryFile->outputToJSON(dataObj);
     jsonObject["ApplicationData"] = dataObj;
 
     return true;
@@ -145,9 +168,8 @@ bool Pyrecodes::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
     if (jsonObject.contains("ApplicationData")) {
         QJsonObject dataObj = jsonObject["ApplicationData"].toObject();
-        pathConfigFile->inputFromJSON(dataObj);
-        pathComponentLibrary->inputFromJSON(dataObj);
-        pathLocalityDefinition->inputFromJSON(dataObj);
+        systemConfigFile->inputFromJSON(dataObj);
+        componentLibraryFile->inputFromJSON(dataObj);
     }
 
     return true;
@@ -156,11 +178,11 @@ bool Pyrecodes::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
 bool Pyrecodes::copyFiles(QString &destDir) {
 
-  pathConfigFile->copyFile(destDir);
-  pathComponentLibrary->copyFile(destDir);
-  pathLocalityDefinition->copyFile(destDir);
+  systemConfigFile->copyFile(destDir);
+  componentLibraryFile->copyFile(destDir);
 
   return true;
+
 }
 
 bool Pyrecodes::outputCitation(QJsonObject &citation){
@@ -178,4 +200,58 @@ SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent, QWidget *R2DresWi
     }
     
     return resultWidget;
+}
+
+void Pyrecodes::runPyReCodes() {
+
+
+  //
+  // create a workdir in LocalApplications folder
+  //
+
+  QDir localWorkDir(SimCenterPreferences::getInstance()->getLocalWorkDir());
+  QString workDirString = localWorkDir.absoluteFilePath("PyReCodes");
+  QDir workDir(workDirString);
+
+  if(workDir.exists()) {
+    if (SCUtils::isSafeToRemoveRecursivily(workDirString))
+      workDir.removeRecursively();
+    else {
+      QString msg("The Program stopped, Running PyReCodes locally was about to recursivily remove: ");
+      msg.append(workDirString);
+      fatalMessage(msg);
+      return;	
+    }
+  }
+  localWorkDir.mkpath("PyReCodes");
+
+  qDebug() << "workdirString: " << workDirString;
+  
+  //
+  // now copy all files there
+  //  
+
+  systemConfigFile->copyFile(workDirString);
+  componentLibraryFile->copyFile(workDirString);
+  
+  inventoryFile->copyFile(workDirString);
+  damageFile->copyFile(workDirString);
+
+  //
+  // now run the python command
+  //
+
+  QStringList args;
+  QString script = "hello.py";
+  RunPythonInThread *thePythonProcess = new RunPythonInThread(script, args, workDirString);
+  connect(thePythonProcess, &RunPythonInThread::processFinished, this, &Pyrecodes::runDone);
+
+  thePythonProcess->runProcess();
+  qDebug() << "STARTED PYTHON";  
+  
+}
+
+void
+Pyrecodes::runDone(int error) {
+  qDebug() << "FINISHED PYTHON" << error;
 }

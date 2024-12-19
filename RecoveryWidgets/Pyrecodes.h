@@ -71,15 +71,15 @@ signals:
 
 public slots:
    void clear(void);
+   void runPyReCodes();
+   void runDone(int error);
 
 private:
-// TODO: THIS SHOULD BE LOOKED AT
   RewetResults *resultWidget;
-
-  LineEditSelectTool *realizationInputWidget;
-  SC_FileEdit *pathConfigFile;
-  SC_FileEdit *pathComponentLibrary;
-  SC_FileEdit *pathLocalityDefinition;
+  SC_FileEdit *componentLibraryFile;
+  SC_FileEdit *systemConfigFile;
+  SC_FileEdit *inventoryFile;
+  SC_FileEdit *damageFile;
 };
 
 
