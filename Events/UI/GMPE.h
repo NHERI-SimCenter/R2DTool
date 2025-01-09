@@ -47,10 +47,10 @@ class GMPE : public QObject, JsonSerializable
 {
     Q_OBJECT
 public:
-    explicit GMPE(QObject *parent = nullptr);
+    explicit GMPE(QString category, QObject *parent = nullptr);
 
     QString type() const;
-    const QStringList& validTypes();
+    QStringList validTypes();
 
     bool outputToJSON(QJsonObject &jsonObject);
     bool inputFromJSON(QJsonObject &jsonObject);
@@ -65,6 +65,7 @@ public slots:
 
 private:
     QString m_type;
+    QString category; // intensity or duration
 
 };
 

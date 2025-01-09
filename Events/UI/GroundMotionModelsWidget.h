@@ -70,7 +70,7 @@ private:
     IntensityMeasure* m_intensityMeasure = nullptr;
     IntensityMeasureWidget* m_intensityMeasureWidget = nullptr;
     GMPEWidget* m_gmpeWidget = nullptr;
-    GMPE* m_gmpe = nullptr;
+//    GMPE* m_gmpe = nullptr;
 
 };
 

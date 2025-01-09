@@ -32,6 +32,9 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     selectedIMTypes->append("PGA");
     SACheckBox = new QCheckBox("SA (g)");
     PGVCheckBox = new QCheckBox("PGV (cm/s)");
+    DS575HCheckBox = new QCheckBox("DS575H (s)");
+    DS595HCheckBox = new QCheckBox("DS595H (s)");
+
 
 //    m_typeBox = new QComboBox(this);
 //    m_typeBox->addItem("Spectral Accelerations (SA)", "SA");
@@ -95,6 +98,8 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     gridLayout->addWidget(periodLabel,1,1, 1, 1, Qt::AlignRight);
     gridLayout->addWidget(periodsLineEdit,1,2, 1, 3);
     gridLayout->addWidget(PGVCheckBox, 2, 0, 1, 1);
+    gridLayout->addWidget(DS575HCheckBox, 3, 0, 1, 1);
+    gridLayout->addWidget(DS595HCheckBox, 4, 0, 1, 1);
     gridLayout->setColumnStretch(2,1);
 //    gridLayout->addWidget(imtLevelLabel,1,0);
 //    gridLayout->addWidget(imtLevelLineEdit,1,1);
@@ -124,6 +129,8 @@ void IntensityMeasureWidget::setupConnections()
     connect(this->PGACheckBox, &QCheckBox::stateChanged, this, &IntensityMeasureWidget::handleTypeChanged);
     connect(this->SACheckBox, &QCheckBox::stateChanged, this, &IntensityMeasureWidget::handleTypeChanged);
     connect(this->PGVCheckBox, &QCheckBox::stateChanged, this, &IntensityMeasureWidget::handleTypeChanged);
+    connect(this->DS575HCheckBox, &QCheckBox::stateChanged, this, &IntensityMeasureWidget::handleTypeChanged);
+    connect(this->DS595HCheckBox, &QCheckBox::stateChanged, this, &IntensityMeasureWidget::handleTypeChanged);
 
     // send imtLevels
     connect(this->imtLevelLineEdit, SIGNAL(textChanged(QString)),&this->m_intensityMeasure, SLOT(setImtLevels(QString)));
@@ -223,6 +230,14 @@ void IntensityMeasureWidget::handleTypeChanged(int state)
 
     if (PGACheckBox->isChecked()){
         selectedIMTypes->append("PGA");
+    }
+
+    if (DS575HCheckBox->isChecked()){
+        selectedIMTypes->append("DS575H");
+    }
+
+    if (DS595HCheckBox->isChecked()){
+        selectedIMTypes->append("DS595H");
     }
     emit IMSelectionChanged(selectedIMTypes);
 }

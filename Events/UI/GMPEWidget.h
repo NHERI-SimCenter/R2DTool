@@ -50,7 +50,7 @@ class GMPEWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit GMPEWidget(GMPE& gmpe, QStringList* selectedIMTypes, QWidget *parent = nullptr);
+    explicit GMPEWidget(QStringList* selectedIMTypes, QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject& obj);
     bool inputFromJSON(QJsonObject& obj);
@@ -61,15 +61,20 @@ public slots:
     void handleAvailableGMPE(const QString sourceType);
     void toggleIMselection(QStringList* selectedIMTypes);
 private:
-    GMPE& m_gmpe;
+    GMPE* m_gmpe_intensity = new GMPE("intensity");
+    GMPE* m_gmpe_duration = new GMPE("duration");
 
     SC_ComboBox* PGAtypeBox = nullptr;
     SC_ComboBox* PGVtypeBox = nullptr;
     SC_ComboBox* SAtypeBox = nullptr;
+    SC_ComboBox* DS575HtypeBox = nullptr;
+    SC_ComboBox* DS595HtypeBox = nullptr;
 
     QLabel* PGAtypeLabel = new QLabel(tr("PGA:"));
     QLabel* SAtypeLabel = new QLabel(tr("SA:"));
     QLabel* PGVtypeLabel = new QLabel(tr("PGV:"));
+    QLabel* DS575HtypeLabel = new QLabel(tr("DS575H:"));
+    QLabel* DS595HtypeLabel = new QLabel(tr("DS595H:"));
 
     QStringList* _selectedIMTypes;
 

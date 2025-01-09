@@ -58,8 +58,8 @@ GroundMotionModelsWidget::GroundMotionModelsWidget(QWidget *parent) : SimCenterA
 
     spatialCorrWidget = new SpatialCorrelationWidget(m_intensityMeasureWidget->getSelectedIMTypes());
 
-    m_gmpe = new GMPE(this);
-    m_gmpeWidget = new GMPEWidget(*this->m_gmpe, m_intensityMeasureWidget->getSelectedIMTypes());
+//    m_gmpe = new GMPE(this);
+    m_gmpeWidget = new GMPEWidget(m_intensityMeasureWidget->getSelectedIMTypes());
 
     // GMPE options (link between source type and GMPE options)
 //    connect(erfWidget->ruptureWidget(), SIGNAL(widgetTypeChanged(QString)),
