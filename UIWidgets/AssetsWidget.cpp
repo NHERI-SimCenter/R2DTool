@@ -77,6 +77,7 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget = new SimCenterAppSelection(QString("Regional Building Inventory"), QString("Buildings"), this);
     gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("NaturalGasPipelines"), this);
     waterNetworkWidget = new SimCenterAppSelection(QString("Regional Water Network"), QString("WaterDistributionNetwork"), this);
+	powerNetworkWidget = new SimCenterAppSelection(QString("Power Network"), QString("PowerNetwork"), this);
     transportNetworkWidget = new SimCenterAppSelection(QString("Regional Transportation Network"), QString("TransportationNetwork"), this);
 
     // Buildings
@@ -105,7 +106,9 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
     
     GeojsonAssetInputWidget *GeoJsonWaterNetworkAssetInventory = new GeojsonAssetInputWidget(this,visualizationWidget,"Water Networks","GEOJSON_TO_ASSET");
     waterNetworkWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonWaterNetworkAssetInventory);
-
+	
+	GeojsonAssetInputWidget *GeoJsonPowerNetworkAssetInventory = new GeojsonAssetInputWidget(this, visualizationWidget, "Power Network", "GEOJSON_TO_ASSET");
+    powerNetworkWidget->addComponent(QString("GeoJSON to Asset"), QString("GEOJSON_TO_ASSET"), GeoJsonPowerNetworkAssetInventory);
 
     GISWaterNetworkInputWidget *gisWaterNetworkInventory = new GISWaterNetworkInputWidget(this, visualizationWidget);
     waterNetworkWidget->addComponent(QString("GIS to Water Network"), QString("GIS_to_WATERNETWORK"), gisWaterNetworkInventory);
@@ -132,8 +135,9 @@ AssetsWidget::AssetsWidget(QWidget *parent, VisualizationWidget* visWidget)
 
 
     this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",gasPipelineWidget);
-    this->addComponent("Water Distribution Network",waterNetworkWidget);
+    this->addComponent("Gas Network", gasPipelineWidget);
+    this->addComponent("Water Distribution Network", waterNetworkWidget);
+	this->addComponent("Power Network", powerNetworkWidget);
     this->addComponent("Transportation Network", transportNetworkWidget);
     this->hideAll();
 }

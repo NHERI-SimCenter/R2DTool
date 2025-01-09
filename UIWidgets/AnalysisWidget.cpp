@@ -72,13 +72,14 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
 {
 
   QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNetworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
-  QList<QString> transportExtraKeys;
-  transportExtraKeys.append("TransportRoads");
-  transportExtraKeys.append("TransportBridges");
-  transportExtraKeys.append("TransportTunnels");
+  // rm: QList<QString> transportExtraKeys;
+  // rm: transportExtraKeys.append("TransportRoads");
+  // rm: transportExtraKeys.append("TransportBridges");
+  // rm: transportExtraKeys.append("TransportTunnels");
   buildingWidget = new SimCenterAppSelection(QString("Building Analysis Method"), QString("Buildings"), this);
   pipelineWidget = new SimCenterAppSelection(QString("Natural Gas Pipeline Analysis Method"), QString("NaturalGasPipelines"), this);
   WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Analysis Method"), QString("WaterDistributionNetwork"), waterExtraKeys);
+  PNWidget = new SimCenterAppSelection(QString("Power Network Analysis Method"), QString("PowerNetwork"), this);
 //  transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), transportExtraKeys);
   transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), this);
   
@@ -118,6 +119,13 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
   WDNWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP3);
 
+  // Power network apps
+  SimCenterAppWidget *noneWidget5 = new NoneWidget(this);
+  SimCenterAppWidget *imAsEDP5 = new NoArgSimCenterApp(QString("IMasEDP"));
+
+  PNWidget->addComponent(QString("None"), QString("None"), noneWidget5);
+  PNWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP5);
+
   // Transportation network apps
   SimCenterAppWidget *noneWidget4 = new NoneWidget(this);
   SimCenterAppWidget *imAsEDP4 = new NoArgSimCenterApp(QString("IMasEDP"));
@@ -126,8 +134,9 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   transportWidget->addComponent(QString("IMasEDP"), QString("IMasEDP"), imAsEDP4);
 
   this->addComponent("Buildings", buildingWidget);
-  this->addComponent("Gas Network",pipelineWidget);
+  this->addComponent("Gas Network", pipelineWidget);
   this->addComponent("Water Distribution Network", WDNWidget);
+  this->addComponent("Power Network", PNWidget);
   this->addComponent("Transportation Network", transportWidget);
   this->hideAll();
 }

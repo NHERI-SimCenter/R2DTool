@@ -62,6 +62,7 @@ private:
     SimCenterAppSelection *buildingWidget;
     SimCenterAppSelection *gasWidget;
     SimCenterAppSelection *wdnWidget;
+    SimCenterAppSelection *pnWidget;
     SimCenterAppSelection *transportWidget;
 };
 
