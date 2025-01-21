@@ -104,6 +104,7 @@ public:
     DLWidget *getTheDamageAndLossWidget() const;
     SystemPerformanceWidget *getTheSystemPerformanceWidget() const;
     RecoveryWidget *getTheRecoveryWidget() const;
+    ResultsWidget* getTheResultsWidget() const;
 
     LocalApplication *getLocalApp() const;
 

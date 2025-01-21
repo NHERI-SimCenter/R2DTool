@@ -180,11 +180,21 @@ QStackedWidget* ShakeMapWidget::getStackedWidget(void)
     PGVItem->setCheckState(Qt::Unchecked);
     IMListWidget->addItem(PGVItem);
 
-    IMListWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+    QListWidgetItem* PSA03Item =  new QListWidgetItem("PSA03");
+    PSA03Item->setFlags(PSA03Item->flags() & (~Qt::ItemIsSelectable));
+    PSA03Item->setCheckState(Qt::Unchecked);
+    IMListWidget->addItem(PSA03Item);
+
+    QListWidgetItem* PSA10Item =  new QListWidgetItem("PSA10");
+    PSA10Item->setFlags(PSA10Item->flags() & (~Qt::ItemIsSelectable));
+    PSA10Item->setCheckState(Qt::Unchecked);
+    IMListWidget->addItem(PSA10Item);
+
+    IMListWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Minimum);
 
     IMListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     IMListWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    IMListWidget->setFixedSize(100,50);
+    IMListWidget->setFixedSize(100,100);
 
     QLabel* IMLabel = new QLabel("Select the type of Intensity Measure (IM):");
 
@@ -606,7 +616,11 @@ bool ShakeMapWidget::outputToJSON(QJsonObject &jsonObject)
         {
             unitsObj["PGV"] = "cmps";
         }
-        else
+        else if(IMtag.compare("PSA03") == 0){
+            unitsObj["SA_0.3"] = "g";
+        } else if(IMtag.compare("PSA10") == 0){
+            unitsObj["SA_1.0"] = "g";
+        } else
         {
             this->errorMessage("Could not recognize the provided intensity measure "+IMtag);
         }
@@ -655,7 +669,7 @@ bool ShakeMapWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     QDir dirInfo = QDir(inputDir);
     auto sourceDir = dirInfo.dirName();
 
-    appData["Directory"] = sourceDir;
+    appData["Directory"] = inputDir;
     appData["EventPath"] = currItemName;
 
     QJsonArray IMType;

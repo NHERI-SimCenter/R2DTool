@@ -136,12 +136,11 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/PelicunPostProcessor.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
-            $$PWD/Tools/ResidualDemandResults.cpp \
+            $$PWD/systemPerformanceWidgets/ResidualDemandResults.cpp \
+            $$PWD/systemPerformanceWidgets/ResidualDemandWidget.cpp \	    
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
-			$$PWD/Tools/LineEditSelectTool.cpp \
-            $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.cpp \
-            $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.cpp \
+	    $$PWD/Tools/LineEditSelectTool.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
             $$PWD/UIWidgets/AssetsWidget.cpp \
             $$PWD/UIWidgets/BuildingDMEQWidget.cpp \
@@ -162,6 +161,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.cpp \
             $$PWD/UIWidgets/GroundMotionStation.cpp \
             $$PWD/UIWidgets/LoadResultsDialog.cpp \
+    $$PWD/UIWidgets/ResidualDemandToolWidget.cpp \
             $$PWD/UIWidgets/ToolDialog.cpp \
             $$PWD/UIWidgets/SimCenterUnitsWidget.cpp \
             $$PWD/UIWidgets/SimCenterIMWidget.cpp \
@@ -318,13 +318,12 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/PelicunPostProcessor.h \
             $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
-            $$PWD/Tools/ResidualDemandResults.h \
+            $$PWD/systemPerformanceWidgets/ResidualDemandResults.h \
+            $$PWD/systemPerformanceWidgets/ResidualDemandWidget.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \
-			$$PWD/Tools/LineEditSelectTool.h \
-            $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.h \
-            $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.h \
+	    $$PWD/Tools/LineEditSelectTool.h \
             $$PWD/UIWidgets/AnalysisWidget.h \
             $$PWD/UIWidgets/AssetsWidget.h \
             $$PWD/UIWidgets/BuildingDMEQWidget.h \
@@ -346,6 +345,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.h \
             $$PWD/UIWidgets/GroundMotionStation.h \
             $$PWD/UIWidgets/LoadResultsDialog.h \
+	    $$PWD/UIWidgets/ResidualDemandToolWidget.h \
             $$PWD/UIWidgets/ToolDialog.h \
             $$PWD/UIWidgets/SimCenterUnitsWidget.h \
             $$PWD/UIWidgets/SimCenterIMWidget.h \

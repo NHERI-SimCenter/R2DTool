@@ -208,18 +208,18 @@ message($$PATH_TO_EXAMPLES)
 exists( $$shell_path($$PATH_TO_EXAMPLES/Examples.json) ) {
 
 # Copies the examples folder into the build directory
-Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples.json)) $$shell_quote($$shell_path($$EXAMPLES_DIR))
+#Copydata.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_EXAMPLES/Examples.json)) $$shell_quote($$shell_path($$EXAMPLES_DIR))
 
 # Copies the databases folder into the build directory
-CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$DATABASE_DIR))
+#CopyDbs.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PWD/Databases)) $$shell_quote($$shell_path($$DATABASE_DIR))
 
-first.depends += Copydata CopyDbs
+#first.depends += Copydata CopyDbs
 
-export(first.depends)
-export(Copydata.commands)
-export(CopyDbs.commands)
+#export(first.depends)
+#export(Copydata.commands)
+#export(CopyDbs.commands)
 
-QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
+#QMAKE_EXTRA_TARGETS += first Copydata CopyDbs
 
 } else {
 message("Warning: Could not find Examples.json, skipping copy functionality")
