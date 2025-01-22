@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_QRadioButton.h>
 #include <SC_DoubleLineEdit.h>
 #include <SC_FileEdit.h>
+#include <SC_DirEdit.h>
 #include <SC_IntLineEdit.h>
 #include <SC_ComboBox.h>
 #include <SC_CheckBox.h>
@@ -66,11 +67,16 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterPreferences.h>
 #include <RunPythonInThread.h>
 
+#include <QCoreApplication>
+#include <QFile>
+#include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
+
 
 Pyrecodes::Pyrecodes(QWidget *parent)
   : SimCenterAppWidget(parent), resultWidget(0)
-{
-    
+{    
     QGridLayout *mainLayout = new QGridLayout(this); // Set the parent to 'this'
 
     QWidget *mainWidget = new QWidget();
@@ -78,9 +84,15 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout();
     mainWidget->setLayout(layout);
 
-
     int numRow = 0;
 
+    mainFile = new SC_FileEdit("mainFile");
+    mainLayout->addWidget(new QLabel("Main File:"), numRow, 0, 1, 1);
+    mainLayout->addWidget(mainFile, numRow, 1, 1, 4);
+    numRow++;
+
+    connect(mainFile, &SC_FileEdit::fileNameChanged, this, &Pyrecodes::parseMainFile);
+    
     systemConfigFile = new SC_FileEdit("systemConfigFile");
     mainLayout->addWidget(new QLabel("System Configuration File:"), numRow, 0, 1, 1);
     mainLayout->addWidget(systemConfigFile, numRow, 1, 1, 4);
@@ -90,16 +102,16 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     mainLayout->addWidget(new QLabel("Component Library File:"), numRow, 0, 1, 1);
     mainLayout->addWidget(componentLibraryFile, numRow, 1, 1, 4);
     numRow++;
-
+    
     QGroupBox *groupBox = new QGroupBox("Run Pyrecodes without Running a Workflow");
     QGridLayout *boxLayout = new QGridLayout(groupBox);
     
-    inventoryFile = new SC_FileEdit("assetFile");
-    damageFile = new SC_FileEdit("damageFileFile");
-    boxLayout->addWidget(new QLabel("Asset Inventory File:"),0,0);
-    boxLayout->addWidget(new QLabel("Asset Damage File:"), 1, 0);
-    boxLayout->addWidget(inventoryFile, 0,1 ,1,4);
-    boxLayout->addWidget(damageFile,    1,1, 1,4);
+    boxLayout->addWidget(new QLabel("Input Data Folder:"), 0, 0);
+    boxLayout->addWidget(new QLabel("R2D Results Folder:"),1,0);
+    r2dResultsFolder = new SC_DirEdit("r2dRunDir");
+    inputDataFolder = new SC_DirEdit("inputDataDir");
+    boxLayout->addWidget(inputDataFolder,    0,1, 1,4);    
+    boxLayout->addWidget(r2dResultsFolder, 1,1 ,1,4);
 
     QPushButton *runLocal = new QPushButton("Run PyReCodes No Workflow");
     boxLayout->addWidget(runLocal,2,1, 2,1);
@@ -156,6 +168,7 @@ bool Pyrecodes::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     jsonObject["Application"] = "Pyrecodes";
     QJsonObject dataObj;
+    mainFile->outputToJSON(dataObj);    
     systemConfigFile->outputToJSON(dataObj);
     componentLibraryFile->outputToJSON(dataObj);
     jsonObject["ApplicationData"] = dataObj;
@@ -168,6 +181,7 @@ bool Pyrecodes::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
     if (jsonObject.contains("ApplicationData")) {
         QJsonObject dataObj = jsonObject["ApplicationData"].toObject();
+	mainFile->inputFromJSON(dataObj);
         systemConfigFile->inputFromJSON(dataObj);
         componentLibraryFile->inputFromJSON(dataObj);
     }
@@ -175,12 +189,20 @@ bool Pyrecodes::inputAppDataFromJSON(QJsonObject &jsonObject) {
     return true;
 }
 
-
 bool Pyrecodes::copyFiles(QString &destDir) {
 
+  // copy main file and all files in the dir
+  QFileInfo mainF = QFile(mainFile->getFilename());
+  if (mainF.exists()) {
+    SimCenterAppWidget::copyPath(mainF.absolutePath(), destDir, false);
+  }
+
+  // just copy other two
   systemConfigFile->copyFile(destDir);
   componentLibraryFile->copyFile(destDir);
 
+  // open up system config file and copy some extra files that user has provided
+  
   return true;
 
 }
@@ -204,9 +226,10 @@ SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent, QWidget *R2DresWi
 
 void Pyrecodes::runPyReCodes() {
 
-
+  qDebug() << "RUN PYRECODES";
+  
   //
-  // create a workdir in LocalApplications folder
+  // create a workdir in LocalApplications folder named PyReCodes
   //
 
   QDir localWorkDir(SimCenterPreferences::getInstance()->getLocalWorkDir());
@@ -218,40 +241,124 @@ void Pyrecodes::runPyReCodes() {
       workDir.removeRecursively();
     else {
       QString msg("The Program stopped, Running PyReCodes locally was about to recursivily remove: ");
-      msg.append(workDirString);
+      msg.append(workDirString);      
       fatalMessage(msg);
       return;	
     }
   }
+
   localWorkDir.mkpath("PyReCodes");
 
-  qDebug() << "workdirString: " << workDirString;
+  //
+  // in that directory create input_data and results folders
+  //
+  
+  QDir finalWorkDir(workDirString);
+  finalWorkDir.mkdir("input_data");
+  finalWorkDir.mkdir("results");      
+  QString inputDataDir = finalWorkDir.absoluteFilePath("input_data");
+  QString resultsDir = finalWorkDir.absoluteFilePath("results");  
+  
+  qDebug() << "MADE WORKDIR:" << workDirString;  
   
   //
   // now copy all files there
   //  
 
-  systemConfigFile->copyFile(workDirString);
-  componentLibraryFile->copyFile(workDirString);
-  
-  inventoryFile->copyFile(workDirString);
-  damageFile->copyFile(workDirString);
+  inputDataFolder->copyFile(inputDataDir);  
+  r2dResultsFolder->copyFile(resultsDir);
+  this->copyFiles(inputDataDir);
 
   //
   // now run the python command
   //
 
+  // need to create names for mainFile componentLibrartyFile and systemConfigFile in new dir
+  QString mainFileNew = inputDataDir + QDir::separator() + mainFile->getName();
+  QString configFileNew = inputDataDir + QDir::separator() + systemConfigFile->getName();
+  QString componentFileNew = inputDataDir + QDir::separator() + componentLibraryFile->getName(); 
+
+  // set up args to script
   QStringList args;
-  QString script = "hello.py";
-  RunPythonInThread *thePythonProcess = new RunPythonInThread(script, args, workDirString);
+  args << "--mainFile" << mainFileNew 
+       << "--systemConfigFile" << configFileNew 
+       << "--componentLibraryFile" << componentFileNew 
+       << "--r2dRunDir" << resultsDir
+       << "--inputDataDir" << inputDataDir;
+
+  // set python script to run
+  QString appDir = SimCenterPreferences::getInstance()->getAppDir();
+  QString pyScript = appDir + QDir::separator() + "applications" + QDir::separator() +
+    "performREC" + QDir::separator() + "pyrecodes" + QDir::separator() + "run_pyrecodes.py";  
+
+  qDebug() << "SCRIPT: " << pyScript << " ARGS: " << args << " workDir: " << workDirString;
+
+  // finally run, connect when done
+  RunPythonInThread *thePythonProcess = new RunPythonInThread(pyScript, args, workDirString);
   connect(thePythonProcess, &RunPythonInThread::processFinished, this, &Pyrecodes::runDone);
 
+  qDebug() << "STARTING PYTHON";  
   thePythonProcess->runProcess();
-  qDebug() << "STARTED PYTHON";  
-  
+  qDebug() << "STARTED PYTHON";
 }
 
 void
 Pyrecodes::runDone(int error) {
   qDebug() << "FINISHED PYTHON" << error;
+}
+
+void
+Pyrecodes::parseMainFile(QString filename) {
+
+  //
+  // Open the file in read-only mode & get JSON object
+  //
+  
+  QFile file(filename);
+  if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
+    errorMessage("Pyrecodes Failed to open file specified");
+    return;
+  }
+
+  QFileInfo fileInfo(file);
+  QDir fileDir = fileInfo.dir();
+  QString filePath = fileInfo.path();
+  
+  // Read the file contents
+  QByteArray fileData = file.readAll();
+  
+  // Parse the JSON document
+  QJsonDocument jsonDoc = QJsonDocument::fromJson(fileData);
+  if (jsonDoc.isNull() || !jsonDoc.isObject()) { 
+    errorMessage("Pyrecodes: file specified is not in JSON format");
+    return;
+  }
+  QJsonObject data = jsonDoc.object();
+  
+  //
+  // given the JSON object data, go see if it has the 2 key value pairs we need
+  //   - if there, read and set the filename if in current dir of mainFile
+  //
+
+  if (data.contains("ComponentLibrary") && data["ComponentLibrary"].isObject()) {
+    QJsonObject compData = data["ComponentLibrary"].toObject();
+    if (compData.contains("ComponentLibraryFile") && compData["ComponentLibraryFile"].isString()) {
+      QString compDataFile = compData["ComponentLibraryFile"].toString();
+      if (fileDir.exists(compDataFile)) {
+	QString fPath = fileDir.absoluteFilePath(compDataFile);
+	componentLibraryFile->setFilename(fPath);
+      }
+    } 
+  } 
+  
+  if (data.contains("System") && data["System"].isObject()) {
+    QJsonObject sysConfigData = data["System"].toObject();
+    if (sysConfigData.contains("SystemConfigurationFile") && sysConfigData["SystemConfigurationFile"].isString()) {
+      QString sysConfigDataFile = sysConfigData["SystemConfigurationFile"].toString();
+      if (fileDir.exists(sysConfigDataFile)) {
+	QString fullPath = fileDir.absoluteFilePath(sysConfigDataFile);
+	systemConfigFile->setFilename(fullPath);
+      }
+    }
+  }    
 }

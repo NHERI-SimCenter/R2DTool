@@ -1,3 +1,4 @@
+
 #ifndef PYRECODES_H
 #define PYRECODES_H
 
@@ -43,14 +44,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 class SC_FileEdit;
-// class SC_DoubleLineEdit;
-// class SC_IntLineEdit;
-// class SC_ComboBox;
-// class SC_CheckBox;
+class SC_DirEdit;
 class RewetResults;
-//class SC_DirEdit;
 class LineEditSelectTool;
-
 
 class Pyrecodes : public SimCenterAppWidget
 {
@@ -73,13 +69,15 @@ public slots:
    void clear(void);
    void runPyReCodes();
    void runDone(int error);
+   void parseMainFile(QString filename);
 
 private:
   RewetResults *resultWidget;
-  SC_FileEdit *componentLibraryFile;
-  SC_FileEdit *systemConfigFile;
-  SC_FileEdit *inventoryFile;
-  SC_FileEdit *damageFile;
+  SC_FileEdit  *mainFile;  
+  SC_FileEdit  *componentLibraryFile;
+  SC_FileEdit  *systemConfigFile;
+  SC_DirEdit  *r2dResultsFolder;
+  SC_DirEdit  *inputDataFolder;
 };
 
 
