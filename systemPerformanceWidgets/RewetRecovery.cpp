@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QJsonObject>
 #include <QDoubleValidator>
+#include <QList>
 
 #include <SC_QRadioButton.h>
 #include <SC_DoubleLineEdit.h>
@@ -509,6 +510,8 @@ bool RewetRecovery::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     jsonObject["Application"] = "REWETRecovery";
     QJsonObject dataObj;
+    dataObj["assetSourceFile"] = "sc_inpFileGeoJSON.json";
+    dataObj["inputDir"] = "";
     jsonObject["ApplicationData"] = dataObj;
 
     return true;
@@ -521,7 +524,19 @@ bool RewetRecovery::inputAppDataFromJSON(QJsonObject &jsonObject) {
 
 
 bool RewetRecovery::copyFiles(QString &destDir) {
-  return policyDefinitionFile->copyFile(destDir);
+  QString file_name = policyDefinitionFile->getFilename();
+
+  // The Order of copying is important. The policy definition file should be copied first.
+  // Then when the policy definition file is copied, the files in the policy definition file
+  // should be copied. If the Files are in a subdirectory, the subdirectory should be created.
+
+  bool returnValue = policyDefinitionFile->copyFile(destDir);
+  
+  if (!file_name.isEmpty()) {
+    copyFilesInPolicyDefinition(file_name, destDir);
+  }
+
+  return returnValue;
 }
 
 bool RewetRecovery::outputCitation(QJsonObject &citation){
@@ -538,4 +553,85 @@ SC_ResultsWidget* RewetRecovery::getResultsWidget(QWidget *parent, QWidget *R2Dr
         resultWidget = new RewetResults(parent);
     }
     return resultWidget;
+}
+
+
+void RewetRecovery::copyFilesInPolicyDefinition(QString &file_name, QString &destDir) {
+  QFile file(file_name);
+  if (!file.exists()) {
+    return;
+  }
+
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return;
+  }
+
+  QList<QString> filesBeCoppied;
+  QTextStream in(&file);
+  std::vector<QString> result;
+  bool filesSectionFound = false;
+
+  while (!in.atEnd()) {
+      QString line = in.readLine();
+      int semicolonIndex = line.indexOf(';');
+      if (semicolonIndex != -1) {
+          line = line.left(semicolonIndex);
+      }
+
+      line = line.trimmed();
+
+      if (line == "[FILES]") {
+          filesSectionFound = true;
+          continue;
+      }
+
+      if (filesSectionFound) {
+          if (line.startsWith('[')) {
+              break;
+          }
+          result.push_back(line);
+      }
+  }
+
+  file.close();
+
+  if (!filesSectionFound) {
+      return;
+  }
+
+  for (auto &line : result) {
+      QStringList parts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+      if (parts.size() < 2) {
+          continue;
+      }
+      QString filePath = parts[1];
+      filesBeCoppied.push_back(filePath);
+  }
+
+  QDir policyDir = QFileInfo(file_name).dir();
+  QDir destQDir(destDir);
+  
+  for (auto &newFilePath : filesBeCoppied) {
+      QString absoluteFilePath = policyDir.absoluteFilePath(newFilePath);
+      // QString copyFileDir = policyDir.absoluteFilePath(QFileInfo(newFilePath).dir());
+     
+      if (!QFile::exists(absoluteFilePath)){
+          qDebug() << "Error: File" << absoluteFilePath << "does not exist.";
+          continue;
+      }
+      
+      QString destNewFilePath = destQDir.filePath(newFilePath);
+      QDir destNewFileDir = QFileInfo(destNewFilePath).dir();
+      if (!destNewFileDir.exists()) {
+        QDir().mkpath(destNewFileDir.absolutePath());
+      }
+      
+      QFile::copy(absoluteFilePath, destNewFilePath);
+
+  }
+
+  QFileInfo fileInfo(file_name);
+  QString fileName = fileInfo.fileName();
+  QString destFileName = destDir + QDir::separator() + fileName;
+  file.copy(destFileName);
 }
