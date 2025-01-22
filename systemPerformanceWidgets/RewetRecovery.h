@@ -111,6 +111,7 @@ private:
   SC_TableEdit *nodeTimeBasedDiscoveryTable;
   SC_TableEdit *tankTimeBasedDiscoveryTable;
   SC_TableEdit *pumpTimeBasedDiscoveryTable;
+  void copyFilesInPolicyDefinition(QString &file_name, QString &destDir);
 
   RewetResults *resultWidget;
 };
