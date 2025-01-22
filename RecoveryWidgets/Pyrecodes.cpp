@@ -226,8 +226,6 @@ SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent, QWidget *R2DresWi
 
 void Pyrecodes::runPyReCodes() {
 
-  qDebug() << "RUN PYRECODES";
-  
   //
   // create a workdir in LocalApplications folder named PyReCodes
   //
@@ -258,8 +256,6 @@ void Pyrecodes::runPyReCodes() {
   finalWorkDir.mkdir("results");      
   QString inputDataDir = finalWorkDir.absoluteFilePath("input_data");
   QString resultsDir = finalWorkDir.absoluteFilePath("results");  
-  
-  qDebug() << "MADE WORKDIR:" << workDirString;  
   
   //
   // now copy all files there
@@ -297,9 +293,7 @@ void Pyrecodes::runPyReCodes() {
   RunPythonInThread *thePythonProcess = new RunPythonInThread(pyScript, args, workDirString);
   connect(thePythonProcess, &RunPythonInThread::processFinished, this, &Pyrecodes::runDone);
 
-  qDebug() << "STARTING PYTHON";  
   thePythonProcess->runProcess();
-  qDebug() << "STARTED PYTHON";
 }
 
 void
