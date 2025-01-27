@@ -73,7 +73,7 @@ public:
 
     void clear(void);
 
-    int processResults(QString &outputDirPath);
+    int processResults(QString &outputFile, QString &outputDirPath);
 
     int addResultTab(QString tabName, QString &dirName);
     int addResultSubtab(QString name, QWidget* existTab, QString &dirName);

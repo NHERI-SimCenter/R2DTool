@@ -113,7 +113,7 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   });
 }
 
-int PyrecodesResults::processResults(QString &outputDirPath)
+int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath)
 {
   //
   // clear old results
@@ -341,7 +341,8 @@ int PyrecodesResults::addResultSubtab(QString name, QWidget* existTab, QString &
         pyrecodesResultWidget->setLayout(pyrecodesWidgetLayout);
         pyrecodesDockWidget->setWidget(pyrecodesResultWidget);
 
-	this->processResults(dirName);
+	QString blank;
+	this->processResults(blank, dirName);
     }
     
     else{ //Add the subtab to docklist

@@ -60,6 +60,7 @@ public:
     bool copyFiles(QString &dirName);
     bool outputCitation(QJsonObject &citation);
 
+    SC_ResultsWidget* getResultsWidget(QWidget *parent);  
     SC_ResultsWidget* getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
   
 signals:

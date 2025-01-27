@@ -258,11 +258,21 @@ bool Pyrecodes::outputCitation(QJsonObject &citation){
 
 SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
 {
-    if (resultsWidget==nullptr){
-        resultsWidget = new PyrecodesResults(parent);
-    }
-    
-    return resultsWidget;
+  if (resultsWidget==nullptr){
+    resultsWidget = new PyrecodesResults(parent);
+  }
+  
+  return resultsWidget;
+}
+
+
+SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent)
+{
+  if (resultsWidget==nullptr){
+    resultsWidget = new PyrecodesResults(parent);
+  }
+  
+  return resultsWidget;
 }
 
 void Pyrecodes::runPyReCodes() {
@@ -354,8 +364,9 @@ void
 Pyrecodes::runDone(int error) {
   qDebug() << "FINISHED PYTHON" << error;
   runLocal->setText("Run PyReCodes No Workflow");
-  runLocal->setDisabled(false);  
-  theResultsWidget->processResults(resultsDir);
+  runLocal->setDisabled(false);
+  QString blank;
+  theResultsWidget->processResults(blank, resultsDir);
   qDebug() << "FINISHED PROCESSING";  
   popupResultsDialog->show();
   qDebug() << "AND THE DIALOG IS SHOWING?????";  
