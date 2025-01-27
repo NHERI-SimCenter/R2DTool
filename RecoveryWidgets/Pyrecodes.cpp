@@ -36,11 +36,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written: fmk, Sina Naeimi
 
 #include "Pyrecodes.h"
-#include <QScrollArea>
-#include <QLineEdit>
+#include "PyrecodesResults.h"
+
+#include <QGuiApplication>
+#include <QScreen>
+#include <QDialog>
 #include <QTabWidget>
 #include <QGridLayout>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QBoxLayout>
 #include <QGroupBox>
 #include <QLabel>
@@ -56,7 +60,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_ComboBox.h>
 #include <SC_CheckBox.h>
 #include <SC_TableEdit.h>
-#include <RewetResults.h>
 #include <QGroupBox>
 #include <QPushButton>
 
@@ -75,7 +78,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 Pyrecodes::Pyrecodes(QWidget *parent)
-  : SimCenterAppWidget(parent), resultWidget(0)
+: SimCenterAppWidget(parent), resultsWidget(0)
 {    
     QGridLayout *mainLayout = new QGridLayout(this); // Set the parent to 'this'
 
@@ -110,11 +113,19 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     boxLayout->addWidget(new QLabel("R2D Results Folder:"),1,0);
     r2dResultsFolder = new SC_DirEdit("r2dRunDir");
     inputDataFolder = new SC_DirEdit("inputDataDir");
-    boxLayout->addWidget(inputDataFolder,    0,1, 1,4);    
+    boxLayout->addWidget(inputDataFolder,  0,1, 1,4);    
     boxLayout->addWidget(r2dResultsFolder, 1,1 ,1,4);
 
-    QPushButton *runLocal = new QPushButton("Run PyReCodes No Workflow");
-    boxLayout->addWidget(runLocal,2,1, 2,1);
+
+    QHBoxLayout *runLayout = new QHBoxLayout();
+
+    runLayout->addStretch();
+    runLocal = new QPushButton("Run PyReCodes No Workflow");
+    runLayout->addWidget(runLocal);
+    runLayout->addStretch();    
+    //boxLayout->addWidget(runLocal,2,0, 1,5);
+    boxLayout->addLayout(runLayout,2,0,1,5);
+    
     boxLayout->setRowStretch(3,1);
     
     connect(runLocal, &QPushButton::clicked, this, &Pyrecodes::runPyReCodes);
@@ -124,9 +135,32 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     
     mainLayout->addWidget(spacer, numRow++, 0);
     
-    mainLayout->addWidget(groupBox, numRow++, 0, 1,4);
+    mainLayout->addWidget(groupBox, numRow++, 0, 1, 5);
     
     mainLayout->setRowStretch(numRow, 1);
+
+    //
+    // create a PyrecodesResults widget and a popup Dialog for showing results if in Dialog
+    //
+    
+    theResultsWidget = new PyrecodesResults(this);
+
+    popupResultsDialog = new QDialog(nullptr, Qt::Window);
+    popupResultsDialog->setWindowTitle("PyReCodes Results Window");
+    QGridLayout *popupResultDialogLayout = new QGridLayout();
+    popupResultDialogLayout->addWidget(theResultsWidget, 0,0);
+    popupResultsDialog->setLayout(popupResultDialogLayout);
+    QRect rec = QGuiApplication::primaryScreen()->geometry();
+    int height = this->height()<int(rec.height())?int(rec.height()):this->height();
+    int width  = this->width()<int(rec.width())?int(rec.width()):this->width();
+    height = abs(0.75*height);
+    width = abs(0.75*width);
+    popupResultsDialog->setMinimumWidth(width);
+    popupResultsDialog->setMaximumWidth(width);
+    popupResultsDialog->setMinimumHeight(height);
+    popupResultsDialog->setMaximumHeight(height);    
+    popupResultsDialog->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);    
+    popupResultsDialog->resize(width, height);
     
 }
 
@@ -139,9 +173,12 @@ Pyrecodes::~Pyrecodes()
 
 void Pyrecodes::clear(void)
 {
-    if (resultWidget != nullptr) {
-        resultWidget->clear();
+    if (theResultsWidget != nullptr) {
+        theResultsWidget->clear();
     }
+    if (resultsWidget != nullptr) {
+        resultsWidget->clear();
+    }    
 }
 
 
@@ -217,11 +254,11 @@ bool Pyrecodes::outputCitation(QJsonObject &citation){
 
 SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
 {
-    if (resultWidget==nullptr){
-        resultWidget = new RewetResults(parent);
+    if (resultsWidget==nullptr){
+        resultsWidget = new PyrecodesResults(parent);
     }
     
-    return resultWidget;
+    return resultsWidget;
 }
 
 void Pyrecodes::runPyReCodes() {
@@ -234,6 +271,14 @@ void Pyrecodes::runPyReCodes() {
   QString workDirString = localWorkDir.absoluteFilePath("PyReCodes");
   QDir workDir(workDirString);
 
+  /* just load and process results
+  resultsDir = workDir.absoluteFilePath("results");
+  qDebug() << "RESULTS DIR: " << resultsDir;
+  theResultsWidget->processResults(resultsDir);
+  return;
+  */
+
+  
   if(workDir.exists()) {
     if (SCUtils::isSafeToRemoveRecursivily(workDirString))
       workDir.removeRecursively();
@@ -255,7 +300,7 @@ void Pyrecodes::runPyReCodes() {
   finalWorkDir.mkdir("input_data");
   finalWorkDir.mkdir("results");      
   QString inputDataDir = finalWorkDir.absoluteFilePath("input_data");
-  QString resultsDir = finalWorkDir.absoluteFilePath("results");  
+  resultsDir = finalWorkDir.absoluteFilePath("results");  
   
   //
   // now copy all files there
@@ -289,6 +334,9 @@ void Pyrecodes::runPyReCodes() {
 
   qDebug() << "SCRIPT: " << pyScript << " ARGS: " << args << " workDir: " << workDirString;
 
+  runLocal->setText("PyReCodes is Running");
+  runLocal->setDisabled(true);
+  
   // finally run, connect when done
   RunPythonInThread *thePythonProcess = new RunPythonInThread(pyScript, args, workDirString);
   connect(thePythonProcess, &RunPythonInThread::processFinished, this, &Pyrecodes::runDone);
@@ -299,6 +347,12 @@ void Pyrecodes::runPyReCodes() {
 void
 Pyrecodes::runDone(int error) {
   qDebug() << "FINISHED PYTHON" << error;
+  runLocal->setText("Run PyReCodes No Workflow");
+  runLocal->setDisabled(false);  
+  theResultsWidget->processResults(resultsDir);
+  qDebug() << "FINISHED PROCESSING";  
+  popupResultsDialog->show();
+  qDebug() << "AND THE DIALOG IS SHOWING?????";  
 }
 
 void

@@ -212,6 +212,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/SystemPerformanceWidgets/RewetResults.cpp \
             $$PWD/RecoveryWidgets/RecoveryWidget.cpp \
 	    $$PWD/RecoveryWidgets/Pyrecodes.cpp \
+	    $$PWD/RecoveryWidgets/PyrecodesResults.cpp \	    
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesUI.cpp \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesSystemConfig.cpp \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponentLibrary.cpp \
@@ -403,6 +404,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/SystemPerformanceWidgets/RewetResults.h \
             $$PWD/RecoveryWidgets/RecoveryWidget.h \
 	    $$PWD/RecoveryWidgets/Pyrecodes.h \
+	    $$PWD/RecoveryWidgets/PyrecodesResults.h \	    
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesUI.h \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesSystemConfig.h \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponentLibrary.h \
