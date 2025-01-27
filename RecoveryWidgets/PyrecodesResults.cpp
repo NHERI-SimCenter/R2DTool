@@ -88,7 +88,7 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   gifWidget->setLayout(gifLayout);
   gifComboBox = new QComboBox();
   //  gifStackedWidget = new QStackedWidget();
-  movieWidget = new SC_MovieWidget(this,"");
+  movieWidget = new SC_MovieWidget(this,"", true);
   
   gifLayout->addWidget(new QLabel("Select Realization:"),0,0);
   gifLayout->addWidget(gifComboBox,0,1);
