@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: Sina Naeimi
+// Written: Sina Naeimi, fmk
 
 #include <SimCenterAppWidget.h>
 

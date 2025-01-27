@@ -167,8 +167,8 @@ int PyrecodesResults::processResults(QString &outputDirPath)
       resourceList << resource;
       SC_MLC_ChartData *resourceLineData = new SC_MLC_ChartData();
       resourceLineData->xLabel = "Days";
-      resourceLineData->yLabel = resource + QString("Supply");
-      resourceLineData->title =  resource + QString("Supply Curve");
+      resourceLineData->yLabel = resource + QString(" Supply");
+      resourceLineData->title =  resource + QString(" Supply Curve");
       multipleLineChartData.insert(resource, resourceLineData);
     }
   }

@@ -77,6 +77,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 
 
+static QString citeText = "Blagojević, Nikola and Stojadinović, Božidar. pyrecodes: an open-source library for regional recovery simulation and disaster resilience assessment of the built environment. (2023) Chair of Structural Dynamics and Earthquake Engineering, ETH Zurich.  https://doi.org/10.5905/ethz-1007-700";
+
+
 Pyrecodes::Pyrecodes(QWidget *parent)
 : SimCenterAppWidget(parent), resultsWidget(0)
 {    
@@ -116,7 +119,6 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     boxLayout->addWidget(inputDataFolder,  0,1, 1,4);    
     boxLayout->addWidget(r2dResultsFolder, 1,1 ,1,4);
 
-
     QHBoxLayout *runLayout = new QHBoxLayout();
 
     runLayout->addStretch();
@@ -125,7 +127,6 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     runLayout->addStretch();    
     //boxLayout->addWidget(runLocal,2,0, 1,5);
     boxLayout->addLayout(runLayout,2,0,1,5);
-    
     boxLayout->setRowStretch(3,1);
     
     connect(runLocal, &QPushButton::clicked, this, &Pyrecodes::runPyReCodes);
@@ -134,11 +135,15 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     spacer->setFixedHeight(20); // Adjust the height as needed
     
     mainLayout->addWidget(spacer, numRow++, 0);
-    
     mainLayout->addWidget(groupBox, numRow++, 0, 1, 5);
+    
+    QLabel *citeLabel = new QLabel(citeText);
+    citeLabel->setWordWrap(true);
+    mainLayout->addWidget(citeLabel, numRow++,0, 1, 5);
     
     mainLayout->setRowStretch(numRow, 1);
 
+    
     //
     // create a PyrecodesResults widget and a popup Dialog for showing results if in Dialog
     //
@@ -244,10 +249,9 @@ bool Pyrecodes::copyFiles(QString &destDir) {
 
 }
 
+  
 bool Pyrecodes::outputCitation(QJsonObject &citation){
-  QString pyrecodesCitationKey = "PyReCoDes";
-  QJsonValue pyrecodesCitationValue( "\"citations\": [{\"citation\": \"Add\"}]}");
-  citation.insert(pyrecodesCitationKey, pyrecodesCitationValue);
+  citation.insert("Recovery",citeText);
   
   return true;
 }
@@ -334,8 +338,10 @@ void Pyrecodes::runPyReCodes() {
 
   qDebug() << "SCRIPT: " << pyScript << " ARGS: " << args << " workDir: " << workDirString;
 
-  runLocal->setText("PyReCodes is Running");
+  runLocal->setText("PyReCodes is now Running");
   runLocal->setDisabled(true);
+
+  this->statusMessage("PyReCodes is now running in the background ..");
   
   // finally run, connect when done
   RunPythonInThread *thePythonProcess = new RunPythonInThread(pyScript, args, workDirString);
