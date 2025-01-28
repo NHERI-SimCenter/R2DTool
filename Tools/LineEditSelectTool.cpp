@@ -1,6 +1,3 @@
-#ifndef PYRECODESTOOL_H
-#define PYRECODESTOOL_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -20,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -37,51 +34,53 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Sina Naeimi
-#include "SimCenterAppWidget.h"
+// Written by: Sina Naeimi, Stevan Gavrilovic
 
-class VisualizationWidget;
-class SC_DoubleLineEdit;
-class SC_FileEdit;
-class SC_DirEdit;
-class SC_CheckBox;
-class SC_ComboBox;
-class AssetInputDelegate;
-class QPushButton;
+#include <SimCenterAppWidget.h>
+#include "LineEditSelectTool.h"
 
+#include <QRegExpValidator>
+#include <QJsonObject>
 
-class PyReCoDesWidget : public SimCenterAppWidget
+LineEditSelectTool::LineEditSelectTool(QString theKey, bool copyFiles)
 {
-    Q_OBJECT
+    key = theKey;
+    this->setPlaceholderText("e.g., 1, 3, 5-10, 12");
 
-public:
-    PyReCoDesWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~PyReCoDesWidget();
-    void handleProcessStarted();
+    // Create a regExp validator to make sure only '-' & ',' & ' ' & numbers are input
+    QRegExp LERegExp ("((([0-9]*)|([0-9]+-[1-9][0-9]*))[ ]*,[ ]*)*([[0-9]+-[1-9][0-9]*|[0-9]*)");
+    QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
+    this->setValidator(LEValidator);
+}
 
-public slots:
-    void clear(void);
-    void handleProcessFinished();
+LineEditSelectTool::LineEditSelectTool(QString key, QString toolTip, bool copyFiles)
+{
+    LineEditSelectTool(key, copyFiles);
+}
 
-signals:
+bool LineEditSelectTool::outputToJSON(QJsonObject &jsonObject)
+{
+    jsonObject[key]= this->text();
 
-protected:
+    return true;
+}
 
-private slots:
-  void runSimulation(void);
+bool LineEditSelectTool::inputFromJSON(QJsonObject &jsonObject)
+{
+  QString realization;
+
+  if (jsonObject.contains(key)) {
+    QJsonValue theName = jsonObject[key];
+    realization = theName.toString();
+    this->setText(realization);
+  }
   
-private:
+  return true;
+}
 
-SC_DirEdit *damageStateDataSrource;
-AssetInputDelegate *realizationInputWidget;
-// SC_DirEdit *resultsDir;
-SC_FileEdit *pathConfigFile;
-SC_FileEdit *pathComponentLibrary;
-SC_FileEdit *pathLocalityDefinition; 
-SC_FileEdit *pathWaterNetwork;
-QPushButton *runButton;
-
-
-};
-
-#endif // PYRECODESTOOL_H
+bool LineEditSelectTool::copyFile(QString &destDir) {
+  if (copyFilesWhenCalled == true)
+    return SimCenterAppWidget::copyPath(this->text(), destDir, true);
+  else
+    return true;
+}

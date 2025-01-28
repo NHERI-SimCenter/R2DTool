@@ -1,5 +1,5 @@
-#ifndef PYRECODESTOOL_H
-#define PYRECODESTOOL_H
+#ifndef PYRECODES_RESULTS_H
+#define PYRECODES_RESULTS_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
@@ -20,7 +20,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -37,51 +37,67 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Sina Naeimi
-#include "SimCenterAppWidget.h"
+// Written by: fmk
 
-class VisualizationWidget;
-class SC_DoubleLineEdit;
-class SC_FileEdit;
-class SC_DirEdit;
-class SC_CheckBox;
-class SC_ComboBox;
-class AssetInputDelegate;
-class QPushButton;
+#include "SC_ResultsWidget.h"
+#include "SimCenterMapcanvasWidget.h"
+
+#include <QString>
+#include <QMainWindow>
+#include <QJsonArray>
+#include <QJsonObject>
+
+class QVBoxLayout;
+class QGISVisualizationWidget;
+class SC_MultipleLineChart;
+class SC_MovieWidget;
+class QComboBox;
+class QStackedWidget;
 
 
-class PyReCoDesWidget : public SimCenterAppWidget
+namespace QtCharts
+{
+    class QChartView;
+    class QBarSet;
+    class QChart;
+    class QLineSeries;
+}
+
+
+class PyrecodesResults : public SC_ResultsWidget
 {
     Q_OBJECT
 
 public:
-    PyReCoDesWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~PyReCoDesWidget();
-    void handleProcessStarted();
+    PyrecodesResults(QWidget *parent);
 
-public slots:
     void clear(void);
-    void handleProcessFinished();
 
-signals:
+    int processResults(QString &outputFile, QString &outputDirPath);
+
+    int addResultTab(QString tabName, QString &dirName);
+    int addResultSubtab(QString name, QWidget* existTab, QString &dirName);
+
+private slots:
+
+    void restoreUI(void);
 
 protected:
 
-private slots:
-  void runSimulation(void);
-  
 private:
 
-SC_DirEdit *damageStateDataSrource;
-AssetInputDelegate *realizationInputWidget;
-// SC_DirEdit *resultsDir;
-SC_FileEdit *pathConfigFile;
-SC_FileEdit *pathComponentLibrary;
-SC_FileEdit *pathLocalityDefinition; 
-SC_FileEdit *pathWaterNetwork;
-QPushButton *runButton;
+  // methods
+  int readDemandSupplyJSON(QString &filename, QtCharts::QLineSeries *lineSeries);
 
-
+  // data
+  
+  QGISVisualizationWidget* theVisualizationWidget;
+  SC_MultipleLineChart *chart;  
+  QComboBox *gifComboBox;
+  SC_MovieWidget *movieWidget;
+  //QStackedWidget *gifStackedWidget;
+  QStringList gifFilenames;
+  
 };
 
-#endif // PYRECODESTOOL_H
+#endif // PYRECODES_RESULTS_H

@@ -1,5 +1,5 @@
-#ifndef REWET_RECOVERY_H
-#define REWET_RECOVERY_H
+#ifndef PYRECODES_UI_H
+#define PYRECODES_UI_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -37,28 +37,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: fmk, Sina Naeimi
+// Written: fmk
 
 #include <SimCenterAppWidget.h>
 
-
 class SC_FileEdit;
-class SC_DoubleLineEdit;
-class SC_IntLineEdit;
-class SC_ComboBox;
-class SC_CheckBox;
-class RewetResults;
+class PyrecodesSystemConfig;
 
-//class SC_IntLineEdit;
-class SC_TableEdit;
-class SC_QRadioButton;
-
-
-class RewetRecovery : public SimCenterAppWidget
+class PyrecodesUI : public SimCenterAppWidget
 {
 public:
-    RewetRecovery(QWidget *parent = 0);
-    ~RewetRecovery();
+    PyrecodesUI(QWidget *parent = 0);
+    ~PyrecodesUI();
 
     bool inputFromJSON(QJsonObject &rvObject);
     bool outputToJSON(QJsonObject &rvObject);  
@@ -72,49 +62,15 @@ public:
 signals:
 
 public slots:
-   void clear(void);
+  void clear(void);
 
 private:
+  SC_FileEdit *theComponentLibraryFile;
+  SC_FileEdit *theSystemConfigurationFile;
 
-  // simulation
-  SC_IntLineEdit *eventTime;
-  SC_IntLineEdit *simulationTime;
-  SC_IntLineEdit *simulationTimeStep;
-  SC_CheckBox        *lastTerminationCheckBox;
-  SC_CheckBox        *demandMetTerminationCheckBox;
-  SC_IntLineEdit *demandMetTerminationTimeWindow;
-  SC_DoubleLineEdit  *demandMetCriteriaRatio;
-
-  // hydraulics
-  // Solver GroupBox
-  //SC_ComboBox *solver;
-  SC_DoubleLineEdit *solverPDARequired;
-  SC_ComboBox *solverSelection;
-  SC_DoubleLineEdit *solverPDAMin;
-  // damage Modeling GroupBox
-  SC_TableEdit *pipeDamageModelingTable;
-  SC_TableEdit *nodeDamageModelingTable;
-
-  // restoration
-  SC_CheckBox *restorationOnCheckBox;
-  SC_FileEdit *policyDefinitionFile;
-  SC_IntLineEdit *minimumJobTimeLineEdit;
-  SC_QRadioButton *pipeLeakBasedRadioButton;
-  SC_QRadioButton *pipeTimeBasedRadioButton;
-  SC_DoubleLineEdit *pipeDiscoveryLeakAmountLineEdit;
-  SC_IntLineEdit *pipeDiscoveryTimeWindowLineEdit;
-  SC_TableEdit *pipeTimeBasedDiscoveryTable;
-  SC_QRadioButton *nodeLeakBasedRadioButton;
-  SC_QRadioButton *nodeTimeBasedRadioButton;
-  SC_DoubleLineEdit *nodeDiscoveryLeakAmountLineEdit;
-  SC_IntLineEdit *nodeDiscoveryTimeWindowLineEdit;
-  SC_TableEdit *nodeTimeBasedDiscoveryTable;
-  SC_TableEdit *tankTimeBasedDiscoveryTable;
-  SC_TableEdit *pumpTimeBasedDiscoveryTable;
-  void copyFilesInPolicyDefinition(QString &file_name, QString &destDir);
-
-  RewetResults *resultWidget;
+  SimCenterWidget *theComponentLibrary;
+  PyrecodesSystemConfig *theSystemConfiguration;
 };
 
 
-#endif // REWET_RECOVERY_H
+#endif // PYRECODES_UI_H

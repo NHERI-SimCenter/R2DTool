@@ -47,7 +47,9 @@ INCLUDEPATH += $$PWD \
                $$PWD/Events/UI \
                $$PWD/Tools \
                $$PWD/assetWidgets \
-               $$PWD/systemPerformanceWidgets \	       
+               $$PWD/SystemPerformanceWidgets \
+	       $$PWD/RecoveryWidgets \
+	       $$PWD/RecoveryWidgets/pyrecodes \
                $$PWD/assetWidgets/EPANET2.2/include \
 	       $$PWD/assetWidgets/EPANET2.2/src \
 	       $$PWD/dlWidgets
@@ -135,10 +137,10 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
             $$PWD/systemPerformanceWidgets/ResidualDemandResults.cpp \
+            $$PWD/systemPerformanceWidgets/ResidualDemandWidget.cpp \	    
             $$PWD/Tools/TablePrinter.cpp \
             $$PWD/Tools/XMLAdaptor.cpp \
-            $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.cpp \
-            $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.cpp \
+	    $$PWD/Tools/LineEditSelectTool.cpp \
             $$PWD/UIWidgets/AnalysisWidget.cpp \
             $$PWD/UIWidgets/AssetsWidget.cpp \
             $$PWD/UIWidgets/BuildingDMEQWidget.cpp \
@@ -197,7 +199,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/UIWidgets/BrailsTranspInventoryGenerator.cpp \	
             $$PWD/UIWidgets/BrailsGoogleDialog.cpp \	    
             $$PWD/UIWidgets/UserInputHurricaneWidget.cpp \
-			$$PWD/UIWidgets/PyReCodesWidget.cpp \
+	    $$PWD/UIWidgets/PyReCodesWidget.cpp \
             $$PWD/GraphicElements/NodeHandle.cpp \
             $$PWD/GraphicElements/RectangleGrid.cpp \
             $$PWD/GraphicElements/PlainRectangle.cpp \	    
@@ -205,10 +207,17 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/GraphicElements/GIS_Selection.cpp \
 	    $$PWD/RunWidget.cpp \
             $$PWD/WorkflowAppR2D.cpp \
-            $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.cpp \
-            $$PWD/systemPerformanceWidgets/RewetRecovery.cpp \
-            $$PWD/systemPerformanceWidgets/RewetResults.cpp \
-            $$PWD/systemPerformanceWidgets/ResidualDemandWidget.cpp \
+            $$PWD/SystemPerformanceWidgets/SystemPerformanceWidget.cpp \
+            $$PWD/SystemPerformanceWidgets/RewetRecovery.cpp \
+            $$PWD/SystemPerformanceWidgets/RewetResults.cpp \
+            $$PWD/RecoveryWidgets/RecoveryWidget.cpp \
+	    $$PWD/RecoveryWidgets/Pyrecodes.cpp \
+	    $$PWD/RecoveryWidgets/PyrecodesResults.cpp \	    
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesUI.cpp \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesSystemConfig.cpp \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponentLibrary.cpp \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponent.cpp \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesLocality.cpp \
             $$PWD/assetWidgets/InpFileWaterInputWidget.cpp \
 	    $$PWD/assetWidgets/EPANET2.2/geoJSON.c \
 	    $$PWD/assetWidgets/EPANET2.2/src/inpfile.c \
@@ -315,8 +324,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/TableNumberItem.h \
             $$PWD/Tools/TablePrinter.h \
             $$PWD/Tools/XMLAdaptor.h \
-            $$PWD/UIWidgets/ANAWidgets/ANACapacitySpectrumWidget.h \
-            $$PWD/UIWidgets/ANAWidgets/CapacitySpectrumWidgets/HAZUSDemandWidget.h \
+	    $$PWD/Tools/LineEditSelectTool.h \
             $$PWD/UIWidgets/AnalysisWidget.h \
             $$PWD/UIWidgets/AssetsWidget.h \
             $$PWD/UIWidgets/BuildingDMEQWidget.h \
@@ -338,7 +346,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/GeneralInformationWidgetR2D.h \
             $$PWD/UIWidgets/GroundMotionStation.h \
             $$PWD/UIWidgets/LoadResultsDialog.h \
-    $$PWD/UIWidgets/ResidualDemandToolWidget.h \
+	    $$PWD/UIWidgets/ResidualDemandToolWidget.h \
             $$PWD/UIWidgets/ToolDialog.h \
             $$PWD/UIWidgets/SimCenterUnitsWidget.h \
             $$PWD/UIWidgets/SimCenterIMWidget.h \
@@ -369,7 +377,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/UQWidget.h \
             $$PWD/UIWidgets/UserDefinedEDPR.h \
             $$PWD/UIWidgets/UserInputGMWidget.h \
-			$$PWD/UIWidgets/PyReCodesWidget.h \
+	    $$PWD/UIWidgets/PyReCodesWidget.h \
             $$PWD/Events/UI/ScenarioSelectionWidget.h \
             $$PWD/Events/UI/GroundMotionModelsWidget.h \
             $$PWD/UIWidgets/RegionalSiteResponseWidget.h \
@@ -391,9 +399,17 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/GraphicElements/GIS_Selection.h \
             $$PWD/WorkflowAppR2D.h \
             $$PWD/RunWidget.h \
-            $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.h \	    	    
-            $$PWD/systemPerformanceWidgets/RewetRecovery.h \
-            $$PWD/systemPerformanceWidgets/RewetResults.h \	    
+            $$PWD/SystemPerformanceWidgets/SystemPerformanceWidget.h \
+            $$PWD/SystemPerformanceWidgets/RewetRecovery.h \
+            $$PWD/SystemPerformanceWidgets/RewetResults.h \
+            $$PWD/RecoveryWidgets/RecoveryWidget.h \
+	    $$PWD/RecoveryWidgets/Pyrecodes.h \
+	    $$PWD/RecoveryWidgets/PyrecodesResults.h \	    
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesUI.h \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesSystemConfig.h \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponentLibrary.h \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponent.h \	    
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesLocality.h \	    
             $$PWD/assetWidgets/InpFileWaterInputWidget.h \	    
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2.h \
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2_2.h \

@@ -1,6 +1,3 @@
-#ifndef PYRECODESTOOL_H
-#define PYRECODESTOOL_H
-
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -20,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,50 +35,40 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Sina Naeimi
-#include "SimCenterAppWidget.h"
 
-class VisualizationWidget;
-class SC_DoubleLineEdit;
-class SC_FileEdit;
-class SC_DirEdit;
-class SC_CheckBox;
-class SC_ComboBox;
-class AssetInputDelegate;
-class QPushButton;
+#include "RecoveryWidget.h"
+#include "NoneWidget.h"
+#include "Pyrecodes.h"
+#include "PyrecodesUI.h"
 
+#include "SecondaryComponentSelection.h"
+#include "VisualizationWidget.h"
+#include "SectionTitle.h"
 
-class PyReCoDesWidget : public SimCenterAppWidget
+// Qt headers
+#include <QDebug>
+
+RecoveryWidget::RecoveryWidget(QWidget *parent)
+  : SimCenterAppSelection(QString("Recovery"), QString("Recovery"), parent)
 {
-    Q_OBJECT
+  // Create the widgets    
+  SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
+  SimCenterAppWidget *pyrecodesRecovery = new Pyrecodes(this);
+  SimCenterAppWidget *pyrecodesUI_Recovery = new PyrecodesUI(this);    
+  this->addComponent(QString("None"), QString("None"), noneWidget3);
+  addComponent(QString("pyrecodes"), QString("Pyrecodes"), pyrecodesRecovery);
+  addComponent(QString("PyrecodesUI"), QString("PyrecodesUI"), pyrecodesUI_Recovery);      
 
-public:
-    PyReCoDesWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
-    ~PyReCoDesWidget();
-    void handleProcessStarted();
+  //addComponent("Recovery", RecWidget);
+  // We shall not hide it since we want to have recovery at any time
+  //this->hideAll();
+}
 
-public slots:
-    void clear(void);
-    void handleProcessFinished();
+RecoveryWidget::~RecoveryWidget()
+{
 
-signals:
-
-protected:
-
-private slots:
-  void runSimulation(void);
-  
-private:
-
-SC_DirEdit *damageStateDataSrource;
-AssetInputDelegate *realizationInputWidget;
-// SC_DirEdit *resultsDir;
-SC_FileEdit *pathConfigFile;
-SC_FileEdit *pathComponentLibrary;
-SC_FileEdit *pathLocalityDefinition; 
-SC_FileEdit *pathWaterNetwork;
-QPushButton *runButton;
+}
 
 
-};
 
-#endif // PYRECODESTOOL_H
+

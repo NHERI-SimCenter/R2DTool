@@ -1,5 +1,5 @@
-#ifndef REWET_RECOVERY_H
-#define REWET_RECOVERY_H
+#ifndef PYRECODES_H
+#define PYRECODES_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -37,28 +37,21 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: fmk, Sina Naeimi
+// Written: Sina Naeimi, fmk
 
 #include <SimCenterAppWidget.h>
 
-
 class SC_FileEdit;
-class SC_DoubleLineEdit;
-class SC_IntLineEdit;
-class SC_ComboBox;
-class SC_CheckBox;
-class RewetResults;
+class SC_DirEdit;
+class LineEditSelectTool;
+class PyrecodesResults;
+class QPushButton;
 
-//class SC_IntLineEdit;
-class SC_TableEdit;
-class SC_QRadioButton;
-
-
-class RewetRecovery : public SimCenterAppWidget
+class Pyrecodes : public SimCenterAppWidget
 {
 public:
-    RewetRecovery(QWidget *parent = 0);
-    ~RewetRecovery();
+    Pyrecodes(QWidget *parent = 0);
+    ~Pyrecodes();
 
     bool inputFromJSON(QJsonObject &rvObject);
     bool outputToJSON(QJsonObject &rvObject);  
@@ -67,54 +60,30 @@ public:
     bool copyFiles(QString &dirName);
     bool outputCitation(QJsonObject &citation);
 
+    SC_ResultsWidget* getResultsWidget(QWidget *parent);  
     SC_ResultsWidget* getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
   
 signals:
 
 public slots:
    void clear(void);
+   void runPyrecodes();
+   void runDone(int error);
+   void parseMainFile(QString filename);
 
 private:
+  SC_FileEdit  *mainFile;  
+  SC_FileEdit  *componentLibraryFile;
+  SC_FileEdit  *systemConfigFile;
+  SC_DirEdit  *r2dResultsFolder;
+  SC_DirEdit  *inputDataFolder;
+  QString resultsDir;  
+  QDialog *popupResultsDialog;
+  QPushButton *runLocal;
 
-  // simulation
-  SC_IntLineEdit *eventTime;
-  SC_IntLineEdit *simulationTime;
-  SC_IntLineEdit *simulationTimeStep;
-  SC_CheckBox        *lastTerminationCheckBox;
-  SC_CheckBox        *demandMetTerminationCheckBox;
-  SC_IntLineEdit *demandMetTerminationTimeWindow;
-  SC_DoubleLineEdit  *demandMetCriteriaRatio;
-
-  // hydraulics
-  // Solver GroupBox
-  //SC_ComboBox *solver;
-  SC_DoubleLineEdit *solverPDARequired;
-  SC_ComboBox *solverSelection;
-  SC_DoubleLineEdit *solverPDAMin;
-  // damage Modeling GroupBox
-  SC_TableEdit *pipeDamageModelingTable;
-  SC_TableEdit *nodeDamageModelingTable;
-
-  // restoration
-  SC_CheckBox *restorationOnCheckBox;
-  SC_FileEdit *policyDefinitionFile;
-  SC_IntLineEdit *minimumJobTimeLineEdit;
-  SC_QRadioButton *pipeLeakBasedRadioButton;
-  SC_QRadioButton *pipeTimeBasedRadioButton;
-  SC_DoubleLineEdit *pipeDiscoveryLeakAmountLineEdit;
-  SC_IntLineEdit *pipeDiscoveryTimeWindowLineEdit;
-  SC_TableEdit *pipeTimeBasedDiscoveryTable;
-  SC_QRadioButton *nodeLeakBasedRadioButton;
-  SC_QRadioButton *nodeTimeBasedRadioButton;
-  SC_DoubleLineEdit *nodeDiscoveryLeakAmountLineEdit;
-  SC_IntLineEdit *nodeDiscoveryTimeWindowLineEdit;
-  SC_TableEdit *nodeTimeBasedDiscoveryTable;
-  SC_TableEdit *tankTimeBasedDiscoveryTable;
-  SC_TableEdit *pumpTimeBasedDiscoveryTable;
-  void copyFilesInPolicyDefinition(QString &file_name, QString &destDir);
-
-  RewetResults *resultWidget;
+  PyrecodesResults *theResultsWidget; // used for a local run w/o workflow
+  PyrecodesResults *resultsWidget;    // used for getResults() given an R2D call  
 };
 
 
-#endif // REWET_RECOVERY_H
+#endif // PYRECODES_H

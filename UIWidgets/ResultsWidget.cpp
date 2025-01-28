@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AssetInputDelegate.h"
 #include "DLWidget.h"
 #include "SystemPerformanceWidget.h"
+#include <RecoveryWidget.h>
 #include "GeneralInformationWidget.h"
 #include "PelicunPostProcessor.h"
 #include "CBCitiesPostProcessor.h"
@@ -278,79 +279,97 @@ int ResultsWidget::processResults(QString resultsDirectory)
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
         QString resultData = jsonFile.readAll();
 
-	// FMK - placing Nan inside quotes to validate
-	if (resultData.contains(" NaN"))
-	    resultData.replace("NaN", " \"NaN\"");
-	/* ******************************************
-	QFile fileNan(QString(pathGeojson + ".Nan"));
-	if(!fileNan.open(QIODevice::WriteOnly)){
-	  fileNan.close();
-	} else {
-	  QTextStream out(&fileNan); out << resultData;
-	  fileNan.close();
-	}
-	********************************************/
-	
-        QJsonDocument exDoc = QJsonDocument::fromJson(resultData.toUtf8());
-        QJsonObject jsonObject = exDoc.object();
+        // FMK - placing Nan inside quotes to validate
+        if (resultData.contains(" NaN"))
+            resultData.replace("NaN", "\"NaN\"");
 
-        if(jsonObject.contains("crs")) {
-            crs = jsonObject["crs"].toObject();
-	    QString crsString = crs["properties"].toObject()["name"].toString();
-	    
-	    QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
-	    if (!qgsCRS.isValid()){
-	      qgsCRS.createFromOgcWmsCrs(crsString);
-	    }
-	    if (!qgsCRS.isValid()){
-	      QString msg = "The CRS (" + crsString + ") defined in " + pathGeojson + " is invalid and ignored";
-	      errorMessage(msg);
-	    }
-	} else {
-	  QString msg = "No CRS info provided in " + pathGeojson;
-	  errorMessage(msg);
-	}
-	
-        QJsonArray features = jsonObject["features"].toArray();
-        for (const QJsonValue& valueIt : features) {
-            QJsonObject value = valueIt.toObject();
-            // Get the type
-            QJsonObject assetProperties = value["properties"].toObject();
-            if (!jsonObject.contains("type")) {
-                this->errorMessage("The Json object is missing the 'type' key that defines the asset type");
-                return false;
-            }
-            // type is Bridge/Tunnel/Road
-            QString type = assetProperties["type"].toString();
-            if (type.compare("")==0){
-                type = "Building";
-            }
-            if (!assetDictionary.contains(type))
-            {
-                assetDictionary[type] = QList<QJsonObject>({value});
-            }
-            else
-            {
-                QList<QJsonObject>& featList = assetDictionary[type];
-                featList.append(value);
-            }
-            // assetType is Transportation Network
-            QString assetType = assetProperties["assetType"].toString();
-            if (!assetTypeToType.contains(assetType))
-            {
-                assetTypeToType[assetType] = QList<QString>({type});
-            }
-            else
-            {
-                QList<QString>& typesList = assetTypeToType[assetType];
-                bool typeExists = false;
-                for (QString it : typesList){
-                    if (it.compare(type)==0){
-                        typeExists = true;
+        // Sina - Placing Infinity to "INF" (inside qoutes)
+        if (resultData.contains(" Infinity"))
+            resultData.replace("Infinity", "\"inf\"");
+
+
+        /* ******************************************
+        QFile fileNan(QString(pathGeojson + ".Nan"));
+        if(!fileNan.open(QIODevice::WriteOnly)){
+        fileNan.close();
+        } else {
+        QTextStream out(&fileNan); out << resultData;
+        fileNan.close();
+        }
+        ********************************************/
+        
+        QJsonParseError parseError;
+        QJsonDocument exDoc = QJsonDocument::fromJson(resultData.toUtf8(), &parseError);
+
+        // Sina - Added to handle when there is a parsling error gracefully. 
+        if (parseError.error != QJsonParseError::NoError) {
+            QString msg = "Error parsing JSON: " + parseError.errorString() + "\n File: " + pathGeojson;
+            qDebug() << "Error parsing JSON: " <<parseError.errorString() << "\n File: " << "OFSET" << parseError.offset;
+            errorMessage(msg);
+        }
+        else {
+
+            QJsonObject jsonObject = exDoc.object();
+
+            if(jsonObject.contains("crs")) {
+                crs = jsonObject["crs"].toObject();
+                QString crsString = crs["properties"].toObject()["name"].toString();
+
+                QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
+                if (!qgsCRS.isValid()){
+                    qgsCRS.createFromOgcWmsCrs(crsString);
                     }
+                if (!qgsCRS.isValid()){
+                    QString msg = "The CRS (" + crsString + ") defined in " + pathGeojson + " is invalid and ignored";
+                    errorMessage(msg);
                 }
-                if (!typeExists){
-                    typesList.append(type);
+            } 
+            else{
+                QString msg = "No CRS info provided in " + pathGeojson;
+                errorMessage(msg);
+            }
+        
+            QJsonArray features = jsonObject["features"].toArray();
+            for (const QJsonValue& valueIt : features) {
+                QJsonObject value = valueIt.toObject();
+                // Get the type
+                QJsonObject assetProperties = value["properties"].toObject();
+                if (!jsonObject.contains("type")) {
+                    this->errorMessage("The Json object is missing the 'type' key that defines the asset type");
+                    return false;
+                }
+                // type is Bridge/Tunnel/Road
+                QString type = assetProperties["type"].toString();
+                if (type.compare("")==0){
+                    type = "Building";
+                }
+                if (!assetDictionary.contains(type))
+                {
+                    assetDictionary[type] = QList<QJsonObject>({value});
+                }
+                else
+                {
+                    QList<QJsonObject>& featList = assetDictionary[type];
+                    featList.append(value);
+                }
+                // assetType is Transportation Network
+                QString assetType = assetProperties["assetType"].toString();
+                if (!assetTypeToType.contains(assetType))
+                {
+                    assetTypeToType[assetType] = QList<QString>({type});
+                }
+                else
+                {
+                    QList<QString>& typesList = assetTypeToType[assetType];
+                    bool typeExists = false;
+                    for (QString it : typesList){
+                        if (it.compare(type)==0){
+                            typeExists = true;
+                        }
+                    }
+                    if (!typeExists){
+                        typesList.append(type);
+                    }
                 }
             }
         }
@@ -358,16 +377,15 @@ int ResultsWidget::processResults(QString resultsDirectory)
 
     // 2. creating small geojson for each type
     if (jsonFile.exists()){
-    QVector<QgsMapLayer*> mapLayers;
-    QVector<QgsMapLayer*> DMGLayers;
-    for (auto it = assetDictionary.begin(); it != assetDictionary.end(); ++it)
-    {
+      QVector<QgsMapLayer*> mapLayers;
+      QVector<QgsMapLayer*> DMGLayers;
+      for (auto it = assetDictionary.begin(); it != assetDictionary.end(); ++it) {
         QString assetType = it.key();
         QList<QJsonObject> features = it.value();
-
+	
         QJsonArray featuresArray;
         for (const auto& obj : features) {
-            featuresArray.append(obj);
+	  featuresArray.append(obj);
         }
 
         QJsonObject assetDictionary;
@@ -375,18 +393,15 @@ int ResultsWidget::processResults(QString resultsDirectory)
         assetDictionary["features"]=featuresArray;
 
         if(!crs.isEmpty())
-            assetDictionary["crs"]=crs;
-
+	  assetDictionary["crs"]=crs;
+	
         QString outputFile = resultsDirectory + QDir::separator() + assetType + ".geojson";
 
         QFile file(outputFile);
-        if (!file.open(QFile::WriteOnly | QFile::Text))
-        {
+        if (!file.open(QFile::WriteOnly | QFile::Text)) {
             this->errorMessage("Error creating the asset output json file in GeojsonAssetInputWidget");
             return false;
         }
-
-	//
 
         // Write the file to the folder
         QJsonDocument doc(assetDictionary);
@@ -399,10 +414,9 @@ int ResultsWidget::processResults(QString resultsDirectory)
 	
         QgsVectorLayer* assetLayer;
         assetLayer = theVisualizationWidget->addVectorLayer(outputFile, assetType + QString("_results"), "ogr");
-        if(assetLayer == nullptr)
-        {
-            this->errorMessage("Error, failed to add GIS layer");
-            return false;
+        if(assetLayer == nullptr) {
+	  this->errorMessage("Error, failed to add GIS layer");
+	  return false;
         }
         QgsVectorLayer* DMGlayer;
         DMGlayer = theVisualizationWidget->duplicateExistingLayer(assetLayer);
@@ -445,22 +459,34 @@ int ResultsWidget::processResults(QString resultsDirectory)
     }
 
 
-    qDebug() << resultsDirectory;
+    // qDebug() << resultsDirectory;
 
     //
     // Get results widgets from each of DL asset types and system performance & add to Tabbed widget
     //
     
-//    QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent);
-//    QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent);
-
-
     QMap<QString, SC_ResultsWidget*> activeDLResultsWidgets = WorkflowAppR2D::getInstance()->getTheDamageAndLossWidget()->getActiveDLResultsWidgets(theParent, this, assetTypeToType);
     QMap<QString, SC_ResultsWidget*> activeSPResultsWidgets = WorkflowAppR2D::getInstance()->getTheSystemPerformanceWidget()->getActiveSPResultsWidgets(theParent, this, assetTypeToType);
+    
     for (QString assetType : activeDLResultsWidgets.keys()){
         resTabWidget->addTab(activeDLResultsWidgets[assetType], assetType);
         activeDLResultsWidgets[assetType]->addResultTab(assetType, resultsDirectory);
     }
+
+
+    // adding Recovery
+    RecoveryWidget *theRecoveryWidget = WorkflowAppR2D::getInstance()->getTheRecoveryWidget();
+    if (theRecoveryWidget != 0) {
+      SimCenterAppWidget *theApp = theRecoveryWidget->getCurrentSelection();
+      SC_ResultsWidget *theRecoveryResults = theApp->getResultsWidget();
+      if (theRecoveryResults != 0) {
+	qDebug() << "ADDING RECOVERY";
+	resTabWidget->addTab(theRecoveryResults, "Recovery");
+	QString blank;
+	theRecoveryResults->processResults(blank, resultsDirectory);
+      } qDebug() << "RECOVERY RESULTS NULL";
+    } else qDebug() << "RECOVERY WIDGET EMPTY";
+    
     for (QString assetType : activeSPResultsWidgets.keys()){
         // check if assetType is in resTabWidget
         // If yes, add new tab
@@ -481,6 +507,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
         }
     }
 
+    
 
 
 //    try {

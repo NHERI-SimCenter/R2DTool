@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "SectionTitle.h"
 #include "SurrogatePyFilter.h"
-#include "ANAWidgets/ANACapacitySpectrumWidget.h"
+#include "CapacitySpectrumWidget.h"
 
 // Qt headers
 #include <QCheckBox>
@@ -91,7 +91,7 @@ AnalysisWidget::AnalysisWidget(QWidget *parent)
   SimCenterAppWidget *surrogatePy = new SurrogatePyFilter(this);
   SimCenterAppWidget *noneWidget = new NoneWidget(this);
 
-  ANACapacitySpectrumWidget* capacitySpectrum = new ANACapacitySpectrumWidget(this);
+  CapacitySpectrumWidget* capacitySpectrum = new CapacitySpectrumWidget(this);
 
   buildingWidget->addComponent(QString("OpenSees"), QString("OpenSees-Simulation"), openSees);
   buildingWidget->addComponent(QString("OpenSeesPy"), QString("OpenSeesPy-Simulation"), openSeesPy);

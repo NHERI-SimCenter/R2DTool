@@ -34,7 +34,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, Sina Naeimi
 
 #include "InpFileWaterInputWidget.h"
 #include "QGISVisualizationWidget.h"
@@ -214,7 +214,7 @@ bool InpFileWaterInputWidget::copyFiles(QString &destDir)
             crsSelectorWidget->outputAppDataToJSON(crsObject);
             document.setObject(jsonObj);
             if(!fileJSON.open( QIODevice::WriteOnly)) {
-                qDebug() << "InpFileWaater::copyFILES failed to open file to write:  " << jsonError.errorString();
+                qDebug() << "InpFileWater::copyFILES failed to open file to write:  " << jsonError.errorString();
                 return false;	    
             }
             fileJSON.write(document.toJson());
@@ -256,7 +256,8 @@ bool InpFileWaterInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     
     QFileInfo inpFile(inpFileLineEdit->text());
     if (inpFile.exists()){
-        data.insert("inpFile", inpFile.absoluteFilePath());
+        auto inp_file_name = inpFile.fileName();
+        data.insert("inpFile", inp_file_name);
     } else {
         this->errorMessage("Cannot find inp file" + inpFileLineEdit->text());
 	    return false;
@@ -264,7 +265,7 @@ bool InpFileWaterInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     QFileInfo componentFile(geoJsonFileName);
     if (componentFile.exists()){
-        data.insert("assetSourceFile", componentFile.absoluteFilePath());
+        data.insert("assetSourceFile", "sc_inpFileGeoJSON.json");
     } else {
         this->errorMessage("Cannot find the tmp GeoJSON file created: " + geoJsonFileName + " This is a bug contact SimCenter");
     }
