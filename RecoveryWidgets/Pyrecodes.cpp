@@ -122,14 +122,14 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     QHBoxLayout *runLayout = new QHBoxLayout();
 
     runLayout->addStretch();
-    runLocal = new QPushButton("Run PyReCodes No Workflow");
+    runLocal = new QPushButton("Launch pyrecodes without Workflow");
     runLayout->addWidget(runLocal);
     runLayout->addStretch();    
     //boxLayout->addWidget(runLocal,2,0, 1,5);
     boxLayout->addLayout(runLayout,2,0,1,5);
     boxLayout->setRowStretch(3,1);
     
-    connect(runLocal, &QPushButton::clicked, this, &Pyrecodes::runPyReCodes);
+    connect(runLocal, &QPushButton::clicked, this, &Pyrecodes::runPyrecodes);
 
     QWidget *spacer = new QWidget();
     spacer->setFixedHeight(20); // Adjust the height as needed
@@ -151,7 +151,7 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     theResultsWidget = new PyrecodesResults(this);
 
     popupResultsDialog = new QDialog(nullptr, Qt::Window);
-    popupResultsDialog->setWindowTitle("PyReCodes Results Window");
+    popupResultsDialog->setWindowTitle("pyrecodes Results Window");
     QGridLayout *popupResultDialogLayout = new QGridLayout();
     popupResultDialogLayout->addWidget(theResultsWidget, 0,0);
     popupResultsDialog->setLayout(popupResultDialogLayout);
@@ -275,14 +275,14 @@ SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent)
   return resultsWidget;
 }
 
-void Pyrecodes::runPyReCodes() {
+void Pyrecodes::runPyrecodes() {
 
   //
-  // create a workdir in LocalApplications folder named PyReCodes
+  // create a workdir in LocalApplications folder named pyrecodes
   //
 
   QDir localWorkDir(SimCenterPreferences::getInstance()->getLocalWorkDir());
-  QString workDirString = localWorkDir.absoluteFilePath("PyReCodes");
+  QString workDirString = localWorkDir.absoluteFilePath("pyrecodes");
   QDir workDir(workDirString);
 
   /* just load and process results
@@ -297,14 +297,14 @@ void Pyrecodes::runPyReCodes() {
     if (SCUtils::isSafeToRemoveRecursivily(workDirString))
       workDir.removeRecursively();
     else {
-      QString msg("The Program stopped, Running PyReCodes locally was about to recursivily remove: ");
+      QString msg("The Program stopped, Running pyrecodes locally was about to recursivily remove: ");
       msg.append(workDirString);      
       fatalMessage(msg);
       return;	
     }
   }
 
-  localWorkDir.mkpath("PyReCodes");
+  localWorkDir.mkpath("pyrecodes");
 
   //
   // in that directory create input_data and results folders
@@ -348,10 +348,10 @@ void Pyrecodes::runPyReCodes() {
 
   qDebug() << "SCRIPT: " << pyScript << " ARGS: " << args << " workDir: " << workDirString;
 
-  runLocal->setText("PyReCodes is now Running");
+  runLocal->setText("pyrecodes is now Running");
   runLocal->setDisabled(true);
 
-  this->statusMessage("PyReCodes is now running in the background ..");
+  this->statusMessage("pyrecodes is now running in the background ..");
   
   // finally run, connect when done
   RunPythonInThread *thePythonProcess = new RunPythonInThread(pyScript, args, workDirString);
@@ -362,14 +362,11 @@ void Pyrecodes::runPyReCodes() {
 
 void
 Pyrecodes::runDone(int error) {
-  qDebug() << "FINISHED PYTHON" << error;
-  runLocal->setText("Run PyReCodes No Workflow");
+  runLocal->setText("Launch pyrecodes without Workflow");
   runLocal->setDisabled(false);
   QString blank;
   theResultsWidget->processResults(blank, resultsDir);
-  qDebug() << "FINISHED PROCESSING";  
   popupResultsDialog->show();
-  qDebug() << "AND THE DIALOG IS SHOWING?????";  
 }
 
 void

@@ -56,7 +56,7 @@ RecoveryWidget::RecoveryWidget(QWidget *parent)
   SimCenterAppWidget *pyrecodesRecovery = new Pyrecodes(this);
   SimCenterAppWidget *pyrecodesUI_Recovery = new PyrecodesUI(this);    
   this->addComponent(QString("None"), QString("None"), noneWidget3);
-  addComponent(QString("Pyrecodes"), QString("Pyrecodes"), pyrecodesRecovery);
+  addComponent(QString("pyrecodes"), QString("Pyrecodes"), pyrecodesRecovery);
   addComponent(QString("PyrecodesUI"), QString("PyrecodesUI"), pyrecodesUI_Recovery);      
 
   //addComponent("Recovery", RecWidget);

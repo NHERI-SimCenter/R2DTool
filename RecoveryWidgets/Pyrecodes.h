@@ -67,7 +67,7 @@ signals:
 
 public slots:
    void clear(void);
-   void runPyReCodes();
+   void runPyrecodes();
    void runDone(int error);
    void parseMainFile(QString filename);
 
