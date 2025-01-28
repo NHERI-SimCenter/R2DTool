@@ -197,6 +197,7 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
       QString fileName = workDir.absoluteFilePath(fileList[resourceCounter]);
 
       readDemandSupplyJSON(fileName, lineSeries);
+      lineSeries->setName(work_directory);
 
       SC_MLC_ChartData *resourceChartData = multipleLineChartData[resource];
       lineSeries->setPen(QPen(Qt::blue));
