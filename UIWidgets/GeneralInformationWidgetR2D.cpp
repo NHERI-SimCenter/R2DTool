@@ -117,10 +117,10 @@ bool GeneralInformationWidgetR2D::outputToJSON(QJsonObject &jsonObj)
     QJsonObject assetsObj;
     assetsObj.insert("buildings", buildingsCheckBox->isChecked());
     assetsObj.insert("soil", soilCheckBox->isChecked());
-    assetsObj.insert("gas", gasCheckBox->isChecked());
+    // assetsObj.insert("gas", gasCheckBox->isChecked());
     assetsObj.insert("water", waterCheckBox->isChecked());
-	assetsObj.insert("power", powerCheckBox->isChecked());
-    assetsObj.insert("waste", sewerCheckBox->isChecked());
+    assetsObj.insert("power", powerCheckBox->isChecked());
+    // assetsObj.insert("waste", sewerCheckBox->isChecked());
     assetsObj.insert("transportation", transportationCheckBox->isChecked());
 
     jsonObj.insert("units",unitsObj);
@@ -176,7 +176,7 @@ bool GeneralInformationWidgetR2D::inputFromJSON(QJsonObject &jsonObject){
         soilCheckBox->setChecked(outObj["soil"].toBool());
         gasCheckBox->setChecked(outObj["gas"].toBool());
         waterCheckBox->setChecked(outObj["water"].toBool());
-		powerCheckBox->setChecked(outObj["power"].toBool());
+	powerCheckBox->setChecked(outObj["power"].toBool());
         sewerCheckBox->setChecked(outObj["waste"].toBool());
         transportationCheckBox->setChecked(outObj["transportation"].toBool());
     }
@@ -224,21 +224,21 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
     soilCheckBox = new QCheckBox("Soil");
     gasCheckBox = new QCheckBox("Gas Network");
     waterCheckBox = new QCheckBox("Water Distribution Network");
-	powerCheckBox = new QCheckBox("Power Network");
+    powerCheckBox = new QCheckBox("Power Network");
     sewerCheckBox = new QCheckBox("Waste Network");
     transportationCheckBox = new QCheckBox("Transportation Network");
-
+    
     soilCheckBox->setCheckable(false);
     gasCheckBox->setCheckable(true);
     waterCheckBox->setCheckable(true);
-	powerCheckBox->setCheckable(true);
+    powerCheckBox->setCheckable(true);
     sewerCheckBox->setCheckable(false);
     transportationCheckBox->setCheckable(true);
-
+    
     soilCheckBox->setEnabled(false);
     gasCheckBox->setEnabled(false);
     waterCheckBox->setEnabled(true);
-	powerCheckBox->setEnabled(true);
+    powerCheckBox->setEnabled(true);
     sewerCheckBox->setEnabled(false);
     transportationCheckBox->setEnabled(true);
 
@@ -269,11 +269,11 @@ QGridLayout* GeneralInformationWidgetR2D::getInfoLayout(void)
     assetGroupBox->setContentsMargins(0,5,0,0);
     QVBoxLayout* assetLayout = new QVBoxLayout(assetGroupBox);
     assetLayout->addWidget(buildingsCheckBox);
-    assetLayout->addWidget(soilCheckBox);
-    assetLayout->addWidget(gasCheckBox);
+    //assetLayout->addWidget(soilCheckBox);
+    //assetLayout->addWidget(gasCheckBox);
     assetLayout->addWidget(waterCheckBox);
-	assetLayout->addWidget(powerCheckBox);
-    assetLayout->addWidget(sewerCheckBox);
+    assetLayout->addWidget(powerCheckBox);
+    //assetLayout->addWidget(sewerCheckBox);
     assetLayout->addWidget(transportationCheckBox);
     
     // Outputs
