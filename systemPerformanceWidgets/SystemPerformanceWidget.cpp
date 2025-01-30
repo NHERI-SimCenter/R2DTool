@@ -57,6 +57,7 @@ SystemPerformanceWidget::SystemPerformanceWidget(QWidget *parent)
   buildingWidget = new SimCenterAppSelection(QString("Building Recovery"), QString("Buildings"), this);
   pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Recovery"), QString("NaturalGasPipelines"), this);
   WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Recovery"), QString("WaterDistributionNetwork"), this);
+  PNWidget = new SimCenterAppSelection(QString("Power Network Recovery"), QString("PowerNetwork"), this);
   transportWidget = new SimCenterAppSelection(QString("Transportation Components Recovery"), QString("TransportationNetwork"), this);
 
   // Building widget apps
@@ -71,7 +72,11 @@ SystemPerformanceWidget::SystemPerformanceWidget(QWidget *parent)
   SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
   SimCenterAppWidget *rewetRecovery = new RewetRecovery(this);
   WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
-  WDNWidget->addComponent(QString("REWETRecovery"), QString("REWETRecovery"), rewetRecovery);  
+  WDNWidget->addComponent(QString("REWETRecovery"), QString("REWETRecovery"), rewetRecovery);
+
+  // Power network apps
+  SimCenterAppWidget *noneWidget5 = new NoneWidget(this);
+  PNWidget->addComponent(QString("None"), QString("None"), noneWidget5);
 
   // Transportation network apps
   SimCenterAppWidget *noneWidget4 = new NoneWidget(this);
@@ -82,6 +87,7 @@ SystemPerformanceWidget::SystemPerformanceWidget(QWidget *parent)
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network", pipelineWidget);
   this->addComponent("Water Distribution Network", WDNWidget);
+  this->addComponent("Power Network", PNWidget);
   this->addComponent("Transportation Network", transportWidget);
   this->hideAll();
 }
