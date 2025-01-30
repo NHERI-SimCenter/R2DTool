@@ -85,8 +85,9 @@ static QString citeText = "Blagojević, Nikola and Stojadinović, Božidar. pyre
 Pyrecodes::Pyrecodes(QWidget *parent)
 : SimCenterAppWidget(parent), resultsWidget(0)
 {
-    QWidget     *inputWidget = new QWidget();  
-    QGridLayout *inputLayout = new QGridLayout(inputWidget); // Set the parent to 'this'
+  //    QWidget     *inputWidget = new QWidget();  
+  //    QGridLayout *inputLayout = new QGridLayout(inputWidget); // Set the parent to 'this'
+  QGridLayout *inputLayout = new QGridLayout(this); // Set the parent to 'this'  
 
     int numRow = 0;
 
@@ -126,13 +127,19 @@ Pyrecodes::Pyrecodes(QWidget *parent)
 
     runLayout->addStretch();
     runLocal = new QPushButton("Launch pyrecodes without Workflow");
+    QPushButton *showResults = new QPushButton("Show Results");
+    
     runLayout->addWidget(runLocal);
+    runLayout->addWidget(showResults);    
     runLayout->addStretch();    
     //boxLayout->addWidget(runLocal,2,0, 1,5);
     boxLayout->addLayout(runLayout,2,0,1,5);
     boxLayout->setRowStretch(3,1);
     
     connect(runLocal, &QPushButton::clicked, this, &Pyrecodes::runPyrecodes);
+    connect(showResults, &QPushButton::clicked, this, [=]() {
+	popupResultsDialog->show();	
+      });
 
     QWidget *spacer = new QWidget();
     spacer->setFixedHeight(20); // Adjust the height as needed
@@ -162,14 +169,17 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     int width  = this->width()<int(rec.width())?int(rec.width()):this->width();
     height = abs(0.75*height);
     width = abs(0.75*width);
+
+    /* ** to stop grwoing when displaying gif **************************************
     popupResultsDialog->setMinimumWidth(width);
     popupResultsDialog->setMaximumWidth(width);
     popupResultsDialog->setMinimumHeight(height);
     popupResultsDialog->setMaximumHeight(height);    
     popupResultsDialog->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);    
     popupResultsDialog->resize(width, height);
+    ******************************************************************************* */
 
-    /*
+    /* ** for when puytting INputs and Results in a Tabbed widget *******************
     QVBoxLayout *layout = new QVBoxLayout(this);
     theTabbedWidget = new QTabWidget();
     theTabbedWidget->addTab(inputWidget, "          Inputs          ");
@@ -177,7 +187,7 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     theTabbedWidget->tabBar()->hide();
 
     layout->addWidget(theTabbedWidget);
-    */
+    **********************************************************************************/
     
 }
 
