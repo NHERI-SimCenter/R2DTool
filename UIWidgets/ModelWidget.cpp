@@ -76,8 +76,9 @@ ModelWidget::ModelWidget(QWidget *parent)
   transportExtraKeys.append("TransportBridges");
   transportExtraKeys.append("TransportTunnels");
   buildingWidget = new SimCenterAppSelection(QString("Building Modeling"), QString("Buildings"), this);
-    pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("NaturalGasPipelines"), this);
-    WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("WaterDistributionNetwork"), waterExtraKeys);
+  pipelineWidget = new SimCenterAppSelection(QString("Gas Pipeline Modeling"), QString("NaturalGasPipelines"), this);
+  WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Modeling"), QString("WaterDistributionNetwork"), waterExtraKeys);
+  PNWidget = new SimCenterAppSelection(QString("Power Network Modeling"), QString("PowerNetwork"), this);
 //    transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), transportExtraKeys);
     transportWidget = new SimCenterAppSelection(QString("Transportation Components Modeling"), QString("TransportationNetwork"), this);
 
@@ -102,10 +103,15 @@ ModelWidget::ModelWidget(QWidget *parent)
 
     pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget2);
 
-    // Water distribution network apps
+    // Water Distribution Nsetwork apps
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
 
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
+
+    // Power Network apps
+    SimCenterAppWidget *noneWidget5 = new NoneWidget(this);
+
+    PNWidget->addComponent(QString("None"), QString("None"), noneWidget5);
 
     // Transportation network apps
     SimCenterAppWidget *noneWidget4 = new NoneWidget(this);
@@ -114,6 +120,7 @@ ModelWidget::ModelWidget(QWidget *parent)
     this->addComponent("Buildings", buildingWidget);
     this->addComponent("Gas Network", pipelineWidget);
     this->addComponent("Water Distribution Network", WDNWidget);
+    this->addComponent("Power Network", PNWidget);
     this->addComponent("Transportation Network", transportWidget);
     this->hideAll();
 }

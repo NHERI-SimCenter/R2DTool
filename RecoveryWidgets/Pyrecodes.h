@@ -43,9 +43,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class SC_FileEdit;
 class SC_DirEdit;
+class SC_AssetInputDelegate;
 class LineEditSelectTool;
 class PyrecodesResults;
 class QPushButton;
+class QTabWidget;
 
 class Pyrecodes : public SimCenterAppWidget
 {
@@ -70,11 +72,14 @@ public slots:
    void runPyrecodes();
    void runDone(int error);
    void parseMainFile(QString filename);
+   void writeMainFile(QString filename);  
 
 private:
   SC_FileEdit  *mainFile;  
   SC_FileEdit  *componentLibraryFile;
   SC_FileEdit  *systemConfigFile;
+  SC_AssetInputDelegate *realizationEntriesToRun;
+  
   SC_DirEdit  *r2dResultsFolder;
   SC_DirEdit  *inputDataFolder;
   QString resultsDir;  
@@ -82,7 +87,9 @@ private:
   QPushButton *runLocal;
 
   PyrecodesResults *theResultsWidget; // used for a local run w/o workflow
-  PyrecodesResults *resultsWidget;    // used for getResults() given an R2D call  
+  PyrecodesResults *resultsWidget;    // used for getResults() given an R2D call
+
+  QTabWidget *theTabbedWidget;
 };
 
 

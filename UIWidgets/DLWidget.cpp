@@ -73,6 +73,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
     pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("NaturalGasPipelines"), this);
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
+    PNWidget = new SimCenterAppSelection(QString("Power Network Damage & Loss Application"), QString("PowerNetwork"), waterExtraKeys);
     QList<QString> transportExtraKeys;
     transportExtraKeys.append("TransportRoads");
     transportExtraKeys.append("TransportBridges");
@@ -102,6 +103,12 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
     WDNWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), waterPelicun);
 
+    // Power Network
+    SimCenterAppWidget *powerPelicun = new Pelicun3DLWidget;
+
+    PNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
+    PNWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), powerPelicun);
+
     // Transportation widget apps
     SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;
     SimCenterAppWidget *noneWidget_trans = new NoneWidget(this);
@@ -109,9 +116,10 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
 
     this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",pipelineWidget);
-    this->addComponent("Water Distribution Network",WDNWidget);
-    this->addComponent("Transportation Network",transportWidget);
+    this->addComponent("Gas Network", pipelineWidget);
+    this->addComponent("Water Distribution Network", WDNWidget);
+    this->addComponent("Power Network", PNWidget);
+    this->addComponent("Transportation Network", transportWidget);
 
     this->hideAll();
 }

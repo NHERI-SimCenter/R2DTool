@@ -92,6 +92,7 @@ private:
     QCheckBox* buildingsCheckBox;
     QCheckBox* soilCheckBox;
     QCheckBox* waterCheckBox;
+	QCheckBox* powerCheckBox;
     QCheckBox* sewerCheckBox;  
     QCheckBox* gasCheckBox;
     QCheckBox* transportationCheckBox;

@@ -53,15 +53,18 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
 
   QList<QString> waterExtraKeys; waterExtraKeys.append("WaterNetworkPipelines"); waterExtraKeys.append("WaterNetworkNodes");
   QList<QString> transportExtraKeys;
-  transportExtraKeys.append("TransportRoads");
-  transportExtraKeys.append("TransportBridges");
-  transportExtraKeys.append("TransportTunnels");
+  // rm: transportExtraKeys.append("TransportRoads");
+  // rm: transportExtraKeys.append("TransportBridges");
+  // rm: transportExtraKeys.append("TransportTunnels");
   buildingWidget = new SimCenterAppSelection(QString("Building Mapping"), QString("Buildings"), this);
   gasWidget = new SimCenterAppSelection(QString("Gas Network Mapping"), QString("NaturalGasPipelines"), this);
   wdnWidget = new SimCenterAppSelection(QString("Water Distribution Network Mapping"), QString("WaterDistributionNetwork"), waterExtraKeys);
+  pnWidget = new SimCenterAppSelection(QString("Power Network Mapping"), QString("PowerNetwork"), this);
 //  transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), transportExtraKeys);
   transportWidget = new SimCenterAppSelection(QString("Transportation Components Mapping"), QString("TransportationNetwork"), this);
+  
 
+  // Buildings
   NearestNeighbourMapping *theNNMapB = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapB = new SiteSpecifiedMapping();
   GISBasedMapping *theGISMapB = new GISBasedMapping();
@@ -69,7 +72,8 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   buildingWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapB);
   buildingWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapB);
   buildingWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapB);
-
+  
+  // Gas pipelines
   NearestNeighbourMapping *theNNMapG = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapG = new SiteSpecifiedMapping();
   GISBasedMapping *theGISMapG = new GISBasedMapping();
@@ -77,7 +81,8 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   gasWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapG);
   gasWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapG);
   gasWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapG);      
-
+  
+  // Water Distribution Network
   NearestNeighbourMapping *theNNMapWDN = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapWDN = new SiteSpecifiedMapping();
   GISBasedMapping *theGISMapWDN = new GISBasedMapping();
@@ -85,7 +90,17 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   wdnWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapWDN);
   wdnWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapWDN);
   wdnWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapWDN);
+  
+  // Power Network
+  NearestNeighbourMapping *theNNMapPN = new NearestNeighbourMapping();
+  SiteSpecifiedMapping *theSSMapPN = new SiteSpecifiedMapping();
+  GISBasedMapping *theGISMapPN = new GISBasedMapping();
 
+  pnWidget->addComponent(QString("Nearest Neighbour"), QString("NearestNeighborEvents"), theNNMapPN);
+  pnWidget->addComponent(QString("Site Specified"), QString("SiteSpecifiedEvents"), theSSMapPN);
+  pnWidget->addComponent(QString("GIS Specified"), QString("GISSpecifiedEvents"), theGISMapPN);
+  
+  // Transportation
   NearestNeighbourMapping *theNNMapTransport = new NearestNeighbourMapping();
   SiteSpecifiedMapping *theSSMapTransport = new SiteSpecifiedMapping();
   GISBasedMapping *theGISMapTransport = new GISBasedMapping();
@@ -97,6 +112,7 @@ HazardToAssetWidget::HazardToAssetWidget(QWidget *parent, VisualizationWidget* v
   this->addComponent("Buildings", buildingWidget);
   this->addComponent("Gas Network",gasWidget);
   this->addComponent("Water Distribution Network", wdnWidget);
+  this->addComponent("Power Network", pnWidget);
   this->addComponent("Transportation Network", transportWidget);
   this->hideAll();  
 }
