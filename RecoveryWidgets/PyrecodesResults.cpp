@@ -87,7 +87,6 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   QGridLayout *gifLayout = new QGridLayout();
   gifWidget->setLayout(gifLayout);
   gifComboBox = new QComboBox();
-  //  gifStackedWidget = new QStackedWidget();
   movieWidget = new SC_MovieWidget(this,"", true);
   
   gifLayout->addWidget(new QLabel("Select Realization:"),0,0);
@@ -96,21 +95,37 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   gifLayout->setColumnStretch(2,1);
   tabWidget->addTab(gifWidget, "Recovery GIFs");  
 
-  /* ORIGINAL
-  gifWidget->setMinimumWidth(475);
-  gifWidget->setMaximumWidth(575);
-  gifWidget->setMinimumHeight(475);
-  gifWidget->setMaximumHeight(575);    
-  gifWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
-  // Connect QComboBox to change the current index of QStackedWidget
-  // connect(gifComboBox, SIGNAL(currentIndexChanged(int)),
-  //	  gifStackedWidget, SLOT(setCurrentIndex(int)) );
-  */
-
   connect(gifComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
     if (index >= 0 && index < gifFilenames.size()) // the -1 for when combo is invoked with clear(), sets index to -1
       movieWidget->updateGif(gifFilenames[index]);  
   });
+
+
+  //
+  // supply-demand workdir curves
+  //  
+
+  /*
+
+  QWidget *sdWidget = new QWidget();
+  QGridLayout *sdLayout = new QGridLayout();
+  sdWidget->setLayout(sdLayout);
+  sdComboBox = new QComboBox();
+  sdMovieWidget = new SC_MovieWidget(this,"");
+  
+  sdLayout->addWidget(new QLabel("Select Realization:"),0,0);
+  sdLayout->addWidget(sdComboBox,0,1);
+  sdLayout->addWidget(movieWidget,1,0,1,3);
+  sdLayout->setColumnStretch(2,1);
+  tabWidget->addTab(sdWidget, "Supply-Demand-Consumption");  
+
+  connect(sdComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
+    if (index >= 0 && index < sdFilenames.size()) // the -1 for when combo is invoked with clear(), sets index to -1
+      sdMovieWidget->updateGif(sdFilenames[index]);  
+  });
+
+  */
+  
 }
 
 int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath)
@@ -214,27 +229,6 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
     gifComboBox->addItem(work_directory);
     gifFilenames.append(workDir.absoluteFilePath("system_recovery.gif"));
 
-    /*
-    QLabel *gifLabel = new QLabel("No system_recovery.gif file found in workdir");
-    gifLabel->setWindowTitle("Animated GIF Viewer");
-    gifLabel->resize(400, 300);
-    gifLabel->setAlignment(Qt::AlignCenter);
-    QString gifFilename = workDir.absoluteFilePath("system_recovery.gif");
-    SC_MovieWidget *movie = new SC_QMovieWidget(this, gifFilename);
-    gifLabel->setMovie(movie);
-
-    QMovie *movie = new QMovie(gifFilename);
-    movie->start();
-    
-    if (!movie->isValid()) {
-      qDebug() << "Failed to load the GIF file!" << gifFilename;
-    } else {
-      qDebug() << "LOADED AND DISPLAYING  GIF file!" << gifFilename;      
-      gifLabel->setMovie(movie);
-    }
-    gifStackedWidget->addWidget(gifLabel);    
-    */
-    
     counter++;
     workDir.cdUp();
     

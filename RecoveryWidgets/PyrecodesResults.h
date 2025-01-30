@@ -53,6 +53,7 @@ class SC_MultipleLineChart;
 class SC_MovieWidget;
 class QComboBox;
 class QStackedWidget;
+class QPixmap;
 
 
 namespace QtCharts
@@ -92,11 +93,19 @@ private:
   // data
   
   QGISVisualizationWidget* theVisualizationWidget;
-  SC_MultipleLineChart *chart;  
+
+  // for supply curves
+  SC_MultipleLineChart *chart;
+
+  // for recovery gifs
   QComboBox *gifComboBox;
   SC_MovieWidget *movieWidget;
-  //QStackedWidget *gifStackedWidget;
   QStringList gifFilenames;
+
+  // for supply-demand curves  
+  QComboBox *sdComboBox;
+  QPixmap *sdPixmapWidget;
+  QStringList sdFilenames;  
   
 };
 

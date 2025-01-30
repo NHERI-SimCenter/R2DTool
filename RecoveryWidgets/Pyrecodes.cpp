@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QGuiApplication>
 #include <QScreen>
-#include <QDialog>
+//#include <QDialog>
 #include <QTabWidget>
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -51,6 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QDoubleValidator>
 #include "LineEditSelectTool.h"
+#include <QTabWidget>
 
 #include <SC_QRadioButton.h>
 #include <SC_DoubleLineEdit.h>
@@ -60,6 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_ComboBox.h>
 #include <SC_CheckBox.h>
 #include <SC_TableEdit.h>
+#include <SC_AssetInputDelegate.h>
 #include <QGroupBox>
 #include <QPushButton>
 
@@ -82,32 +84,33 @@ static QString citeText = "Blagojević, Nikola and Stojadinović, Božidar. pyre
 
 Pyrecodes::Pyrecodes(QWidget *parent)
 : SimCenterAppWidget(parent), resultsWidget(0)
-{    
-    QGridLayout *mainLayout = new QGridLayout(this); // Set the parent to 'this'
-
-    QWidget *mainWidget = new QWidget();
-    
-    QVBoxLayout *layout = new QVBoxLayout();
-    mainWidget->setLayout(layout);
+{
+    QWidget     *inputWidget = new QWidget();  
+    QGridLayout *inputLayout = new QGridLayout(inputWidget); // Set the parent to 'this'
 
     int numRow = 0;
 
     mainFile = new SC_FileEdit("mainFile");
-    mainLayout->addWidget(new QLabel("Main File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(mainFile, numRow, 1, 1, 4);
+    inputLayout->addWidget(new QLabel("Main File:"), numRow, 0, 1, 1);
+    inputLayout->addWidget(mainFile, numRow, 1, 1, 4);
     numRow++;
 
     connect(mainFile, &SC_FileEdit::fileNameChanged, this, &Pyrecodes::parseMainFile);
     
-    systemConfigFile = new SC_FileEdit("systemConfigFile");
-    mainLayout->addWidget(new QLabel("System Configuration File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(systemConfigFile, numRow, 1, 1, 4);
+    systemConfigFile = new SC_FileEdit("SystemConfigurationFile");
+    inputLayout->addWidget(new QLabel("System Configuration File:"), numRow, 0, 1, 1);
+    inputLayout->addWidget(systemConfigFile, numRow, 1, 1, 4);
     numRow++;
     
-    componentLibraryFile = new SC_FileEdit("componentLibraryFile");
-    mainLayout->addWidget(new QLabel("Component Library File:"), numRow, 0, 1, 1);
-    mainLayout->addWidget(componentLibraryFile, numRow, 1, 1, 4);
+    componentLibraryFile = new SC_FileEdit("ComponentLibraryFile");
+    inputLayout->addWidget(new QLabel("Component Library File:"), numRow, 0, 1, 1);
+    inputLayout->addWidget(componentLibraryFile, numRow, 1, 1, 4);
     numRow++;
+
+    inputLayout->addWidget(new QLabel("Realizations to Analyze:"), numRow, 0, 1, 1);
+    realizationEntriesToRun = new SC_AssetInputDelegate("Filter");
+    inputLayout->addWidget(realizationEntriesToRun, numRow, 1, 1, 2);
+    numRow++;			  
     
     QGroupBox *groupBox = new QGroupBox("Run Pyrecodes without Running a Workflow");
     QGridLayout *boxLayout = new QGridLayout(groupBox);
@@ -134,19 +137,18 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     QWidget *spacer = new QWidget();
     spacer->setFixedHeight(20); // Adjust the height as needed
     
-    mainLayout->addWidget(spacer, numRow++, 0);
-    mainLayout->addWidget(groupBox, numRow++, 0, 1, 5);
+    inputLayout->addWidget(spacer, numRow++, 0);
+    inputLayout->addWidget(groupBox, numRow++, 0, 1, 5);
     
     QLabel *citeLabel = new QLabel(citeText);
     citeLabel->setWordWrap(true);
-    mainLayout->addWidget(citeLabel, numRow++,0, 1, 5);
+    inputLayout->addWidget(citeLabel, numRow++,0, 1, 5);
     
-    mainLayout->setRowStretch(numRow, 1);
-
+    inputLayout->setRowStretch(numRow, 1);
     
     //
     // create a PyrecodesResults widget and a popup Dialog for showing results if in Dialog
-    //
+    //    - trying something different
     
     theResultsWidget = new PyrecodesResults(this);
 
@@ -166,6 +168,16 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     popupResultsDialog->setMaximumHeight(height);    
     popupResultsDialog->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);    
     popupResultsDialog->resize(width, height);
+
+    /*
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    theTabbedWidget = new QTabWidget();
+    theTabbedWidget->addTab(inputWidget, "          Inputs          ");
+    theTabbedWidget->addTab(theResultsWidget, "          Results         ");    
+    theTabbedWidget->tabBar()->hide();
+
+    layout->addWidget(theTabbedWidget);
+    */
     
 }
 
@@ -213,6 +225,7 @@ bool Pyrecodes::outputAppDataToJSON(QJsonObject &jsonObject) {
     mainFile->outputToJSON(dataObj);    
     systemConfigFile->outputToJSON(dataObj);
     componentLibraryFile->outputToJSON(dataObj);
+    realizationEntriesToRun->outputToJSON(dataObj);
     jsonObject["ApplicationData"] = dataObj;
 
     return true;
@@ -226,6 +239,7 @@ bool Pyrecodes::inputAppDataFromJSON(QJsonObject &jsonObject) {
 	mainFile->inputFromJSON(dataObj);
         systemConfigFile->inputFromJSON(dataObj);
         componentLibraryFile->inputFromJSON(dataObj);
+	realizationEntriesToRun->inputFromJSON(dataObj);	
     }
 
     return true;
@@ -239,7 +253,12 @@ bool Pyrecodes::copyFiles(QString &destDir) {
     SimCenterAppWidget::copyPath(mainF.absolutePath(), destDir, false);
   }
 
-  // just copy other two
+  QString filename = mainF.fileName();
+  QString newMainFile = destDir + QDir::separator() + filename;
+
+  this->writeMainFile(newMainFile);
+  
+  // copy systemconfig & components library file
   systemConfigFile->copyFile(destDir);
   componentLibraryFile->copyFile(destDir);
 
@@ -285,14 +304,6 @@ void Pyrecodes::runPyrecodes() {
   QString workDirString = localWorkDir.absoluteFilePath("pyrecodes");
   QDir workDir(workDirString);
 
-  /* just load and process results
-  resultsDir = workDir.absoluteFilePath("results");
-  qDebug() << "RESULTS DIR: " << resultsDir;
-  theResultsWidget->processResults(resultsDir);
-  return;
-  */
-
-  
   if(workDir.exists()) {
     if (SCUtils::isSafeToRemoveRecursivily(workDirString))
       workDir.removeRecursively();
@@ -366,7 +377,11 @@ Pyrecodes::runDone(int error) {
   runLocal->setDisabled(false);
   QString blank;
   theResultsWidget->processResults(blank, resultsDir);
-  popupResultsDialog->show();
+  /* TABBED
+  theTabbedWidget->tabBar()->show();
+  theTabbedWidget->setCurrentIndex(1);
+  */
+   popupResultsDialog->show();
 }
 
 void
@@ -378,13 +393,17 @@ Pyrecodes::parseMainFile(QString filename) {
   
   QFile file(filename);
   if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
-    errorMessage("Pyrecodes Failed to open file specified");
     return;
   }
 
-  QFileInfo fileInfo(file);
+  QFileInfo fileInfo(filename);
   QDir fileDir = fileInfo.dir();
   QString filePath = fileInfo.path();
+
+  if (!fileDir.exists()) {
+    errorMessage("Pyrecodes: mainFile directory must exist and must contain pyrecodes files");
+    return;
+  }
   
   // Read the file contents
   QByteArray fileData = file.readAll();
@@ -422,5 +441,82 @@ Pyrecodes::parseMainFile(QString filename) {
 	systemConfigFile->setFilename(fullPath);
       }
     }
-  }    
+  }
+	
+  if (data.contains("DamageInput") && data["DamageInput"].isObject()) {
+    QJsonObject dataObj = data["DamageInput"].toObject();
+    qDebug() << "DAMAGE_INPUT OBJ: " << dataObj;
+    if (dataObj.contains("Parameters") && dataObj["Parameters"].isObject()) {    
+      QJsonObject paramObj = dataObj["Parameters"].toObject();
+      qDebug() << "PARAMETERS OBJ: " << paramObj;
+      realizationEntriesToRun->inputFromJSON(paramObj);
+    }
+  }
+}
+
+
+void
+Pyrecodes::writeMainFile(QString filepath) {
+
+  /* want this: 
+     "ComponentLibrary": {
+        "ComponentLibraryCreatorFileName": "json_component_library_creator",
+
+        "ComponentLibraryFile": "Alameda_ComponentLibrary.json"
+     },
+     "System": {
+        "SystemCreatorClassName": "ConcreteSystemCreator",
+        "SystemCreatorFileName": "concrete_system_creator",
+        "SystemClassName": "BuiltEnvironment",
+        "SystemFileName": "built_environment",
+        "SystemConfigurationFile": "Alameda_SystemConfiguration.json"
+     },
+     "DamageInput": {
+        "Type": "SpecificRealization",
+        "Parameters":{
+            "Filter": "0,1"
+        }
+     }
+  */     
+
+  QJsonObject componentLibrary;
+  componentLibrary["ComponentLibraryCreatorFileName"]="json_component_library_creator";
+  componentLibrary["ComponentLibraryCreatorClassName"]="JSONComponentLibraryCreator";
+  componentLibraryFile->outputToJSON(componentLibrary);
+
+  QJsonObject system;  
+  system["SystemCreatorClassName"] = "ConcreteSystemCreator";
+  system["SystemCreatorFileName"] = "concrete_system_creator";
+  system["SystemClassName"] = "BuiltEnvironment";
+  system["SystemFileName"] = "built_environment";
+  systemConfigFile->outputToJSON(system);
+
+  QJsonObject damage;
+  damage["Type"] = "SpecificRealization";
+  QJsonObject typeParamaters;
+  realizationEntriesToRun->outputToJSON(typeParamaters);
+  damage["Parameters"]=typeParamaters;
+
+  QJsonObject jsonObject;
+  jsonObject["ComponentLibrary"] = componentLibrary;
+  jsonObject["System"]=system;
+  jsonObject["DamageInput"]=damage;
+
+  //
+  // write to file
+  //
+  
+  // Open file for writing
+  QFile file(filepath);
+  if (!file.open(QIODevice::WriteOnly)) {
+    qWarning() << "Couldn't open file for writing:" << file.errorString();
+    return;
+  }
+
+  // Convert QJsonObject to QJsonDocument
+  QJsonDocument jsonDoc(jsonObject);
+
+  // Write JSON doc to file
+  file.write(jsonDoc.toJson(QJsonDocument::Indented)); // Indented for readability
+  file.close();
 }
