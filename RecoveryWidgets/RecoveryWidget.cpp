@@ -69,6 +69,11 @@ RecoveryWidget::~RecoveryWidget()
 
 }
 
+void RecoveryWidget::clear(void)
+{
+  this->selectComponent("None");
+}
+
 
 
 

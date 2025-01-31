@@ -51,7 +51,9 @@ public:
     explicit RecoveryWidget(QWidget *parent = 0);
     ~RecoveryWidget();
 
-private:
+    void clear(void);
+
+private: 
 
 };
 

@@ -103,7 +103,6 @@ ResidualDemandWidget::ResidualDemandWidget(QWidget *parent) : SimCenterAppWidget
     // 2. Realization Selection
     damageInputMethodComboBox = new SC_ComboBox("DamageInputType",
                                                 QStringList({
-                                                    "Most likely damage state",
                                                     "Specific realization(s)"
                                                 }));
     mainLayout->addWidget(new QLabel("Damage State Input:"), numRow, 0, 1, 1);
@@ -113,10 +112,11 @@ ResidualDemandWidget::ResidualDemandWidget(QWidget *parent) : SimCenterAppWidget
     mainLayout->addWidget(realizationToAnalyzeLabel, numRow, 2, 1, 1);
     realizationInputWidget = new AssetInputDelegate();
     connect(realizationInputWidget,&QLineEdit::editingFinished,this,&ResidualDemandWidget::selectComponents);
-    mainLayout->addWidget(realizationInputWidget, numRow, 3, 1, 3); 
-    connect(this->damageInputMethodComboBox, &QComboBox::currentTextChanged,
-            this, &ResidualDemandWidget::handleInputTypeChanged);
-    damageInputMethodComboBox->setCurrentIndex(1);
+    mainLayout->addWidget(realizationInputWidget, numRow, 3, 1, 3);
+//    connect(this->damageInputMethodComboBox, &QComboBox::currentTextChanged,
+//            this, &ResidualDemandWidget::handleInputTypeChanged);
+    damageInputMethodComboBox->setCurrentIndex(0);
+    this->handleInputTypeChanged();
     numRow++;
 
     // 3. Path To Edges File
@@ -199,6 +199,30 @@ void ResidualDemandWidget::togglePostEventODFileEdit(int state){
 
 void ResidualDemandWidget::clear(void)
 {
+    QString empty;
+    pathCapacityMap = "";
+    pathEdges = "";
+    pathNodes= "";
+    pathPreOD = "";
+    pathPostOD = "";
+    realizationInputWidget->clear();
+
+    pathEdgesFile->setFilename(pathEdges);
+    pathNodesFile->setFilename(pathNodes);
+    pathCapacityMapFile->setFilename(pathCapacityMap);
+    pathODFilePre->setFilename(pathPreOD);
+    pathODFilePost->setFilename(pathPostOD);
+    simulationHourList->setText(empty);
+    postEventODCheckBox->setChecked(false);
+    twoWayEdgeCheckbox->setChecked(false);
+    createAnimationCheckbox->setChecked(true);
+    damageInputMethodComboBox->setCurrentIndex(0);
+    if (resultWidget != nullptr) {
+        resultWidget->clear();
+    }
+    if (theR2DResultsWidget != nullptr) {
+        theR2DResultsWidget->clear();
+    }
 
 }
 
@@ -215,10 +239,10 @@ void ResidualDemandWidget::selectComponents(void)
 }
 
 void ResidualDemandWidget::handleInputTypeChanged(){
-    if (damageInputMethodComboBox->currentIndex()==0){
+    if (damageInputMethodComboBox->currentIndex()==1){
         realizationToAnalyzeLabel->hide();
         realizationInputWidget->hide();
-    } else if (damageInputMethodComboBox->currentIndex()==1){
+    } else if (damageInputMethodComboBox->currentIndex()==0){
         realizationInputWidget->show();
         realizationToAnalyzeLabel->show();
     }
@@ -317,9 +341,9 @@ bool ResidualDemandWidget::copyFiles(QString &dirName){
     config.insert("CapacityMap", jsonObj);
 
     QJsonObject damageInputJsonObject;
-    if (damageInputMethodComboBox->currentIndex()==0){
+    if (damageInputMethodComboBox->currentIndex()==1){
         damageInputJsonObject.insert("Type", "MostlikelyDamageState");
-    } else if(damageInputMethodComboBox->currentIndex()==1) {
+    } else if(damageInputMethodComboBox->currentIndex()==0) {
         QJsonObject damageinputParameterQObject;
         damageinputParameterQObject.insert("Filter", realizationInputWidget->getComponentAnalysisList()); // TODO: Add the filter
         damageInputJsonObject.insert("Parameters", damageinputParameterQObject);
@@ -384,9 +408,9 @@ bool ResidualDemandWidget::inputAppDataFromJSON(QJsonObject &jsonObject) {
         if (damageInputObj.contains("Type")) {
             QString damageInputType = damageInputObj["Type"].toString();
             if (damageInputType == "MostlikelyDamageState") {
-                damageInputMethodComboBox->setCurrentIndex(0);
-            } else if (damageInputType == "SpecificRealization") {
                 damageInputMethodComboBox->setCurrentIndex(1);
+            } else if (damageInputType == "SpecificRealization") {
+                damageInputMethodComboBox->setCurrentIndex(0);
                 if (damageInputObj.contains("Parameters")) {
                     QJsonObject damageInputPara = damageInputObj["Parameters"].toObject();
                     if (damageInputPara.contains("Filter")) {
@@ -534,4 +558,5 @@ ResidualDemandWidget::outputCitation(QJsonObject &jsonObject)
 
   return true;
 }
+
 
