@@ -205,7 +205,25 @@ void Pyrecodes::clear(void)
     }
     if (resultsWidget != nullptr) {
         resultsWidget->clear();
-    }    
+    }
+  QString empty;
+  resultsDir = QString("");
+  if (mainFile != nullptr) {
+    mainFile->setFilename(empty);
+  }
+  if (systemConfigFile != nullptr) {
+    systemConfigFile->setFilename(empty);
+  }
+  if (componentLibraryFile != nullptr) {
+    componentLibraryFile->setFilename(empty);
+  }
+  realizationEntriesToRun->clear();
+  if (r2dResultsFolder != nullptr) {
+    r2dResultsFolder->setDirName(empty);
+  }
+  if (inputDataFolder != nullptr) {
+    inputDataFolder->setDirName(empty);
+  }
 }
 
 

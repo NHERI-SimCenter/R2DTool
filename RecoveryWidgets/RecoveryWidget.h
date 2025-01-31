@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 
 class SimCenterAppSelection;
+class SimCenterAppWidget;
 
 class RecoveryWidget : public  SimCenterAppSelection
 {
@@ -51,7 +52,12 @@ public:
     explicit RecoveryWidget(QWidget *parent = 0);
     ~RecoveryWidget();
 
+    void clear(void);
+
 private:
+    SimCenterAppWidget *noneWidget3;
+    SimCenterAppWidget *pyrecodesRecovery;
+    SimCenterAppWidget *pyrecodesUI_Recovery;
 
 };
 

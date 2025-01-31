@@ -59,12 +59,23 @@ using namespace QtCharts;
 PyrecodesResults::PyrecodesResults(QWidget * parent)
   :SC_ResultsWidget(parent) {
 
-  // basic widget is a QTabbedWidget
+   layout = new QVBoxLayout(this);
+   mainWindow = new QMainWindow(parent);
+   mainWindow->show();
+   layout->addWidget(mainWindow);
+   curveDockWidget = new QDockWidget("Supply Curves", mainWindow);
+   gifDockWidget = new QDockWidget("Recovery GIFs", mainWindow);
+   mainWindow->addDockWidget(Qt::LeftDockWidgetArea, curveDockWidget);
+   mainWindow->addDockWidget(Qt::RightDockWidgetArea, gifDockWidget);
+   this->setLayout(layout);
+
+
+   // basic widget is a QTabbedWidget
   
-  QTabWidget *tabWidget = new QTabWidget();
-  QVBoxLayout *mainLayout = new QVBoxLayout();
-  mainLayout->addWidget(tabWidget);
-  this->setLayout(mainLayout);
+//  QTabWidget *tabWidget = new QTabWidget();
+//  QVBoxLayout *mainLayout = new QVBoxLayout();
+//  mainLayout->addWidget(tabWidget);
+//  this->setLayout(mainLayout);
   
   //
   // demand-supply
@@ -73,11 +84,12 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   QWidget *supplyWidget = new QWidget();
   QGridLayout *supplyLayout = new QGridLayout();
   supplyWidget->setLayout(supplyLayout);
+  curveDockWidget->setWidget(supplyWidget);
 
   //FMK  chart = new SC_TimeSeriesResultChart(&allSeries, this);
   chart = new SC_MultipleLineChart(this);  
   supplyLayout->addWidget(chart, 0, 0);
-  tabWidget->addTab(supplyWidget, "Supply Curves");
+//  tabWidget->addTab(supplyWidget, "Supply Curves");
 
   //
   // recovery gifs
@@ -86,6 +98,7 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   QWidget *gifWidget = new QWidget();
   QGridLayout *gifLayout = new QGridLayout();
   gifWidget->setLayout(gifLayout);
+  gifDockWidget->setWidget(gifWidget);
   gifComboBox = new QComboBox();
   movieWidget = new SC_MovieWidget(this,"", true);
   
@@ -93,7 +106,7 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   gifLayout->addWidget(gifComboBox,0,1);
   gifLayout->addWidget(movieWidget,1,0,1,3);
   gifLayout->setColumnStretch(2,1);
-  tabWidget->addTab(gifWidget, "Recovery GIFs");  
+//  tabWidget->addTab(gifWidget, "Recovery GIFs");
 
   connect(gifComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
     if (index >= 0 && index < gifFilenames.size()) // the -1 for when combo is invoked with clear(), sets index to -1

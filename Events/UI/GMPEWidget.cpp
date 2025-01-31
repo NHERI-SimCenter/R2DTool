@@ -44,22 +44,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QGroupBox>
 #include <QStringListModel>
 
-GMPEWidget::GMPEWidget(GMPE& gmpe, QStringList* selectedIMTypes, QWidget *parent): SimCenterAppWidget(parent), m_gmpe(gmpe)
+GMPEWidget::GMPEWidget(QStringList* selectedIMTypes, QWidget *parent): SimCenterAppWidget(parent)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     gmpeGroupBox = new QGroupBox();
     gmpeGroupBox->setTitle("Ground Motion Model");
 
-    const QStringList validType = this->m_gmpe.validTypes();
+    QStringList validTypeIntensity = this->m_gmpe_intensity->validTypes();
+    QStringList validTypeDuration = this->m_gmpe_duration->validTypes();
 
 
     QGridLayout* formLayout = new QGridLayout(gmpeGroupBox);
-    PGAtypeBox = new SC_ComboBox("Type",validType);
+    PGAtypeBox = new SC_ComboBox("Type",validTypeIntensity);
     PGAtypeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-    PGVtypeBox = new SC_ComboBox("Type",validType);
+    PGVtypeBox = new SC_ComboBox("Type",validTypeIntensity);
     PGVtypeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-    SAtypeBox = new SC_ComboBox("Type",validType);
+    SAtypeBox = new SC_ComboBox("Type",validTypeIntensity);
     SAtypeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    DS575HtypeBox = new SC_ComboBox("Type",validTypeDuration);
+    DS575HtypeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    DS595HtypeBox = new SC_ComboBox("Type",validTypeDuration);
+    DS595HtypeBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     formLayout->addWidget(PGAtypeLabel,0, 0);
     formLayout->addWidget(PGAtypeBox,0,1);
@@ -70,6 +75,11 @@ GMPEWidget::GMPEWidget(GMPE& gmpe, QStringList* selectedIMTypes, QWidget *parent
     formLayout->addWidget(PGVtypeLabel,2, 0);
     formLayout->addWidget(PGVtypeBox,2,1);
 
+    formLayout->addWidget(DS575HtypeLabel,3, 0);
+    formLayout->addWidget(DS575HtypeBox,3,1);
+
+    formLayout->addWidget(DS595HtypeLabel,4, 0);
+    formLayout->addWidget(DS595HtypeBox,4,1);
 
     toggleIMselection(selectedIMTypes);
     _selectedIMTypes = selectedIMTypes;
@@ -77,13 +87,22 @@ GMPEWidget::GMPEWidget(GMPE& gmpe, QStringList* selectedIMTypes, QWidget *parent
     layout->addWidget(gmpeGroupBox);
 
 
-    QStringListModel* typeModel = new QStringListModel(validType);
-    PGAtypeBox->setModel(typeModel);
-    PGAtypeBox->setCurrentIndex(validType.indexOf(m_gmpe.type()));
-    PGVtypeBox->setModel(typeModel);
-    PGVtypeBox->setCurrentIndex(validType.indexOf(m_gmpe.type()));
-    SAtypeBox->setModel(typeModel);
-    SAtypeBox->setCurrentIndex(validType.indexOf(m_gmpe.type()));
+    QStringListModel* typeModelIntensity = new QStringListModel(validTypeIntensity);
+    QStringListModel* typeModelDuration = new QStringListModel(validTypeDuration);
+    qDebug() << validTypeDuration.size();
+    qDebug() << validTypeDuration.at(0);
+    qDebug() << validTypeDuration.at(1);
+    qDebug() << m_gmpe_duration->type();
+    PGAtypeBox->setModel(typeModelIntensity);
+    PGAtypeBox->setCurrentIndex(validTypeIntensity.indexOf(m_gmpe_intensity->type()));
+    PGVtypeBox->setModel(typeModelIntensity);
+    PGVtypeBox->setCurrentIndex(validTypeIntensity.indexOf(m_gmpe_intensity->type()));
+    SAtypeBox->setModel(typeModelIntensity);
+    SAtypeBox->setCurrentIndex(validTypeIntensity.indexOf(m_gmpe_intensity->type()));
+    DS575HtypeBox->setModel(typeModelDuration);
+    DS575HtypeBox->setCurrentIndex(validTypeDuration.indexOf(m_gmpe_duration->type()));
+    DS595HtypeBox->setModel(typeModelDuration);
+    DS595HtypeBox->setCurrentIndex(validTypeDuration.indexOf(m_gmpe_duration->type()));
     this->setupConnections();
 }
 
@@ -94,6 +113,11 @@ void GMPEWidget::toggleIMselection(QStringList* selectedIMTypes){
     SAtypeBox->hide();
     PGVtypeLabel->hide();
     PGVtypeBox->hide();
+    DS575HtypeLabel->hide();
+    DS575HtypeBox->hide();
+    DS595HtypeLabel->hide();
+    DS595HtypeBox->hide();
+
     _selectedIMTypes = selectedIMTypes;
     if (selectedIMTypes->contains("PGA")){
         PGAtypeLabel->show();
@@ -107,16 +131,24 @@ void GMPEWidget::toggleIMselection(QStringList* selectedIMTypes){
         PGVtypeLabel->show();
         PGVtypeBox->show();
     }
+    if (selectedIMTypes->contains("DS575H")){
+        DS575HtypeLabel->show();
+        DS575HtypeBox->show();
+    }
+    if (selectedIMTypes->contains("DS595H")){
+        DS595HtypeLabel->show();
+        DS595HtypeBox->show();
+    }
     return;
 }
 
 void GMPEWidget::setupConnections()
 {
-    connect(this->PGAtypeBox, &QComboBox::currentTextChanged,
-            &this->m_gmpe, &GMPE::setType);
+//    connect(this->PGAtypeBox, &QComboBox::currentTextChanged,
+//            &this->m_gmpe, &GMPE::setType);
 
-    connect(&this->m_gmpe, &GMPE::typeChanged,
-            this->PGAtypeBox, &QComboBox::setCurrentText);
+//    connect(&this->m_gmpe, &GMPE::typeChanged,
+//            this->PGAtypeBox, &QComboBox::setCurrentText);
 }
 
 
@@ -139,6 +171,12 @@ bool GMPEWidget::outputToJSON(QJsonObject& obj)
         if (_selectedIMTypes->contains("PGV")){
             PGVtypeBox->outputToJSON(obj);
         }
+        if (_selectedIMTypes->contains("DS575H")){
+            DS575HtypeBox->outputToJSON(obj);
+        }
+        if (_selectedIMTypes->contains("DS595H")){
+            DS595HtypeBox->outputToJSON(obj);
+        }
     } else {
         if (_selectedIMTypes->contains("PGA")){
             QJsonObject PGAgmpe;
@@ -154,6 +192,16 @@ bool GMPEWidget::outputToJSON(QJsonObject& obj)
             QJsonObject PGVgmpe;
             PGVtypeBox->outputToJSON(PGVgmpe);
             obj["PGV"] = PGVgmpe;
+        }
+        if (_selectedIMTypes->contains("DS575H")){
+            QJsonObject DS575Hgmpe;
+            DS575HtypeBox->outputToJSON(DS575Hgmpe);
+            obj["DS575H"] = DS575Hgmpe;
+        }
+        if (_selectedIMTypes->contains("DS595H")){
+            QJsonObject DS595Hgmpe;
+            DS595HtypeBox->outputToJSON(DS595Hgmpe);
+            obj["DS595H"] = DS595Hgmpe;
         }
     }
     obj["Parameters"] = QJsonObject();

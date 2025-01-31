@@ -54,6 +54,7 @@ class SC_MovieWidget;
 class QComboBox;
 class QStackedWidget;
 class QPixmap;
+class QDockWidget;
 
 
 namespace QtCharts
@@ -91,7 +92,10 @@ private:
   int readDemandSupplyJSON(QString &filename, QtCharts::QLineSeries *lineSeries);
 
   // data
-  
+  QVBoxLayout* layout;
+  QDockWidget* curveDockWidget;
+  QDockWidget* gifDockWidget;
+
   QGISVisualizationWidget* theVisualizationWidget;
 
   // for supply curves

@@ -128,7 +128,9 @@ void SystemPerformanceWidget::clear(void)
   buildingWidget->clear();
   pipelineWidget->clear();
   WDNWidget->clear();
+  WDNWidget->selectComponent("None");
   transportWidget->clear();
+  transportWidget->selectComponent("None");
 }
 
 

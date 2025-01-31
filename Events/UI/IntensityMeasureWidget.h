@@ -47,6 +47,8 @@ private:
     QCheckBox* PGACheckBox;
     QCheckBox* SACheckBox;
     QCheckBox* PGVCheckBox;
+    QCheckBox* DS575HCheckBox;
+    QCheckBox* DS595HCheckBox;
     QStringList* selectedIMTypes = new QStringList();
     QList<double> SAperiods;
 
