@@ -51,10 +51,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 RecoveryWidget::RecoveryWidget(QWidget *parent)
   : SimCenterAppSelection(QString("Recovery"), QString("Recovery"), parent)
 {
-  // Create the widgets    
-  SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
-  SimCenterAppWidget *pyrecodesRecovery = new Pyrecodes(this);
-  SimCenterAppWidget *pyrecodesUI_Recovery = new PyrecodesUI(this);    
+  // Create the widgets
+  noneWidget3 = new NoneWidget(this);
+  pyrecodesRecovery = new Pyrecodes(this);
+  pyrecodesUI_Recovery = new PyrecodesUI(this);
   this->addComponent(QString("None"), QString("None"), noneWidget3);
   addComponent(QString("pyrecodes"), QString("Pyrecodes"), pyrecodesRecovery);
   addComponent(QString("PyrecodesUI"), QString("PyrecodesUI"), pyrecodesUI_Recovery);      
@@ -72,6 +72,8 @@ RecoveryWidget::~RecoveryWidget()
 void RecoveryWidget::clear(void)
 {
   this->selectComponent("None");
+  pyrecodesRecovery->clear();
+  pyrecodesUI_Recovery->clear();
 }
 
 

@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 
 class SimCenterAppSelection;
+class SimCenterAppWidget;
 
 class RecoveryWidget : public  SimCenterAppSelection
 {
@@ -53,7 +54,10 @@ public:
 
     void clear(void);
 
-private: 
+private:
+    SimCenterAppWidget *noneWidget3;
+    SimCenterAppWidget *pyrecodesRecovery;
+    SimCenterAppWidget *pyrecodesUI_Recovery;
 
 };
 
