@@ -71,7 +71,7 @@ class PyrecodesResults : public SC_ResultsWidget
     Q_OBJECT
 
 public:
-    PyrecodesResults(QWidget *parent);
+  PyrecodesResults(QWidget *parent, bool dockable = false);
 
     void clear(void);
 
@@ -82,14 +82,19 @@ public:
 
 private slots:
 
-    void restoreUI(void);
+  void restoreUI(void);
 
+  
 protected:
 
 private:
 
   // methods
-  int readDemandSupplyJSON(QString &filename, QtCharts::QLineSeries *lineSeries);
+  int readDemandSupplyJSON(QString &filename,
+			   QtCharts::QLineSeries *supplySeries,
+			   QtCharts::QLineSeries *demandSeries =0,
+			   QtCharts::QLineSeries *consumptionSeries =0);
+  int processSupplyDemandUpdate(QString &workdirPath);
 
   // data
   QVBoxLayout* layout;
@@ -98,19 +103,20 @@ private:
 
   QGISVisualizationWidget* theVisualizationWidget;
 
+  QStringList resourceList;
+  
   // for supply curves
-  SC_MultipleLineChart *chart;
+  SC_MultipleLineChart *supplyChart;
 
+  // for supply-demand curves
+  SC_MultipleLineChart *supplyDemandChart;
+  QComboBox *sdComboBox;
+  QStringList sdWorkDirs;
+  
   // for recovery gifs
   QComboBox *gifComboBox;
   SC_MovieWidget *movieWidget;
   QStringList gifFilenames;
-
-  // for supply-demand curves  
-  QComboBox *sdComboBox;
-  QPixmap *sdPixmapWidget;
-  QStringList sdFilenames;  
-  
 };
 
 #endif // PYRECODES_RESULTS_H
