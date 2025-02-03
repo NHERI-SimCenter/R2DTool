@@ -157,7 +157,7 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     // create a PyrecodesResults widget and a popup Dialog for showing results if in Dialog
     //    - trying something different
     
-    theResultsWidget = new PyrecodesResults(this);
+    theResultsWidget = new PyrecodesResults(this, false);
 
     popupResultsDialog = new QDialog(nullptr, Qt::Window);
     popupResultsDialog->setWindowTitle("pyrecodes Results Window");
@@ -169,8 +169,9 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     int width  = this->width()<int(rec.width())?int(rec.width()):this->width();
     height = abs(0.75*height);
     width = abs(0.75*width);
+    popupResultsDialog->resize(width,height);
 
-    /* ** to stop grwoing when displaying gif **************************************
+    /* ** to stop growing when displaying gif **************************************
     popupResultsDialog->setMinimumWidth(width);
     popupResultsDialog->setMaximumWidth(width);
     popupResultsDialog->setMinimumHeight(height);
@@ -179,7 +180,7 @@ Pyrecodes::Pyrecodes(QWidget *parent)
     popupResultsDialog->resize(width, height);
     ******************************************************************************* */
 
-    /* ** for when puytting INputs and Results in a Tabbed widget *******************
+    /* ** for when putting INputs and Results in a Tabbed widget *******************
     QVBoxLayout *layout = new QVBoxLayout(this);
     theTabbedWidget = new QTabWidget();
     theTabbedWidget->addTab(inputWidget, "          Inputs          ");
@@ -305,10 +306,9 @@ bool Pyrecodes::outputCitation(QJsonObject &citation){
 
 SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType)
 {
-  if (resultsWidget==nullptr){
-    resultsWidget = new PyrecodesResults(parent);
-  }
-  
+  if (resultsWidget == 0)
+    resultsWidget = new PyrecodesResults(this, true);
+
   return resultsWidget;
 }
 

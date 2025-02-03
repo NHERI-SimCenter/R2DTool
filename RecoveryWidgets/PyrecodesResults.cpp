@@ -56,27 +56,9 @@ using namespace QtCharts;
 
 #include <QGridLayout>
 
-PyrecodesResults::PyrecodesResults(QWidget * parent)
+PyrecodesResults::PyrecodesResults(QWidget * parent, bool dockable)
   :SC_ResultsWidget(parent) {
 
-   layout = new QVBoxLayout(this);
-   mainWindow = new QMainWindow(parent);
-   mainWindow->show();
-   layout->addWidget(mainWindow);
-   curveDockWidget = new QDockWidget("Supply Curves", mainWindow);
-   gifDockWidget = new QDockWidget("Recovery GIFs", mainWindow);
-   mainWindow->addDockWidget(Qt::LeftDockWidgetArea, curveDockWidget);
-   mainWindow->addDockWidget(Qt::RightDockWidgetArea, gifDockWidget);
-   this->setLayout(layout);
-
-
-   // basic widget is a QTabbedWidget
-  
-//  QTabWidget *tabWidget = new QTabWidget();
-//  QVBoxLayout *mainLayout = new QVBoxLayout();
-//  mainLayout->addWidget(tabWidget);
-//  this->setLayout(mainLayout);
-  
   //
   // demand-supply
   //
@@ -84,12 +66,9 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   QWidget *supplyWidget = new QWidget();
   QGridLayout *supplyLayout = new QGridLayout();
   supplyWidget->setLayout(supplyLayout);
-  curveDockWidget->setWidget(supplyWidget);
 
-  //FMK  chart = new SC_TimeSeriesResultChart(&allSeries, this);
-  chart = new SC_MultipleLineChart(this);  
-  supplyLayout->addWidget(chart, 0, 0);
-//  tabWidget->addTab(supplyWidget, "Supply Curves");
+  supplyChart = new SC_MultipleLineChart(this);  
+  supplyLayout->addWidget(supplyChart, 0, 0);
 
   //
   // recovery gifs
@@ -98,7 +77,6 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   QWidget *gifWidget = new QWidget();
   QGridLayout *gifLayout = new QGridLayout();
   gifWidget->setLayout(gifLayout);
-  gifDockWidget->setWidget(gifWidget);
   gifComboBox = new QComboBox();
   movieWidget = new SC_MovieWidget(this,"", true);
   
@@ -106,39 +84,136 @@ PyrecodesResults::PyrecodesResults(QWidget * parent)
   gifLayout->addWidget(gifComboBox,0,1);
   gifLayout->addWidget(movieWidget,1,0,1,3);
   gifLayout->setColumnStretch(2,1);
-//  tabWidget->addTab(gifWidget, "Recovery GIFs");
 
   connect(gifComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
     if (index >= 0 && index < gifFilenames.size()) // the -1 for when combo is invoked with clear(), sets index to -1
       movieWidget->updateGif(gifFilenames[index]);  
   });
 
-
   //
-  // supply-demand workdir curves
-  //  
-
-  /*
+  // supply demand
+  //
 
   QWidget *sdWidget = new QWidget();
   QGridLayout *sdLayout = new QGridLayout();
   sdWidget->setLayout(sdLayout);
   sdComboBox = new QComboBox();
-  sdMovieWidget = new SC_MovieWidget(this,"");
+  supplyDemandChart = new SC_MultipleLineChart(this); 
   
   sdLayout->addWidget(new QLabel("Select Realization:"),0,0);
   sdLayout->addWidget(sdComboBox,0,1);
-  sdLayout->addWidget(movieWidget,1,0,1,3);
-  sdLayout->setColumnStretch(2,1);
-  tabWidget->addTab(sdWidget, "Supply-Demand-Consumption");  
+  sdLayout->addWidget(supplyDemandChart,1,0,1,3);
+  sdLayout->setRowStretch(1,1);
 
   connect(sdComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
-    if (index >= 0 && index < sdFilenames.size()) // the -1 for when combo is invoked with clear(), sets index to -1
-      sdMovieWidget->updateGif(sdFilenames[index]);  
-  });
+    if (index >= 0 && index < sdWorkDirs.size()) { // the -1 for when combo is invoked with clear(), sets index to -1
+      //      qDebug() << "PROCESS SUPPLY DEMAND: " << sdWorkDirs[index];
+      this->processSupplyDemandUpdate(sdWorkDirs[index]);
+    }
+  });  
 
-  */
   
+  if (dockable == true) {
+
+    //
+    // use QDockWidgets for interface
+    //
+
+    layout = new QVBoxLayout(this);
+    mainWindow = new QMainWindow(parent);
+    mainWindow->show();
+    layout->addWidget(mainWindow);
+
+    QTabWidget *tabWidget = new QTabWidget();
+    QVBoxLayout *tabLayout = new QVBoxLayout();
+    tabLayout->addWidget(tabWidget);
+
+    tabWidget->addTab(supplyWidget, "Supply Curves");
+    tabWidget->addTab(sdWidget, "Supply Demand Curves");    
+    tabWidget->addTab(gifWidget, "Recovery GIFs");
+    
+    QDockWidget *tabDockWidget = new QDockWidget("Recovery", mainWindow);
+    tabDockWidget->setWidget(tabWidget);    
+    
+    mainWindow->addDockWidget(Qt::LeftDockWidgetArea, tabDockWidget);
+    this->setLayout(layout);
+
+    /* ************** two dockable widgets ******************************
+    layout = new QVBoxLayout(this);
+    mainWindow = new QMainWindow(parent);
+    mainWindow->show();
+    layout->addWidget(mainWindow);
+    
+    curveDockWidget = new QDockWidget("Supply Curves", mainWindow);
+    gifDockWidget = new QDockWidget("Recovery GIFs", mainWindow);
+
+    gifDockWidget->setWidget(gifWidget);    
+    curveDockWidget->setWidget(supplyWidget);
+    
+    mainWindow->addDockWidget(Qt::LeftDockWidgetArea, curveDockWidget);
+    mainWindow->addDockWidget(Qt::RightDockWidgetArea, gifDockWidget);
+    
+    this->setLayout(layout);
+    ******************************************************************** */
+    
+  } else {
+
+    //
+    // use QTabWidget for interface
+    //
+  
+    QTabWidget *tabWidget = new QTabWidget();
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->addWidget(tabWidget);
+
+    tabWidget->addTab(supplyWidget, "Supply Curves");
+    tabWidget->addTab(sdWidget, "Supply Demand Curves");    
+    tabWidget->addTab(gifWidget, "Recovery GIFs");
+    
+    this->setLayout(mainLayout);
+  }
+}
+
+int
+PyrecodesResults::processSupplyDemandUpdate(QString &workdirPath) {
+
+  QDir workDir(workdirPath);
+  QMap<QString, SC_MLC_ChartData *> *chartData = new QMap<QString, SC_MLC_ChartData *>;
+
+  int resourceCounter = 0;  
+  for (const QString &resource : resourceList) {
+
+    QString fileName = workDir.filePath(resource + QString("_supply_demand_consumption.json"));
+    SC_MLC_ChartData *resourceChartData = new SC_MLC_ChartData();    
+
+    resourceChartData->xLabel = "Days";
+    resourceChartData->yLabel = resource + QString(" ");
+    resourceChartData->title =  resource + QString(" Supply Demand Consumption Curves");
+    resourceChartData->showLegend = true;    
+    chartData->insert(resource, resourceChartData);
+    
+    // add curves for resource
+    QLineSeries *supplyLineSeries = new QLineSeries();
+    QLineSeries *demandLineSeries = new QLineSeries();
+    QLineSeries *consumptionLineSeries = new QLineSeries();      
+    
+    readDemandSupplyJSON(fileName, supplyLineSeries, demandLineSeries, consumptionLineSeries);
+    supplyLineSeries->setName("Supply");
+    demandLineSeries->setName("Demand");
+    consumptionLineSeries->setName("Consumption");            
+
+    consumptionLineSeries->setPen(QPen(Qt::yellow));
+    resourceChartData->theLines.append(consumptionLineSeries);
+
+    demandLineSeries->setPen(QPen(Qt::red));
+    resourceChartData->theLines.append(demandLineSeries);
+    
+    supplyLineSeries->setPen(QPen(Qt::blue));
+    resourceChartData->theLines.append(supplyLineSeries);
+
+  }
+  
+  supplyDemandChart->setData(chartData);
 }
 
 int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath)
@@ -147,20 +222,12 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
   // clear old results
   //
   
-  // FMK allSeries.clear();
+  resourceList.clear();  
   gifFilenames.clear();  
   gifComboBox->clear();
+  sdWorkDirs.clear();  
+  sdComboBox->clear();  
 
-  // gifStackedWidget->clear(); // imagine no clear method at leats in 5.15 !!
-  /*
-  while (gifStackedWidget->count() > 0) {
-    QWidget *widget = gifStackedWidget->widget(0); // Get the first widget
-    gifStackedWidget->removeWidget(widget);        // Remove it from QStackedWidget
-    delete widget;                              // Delete the widget to free memory
-  }
-  qDebug() << "STACKED WIDGETS DONE";
-  */
-  
   // cd to RecoveryResults dir
 
   QDir workDir(outputDirPath);
@@ -183,8 +250,7 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
   QStringList filters;
   filters << "*_supply_demand_consumption.json";
   QStringList fileList = workDir.entryList(filters, QDir::Files);
-  QStringList resourceList;
-  
+
   QMap<QString, SC_MLC_ChartData *>multipleLineChartData;
     
   for (const QString &fileName : fileList) {
@@ -202,9 +268,6 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
   }
   
   workDir.cdUp();
-  
-  qDebug() << "PyrecodesResults:: work_directories: " << work_directories;
-  qDebug() << "PyrecodesResults:: resourceList: " << resourceList;
 
   // loop foreach working dir
 
@@ -221,16 +284,17 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
     for (const QString &resource: resourceList) {
 	
       // add supply curve for resource
-      QLineSeries *lineSeries = new QLineSeries();
+      QLineSeries *supplyLineSeries = new QLineSeries();
+      //QLineSeries *demandLineSeries = new QLineSeries();
+      //QLineSeries *consumptionLineSeries = new QLineSeries();      
       QString fileName = workDir.absoluteFilePath(fileList[resourceCounter]);
 
-      readDemandSupplyJSON(fileName, lineSeries);
-      lineSeries->setName(work_directory);
+      readDemandSupplyJSON(fileName, supplyLineSeries);
+      supplyLineSeries->setName(work_directory);
 
       SC_MLC_ChartData *resourceChartData = multipleLineChartData[resource];
-      lineSeries->setPen(QPen(Qt::blue));
-      resourceChartData->theLines.append(lineSeries);
-
+      supplyLineSeries->setPen(QPen(Qt::blue));
+      resourceChartData->theLines.append(supplyLineSeries);
       
       resourceCounter++;
     }
@@ -242,12 +306,19 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
     gifComboBox->addItem(work_directory);
     gifFilenames.append(workDir.absoluteFilePath("system_recovery.gif"));
 
+    //
+    // store info for workdirs
+    //
+    
+    sdComboBox->addItem(work_directory);
+    sdWorkDirs.append(workDir.absolutePath());    
+
     counter++;
     workDir.cdUp();
     
   }
 
-  chart->setData(&multipleLineChartData);
+  supplyChart->setData(&multipleLineChartData);
 
   /*
   if (counter > 5) {
@@ -260,13 +331,21 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
     movieWidget->updateGif(gifFilenames[0]);    
     gifComboBox->setCurrentIndex(0); // to get gif 0 updated
   }
+
+  if (sdWorkDirs.size() >  0) {
+    sdComboBox->setCurrentIndex(0);
+    this->processSupplyDemandUpdate(sdWorkDirs[0]);
+  }
   
   return 0;
 }
 
 
 int
-PyrecodesResults::readDemandSupplyJSON(QString &filename, QtCharts::QLineSeries *lineSeries) {
+PyrecodesResults::readDemandSupplyJSON(QString &filename,
+				       QtCharts::QLineSeries *supplySeries,
+				       QtCharts::QLineSeries *demandSeries,
+				       QtCharts::QLineSeries *consumptionSeries) {
 
   //
   // Open the file in read-only mode & get JSON object
@@ -279,7 +358,7 @@ PyrecodesResults::readDemandSupplyJSON(QString &filename, QtCharts::QLineSeries 
     errorMessage(message);
     return -1;
   }
-
+  
   // Read the file contents
   QByteArray fileData = file.readAll();
   
@@ -298,9 +377,12 @@ PyrecodesResults::readDemandSupplyJSON(QString &filename, QtCharts::QLineSeries 
   QJsonArray timeSteps = jsonObj["TimeStep"].toArray();
   QJsonArray supply = jsonObj["Supply"].toArray();
   QJsonArray consumption = jsonObj["Consumption"].toArray();
+  QJsonArray demand = jsonObj["Demand"].toArray();  
 
   // Check for matching array sizes
-  if (timeSteps.size() != supply.size() || timeSteps.size() != consumption.size()) {
+  if (timeSteps.size() != supply.size() ||
+      timeSteps.size() != consumption.size() ||
+      timeSteps.size() != demand.size()) {
     qDebug() << "PyrecodesResults:: readDataFROmJSON: Array sizes do not match for file: " << filename;
     return -1;
   }
@@ -309,14 +391,24 @@ PyrecodesResults::readDemandSupplyJSON(QString &filename, QtCharts::QLineSeries 
   for (int i = 0; i < timeSteps.size(); ++i) {
     int timeStep = timeSteps[i].toInt();
     double supplyValue = supply[i].toDouble();
-    // double consumptionValue = consumption[i].toDouble();
-    if (i == 0)
-      lineSeries->append(-1, supplyValue); // add a point on line to indicate day before event same as day 0
-    lineSeries->append(timeStep, supplyValue);    
+    double consumptionValue = consumption[i].toDouble();
+    double demandValue = demand[i].toDouble();    
+    if (i == 0) {
+      // add a point on line to indicate day before event same as day 0      
+      supplySeries->append(-1, supplyValue);
+      if (demandSeries != 0)
+	demandSeries->append(-1, demandValue);
+      if (consumptionSeries != 0)
+	consumptionSeries->append(-1, consumptionValue);
+    }
+    supplySeries->append(timeStep, supplyValue);
+    if (demandSeries != 0)    
+      demandSeries->append(timeStep, demandValue);
+    if (consumptionSeries != 0)    
+      consumptionSeries->append(timeStep, consumptionValue); 
   }
   
   return 0;
-  
 }
       
 
