@@ -374,9 +374,9 @@ void Pyrecodes::runPyrecodes() {
 
   // set up args to script
   QStringList args;
-  args << "--mainFile" << mainFileNew 
-       << "--systemConfigFile" << configFileNew 
-       << "--componentLibraryFile" << componentFileNew 
+  args << "--mainFile" << mainFileNew
+       << "--SystemConfigurationFile" << configFileNew
+       << "--ComponentLibraryFile" << componentFileNew
        << "--r2dRunDir" << resultsDir
        << "--inputDataDir" << inputDataDir;
 
