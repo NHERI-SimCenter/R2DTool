@@ -57,11 +57,7 @@ RecoveryWidget::RecoveryWidget(QWidget *parent)
   pyrecodesUI_Recovery = new PyrecodesUI(this);
   this->addComponent(QString("None"), QString("None"), noneWidget3);
   addComponent(QString("pyrecodes"), QString("Pyrecodes"), pyrecodesRecovery);
-  addComponent(QString("PyrecodesUI"), QString("PyrecodesUI"), pyrecodesUI_Recovery);      
-
-  //addComponent("Recovery", RecWidget);
-  // We shall not hide it since we want to have recovery at any time
-  //this->hideAll();
+  //  addComponent(QString("PyrecodesUI"), QString("PyrecodesUI"), pyrecodesUI_Recovery);      
 }
 
 RecoveryWidget::~RecoveryWidget()
