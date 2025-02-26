@@ -214,6 +214,8 @@ PyrecodesResults::processSupplyDemandUpdate(QString &workdirPath) {
   }
   
   supplyDemandChart->setData(chartData);
+
+  return 0;
 }
 
 int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath)
