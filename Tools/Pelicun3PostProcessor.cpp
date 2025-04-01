@@ -149,7 +149,9 @@ Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget *parent, QWidget *resWidget
 int Pelicun3PostProcessor::addResultTab(QString tabName, QString &dirName){
     QString resultFile = tabName + QString(".geojson");
     QString assetTypeSimplified = tabName.simplified().replace( " ", "" );
+
     this->processResults(resultFile, dirName, tabName, theAssetTypeToType[assetTypeSimplified]);
+
     R2DresWidget->getTabWidget()->addTab(this, tabName);
     return 0;
  }
@@ -186,8 +188,10 @@ int Pelicun3PostProcessor::addResultSubtab(QString name, QWidget* existTab, QStr
         dockWidthes.append(int(0.3*windowWidth));
         dockHeights.append(int(0.7*windowHeight));
     }
-    mainWindow->resizeDocks(alldocks, dockWidthes, Qt::Horizontal);
-    mainWindow->resizeDocks(alldocks, dockHeights, Qt::Vertical);
+    if (windowWidth != 0)
+      mainWindow->resizeDocks(alldocks, dockWidthes, Qt::Horizontal);
+    if (windowHeight != 0)    
+      mainWindow->resizeDocks(alldocks, dockHeights, Qt::Vertical);
 
     // Set Menu Bar status
     auto menuBar = WorkflowAppR2D::getInstance()->getTheMainWindow()->menuBar();
@@ -380,8 +384,11 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         dockWidthes.append(int(0.3*windowWidth));
         dockHeights.append(int(0.7*windowHeight));
     }
-    mainWindow->resizeDocks(alldocks, dockWidthes, Qt::Horizontal);
-    mainWindow->resizeDocks(alldocks, dockHeights, Qt::Vertical);
+
+    if (windowWidth != 0)
+      mainWindow->resizeDocks(alldocks, dockWidthes, Qt::Horizontal);
+    if (windowHeight != 0)
+      mainWindow->resizeDocks(alldocks, dockHeights, Qt::Vertical);
 
 
     auto menuBar = WorkflowAppR2D::getInstance()->getTheMainWindow()->menuBar();
@@ -419,6 +426,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
         return 1;
     }
 
+    return 0;
 }
 
 int Pelicun3PostProcessor::extractDataAddToTable(QJsonArray& features, QStringList& attributes, QTableWidget* table, QStringList headings){
