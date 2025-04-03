@@ -61,6 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QWebEngineView>
 
 #include "qgsapplication.h"
+#include <Utils/FileOperations.h>
 
 static QString logFilePath;
 static bool logToFile = false;
@@ -113,18 +114,12 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion("5.3.0");
 
+    //
     // set up logging of output messages for user debugging
-    logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + QDir::separator() + QCoreApplication::applicationName();
-
-    // make sure tool dir exists in Documentss folder
-    QDir dirWork(logFilePath);
-    if (!dirWork.exists())
-        if (!dirWork.mkpath(logFilePath))   {
-            qDebug() << QString("Could not create Working Dir: ") << logFilePath;
-        }
-
+    //
+    
     // Full path to debug.log file
+    logFilePath = SCUtils::getAppWorkDir();
     logFilePath = logFilePath + QDir::separator() + QString("debug.log");
 
     // Remove old log file
@@ -132,7 +127,6 @@ int main(int argc, char *argv[])
     debugFile.remove();
 
     QByteArray envVar = qgetenv("QTDIR");  //  check if the app is run in Qt Creator
-
     if (envVar.isEmpty())
         logToFile = true;
 
