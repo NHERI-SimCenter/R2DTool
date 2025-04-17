@@ -368,7 +368,11 @@ int RasterHazardInputWidget::loadRaster(void)
 
     auto evtType = eventTypeCombo->currentText();
 
-    rasterlayer = theVisualizationWidget->addRasterLayer(rasterFilePath, evtType+" Raster Hazard", "gdal");
+    QFileInfo rasterFileInfo(rasterFilePath);
+    QString baseName = rasterFileInfo.baseName();
+
+    //rasterlayer = theVisualizationWidget->addRasterLayer(rasterFilePath, evtType+" Raster Hazard", "gdal");
+    rasterlayer = theVisualizationWidget->addRasterLayer(rasterFilePath, baseName, "gdal");    
 
     if(rasterlayer == nullptr)
     {
@@ -461,3 +465,8 @@ bool RasterHazardInputWidget::copyFiles(QString &destDir)
 }
 
 
+SimCenterAppWidget *
+RasterHazardInputWidget::getClone(){
+  SimCenterAppWidget *thisCopy = new RasterHazardInputWidget(theVisualizationWidget);
+  return thisCopy;
+}

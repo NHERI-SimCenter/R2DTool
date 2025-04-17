@@ -76,6 +76,7 @@ public:
     bool copyFiles(QString &destDir);
     void clear(void);
 
+    SimCenterAppWidget *getClone();  
     // Returns the value of the raster layer in the given band
     // Note that band numbers start from 1 and not 0!
     double sampleRaster(const double& x, const double& y, const int& bandNumber);
