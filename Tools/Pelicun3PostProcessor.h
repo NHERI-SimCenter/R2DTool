@@ -53,7 +53,7 @@ class REmpiricalProbabilityDistribution;
 class VisualizationWidget;
 
 class QDockWidget;
-class QTableWidget;
+class DL_TableWidget;
 class QGridLayout;
 class QLabel;
 class QComboBox;
@@ -157,14 +157,14 @@ private:
     QVBoxLayout* layout;
 
 //    QList<QDockWidget*> dockList;
-    QList<QTableWidget*> tableList;
+    QList<DL_TableWidget*> tableList;
 
     QComboBox* sortComboBox;
 
     QGraphicsView* mapViewMainWidget;
 
 
-    int extractDataAddToTable(QJsonArray& features, QStringList& attributes, QTableWidget* table, QStringList headings);
+    int extractDataAddToTable(QJsonArray& features, QStringList& attributes, DL_TableWidget* table, QStringList headings);
 
 //    QByteArray uiState;
 
@@ -173,7 +173,7 @@ private:
     QDockWidget* tableDock2;
 
     // site response data table
-    QTableWidget* siteResponseTableWidget;
+    DL_TableWidget* siteResponseTableWidget;
     QWidget *tableWidget2;
 
     // kz: adding site response result table

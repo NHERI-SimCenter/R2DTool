@@ -70,12 +70,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedBarSeries>
 #include <QStringList>
 #include <QTabWidget>
-#include <QTableWidget>
+
 #include <QTextCursor>
 #include <QTextTable>
 #include <QValueAxis>
 
 #include "QGISVisualizationWidget.h"
+#include <DL_TableWidget.h>
 
 #include <qgsattributes.h>
 #include <qgsmapcanvas.h>
@@ -318,7 +319,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
 
         QVBoxLayout* typetableWidgetLayout = new QVBoxLayout(typetableWidget);
 
-        QTableWidget* typeResultsTableWidget = new QTableWidget(typeDockWidget);
+        DL_TableWidget* typeResultsTableWidget = new DL_TableWidget(typeDockWidget);
         typeResultsTableWidget->verticalHeader()->setVisible(false);
         typeResultsTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
@@ -429,7 +430,7 @@ int Pelicun3PostProcessor::processResults(QString &outputFile, QString &dirName,
     return 0;
 }
 
-int Pelicun3PostProcessor::extractDataAddToTable(QJsonArray& features, QStringList& attributes, QTableWidget* table, QStringList headings){
+int Pelicun3PostProcessor::extractDataAddToTable(QJsonArray& features, QStringList& attributes, DL_TableWidget* table, QStringList headings){
     QVector<QVector<double>> result(features.count(), QVector<double> (attributes.count(), 0.0));
     table->setColumnCount(headings.size());
     table->setHorizontalHeaderLabels(headings);
@@ -562,7 +563,7 @@ void Pelicun3PostProcessor::setCurrentlyViewable(bool status){
 //    }
 //    tableWidget2 = new QWidget(static_cast<QMainWindow*>(this));
 //    auto tableWidgetLayout = new QVBoxLayout(tableWidget2);
-//    siteResponseTableWidget = new QTableWidget(static_cast<QMainWindow*>(this));
+//    siteResponseTableWidget = new DL_TableWidget(static_cast<QMainWindow*>(this));
 //    siteResponseTableWidget->verticalHeader()->setVisible(false);
 //    siteResponseTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 //    siteResponseTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
@@ -666,7 +667,7 @@ void Pelicun3PostProcessor::clear(void)
 {
 
     for (int i = 0; i < tableList.count(); i++){
-        QTableWidget* parentWidget = tableList.at(i);
+        DL_TableWidget* parentWidget = tableList.at(i);
         parentWidget->clear();
     }
     tableList.clear();
