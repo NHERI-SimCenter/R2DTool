@@ -133,6 +133,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/ComponentDatabaseManager.cpp \
             $$PWD/Tools/NGAW2Converter.cpp \
             $$PWD/Tools/Pelicun3PostProcessor.cpp \
+            $$PWD/Tools/DL_TableWidget.cpp \	    
             $$PWD/Tools/PelicunPostProcessor.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
@@ -316,6 +317,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/ComponentDatabaseManager.h \
             $$PWD/Tools/NGAW2Converter.h \
             $$PWD/Tools/Pelicun3PostProcessor.h \
+            $$PWD/Tools/DL_TableWidget.h \	    
             $$PWD/Tools/PelicunPostProcessor.h \
             $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
@@ -472,7 +474,7 @@ SOURCES +=  $$PWD/Tools/QGISHurricanePreprocessor.cpp \
             $$PWD/UIWidgets/PointAssetInputWidget.cpp \
             $$PWD/UIWidgets/CSVWaterNetworkInputWidget.cpp \
             $$PWD/UIWidgets/RasterHazardInputWidget.cpp \
-#	    $$PWD/UiWidgets/MultiHazardInputWidget.cpp \
+	    $$PWD/UIWidgets/MultiHazardInputWidget.cpp \
             $$PWD/UIWidgets/GISHazardInputWidget.cpp \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.cpp \
             $$PWD/UIWidgets/GISAssetInputWidget.cpp \
@@ -488,7 +490,7 @@ HEADERS +=  $$PWD/Tools/QGISHurricanePreprocessor.h \
             $$PWD/UIWidgets/PointAssetInputWidget.h \
             $$PWD/UIWidgets/CSVWaterNetworkInputWidget.h \
             $$PWD/UIWidgets/RasterHazardInputWidget.h \
-#	    $$PWD/UiWidgets/MultiHazardInputWidget.h \
+	    $$PWD/UIWidgets/MultiHazardInputWidget.h \
             $$PWD/UIWidgets/GISHazardInputWidget.h \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.h \
             $$PWD/UIWidgets/GISAssetInputWidget.h \
