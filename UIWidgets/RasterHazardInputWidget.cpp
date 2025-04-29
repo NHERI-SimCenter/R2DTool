@@ -257,6 +257,7 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     theIMs = new SimCenterIMWidget("Intensity Measures of Raster");
 
     connect(eventTypeCombo,&QComboBox::currentTextChanged,theIMs,&SimCenterIMWidget::handleHazardChange);
+    theIMs->handleHazardChange("Earthquake");
     
     QLabel* crsTypeLabel = new QLabel("Set the coordinate reference system (CRS):",this);
 
@@ -267,7 +268,6 @@ QWidget* RasterHazardInputWidget::getRasterHazardInputWidget(void)
     fileLayout->addWidget(crsSelectorWidget,2,1,1,2);
 
     fileLayout->addWidget(theIMs, 3,0,1,3);
-
     fileLayout->setRowStretch(4,1);
 
     return fileInputWidget;
