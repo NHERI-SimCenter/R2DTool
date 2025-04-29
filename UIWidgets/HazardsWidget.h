@@ -78,6 +78,7 @@ private:
     UserInputHurricaneWidget* theUserInputHurricaneWidget = nullptr;
     SimCenterAppWidget* theRasterHazardWidget = nullptr;
     SimCenterAppWidget* theGISHazardWidget = nullptr;
+    SimCenterAppWidget* theMultiGISHazardWidget = nullptr;  
 };
 
 #endif // HAZARDS_WIDGET_H

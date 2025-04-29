@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISHurricaneSelectionWidget.h"
 #include "RasterHazardInputWidget.h"
 #include "GISHazardInputWidget.h"
+#include "MultiHazardInputWidget.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -74,6 +75,8 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 
     theRasterHazardWidget = new RasterHazardInputWidget(theVisualizationWidget,this);
     theGISHazardWidget = new GISHazardInputWidget(theVisualizationWidget,this);
+    MultiHazardInputWidget *theMultiRasterHazardWidget = new MultiHazardInputWidget(theVisualizationWidget,theRasterHazardWidget, "Raster", this);
+    //    theMultiGISHazardWidget = new MultiHazardInputWidget(theVisualizationWidget,theGISHazardWidget, this);    
 
     theRegionalSiteResponseWidget = new RegionalSiteResponseWidget(theVisualizationWidget);
     
@@ -82,8 +85,9 @@ HazardsWidget::HazardsWidget(QWidget *parent,
 
     this->addComponent("User Specified Hurricane", "UserInputHurricane", theUserInputHurricaneWidget);
     this->addComponent("ShakeMap Earthquake Scenario", "UserInputShakeMap", theShakeMapWidget);
-    this->addComponent("Raster Defined Hazard", "UserInputRasterHazard", theRasterHazardWidget);
-    this->addComponent("GIS Defined Hazard", "UserInputGISHazard", theGISHazardWidget);
+    //this->addComponent("Raster Defined Hazard", "UserInputRasterHazard", theRasterHazardWidget);
+    //this->addComponent("GIS Defined Hazard", "UserInputGISHazard", theGISHazardWidget);
+    this->addComponent("Raster Defined Hazard", "UserInputRasterHazard", theMultiRasterHazardWidget);    
 
     //connect(theShakeMapWidget, &ShakeMapWidget::loadingComplete, this, &HazardsWidget::shakeMapLoadingFinished);
 
