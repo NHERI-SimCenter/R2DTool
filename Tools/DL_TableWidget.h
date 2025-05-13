@@ -41,6 +41,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // a class simply to override the mouse press event
 
+#include <QSet>
+#include <QString>
 #include <QTableWidget>
 
 class DL_TableWidget : public QTableWidget
@@ -48,6 +50,9 @@ class DL_TableWidget : public QTableWidget
     Q_OBJECT
   
 public:
+
+    enum ColType { Ints, Floats, Strings, Mixed };
+
     explicit DL_TableWidget(QWidget *parent = nullptr);
     virtual ~DL_TableWidget();
     
@@ -59,10 +64,13 @@ signals:
 public slots:
    void onSpreadsheetCellClicked(int, int);
    void showHistogram(int col);
-   void showStatistics(int col);  
+   void showStatistics(int col);
+   void saveTableToCSV(int col);
 
 private:
-    bool mLeft;
+  DL_TableWidget::ColType detectColType(int col);
+  bool mLeft;
+  QSet<QString> uniqueValues;
 };
 
 #endif // DL_TABLE_WIDGET_H
