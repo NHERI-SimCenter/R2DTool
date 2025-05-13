@@ -82,7 +82,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     //Do not use the extra keys since all subtypes use the same DL for now
     transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), this);
     // Building widget apps
-    SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget;    
+    SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget("Buildings");    
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
     
     buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);
@@ -97,20 +97,20 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
     SimCenterAppWidget *WDNDL = new NoArgSimCenterApp(QString("CBCitiesDL"));
     //    SimCenterAppWidget *waterPelicun = new ReWetWidget;
-    SimCenterAppWidget *waterPelicun = new Pelicun3DLWidget;        
+    SimCenterAppWidget *waterPelicun = new Pelicun3DLWidget("Water");        
 
     WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
     WDNWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), waterPelicun);
 
     // Power Network
-    SimCenterAppWidget *powerPelicun = new Pelicun3DLWidget;
+    SimCenterAppWidget *powerPelicun = new Pelicun3DLWidget("Power");
 
     PNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
     PNWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), powerPelicun);
 
     // Transportation widget apps
-    SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;
+    SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget("Transportation");
     SimCenterAppWidget *noneWidget_trans = new NoneWidget(this);
     transportWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3_trans);
     transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);

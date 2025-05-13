@@ -54,7 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
-Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
+Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
+  SimCenterAppWidget(parent), assetType(assType)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* groupBox = new QGroupBox(this);
@@ -93,16 +94,18 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     coupledEDPCheckBox = new QCheckBox("Coupled EDP");
     groundFailureCheckBox= new QCheckBox("Include ground failure");
 
+    /*
     autoPopulateScriptWidget = new QWidget();
     auto autoPopScriptLabel = new QLabel("Auto-population script:");
     autoPopulationScriptLineEdit = new QLineEdit();
     auto browseButton = new QPushButton("Browse");
     connect(browseButton,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton1Pressed);
-
+    */
+    
     auto autoPopulateScriptLayout = new QHBoxLayout(autoPopulateScriptWidget);
-    autoPopulateScriptLayout->addWidget(autoPopScriptLabel);
-    autoPopulateScriptLayout->addWidget(autoPopulationScriptLineEdit);
-    autoPopulateScriptLayout->addWidget(browseButton);
+    // autoPopulateScriptLayout->addWidget(autoPopScriptLabel);
+    // autoPopulateScriptLayout->addWidget(autoPopulationScriptLineEdit);
+    // autoPopulateScriptLayout->addWidget(browseButton);
 
     customModelDirWidget = new QWidget();
     auto customModelDirLabel = new QLabel("Folder with user-provided model data:");
@@ -157,11 +160,11 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
     appDataObj.insert("regional", "true");
 
+
+    /*
     QString autoScript = autoPopulationScriptLineEdit->text();
-
     if (autoScript.contains("PelicunDefault")){
-        appDataObj.insert("auto_script", autoScript);
-
+      appDataObj.insert("auto_script", autoScript);
     } else {
         QFileInfo test_auto(autoScript);        
         if (test_auto.exists()) {
@@ -174,7 +177,8 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
             return false;
         }
     }
-
+    */
+    
     // only deal with the custom model dir if needed
     if(!customModelDirWidget->isHidden())
     {
@@ -255,7 +259,7 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
         //if (appData.contains("event_time"))
         //    eventTimeComboBox->setCurrentText(appData["event_time"].toString());
-
+	/*
         if (appData.contains("auto_script")){
             auto autoScript = appData["auto_script"].toString();
 
@@ -284,6 +288,7 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 }
             }
         }
+	*/
 
         // only check the custom model dir when we have user-provided models
         if (dlMethod == "User-provided Models"){
@@ -334,7 +339,7 @@ void Pelicun3DLWidget::clearParams(void)
     groundFailureCheckBox->hide();
     groundFailureCheckBox->setChecked(false);
     
-    autoPopulationScriptLineEdit->clear();
+    //autoPopulationScriptLineEdit->clear();
 
     customModelDirWidget->hide();
     customModelDirLineEdit->clear();
@@ -344,6 +349,7 @@ void Pelicun3DLWidget::clearParams(void)
 
 bool Pelicun3DLWidget::copyFiles(QString &destName)
 {
+  /*
     auto autoScript = autoPopulationScriptLineEdit->text();
 
     if (autoScript.contains("PelicunDefault")){
@@ -394,7 +400,7 @@ bool Pelicun3DLWidget::copyFiles(QString &destName)
             }
         }
     }
-
+  */
     // only copy model data if needed
 
     if(!customModelDirWidget->isHidden())
@@ -442,20 +448,27 @@ void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
 {
     this->clearParams();
 
+
     if (text.compare("HAZUS MH EQ Story") == 0) {
         groundFailureCheckBox->show();
+	/*
         autoPopulationScriptLineEdit->setText(
             "PelicunDefault/Hazus_Earthquake_Story.py");
+	*/	    
 
     } else if (text.compare("HAZUS MH EQ IM") == 0) {
         groundFailureCheckBox->show();
+	/*
         autoPopulationScriptLineEdit->setText(
             "PelicunDefault/Hazus_Earthquake_IM.py");
+	*/
 
     } else if (text.compare("HAZUS MH EQ CSM") == 0) {
         groundFailureCheckBox->show();
+	/*
         autoPopulationScriptLineEdit->setText(
             "PelicunDefault/Hazus_Earthquake_CSM.py");
+	*/
 
     } else if (text.compare("HAZUS MH HU") == 0) {
         // placeholder
@@ -503,9 +516,10 @@ bool Pelicun3DLWidget::recursiveCopy(const QString &sourcePath, const QString &d
     return true;
 }
 
-
+  /*
 void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
 {
+
     QFileDialog dialog(this);
     QString scriptFile = QFileDialog::getOpenFileName(this,tr("Auto-population Script"));
     dialog.close();
@@ -515,7 +529,7 @@ void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
         return;
 
     autoPopulationScriptLineEdit->setText(scriptFile);
-}
+    } */
 
 
 void Pelicun3DLWidget::handleBrowseButton2Pressed(void)

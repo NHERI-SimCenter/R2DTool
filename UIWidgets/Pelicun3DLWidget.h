@@ -55,7 +55,7 @@ class Pelicun3DLWidget : public SimCenterAppWidget
     Q_OBJECT
 
 public:
-    explicit Pelicun3DLWidget(QWidget *parent = nullptr);
+  explicit Pelicun3DLWidget(QString assetType, QWidget *parent = nullptr);
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
 
@@ -75,7 +75,7 @@ public:
 public slots:
 
     void handleComboBoxChanged(const QString &text);
-    void handleBrowseButton1Pressed(void);
+    // void handleBrowseButton1Pressed(void);
     void handleBrowseButton2Pressed(void);
 
 private:
@@ -90,9 +90,11 @@ private:
     QCheckBox* logFileCheckBox;
     QCheckBox* coupledEDPCheckBox;
     QCheckBox* groundFailureCheckBox;
-    QLineEdit* autoPopulationScriptLineEdit;
+    //    QLineEdit* autoPopulationScriptLineEdit;
     QLineEdit* customModelDirLineEdit;
     void clearParams(void);
+
+    QString assetType;
 };
 
 #endif // Pelicun3DLWidget_H
