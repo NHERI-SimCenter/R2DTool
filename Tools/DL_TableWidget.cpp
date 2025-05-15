@@ -50,6 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDialog>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
+#include <QFileDialog>
 
 DL_TableWidget::DL_TableWidget(QWidget *parent)
     :QTableWidget(parent),mLeft(true)
@@ -87,7 +89,11 @@ void DL_TableWidget::onSpreadsheetCellClicked(int row, int col) {
 
   QAction *action1 = menu.addAction("Summary Statistics");
   QAction *action2 = menu.addAction("Show Histogram");
-  //  QAction *action3 = menu.addAction("Save Table as CSV");
+  menu.addSeparator();
+  QAction *action3 = menu.addAction("Order (Descending)");
+  QAction *action4 = menu.addAction("Order (Ascending)");
+  menu.addSeparator();  
+  QAction *action5 = menu.addAction("Save Table as CSV");  
   
   QAction *selectedAction = menu.exec(QCursor::pos());
   if (selectedAction == action1) {
@@ -95,13 +101,16 @@ void DL_TableWidget::onSpreadsheetCellClicked(int row, int col) {
   } else if (selectedAction == action2) {
     showHistogram(col);
   } else if (selectedAction == action3) {
-    // handle Option 3
+    this->sortItems(col, Qt::DescendingOrder);
+  } else if (selectedAction == action4) {
+    this->sortItems(col, Qt::AscendingOrder);    
+  } else if (selectedAction == action5) {
+    saveTableToCSV(col);
   }
 }
 
 void DL_TableWidget::showHistogram(int col)
 {
-
     using namespace QtCharts;
     
     int rowCount = this->rowCount();
@@ -113,7 +122,6 @@ void DL_TableWidget::showHistogram(int col)
       NUM_DIVISIONS_FOR_DIVISION = 10;
     else if (NUM_DIVISIONS_FOR_DIVISION > 20)
       NUM_DIVISIONS_FOR_DIVISION = 20;
-    
     
     int NUM_DIVISIONS = NUM_DIVISIONS_FOR_DIVISION;
 
@@ -230,8 +238,15 @@ void DL_TableWidget::showStatistics(int col)
     double *dataValues = new double[rowCount];    
     int n_eff = 0;    
     for (int i=0; i<rowCount; i++) {
-      QTableWidgetItem *itemX = this->item(i,col);      
-      double value = itemX->text().toDouble();
+      QTableWidgetItem *itemX = this->item(i,col);
+      bool ok;
+      double value = itemX->text().toDouble(&ok);
+      // it not int or double, return as cannot do stats
+      if (!ok) {
+	delete [] dataValues;
+	return;
+      }
+	
       dataValues[i] =  value;
       if (i == 0) {
 	min = value;
@@ -244,10 +259,18 @@ void DL_TableWidget::showStatistics(int col)
       sum += value;
     }
 
-    
+    // mean
     double mean = sum/rowCount;
 
-    // Create a window to display the chart
+    // stdev    
+    double stdDev = 0.0;
+    for (int i=0; i<rowCount; i++)
+      stdDev += (dataValues[i] - mean) * (dataValues[i] - mean);
+    
+    stdDev = stdDev/(rowCount-1);
+      
+    // Create a window to display the stats
+    
     QDialog *dialog = new QDialog(this); // Pass 'this' to parent it properly
     dialog->setWindowTitle("Statistics");
  
@@ -258,12 +281,6 @@ void DL_TableWidget::showStatistics(int col)
     numEdit->setText(QString::number(rowCount));
     numEdit->setReadOnly(true);
     layout->addWidget(numEdit, numRow,1);
-    
-    layout->addWidget(new QLabel("Mean: "), ++numRow,0);
-    QLineEdit *meanEdit = new QLineEdit();
-    meanEdit->setText(QString::number(mean));
-    meanEdit->setReadOnly(true);
-    layout->addWidget(meanEdit, numRow, 1);
     
     layout->addWidget(new QLabel("Min: "),  ++numRow,0);
     QLineEdit *minEdit = new QLineEdit();
@@ -276,20 +293,110 @@ void DL_TableWidget::showStatistics(int col)
     maxEdit->setText(QString::number(max));
     maxEdit->setReadOnly(true);
     layout->addWidget(maxEdit, numRow, 1);
+
+    layout->addWidget(new QLabel("Mean: "), ++numRow,0);
+    QLineEdit *meanEdit = new QLineEdit();
+    meanEdit->setText(QString::number(mean));
+    meanEdit->setReadOnly(true);
+    layout->addWidget(meanEdit, numRow, 1);
+
+    layout->addWidget(new QLabel("std Deviation: "), ++numRow,0);
+    QLineEdit *devEdit = new QLineEdit();
+    meanEdit->setText(QString::number(stdDev));
+    meanEdit->setReadOnly(true);
+    layout->addWidget(devEdit, numRow, 1);    
     
     layout->addWidget(new QLabel("Sum: "),  ++numRow,0);
     QLineEdit *sumEdit = new QLineEdit();
     sumEdit->setText(QString::number(sum));
     sumEdit->setReadOnly(true);
     layout->addWidget(sumEdit, numRow, 1);    
-    
-
-
-
 		      
     dialog->resize(400, 300);
     dialog->exec();
 
     delete [] dataValues;
     
+}
+
+void DL_TableWidget::saveTableToCSV(int col)
+{
+  //
+  // get name of a file to save data to
+  //
+  
+  QString fileName = QFileDialog::getSaveFileName(this, "Save CSV", "", "CSV Files (*.csv)");
+  if (fileName.isEmpty())
+    return;
+
+  //
+  // open file
+  //
+  
+  QFile file(fileName);
+  if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    QMessageBox::warning(this, "Error", "Cannot open file for writing");
+    return;
+  }
+
+  //
+  // write to it
+  //
+  
+  QTextStream out(&file);
+  
+  // Write headers
+  QStringList headers;
+  for (int col = 0; col < this->columnCount(); ++col) {
+    headers << this->horizontalHeaderItem(col)->text();
+  }
+  out << headers.join(",") << "\n";
+  
+  // Write rows
+  for (int row = 0; row < this->rowCount(); ++row) {
+    QStringList rowValues;
+    for (int col = 0; col < this->columnCount(); ++col) {
+      QTableWidgetItem *item = this->item(row, col);
+      rowValues << (item ? item->text() : "");
+    }
+    out << rowValues.join(",") << "\n";
+  }
+  
+  file.close();
+}
+
+
+DL_TableWidget::ColType DL_TableWidget::detectColType(int col) {
+  
+  uniqueValues.clear();
+  
+  bool allInt = true;
+  bool allFloat = true;
+  bool allStrings = true;
+  
+  for (int row = 0; col < this->rowCount(); row++) {
+    QTableWidgetItem *item = this->item(row, col);
+    if (!item) return ColType::Mixed;  // Treat missing as mixed & just return
+    
+    QString text = item->text().trimmed();
+    uniqueValues.insert(text);
+    
+    // Check for int
+    bool okInt = false;
+    text.toInt(&okInt);
+    allInt = allInt && okInt;
+    
+    // Check for float
+    bool okFloat = false;
+    text.toDouble(&okFloat);
+    allFloat = allFloat && okFloat;
+    
+    if (!okFloat && !okInt)
+      return ColType::Strings;  // early out for non-numeric
+  }
+  
+  if (allInt) return ColType::Ints;
+  if (allFloat) return ColType::Floats;
+  
+  return ColType::Mixed;
 }

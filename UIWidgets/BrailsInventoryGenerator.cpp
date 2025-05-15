@@ -70,7 +70,7 @@ BrailsInventoryGenerator::BrailsInventoryGenerator(VisualizationWidget* visWidge
 	// with EPSG 4326 corner coordinates of (37.8227, -122.432) and (37.9739, -122.156):
 	theVisualizationWidget = dynamic_cast<QGISVisualizationWidget*>(visWidget);
 	QgsRectangle zoomRectangle(QgsPointXY(-13629067.89, 4554409.45), QgsPointXY(-13598343.72, 4575739.41));
-	theVisualizationWidget->zoomToExtent(zoomRectangle);
+	//theVisualizationWidget->zoomToExtent(zoomRectangle);
 	assert(visWidget);
 
 	minLat = new SC_DoubleLineEdit("minLat", 37.8227);
@@ -380,7 +380,7 @@ void
 BrailsInventoryGenerator::loadVectorLayer(QString outputFile, QString layerName){
     auto layer = theVisualizationWidget->addVectorLayer(outputFile, layerName, "ogr");
     if (layer != nullptr) {
-        theVisualizationWidget->zoomToActiveLayer();
+        //theVisualizationWidget->zoomToActiveLayer();
     }
 }
 
@@ -501,7 +501,7 @@ BrailsInventoryGenerator::getLocationBoundary(void)
     QFile file(regionInp.outputFile);
     if (file.exists()){
         loadVectorLayer(regionInp.outputFile, "RegionBoundary");
-        theVisualizationWidget->setActiveLayerFillNull();
+        //theVisualizationWidget->setActiveLayerFillNull();
     }
 }
 

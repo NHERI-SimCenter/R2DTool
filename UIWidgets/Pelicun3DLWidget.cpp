@@ -54,7 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
-Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
+Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
+  SimCenterAppWidget(parent), assetType(assType)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* groupBox = new QGroupBox(this);
@@ -110,12 +111,12 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     autoPopulationScriptLineEdit = new QLineEdit();
     auto browseButton = new QPushButton("Browse");
     connect(browseButton,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton1Pressed);
-
-    auto autoPopulateScriptLayout = new QHBoxLayout(autoPopulateScriptWidget);
-    autoPopulateScriptLayout->addWidget(autoPopScriptLabel);
-    autoPopulateScriptLayout->addWidget(autoPopulationScriptLineEdit);
-    autoPopulateScriptLayout->addWidget(browseButton);
     */
+    
+    auto autoPopulateScriptLayout = new QHBoxLayout(autoPopulateScriptWidget);
+    // autoPopulateScriptLayout->addWidget(autoPopScriptLabel);
+    // autoPopulateScriptLayout->addWidget(autoPopulationScriptLineEdit);
+    // autoPopulateScriptLayout->addWidget(browseButton);
 
     customModelDirWidget = new QWidget();
     auto customModelDirLabel = new QLabel("Folder with user-provided model data:");
@@ -183,10 +184,8 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     /*
     QString autoScript = autoPopulationScriptLineEdit->text();
 
-    
     if (autoScript.contains("PelicunDefault")){
-        appDataObj.insert("auto_script", autoScript);
-
+      appDataObj.insert("auto_script", autoScript);
     } else {
         QFileInfo test_auto(autoScript);        
         if (test_auto.exists()) {
@@ -538,9 +537,10 @@ bool Pelicun3DLWidget::recursiveCopy(const QString &sourcePath, const QString &d
     return true;
 }
 
-
+/*
 void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
 {
+
     QFileDialog dialog(this);
     QString scriptFile = QFileDialog::getOpenFileName(this,tr("Auto-population Script"));
     dialog.close();
@@ -549,9 +549,9 @@ void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
     if(scriptFile.isEmpty())
         return;
 
-    //autoPopulationScriptLineEdit->setText(scriptFile);
-}
-
+    autoPopulationScriptLineEdit->setText(scriptFile);
+} 
+*/
 
 void Pelicun3DLWidget::handleBrowseButton2Pressed(void)
 {
