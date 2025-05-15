@@ -184,7 +184,7 @@ void DL_TableWidget::showHistogram(int col)
     QChart *chart = new QChart();
     chart->addSeries(series);
     chart->createDefaultAxes();
-    chart->setTitle("Histogram!");
+    //chart->setTitle("Histogram!");
 
     if (col == 1) { // for Damage State
       
@@ -267,7 +267,7 @@ void DL_TableWidget::showStatistics(int col)
     for (int i=0; i<rowCount; i++)
       stdDev += (dataValues[i] - mean) * (dataValues[i] - mean);
     
-    stdDev = stdDev/(rowCount-1);
+    stdDev = sqrt(stdDev/(rowCount-1));
       
     // Create a window to display the stats
     
@@ -302,8 +302,8 @@ void DL_TableWidget::showStatistics(int col)
 
     layout->addWidget(new QLabel("std Deviation: "), ++numRow,0);
     QLineEdit *devEdit = new QLineEdit();
-    meanEdit->setText(QString::number(stdDev));
-    meanEdit->setReadOnly(true);
+    devEdit->setText(QString::number(stdDev));
+    devEdit->setReadOnly(true);
     layout->addWidget(devEdit, numRow, 1);    
     
     layout->addWidget(new QLabel("Sum: "),  ++numRow,0);
