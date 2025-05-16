@@ -170,7 +170,7 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     appDataObj.insert("DL_Method",DLTypeComboBox->currentText());
 
-    if (appDataObj["DL_Method"] == "Hazus Hurricane Wind & Storm Surge - Buildings") {
+    if (appDataObj["DL_Method"].toString() == "Hazus Hurricane Wind & Storm Surge - Buildings") {
         appDataObj.insert(
             "DL_Method",
             "Hazus Hurricane Wind - Buildings, Hazus Hurricane Storm Surge - Buildings"
@@ -272,7 +272,12 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
                 dlMethod = dlMethodMap[appData["DL_Method"].toString()];
             } else {
-                dlMethod = appData["DL_Method"].toString();    
+
+                if (appData["DL_Method"].toString() == "Hazus Hurricane Wind - Buildings, Hazus Hurricane Storm Surge - Buildings") {
+                    dlMethod = "Hazus Hurricane Wind & Storm Surge - Buildings";
+                } else {
+                    dlMethod = appData["DL_Method"].toString();    
+                }
             }
 
             auto index = DLTypeComboBox->findText(dlMethod);
