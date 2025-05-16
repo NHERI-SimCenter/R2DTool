@@ -66,16 +66,21 @@ Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
     
-    DLTypeComboBox->addItem("Hazus Earthquake - Buildings");
-    DLTypeComboBox->addItem("Hazus Earthquake - Stories");
-    DLTypeComboBox->addItem("Hazus Hurricane Wind - Buildings");
-    DLTypeComboBox->addItem("Hazus Hurricane Wind & Storm Surge - Buildings");
-
-    DLTypeComboBox->addItem("Hazus Earthquake - Transportation");
-
-    DLTypeComboBox->addItem("Hazus Earthquake - Power");
-
-    DLTypeComboBox->addItem("Hazus Earthquake - Water");
+    if (assetType == "Buildings") {
+        DLTypeComboBox->addItem("Hazus Earthquake - Buildings");
+        DLTypeComboBox->addItem("Hazus Earthquake - Stories");
+        DLTypeComboBox->addItem("Hazus Hurricane Wind - Buildings");
+        DLTypeComboBox->addItem("Hazus Hurricane Wind & Storm Surge - Buildings");
+    } 
+    else if (assetType == "Transportation"){
+        DLTypeComboBox->addItem("Hazus Earthquake - Transportation");    
+    }
+    else if (assetType == "Power"){
+        DLTypeComboBox->addItem("Hazus Earthquake - Electric Power");    
+    }
+    else if (assetType == "Water"){
+        DLTypeComboBox->addItem("Hazus Earthquake - Potable Water");    
+    }
 
     DLTypeComboBox->addItem("User-provided Models");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
@@ -237,16 +242,31 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
             // backwards compatibility
             QMap<QString, QString> dlMethodMap;
-            dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Buildings";
-            dlMethodMap["HAZUS MH EQ CSM"] = "Hazus Earthquake - Buildings";
-            dlMethodMap["HAZUS MH EQ Story"] = "Hazus Earthquake - Stories";
-            dlMethodMap["HAZUS MH HU"] = "Hazus Hurricane Wind & Storm Surge - Buildings";
+
+            if (assetType == "Buildings") {
+                dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Buildings";
+                dlMethodMap["HAZUS MH EQ CSM"] = "Hazus Earthquake - Buildings";
+                dlMethodMap["HAZUS MH EQ Story"] = "Hazus Earthquake - Stories";
+                dlMethodMap["HAZUS MH HU"] = "Hazus Hurricane Wind & Storm Surge - Buildings";
+                dlMethodMap["HAZUS MH EQ"] = "Hazus Earthquake - Stories";
+            } 
+            else if (assetType == "Transportation"){
+                dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Transportation";
+            }
+            else if (assetType == "Power"){
+                dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Electric Power";
+            }
+            else if (assetType == "Water"){
+                dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Potable Water";
+            }
+
             dlMethodMap["User-provided Fragilities"] = "User-provided Models";
-            dlMethodMap["HAZUS MH EQ"] = "Hazus Earthquake - Stories";
 
             if (dlMethodMap.contains(appData["DL_Method"].toString())) {
 
-                if (appData["DL_Method"].toString() == "HAZUS MH EQ IM") {
+                if ((appData["DL_Method"].toString() == "HAZUS MH EQ IM") && 
+                    (assetType == "Buildings")
+                    ){
                     appData["lifeline_facility"] = true;
                 }
 
