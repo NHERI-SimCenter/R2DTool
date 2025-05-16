@@ -90,6 +90,7 @@ private:
     QCheckBox* logFileCheckBox;
     QCheckBox* coupledEDPCheckBox;
     QCheckBox* groundFailureCheckBox;
+    QCheckBox* lifelineFacilityCheckBox;
     //    QLineEdit* autoPopulationScriptLineEdit;
     QLineEdit* customModelDirLineEdit;
     void clearParams(void);
