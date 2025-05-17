@@ -65,7 +65,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
-    
+
     if (assetType == "Buildings") {
         DLTypeComboBox->addItem("Hazus Earthquake - Buildings");
         DLTypeComboBox->addItem("Hazus Earthquake - Stories");
@@ -110,29 +110,17 @@ Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
     lifelineFacilityCheckBox = new QCheckBox("Use Lifeline Facility models");
     lifelineFacilityCheckBox->setToolTip("Use PGA-based damage models developed for lifeline facilities.");
 
-    /*
-    autoPopulateScriptWidget = new QWidget();
-    auto autoPopScriptLabel = new QLabel("Auto-population script:");
-    autoPopulationScriptLineEdit = new QLineEdit();
-    auto browseButton = new QPushButton("Browse");
-    connect(browseButton,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton1Pressed);
-    */
-    
-    auto autoPopulateScriptLayout = new QHBoxLayout(autoPopulateScriptWidget);
-    // autoPopulateScriptLayout->addWidget(autoPopScriptLabel);
-    // autoPopulateScriptLayout->addWidget(autoPopulationScriptLineEdit);
-    // autoPopulateScriptLayout->addWidget(browseButton);
 
     customModelDirWidget = new QWidget();
-    auto customModelDirLabel = new QLabel("Folder with user-provided model data:");
     customModelDirLineEdit = new QLineEdit();
-    auto browseButton2 = new QPushButton("Browse");
+    QPushButton *browseButton2 = new QPushButton("Browse");
     connect(browseButton2,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton2Pressed);
 
-    auto customModelDirLayout = new QHBoxLayout(customModelDirWidget);
-    customModelDirLayout->addWidget(customModelDirLabel);
+    QHBoxLayout* customModelDirLayout = new QHBoxLayout(customModelDirWidget);
+    customModelDirLayout->addWidget(new QLabel("Folder with user-provided model data:"));
     customModelDirLayout->addWidget(customModelDirLineEdit);
     customModelDirLayout->addWidget(browseButton2);
+
 
     auto Vspacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
@@ -143,12 +131,12 @@ Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
     gridLayout->addWidget(realizationsLabel,2,0);
     gridLayout->addWidget(realizationsLineEdit,2,1);
 
+
     gridLayout->addWidget(detailedResultsCheckBox,3,0);
     gridLayout->addWidget(logFileCheckBox,4,0);
     gridLayout->addWidget(coupledEDPCheckBox,5,0);
     gridLayout->addWidget(groundFailureCheckBox,6,0);
     gridLayout->addWidget(lifelineFacilityCheckBox,7,0);
-    //gridLayout->addWidget(autoPopulateScriptWidget,7,0,1,2);
     gridLayout->addWidget(customModelDirWidget,8,0,1,2);
 
     gridLayout->addItem(Vspacer,9,0,1,2);
@@ -156,7 +144,6 @@ Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
     layout->addWidget(groupBox);
 
     this->clear();
-
 
 }
 

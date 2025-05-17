@@ -80,7 +80,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 ResidualDemandWidget::ResidualDemandWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
-    
+    resultWidget = nullptr; // always initialize pointers
+
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 //    QString workDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
 //    QString r2drunDir = workDir + QDir::separator() + QString("tmp.SimCenter") + QDir::separator() + QString("Results");
@@ -89,6 +90,7 @@ ResidualDemandWidget::ResidualDemandWidget(QWidget *parent) : SimCenterAppWidget
 //        r2drunDir = QString("");
 //        dir.mkpath(inputDir);
 
+    
     int numRow = 0;
     QHBoxLayout *windowLayout = new QHBoxLayout(this);
 
@@ -220,9 +222,9 @@ void ResidualDemandWidget::clear(void)
     if (resultWidget != nullptr) {
         resultWidget->clear();
     }
-    if (theR2DResultsWidget != nullptr) {
-        theR2DResultsWidget->clear();
-    }
+    //if (theR2DResultsWidget != nullptr) {
+    //    theR2DResultsWidget->clear();
+    //}
 
 }
 

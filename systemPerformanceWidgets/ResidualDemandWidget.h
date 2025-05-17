@@ -104,7 +104,7 @@ QGroupBox* theGroupBox;
 QString appInputPath;
 QString appOutputPath;
 //ResidualDemandResults* theResidualDemandResultsWidget;
-ResultsWidget* theR2DResultsWidget;
+// ResultsWidget* theR2DResultsWidget;
 
 QLabel *postEventFileEditLable;
 
