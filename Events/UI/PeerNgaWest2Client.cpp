@@ -53,7 +53,7 @@ PeerNgaWest2Client::PeerNgaWest2Client(QObject *parent) : QObject(parent),
     nRecords(3), isLoggedIn(false), retries(0)
 {
     QNetworkCookie cookie("sourceDb_flag", "1");
-    cookie.setDomain("ngawest2.berkeley.edu");
+    cookie.setDomain("peer-prod-03.ist.berkeley.edu");
     networkManager.cookieJar()->insertCookie(cookie);
 
     searchScaleFlag = -1;
@@ -75,7 +75,7 @@ void PeerNgaWest2Client::signIn(QString username, QString password)
     this->username = username;
     this->password = password;
     
-    QNetworkRequest peerSignInPageRequest(QUrl("https://ngawest2.berkeley.edu/users/sign_in"));
+    QNetworkRequest peerSignInPageRequest(QUrl("https://peer-prod-03.ist.berkeley.edu/users/sign_in"));
     signInPageReply = networkManager.get(peerSignInPageRequest);
 }
 
@@ -90,7 +90,7 @@ void PeerNgaWest2Client::selectRecords(QList<QPair<double, double>> spectrum, in
     this->distanceRange = distanceRange;
     this->vs30Range = vs30Range;
 
-    uploadFileRequest.setUrl(QUrl("https://ngawest2.berkeley.edu/spectras/uploadFile"));
+    uploadFileRequest.setUrl(QUrl("https://peer-prod-03.ist.berkeley.edu/spectras/uploadFile"));
     QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
     //Token part
@@ -134,10 +134,10 @@ void PeerNgaWest2Client::selectRecords(double sds, double sd1, double tl, int nR
     this->nRecords = nRecords;
 
     QNetworkCookie cookie("SpectrumModel_Dropdown", "99");
-    cookie.setDomain("ngawest2.berkeley.edu");
+    cookie.setDomain("peer-prod-03.ist.berkeley.edu");
     networkManager.cookieJar()->insertCookie(cookie);
 
-    postSpectraRequest.setUrl(QUrl("https://ngawest2.berkeley.edu/spectras"));
+    postSpectraRequest.setUrl(QUrl("https://peer-prod-03.ist.berkeley.edu/spectras"));
     postSpectraRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     postSpectraParameters.clear();
@@ -168,10 +168,10 @@ void PeerNgaWest2Client::selectRecords(QStringList records)
     emit statusUpdated("Performing Record Selection...");
 
     QNetworkCookie cookie("SpectrumModel_Dropdown", "88");
-    cookie.setDomain("ngawest2.berkeley.edu");
+    cookie.setDomain("peer-prod-03.ist.berkeley.edu");
     networkManager.cookieJar()->insertCookie(cookie);
 
-    postSpectraRequest.setUrl(QUrl("https://ngawest2.berkeley.edu/spectras"));
+    postSpectraRequest.setUrl(QUrl("https://peer-prod-03.ist.berkeley.edu/spectras"));
     postSpectraRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     postSpectraParameters.clear();
@@ -274,7 +274,7 @@ void PeerNgaWest2Client::processSignInPageReply()
     authenticityToken = match.captured(1);
 #endif
 
-    peerSignInRequest.setUrl(QUrl("https://ngawest2.berkeley.edu/users/sign_in"));
+    peerSignInRequest.setUrl(QUrl("https://peer-prod-03.ist.berkeley.edu/users/sign_in"));
     peerSignInRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     signInParameters.clear();
@@ -336,10 +336,10 @@ void PeerNgaWest2Client::processUploadFileReply()
 {
 
     QNetworkCookie cookie("SpectrumModel_Dropdown", "0");
-    cookie.setDomain("ngawest2.berkeley.edu");
+    cookie.setDomain("peer-prod-03.ist.berkeley.edu");
     networkManager.cookieJar()->insertCookie(cookie);
 
-    postSpectraRequest.setUrl(QUrl("https://ngawest2.berkeley.edu/spectras"));
+    postSpectraRequest.setUrl(QUrl("https://peer-prod-03.ist.berkeley.edu/spectras"));
     postSpectraRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     postSpectraParameters.clear();
@@ -352,7 +352,7 @@ void PeerNgaWest2Client::processUploadFileReply()
     postSpectraParameters.addQueryItem("model[ID]", "0");
     postSpectraParameters.addQueryItem("spectra[menu_Mechanism]", "1");
 
-    for (auto& cookie: networkManager.cookieJar()->cookiesForUrl(QUrl("https://ngawest2.berkeley.edu")))
+    for (auto& cookie: networkManager.cookieJar()->cookiesForUrl(QUrl("https://peer-prod-03.ist.berkeley.edu")))
         if (0 == cookie.name().compare("upload_file"))
             postSpectraParameters.addQueryItem("spectra[filename]", cookie.value());
 
@@ -499,7 +499,7 @@ void PeerNgaWest2Client::processGetRecordsReply()
 {
     emit statusUpdated("Downloading Ground Motions from PEER NGA West 2 Database");
     auto replyText = QString(getRecordsReply->readAll());
-    auto url = replyText.remove("window.location.href = \"").remove("\";").prepend("https://ngawest2.berkeley.edu");
+    auto url = replyText.remove("window.location.href = \"").remove("\";").prepend("https://peer-prod-03.ist.berkeley.edu");
 
     QNetworkRequest downloadRecordsRequest(url);
     downloadRecordsReply = networkManager.get(downloadRecordsRequest);
@@ -546,7 +546,7 @@ void PeerNgaWest2Client::retryPostSpectra()
 
 void PeerNgaWest2Client::retrySignIn()
 {
-    QNetworkRequest peerSignInPageRequest(QUrl("https://ngawest2.berkeley.edu/users/sign_in"));
+    QNetworkRequest peerSignInPageRequest(QUrl("https://peer-prod-03.ist.berkeley.edu/users/sign_in"));
     signInPageReply = networkManager.get(peerSignInPageRequest);
 }
 
