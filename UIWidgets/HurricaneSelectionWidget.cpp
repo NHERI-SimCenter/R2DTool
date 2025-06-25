@@ -811,6 +811,7 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
         if(pathTerrainFile.isEmpty())
         {
             this->statusMessage("No terrain.geojson file provided. Using default values");
+        } else {
             scenarioObj.insert("Terrain", pathTerrainFile);
         }
     }
