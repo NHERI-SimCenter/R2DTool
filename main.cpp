@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("5.4.0");
+    QCoreApplication::setApplicationVersion("5.4.1");
 
     //
     // set up logging of output messages for user debugging
