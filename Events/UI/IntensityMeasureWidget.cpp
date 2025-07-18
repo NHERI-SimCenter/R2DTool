@@ -13,7 +13,8 @@
 
 #include <sstream>
 
-IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *parent): SimCenterAppWidget(parent), m_intensityMeasure(im)
+IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure *im, QWidget *parent)
+  : SimCenterAppWidget(parent), theIntensityMeasure(im)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
 
@@ -21,25 +22,22 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     imGroupBox->setTitle("Intensity Measure(s)");
     imGroupBox->setContentsMargins(0,0,0,0);
 
-    //imGroupBox->setMinimumWidth(400);
-
     QGridLayout* gridLayout = new QGridLayout(imGroupBox);
     imGroupBox->setLayout(gridLayout);
 
-//    typeLabel = new QLabel(tr("Type Test:"),this);
+    selectedIMTypes = new QStringList();
+    selectedIMTypes->append("PGA");
+    
     PGACheckBox = new QCheckBox("PGA (g)");
     PGACheckBox->setChecked(true);
-    selectedIMTypes->append("PGA");
+
     SACheckBox = new QCheckBox("SA (g)");
     PGVCheckBox = new QCheckBox("PGV (cm/s)");
+    DS575HCheckBox = new QCheckBox("DS575H (s)");
+    DS595HCheckBox = new QCheckBox("DS595H (s)");
 
-//    m_typeBox = new QComboBox(this);
-//    m_typeBox->addItem("Spectral Accelerations (SA)", "SA");
-//    m_typeBox->addItem("Peak Ground Acceleration (PGA)", "PGA");
-    im.setType("Spectral Accelerations (SA)");
-//    m_typeBox->setCurrentIndex(0);
-    //m_typeBox->setMaximumWidth(450);
-//    SACheckBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+
+    im->setType("Spectral Accelerations (SA)");
 
     periodLabel = new QLabel(tr("Periods:"),this);
 
@@ -51,7 +49,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     periodsLineEdit->setText("0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.5, 10.0");
     periodsLineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     QList<double> periodArray = {0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.5, 10.0};
-    im.setPeriods(periodArray);
+    im->setPeriods(periodArray);
     SAperiods = periodArray;
 
     periodLabel->hide();
@@ -70,10 +68,12 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     scaleBox = new QComboBox(this);
     scaleBox->addItem("Log");
     scaleBox->addItem("Linear");
+    
     connect(this->scaleBox, &QComboBox::currentTextChanged,
-            &this->m_intensityMeasure, &IntensityMeasure::setImtScale);
+            theIntensityMeasure, &IntensityMeasure::setImtScale);
+    
     scaleBox->setCurrentText("Log");
-    m_intensityMeasure.setImtScale("Log");
+    theIntensityMeasure->setImtScale("Log");
     imtLevelLabel->hide();
     imtLevelLineEdit->hide();
     scaleBox->hide();
@@ -85,7 +85,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     imtTrucBox->setRange(0, 5.0);
     imtTrucBox->setDecimals(2);
     imtTrucBox->setSingleStep(0.01);
-    imtTrucBox->setValue(m_intensityMeasure.getImtTruc()); // set initial values
+    imtTrucBox->setValue(theIntensityMeasure->getImtTruc()); // set initial values
     imtTrucLabel->hide();
     imtTrucBox->hide();
 
@@ -95,6 +95,8 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
     gridLayout->addWidget(periodLabel,1,1, 1, 1, Qt::AlignRight);
     gridLayout->addWidget(periodsLineEdit,1,2, 1, 3);
     gridLayout->addWidget(PGVCheckBox, 2, 0, 1, 1);
+    gridLayout->addWidget(DS575HCheckBox, 3, 0, 1, 1);
+    gridLayout->addWidget(DS595HCheckBox, 4, 0, 1, 1);
     gridLayout->setColumnStretch(2,1);
 //    gridLayout->addWidget(imtLevelLabel,1,0);
 //    gridLayout->addWidget(imtLevelLineEdit,1,1);
@@ -111,6 +113,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
 
 void IntensityMeasureWidget::setupConnections()
 {
+
   /* FMK - never created
   connect(this->m_typeBox, &QComboBox::currentTextChanged,
             &this->m_intensityMeasure, &IntensityMeasure::setType);
@@ -205,7 +208,7 @@ void IntensityMeasureWidget::commitPeriods()
         periodArray.push_back(period);
     }
 
-    m_intensityMeasure.setPeriods(periodArray);
+    theIntensityMeasure->setPeriods(periodArray);
     SAperiods = periodArray;
 }
 
@@ -228,6 +231,14 @@ void IntensityMeasureWidget::handleTypeChanged(int state)
 
     if (PGACheckBox->isChecked()){
         selectedIMTypes->append("PGA");
+    }
+
+    if (DS575HCheckBox->isChecked()){
+        selectedIMTypes->append("DS575H");
+    }
+
+    if (DS595HCheckBox->isChecked()){
+        selectedIMTypes->append("DS595H");
     }
     emit IMSelectionChanged(selectedIMTypes);
 }
@@ -275,36 +286,12 @@ QComboBox *IntensityMeasureWidget::typeBox() const
 
 bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 {
-//    if (selectedIMTypes->size()==1){
-//        jsonObject.insert("Type", selectedIMTypes->at(0));
-//        if (selectedIMTypes->contains("SA")){
-//            QJsonArray arrayPeriods;
-//            for(auto&& it:SAperiods){
-//                arrayPeriods.append(it);
-//            }
-//            jsonObject.insert("Period", arrayPeriods);
-//        } else {
-//            jsonObject.insert("Period", 0);
-//        }
-//    } else {
-//        foreach(QString IMtype, &selectedIMTypes){
-//            QJsonObject IMobj;
-//            IMobj.insert("Type", IMtype);
-//            if (IMtype.compare("SA")==0){
-//                QJsonArray arrayPeriods;
-//                for(auto&& it:SAperiods){
-//                    arrayPeriods.append(it);
-//                }
-//                IMobj.insert("Period", arrayPeriods);
-//            } else {
-//                IMobj.insert("Period", 0);
-//            }
-//        }
-//    }
-    if (selectedIMTypes->size()==0){
-        errorMessage("Ground Motion Models: At least one intensity measure needs to be selected." );
-        return false;
-    }
+
+  if (selectedIMTypes->size()==0){
+    errorMessage("Ground Motion Models: At least one intensity measure needs to be selected." );
+    return false;
+  }
+  
     for(int i = 0; i < selectedIMTypes->size(); i++){
         QString IMtype = selectedIMTypes->at(i);
         QJsonObject IMobj;

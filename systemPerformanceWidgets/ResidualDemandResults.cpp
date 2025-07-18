@@ -200,19 +200,21 @@ QDockWidget* ResidualDemandResults::createGIFWidget(QWidget* parent, QString nam
 //    gifDisplay->setMovie(gif);
 //    gifDisplay->setScaledContents(true);
 
-    gifDisplay = new SC_MovieWidget(this, undamaged_gif_path);
+    gifDisplay = new SC_MovieWidget(this, undamaged_gif_path, true);
+//    gifDisplay->setStyleSheet("background-color: lightgreen;");
+    gifDisplay->updateGif(undamaged_gif_path);
 
 
     layout->addWidget(selectRlzLabel, 0, 0, 1, 1);
     layout->addWidget(rlzSelectionComboBox, 0, 1, 1, 1);
     layout->addWidget(summaryDisplay, 1, 0, 1, 2);
-    layout->addWidget(gifDisplay, 2, 0, 1, 2);
+    layout->addWidget(gifDisplay, 2, 0, 1, 3);
     layout->setColumnStretch(3,1);
-    layout->setRowStretch(3,1);
+    layout->setRowStretch(2,1);
 
-    gifWidget->setMinimumWidth(475);
-    gifWidget->setMaximumWidth(575);
-    gifWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+//    gifWidget->setMinimumWidth(475);
+//    gifWidget->setMaximumWidth(575);
+//    gifWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 
     gifWidget->setWidget(congestionResultWidget);
 

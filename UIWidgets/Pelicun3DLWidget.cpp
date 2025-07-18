@@ -54,7 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
-Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
+Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
+  SimCenterAppWidget(parent), assetType(assType)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     QGroupBox* groupBox = new QGroupBox(this);
@@ -64,10 +65,23 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
 
     QLabel* typeLabel = new QLabel(tr("Damage and Loss Method:"),this);
     DLTypeComboBox = new QComboBox(this);
-    DLTypeComboBox->addItem("HAZUS MH EQ Story");
-    DLTypeComboBox->addItem("HAZUS MH EQ IM");
-    DLTypeComboBox->addItem("HAZUS MH HU");
-    DLTypeComboBox->addItem("HAZUS MH EQ CSM");
+
+    if (assetType == "Buildings") {
+        DLTypeComboBox->addItem("Hazus Earthquake - Buildings");
+        DLTypeComboBox->addItem("Hazus Earthquake - Stories");
+        DLTypeComboBox->addItem("Hazus Hurricane Wind - Buildings");
+        DLTypeComboBox->addItem("Hazus Hurricane Wind & Storm Surge - Buildings");
+    } 
+    else if (assetType == "Transportation"){
+        DLTypeComboBox->addItem("Hazus Earthquake - Transportation");    
+    }
+    else if (assetType == "Power"){
+        DLTypeComboBox->addItem("Hazus Earthquake - Electric Power");    
+    }
+    else if (assetType == "Water"){
+        DLTypeComboBox->addItem("Hazus Earthquake - Potable Water");    
+    }
+
     DLTypeComboBox->addItem("User-provided Models");
     DLTypeComboBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
@@ -93,27 +107,20 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     coupledEDPCheckBox = new QCheckBox("Coupled EDP");
     groundFailureCheckBox= new QCheckBox("Include ground failure");
 
-    autoPopulateScriptWidget = new QWidget();
-    auto autoPopScriptLabel = new QLabel("Auto-population script:");
-    autoPopulationScriptLineEdit = new QLineEdit();
-    auto browseButton = new QPushButton("Browse");
-    connect(browseButton,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton1Pressed);
+    lifelineFacilityCheckBox = new QCheckBox("Use Lifeline Facility models");
+    lifelineFacilityCheckBox->setToolTip("Use PGA-based damage models developed for lifeline facilities.");
 
-    auto autoPopulateScriptLayout = new QHBoxLayout(autoPopulateScriptWidget);
-    autoPopulateScriptLayout->addWidget(autoPopScriptLabel);
-    autoPopulateScriptLayout->addWidget(autoPopulationScriptLineEdit);
-    autoPopulateScriptLayout->addWidget(browseButton);
 
     customModelDirWidget = new QWidget();
-    auto customModelDirLabel = new QLabel("Folder with user-provided model data:");
     customModelDirLineEdit = new QLineEdit();
-    auto browseButton2 = new QPushButton("Browse");
+    QPushButton *browseButton2 = new QPushButton("Browse");
     connect(browseButton2,&QPushButton::pressed,this,&Pelicun3DLWidget::handleBrowseButton2Pressed);
 
-    auto customModelDirLayout = new QHBoxLayout(customModelDirWidget);
-    customModelDirLayout->addWidget(customModelDirLabel);
+    QHBoxLayout* customModelDirLayout = new QHBoxLayout(customModelDirWidget);
+    customModelDirLayout->addWidget(new QLabel("Folder with user-provided model data:"));
     customModelDirLayout->addWidget(customModelDirLineEdit);
     customModelDirLayout->addWidget(browseButton2);
+
 
     auto Vspacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
@@ -124,11 +131,12 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     gridLayout->addWidget(realizationsLabel,2,0);
     gridLayout->addWidget(realizationsLineEdit,2,1);
 
+
     gridLayout->addWidget(detailedResultsCheckBox,3,0);
     gridLayout->addWidget(logFileCheckBox,4,0);
     gridLayout->addWidget(coupledEDPCheckBox,5,0);
     gridLayout->addWidget(groundFailureCheckBox,6,0);
-    gridLayout->addWidget(autoPopulateScriptWidget,7,0,1,2);
+    gridLayout->addWidget(lifelineFacilityCheckBox,7,0);
     gridLayout->addWidget(customModelDirWidget,8,0,1,2);
 
     gridLayout->addItem(Vspacer,9,0,1,2);
@@ -136,7 +144,6 @@ Pelicun3DLWidget::Pelicun3DLWidget(QWidget *parent): SimCenterAppWidget(parent)
     layout->addWidget(groupBox);
 
     this->clear();
-
 
 }
 
@@ -149,19 +156,28 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     QJsonObject appDataObj;
 
     appDataObj.insert("DL_Method",DLTypeComboBox->currentText());
+
+    if (appDataObj["DL_Method"].toString() == "Hazus Hurricane Wind & Storm Surge - Buildings") {
+        appDataObj.insert(
+            "DL_Method",
+            "Hazus Hurricane Wind - Buildings, Hazus Hurricane Storm Surge - Buildings"
+        );
+    }
+
     appDataObj.insert("Realizations",realizationsLineEdit->text().toInt());
     appDataObj.insert("detailed_results",detailedResultsCheckBox->isChecked());
     appDataObj.insert("log_file",logFileCheckBox->isChecked());
     appDataObj.insert("coupled_EDP",coupledEDPCheckBox->isChecked());
     //appDataObj.insert("event_time",eventTimeComboBox->currentText());
     appDataObj.insert("ground_failure",groundFailureCheckBox->isChecked());
+    appDataObj.insert("lifeline_facility",lifelineFacilityCheckBox->isChecked());
     appDataObj.insert("regional", "true");
 
+    /*
     QString autoScript = autoPopulationScriptLineEdit->text();
 
     if (autoScript.contains("PelicunDefault")){
-        appDataObj.insert("auto_script", autoScript);
-
+      appDataObj.insert("auto_script", autoScript);
     } else {
         QFileInfo test_auto(autoScript);        
         if (test_auto.exists()) {
@@ -174,6 +190,7 @@ bool Pelicun3DLWidget::outputAppDataToJSON(QJsonObject &jsonObject)
             return false;
         }
     }
+    */
 
     // only deal with the custom model dir if needed
     if(!customModelDirWidget->isHidden())
@@ -209,15 +226,45 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         QString dlMethod;
         if (appData.contains("DL_Method"))
         {
-            dlMethod = appData["DL_Method"].toString();
 
-            // The following two checks are only for backwards compatibility
-            if (dlMethod.contains("User-provided Fragilities")){
-                dlMethod = "User-provided Models";
+            // backwards compatibility
+            QMap<QString, QString> dlMethodMap;
+
+            if (assetType == "Buildings") {
+                dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Buildings";
+                dlMethodMap["HAZUS MH EQ CSM"] = "Hazus Earthquake - Buildings";
+                dlMethodMap["HAZUS MH EQ Story"] = "Hazus Earthquake - Stories";
+                dlMethodMap["HAZUS MH HU"] = "Hazus Hurricane Wind & Storm Surge - Buildings";
+                dlMethodMap["HAZUS MH EQ"] = "Hazus Earthquake - Stories";
+            } 
+            else if (assetType == "Transportation"){
+                dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Transportation";
+            }
+            else if (assetType == "Power"){
+                dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Electric Power";
+            }
+            else if (assetType == "Water"){
+                dlMethodMap["HAZUS MH EQ IM"] = "Hazus Earthquake - Potable Water";
             }
 
-            if (dlMethod.compare("HAZUS MH EQ") == 0) {
-                dlMethod = "HAZUS MH EQ Story";
+            dlMethodMap["User-provided Fragilities"] = "User-provided Models";
+
+            if (dlMethodMap.contains(appData["DL_Method"].toString())) {
+
+                if ((appData["DL_Method"].toString() == "HAZUS MH EQ IM") && 
+                    (assetType == "Buildings")
+                    ){
+                    appData["lifeline_facility"] = true;
+                }
+
+                dlMethod = dlMethodMap[appData["DL_Method"].toString()];
+            } else {
+
+                if (appData["DL_Method"].toString() == "Hazus Hurricane Wind - Buildings, Hazus Hurricane Storm Surge - Buildings") {
+                    dlMethod = "Hazus Hurricane Wind & Storm Surge - Buildings";
+                } else {
+                    dlMethod = appData["DL_Method"].toString();    
+                }
             }
 
             auto index = DLTypeComboBox->findText(dlMethod);
@@ -250,12 +297,16 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (appData.contains("ground_failure"))
             groundFailureCheckBox->setChecked(appData["ground_failure"].toBool());
 
+        if (appData.contains("lifeline_facility"))
+            lifelineFacilityCheckBox->setChecked(appData["lifeline_facility"].toBool());
+
         if (appData.contains("log_file"))
             logFileCheckBox->setChecked(appData["log_file"].toBool());
 
         //if (appData.contains("event_time"))
         //    eventTimeComboBox->setCurrentText(appData["event_time"].toString());
 
+        /*
         if (appData.contains("auto_script")){
             auto autoScript = appData["auto_script"].toString();
 
@@ -284,6 +335,7 @@ bool Pelicun3DLWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
                 }
             }
         }
+        */
 
         // only check the custom model dir when we have user-provided models
         if (dlMethod == "User-provided Models"){
@@ -333,8 +385,11 @@ void Pelicun3DLWidget::clearParams(void)
 {   
     groundFailureCheckBox->hide();
     groundFailureCheckBox->setChecked(false);
+
+    lifelineFacilityCheckBox->hide();
+    lifelineFacilityCheckBox->setChecked(false);   
     
-    autoPopulationScriptLineEdit->clear();
+    //autoPopulationScriptLineEdit->clear();
 
     customModelDirWidget->hide();
     customModelDirLineEdit->clear();
@@ -344,6 +399,7 @@ void Pelicun3DLWidget::clearParams(void)
 
 bool Pelicun3DLWidget::copyFiles(QString &destName)
 {
+    /*
     auto autoScript = autoPopulationScriptLineEdit->text();
 
     if (autoScript.contains("PelicunDefault")){
@@ -394,6 +450,7 @@ bool Pelicun3DLWidget::copyFiles(QString &destName)
             }
         }
     }
+    */
 
     // only copy model data if needed
 
@@ -442,25 +499,14 @@ void Pelicun3DLWidget::handleComboBoxChanged(const QString &text)
 {
     this->clearParams();
 
-    if (text.compare("HAZUS MH EQ Story") == 0) {
+    if (text.contains("Hazus Earthquake - Buildings")) {
         groundFailureCheckBox->show();
-        autoPopulationScriptLineEdit->setText(
-            "PelicunDefault/Hazus_Earthquake_Story.py");
+        lifelineFacilityCheckBox->show();
 
-    } else if (text.compare("HAZUS MH EQ IM") == 0) {
-        groundFailureCheckBox->show();
-        autoPopulationScriptLineEdit->setText(
-            "PelicunDefault/Hazus_Earthquake_IM.py");
-
-    } else if (text.compare("HAZUS MH EQ CSM") == 0) {
-        groundFailureCheckBox->show();
-        autoPopulationScriptLineEdit->setText(
-            "PelicunDefault/Hazus_Earthquake_CSM.py");
-
-    } else if (text.compare("HAZUS MH HU") == 0) {
+    } else if (text.contains("Hazus Hurricane")) {
         // placeholder
 
-    } else if (text.compare("User-provided Models") == 0) {
+    } else if (text.contains("User")) {
         customModelDirWidget->show();
     }
 }
@@ -503,9 +549,10 @@ bool Pelicun3DLWidget::recursiveCopy(const QString &sourcePath, const QString &d
     return true;
 }
 
-
+/*
 void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
 {
+
     QFileDialog dialog(this);
     QString scriptFile = QFileDialog::getOpenFileName(this,tr("Auto-population Script"));
     dialog.close();
@@ -515,8 +562,8 @@ void Pelicun3DLWidget::handleBrowseButton1Pressed(void)
         return;
 
     autoPopulationScriptLineEdit->setText(scriptFile);
-}
-
+} 
+*/
 
 void Pelicun3DLWidget::handleBrowseButton2Pressed(void)
 {

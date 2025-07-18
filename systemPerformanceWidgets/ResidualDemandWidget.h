@@ -103,8 +103,8 @@ QLabel *realizationToAnalyzeLabel;
 QGroupBox* theGroupBox;
 QString appInputPath;
 QString appOutputPath;
-ResidualDemandResults* theResidualDemandResultsWidget;
-ResultsWidget* theR2DResultsWidget;
+//ResidualDemandResults* theResidualDemandResultsWidget;
+// ResultsWidget* theR2DResultsWidget;
 
 QLabel *postEventFileEditLable;
 

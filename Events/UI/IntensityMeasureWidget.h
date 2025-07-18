@@ -18,7 +18,7 @@ class IntensityMeasureWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit IntensityMeasureWidget(IntensityMeasure& im, QWidget *parent = nullptr);
+    explicit IntensityMeasureWidget(IntensityMeasure *im, QWidget *parent = nullptr);
 
   // QComboBox *typeBox() const;
     QStringList* getSelectedIMTypes(void);
@@ -37,7 +37,7 @@ public slots:
     void handleIntensityMeasureLevels(const QString sourceType);
 
 private:
-    IntensityMeasure& m_intensityMeasure;
+    IntensityMeasure* theIntensityMeasure;
     QLabel* typeLabel;
     // FMK removal as not ever created!    QComboBox* m_typeBox;
     QLineEdit* periodsLineEdit;
@@ -47,7 +47,9 @@ private:
     QCheckBox* PGACheckBox;
     QCheckBox* SACheckBox;
     QCheckBox* PGVCheckBox;
-    QStringList* selectedIMTypes = new QStringList();
+    QCheckBox* DS575HCheckBox;
+    QCheckBox* DS595HCheckBox;
+    QStringList* selectedIMTypes;
     QList<double> SAperiods;
 
     QLineEdit* imtLevelLineEdit;

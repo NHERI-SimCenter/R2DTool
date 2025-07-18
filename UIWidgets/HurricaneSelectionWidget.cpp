@@ -318,6 +318,7 @@ QStackedWidget* HurricaneSelectionWidget::getHurricaneSelectionWidget(void)
 
     QLabel* terrainLabel = new QLabel("Terrain Roughness (.geojson)");
     terrainLineEdit = new QLineEdit();
+    terrainLineEdit -> setPlaceholderText("(Optional, default: z0=0.01)");
     browseTerrainButton = new QPushButton("Browse");
 
     specifyHurricaneLayout->addWidget(trackLabel,0,0);
@@ -811,6 +812,7 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
         if(pathTerrainFile.isEmpty())
         {
             this->statusMessage("No terrain.geojson file provided. Using default values");
+        } else {
             scenarioObj.insert("Terrain", pathTerrainFile);
         }
     }
@@ -874,6 +876,17 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
         file.close();
     }
 
+    // copy z0 file
+
+
+    auto pathTerrainFile = terrainLineEdit->text();
+    if(!pathTerrainFile.isEmpty()) {
+        QDir inputDirQ(inputDir);
+        QString destinationDir = inputDirQ.canonicalPath();
+        QString sourcePath = pathTerrainFile;
+        SimCenterAppWidget::copyFile(sourcePath, destinationDir);
+    }
+
     // Get the path to the Python
     auto pythonPath = SimCenterPreferences::getInstance()->getPython();
 
@@ -895,6 +908,8 @@ void HurricaneSelectionWidget::runHazardSimulation(void)
 
     process->start(pythonPath, args);
     process->waitForStarted();
+
+
 }
 
 

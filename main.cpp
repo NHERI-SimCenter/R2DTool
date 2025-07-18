@@ -61,6 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QWebEngineView>
 
 #include "qgsapplication.h"
+#include <Utils/FileOperations.h>
 
 static QString logFilePath;
 static bool logToFile = false;
@@ -111,20 +112,14 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("5.2.0");
+    QCoreApplication::setApplicationVersion("5.4.2");
 
+    //
     // set up logging of output messages for user debugging
-    logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + QDir::separator() + QCoreApplication::applicationName();
-
-    // make sure tool dir exists in Documentss folder
-    QDir dirWork(logFilePath);
-    if (!dirWork.exists())
-        if (!dirWork.mkpath(logFilePath))   {
-            qDebug() << QString("Could not create Working Dir: ") << logFilePath;
-        }
-
+    //
+    
     // Full path to debug.log file
+    logFilePath = SCUtils::getAppWorkDir();
     logFilePath = logFilePath + QDir::separator() + QString("debug.log");
 
     // Remove old log file
@@ -132,7 +127,6 @@ int main(int argc, char *argv[])
     debugFile.remove();
 
     QByteArray envVar = qgetenv("QTDIR");  //  check if the app is run in Qt Creator
-
     if (envVar.isEmpty())
         logToFile = true;
 
@@ -182,7 +176,7 @@ int main(int argc, char *argv[])
 
     w.setVersion(version);
 
-    QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sina Naeimi, Sang-ri Yi, Aakash Bangalore Satish, Pedro Arduino, & Wael Elhaddad. (2024). NHERI-SimCenter/R2DTool: Version 5.2.0 (v5.2.0). Zenodo. https://doi.org/10.5281/zenodo.14219019 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matthew J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
+    QString citeText("\n1)Frank McKenna, Stevan Gavrilovic, Jinyan Zhao, Kuanshi Zhong, Adam Zsarnoczay, Barbaros Cetiner, Sina Naeimi, Sang-ri Yi, Aakash Bangalore Satish, Amin Pakzad, Pedro Arduino, & Wael Elhaddad. (2025). NHERI-SimCenter/R2DTool: Version 5.4.0 (v5.4.0). Zenodo. https://doi.org/10.5281/zenodo.15446356 \n\n2) Gregory G. Deierlein, Frank McKenna, Adam Zsarnóczay, Tracy Kijewski-Correa, Ahsan Kareem, Wael Elhaddad, Laura Lowes, Matthew J. Schoettler, and Sanjay Govindjee (2020) A Cloud-Enabled Application Framework for Simulating Regional-Scale Impacts of Natural Hazards on the Built Environment. Frontiers in the Built Environment. 6:558706. doi: 10.3389/fbuil.2020.558706");
     w.setCite(citeText);
 
     QString manualURL("https://nheri-simcenter.github.io/R2D-Documentation/");

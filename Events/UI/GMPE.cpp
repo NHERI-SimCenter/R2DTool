@@ -38,9 +38,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "GMPE.h"
 
-GMPE::GMPE(QObject *parent) : QObject(parent)
+GMPE::GMPE(QString category, QObject *parent) : QObject(parent)
 {
-    this->m_type = "Chiou & Youngs (2014)";
+    this->category = category;
+    if (this->category.compare("intensity") == 0){
+        this->m_type = "Chiou & Youngs (2014)";
+    } else if (this->category.compare("duration") == 0){
+        this->m_type = "Bommer, Stafford & Alarcon (2009)";
+    }
 }
 
 
@@ -63,28 +68,39 @@ bool GMPE::setType(const QString &type)
 }
 
 
-const QStringList &GMPE::validTypes()
+QStringList GMPE::validTypes()
 {
-    static QStringList validTypes = QStringList()
-            << "Abrahamson, Silva & Kamai (2014)"
-            << "Boore, Stewart, Seyhan & Atkinson (2014)"
-            << "Campbell & Bozorgnia (2014)"
-            << "Chiou & Youngs (2014)";
-//            << "Idriss (2014)"
-//            << "Campbell & Bozorgnia (2008)"
-//            << "Boore & Atkinson (2008)"
-//            << "Abrahamson & Silva (2008)"
-//            << "Chiou & Youngs (2008)"
-//            << "Zhao Et Al. (2006) - Intraslab"
-//            << "Boore & Atkinson (2006)"
-//            << "Chiou & Youngs (2006)"
-//            << "Campbell & Bozorgnia (2006)"
-//            << "Campbell and Bozorgnia (2003)"
-//            << "Atkinson and Boore (2003) Subduction"
-//            << "Field (2000)"
-//            << "Campbell (1997) w/ erratum (2000) changes"
-//            << "Abrahamson & Silva (1997)"
-//            << "Boore, Joyner & Fumal (1997)";
+    QStringList validTypes;
+    if (this->category.compare("intensity")==0){
+        validTypes = QStringList()
+                     << "Abrahamson, Silva & Kamai (2014)"
+                     << "Boore, Stewart, Seyhan & Atkinson (2014)"
+                     << "Campbell & Bozorgnia (2014)"
+                     << "Chiou & Youngs (2014)";
+        //            << "Idriss (2014)"
+        //            << "Campbell & Bozorgnia (2008)"
+        //            << "Boore & Atkinson (2008)"
+        //            << "Abrahamson & Silva (2008)"
+        //            << "Chiou & Youngs (2008)"
+        //            << "Zhao Et Al. (2006) - Intraslab"
+        //            << "Boore & Atkinson (2006)"
+        //            << "Chiou & Youngs (2006)"
+        //            << "Campbell & Bozorgnia (2006)"
+        //            << "Campbell and Bozorgnia (2003)"
+        //            << "Atkinson and Boore (2003) Subduction"
+        //            << "Field (2000)"
+        //            << "Campbell (1997) w/ erratum (2000) changes"
+        //            << "Abrahamson & Silva (1997)"
+        //            << "Boore, Joyner & Fumal (1997)";
+    } else if (this->category.compare("duration")==0){
+        validTypes = QStringList()
+                     << "Bommer, Stafford & Alarcon (2009)"
+                     << "Afshari & Stewart (2016)";
+    } else {
+        validTypes = QStringList()
+                     << "None";
+    }
+
 
     return validTypes;
 }
@@ -106,6 +122,10 @@ bool GMPE::inputFromJSON(QJsonObject &/*jsonObject*/)
 
 void GMPE::reset(void)
 {
-    this->m_type = "Chiou & Youngs (2014)";
+    if (this->category.compare("intensity") == 0){
+        this->m_type = "Chiou & Youngs (2014)";
+    } else if (this->category.compare("duration") == 0){
+        this->m_type = "Bommer, Stafford & Alarcon (2009)";
+    }
 }
 

@@ -1,4 +1,3 @@
-
 #ifndef PYRECODES_H
 #define PYRECODES_H
 
@@ -38,15 +37,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: Sina Naeimi
+// Written: Sina Naeimi, fmk
 
 #include <SimCenterAppWidget.h>
 
-
 class SC_FileEdit;
 class SC_DirEdit;
-class RewetResults;
+class SC_AssetInputDelegate;
 class LineEditSelectTool;
+class PyrecodesResults;
+class QPushButton;
+class QTabWidget;
 
 class Pyrecodes : public SimCenterAppWidget
 {
@@ -61,23 +62,34 @@ public:
     bool copyFiles(QString &dirName);
     bool outputCitation(QJsonObject &citation);
 
+    SC_ResultsWidget* getResultsWidget(QWidget *parent);  
     SC_ResultsWidget* getResultsWidget(QWidget *parent, QWidget *R2DresWidget, QMap<QString, QList<QString>> assetTypeToType);
   
 signals:
 
 public slots:
    void clear(void);
-   void runPyReCodes();
+   void runPyrecodes();
    void runDone(int error);
    void parseMainFile(QString filename);
+   void writeMainFile(QString filename);  
 
 private:
-  RewetResults *resultWidget;
   SC_FileEdit  *mainFile;  
   SC_FileEdit  *componentLibraryFile;
   SC_FileEdit  *systemConfigFile;
+  SC_AssetInputDelegate *realizationEntriesToRun;
+  
   SC_DirEdit  *r2dResultsFolder;
   SC_DirEdit  *inputDataFolder;
+  QString resultsDir;  
+  QDialog *popupResultsDialog;
+  QPushButton *runLocal;
+
+  PyrecodesResults *theResultsWidget; // used for a local run w/o workflow
+  PyrecodesResults *resultsWidget;    // used for getResults() given an R2D call
+
+  QTabWidget *theTabbedWidget;
 };
 
 

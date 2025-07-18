@@ -73,6 +73,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     buildingWidget = new SimCenterAppSelection(QString("Building Damage & Loss Application"), QString("Buildings"), this);
     pipelineWidget = new SimCenterAppSelection(QString("Gas Network Damage & Loss Application"), QString("NaturalGasPipelines"), this);
     WDNWidget = new SimCenterAppSelection(QString("Water Distribution Network Damage & Loss Application"), QString("WaterDistributionNetwork"), waterExtraKeys);
+    PNWidget = new SimCenterAppSelection(QString("Power Network Damage & Loss Application"), QString("PowerNetwork"), waterExtraKeys);
     QList<QString> transportExtraKeys;
     transportExtraKeys.append("TransportRoads");
     transportExtraKeys.append("TransportBridges");
@@ -81,7 +82,7 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     //Do not use the extra keys since all subtypes use the same DL for now
     transportWidget = new SimCenterAppSelection(QString("Transportation Network Damage & Loss Application"), QString("TransportationNetwork"), this);
     // Building widget apps
-    SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget;    
+    SimCenterAppWidget *buildingPelicun3 = new Pelicun3DLWidget("Buildings");    
     SimCenterAppWidget *noneWidget = new NoneWidget(this);
     
     buildingWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3);
@@ -93,25 +94,33 @@ DLWidget::DLWidget(QWidget *parent, VisualizationWidget* visWidget)
     pipelineWidget->addComponent(QString("None"), QString("None"), noneWidget2);
 
     // Water distribution network apps
-    SimCenterAppWidget *noneWidget3 = new NoneWidget(this);
+    SimCenterAppWidget *noneWidgetWater = new NoneWidget(this);
     SimCenterAppWidget *WDNDL = new NoArgSimCenterApp(QString("CBCitiesDL"));
-    //    SimCenterAppWidget *waterPelicun = new ReWetWidget;
-    SimCenterAppWidget *waterPelicun = new Pelicun3DLWidget;        
+    // SimCenterAppWidget *waterPelicun = new ReWetWidget;
+    SimCenterAppWidget *waterPelicun = new Pelicun3DLWidget("Water");        
 
-    WDNWidget->addComponent(QString("None"), QString("None"), noneWidget3);
+    WDNWidget->addComponent(QString("None"), QString("None"), noneWidgetWater);
     WDNWidget->addComponent(QString("CBCities"), QString("CBCitiesDL"), WDNDL);
     WDNWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), waterPelicun);
 
+    // Power Network
+    SimCenterAppWidget *powerPelicun = new Pelicun3DLWidget("Power");
+    SimCenterAppWidget *noneWidgetPower = new NoneWidget(this);    
+    PNWidget->addComponent(QString("None"), QString("None"), noneWidgetPower);
+    PNWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), powerPelicun);
+
     // Transportation widget apps
-    SimCenterAppWidget *buildingPelicun3_trans = new Pelicun3DLWidget;
-    SimCenterAppWidget *noneWidget_trans = new NoneWidget(this);
-    transportWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), buildingPelicun3_trans);
-    transportWidget->addComponent(QString("None"), QString("None"), noneWidget_trans);
+    SimCenterAppWidget *transportationPelicun = new Pelicun3DLWidget("Transportation");
+    SimCenterAppWidget *noneWidgetTransp = new NoneWidget(this);
+    transportWidget->addComponent(QString("None"), QString("None"), noneWidgetTransp);    
+    transportWidget->addComponent(QString("Pelicun3"), QString("Pelicun3"), transportationPelicun);
+
 
     this->addComponent("Buildings", buildingWidget);
-    this->addComponent("Gas Network",pipelineWidget);
-    this->addComponent("Water Distribution Network",WDNWidget);
-    this->addComponent("Transportation Network",transportWidget);
+    this->addComponent("Gas Network", pipelineWidget);
+    this->addComponent("Water Distribution Network", WDNWidget);
+    this->addComponent("Power Network", PNWidget);
+    this->addComponent("Transportation Network", transportWidget);
 
     this->hideAll();
 }

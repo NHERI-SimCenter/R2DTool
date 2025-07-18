@@ -1,4 +1,4 @@
->#*****************************************************************************
+#*****************************************************************************
 # Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 # All rights reserved.
 #
@@ -47,7 +47,7 @@ INCLUDEPATH += $$PWD \
                $$PWD/Events/UI \
                $$PWD/Tools \
                $$PWD/assetWidgets \
-               $$PWD/SystemPerformanceWidgets \
+               $$PWD/systemPerformanceWidgets \
 	       $$PWD/RecoveryWidgets \
 	       $$PWD/RecoveryWidgets/pyrecodes \
                $$PWD/assetWidgets/EPANET2.2/include \
@@ -133,6 +133,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/Tools/ComponentDatabaseManager.cpp \
             $$PWD/Tools/NGAW2Converter.cpp \
             $$PWD/Tools/Pelicun3PostProcessor.cpp \
+            $$PWD/Tools/DL_TableWidget.cpp \	    
             $$PWD/Tools/PelicunPostProcessor.cpp \
             $$PWD/Tools/CBCitiesPostProcessor.cpp \
             $$PWD/Tools/REmpiricalProbabilityDistribution.cpp \
@@ -207,11 +208,12 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/GraphicElements/GIS_Selection.cpp \
 	    $$PWD/RunWidget.cpp \
             $$PWD/WorkflowAppR2D.cpp \
-            $$PWD/SystemPerformanceWidgets/SystemPerformanceWidget.cpp \
-            $$PWD/SystemPerformanceWidgets/RewetRecovery.cpp \
-            $$PWD/SystemPerformanceWidgets/RewetResults.cpp \
+            $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.cpp \
+            $$PWD/systemPerformanceWidgets/RewetRecovery.cpp \
+            $$PWD/systemPerformanceWidgets/RewetResults.cpp \
             $$PWD/RecoveryWidgets/RecoveryWidget.cpp \
 	    $$PWD/RecoveryWidgets/Pyrecodes.cpp \
+	    $$PWD/RecoveryWidgets/PyrecodesResults.cpp \	    
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesUI.cpp \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesSystemConfig.cpp \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponentLibrary.cpp \
@@ -315,6 +317,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/Tools/ComponentDatabaseManager.h \
             $$PWD/Tools/NGAW2Converter.h \
             $$PWD/Tools/Pelicun3PostProcessor.h \
+            $$PWD/Tools/DL_TableWidget.h \	    
             $$PWD/Tools/PelicunPostProcessor.h \
             $$PWD/Tools/CBCitiesPostProcessor.h \
             $$PWD/Tools/REmpiricalProbabilityDistribution.h \
@@ -398,11 +401,12 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/GraphicElements/GIS_Selection.h \
             $$PWD/WorkflowAppR2D.h \
             $$PWD/RunWidget.h \
-            $$PWD/SystemPerformanceWidgets/SystemPerformanceWidget.h \
-            $$PWD/SystemPerformanceWidgets/RewetRecovery.h \
-            $$PWD/SystemPerformanceWidgets/RewetResults.h \
+            $$PWD/systemPerformanceWidgets/SystemPerformanceWidget.h \
+            $$PWD/systemPerformanceWidgets/RewetRecovery.h \
+            $$PWD/systemPerformanceWidgets/RewetResults.h \
             $$PWD/RecoveryWidgets/RecoveryWidget.h \
 	    $$PWD/RecoveryWidgets/Pyrecodes.h \
+	    $$PWD/RecoveryWidgets/PyrecodesResults.h \	    
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesUI.h \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesSystemConfig.h \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponentLibrary.h \
@@ -470,6 +474,7 @@ SOURCES +=  $$PWD/Tools/QGISHurricanePreprocessor.cpp \
             $$PWD/UIWidgets/PointAssetInputWidget.cpp \
             $$PWD/UIWidgets/CSVWaterNetworkInputWidget.cpp \
             $$PWD/UIWidgets/RasterHazardInputWidget.cpp \
+	    $$PWD/UIWidgets/MultiHazardInputWidget.cpp \
             $$PWD/UIWidgets/GISHazardInputWidget.cpp \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.cpp \
             $$PWD/UIWidgets/GISAssetInputWidget.cpp \
@@ -485,6 +490,7 @@ HEADERS +=  $$PWD/Tools/QGISHurricanePreprocessor.h \
             $$PWD/UIWidgets/PointAssetInputWidget.h \
             $$PWD/UIWidgets/CSVWaterNetworkInputWidget.h \
             $$PWD/UIWidgets/RasterHazardInputWidget.h \
+	    $$PWD/UIWidgets/MultiHazardInputWidget.h \
             $$PWD/UIWidgets/GISHazardInputWidget.h \
             $$PWD/UIWidgets/QGISHurricaneSelectionWidget.h \
             $$PWD/UIWidgets/GISAssetInputWidget.h \

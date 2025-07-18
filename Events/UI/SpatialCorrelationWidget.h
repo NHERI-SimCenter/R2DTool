@@ -66,6 +66,10 @@ private:
     SC_ComboBox* SAcorrelationBoxIntra = nullptr;
     SC_ComboBox* PGVcorrelationBoxInter = nullptr;
     SC_ComboBox* PGVcorrelationBoxIntra = nullptr;
+    SC_ComboBox* DS575HcorrelationBoxInter = nullptr;
+    SC_ComboBox* DS575HcorrelationBoxIntra = nullptr;
+    SC_ComboBox* DS595HcorrelationBoxInter = nullptr;
+    SC_ComboBox* DS595HcorrelationBoxIntra = nullptr;
 
     QLabel* spatialCorrelationInterLabel;
     QLabel* spatialCorrelationIntraLabel;
@@ -74,9 +78,14 @@ private:
     QLabel* PGVtypeLabelInter = new QLabel(tr("PGV:"));
     QLabel* PGAtypeLabelInter = new QLabel(tr("PGA:"));
     QLabel* SAtypeLabelInter = new QLabel(tr("SA:"));
+    QLabel* DS575HtypeLabelInter = new QLabel(tr("DS575H:"));
+    QLabel* DS595HtypeLabelInter = new QLabel(tr("DS595H:"));
+
     QLabel* PGVtypeLabelIntra = new QLabel(tr("PGV:"));
     QLabel* PGAtypeLabelIntra = new QLabel(tr("PGA:"));
     QLabel* SAtypeLabelIntra = new QLabel(tr("SA:"));
+    QLabel* DS575HtypeLabelIntra = new QLabel(tr("DS575H:"));
+    QLabel* DS595HtypeLabelIntra = new QLabel(tr("DS595H:"));
 
 };
 

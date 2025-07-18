@@ -63,9 +63,11 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QStringList* selectedIMTypes,
 //    spatialCorrelationInterLabel = new QLabel(tr("Inter-event Spatial Correlation Model:"),this);
 //    spatialCorrelationIntraLabel = new QLabel(tr("Intra-event Spatial Correlation Model:"),this);
 
-    PGAcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Jayaram (2008)"}));
-    SAcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Jayaram (2008)"}));
+    PGAcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Bradley (2017)"}));
+    SAcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Bradley (2017)"}));
     PGVcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Bradley (2017)"}));
+    DS575HcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Bradley (2017)"}));
+    DS595HcorrelationBoxInter = new SC_ComboBox("InterEventCorr",QStringList({"Baker & Bradley (2017)"}));
 
 
     gridLayoutInter->addWidget(PGAtypeLabelInter, 0, 0);
@@ -74,6 +76,10 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QStringList* selectedIMTypes,
     gridLayoutInter->addWidget(SAcorrelationBoxInter,1,1);
     gridLayoutInter->addWidget(PGVtypeLabelInter,2,0);
     gridLayoutInter->addWidget(PGVcorrelationBoxInter,2,1);
+    gridLayoutInter->addWidget(DS575HtypeLabelInter,3,0);
+    gridLayoutInter->addWidget(DS575HcorrelationBoxInter,3,1);
+    gridLayoutInter->addWidget(DS595HtypeLabelInter,4,0);
+    gridLayoutInter->addWidget(DS595HcorrelationBoxInter,4,1);
     gridLayoutInter->setColumnStretch(1,1);
 
     QGroupBox* intraCorrGroupBox = new QGroupBox(this);
@@ -94,6 +100,8 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QStringList* selectedIMTypes,
                                                                           "Loth & Baker (2013)",
                                                                            "Du & Ning (2021)"}));
     PGVcorrelationBoxIntra = new SC_ComboBox("IntraEventCorr",QStringList({"Du & Ning (2021)"}));
+    DS575HcorrelationBoxIntra = new SC_ComboBox("IntraEventCorr",QStringList({"Du & Ning (2021)"}));
+    DS595HcorrelationBoxIntra = new SC_ComboBox("IntraEventCorr",QStringList({"Du & Ning (2021)"}));
 
     gridLayoutIntra->addWidget(PGAtypeLabelIntra, 0, 0);
     gridLayoutIntra->addWidget(PGAcorrelationBoxIntra,0,1);
@@ -101,6 +109,10 @@ SpatialCorrelationWidget::SpatialCorrelationWidget(QStringList* selectedIMTypes,
     gridLayoutIntra->addWidget(SAcorrelationBoxIntra,1,1);
     gridLayoutIntra->addWidget(PGVtypeLabelIntra,2,0);
     gridLayoutIntra->addWidget(PGVcorrelationBoxIntra,2,1);
+    gridLayoutIntra->addWidget(DS575HtypeLabelIntra,3,0);
+    gridLayoutIntra->addWidget(DS575HcorrelationBoxIntra,3,1);
+    gridLayoutIntra->addWidget(DS595HtypeLabelIntra,4,0);
+    gridLayoutIntra->addWidget(DS595HcorrelationBoxIntra,4,1);
     gridLayoutIntra->setColumnStretch(1,1);
 
     toggleIMselection(selectedIMTypes);
@@ -118,12 +130,21 @@ void SpatialCorrelationWidget::toggleIMselection(QStringList* selectedIMTypes){
     SAtypeLabelIntra->hide();
     PGVtypeLabelInter->hide();
     PGVtypeLabelIntra->hide();
+    DS575HtypeLabelInter->hide();
+    DS575HtypeLabelIntra->hide();
+    DS595HtypeLabelInter->hide();
+    DS595HtypeLabelIntra->hide();
+
     PGAcorrelationBoxIntra->hide();
     PGAcorrelationBoxInter->hide();
     SAcorrelationBoxIntra->hide();
     SAcorrelationBoxInter->hide();
     PGVcorrelationBoxIntra->hide();
     PGVcorrelationBoxInter->hide();
+    DS575HcorrelationBoxIntra->hide();
+    DS575HcorrelationBoxInter->hide();
+    DS595HcorrelationBoxIntra->hide();
+    DS595HcorrelationBoxInter->hide();
     _selectedIMTypes = selectedIMTypes;
     if (selectedIMTypes->contains("PGA")){
         PGAtypeLabelInter->show();
@@ -143,22 +164,42 @@ void SpatialCorrelationWidget::toggleIMselection(QStringList* selectedIMTypes){
         PGVcorrelationBoxIntra->show();
         PGVcorrelationBoxInter->show();
     }
+    if (selectedIMTypes->contains("DS575H")){
+        DS575HtypeLabelInter->show();
+        DS575HtypeLabelIntra->show();
+        DS575HcorrelationBoxIntra->show();
+        DS575HcorrelationBoxInter->show();
+    }
+    if (selectedIMTypes->contains("DS595H")){
+        DS595HtypeLabelInter->show();
+        DS595HtypeLabelIntra->show();
+        DS595HcorrelationBoxIntra->show();
+        DS595HcorrelationBoxInter->show();
+    }
     return;
 }
 bool SpatialCorrelationWidget::outputToJSON(QJsonObject& obj)
 {
     if (_selectedIMTypes->size()==1){
         if (_selectedIMTypes->contains("PGA")){
-            obj["SaInterEvent"] = PGAcorrelationBoxInter->currentText();
-            obj["SaIntraEvent"] = PGAcorrelationBoxIntra->currentText();
+            obj["InterEventCorr"] = PGAcorrelationBoxInter->currentText();
+            obj["IntraEventCorr"] = PGAcorrelationBoxIntra->currentText();
         }
         if (_selectedIMTypes->contains("SA")){
-            obj["SaInterEvent"] = SAcorrelationBoxInter->currentText();
-            obj["SaIntraEvent"] = SAcorrelationBoxIntra->currentText();
+            obj["InterEventCorr"] = SAcorrelationBoxInter->currentText();
+            obj["IntraEventCorr"] = SAcorrelationBoxIntra->currentText();
         }
         if (_selectedIMTypes->contains("PGV")){
-            obj["SaInterEvent"] = PGVcorrelationBoxInter->currentText();
-            obj["SaIntraEvent"] = PGVcorrelationBoxIntra->currentText();
+            obj["InterEventCorr"] = PGVcorrelationBoxInter->currentText();
+            obj["IntraEventCorr"] = PGVcorrelationBoxIntra->currentText();
+        }
+        if (_selectedIMTypes->contains("DS575H")){
+            obj["InterEventCorr"] = DS575HcorrelationBoxInter->currentText();
+            obj["IntraEventCorr"] = DS575HcorrelationBoxIntra->currentText();
+        }
+        if (_selectedIMTypes->contains("DS595H")){
+            obj["InterEventCorr"] = DS595HcorrelationBoxInter->currentText();
+            obj["IntraEventCorr"] = DS595HcorrelationBoxIntra->currentText();
         }
     } else {
         if (_selectedIMTypes->contains("PGA")){
@@ -179,6 +220,19 @@ bool SpatialCorrelationWidget::outputToJSON(QJsonObject& obj)
             PGVcorrelationBoxIntra->outputToJSON(PGVgmpe);
             obj["PGV"] = PGVgmpe;
         }
+        if (_selectedIMTypes->contains("DS575H")){
+            QJsonObject DS575Hgmpe;
+            DS575HcorrelationBoxInter->outputToJSON(DS575Hgmpe);
+            DS575HcorrelationBoxIntra->outputToJSON(DS575Hgmpe);
+            obj["DS575H"] = DS575Hgmpe;
+        }
+        if (_selectedIMTypes->contains("DS595H")){
+            QJsonObject DS595Hgmpe;
+            DS595HcorrelationBoxInter->outputToJSON(DS595Hgmpe);
+            DS595HcorrelationBoxIntra->outputToJSON(DS595Hgmpe);
+            obj["DS595H"] = DS595Hgmpe;
+        }
+
     }
 
     return true;
