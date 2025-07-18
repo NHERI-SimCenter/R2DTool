@@ -66,10 +66,11 @@ public slots:
 
 private:
 
-    SpatialCorrelationWidget* spatialCorrWidget = nullptr;
-    IntensityMeasure* m_intensityMeasure = nullptr;
-    IntensityMeasureWidget* m_intensityMeasureWidget = nullptr;
-    GMPEWidget* m_gmpeWidget = nullptr;
+    SpatialCorrelationWidget* theSpatialCorrWidget = nullptr;
+    IntensityMeasure* theIntensityMeasure = nullptr;
+    IntensityMeasureWidget* theIntensityMeasureWidget = nullptr;
+  
+    GMPEWidget* theGMPE = nullptr;
 //    GMPE* m_gmpe = nullptr;
 
 };

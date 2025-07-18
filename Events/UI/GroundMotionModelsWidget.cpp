@@ -51,37 +51,24 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 GroundMotionModelsWidget::GroundMotionModelsWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
-    auto mainLayout = new QVBoxLayout(this);
+    QVBoxLayout * mainLayout = new QVBoxLayout(this);
 
-    m_intensityMeasure = new IntensityMeasure(this);
-    m_intensityMeasureWidget = new IntensityMeasureWidget(*this->m_intensityMeasure);
+    theIntensityMeasure = new IntensityMeasure(this);
+    theIntensityMeasureWidget = new IntensityMeasureWidget(theIntensityMeasure);
 
-    spatialCorrWidget = new SpatialCorrelationWidget(m_intensityMeasureWidget->getSelectedIMTypes());
+    theSpatialCorrWidget = new SpatialCorrelationWidget(theIntensityMeasureWidget->getSelectedIMTypes());
 
-//    m_gmpe = new GMPE(this);
-    m_gmpeWidget = new GMPEWidget(m_intensityMeasureWidget->getSelectedIMTypes());
+    theGMPE = new GMPEWidget(theIntensityMeasureWidget->getSelectedIMTypes());
 
-    // GMPE options (link between source type and GMPE options)
-//    connect(erfWidget->ruptureWidget(), SIGNAL(widgetTypeChanged(QString)),
-//            m_gmpeWidget, SLOT(handleAvailableGMPE(QString)));
-
-//    // correlation model options (link between source type and correlation model options)
-//    connect(erfWidget->ruptureWidget(), SIGNAL(widgetTypeChanged(QString)),
-//            spatialCorrWidget, SLOT(handleAvailableModel(QString)));
-
-//    // Intensity Measure Levels options (link between source type and intensity measure levels options)
-//    connect(erfWidget->ruptureWidget(), SIGNAL(widgetTypeChanged(QString)),
-//            m_intensityMeasureWidget, SLOT(handleIntensityMeasureLevels(QString)));
-
-    mainLayout->addWidget(m_intensityMeasureWidget);
-    mainLayout->addWidget(m_gmpeWidget);
-    mainLayout->addWidget(spatialCorrWidget);
+    mainLayout->addWidget(theIntensityMeasureWidget);
+    mainLayout->addWidget(theGMPE);
+    mainLayout->addWidget(theSpatialCorrWidget);
     mainLayout->addStretch(0);
 
-    connect(m_intensityMeasureWidget, &IntensityMeasureWidget::IMSelectionChanged,
-            m_gmpeWidget, &GMPEWidget::toggleIMselection);
-    connect(m_intensityMeasureWidget, &IntensityMeasureWidget::IMSelectionChanged,
-            spatialCorrWidget, &SpatialCorrelationWidget::toggleIMselection);
+    connect(theIntensityMeasureWidget, &IntensityMeasureWidget::IMSelectionChanged,
+            theGMPE, &GMPEWidget::toggleIMselection);
+    connect(theIntensityMeasureWidget, &IntensityMeasureWidget::IMSelectionChanged,
+            theSpatialCorrWidget, &SpatialCorrelationWidget::toggleIMselection);
 
 }
 
@@ -94,7 +81,7 @@ void GroundMotionModelsWidget::reset(void)
 
 IntensityMeasure *GroundMotionModelsWidget::intensityMeasure() const
 {
-    return m_intensityMeasure;
+    return theIntensityMeasure;
 }
 
 
@@ -106,7 +93,7 @@ bool GroundMotionModelsWidget::inputFromJSON(QJsonObject& /*obj*/)
 
 bool GroundMotionModelsWidget::outputToJSON(QJsonObject& obj)
 {
-    QStringList* selectedIMtypes = m_intensityMeasureWidget->getSelectedIMTypes();
+    QStringList* selectedIMtypes = theIntensityMeasureWidget->getSelectedIMTypes();
     if (selectedIMtypes->size()==0){
         errorMessage("Ground Motion Models: At least one intensity measure needs to be selected." );
         return false;
@@ -115,16 +102,16 @@ bool GroundMotionModelsWidget::outputToJSON(QJsonObject& obj)
 
     // Get the correlation model Json object
     QJsonObject spatCorrObj;
-    if (!spatialCorrWidget->outputToJSON(spatCorrObj))
+    if (!theSpatialCorrWidget->outputToJSON(spatCorrObj))
         return false;
     // Get the intensity measure Json object
     QJsonObject IMObj;
-    if (!m_intensityMeasureWidget->outputToJSON(IMObj))
+    if (!theIntensityMeasureWidget->outputToJSON(IMObj))
         return false;
 
 
     QJsonObject GMPEObj;
-    if (!m_gmpeWidget->outputToJSON(GMPEObj))
+    if (!theGMPE->outputToJSON(GMPEObj))
         return false;
 
 
