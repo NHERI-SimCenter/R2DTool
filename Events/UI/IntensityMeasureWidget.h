@@ -20,7 +20,7 @@ class IntensityMeasureWidget : public SimCenterAppWidget
 public:
     explicit IntensityMeasureWidget(IntensityMeasure& im, QWidget *parent = nullptr);
 
-    QComboBox *typeBox() const;
+  // QComboBox *typeBox() const;
     QStringList* getSelectedIMTypes(void);
     bool outputToJSON(QJsonObject &jsonObject);
 
@@ -39,7 +39,7 @@ public slots:
 private:
     IntensityMeasure& m_intensityMeasure;
     QLabel* typeLabel;
-    QComboBox* m_typeBox;
+    // FMK removal as not ever created!    QComboBox* m_typeBox;
     QLineEdit* periodsLineEdit;
     QRegExpValidator* LEValidator;
     QLabel* periodLabel;

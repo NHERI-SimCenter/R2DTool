@@ -111,30 +111,35 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure &im, QWidget *pa
 
 void IntensityMeasureWidget::setupConnections()
 {
-    connect(this->m_typeBox, &QComboBox::currentTextChanged,
+  /* FMK - never created
+  connect(this->m_typeBox, &QComboBox::currentTextChanged,
             &this->m_intensityMeasure, &IntensityMeasure::setType);
-
+  
     connect(&this->m_intensityMeasure, &IntensityMeasure::typeChanged,
             this->m_typeBox, &QComboBox::setCurrentText);
 
-    connect(this->periodsLineEdit, &QLineEdit::textChanged, this, &IntensityMeasureWidget::checkPeriodsValid);
-    connect(this->periodsLineEdit, &QLineEdit::editingFinished, this, &IntensityMeasureWidget::commitPeriods);
+
+  */
+  
+    connect(this->periodsLineEdit, &QLineEdit::textChanged,
+	    this, &IntensityMeasureWidget::checkPeriodsValid);
+    connect(this->periodsLineEdit, &QLineEdit::editingFinished,
+	    this, &IntensityMeasureWidget::commitPeriods);
     //    connect(this->periodsLineEdit, &QLineEdit::inputRejected, this->periodsLineEdit, &QLineEdit::undo);
 
-    connect(this->PGACheckBox, &QCheckBox::stateChanged, this, &IntensityMeasureWidget::handleTypeChanged);
-    connect(this->SACheckBox, &QCheckBox::stateChanged, this, &IntensityMeasureWidget::handleTypeChanged);
+    connect(this->PGACheckBox, &QCheckBox::stateChanged,
+	    this, &IntensityMeasureWidget::handleTypeChanged);
+    connect(this->SACheckBox, &QCheckBox::stateChanged,
+	    this, &IntensityMeasureWidget::handleTypeChanged);
     connect(this->PGVCheckBox, &QCheckBox::stateChanged, this, &IntensityMeasureWidget::handleTypeChanged);
 
     // send imtLevels
-    connect(this->imtLevelLineEdit, SIGNAL(textChanged(QString)),&this->m_intensityMeasure, SLOT(setImtLevels(QString)));
+    connect(this->imtLevelLineEdit, SIGNAL(textChanged(QString)),
+	    &this->m_intensityMeasure, SLOT(setImtLevels(QString)));
 
     // send trucation levels
     connect(this->imtTrucBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             &this->m_intensityMeasure, &IntensityMeasure::setImtTruc);
-
-//    periodsLineEdit->setReadOnly(true);
-//    periodsLineEdit->setEnabled(false);
-//    periodsLineEdit->setStyleSheet("QLineEdit {background-color: gray;}");
 }
 
 
@@ -261,10 +266,12 @@ void IntensityMeasureWidget::handleIntensityMeasureLevels(const QString sourceTy
 }
 
 
+/* FMK - typeBix not set
 QComboBox *IntensityMeasureWidget::typeBox() const
 {
     return m_typeBox;
 }
+*/
 
 bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 {
