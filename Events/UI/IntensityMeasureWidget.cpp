@@ -138,11 +138,11 @@ void IntensityMeasureWidget::setupConnections()
 
     // send imtLevels
     connect(this->imtLevelLineEdit, SIGNAL(textChanged(QString)),
-	    &this->m_intensityMeasure, SLOT(setImtLevels(QString)));
+	    theIntensityMeasure, SLOT(setImtLevels(QString)));
 
     // send trucation levels
     connect(this->imtTrucBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            &this->m_intensityMeasure, &IntensityMeasure::setImtTruc);
+            theIntensityMeasure, &IntensityMeasure::setImtTruc);
 }
 
 
@@ -150,7 +150,6 @@ QString IntensityMeasureWidget::checkPeriodsValid(const QString& input) const
 {
 
     QString validInput = input;
-
     if(validInput.isEmpty())
         return validInput;
 
