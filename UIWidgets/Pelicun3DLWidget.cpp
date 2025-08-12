@@ -70,6 +70,7 @@ Pelicun3DLWidget::Pelicun3DLWidget(QString assType, QWidget *parent):
         DLTypeComboBox->addItem("Hazus Earthquake - Buildings");
         DLTypeComboBox->addItem("Hazus Earthquake - Stories");
         DLTypeComboBox->addItem("Hazus Hurricane Wind - Buildings");
+        DLTypeComboBox->addItem("Hazus Hurricane Storm Surge - Buildings");
         DLTypeComboBox->addItem("Hazus Hurricane Wind & Storm Surge - Buildings");
     } 
     else if (assetType == "Transportation"){
