@@ -82,9 +82,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 using namespace std::chrono;
 // Test to remove end
 
-
-
-GISHazardInputWidget::GISHazardInputWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+GISHazardInputWidget::GISHazardInputWidget(QGISVisualizationWidget* visWidget, QWidget *parent)
+  : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     GISFilePath = "";
 
@@ -111,12 +110,6 @@ bool GISHazardInputWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     QJsonObject appData;
 
-    QFileInfo GISFile (GISPathLineEdit->text());
-
-    appData["GISFile"] = GISFile.fileName();
-    appData["pathToSource"]=GISFile.path();
-    crsSelectorWidget->outputAppDataToJSON(appData);
-
     jsonObject["ApplicationData"]=appData;
 
     return true;
@@ -134,6 +127,11 @@ bool GISHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
         jsonObj["eventFilePath"]=QString("");
     }
   */
+
+  QFileInfo GISFile (GISPathLineEdit->text());
+  jsonObj["GISFile"] = GISFile.fileName();
+  jsonObj["pathToSource"]=GISFile.path();
+  crsSelectorWidget->outputAppDataToJSON(jsonObj);
   
   return theIMs->outputToJSON(jsonObj);
 
@@ -142,89 +140,84 @@ bool GISHazardInputWidget::outputToJSON(QJsonObject &jsonObj)
 
 bool GISHazardInputWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    // Set the units
-    bool res = theIMs->inputFromJSON(jsonObject);
-
-    // If setting of units failed, provide default units and issue a warning
-    if(!res) {
-      errorMessage("GIS Hazard INput - failed to load intensity measures");
+  QString fileName;
+  QString pathToFile;
+  
+  if (jsonObject.contains("GISFile"))
+    fileName = jsonObject["GISFile"].toString();
+  if (jsonObject.contains("pathToSource"))
+    pathToFile = jsonObject["pathToSource"].toString();
+  else
+    pathToFile=QDir::currentPath();
+  
+  QString fullFilePath= pathToFile + QDir::separator() + fileName;
+  
+  // adam .. adam .. adam
+  if (!QFileInfo::exists(fullFilePath)){
+    fullFilePath = pathToFile + QDir::separator()
+      + "input_data" + QDir::separator() + fileName;
+    
+    if (!QFile::exists(fullFilePath)) {
+      this->errorMessage("GIS hazard input widget - could not find the GIS file");
+      return false;
     }
+  }
+  
+  GISPathLineEdit->setText(fullFilePath);
+  GISFilePath = fullFilePath;
 
-    return res;
+  // Get the event type
+  auto eventType = jsonObject["eventClassification"].toString();
+  
+  if(eventType.isEmpty())
+    {
+      this->errorMessage("Error, please provide an event classification in the json input file");
+            return false;
+    }
+  
+  auto eventIndex = eventTypeCombo->findText(eventType);
+  
+  if(eventIndex == -1)
+    {
+      this->errorMessage("Error, the event classification "+eventType+" is not recognized");
+      return false;
+    }
+  else
+    {
+      eventTypeCombo->setCurrentIndex(eventIndex);
+    }
+  
+  int res = this->loadGISFile();
+  
+  if(res !=0)
+    {
+      this->errorMessage("Failed to load the GIS file");
+      return false;
+    }
+  
+  // Set the hazard type
+  theIMs->handleHazardChange(eventType);
+  
+  // Set the CRS
+  auto layerCrs = vectorLayer->crs();
+  crsSelectorWidget->setCRS(layerCrs);
+  
+  
+  // Set the units
+  bool resIM = theIMs->inputFromJSON(jsonObject);
+  
+  // If setting of units failed, provide default units and issue a warning
+  if(!resIM) {
+    errorMessage("GIS Hazard Input - failed to load intensity measures");
+  }
+  
+  return resIM;
 }
 
 
 bool GISHazardInputWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
-    if (jsonObj.contains("ApplicationData")) {
-        QJsonObject appData = jsonObj["ApplicationData"].toObject();
-
-        QString fileName;
-        QString pathToFile;
-
-        if (appData.contains("GISFile"))
-            fileName = appData["GISFile"].toString();
-        if (appData.contains("pathToSource"))
-            pathToFile = appData["pathToSource"].toString();
-        else
-            pathToFile=QDir::currentPath();
-
-        QString fullFilePath= pathToFile + QDir::separator() + fileName;
-
-        // adam .. adam .. adam
-        if (!QFileInfo::exists(fullFilePath)){
-            fullFilePath = pathToFile + QDir::separator()
-                    + "input_data" + QDir::separator() + fileName;
-
-            if (!QFile::exists(fullFilePath)) {
-                this->errorMessage("GIS hazard input widget - could not find the GIS file");
-                return false;
-            }
-        }
-
-        GISPathLineEdit->setText(fullFilePath);
-        GISFilePath = fullFilePath;
-
-        // Get the event type
-        auto eventType = appData["eventClassification"].toString();
-
-        if(eventType.isEmpty())
-        {
-            this->errorMessage("Error, please provide an event classification in the json input file");
-            return false;
-        }
-
-        auto eventIndex = eventTypeCombo->findText(eventType);
-
-        if(eventIndex == -1)
-        {
-            this->errorMessage("Error, the event classification "+eventType+" is not recognized");
-            return false;
-        }
-        else
-        {
-            eventTypeCombo->setCurrentIndex(eventIndex);
-        }
-
-        auto res = this->loadGISFile();
-
-        if(res !=0)
-        {
-            this->errorMessage("Failed to load the GIS file");
-            return false;
-        }
-
-        // Set the hazard type
-        theIMs->handleHazardChange(eventType);
-
-        // Set the CRS
-        auto layerCrs = vectorLayer->crs();
-        crsSelectorWidget->setCRS(layerCrs);
-
-        return true;
-    }
-
-    return false;
+  return true;
 }
 
 
@@ -438,4 +431,9 @@ bool GISHazardInputWidget::copyFiles(QString &destDir)
     return true;
 }
 
+SimCenterAppWidget *
+GISHazardInputWidget::getClone(){
+  SimCenterAppWidget *thisCopy = new GISHazardInputWidget(theVisualizationWidget);
+  return thisCopy;
+}
 

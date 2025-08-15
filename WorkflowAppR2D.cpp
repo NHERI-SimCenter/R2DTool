@@ -167,7 +167,7 @@ WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
 
     connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
 
-    connect(theJobManager,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
+    // connect(theJobManager,SIGNAL(processResults(QString&)), this, SLOT(processResults(QString&)));
     
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
@@ -486,12 +486,18 @@ bool WorkflowAppR2D::outputToJSON(QJsonObject &jsonObjectTop)
 
 void WorkflowAppR2D::processResults(QString &resultsDir)
 {
-    this->statusMessage("Importing results");
+    this->statusMessage("Importing results");    
     QApplication::processEvents();
 
-    theResultsWidget->processResults(resultsDir);
+    int ok = theResultsWidget->processResults(resultsDir);
     theRunWidget->hide();
-    theComponentSelection->displayComponent("RES");
+
+    if  (ok == 0) {
+      theComponentSelection->displayComponent("RES");
+      this->statusMessage("Import Success");
+    }
+    else
+      this->errorMessage("Import Failure .. Incorrect path or Job failed");
 }
 
 

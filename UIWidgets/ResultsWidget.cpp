@@ -237,34 +237,38 @@ bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 
 int ResultsWidget::processResults(QString resultsDirectory)
 {
+  
   //
   // clear current results
   //
   
-    int tabCount = resTabWidget->count();
-    for (int ind = 0; ind < tabCount; ind++){
-        SC_ResultsWidget* tab = static_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
-        if (tab !=0){
-            tab->clear();
-        }
+  int tabCount = resTabWidget->count();
+  for (int ind = 0; ind < tabCount; ind++){
+    SC_ResultsWidget* tab = static_cast<SC_ResultsWidget*>(resTabWidget->widget(ind));
+    if (tab !=0){
+      tab->clear();
     }
-    resTabWidget->clear();
-    auto resultLyr = theVisualizationWidget->getLayerGroup("Results");
-    if (resultLyr){
-        theVisualizationWidget->removeLayerGroup("Results");
+  }
+  
+  resTabWidget->clear();
+  auto resultLyr = theVisualizationWidget->getLayerGroup("Results");
+  if (resultLyr){
+    theVisualizationWidget->removeLayerGroup("Results");
+  }
+  auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Critical Damage State");
+  if (DMGLyr){
+    theVisualizationWidget->removeLayerGroup("Most Likely Critical Damage State");
+  }
+  
+  QgsProject *project = QgsProject::instance();
+  for (QgsMapLayer *layer : project->mapLayers().values()) {
+    if ((layer->name() == "Results")||(layer->name() == "Most Likely Critical Damage State")) {
+      theVisualizationWidget->removeLayer(layer);
     }
-    auto DMGLyr = theVisualizationWidget->getLayerGroup("Most Likely Critical Damage State");
-    if (DMGLyr){
-        theVisualizationWidget->removeLayerGroup("Most Likely Critical Damage State");
-    }
-    QgsProject *project = QgsProject::instance();
-    for (QgsMapLayer *layer : project->mapLayers().values()) {
-        if ((layer->name() == "Results")||(layer->name() == "Most Likely Critical Damage State")) {
-            theVisualizationWidget->removeLayer(layer);
-        }
-    }
+  }
 
-    //
+  
+  //
     // opening large geojson file, create layers in main VIZ
     //    1. first divide features into types
     //    2. creating small geojson for each type    
@@ -336,7 +340,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
                 QJsonObject assetProperties = value["properties"].toObject();
                 if (!jsonObject.contains("type")) {
                     this->errorMessage("The Json object is missing the 'type' key that defines the asset type");
-                    return false;
+                    return -1;
                 }
                 // type is Bridge/Tunnel/Road
                 QString type = assetProperties["type"].toString();
@@ -373,6 +377,10 @@ int ResultsWidget::processResults(QString resultsDirectory)
                 }
             }
         }
+    } else {
+      QString msg = "No Results file found: " + pathGeojson;
+      errorMessage(msg);      
+      return -2;
     }
 
     // 2. creating small geojson for each type
@@ -400,7 +408,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
         QFile file(outputFile);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {
             this->errorMessage("Error creating the asset output json file in GeojsonAssetInputWidget");
-            return false;
+            return -3;
         }
 
         // Write the file to the folder
@@ -416,7 +424,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
         assetLayer = theVisualizationWidget->addVectorLayer(outputFile, assetType + QString("_results"), "ogr");
         if(assetLayer == nullptr) {
 	  this->errorMessage("Error, failed to add GIS layer");
-	  return false;
+	  return -4;
         }
         QgsVectorLayer* DMGlayer;
         DMGlayer = theVisualizationWidget->duplicateExistingLayer(assetLayer);
@@ -440,7 +448,7 @@ int ResultsWidget::processResults(QString resultsDirectory)
         else
         {
             this->errorMessage("Could not parse the layer type for layer "+DMGlayer->name());
-            return -1;
+            return -5;
         }
         theVisualizationWidget->createCategoryRenderer("R2Dres_MostLikelyCriticalDamageState", DMGlayer, markerSymbol);
         DMGLayers.append(DMGlayer);
@@ -458,9 +466,6 @@ int ResultsWidget::processResults(QString resultsDirectory)
         }
     }
 
-
-    // qDebug() << resultsDirectory;
-
     //
     // Get results widgets from each of DL asset types and system performance & add to Tabbed widget
     //
@@ -473,20 +478,23 @@ int ResultsWidget::processResults(QString resultsDirectory)
         activeDLResultsWidgets[assetType]->addResultTab(assetType, resultsDirectory);
     }
 
-
+    //
     // adding Recovery
+    //
+    
     RecoveryWidget *theRecoveryWidget = WorkflowAppR2D::getInstance()->getTheRecoveryWidget();
     if (theRecoveryWidget != 0) {
       SimCenterAppWidget *theApp = theRecoveryWidget->getCurrentSelection();
       SC_ResultsWidget *theRecoveryResults = theApp->getResultsWidget();
       if (theRecoveryResults != 0) {
-	qDebug() << "ADDING RECOVERY";
+	
 	resTabWidget->addTab(theRecoveryResults, "Recovery");
 	QString blank;
 	theRecoveryResults->processResults(blank, resultsDirectory);
-      } qDebug() << "RECOVERY RESULTS NULL";
-    } else qDebug() << "RECOVERY WIDGET EMPTY";
-    
+	
+      }
+    } 
+
     for (QString assetType : activeSPResultsWidgets.keys()){
         // check if assetType is in resTabWidget
         // If yes, add new tab
@@ -506,8 +514,6 @@ int ResultsWidget::processResults(QString resultsDirectory)
             activeSPResultsWidgets[assetType]->addResultSubtab(assetType, activeDLResultsWidgets[assetType], resultsDirectory);
         }
     }
-
-    
 
 
 //    try {
@@ -592,7 +598,6 @@ int ResultsWidget::processResults(QString resultsDirectory)
 
         return -1;
     }
-
 
     return 0;
 }

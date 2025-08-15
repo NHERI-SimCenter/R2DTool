@@ -77,6 +77,8 @@ public:
     bool copyFiles(QString &destDir);
     void clear(void);
 
+    SimCenterAppWidget *getClone();
+						     
 private slots:
     void chooseEventFileDialog(void);
     void handleLayerCrsChanged(const QgsCoordinateReferenceSystem & val);
