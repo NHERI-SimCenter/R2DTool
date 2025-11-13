@@ -62,6 +62,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "qgsapplication.h"
 #include <Utils/FileOperations.h>
+#include <Utils/SimCenterConfigFile.h>
 
 static QString logFilePath;
 static bool logToFile = false;
@@ -112,7 +113,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("5.5.1");
+    QCoreApplication::setApplicationVersion("5.5.2");
 
     //
     // set up logging of output messages for user debugging
@@ -142,13 +143,6 @@ int main(int argc, char *argv[])
 
     // Start the Application
     QgsApplication a( argc, argv, true );
-
-    //Setting Google Analytics Tracking Information
-    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
-    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
-    GoogleAnalytics::CreateSessionId();
-    GoogleAnalytics::StartSession();
-
 
     // create a remote interface
     QString tenant("designsafe");
@@ -234,48 +228,52 @@ int main(int argc, char *argv[])
     //
     //Setting Google Analytics Tracking Information
     //
+
+    QString analyticsOption = getConfigOptionString("GoogleAnalytics");
     
 #ifdef _SC_RELEASE
-    
-    qDebug() << "Running a Release Version of R2D";   
-    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
-    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
-    GoogleAnalytics::CreateSessionId();
-    GoogleAnalytics::StartSession();
 
-    // Opening a QWebEngineView and using github to get app geographic usage
-    QWebEngineView view;
-    view.setUrl(QUrl("https://nheri-simcenter.github.io/R2DTool/GA4.html"));
-    view.resize(1024, 750);
-    view.show();
-    view.hide();
-#endif
+    qDebug() << "Running a Release Version of R2D";
+    
+    if (analyticsOption != "No") {
+
+      GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
+      GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
+      GoogleAnalytics::CreateSessionId();
+      GoogleAnalytics::StartSession();
+
+      qDebug() << "Google Analytics: Started";
+
+      // Opening a QWebEngineView and using github to get app geographic usage
+      QWebEngineView view;
+      view.setUrl(QUrl("https://nheri-simcenter.github.io/R2DTool/GA4.html"));
+	view.resize(1024, 750);
+	view.show();
+	view.hide();
+	
+    } else
+      qDebug() << "Google Analytics: None";
+    
+#endif      
+
+
 
 #ifdef _ANALYTICS
 
-    qDebug() << "compiled with: ANALYTICS";    
-    GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
-    GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
-    GoogleAnalytics::CreateSessionId();
-    GoogleAnalytics::StartSession();
+    if (analyticsOption != "No") {
+      
+      qDebug() << "compiled with: ANALYTICS";    
+      GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
+      GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
+      GoogleAnalytics::CreateSessionId();
+      GoogleAnalytics::StartSession();
+      
+    } else
+      qDebug() << "Google Analytics: None";    
 
-#endif    
-    
-
-    int res = a.exec();
-
-
-#ifdef _GA_AFTER
-    
-    qDebug() << "compiled with: _GA_AFTER";    
-    // Opening a QWebEngineView and using github to get app geographic usage
-    QWebEngineView view;
-    view.setUrl(QUrl("https://nheri-simcenter.github.io/R2DTool/GA4.html"));
-    view.resize(1024, 750);
-    view.show();
-    view.hide();
-    
 #endif
+    
+    int res = a.exec();
     
     // On done with event loop, logout & stop the thread
     theRemoteService->logout();
