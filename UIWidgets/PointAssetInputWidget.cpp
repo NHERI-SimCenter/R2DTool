@@ -79,9 +79,24 @@ int PointAssetInputWidget::loadAssetVisualization()
 
     // First check if a footprint was provided
     auto indexFootprint = headers.indexOf("Footprint");
-    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, latTag);
-    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, lonTag);
+    
+    //    auto indexLatitude = theVisualizationWidget->getIndexOfVal(headers, latTag);
+    //    auto indexLongitude = theVisualizationWidget->getIndexOfVal(headers, lonTag);
 
+    
+    auto indexLatitude = headers.indexOf(latTag); 
+    if (indexLatitude == -1)
+     indexLatitude = headers.indexOf("Latitude");
+    
+    auto indexLongitude = headers.indexOf(lonTag);
+    if (indexLongitude == -1)
+      indexLongitude = headers.indexOf("Longitude");
+
+    /*
+    qDebug() << "headers: " << headers;
+    qDebug() <<" index Footprint: " << indexFootprint << " lat: " << indexLatitude << " long: " << indexLongitude;
+    */
+    
     if(indexLongitude == -1 || indexLatitude == -1)
     {
         this->errorMessage("Could not find latitude and longitude in the header columns");
@@ -157,7 +172,7 @@ int PointAssetInputWidget::loadAssetVisualization()
 
         QgsFeature feature;
         feature.setFields(featFields);
-
+	
         // If a footprint is given use that
         if(indexFootprint != -1)
         {
