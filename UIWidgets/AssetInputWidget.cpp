@@ -586,7 +586,12 @@ bool AssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
         {
             data["assetSourceFile"]=componentFile.fileName();
             data["pathToSource"]=componentFile.absoluteDir().path();
-            data["inputIsGIS"]=false;
+
+            QFileInfo fi(componentFile.fileName());
+            QString suffix = fi.suffix().toLower();
+            QSet<QString> gisExt = {"shp", "gdb", "gpkg"};
+            data["inputIsGIS"] = gisExt.contains(suffix);
+//            data["inputIsGIS"]=false;
         }
 
         QString filterData = this->getFilterString();

@@ -161,8 +161,9 @@ bool GISAssetInputWidget::outputToJSON(QJsonObject &rvObject)
     QDir dirInfo(assetFilePath);
     auto assetDirName = dirInfo.dirName();
     auto pathToFile = assetDirName + QDir::separator() + assetFileName;
-
-    //    auto pathToFile = assetFilePath + QDir::separator() + assetFileName;
+    if (!QFileInfo::exists(pathToFile)) {
+        pathToFile = assetFilePath + QDir::separator() + assetFileName;
+    }
 
     //    auto pathToFile = assetFileName;
 
@@ -468,7 +469,8 @@ bool GISAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
 
     if (appData["inputIsGIS"].toBool())
     {
-        appData["assetGISFile"] = appData["assetSourceFile"];
+//        appData["assetGISFile"] = appData["assetSourceFile"];
+        appData["assetGISFile"] = appData.value("assetSourceFile").toString();
     }
     else
     {
