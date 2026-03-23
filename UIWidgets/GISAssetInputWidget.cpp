@@ -215,11 +215,11 @@ int GISAssetInputWidget::loadAssetVisualization()
     auto type = mainLayer->geometryType();
 
     QString typeStr = "Null";
-    if(type == QgsWkbTypes::PointGeometry)
+    if (type == Qgis::GeometryType::Point)
         typeStr = "point";
-    else if(type == QgsWkbTypes::LineGeometry)
+    else if (type == Qgis::GeometryType::Line)
         typeStr = "multilinestring";
-    else if(type == QgsWkbTypes::PolygonGeometry)
+    else if (type == Qgis::GeometryType::Polygon)
         typeStr = "polygon";
 
     // Create the selected building layer
@@ -234,15 +234,16 @@ int GISAssetInputWidget::loadAssetVisualization()
     selectedFeaturesLayer->setCrs(mainLayer->crs());
 
     QgsSymbol* selectFeatSymbol = nullptr;
-    if(type == QgsWkbTypes::PointGeometry)
+
+    if (type == Qgis::GeometryType::Point)
     {
         selectFeatSymbol = new QgsMarkerSymbol();
     }
-    else if(type == QgsWkbTypes::LineGeometry)
+    else if (type == Qgis::GeometryType::Line)
     {
         selectFeatSymbol = new QgsLineSymbol();
     }
-    else if(type == QgsWkbTypes::PolygonGeometry)
+    else if (type == Qgis::GeometryType::Polygon)
     {
         selectFeatSymbol = new QgsFillSymbol();
     }

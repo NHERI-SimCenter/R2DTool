@@ -433,15 +433,15 @@ int ResultsWidget::processResults(QString resultsDirectory)
         // Get the layer type
         QString layerType;
         auto geomType = DMGlayer->geometryType();
-        if(geomType == QgsWkbTypes::PolygonGeometry){
+	if (geomType == Qgis::GeometryType::Polygon) {
             layerType = "polygon";
             markerSymbol = new QgsFillSymbol();
         }
-        else if (geomType == QgsWkbTypes::PointGeometry){
+        else if (geomType == Qgis::GeometryType::Point) { 
             layerType = "point";
             markerSymbol = new QgsMarkerSymbol();
         }
-        else if (geomType == QgsWkbTypes::LineGeometry){
+        else if (geomType == Qgis::GeometryType::Line) {
             layerType = "linestring";
             markerSymbol = new QgsLineSymbol();
         }
