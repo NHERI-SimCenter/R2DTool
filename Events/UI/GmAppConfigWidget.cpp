@@ -54,7 +54,8 @@ GmAppConfigWidget::GmAppConfigWidget(GmAppConfig* appConfig, GMWidget *parent) :
     this->setWindowIcon(QIcon(":/images/settings.png"));
     this->setAutoFillBackground(true);
     QPalette palette = QPalette();
-    palette.setColor(QPalette::Background, Qt::white);
+    //palette.setColor(QPalette::Background, Qt::white);
+    palette.setColor(QPalette::Window, Qt::white);
     this->setPalette(palette);
 
     QVBoxLayout* layout = new QVBoxLayout(this);

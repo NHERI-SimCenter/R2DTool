@@ -38,7 +38,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetInputDelegate.h"
 
-#include <QRegExpValidator>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 #include <sstream>
 
@@ -50,8 +51,11 @@ AssetInputDelegate::AssetInputDelegate()
     this->setPlaceholderText("e.g., 1, 3, 5-10, 12");
 
     // Create a regExp validator to make sure only '-' & ',' & ' ' & numbers are input
-    QRegExp LERegExp ("((([0-9]*)|([0-9]+-[1-9][0-9]*))[ ]*,[ ]*)*([[0-9]+-[1-9][0-9]*|[0-9]*)");
-    QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
+    QString pattern = "((([0-9]*)|([0-9]+-[1-9][0-9]*))[ ]*,[ ]*)*([0-9]+-[1-9][0-9]*|[0-9]*)";
+    QRegularExpression LERegExp(pattern);
+    QRegularExpressionValidator* LEValidator = new QRegularExpressionValidator(LERegExp, this);
+    //    QRegExp LERegExp ("((([0-9]*)|([0-9]+-[1-9][0-9]*))[ ]*,[ ]*)*([[0-9]+-[1-9][0-9]*|[0-9]*)");
+    // QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
     this->setValidator(LEValidator);
 }
 

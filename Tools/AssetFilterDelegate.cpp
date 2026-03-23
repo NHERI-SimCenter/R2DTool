@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "AssetFilterDelegate.h"
 
-#include <QRegExpValidator>
+//#include <QRegularExpressionValidator>
 
 #include <qgsvectorlayer.h>
 

@@ -10,6 +10,9 @@
 #include <QDebug>
 #include <QDoubleSpinBox>
 #include <QJsonObject>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+
 
 #include <sstream>
 
@@ -42,8 +45,13 @@ IntensityMeasureWidget::IntensityMeasureWidget(IntensityMeasure *im, QWidget *pa
     periodLabel = new QLabel(tr("Periods:"),this);
 
     // Set a validator to allow only numbers, periods, and spaces
-    QRegExp regExpAllow("^([1-9][0-9]*|[1-9]*\\.[0-9]*|0\\.[0-9]*)*(([ ]*,[ ]*){0,1}([[1-9]*\\.[0-9]*|[1-9][0-9]*|0\\.[0-9]*))*");
-    LEValidator = new QRegExpValidator(regExpAllow,this);
+
+    //    QRegExp regExpAllow("^([1-9][0-9]*|[1-9]*\\.[0-9]*|0\\.[0-9]*)*(([ ]*,[ ]*){0,1}([[1-9]*\\.[0-9]*|[1-9][0-9]*|0\\.[0-9]*))*");    
+    QString pattern = "^([1-9][0-9]*|[1-9]*\\.[0-9]*|0\\.[0-9]*)*(([ ]*,[ ]*){0,1}([1-9]*\\.[0-9]*|[1-9][0-9]*|0\\.[0-9]*))*";
+    QRegularExpression regExpAllow(pattern);
+ 
+
+    LEValidator = new QRegularExpressionValidator(regExpAllow,this);
 
     periodsLineEdit = new QLineEdit(this);
     periodsLineEdit->setText("0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.5, 10.0");
@@ -156,7 +164,9 @@ QString IntensityMeasureWidget::checkPeriodsValid(const QString& input) const
     int pos = 0;
     if(LEValidator->validate(const_cast<QString&>(input), pos) != 1)
     {
-        validInput = QStringRef(&input, 0, pos-1).toString();
+      //        validInput = QStringRef(&input, 0, pos-1).toString();
+      // validInput = input.left(pos - 1);
+      validInput = QStringView(input).left(pos - 1).toString();
 
         qDebug()<<"pos"<<pos<<" : "<<validInput;
         periodsLineEdit->setText(validInput);

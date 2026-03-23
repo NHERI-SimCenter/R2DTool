@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
-#include <QRegExpValidator>
+#include <QRegularExpressionValidator>
 
 CSVtoBIMModelingWidget::CSVtoBIMModelingWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {    
@@ -62,8 +62,8 @@ CSVtoBIMModelingWidget::CSVtoBIMModelingWidget(QWidget *parent) : SimCenterAppWi
     selectComponentsLineEdit->setPlaceholderText("e.g., 1, 3, 5-10, 12");
 
     // Create a regExp validator to make sure only '-' & ',' & ' ' & numbers are input
-    QRegExp LERegExp ("((([1-9][0-9]*)|([1-9][0-9]*-[1-9][0-9]*))[ ]*,[ ]*)*([[1-9][0-9]*-[1-9][0-9]*|[1-9][0-9]*)");
-    QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
+    QRegularExpression LERegExp ("((([1-9][0-9]*)|([1-9][0-9]*-[1-9][0-9]*))[ ]*,[ ]*)*([[1-9][0-9]*-[1-9][0-9]*|[1-9][0-9]*)");
+    QRegularExpressionValidator* LEValidator = new QRegularExpressionValidator(LERegExp);
     selectComponentsLineEdit->setValidator(LEValidator);
 
     // Add a vertical spacer at the bottom to push everything up

@@ -88,7 +88,9 @@ AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidg
     auto txt2  = "Enter the IDs of one or more " + assetType.toLower() + " to analyze."
                                                                          "\nDefine a range of " + assetType.toLower() + " with a dash and separate multiple " + assetType.toLower() + " with a comma.";
 
-    auto txt3 = QStringRef(&assetType, 0, assetType.length()-1) + " Information";
+
+    //auto txt3 = QStringRef(&assetType, 0, assetType.length()-1) + " Information";
+    auto txt3 = assetType.first(assetType.length() - 1) + " Information";    
 
 #ifdef OpenSRA
     label1->setText(txt1);

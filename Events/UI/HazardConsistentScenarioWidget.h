@@ -63,9 +63,9 @@ public:
     State validate(QString &input, int &/*pos*/) const override
     {
         // Use a regular expression for custom validation
-        QRegExp rx("(\\s*\\d+\\s*,?\\s*)*");
+        static const QRegularExpression rx("(\\s*\\d+\\s*,?\\s*)*");
 
-        if (rx.exactMatch(input))
+        if (rx.match(input).hasMatch())
             return Acceptable;
         else
             return Invalid;

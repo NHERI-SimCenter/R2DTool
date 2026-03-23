@@ -85,7 +85,7 @@ BuildingEDPEQWidget::BuildingEDPEQWidget(QWidget *parent)
     layout->addWidget(theStackedWidget);
     this->setLayout(layout);
     theCurrentWidget=theStandardEarthquakeEDPs;
-    layout->setMargin(0);
+    //layout->setMargin(0);
 
     connect(edpSelection, SIGNAL(currentIndexChanged(QString)), this,
             SLOT(edpSelectionChanged(QString)));

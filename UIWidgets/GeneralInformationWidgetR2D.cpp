@@ -59,7 +59,7 @@ GeneralInformationWidgetR2D::GeneralInformationWidgetR2D(QWidget *parent)
     : SimCenterWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
+    //mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();

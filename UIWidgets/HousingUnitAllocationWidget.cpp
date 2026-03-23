@@ -1601,5 +1601,6 @@ void HousingUnitAllocationWidget::handleDownloadProgress(qint64 bytesReceived, q
 
 void HousingUnitAllocationWidget::handleDownloadError(QNetworkReply::NetworkError code)
 {
-    emit emitErrorMsg("Error in download with code "+QString(code));
+  //  emit emitErrorMsg("Error in download with code "+QString(code));
+  emit emitErrorMsg("Error in download with code " + QString::number(code));  
 }

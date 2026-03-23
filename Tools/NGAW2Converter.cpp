@@ -379,11 +379,15 @@ int NGAW2Converter::convertRecordToJson(const QString& inputFile, QJsonObject& r
         // Get the fourth line - number of points and time step (Dt)
         auto fourthLine = QString::fromLocal8Bit(theRecordFile.readLine()).trimmed();
 
-        QRegExp rx = QRegExp("NPTS=\\s*([1-9][0-9]*)\\s*,\\s*DT=\\s*(\\d*\\.\\d+)\\s*SEC");
+        QRegularExpression rx = QRegularExpression("NPTS=\\s*([1-9][0-9]*)\\s*,\\s*DT=\\s*(\\d*\\.\\d+)\\s*SEC");
 
-        rx.indexIn(fourthLine);
+	QRegularExpressionMatch match = rx.match(fourthLine);
+	if (!match.hasMatch()) {
+            errorMsg = "Error could not find NPTS= in file";
+            return -1;	  
+	}
+	QStringList qsl = match.capturedTexts();
 
-        QStringList qsl = rx.capturedTexts();
 
         if(qsl.size() != 3)
             return -1;
@@ -410,14 +414,14 @@ int NGAW2Converter::convertRecordToJson(const QString& inputFile, QJsonObject& r
 
         QJsonArray timeHistoryArray;
 
-        QRegExp delim("\\s+");
+        QRegularExpression delim("\\s+");
 
         // File opened successfully, parse csv file for records
         while (!theRecordFile.atEnd())
         {
             auto line =  QString::fromLocal8Bit(theRecordFile.readLine()).trimmed();
 
-            foreach (const QString &item, line.split(delim, QString::SkipEmptyParts))
+            foreach (const QString &item, line.split(delim, Qt::SkipEmptyParts))
             {
                 bool OK = true;
                 auto dataPointValue = item.toDouble(&OK);

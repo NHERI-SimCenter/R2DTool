@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterAppWidget.h>
 #include "LineEditSelectTool.h"
 
-#include <QRegExpValidator>
+#include <QRegularExpressionValidator>
 #include <QJsonObject>
 
 LineEditSelectTool::LineEditSelectTool(QString theKey, bool copyFiles)
@@ -48,8 +48,8 @@ LineEditSelectTool::LineEditSelectTool(QString theKey, bool copyFiles)
     this->setPlaceholderText("e.g., 1, 3, 5-10, 12");
 
     // Create a regExp validator to make sure only '-' & ',' & ' ' & numbers are input
-    QRegExp LERegExp ("((([0-9]*)|([0-9]+-[1-9][0-9]*))[ ]*,[ ]*)*([[0-9]+-[1-9][0-9]*|[0-9]*)");
-    QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
+    QRegularExpression LERegExp ("((([0-9]*)|([0-9]+-[1-9][0-9]*))[ ]*,[ ]*)*([[0-9]+-[1-9][0-9]*|[0-9]*)");
+    QRegularExpressionValidator* LEValidator = new QRegularExpressionValidator(LERegExp);
     this->setValidator(LEValidator);
 }
 

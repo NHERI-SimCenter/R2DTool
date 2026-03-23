@@ -51,7 +51,7 @@ PointSourceRuptureWidget::PointSourceRuptureWidget(QWidget *parent, Qt::Orientat
 
     QVBoxLayout* siteBoxLayout = new QVBoxLayout(this);
     siteBoxLayout->setContentsMargins(0,0,0,0);
-    siteBoxLayout->setMargin(0);
+    // siteBoxLayout->setMargin(0);
 
     QHBoxLayout* magnitudeLayout = new QHBoxLayout();
 

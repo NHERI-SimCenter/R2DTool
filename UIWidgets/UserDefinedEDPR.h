@@ -1,5 +1,5 @@
-#ifndef USER_DEFINED_EDP_H
-#define USER_DEFINED_EDP_H
+#ifndef USER_DEFINED_EDPR_H
+#define USER_DEFINED_EDPR_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -39,14 +39,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Frank McKenna
 
 #include "SimCenterAppWidget.h"
-
-#include <QGroupBox>
-#include <QVector>
-#include <QVBoxLayout>
-#include <QComboBox>
-
-class EDP;
-class InputWidgetParameters;
 
 class UserDefinedEDPR : public SimCenterAppWidget
 {

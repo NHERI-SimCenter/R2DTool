@@ -86,8 +86,10 @@ NonselectableComponentInputWidget::NonselectableComponentInputWidget(QWidget *pa
 
     auto txt1 = "Load information from a CSV file";
 
-    auto txt2 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
+    //    auto txt2 = QStringRef(&componentType, 0, componentType.length()-1) + " Information";
+    auto txt2 = componentType.chopped(1) + " Information";
 
+    
     label1->setText(txt1);
     label2->setText(txt2);
 
@@ -267,7 +269,7 @@ void NonselectableComponentInputWidget::createComponentsBox(void)
     componentGroupBox->setContentsMargins(0,0,0,0);
     
     QVBoxLayout* gridLayout = new QVBoxLayout();
-    gridLayout->setMargin(0);
+    //gridLayout->setMargin(0);
     gridLayout->setSpacing(5);
     gridLayout->setContentsMargins(10,10,0,0);
     

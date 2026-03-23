@@ -79,7 +79,7 @@ BuildingDMEQWidget::BuildingDMEQWidget(QWidget *parent)
 
     layout->addWidget(theStackedWidget);
     this->setLayout(layout);
-    layout->setMargin(0);
+    //layout->setMargin(0);
 
     connect(edpSelection, SIGNAL(currentIndexChanged(QString)), this,
             SLOT(edpSelectionChanged(QString)));

@@ -39,11 +39,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Kuanshi Zhong
 
 #include "AssetInputWidget.h"
+#include <QStringList>
 
 class QgsVectorLayer;
 class QgsFeature;
 class QgsGeometry;
-class QStringList;
 class ComponentTableView;
 
 class QGISSiteInputWidget : public AssetInputWidget

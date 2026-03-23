@@ -1267,7 +1267,10 @@ void RegionalSiteResponseWidget::getSiteData(void)
             m_siteConfigWidget->getCsvSiteWidget()->selectAllComponents();
             filterIDs = m_siteConfigWidget->getCsvSiteWidget()->getFilterString();
         }
-        QStringList IDs = filterIDs.split(QRegExp(",|-"), QString::SkipEmptyParts);
+	
+        // QStringList IDs = filterIDs.split(QRegularExpression(",|-"), QString::SkipEmptyParts);
+	QStringList IDs = filterIDs.split(QRegularExpression(",|-"), Qt::SkipEmptyParts);
+	
         int tmpMin = 10000000;
         int tmpMax = 0;
         for (int i = 0; i < IDs.size(); i++) {

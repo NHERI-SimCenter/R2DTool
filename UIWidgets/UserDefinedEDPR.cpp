@@ -40,6 +40,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SectionTitle.h"
 #include "UserDefinedEDPR.h"
 
+
+#include <QGroupBox>
+#include <QVector>
+#include <QVBoxLayout>
+#include <QComboBox>
+
 #include <QDebug>
 #include <QFileDialog>
 #include <QGridLayout>
@@ -85,7 +91,7 @@ UserDefinedEDPR::UserDefinedEDPR(QWidget *parent)
     layout->addSpacerItem(spacer);
 
     layout->setSpacing(0);
-    layout->setMargin(0);
+    //layout->setMargin(0);
 
     this->setLayout(layout);
 }

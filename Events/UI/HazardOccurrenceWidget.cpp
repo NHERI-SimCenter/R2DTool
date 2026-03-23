@@ -134,8 +134,10 @@ HazardOccurrenceWidget::HazardOccurrenceWidget(QWidget *parent) : QWidget(parent
     QLabel* return_period_label = new QLabel(tr("Return periods (yr):"),this);
 
     // Set a validator to allow only numbers, periods, and spaces
-    QRegExp regExpAllow("^([1-9][0-9]*|[1-9]*\\.[0-9]*|0\\.[0-9]*)*(([ ]*,[ ]*){0,1}([[1-9]*\\.[0-9]*|[1-9][0-9]*|0\\.[0-9]*))*");
-    LEValidator = new QRegExpValidator(regExpAllow,this);
+    // Define the pattern as a QString or directly in the constructor
+    QString pattern = "^([1-9][0-9]*|[1-9]*\\.[0-9]*|0\\.[0-9]*)*(([ ]*,[ ]*){0,1}([1-9]*\\.[0-9]*|[1-9][0-9]*|0\\.[0-9]*))*";
+    QRegularExpression regExpAllow(pattern);
+    LEValidator = new QRegularExpressionValidator(regExpAllow,this);
     return_periods_lineEdit = new QLineEdit(this);
     return_periods_lineEdit->setText("224, 475, 975, 2475");
     return_periods_lineEdit->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
@@ -290,7 +292,9 @@ QString HazardOccurrenceWidget::checkReturnPeriodsValid(const QString& input) co
     int pos = 0;
     if(LEValidator->validate(const_cast<QString&>(input), pos) != 1)
     {
-        validInput = QStringRef(&input, 0, pos-1).toString();
+      //validInput = QStringRef(&input, 0, pos-1).toString();
+      //      validInput = input.left(pos - 1);
+      validInput = QStringView(input).left(pos - 1).toString();
 
         qDebug()<<"pos"<<pos<<" : "<<validInput;
         return_periods_lineEdit->setText(validInput);

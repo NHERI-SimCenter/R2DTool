@@ -80,7 +80,7 @@ SecondaryComponentSelection::SecondaryComponentSelection(QWidget *parent)
     theSelectionLayout->addSpacerItem(spacer);
     theSelectionLayout->addStretch();
 
-    horizontalLayout->setMargin(0);
+    //horizontalLayout->setMargin(0);
     theStackedWidget = new QStackedWidget();
 
     horizontalLayout->addWidget(theSelectionWidget);

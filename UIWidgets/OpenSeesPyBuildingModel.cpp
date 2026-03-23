@@ -81,8 +81,8 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(QWidget *parent)
     responseNodes = new QLineEdit;
     responseNodes->setText("1,2,3");
 
-    QRegExp LERegExp ("[1-3][ ]*,[ ]*[1-3][ ]*,[ ]*[1-3]");
-    QRegExpValidator* LEValidator = new QRegExpValidator(LERegExp);
+    QRegularExpression LERegExp ("[1-3][ ]*,[ ]*[1-3][ ]*,[ ]*[1-3]");
+    QRegularExpressionValidator* LEValidator = new QRegularExpressionValidator(LERegExp);
     responseNodes->setValidator(LEValidator);
 
     layout->addWidget(label2,1,0);
@@ -93,8 +93,8 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(QWidget *parent)
     ndm = new QLineEdit();
     ndm->setText("3");
 
-    QRegExp LERegExp2 ("[1-3]");
-    QRegExpValidator* LEValidator2 = new QRegExpValidator(LERegExp2);
+    QRegularExpression LERegExp2 ("[1-3]");
+    QRegularExpressionValidator* LEValidator2 = new QRegularExpressionValidator(LERegExp2);
     ndm->setValidator(LEValidator2);
 
     ndm->setMaximumWidth(50);
@@ -105,8 +105,8 @@ OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(QWidget *parent)
     label4->setText("Number Nodal DOF:");
     ndf = new QLineEdit();
 
-    QRegExp LERegExp3 ("[1-9]");
-    QRegExpValidator* LEValidator3 = new QRegExpValidator(LERegExp3);
+    QRegularExpression LERegExp3 ("[1-9]");
+    QRegularExpressionValidator* LEValidator3 = new QRegularExpressionValidator(LERegExp3);
     ndf->setValidator(LEValidator3);
 
     ndf->setText("6");

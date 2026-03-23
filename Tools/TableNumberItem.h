@@ -83,7 +83,7 @@ public:
         // clean the beginning of the string of whatever
         // introducers
         //
-        int const sp(t.indexOf(QRegExp("[0-9.]"), 0));
+        int const sp(t.indexOf(QRegularExpression("[0-9.]"), 0));
         if(sp > 0)
         {
             t = t.mid(sp);
@@ -91,7 +91,7 @@ public:
 
         // clean the end of the string of whatever postfix
         //
-        int const ep(t.indexOf(QRegExp("[^0-9. ,]"), 0));
+        int const ep(t.indexOf(QRegularExpression("[^0-9. ,]"), 0));
         if(ep > 0)
         {
             t = t.mid(ep);
@@ -102,7 +102,7 @@ public:
         // note: replace() happens in place so we don't have to
         //       save the result in the variable itself
         //
-        t.replace(QRegExp("[, ]+"), "");
+        t.replace(QRegularExpression("[, ]+"), "");
 
         return t.toDouble();
     }

@@ -137,8 +137,8 @@ void SiteConfigWidget::soilDataCompleteSlot(bool flag)
 
 void SiteConfigWidget::setupConnections()
 {
-    connect(m_typeButtonsGroup, QOverload<int>::of(&QButtonGroup::buttonReleased), [this](int id)
-    {
+  // connect(m_typeButtonsGroup, QOverload<int>::of(&QButtonGroup::buttonReleased), [this](int id)
+  connect(m_typeButtonsGroup, &QButtonGroup::idReleased, [this](int id) {
         if(id == 0)
             m_siteConfig.setType(SiteConfig::SiteType::Single);
         else if (id == 1)
@@ -149,8 +149,7 @@ void SiteConfigWidget::setupConnections()
             m_siteConfig.setType(SiteConfig::SiteType::UserCSV);
     });
 
-    connect(&m_siteConfig, &SiteConfig::typeChanged, [this](SiteConfig::SiteType type)
-    {
+  connect(&m_siteConfig, &SiteConfig::typeChanged, [this](SiteConfig::SiteType type) {
         if(type == SiteConfig::SiteType::Single)
         {
             m_typeButtonsGroup->button(0)->setChecked(true);
@@ -173,8 +172,7 @@ void SiteConfigWidget::setupConnections()
         }
     });
 
-    connect(&m_siteConfig, &SiteConfig::typeChanged, [this](SiteConfig::SiteType siteType)
-    {
+  connect(&m_siteConfig, &SiteConfig::typeChanged, [this](SiteConfig::SiteType siteType) {
         emit siteTypeChangedSignal(siteType);
     });
 

@@ -39,9 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include <QVector>
+#include <QStringList>
 
 class QString;
-class QStringList;
 
 class CSVReaderWriter
 {
