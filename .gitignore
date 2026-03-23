@@ -77,3 +77,4 @@ Frameworks
 *.lnk
 .vscode/*
 .DS_Store*
+CMakeUserPresets.json
