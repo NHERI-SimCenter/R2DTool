@@ -52,8 +52,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SC_MultipleLineChart.h>
 
-using namespace QtCharts;
-
 #include <QGridLayout>
 
 PyrecodesResults::PyrecodesResults(QWidget * parent, bool dockable)
@@ -345,9 +343,9 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
 
 int
 PyrecodesResults::readDemandSupplyJSON(QString &filename,
-				       QtCharts::QLineSeries *supplySeries,
-				       QtCharts::QLineSeries *demandSeries,
-				       QtCharts::QLineSeries *consumptionSeries) {
+				       QLineSeries *supplySeries,
+				       QLineSeries *demandSeries,
+				       QLineSeries *consumptionSeries) {
 
   //
   // Open the file in read-only mode & get JSON object

@@ -600,7 +600,7 @@ void RewetRecovery::copyFilesInPolicyDefinition(QString &file_name, QString &des
   }
 
   for (auto &line : result) {
-      QStringList parts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+      QStringList parts = line.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
       if (parts.size() < 2) {
           continue;
       }

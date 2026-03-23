@@ -111,7 +111,7 @@ void DL_TableWidget::onSpreadsheetCellClicked(int row, int col) {
 
 void DL_TableWidget::showHistogram(int col)
 {
-    using namespace QtCharts;
+  // using namespace QtCharts;
     
     int rowCount = this->rowCount();
     if (rowCount <= 0)

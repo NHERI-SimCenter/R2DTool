@@ -277,7 +277,8 @@ bool Pyrecodes::inputAppDataFromJSON(QJsonObject &jsonObject) {
 bool Pyrecodes::copyFiles(QString &destDir) {
 
   // copy main file and all files in the dir
-  QFileInfo mainF = QFile(mainFile->getFilename());
+  //QFileInfo mainF = QFile(mainFile->getFilename());
+  QFileInfo mainF(mainFile->getFilename());
   if (mainF.exists()) {
     SimCenterAppWidget::copyPath(mainF.absolutePath(), destDir, false);
   }

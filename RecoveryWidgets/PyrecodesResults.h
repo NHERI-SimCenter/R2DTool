@@ -56,14 +56,7 @@ class QStackedWidget;
 class QPixmap;
 class QDockWidget;
 
-
-namespace QtCharts
-{
-    class QChartView;
-    class QBarSet;
-    class QChart;
-    class QLineSeries;
-}
+class QLineSeries;
 
 
 class PyrecodesResults : public SC_ResultsWidget
@@ -91,9 +84,9 @@ private:
 
   // methods
   int readDemandSupplyJSON(QString &filename,
-			   QtCharts::QLineSeries *supplySeries,
-			   QtCharts::QLineSeries *demandSeries =0,
-			   QtCharts::QLineSeries *consumptionSeries =0);
+			   QLineSeries *supplySeries,
+			   QLineSeries *demandSeries =0,
+			   QLineSeries *consumptionSeries =0);
   int processSupplyDemandUpdate(QString &workdirPath);
 
   // data

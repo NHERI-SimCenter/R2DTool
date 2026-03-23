@@ -80,6 +80,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QValueAxis>
 #include <QJsonObject>
 #include <QtCharts/QChart>
+#include <QtCharts/QLineSeries>
 #include <QToolTip>
 #include <QColor>
 
@@ -89,8 +90,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SC_Chart.h>
 #include <SC_TimeSeriesResultChart.h>
 
-
-using namespace QtCharts;
 
 #include <QGridLayout>
 

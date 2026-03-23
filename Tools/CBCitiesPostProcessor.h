@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QString>
 #include <QMainWindow>
+#include <QtCharts/QChartView>
 
 #include <memory>
 #include <set>
@@ -59,13 +60,6 @@ class QLabel;
 class QComboBox;
 class QGraphicsView;
 class QVBoxLayout;
-
-namespace QtCharts
-{
-class QChartView;
-class QBarSet;
-class QChart;
-}
 
 class CBCitiesPostProcessor : public QMainWindow
 {
@@ -155,9 +149,9 @@ private:
 
     QGraphicsView* mapViewMainWidget;
 
-    QtCharts::QChartView *lossesRFDiagram;
+    QChartView *lossesRFDiagram;
 
-    QtCharts::QChart *RFDiagChart;
+    QChart *RFDiagChart;
 
     int createHistogramChart(REmpiricalProbabilityDistribution* probDist);
 

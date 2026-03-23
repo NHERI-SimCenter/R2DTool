@@ -89,7 +89,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // using namespace std::chrono;
 // Test to remove end
 
-using namespace QtCharts;
 
 ResidualDemandResults::ResidualDemandResults(QWidget * parent) : SC_ResultsWidget(parent){
 

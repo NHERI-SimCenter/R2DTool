@@ -52,14 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class QVBoxLayout;
 class QGISVisualizationWidget;
 class SC_TimeSeriesResultChart;
-
-namespace QtCharts
-{
-    class QChartView;
-    class QBarSet;
-    class QChart;
-    class QLineSeries;
-}
+class QLineSeries;
 
 class RewetResults : public SC_ResultsWidget
 {
@@ -84,9 +77,9 @@ protected:
 
 private:
 
-    QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries;
+    QMap<QString, QMap<QString, QLineSeries *>> *allSeiries;
     QGISVisualizationWidget* theVisualizationWidget;
-    int extractDataFramJSON(QJsonObject, QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries);
+    int extractDataFramJSON(QJsonObject, QMap<QString, QMap<QString, QLineSeries *>> *allSeries);
     SC_TimeSeriesResultChart *chart;
 };
 

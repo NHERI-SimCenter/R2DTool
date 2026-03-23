@@ -50,9 +50,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
-#include <QBarSet>
-#include <QChart>
-#include <QChartView>
 #include <QComboBox>
 #include <QDir>
 #include <QDockWidget>
@@ -85,7 +82,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // using namespace std::chrono;
 // Test to remove end
 
-using namespace QtCharts;
+//using namespace QtCharts;
 
 PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : QMainWindow(parent), theVisualizationWidget(visWidget)
 {
@@ -627,6 +624,7 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
 
     //  CASUALTIES
     QBarSet *casualtiesSet = new QBarSet("Casualties");
+    //    QBarSet *casualtiesSet = new QBarSet("Casualties");
 
     *casualtiesSet << cumulativeinjSevLvl1 << cumulativeinjSevLvl2 << cumulativeinjSevLvl3 << cumulativeinjSevLvl4;
 
@@ -912,11 +910,16 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
     // The printer
     QPrinter printer(QPrinter::HighResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setPaperSize(QPrinter::Letter);
-    printer.setPageMargins(25.4, 25.4, 25.4, 25.4, QPrinter::Millimeter);
+    printer.setPageSize(QPageSize::Letter);
+    //printer.setPageMargins(25.4, 25.4, 25.4, 25.4, QPrinter::Millimeter);
+    printer.setPageMargins(QMarginsF(25.4, 25.4, 25.4, 25.4), QPageLayout::Millimeter);    
     printer.setFullPage(true);
     qreal leftMargin, topMargin;
-    printer.getPageMargins(&leftMargin,&topMargin,nullptr,nullptr,QPrinter::Point);
+    //    printer.getPageMargins(&leftMargin,&topMargin,nullptr,nullptr,QPrinter::Point);    
+    QPageLayout layout = printer.pageLayout();
+    leftMargin = layout.margins(QPageLayout::Point).left();
+    topMargin = layout.margins(QPageLayout::Point).top();
+
     printer.setOutputFileName(outputFilePath);
 
     // Create a new document
