@@ -9,7 +9,7 @@ class QComboBox;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
-class QRegExpValidator;
+class QRegularExpressionValidator;
 class QDoubleSpinBox;
 class QGroupBox;
 class QJsonObject;
@@ -41,7 +41,7 @@ private:
     QLabel* typeLabel;
     // FMK removal as not ever created!    QComboBox* m_typeBox;
     QLineEdit* periodsLineEdit;
-    QRegExpValidator* LEValidator;
+    QRegularExpressionValidator* LEValidator;
     QLabel* periodLabel;
 
     QCheckBox* PGACheckBox;

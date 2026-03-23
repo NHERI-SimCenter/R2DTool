@@ -37,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Kuanshi Zhong
 
 #include "HazardOccurrence.h"
+#include <algorithm>
 
 #include <QJsonArray>
 
@@ -180,7 +181,8 @@ void HazardOccurrence::setReturnPeriods(const QString &return_periods)
 void HazardOccurrence::addReturnPeriod(int return_period)
 {
     this->m_return_periods.append(return_period);
-    qSort(this->m_return_periods);
+    //qSort(this->m_return_periods);
+    std::sort(this->m_return_periods.begin(), this->m_return_periods.end());
 }
 
 

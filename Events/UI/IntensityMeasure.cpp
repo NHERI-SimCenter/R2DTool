@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QLineEdit>
 
+#include <Algorithm>
+
 IntensityMeasure::IntensityMeasure(QWidget *parent) : SimCenterAppWidget(parent)
 {
 
@@ -97,7 +99,8 @@ void IntensityMeasure::setPeriods(const QString &periods)
 void IntensityMeasure::addPeriod(double period)
 {
     this->m_periods.append(period);
-    qSort(this->m_periods);
+    //qSort(this->m_periods);
+    std::sort(this->m_periods.begin(), this->m_periods.end());
 }
 
 

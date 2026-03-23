@@ -46,7 +46,7 @@ class QComboBox;
 class QLineEdit;
 class QDoubleSpinBox;
 class QPushButton;
-class QRegExpValidator;
+class QRegularExpressionValidator;
 class QLabel;
 
 class HazardOccurrenceWidget : public QWidget
@@ -98,7 +98,7 @@ private:
     QLineEdit* PeriodEdit;
     // return periods
     QLineEdit* return_periods_lineEdit;
-    QRegExpValidator* LEValidator;
+    QRegularExpressionValidator* LEValidator;
 
     void setupConnections();
 

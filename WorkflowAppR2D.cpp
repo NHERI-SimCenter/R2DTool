@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterPreferences.h"
 #include "Utils/RelativePathResolver.h"
 
+#include <QStandardPaths>
 #include "AnalysisWidget.h"
 #include "AssetsWidget.h"
 #include "CustomizedItemModel.h"
@@ -123,6 +124,8 @@ WorkflowAppR2D *WorkflowAppR2D::theInstance = nullptr;
 WorkflowAppR2D::WorkflowAppR2D(RemoteService *theService, QWidget *parent)
     : WorkflowAppWidget(theService, parent)
 {
+
+
     resultsDialog = nullptr;
 
     // Set static pointer for global procedure
@@ -268,7 +271,7 @@ void WorkflowAppR2D::initialize(void)
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
     this->setContentsMargins(0,5,0,5);
-    horizontalLayout->setMargin(0);
+    //horizontalLayout->setMargin(0);
 
     // Create the component selection & add the components to it
     theComponentSelection = new SimCenterComponentSelection();
@@ -1080,7 +1083,7 @@ WorkflowAppR2D::createCitation(QJsonObject &citation, QString citeFile) {
     if(docC.isObject()) {
       citation = docC.object();        
     }  else {
-      qDebug() << "WorkflowdAppR2D citation text is not valid JSON: \n" << cit << endl;
+      qDebug() << "WorkflowdAppR2D citation text is not valid JSON: \n" << cit;
     }
   }
 
