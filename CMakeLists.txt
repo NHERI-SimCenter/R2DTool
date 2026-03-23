@@ -149,12 +149,16 @@ set(QGIS_LIB_DIR "/Users/fmckenna/NHERI/QGIS/build/output/Contents/Frameworks" C
 set(QGIS_VERSION "4.1.0" CACHE STRING "QGIS Library version")
 
 target_link_libraries(${TARGET_NAME} PRIVATE
-    ${QGIS_LIB_DIR}/libqgis_app.${QGIS_VERSION}.dylib
-    ${QGIS_LIB_DIR}/libqgis_gui.${QGIS_VERSION}.dylib
-    ${QGIS_LIB_DIR}/libqgis_native.${QGIS_VERSION}.dylib
-    ${QGIS_LIB_DIR}/libqgis_analysis.${QGIS_VERSION}.dylib
-    ${QGIS_LIB_DIR}/libqgis_3d.${QGIS_VERSION}.dylib
-    ${QGIS_LIB_DIR}/libqgis_core.${QGIS_VERSION}.dylib
+    if(APPLE)
+        target_link_libraries(${TARGET_NAME} PRIVATE
+           "${QGIS_LIB_DIR}/libqgis_app.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_gui.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_native.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_analysis.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_3d.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_core.${QGIS_VERSION}.dylib"
+        )
+    endif()
 )
 	
 # ---- External libs (mirror your .pro, but prefer find_package results) ----
