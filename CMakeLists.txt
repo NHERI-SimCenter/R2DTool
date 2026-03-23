@@ -25,7 +25,6 @@ set(CMAKE_AUTORCC ON)
 # ---- Paths ----
 set(PATH_TO_COMMON      "${CMAKE_CURRENT_LIST_DIR}/../SimCenterCommon")
 set(PATH_TO_EXAMPLES    "${CMAKE_CURRENT_LIST_DIR}/../../R2DExamples")
-set(PATH_TO_QGIS_PLUGIN "${CMAKE_CURRENT_LIST_DIR}/../SimCenterQGIS")
 set(PATH_TO_QGIS_DEPS "${CMAKE_CURRENT_LIST_DIR}/../QGIS_DEPS")
 
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -117,7 +116,7 @@ include("${PATH_TO_COMMON}/InputSheetBM/InputSheet.cmake")
 simcenter_add_inputsheet(${TARGET_NAME})
 
 # SimCenterQGIS
-include("${CMAKE_CURRENT_LIST_DIR}/../SimCenterQGIS/SimCenterQGIS.cmake")
+include("${PATH_TO_COMMON}/QGIS/SimCenterQGIS.cmake")
 simcenter_add_qgis(${TARGET_NAME})
 
 # R2D
