@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.21)
 
 project(R2D VERSION 1.0.0 LANGUAGES CXX C)
 
-# ---- C++17 ----
-set(CMAKE_CXX_STANDARD 17)
+# ---- C++20 ----
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
 
 # ---- Qt ----
 find_package(Qt6 REQUIRED COMPONENTS
@@ -25,7 +26,8 @@ set(CMAKE_AUTORCC ON)
 # ---- Paths ----
 set(PATH_TO_COMMON      "${CMAKE_CURRENT_LIST_DIR}/../SimCenterCommon")
 set(PATH_TO_EXAMPLES    "${CMAKE_CURRENT_LIST_DIR}/../../R2DExamples")
-set(PATH_TO_QGIS_DEPS "${CMAKE_CURRENT_LIST_DIR}/../QGIS_DEPS")
+set(PATH_TO_QGIS_DEPS   "${CMAKE_CURRENT_LIST_DIR}/../QGIS_DEPS")
+
 
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -130,6 +132,7 @@ simcenter_add_workflow(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PRIVATE
   ${QCA_INCLUDE_DIR}
+  ${QSCINTILLA_INCLUDE_DIR}
   ${PATH_TO_QGIS_DEPS}/include
 )
   
@@ -148,8 +151,8 @@ target_link_libraries(${TARGET_NAME} PRIVATE
 set(QGIS_LIB_DIR "/Users/fmckenna/NHERI/QGIS/build/output/Contents/Frameworks" CACHE PATH "Path to QGIS libraries")
 set(QGIS_VERSION "4.1.0" CACHE STRING "QGIS Library version")
 
-target_link_libraries(${TARGET_NAME} PRIVATE
-    if(APPLE)
+if(APPLE)
+   
         target_link_libraries(${TARGET_NAME} PRIVATE
            "${QGIS_LIB_DIR}/libqgis_app.${QGIS_VERSION}.dylib"
            "${QGIS_LIB_DIR}/libqgis_gui.${QGIS_VERSION}.dylib"
@@ -158,8 +161,8 @@ target_link_libraries(${TARGET_NAME} PRIVATE
            "${QGIS_LIB_DIR}/libqgis_3d.${QGIS_VERSION}.dylib"
            "${QGIS_LIB_DIR}/libqgis_core.${QGIS_VERSION}.dylib"
         )
-    endif()
-)
+    
+endif()
 	
 # ---- External libs (mirror your .pro, but prefer find_package results) ----
 target_link_libraries(${TARGET_NAME} PRIVATE
