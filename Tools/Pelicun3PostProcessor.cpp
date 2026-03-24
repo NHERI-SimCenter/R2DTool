@@ -81,11 +81,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsattributes.h>
 #include <qgsmapcanvas.h>
 
-// Test to remove start
-// #include <chrono>
-// using namespace std::chrono;
-// Test to remove end
-
 using namespace QtCharts;
 
 Pelicun3PostProcessor::Pelicun3PostProcessor(QWidget * parent) : SC_ResultsWidget(parent){

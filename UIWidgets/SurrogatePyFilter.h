@@ -57,8 +57,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSpinBox>
 class QJsonObject;
 
-using namespace std;
-
 class SurrogateFile : public SimCenterWidget
 {
     Q_OBJECT
@@ -75,10 +73,8 @@ public:
     SC_StringLineEdit  *theModelName;  // load factor
 
 public slots:
-    //void chooseFileName(void);
     void onFilePathChanged(QString);
     void onRemoveMod(bool);
-    //void onAddMod(bool);
 
 signals:
     void removeRecord();

@@ -57,8 +57,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <sstream>
 #include <iostream>
 
-using namespace std;
-
 OpenSeesPyBuildingModel::OpenSeesPyBuildingModel(QWidget *parent)
     : SimCenterAppWidget(parent), responseNodes(0)
 {
