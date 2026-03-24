@@ -71,10 +71,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsmapcanvas.h>
 
 // Test to remove start
+#if defined(Q_OS_MAC)
 #include <chrono>
 #include <thread>
 #include <future>
 using namespace std::chrono;
+#endif
 // Test to remove end
 
 
@@ -800,7 +802,9 @@ int HousingUnitAllocationWidget::linkBuildingsAndParcels(void)
 {
 
     // Test to remove start
-    auto start = high_resolution_clock::now();
+#if defined(Q_OS_MAC)  
+  auto start = high_resolution_clock::now();
+#endif
     // Test to remove end
 
 
@@ -876,9 +880,11 @@ int HousingUnitAllocationWidget::linkBuildingsAndParcels(void)
     emit emitStatusMsg("Done linking buildings to parcels.");
 
     // Test to remove start
+#if defined(Q_OS_MAC)
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
     emit emitStatusMsg("Duration linking buildings to parcels: " + QString::number(duration.count()/1000.0) + " seconds");
+#endif
     // Test to remove end
 
 
