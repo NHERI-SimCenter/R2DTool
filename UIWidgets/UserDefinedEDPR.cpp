@@ -57,8 +57,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <string>
 #include <fstream>
 
-using namespace std;
-
 UserDefinedEDPR::UserDefinedEDPR(QWidget *parent)
   : SimCenterAppWidget(parent)
 {
