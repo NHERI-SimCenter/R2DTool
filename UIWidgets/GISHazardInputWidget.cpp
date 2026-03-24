@@ -77,11 +77,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgscollapsiblegroupbox.h>
 #include <qgsproject.h>
 
-// Test to remove start
-#include <chrono>
-using namespace std::chrono;
-// Test to remove end
-
 GISHazardInputWidget::GISHazardInputWidget(QGISVisualizationWidget* visWidget, QWidget *parent)
   : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {

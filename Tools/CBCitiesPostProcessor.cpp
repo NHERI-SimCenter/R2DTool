@@ -80,11 +80,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsmapcanvas.h>
 #include <qgslinesymbol.h>
 
-// Test to remove start
-// #include <chrono>
-// using namespace std::chrono;
-// Test to remove end
-
 //using namespace QtCharts;
 #include <QChartView>
 

@@ -44,9 +44,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
 
-// Test to remove
-//#include <chrono>
-//using namespace std::chrono;
 
 #include <QMessageBox>
 #include <QCoreApplication>
