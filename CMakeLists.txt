@@ -16,6 +16,8 @@ find_package(Qt6 REQUIRED COMPONENTS
   Positioning QuickWidgets
 )
 
+find_package(Qt6Keychain REQUIRED)
+
 #qt_standard_project_setup()
 
 set(CMAKE_AUTOMOC ON)
@@ -142,6 +144,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
   Qt6::3DCore Qt6::3DRender Qt6::3DExtras
   Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Svg
   Qt6::Positioning Qt6::QuickWidgets
+  qt6keychain
 )
 
 # Define variables with default values (can be overridden via CLI)
