@@ -2,10 +2,24 @@ cmake_minimum_required(VERSION 3.21)
 
 project(R2D VERSION 1.0.0 LANGUAGES CXX C)
 
-# ---- C++17 ----
-set(CMAKE_CXX_STANDARD 17)
+# ---- C++20 ----
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(MSVC)
+    # Use file(TO_NATIVE_PATH) to ensure \ instead of /
+    file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/msvc_fix.h" MSVC_FIX_PATH)
+    
+    # Add the force include without manual escaped quotes
+    add_compile_options("/FI${MSVC_FIX_PATH}")
+    
+    # Also ensure these are set to help the header conflict
+    add_compile_definitions(WIN32_LEAN_AND_MEAN)
+    add_compile_definitions(NOMINMAX)
+endif()
+
+
 
 # ---- Qt ----
 find_package(Qt6 REQUIRED COMPONENTS
@@ -27,7 +41,8 @@ set(CMAKE_AUTORCC ON)
 # ---- Paths ----
 set(PATH_TO_COMMON      "${CMAKE_CURRENT_LIST_DIR}/../SimCenterCommon")
 set(PATH_TO_EXAMPLES    "${CMAKE_CURRENT_LIST_DIR}/../../R2DExamples")
-set(PATH_TO_QGIS_DEPS "${CMAKE_CURRENT_LIST_DIR}/../QGIS_DEPS")
+set(PATH_TO_QGIS_DEPS   "${CMAKE_CURRENT_LIST_DIR}/../QGIS_DEPS")
+
 
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -132,6 +147,7 @@ simcenter_add_workflow(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PRIVATE
   ${QCA_INCLUDE_DIR}
+  ${QSCINTILLA_INCLUDE_DIR}
   ${PATH_TO_QGIS_DEPS}/include
 )
   
@@ -148,18 +164,45 @@ target_link_libraries(${TARGET_NAME} PRIVATE
 )
 
 # Define variables with default values (can be overridden via CLI)
-set(QGIS_LIB_DIR "/Users/fmckenna/NHERI/QGIS/build/output/Contents/Frameworks" CACHE PATH "Path to QGIS libraries")
-set(QGIS_VERSION "4.1.0" CACHE STRING "QGIS Library version")
+
 
 if(APPLE)
-   target_link_libraries(${TARGET_NAME} PRIVATE
-        "${QGIS_LIB_DIR}/libqgis_app.${QGIS_VERSION}.dylib"
-        "${QGIS_LIB_DIR}/libqgis_gui.${QGIS_VERSION}.dylib"
-        "${QGIS_LIB_DIR}/libqgis_native.${QGIS_VERSION}.dylib"
-        "${QGIS_LIB_DIR}/libqgis_analysis.${QGIS_VERSION}.dylib"
-        "${QGIS_LIB_DIR}/libqgis_3d.${QGIS_VERSION}.dylib"
-        "${QGIS_LIB_DIR}/libqgis_core.${QGIS_VERSION}.dylib"
-   )
+   
+        set(QGIS_LIB_DIR "/Users/fmckenna/NHERI/QGIS/build/output/Contents/Frameworks" CACHE PATH "Path to QGIS libs")
+        set(QGIS_VERSION "4.1.0" CACHE STRING "QGIS Library version")
+        target_link_libraries(${TARGET_NAME} PRIVATE
+           "${QGIS_LIB_DIR}/libqgis_app.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_gui.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_native.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_analysis.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_3d.${QGIS_VERSION}.dylib"
+           "${QGIS_LIB_DIR}/libqgis_core.${QGIS_VERSION}.dylib"
+        )
+    
+endif()
+
+if(WIN32)
+
+       # set(QGIS_LIB_DIR "C:/Users/fmcke/NHERI/QGIS/build/output/bin" CACHE PATH "Path to QGIS libs")
+       # target_link_libraries(${TARGET_NAME} PRIVATE
+       #    "${QGIS_LIB_DIR}/qgis_app.dll"
+       #    "${QGIS_LIB_DIR}/qgis_gui.dll"
+       ##    "${QGIS_LIB_DIR}/qgis_native.dll"
+       #    "${QGIS_LIB_DIR}/qgis_analysis.dll"
+       #    "${QGIS_LIB_DIR}/qgis_3d.dll"
+       #    "${QGIS_LIB_DIR}/qgis_core.dll"
+       # )
+
+       set(QGIS_LIB_DIR "C:/Users/fmcke/NHERI/QGIS/build/src" CACHE PATH "Path to QGIS libs")
+       target_link_libraries(${TARGET_NAME} PRIVATE
+           "${QGIS_LIB_DIR}/app/qgis_app.lib"
+           "${QGIS_LIB_DIR}/gui/qgis_gui.lib"
+           "${QGIS_LIB_DIR}/native/qgis_native.lib"
+           "${QGIS_LIB_DIR}/core/qgis_core.lib"
+       )
+
+
+
 endif()
 	
 # ---- External libs (mirror your .pro, but prefer find_package results) ----

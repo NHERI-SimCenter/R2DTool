@@ -23,16 +23,19 @@ class QuoFEMConan(ConanFile):
         cmake_layout(self)
 
     def generate(self):
-        # Generate toolchain + find_package config files        
         deps = CMakeDeps(self)
         deps.generate()
         tc = CMakeToolchain(self)
         tc.generate()
 
-        # The following solves the "DLL not found" error during local development
         if self.settings.os == "Windows":
-            # For CMake, the binary usually ends up in build/Release or build/Debug
+            # Determine where the executable will be (e.g., build/Release)
             bindir = os.path.join(self.build_folder, str(self.settings.build_type))
+            
             for dep in self.dependencies.values():
-                copy(self, "*.dll", dep.cpp_info.bindirs[0], bindir)
-                
+                # Check if the dependency actually has a bin directory defined
+                if dep.cpp_info.bindirs:
+                    source_dir = dep.cpp_info.bindirs[0]
+                    # Only attempt copy if the directory exists on the system
+                    if os.path.exists(source_dir):
+                        copy(self, "*.dll", source_dir, bindir)
