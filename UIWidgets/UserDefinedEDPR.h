@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
+class QLineEdit;
+
 class UserDefinedEDPR : public SimCenterAppWidget
 {
     Q_OBJECT
@@ -61,7 +63,6 @@ public slots:
     void chooseEDPSpecs(void);
 
 private:
-
     QLineEdit* EDPSpecsLineEdit;
 };
 

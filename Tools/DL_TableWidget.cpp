@@ -52,6 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QtGlobal> 
 
 DL_TableWidget::DL_TableWidget(QWidget *parent)
     :QTableWidget(parent),mLeft(true)
@@ -111,7 +112,10 @@ void DL_TableWidget::onSpreadsheetCellClicked(int row, int col) {
 
 void DL_TableWidget::showHistogram(int col)
 {
-  // using namespace QtCharts;
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  using namespace QtCharts;
+#endif
     
     int rowCount = this->rowCount();
     if (rowCount <= 0)

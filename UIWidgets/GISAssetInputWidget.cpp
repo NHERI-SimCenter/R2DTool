@@ -57,6 +57,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileInfo>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QtGlobal>
 
 #include <qgsfillsymbol.h>
 #include <qgsmarkersymbol.h>
@@ -215,6 +216,9 @@ int GISAssetInputWidget::loadAssetVisualization()
     auto type = mainLayer->geometryType();
 
     QString typeStr = "Null";
+    
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
     if (type == Qgis::GeometryType::Point)
         typeStr = "point";
     else if (type == Qgis::GeometryType::Line)
@@ -222,6 +226,17 @@ int GISAssetInputWidget::loadAssetVisualization()
     else if (type == Qgis::GeometryType::Polygon)
         typeStr = "polygon";
 
+#else
+    
+    if (type == QgsWkbTypes::PointGeometry)
+        typeStr = "point";
+    else if (type == QgsWkbTypes::LineGeometry)
+        typeStr = "multilinestring";
+    else if (type == QgsWkbTypes::PolygonGeometry)
+        typeStr = "polygon";
+
+#endif
+    
     // Create the selected building layer
     selectedFeaturesLayer = theVisualizationWidget->addVectorLayer(typeStr,"Selected "+assetType);
 
@@ -235,18 +250,25 @@ int GISAssetInputWidget::loadAssetVisualization()
 
     QgsSymbol* selectFeatSymbol = nullptr;
 
-    if (type == Qgis::GeometryType::Point)
-    {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)    
+    if (type == Qgis::GeometryType::Point) {
         selectFeatSymbol = new QgsMarkerSymbol();
-    }
-    else if (type == Qgis::GeometryType::Line)
-    {
+    } else if (type == Qgis::GeometryType::Line) {
         selectFeatSymbol = new QgsLineSymbol();
-    }
-    else if (type == Qgis::GeometryType::Polygon)
-    {
+    } else if (type == Qgis::GeometryType::Polygon) {
         selectFeatSymbol = new QgsFillSymbol();
     }
+#else
+    if (type == QgsWkbTypes::PointGeometry) {
+        selectFeatSymbol = new QgsMarkerSymbol();
+    } else if (type == QgsWkbTypes::LineGeometry) {
+        selectFeatSymbol = new QgsLineSymbol();
+    } else if (type == QgsWkbTypes::PolygonGeometry) {
+        selectFeatSymbol = new QgsFillSymbol();
+    }    
+#endif
+
+    
     else
     {
         this->errorMessage("Type of geometry is not supported");
