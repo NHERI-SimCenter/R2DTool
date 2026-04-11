@@ -62,6 +62,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileInfo>
 #include <QJsonObject>
 #include <QHeaderView>
+#include <QtGlobal>
 
 #include "QGISVisualizationWidget.h"
 
@@ -88,9 +89,11 @@ AssetInputWidget::AssetInputWidget(QWidget *parent, VisualizationWidget* visWidg
     auto txt2  = "Enter the IDs of one or more " + assetType.toLower() + " to analyze."
                                                                          "\nDefine a range of " + assetType.toLower() + " with a dash and separate multiple " + assetType.toLower() + " with a comma.";
 
-
-    //auto txt3 = QStringRef(&assetType, 0, assetType.length()-1) + " Information";
-    auto txt3 = assetType.first(assetType.length() - 1) + " Information";    
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    auto txt3 = assetType.first(assetType.length() - 1) + " Information";
+#else
+    auto txt3 = QStringRef(&assetType, 0, assetType.length()-1) + " Information";
+#endif
 
 #ifdef OpenSRA
     label1->setText(txt1);
