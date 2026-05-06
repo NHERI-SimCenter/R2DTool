@@ -47,6 +47,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonArray>
 #include <QJsonObject>
 
+#include <QtGlobal>
+
 class QVBoxLayout;
 class QGISVisualizationWidget;
 class SC_MultipleLineChart;
@@ -56,7 +58,21 @@ class QStackedWidget;
 class QPixmap;
 class QDockWidget;
 
-class QLineSeries;
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
+namespace QtCharts
+{
+    class QChartView;
+    class QBarSet;
+    class QChart;
+    class QLineSeries;
+}
+
+#else
+    class QLineSeries;
+#endif
+
 
 
 class PyrecodesResults : public SC_ResultsWidget
@@ -83,10 +99,20 @@ protected:
 private:
 
   // methods
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
   int readDemandSupplyJSON(QString &filename,
 			   QLineSeries *supplySeries,
 			   QLineSeries *demandSeries =0,
 			   QLineSeries *consumptionSeries =0);
+#else
+  
+ int readDemandSupplyJSON(QString &filename,
+			   QtCharts::QLineSeries *supplySeries,
+			   QtCharts::QLineSeries *demandSeries =0,
+			   QtCharts::QLineSeries *consumptionSeries =0);
+#endif
+
   int processSupplyDemandUpdate(QString &workdirPath);
 
   // data

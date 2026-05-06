@@ -54,6 +54,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QGridLayout>
 
+#include <QtGlobal>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  using namespace QtCharts;
+#endif
+
 PyrecodesResults::PyrecodesResults(QWidget * parent, bool dockable)
   :SC_ResultsWidget(parent) {
 
@@ -341,12 +347,22 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
 }
 
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  
 int
 PyrecodesResults::readDemandSupplyJSON(QString &filename,
 				       QLineSeries *supplySeries,
 				       QLineSeries *demandSeries,
 				       QLineSeries *consumptionSeries) {
+#else
 
+int
+PyrecodesResults::readDemandSupplyJSON(QString &filename,
+				       QtCharts::QLineSeries *supplySeries,
+				       QtCharts::QLineSeries *demandSeries,
+				       QtCharts::QLineSeries *consumptionSeries) {
+
+#endif
   //
   // Open the file in read-only mode & get JSON object
   //

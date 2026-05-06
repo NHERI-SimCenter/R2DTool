@@ -81,7 +81,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgslinesymbol.h>
 
 //using namespace QtCharts;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QChartView>
+#else
+using namespace QtCharts;
+#endif
 
 CBCitiesPostProcessor::CBCitiesPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : QMainWindow(parent), theVisualizationWidget(visWidget)
 {

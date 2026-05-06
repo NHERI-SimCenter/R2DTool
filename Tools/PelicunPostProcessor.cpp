@@ -71,13 +71,21 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextCursor>
 #include <QTextTable>
 #include <QValueAxis>
+#include <QtGlobal>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
+#include <QBarSet>
+#include <QChart>
+#include <QChartView>
+
+using namespace QtCharts;
+
+#endif
 
 #include "QGISVisualizationWidget.h"
-
 #include <qgsattributes.h>
 #include <qgsmapcanvas.h>
-
-//using namespace QtCharts;
 
 PelicunPostProcessor::PelicunPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : QMainWindow(parent), theVisualizationWidget(visWidget)
 {
@@ -618,7 +626,11 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     theBuildingDB->getSelectedLayer()->setName("Loss Ratio");
 
     //  CASUALTIES
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QBarSet *casualtiesSet = new QBarSet("Casualties");
+#else
+    QtCharts::QBarSet *casualtiesSet = new QtCharts::QBarSet("Casualties");
+#endif
     //    QBarSet *casualtiesSet = new QBarSet("Casualties");
 
     *casualtiesSet << cumulativeinjSevLvl1 << cumulativeinjSevLvl2 << cumulativeinjSevLvl3 << cumulativeinjSevLvl4;
@@ -629,9 +641,16 @@ int PelicunPostProcessor::processDVResults(const QVector<QStringList>& DVResults
     totalFatalitiesValueLabel->setText(QString::number(casualtiesSet->at(3),'f',2));
 
     //  LOSSES
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)    
     QBarSet *structLossSet = new QBarSet("Structural");
     QBarSet *NSAccLossSet = new QBarSet("Non-structural Acc.");
     QBarSet *NSDriftLossSet = new QBarSet("Non-structural Drift");
+#else
+    QtCharts::QBarSet *structLossSet = new QtCharts::QBarSet("Structural");
+    QtCharts::QBarSet *NSAccLossSet = new QtCharts::QBarSet("Non-structural Acc.");
+    QtCharts::QBarSet *NSDriftLossSet = new QtCharts::QBarSet("Non-structural Drift");
+#endif
 
     *structLossSet << cumulativeStructDS1 << cumulativeStructDS2 << cumulativeStructDS3 << cumulativeStructDS4 ;
     *NSAccLossSet << cumulativeNSAccDS1 << cumulativeNSAccDS2 << cumulativeNSAccDS3 << cumulativeNSAccDS4 ;
@@ -905,9 +924,15 @@ int PelicunPostProcessor::assemblePDF(QImage screenShot)
     // The printer
     QPrinter printer(QPrinter::HighResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)    
     printer.setPageSize(QPageSize::Letter);
-    //printer.setPageMargins(25.4, 25.4, 25.4, 25.4, QPrinter::Millimeter);
-    printer.setPageMargins(QMarginsF(25.4, 25.4, 25.4, 25.4), QPageLayout::Millimeter);    
+    printer.setPageMargins(QMarginsF(25.4, 25.4, 25.4, 25.4), QPageLayout::Millimeter);
+#else
+    printer.setPaperSize(QPrinter::Letter);
+    printer.setPageMargins(25.4, 25.4, 25.4, 25.4, QPrinter::Millimeter);
+#endif
+
     printer.setFullPage(true);
     qreal leftMargin, topMargin;
     //    printer.getPageMargins(&leftMargin,&topMargin,nullptr,nullptr,QPrinter::Point);    

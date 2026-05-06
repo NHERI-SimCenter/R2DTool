@@ -66,6 +66,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QFileDialog>
+#include <QtGlobal>
 
 #include "QGISVisualizationWidget.h"
 
@@ -73,6 +74,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 #include <qgsfillsymbol.h>
 #include <qgsmarkersymbol.h>
+
+
 ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent)
 {
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
@@ -433,6 +436,9 @@ int ResultsWidget::processResults(QString resultsDirectory)
         // Get the layer type
         QString layerType;
         auto geomType = DMGlayer->geometryType();
+
+	// NOTE .. qgis interfgace changed based on Qt6 v Qt5, so using QT_VERSION and not an added def for QGIS
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)	
 	if (geomType == Qgis::GeometryType::Polygon) {
             layerType = "polygon";
             markerSymbol = new QgsFillSymbol();
@@ -445,11 +451,29 @@ int ResultsWidget::processResults(QString resultsDirectory)
             layerType = "linestring";
             markerSymbol = new QgsLineSymbol();
         }
+#else
+	if(geomType == QgsWkbTypes::PolygonGeometry){
+            layerType = "polygon";
+            markerSymbol = new QgsFillSymbol();
+        }
+	else if (geomType == QgsWkbTypes::PointGeometry){
+            layerType = "point";
+            markerSymbol = new QgsMarkerSymbol();
+        }
+	else if (geomType == QgsWkbTypes::LineGeometry){
+            layerType = "linestring";
+            markerSymbol = new QgsLineSymbol();
+        }
+#endif
+	
         else
         {
             this->errorMessage("Could not parse the layer type for layer "+DMGlayer->name());
             return -5;
         }
+
+
+	
         theVisualizationWidget->createCategoryRenderer("R2Dres_MostLikelyCriticalDamageState", DMGlayer, markerSymbol);
         DMGLayers.append(DMGlayer);
         mapLayers.append(assetLayer);

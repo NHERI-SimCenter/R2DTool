@@ -48,11 +48,25 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonArray>
 #include <RewetResults.h>
 #include <QJsonObject>
+#include <QtGlobal>
 
 class QVBoxLayout;
 class QGISVisualizationWidget;
 class SC_TimeSeriesResultChart;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 class QLineSeries;
+#else
+
+namespace QtCharts
+{
+    class QChartView;
+    class QBarSet;
+    class QChart;
+    class QLineSeries;
+}
+#endif
+
 
 class RewetResults : public SC_ResultsWidget
 {
@@ -77,9 +91,18 @@ protected:
 
 private:
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMap<QString, QMap<QString, QLineSeries *>> *allSeiries;
+    int extractDataFramJSON(QJsonObject, QMap<QString, QMap<QString, QLineSeries *>> *allSeries);  
+#else
+
+  QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries;
+  int extractDataFramJSON(QJsonObject, QMap<QString, QMap<QString, QtCharts::QLineSeries *>> *allSeiries);
+  
+#endif
+
     QGISVisualizationWidget* theVisualizationWidget;
-    int extractDataFramJSON(QJsonObject, QMap<QString, QMap<QString, QLineSeries *>> *allSeries);
+
     SC_TimeSeriesResultChart *chart;
 };
 

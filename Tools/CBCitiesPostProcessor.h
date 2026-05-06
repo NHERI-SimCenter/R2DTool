@@ -45,10 +45,25 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QString>
 #include <QMainWindow>
-#include <QtCharts/QChartView>
-
+#include <QtGlobal>
 #include <memory>
 #include <set>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
+#include <QtCharts/QChartView>
+
+#else
+
+namespace QtCharts
+{
+  class QChartView;
+  class QBarSet;
+  class QChart;
+}
+
+#endif
+
 
 class REmpiricalProbabilityDistribution;
 class VisualizationWidget;
@@ -149,9 +164,17 @@ private:
 
     QGraphicsView* mapViewMainWidget;
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  
     QChartView *lossesRFDiagram;
-
     QChart *RFDiagChart;
+
+#else
+  
+    QtCharts::QChartView *lossesRFDiagram;
+    QtCharts::QChart *RFDiagChart;
+  
+#endif
 
     int createHistogramChart(REmpiricalProbabilityDistribution* probDist);
 

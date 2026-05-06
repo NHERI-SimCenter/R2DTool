@@ -47,7 +47,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QChart>
 #include <QBarSet>
 #include <QChartView>
-
+#include <QtGlobal>
 
 #include <memory>
 #include <set>
@@ -62,6 +62,17 @@ class QLabel;
 class QComboBox;
 class QGraphicsView;
 class QVBoxLayout;
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
+namespace QtCharts
+{
+  class QChartView;
+  class QBarSet;
+  class QChart;
+}
+
+#endif
 
 
 class PelicunPostProcessor : public QMainWindow
@@ -173,6 +184,9 @@ private:
 
     QGraphicsView* mapViewMainWidget;
 
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  
     QChart *casualtiesChart;
     QChart *RFDiagChart;
     QChart *Losseschart;
@@ -181,11 +195,26 @@ private:
     QChartView *lossesChartView;
     QChartView *lossesRFDiagram;
 
-    int createHistogramChart(REmpiricalProbabilityDistribution* probDist);
-
     int createLossesChart(QBarSet *structLossSet, QBarSet *NSAccLossSet, QBarSet *NSDriftLossSet);
+    int createCasualtiesChart(QBarSet *casualtiesSet);  
+  
+#else
 
-    int createCasualtiesChart(QBarSet *casualtiesSet);
+    QtCharts::QChart *casualtiesChart;
+    QtCharts::QChart *RFDiagChart;
+    QtCharts::QChart *Losseschart;
+    QtCharts::QChartView *casualtiesChartView;
+    QtCharts::QChartView *lossesChartView;
+    QtCharts::QChartView *lossesRFDiagram;
+
+   int createLossesChart(QtCharts::QBarSet *structLossSet,
+			 QtCharts::QBarSet *NSAccLossSet,
+			 QtCharts::QBarSet *NSDriftLossSet);
+   int createCasualtiesChart(QtCharts::QBarSet *casualtiesSet);
+  
+#endif
+
+    int createHistogramChart(REmpiricalProbabilityDistribution* probDist);
 
     QByteArray uiState;
 

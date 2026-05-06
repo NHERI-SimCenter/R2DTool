@@ -80,10 +80,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QValueAxis>
 #include <QJsonObject>
 #include <QtCharts/QChart>
-#include <QtCharts/QLineSeries>
+
 #include <QToolTip>
 #include <QColor>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtCharts/QLineSeries>
+#else
+using namespace QtCharts;
+#endif
 
 #include <qgsattributes.h>
 #include <qgsmapcanvas.h>
