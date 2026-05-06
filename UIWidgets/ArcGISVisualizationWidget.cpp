@@ -276,7 +276,7 @@ void ArcGISVisualizationWidget::createArcGISVisualizationWidget(void)
     baseMapCombo->addItem("Canvas (Light)");
     baseMapCombo->addItem("National Geographic");
 
-    connect(baseMapCombo, SIGNAL(currentIndexChanged(QString)), this, SLOT(handleBasemapSelection(QString)));
+    connect(baseMapCombo, SIGNAL(currentTextChanged(QString)), this, SLOT(handleBasemapSelection(QString)));
 
     // The tree view class used to visualize the tree data model
     layersTree = new LayerTreeView(visWidget, this);

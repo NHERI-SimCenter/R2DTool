@@ -87,7 +87,7 @@ BuildingEDPEQWidget::BuildingEDPEQWidget(QWidget *parent)
     theCurrentWidget=theStandardEarthquakeEDPs;
     //layout->setMargin(0);
 
-    connect(edpSelection, SIGNAL(currentIndexChanged(QString)), this,
+    connect(edpSelection, SIGNAL(currentTextChanged(QString)), this,
             SLOT(edpSelectionChanged(QString)));
 
     edpSelection->setCurrentText("User Defined");

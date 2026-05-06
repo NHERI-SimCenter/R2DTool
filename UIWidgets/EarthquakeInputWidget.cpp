@@ -142,7 +142,7 @@ void EarthquakeInputWidget::createEarthquakesWidget(void)
     earthquakeSelectionCombo->addItem("User Specified Ground Motions");
     earthquakeSelectionCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    connect(earthquakeSelectionCombo, SIGNAL(currentIndexChanged(QString)), this, SLOT(handleEQTypeSelection(QString)));
+    connect(earthquakeSelectionCombo, SIGNAL(currentTextChanged(QString)), this, SLOT(handleEQTypeSelection(QString)));
 
     theRootStackedWidget = new QStackedWidget();
 

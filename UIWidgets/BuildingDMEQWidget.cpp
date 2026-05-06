@@ -81,7 +81,7 @@ BuildingDMEQWidget::BuildingDMEQWidget(QWidget *parent)
     this->setLayout(layout);
     //layout->setMargin(0);
 
-    connect(edpSelection, SIGNAL(currentIndexChanged(QString)), this,
+    connect(edpSelection, SIGNAL(currentTextChanged(QString)), this,
             SLOT(edpSelectionChanged(QString)));
 
     this->edpSelectionChanged("Pelicun");
