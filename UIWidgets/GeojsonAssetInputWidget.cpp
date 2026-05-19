@@ -401,6 +401,40 @@ void GeojsonAssetInputWidget::chooseAssetFileDialog(void)
 
 
 
+static QJsonObject geometryToMultiPoint(const QJsonObject& geom)
+{
+    QString gtype = geom["type"].toString();
+    QJsonArray coords = geom["coordinates"].toArray();
+    QJsonArray pts;
+
+    if (gtype == "Point") {
+        pts.append(coords);
+    } else if (gtype == "MultiPoint") {
+        pts = coords;
+    } else if (gtype == "LineString") {
+        pts = coords;
+    } else if (gtype == "MultiLineString") {
+        for (const QJsonValue& line : coords)
+            for (const QJsonValue& pt : line.toArray())
+                pts.append(pt);
+    } else if (gtype == "Polygon") {
+        for (const QJsonValue& ring : coords)
+            for (const QJsonValue& pt : ring.toArray())
+                pts.append(pt);
+    } else if (gtype == "MultiPolygon") {
+        for (const QJsonValue& poly : coords)
+            for (const QJsonValue& ring : poly.toArray())
+                for (const QJsonValue& pt : ring.toArray())
+                    pts.append(pt);
+    }
+
+    QJsonObject result;
+    result["type"] = "MultiPoint";
+    result["coordinates"] = pts;
+    return result;
+}
+
+
 bool GeojsonAssetInputWidget::loadAssetData(void)
 {
     QString pathGeojson = componentFileLineEdit->text();
@@ -466,7 +500,11 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
 
         QJsonArray featuresArray;
         for (const auto& obj : features) {
-            featuresArray.append(obj);
+            QJsonObject feat = obj;
+            QJsonObject geom = feat["geometry"].toObject();
+            if (!geom.isEmpty())
+                feat["geometry"] = geometryToMultiPoint(geom);
+            featuresArray.append(feat);
         }
 
         QJsonObject assetDictionary;

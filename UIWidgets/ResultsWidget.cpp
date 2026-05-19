@@ -396,7 +396,39 @@ int ResultsWidget::processResults(QString resultsDirectory)
 	
         QJsonArray featuresArray;
         for (const auto& obj : features) {
-	  featuresArray.append(obj);
+            QJsonObject feature = obj;
+            QJsonObject geometry = feature["geometry"].toObject();
+            QString geomType = geometry["type"].toString();
+            QJsonArray coords = geometry["coordinates"].toArray();
+            QJsonArray multiPointCoords;
+
+            if (geomType == "Point") {
+                multiPointCoords.append(coords);
+            } else if (geomType == "MultiPoint") {
+                multiPointCoords = coords;
+            } else if (geomType == "LineString") {
+                multiPointCoords = coords;
+            } else if (geomType == "MultiLineString") {
+                for (const QJsonValue& line : coords)
+                    for (const QJsonValue& pt : line.toArray())
+                        multiPointCoords.append(pt);
+            } else if (geomType == "Polygon") {
+                if (!coords.isEmpty())
+                    multiPointCoords = coords[0].toArray();
+            } else if (geomType == "MultiPolygon") {
+                for (const QJsonValue& poly : coords) {
+                    QJsonArray rings = poly.toArray();
+                    if (!rings.isEmpty())
+                        for (const QJsonValue& pt : rings[0].toArray())
+                            multiPointCoords.append(pt);
+                }
+            }
+
+            QJsonObject newGeometry;
+            newGeometry["type"] = "MultiPoint";
+            newGeometry["coordinates"] = multiPointCoords;
+            feature["geometry"] = newGeometry;
+            featuresArray.append(feature);
         }
 
         QJsonObject assetDictionary;
