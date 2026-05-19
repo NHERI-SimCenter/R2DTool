@@ -106,7 +106,7 @@ private:
 			   QLineSeries *demandSeries =0,
 			   QLineSeries *consumptionSeries =0);
 #else
-  
+
  int readDemandSupplyJSON(QString &filename,
 			   QtCharts::QLineSeries *supplySeries,
 			   QtCharts::QLineSeries *demandSeries =0,
@@ -115,7 +115,14 @@ private:
 
   int processSupplyDemandUpdate(QString &workdirPath);
 
+  // Locate the "display" ReCoDeS calculator inside a workdir's
+  // SystemConfiguration.json. Returns its index (used as the supply-
+  // demand-consumption file suffix), or -1 if no ReCoDeSCalculator
+  // with Scope="All" is configured.
+  int findDisplayCalculatorIndex(const QString &workdirPath);
+
   // data
+  int displayCalculatorIndex;
   QVBoxLayout* layout;
   QDockWidget* curveDockWidget;
   QDockWidget* gifDockWidget;

@@ -48,6 +48,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QApplication>
 #include <SC_MovieWidget.h>
 #include <QPen>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QFile>
 
 
 #include <SC_MultipleLineChart.h>
@@ -61,7 +65,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endif
 
 PyrecodesResults::PyrecodesResults(QWidget * parent, bool dockable)
-  :SC_ResultsWidget(parent) {
+  :SC_ResultsWidget(parent), displayCalculatorIndex(-1) {
 
   //
   // demand-supply
@@ -179,15 +183,53 @@ PyrecodesResults::PyrecodesResults(QWidget * parent, bool dockable)
 }
 
 int
+PyrecodesResults::findDisplayCalculatorIndex(const QString &workdirPath) {
+
+  QDir workDir(workdirPath);
+  QString configPath = workDir.filePath("SystemConfiguration.json");
+  QFile configFile(configPath);
+  if (!configFile.exists() || !configFile.open(QIODevice::ReadOnly)) {
+    return -1;
+  }
+
+  QByteArray fileData = configFile.readAll();
+  QJsonDocument jsonDoc = QJsonDocument::fromJson(fileData);
+  if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+    return -1;
+  }
+
+  QJsonObject root = jsonDoc.object();
+  if (!root.contains("ResilienceCalculator") || !root["ResilienceCalculator"].isArray()) {
+    return -1;
+  }
+
+  QJsonArray calculators = root["ResilienceCalculator"].toArray();
+  for (int i = 0; i < calculators.size(); ++i) {
+    QJsonObject calc = calculators[i].toObject();
+    if (calc.value("ClassName").toString() != "ReCoDeSCalculator") continue;
+    QJsonObject params = calc.value("Parameters").toObject();
+    if (params.value("Scope").toString() == "All") return i;
+  }
+
+  return -1;
+}
+
+int
 PyrecodesResults::processSupplyDemandUpdate(QString &workdirPath) {
 
   QDir workDir(workdirPath);
   QMap<QString, SC_MLC_ChartData *> *chartData = new QMap<QString, SC_MLC_ChartData *>;
 
-  int resourceCounter = 0;  
+  if (displayCalculatorIndex < 0) {
+    supplyDemandChart->setData(chartData);
+    return 0;
+  }
+
+  QString suffix = QString("_supply_demand_consumption_%1.json").arg(displayCalculatorIndex);
+
   for (const QString &resource : resourceList) {
 
-    QString fileName = workDir.filePath(resource + QString("_supply_demand_consumption.json"));
+    QString fileName = workDir.filePath(resource + suffix);
     SC_MLC_ChartData *resourceChartData = new SC_MLC_ChartData();    
 
     resourceChartData->xLabel = "Days";
@@ -241,29 +283,52 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
 
   //
   // get a list of all workdir there
-  //   - for first dir returned get list of files ending in _supply_demand_consumption.json .. this is resources plotted
-  //   - loop through all workdir building the data needed to plot all the results
-  //   - plot them
+  //   - resolve which ReCoDeS calculator drives the supply/demand UI
+  //   - for first dir returned get list of files matching the supply-
+  //     demand-consumption suffix for that calculator. this is the
+  //     resources plotted
+  //   - loop through all workdir building the data needed to plot all
+  //     the results, then plot them
+  //
 
   // list of workdir
 
   QStringList work_directories = workDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 
-  // get list of resources to be plotted & create list of QMap<Qstring, QMap<QString, QLineSeries *>>
-  // & then to map add a new SC_MLC_ChartData for each resource
+  QMap<QString, SC_MLC_ChartData *> multipleLineChartData;
+  QStringList fileList;
 
-  workDir.cd(work_directories[0]);
-  QStringList filters;
-  filters << "*_supply_demand_consumption.json";
-  QStringList fileList = workDir.entryList(filters, QDir::Files);
+  if (work_directories.isEmpty()) {
+    displayCalculatorIndex = -1;
+  } else {
+    // Resolve which ReCoDeSCalculator's output to display by parsing
+    // SystemConfiguration.json from the first workdir.
+    QString firstWorkdirPath = workDir.absoluteFilePath(work_directories[0]);
+    displayCalculatorIndex = findDisplayCalculatorIndex(firstWorkdirPath);
+  }
 
-  QMap<QString, SC_MLC_ChartData *>multipleLineChartData;
-    
-  for (const QString &fileName : fileList) {
-    
-    // Remove the suffix to get resources list
-    if (fileName.endsWith("_supply_demand_consumption.json")) {
-      QString resource = fileName.left(fileName.length() - QString("_supply_demand_consumption.json").length());
+  if (displayCalculatorIndex < 0) {
+    this->infoMessage("PyrecodesResults: no ReCoDeSCalculator with Scope=\"All\" "
+                      "was found in SystemConfiguration.json. Supply Curves and "
+                      "Supply-Demand Curves tabs will be empty for this run.");
+  } else {
+    this->infoMessage(QString("PyrecodesResults: Supply Curves and Supply-Demand "
+                              "Curves will be drawn from calculator index %1 "
+                              "(ReCoDeSCalculator, Scope=\"All\").")
+                      .arg(displayCalculatorIndex));
+
+    // Build resourceList and the chart-data shells from the first workdir's
+    // <resource>_supply_demand_consumption_<displayCalculatorIndex>.json files.
+    QString suffix = QString("_supply_demand_consumption_%1.json").arg(displayCalculatorIndex);
+    QStringList filters;
+    filters << QString("*%1").arg(suffix);
+
+    workDir.cd(work_directories[0]);
+    fileList = workDir.entryList(filters, QDir::Files);
+
+    for (const QString &fileName : fileList) {
+      if (!fileName.endsWith(suffix)) continue;
+      QString resource = fileName.left(fileName.length() - suffix.length());
       resourceList << resource;
       SC_MLC_ChartData *resourceLineData = new SC_MLC_ChartData();
       resourceLineData->xLabel = "Days";
@@ -271,9 +336,9 @@ int PyrecodesResults::processResults(QString &outputFile, QString &outputDirPath
       resourceLineData->title =  resource + QString(" Supply Curve");
       multipleLineChartData.insert(resource, resourceLineData);
     }
+
+    workDir.cdUp();
   }
-  
-  workDir.cdUp();
 
   // loop foreach working dir
 
