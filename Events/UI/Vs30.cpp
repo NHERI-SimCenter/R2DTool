@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 Vs30::Vs30(QObject *parent) : QObject(parent)
 {
-    this->m_type = "CGS/Wills Vs30 (Wills et al., 2015)";
+    this->m_type = "Thompson VS30 Map (2022) [California only]";
     vsInferred = true;
 }
 
@@ -87,10 +87,16 @@ bool Vs30::inputFromJSON(QJsonObject &/*jsonObject*/)
 
 const QStringList &Vs30::validTypesUser()
 {
+    // The first five entries are the canonical OpenSHA `getSourceName()`
+    // strings with a "[California only]" suffix appended for the CA-scope
+    // products. The backend strips that suffix when looking the model up
+    // by name.
     static QStringList validTypes = QStringList()
-            << "CGS/Wills Vs30 (Wills et al., 2015)"
-            << "Thompson California Vs30 (Thompson et al., 2018)"
-            << "Global Vs30 (Heath et al., 2020)"
+            << "Thompson VS30 Map (2022) [California only]"
+            << "Thompson VS30 Map (2018) [California only]"
+            << "CGS/Wills VS30 Map (2015) [California only]"
+            << "CGS/Wills Site Classification Map (2006) [California only]"
+            << "Global Vs30 from Topographic Slope (Wald & Allen 2008)"
             << "User-specified";
             //<< "National Crustal Model (Boyd et al., 2019)";
 
@@ -101,9 +107,11 @@ const QStringList &Vs30::validTypesUser()
 const QStringList &Vs30::validTypes()
 {
     static QStringList validTypes = QStringList()
-            << "CGS/Wills Vs30 (Wills et al., 2015)"
-            << "Thompson California Vs30 (Thompson et al., 2018)"
-            << "Global Vs30 (Heath et al., 2020)"
+            << "Thompson VS30 Map (2022) [California only]"
+            << "Thompson VS30 Map (2018) [California only]"
+            << "CGS/Wills VS30 Map (2015) [California only]"
+            << "CGS/Wills Site Classification Map (2006) [California only]"
+            << "Global Vs30 from Topographic Slope (Wald & Allen 2008)"
             << "User-specified";
             //<< "National Crustal Model (Boyd et al., 2019)";
 
@@ -113,6 +121,6 @@ const QStringList &Vs30::validTypes()
 
 void Vs30::reset(void)
 {
-    this->m_type = "CGS/Wills Vs30 (Wills et al., 2015)";
+    this->m_type = "Thompson VS30 Map (2022) [California only]";
     vsInferred = false;
 }

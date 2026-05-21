@@ -53,7 +53,21 @@ zDepthWidget::zDepthWidget(QString type, QWidget *parent): type(type), QWidget(p
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
     m_z1Combo = new QComboBox(this);
+    // "OpenSHA default model" uses OpenSHA's built-in fallback sequence:
+    // it returns the first non-NaN value among the basin-depth providers
+    // in OpenSHA's default order. The named entries below select one
+    // specific OpenSHA basin-depth provider. All names match OpenSHA's
+    // `getSourceName()` strings exactly (the backend dispatches by name).
     m_z1Combo->addItem("OpenSHA default model");
+    m_z1Combo->addItem("USGS SF Bay Area Velocity Model Release 21.1");
+    m_z1Combo->addItem("USGS Bay Area Velocity Model Release 8.3.0");
+    m_z1Combo->addItem("SCEC Community Velocity Model Version 4, Iteration 26, Basin Depth");
+    m_z1Combo->addItem("SCEC Community Velocity Model Version 4, Iteration 26, M01 w/ Taper, Basin Depth");
+    m_z1Combo->addItem("SCEC CCA, Iteration 6, Basin Depth");
+    m_z1Combo->addItem("SCEC Community Velocity Model Version 4 Basin Depth");
+    m_z1Combo->addItem("SCEC/Harvard Community Velocity Model Version 11.9.x Basin Depth");
+    m_z1Combo->addItem("SCEC CyberShake Study 18.8 Stitched Basin Depth");
+    m_z1Combo->addItem("SCEC CyberShake Study 24.8 Stitched Basin Depth");
     m_z1Combo->addItem("User-specified");
     m_z1Combo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
@@ -65,16 +79,17 @@ zDepthWidget::zDepthWidget(QString type, QWidget *parent): type(type), QWidget(p
     comboLayout->addWidget(m_z1Combo);
 
     z1StackedWidget = new QStackedWidget(this);
-    QString lableText = QString("Will get %1 from OpenSHA").arg(type);
+    QString labelText = QString("Will get %1 from OpenSHA.").arg(type);
     if (type == "Z1pt0"){
-        lableText = lableText + QString("\nThe value will be inferred from Vs30 (Chiou and Youngs, 2013) if it can not be interpolated from") +
-                    QString(" SCEC Community Velocity Models nor USGS Bay Area Velocity Model.\nThis model is only applicable for California");
+        labelText = labelText + QString("\nThe value will be inferred from Vs30 (Chiou and Youngs, 2013) for sites the chosen basin-depth model does not cover.") +
+                    QString("\nAll OpenSHA basin-depth models are limited to California.");
     } else {
-        lableText = lableText + QString("\nThe value will be inferred from Vs30 (Campbell and Bozorgnia (2014)) if it can not be interpolated from") +
-                    QString(" SCEC Community Velocity Models nor USGS Bay Area Velocity Model,\nThis model is only applicable for California");
+        labelText = labelText + QString("\nThe value will be inferred from Vs30 (Campbell and Bozorgnia, 2014) for sites the chosen basin-depth model does not cover.") +
+                    QString("\nAll OpenSHA basin-depth models are limited to California.");
     }
 
-    auto labelZ1 = new QLabel(lableText);
+    auto labelZ1 = new QLabel(labelText);
+    labelZ1->setWordWrap(true);
     z1StackedWidget->addWidget(labelZ1);
 
     userInputZ1 = new zDepthUserInputWidget(type);
@@ -83,7 +98,12 @@ zDepthWidget::zDepthWidget(QString type, QWidget *parent): type(type), QWidget(p
     mainLayout->addLayout(comboLayout);
     mainLayout->addWidget(z1StackedWidget);
 
-    QObject::connect(m_z1Combo, SIGNAL(currentIndexChanged(int)), z1StackedWidget, SLOT(setCurrentIndex(int)));
+    // Only the "User-specified" entry shows the value-entry widget; every
+    // OpenSHA entry shows the informational label.
+    QObject::connect(m_z1Combo, &QComboBox::currentTextChanged,
+                     [this](const QString& text){
+                         z1StackedWidget->setCurrentIndex(text == "User-specified" ? 1 : 0);
+                     });
 }
 
 
