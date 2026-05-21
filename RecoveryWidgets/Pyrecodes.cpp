@@ -325,6 +325,33 @@ SC_ResultsWidget* Pyrecodes::getResultsWidget(QWidget *parent)
 
 void Pyrecodes::runPyrecodes() {
 
+  // first check entries exist
+  QString r2dResultsFolderName = r2dResultsFolder->getDirName();
+  QString inputDataFolderName = inputDataFolder->getDirName();
+
+  if (r2dResultsFolderName.isEmpty()) {
+    errorMessage("PYRECODES CANNOT RUN .. input Data Folder NOT Specified");
+    return;
+  }
+
+  if (inputDataFolderName.isEmpty()) {
+    errorMessage("Pyrecodes Cannot RUN .. R2D Results Folder Not SPECIFIED");
+    return;
+  }  
+  
+  QDir resultsFolderDir(r2dResultsFolderName);
+  QDir inputFolderDir(inputDataFolderName);
+  
+  if (!inputFolderDir.exists()) {
+    errorMessage("PYRECODES CANNOT RUN .. input Data Folder DOES NOT EXIST");
+    return;
+  }
+
+  if (!resultsFolderDir.exists()) {
+    errorMessage("Pyrecodes Cannot RUN .. R2D Results Folder DOES NOT EXIST or Not SPECIFIED");
+    return;
+  }
+  
   //
   // create a workdir in LocalApplications folder named pyrecodes
   //
@@ -373,6 +400,7 @@ void Pyrecodes::runPyrecodes() {
   QString configFileNew = inputDataDir + QDir::separator() + systemConfigFile->getName();
   QString componentFileNew = inputDataDir + QDir::separator() + componentLibraryFile->getName(); 
 
+  
   // set up args to script
   QStringList args;
   args << "--mainFile" << mainFileNew
