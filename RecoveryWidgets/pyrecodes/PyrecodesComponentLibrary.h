@@ -75,6 +75,9 @@ public:
 
   void addOrUpdateComponentTableEntry(QString name, QString classT, QString supply, QString demand, QString recoveryModel);
 
+  //! current component library file path shown in the file field (may be empty or "<template>")
+  QString getFileName();
+
 public slots:
   void bringUpJobActionMenu(int row, int col);
   void deleteComponent();

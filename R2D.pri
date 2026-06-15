@@ -412,6 +412,8 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponentLibrary.h \
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesComponent.h \	    
 	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesLocality.h \	    
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesOptions.h \
+	    $$PWD/RecoveryWidgets/pyrecodes/PyrecodesTemplates.h \
             $$PWD/assetWidgets/InpFileWaterInputWidget.h \	    
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2.h \
 	    $$PWD/assetWidgets/EPANET2.2/include/epanet2_2.h \

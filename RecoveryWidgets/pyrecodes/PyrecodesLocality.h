@@ -51,8 +51,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class  SC_FileEdit;
 class  QLineEdit;
-class  SC_CheckBox;
-class  QListWidget;
+class  SC_ComboBox;
+class  QPlainTextEdit;
+class  QDialog;
+class  QStackedWidget;
 class PyrecodesSystemConfig;
 
 
@@ -67,25 +69,30 @@ public:
   bool inputFromJSON(QJsonObject &jsonObject);
   bool copyFiles(QString &dirName);
   void clear(void);
-  
+
+private:
+  //! one-line summary of the current coordinates (for the table / summary field)
+  QString coordinateSummary();
+
 signals:
 
 private:
 
   // name
   QLineEdit  *theName;
-  
-  // coordinates
-  SC_FileEdit        *coordinateFile;
-  QLineEdit  *boundingBox;
 
-  // components
-  SC_CheckBox *buildingsCB;
-  SC_CheckBox *infrastructureCB;  
-  //SC_CheckBox *waterCB;
-  //SC_CheckBox *transportationCB;
-  QListWidget *infrastructureList;
-  SC_CheckBox *resourceSupplierCB;
+  // coordinates - edited in their own pop-up window (coordDialog)
+  SC_ComboBox    *coordType;       // Centroid | GeoJSON | BoundingBox
+  QLineEdit      *centroidX;
+  QLineEdit      *centroidY;
+  SC_FileEdit    *geoJSONFile;
+  QLineEdit      *boundingBox;     // JSON array, e.g. [xmin, ymin, xmax, ymax]
+  QDialog        *coordDialog;     // the dedicated coordinates window
+  QStackedWidget *coordStack;      // shows only the fields for the chosen type
+  QLineEdit      *coordSummary;    // read-only summary shown in the main window
+
+  // components (Infrastructure / BuildingStock / RecoveryResourceSuppliers)
+  QPlainTextEdit *componentsEdit;
 
   PyrecodesSystemConfig *theSystemConfig;
 };

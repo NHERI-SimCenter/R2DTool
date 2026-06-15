@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class SC_FileEdit;
 class PyrecodesSystemConfig;
+class PyrecodesComponentLibrary;
 
 class PyrecodesUI : public SimCenterAppWidget
 {
@@ -68,7 +69,7 @@ private:
   SC_FileEdit *theComponentLibraryFile;
   SC_FileEdit *theSystemConfigurationFile;
 
-  SimCenterWidget *theComponentLibrary;
+  PyrecodesComponentLibrary *theComponentLibrary;
   PyrecodesSystemConfig *theSystemConfiguration;
 };
 
