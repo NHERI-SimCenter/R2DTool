@@ -56,6 +56,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "Utils/RelativePathResolver.h"
 #include "Utils/FileOperations.h"
 #include <PyrecodesComponent.h>
+#include <PyrecodesTemplates.h>
+
+// make a table's columns user-resizable and sized to fit their header labels
+static void setupColumns(QTableWidget *t) {
+  QHeaderView *h = t->horizontalHeader();
+  h->setSectionResizeMode(QHeaderView::Interactive);
+  h->setMinimumSectionSize(40);
+  t->resizeColumnsToContents();
+}
 
 PyrecodesComponentLibrary::PyrecodesComponentLibrary(QWidget *parent)
   :SimCenterWidget(parent)
@@ -65,9 +74,28 @@ PyrecodesComponentLibrary::PyrecodesComponentLibrary(QWidget *parent)
   // first a QLineEdit to Load and Save the info to a file
   //
   
-  QLineEdit   *theComponentLibraryFile = new QLineEdit();
+  theComponentLibraryFile = new QLineEdit();
+  theComponentLibraryFile->setToolTip("Path of the component library file (set when you Load or Save).");
   QPushButton *loadFileButton = new QPushButton("Load");
-  QPushButton *saveFileButton = new QPushButton("Save");  
+  loadFileButton->setToolTip("Load an existing component library JSON file.");
+  QPushButton *loadTemplateButton = new QPushButton("Load Template");
+  loadTemplateButton->setToolTip("Start from a built-in example with two components you can edit.");
+  QPushButton *saveFileButton = new QPushButton("Save");
+  saveFileButton->setToolTip("Save the component library to a JSON file (used by pyrecodes / R2DTool).");
+
+  //
+  // code for when user pushes the loadTemplateButton
+  //   - load the embedded starter component-library template
+  //
+  connect(loadTemplateButton, &QPushButton::clicked, this, [=]() {
+    QJsonDocument doc = QJsonDocument::fromJson(PyrecodesTemplates::componentLibrary().toUtf8());
+    QJsonObject jsonObj = doc.object();
+    this->clear();
+    if (this->inputFromJSON(jsonObj))
+      theComponentLibraryFile->setText("<template>");
+    else
+      this->errorMessage("Could not load component library template");
+  });
 
   //
   // code for when user pushes the loadFileButton
@@ -172,16 +200,22 @@ PyrecodesComponentLibrary::PyrecodesComponentLibrary(QWidget *parent)
   
   
   // addConstant PushButton
-  QPushButton *addComponentButton = new QPushButton("Add Component");  
+  QPushButton *addComponentButton = new QPushButton("Add Component");
+  addComponentButton->setToolTip("Open a dialog to define a new component (asset type).");
 
   QStringList headingsComponent; headingsComponent << "Name" << "Class" << "Supply" << "Demand" << "Recovery Model";
   theComponentsTable = new QTableWidget();
   theComponentsTable->setColumnCount(5);
   theComponentsTable->setHorizontalHeaderLabels(headingsComponent);
-  theComponentsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+  // columns are user-resizable; they fit their headers/content initially
+  setupColumns(theComponentsTable);
   theComponentsTable->verticalHeader()->setVisible(false);
   theComponentsTable->setShowGrid(true);
-  theComponentsTable->setStyleSheet("QTableWidget::item { border: 1px solid black; }");  
+  theComponentsTable->setAlternatingRowColors(true);
+  theComponentsTable->setToolTip("Components defined so far. Click a row to Edit or Delete it.\n"
+				 "Supply/Demand columns list the resources each provides/consumes.");
+  if (theComponentsTable->horizontalHeaderItem(2)) theComponentsTable->horizontalHeaderItem(2)->setToolTip("Resources this component supplies");
+  if (theComponentsTable->horizontalHeaderItem(3)) theComponentsTable->horizontalHeaderItem(3)->setToolTip("Resources this component consumes (operation demand)");
   
   connect(addComponentButton, &QPushButton::clicked, this, [=]() {
     this->addComponent();
@@ -191,18 +225,28 @@ PyrecodesComponentLibrary::PyrecodesComponentLibrary(QWidget *parent)
   connect(theComponentsTable, SIGNAL(cellPressed(int,int)),this,SLOT(bringUpJobActionMenu(int,int)));  
   
   QGridLayout *layout = new QGridLayout(this);
-  layout->addWidget(new QLabel("Component Library File:"),0,0);
-  layout->addWidget(theComponentLibraryFile,0,1);
-  layout->addWidget(loadFileButton,0,2);
-  layout->addWidget(saveFileButton,0,3);
+
+  QLabel *intro = new QLabel(
+      "The Component Library lists every component (asset type) in your region and how each "
+      "supplies/consumes resources and recovers. Click \"Load Template\" to start from an example, "
+      "\"Add Component\" to define one, then \"Save\". Hover fields for help.");
+  intro->setWordWrap(true);
+  intro->setStyleSheet("color: #555; font-style: italic;");
+  layout->addWidget(intro, 0, 0, 1, 5);
+
+  layout->addWidget(new QLabel("Component Library File:"),1,0);
+  layout->addWidget(theComponentLibraryFile,1,1);
+  layout->addWidget(loadFileButton,1,2);
+  layout->addWidget(loadTemplateButton,1,3);
+  layout->addWidget(saveFileButton,1,4);
   layout->setColumnStretch(1,1);
 
   QGroupBox *theGroupBox = new QGroupBox("Component Library");
   QGridLayout *groupLayout = new QGridLayout(theGroupBox);
   groupLayout->addWidget(addComponentButton, 0,0, 1, 2);
   groupLayout->addWidget(theComponentsTable, 1, 0, 1, 5);
-  
-  layout->addWidget(theGroupBox,1,0,1,4);  
+
+  layout->addWidget(theGroupBox,2,0,1,5);
 }
 
 
@@ -211,6 +255,11 @@ PyrecodesComponentLibrary::~PyrecodesComponentLibrary()
 
 }
 
+
+QString
+PyrecodesComponentLibrary::getFileName() {
+  return theComponentLibraryFile->text();
+}
 
 void
 PyrecodesComponentLibrary::addComponent() {
@@ -242,6 +291,7 @@ PyrecodesComponentLibrary::inputFromJSON(QJsonObject &jsonObject)
 {
   theComponents.clear();
   theComponentsTable->clearContents();
+  theComponentsTable->setRowCount(0);
 
   for (const QString &key : jsonObject.keys()) {
 
@@ -297,8 +347,11 @@ PyrecodesComponentLibrary::addOrUpdateComponentTableEntry(QString name, QString 
   theComponentsTable->setItem(row, 0, newName);
   theComponentsTable->setItem(row, 1, newClass);
   theComponentsTable->setItem(row, 2, newSupply);
-  theComponentsTable->setItem(row, 2, newDemand);
-  theComponentsTable->setItem(row, 2, newRecovery);        
+  theComponentsTable->setItem(row, 3, newDemand);
+  theComponentsTable->setItem(row, 4, newRecovery);
+
+  // size columns to the new content (names etc.); user can still drag them
+  theComponentsTable->resizeColumnsToContents();
 }
 
 void

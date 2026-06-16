@@ -54,6 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class QTableWidget;
 class PyrecodesLocality;
 class QLineEdit;
+class SC_ComboBox;
+class QPlainTextEdit;
 
 class PyrecodesSystemConfig : public SimCenterWidget
 {
@@ -73,16 +75,26 @@ public:
   void addLocality();
 
   void addOrUpdateLocalityTableEntry(QString, QString, QStringList);
+
+  //! current system configuration file path shown in the file field (may be empty or "<template>")
+  QString getFileName();
   
 signals:
 
 private:
 
   QLineEdit *theSystemFile;
-  QTableWidget *theConstantsTable;  
+  QTableWidget *theConstantsTable;
   QTableWidget *theLocalityTable;
-  QTableWidget *theResourcesTable;  
+  QTableWidget *theResourcesTable;
   QList<PyrecodesLocality *>theLocalities;
+
+  // DamageInput section
+  SC_ComboBox    *theDamageInputClass;
+  QPlainTextEdit *theDamageInputParams;
+
+  // ResilienceCalculator section
+  QTableWidget   *theResilienceTable;
 
 };
 
