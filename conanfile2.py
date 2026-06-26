@@ -3,8 +3,8 @@ from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy
 import os
 
-class QuoFEMConan(ConanFile):
-    name = "quoFEM"
+class R2D_Conan(ConanFile):
+    name = "R2D"
     version = "0.0.9"
     license = "BSD-3-Clause"
     author = "NHERI SimCenter"
@@ -18,9 +18,6 @@ class QuoFEMConan(ConanFile):
         self.requires("nlohmann_json/3.12.0")
         if self.settings.os != "Linux":
             self.requires("libcurl/8.12.1")
-
-    def layout(self):
-        cmake_layout(self)
 
     def generate(self):
         deps = CMakeDeps(self)

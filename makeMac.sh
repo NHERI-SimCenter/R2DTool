@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
             ;;
 	--release|-r)
 	    RELEASE="YES"
-	    RELEASE_FLAG="-DSC_RELEASE"	    
+	    RELEASE_FLAG="-D_SC_RELEASE"	    
 	    shift 1
 	    ;;
 	--wipe|-w)
@@ -94,7 +94,7 @@ fi
 #
 
 if [[ "$WIPE" == "TRUE" ]]; then
-    if [[ -n "$BUILD_DIR" && "$BUILD_DIR" != "$HOME" ]]; then
+    if [[ "$BUILD_DIR" != "$HOME" ]]; then
 	echo "Cleaning up old build directory..."
 	rm -rf "${BUILD_DIR}"
     fi

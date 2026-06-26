@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("R2D");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("5.6.1");
+    QCoreApplication::setApplicationVersion("5.6.2");
 
     //
     // set up logging of output messages for user debugging
@@ -251,28 +251,18 @@ int main(int argc, char *argv[])
 	view.show();
 	view.hide();
 	
-    } else
+    } else {
+      
       qDebug() << "Google Analytics: None";
+
+    }
+
+#else
+
+    qDebug() << "Running a Developer Version of R2D";
     
 #endif      
 
-
-
-#ifdef _ANALYTICS
-
-    if (analyticsOption != "No") {
-      
-      qDebug() << "compiled with: ANALYTICS";    
-      GoogleAnalytics::SetMeasurementId("G-ZXJJP9JW1R");
-      GoogleAnalytics::SetAPISecret("UPiFP4sETYedbPqIhVdCDA");
-      GoogleAnalytics::CreateSessionId();
-      GoogleAnalytics::StartSession();
-      
-    } else
-      qDebug() << "Google Analytics: None";    
-
-#endif
-    
     int res = a.exec();
     
     // On done with event loop, logout & stop the thread

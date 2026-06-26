@@ -1,0 +1,15 @@
+createSAM/openSeesInput
+createSAM/AutoSDA 
+createEVENT/ASCE7_WindSpeed
+createEVENT/CFDEvent
+createEVENT/HighRiseTPU
+createEVENT/LowRiseTPU
+createEVENT/NonisolatedLowRiseTPU
+createEVENT/stochasticWind
+createEVENT/stochasticGroundMotion
+createEVENT/windTunnelExperiment
+createEDP/standardWindEDP
+createEDP/userEDP
+createEDP/userEDP
+createEDP/userEDP_R
+createEDP/standardEarthquakeEDP_R

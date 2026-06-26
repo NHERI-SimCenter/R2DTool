@@ -681,7 +681,7 @@ bool WorkflowAppR2D::inputFromJSON(QJsonObject &jsonObject)
     }
 
     // zoom to full extent
-    theVisualizationWidget->zoomToActiveLayer();
+    //theVisualizationWidget->zoomToActiveLayer();
     
     return result;
 }

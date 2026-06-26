@@ -70,7 +70,7 @@ postprocessDAKOTA
 *.autosave
 debug.log
 MDOF_BuildingModelToSAM
-build
+build*
 results
 userID.sh
 Frameworks
