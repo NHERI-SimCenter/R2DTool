@@ -760,7 +760,7 @@ int GISAssetInputWidget::getOffset(void)
 
     // Get the ID of the first asset from the table
     bool OK;
-    auto firstIDTable = componentTableWidget->item(0,0).toInt(&OK);
+    auto firstIDTable = componentTableWidget->item(0,this->getIDColumn()).toInt(&OK);
 
     if(!OK)
     {
