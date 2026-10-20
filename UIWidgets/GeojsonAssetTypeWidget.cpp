@@ -85,6 +85,28 @@ void GeojsonAssetTypeWidget::setAssetFile(const QString& path, const QSet<qint64
 }
 
 
+// QVariant::toString() returns "" for lists, e.g. "NumberOfStories": [2,1] in the GeoJSON
+// If any feature has a list, QGIS makes the field a list for all features, so a single value 2 comes back as [2]
+static QString attributeToString(const QVariant& value)
+{
+    if (value.userType() == QMetaType::QVariantList || value.userType() == QMetaType::QStringList)
+    {
+        auto list = value.toList();
+
+        if (list.size() == 1)
+            return attributeToString(list.first());
+
+        QStringList items;
+        for (const QVariant& it : list)
+            items.push_back(attributeToString(it));
+
+        return "[" + items.join(",") + "]";
+    }
+
+    return value.toString();
+}
+
+
 bool GeojsonAssetTypeWidget::loadAssetData(bool message)
 {
     QFileInfo file(pathToComponentInputFile);
@@ -154,7 +176,7 @@ bool GeojsonAssetTypeWidget::loadAssetData(bool message)
 
         auto attributes = feat.attributes();
         for(int i = 0; i<attributes.size(); ++i)
-            attributeStrList.push_back(attributes[i].toString());
+            attributeStrList.push_back(attributeToString(attributes[i]));
 
         if(attributeStrList.size() != numFields)
         {
