@@ -38,23 +38,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "GeojsonAssetInputWidget.h"
 #include "QGISVisualizationWidget.h"
-#include "GISAssetInputWidget.h"
+#include "GeojsonAssetTypeWidget.h"
 #include "MultiComponentR2D.h"
 #include "SimCenterPreferences.h"
-
-#include <qgslinesymbol.h>
-#include <qgsmarkersymbol.h>
-#include <qgsjsonutils.h>
 
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
 #include <QFileDialog>
-#include <QSplitter>
-#include <QGroupBox>
 #include <QVBoxLayout>
 #include <QJsonArray>
-#include <QTemporaryFile>
+#include <QSet>
 
 GeojsonAssetInputWidget::GeojsonAssetInputWidget(QWidget *parent, VisualizationWidget* visWidget, QString componentType, QString appType)
     : SimCenterAppWidget(parent), componentType(componentType), appType(appType)
@@ -145,7 +139,7 @@ void GeojsonAssetInputWidget::handleLayerCrsChanged(const QgsCoordinateReference
     if (!activeComponents.isEmpty()){
         for(QString it : activeComponents)
         {
-            auto activeComp = dynamic_cast<GISAssetInputWidget*>(mainAssetWidget->getComponent(it));
+            auto activeComp = dynamic_cast<GeojsonAssetTypeWidget*>(mainAssetWidget->getComponent(it));
 
             if(activeComp == nullptr)
                 continue;
@@ -179,7 +173,7 @@ bool GeojsonAssetInputWidget::copyFiles(QString &destDir)
     if (!activeComponents.isEmpty()){
         for(QString it : activeComponents)
         {
-            auto activeComp = dynamic_cast<GISAssetInputWidget*>(mainAssetWidget->getComponent(it));
+            auto activeComp = dynamic_cast<AssetInputWidget*>(mainAssetWidget->getComponent(it));
 
             if(activeComp == nullptr)
                 continue;
@@ -215,7 +209,8 @@ bool GeojsonAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
         data.insert("assetSourceFile", componentFile.fileName());
         data["pathToSource"]=componentFile.absoluteDir().path();
     } else {
-        this->errorMessage("Cannot find GeoJSON file" + componentFileLineEdit->text());
+        this->errorMessage("Cannot find GeoJSON file " + componentFileLineEdit->text());
+        return false;
     }
 
 //    data.insert("assetType",componentType);
@@ -225,7 +220,7 @@ bool GeojsonAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     if (!activeComponents.isEmpty()){
         for(QString it : activeComponents)
         {
-            auto activeComp = dynamic_cast<GISAssetInputWidget*>(mainAssetWidget->getComponent(it));
+            auto activeComp = dynamic_cast<AssetInputWidget*>(mainAssetWidget->getComponent(it));
 
             if(activeComp == nullptr)
                 return false;
@@ -245,25 +240,6 @@ bool GeojsonAssetInputWidget::outputAppDataToJSON(QJsonObject &jsonObject)
             data.insert(it, subTypeAppData);
         }
     }
-
-    for (auto&& it : theAssetInputWidgetList)
-    {
-        auto assetType = it->getAssetType();
-
-        QJsonObject assetData;
-
-        // The file containing the network bridges
-
-        if(!it->outputAppDataToJSON(assetData))
-        {
-            this->errorMessage("Error, could not get the .json output from the "+assetType+" widget in GIS_to_TransportNETWORK");
-            return false;
-        }
-
-        data[assetType] = assetData;
-
-    }
-
 
     jsonObject["ApplicationData"] = data;
 
@@ -331,7 +307,7 @@ bool GeojsonAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     if (!activeComponents.isEmpty()){
         for(QString it : activeComponents)
         {
-            auto activeComp = dynamic_cast<GISAssetInputWidget*>(mainAssetWidget->getComponent(it));
+            auto activeComp = dynamic_cast<AssetInputWidget*>(mainAssetWidget->getComponent(it));
 
             if(activeComp == nullptr)
                 return false;
@@ -360,11 +336,21 @@ bool GeojsonAssetInputWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 }
 
 
-void GeojsonAssetInputWidget::clear()
+void GeojsonAssetInputWidget::removeAllAssets(void)
 {
-    theAssetInputWidgetList.clear();
+    // Remove the layers first, removeAllComponents deletes the widgets the map would otherwise still select into
+    for(auto&& it : theAssetWidgetList)
+        it->removeLayers();
+
+    theAssetWidgetList.clear();
     theAssetLayerList.clear();
     mainAssetWidget->removeAllComponents();
+}
+
+
+void GeojsonAssetInputWidget::clear()
+{
+    this->removeAllAssets();
     componentFileLineEdit->clear();
     for(auto field : FieldNameToLineEdit.keys())
     {
@@ -388,9 +374,6 @@ void GeojsonAssetInputWidget::chooseAssetFileDialog(void)
     if(newPathToComponentInputFile.isEmpty())
         return;
 
-    // Clear the existing widget data
-    mainAssetWidget->removeAllComponents();
-
     // Set file name & entry in qLine edit
     componentFileLineEdit->setText(newPathToComponentInputFile);
 
@@ -399,6 +382,24 @@ void GeojsonAssetInputWidget::chooseAssetFileDialog(void)
     return;
 }
 
+
+
+// GeojsonAssetTypeWidget loads each asset type into a single QGIS vector layer, and
+// that layer only supports one geometry family (point/line/polygon) at a time -
+// see GeojsonAssetTypeWidget::loadAssetVisualization(). If an asset type's features
+// are all the same family we can load them as-is; only truly mixed-family asset
+// types need to be collapsed down to a common (point) representation.
+static QString geometryFamily(const QString& gtype)
+{
+    if (gtype == "Point" || gtype == "MultiPoint")
+        return "point";
+    else if (gtype == "LineString" || gtype == "MultiLineString")
+        return "line";
+    else if (gtype == "Polygon" || gtype == "MultiPolygon")
+        return "polygon";
+
+    return "other";
+}
 
 
 static QJsonObject geometryToMultiPoint(const QJsonObject& geom)
@@ -437,45 +438,99 @@ static QJsonObject geometryToMultiPoint(const QJsonObject& geom)
 
 bool GeojsonAssetInputWidget::loadAssetData(void)
 {
+    // Clear any assets from a previous load
+    this->removeAllAssets();
+
     QString pathGeojson = componentFileLineEdit->text();
-      QFile jsonFile(pathGeojson);
+    QFile jsonFile(pathGeojson);
 
     QMap<QString, QList<QJsonObject>> assetDictionary;
+    QMap<QString, QSet<qint64>> assetIds;
 
     QJsonObject crs;
     if (jsonFile.exists() && jsonFile.open(QFile::ReadOnly)) {
 
-        QString data = jsonFile.readAll();
-        QJsonDocument exDoc = QJsonDocument::fromJson(data.toUtf8());
+        QJsonParseError parseError;
+        QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll(), &parseError);
+        if (parseError.error != QJsonParseError::NoError) {
+            this->errorMessage("Error reading " + pathGeojson + ", invalid JSON at character " + QString::number(parseError.offset) + ": " + parseError.errorString());
+            return false;
+        }
+        if (!exDoc.isObject() || !exDoc.object()["features"].isArray()) {
+            this->errorMessage("Error reading " + pathGeojson + ", it is not a GeoJSON FeatureCollection with a 'features' array");
+            return false;
+        }
         QJsonObject jsonObject = exDoc.object();
 
-        if(jsonObject.contains("crs"))
+        // GeoJSON without a crs is WGS84 (RFC 7946)
+        QgsCoordinateReferenceSystem qgsCRS("EPSG:4326");
+        if(jsonObject.contains("crs")) {
             crs = jsonObject["crs"].toObject();
-        QString crsString = crs["properties"].toObject()["name"].toString();
-        QgsCoordinateReferenceSystem qgsCRS = QgsCoordinateReferenceSystem(crsString);
-        if (!qgsCRS.isValid()){
-            qgsCRS.createFromOgcWmsCrs(crsString);
-        }
-        if (!qgsCRS.isValid()){
-            QString msg = "The CRS: " + crsString + " defined in " + pathGeojson + " is invalid and ignored";
-            errorMessage(msg);
+            QString crsString = crs["properties"].toObject()["name"].toString();
+            QgsCoordinateReferenceSystem fileCRS(crsString);
+            if (!fileCRS.isValid()){
+                fileCRS.createFromOgcWmsCrs(crsString);
+            }
+            if (fileCRS.isValid()){
+                qgsCRS = fileCRS;
+            } else {
+                QString msg = "The CRS: " + crsString + " defined in " + pathGeojson + " is invalid and ignored, using WGS84 (EPSG:4326)";
+                errorMessage(msg);
+                // Leave it out of the asset type files too, so QGIS also uses WGS84
+                crs = QJsonObject();
+            }
         }
         crsSelectorWidget->setCRS(qgsCRS);
         QJsonArray features = jsonObject["features"].toArray();
 
+        if (features.isEmpty()) {
+            this->errorMessage("There are no features in " + pathGeojson);
+            return false;
+        }
+
+        int featureIndex = -1;
         for (const QJsonValue& valueIt : features) {
 
+            ++featureIndex;
             QJsonObject value = valueIt.toObject();
 
             // Get the type
             QJsonObject assetProperties = value["properties"].toObject();
 
-            if (!jsonObject.contains("type")) {
-                this->errorMessage("The Json object is missing the 'type' key that defines the asset type");
+            QString assetType = assetProperties["type"].toString();
+
+            if (assetType.isEmpty()) {
+                this->errorMessage("Feature " + QString::number(featureIndex) + " in " + pathGeojson + " is missing the 'type' property that defines the asset type");
                 return false;
             }
 
-            QString assetType = assetProperties["type"].toString();
+            // The asset id is the integer feature "id", QGIS then uses it as the feature id
+            QJsonValue idValue = value["id"];
+            bool idOK = false;
+            qint64 assetId = 0;
+            if (idValue.isDouble()) {
+                double idDouble = idValue.toDouble();
+                assetId = static_cast<qint64>(idDouble);
+                idOK = (static_cast<double>(assetId) == idDouble);
+            }
+
+            if (!idOK) {
+                QString idText = idValue.isUndefined() ? QString("missing") : QString::fromUtf8(QJsonDocument(QJsonArray({idValue})).toJson(QJsonDocument::Compact).mid(1).chopped(1));
+                this->errorMessage("A " + assetType + " feature in " + pathGeojson + " has id " + idText + ", each feature must have an integer 'id'");
+                return false;
+            }
+
+            QSet<qint64>& typeIds = assetIds[assetType];
+            if (typeIds.contains(assetId)) {
+                this->errorMessage("The id " + QString::number(assetId) + " is used by more than one " + assetType + " feature in " + pathGeojson);
+                return false;
+            }
+            typeIds.insert(assetId);
+
+            // The backend also takes the id from the feature, so an id in the properties is not used
+            assetProperties.remove("id");
+            value["properties"] = assetProperties;
+            value["id"] = assetId;
 
             if (!assetDictionary.contains(assetType))
             {
@@ -498,11 +553,23 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
         QString assetType = it.key();
         QList<QJsonObject> features = it.value();
 
+        // Only collapse geometries down to points if this asset type genuinely
+        // mixes geometry families (e.g. some points and some lines). A single
+        // QGIS layer can't render mixed families, but it can render a uniform
+        // set of polygons or lines just fine, so leave those alone.
+        QSet<QString> families;
+        for (const auto& obj : features) {
+            QJsonObject geom = obj["geometry"].toObject();
+            if (!geom.isEmpty())
+                families.insert(geometryFamily(geom["type"].toString()));
+        }
+        bool mixedGeometry = families.size() > 1;
+
         QJsonArray featuresArray;
         for (const auto& obj : features) {
             QJsonObject feat = obj;
             QJsonObject geom = feat["geometry"].toObject();
-            if (!geom.isEmpty())
+            if (!geom.isEmpty() && mixedGeometry)
                 feat["geometry"] = geometryToMultiPoint(geom);
             featuresArray.append(feat);
         }
@@ -557,28 +624,16 @@ bool GeojsonAssetInputWidget::loadAssetData(void)
 
         this->statusMessage("Loading asset type "+assetType+" with "+ QString::number(features.size())+" features");
 
-        GISAssetInputWidget *thisAssetWidget = new GISAssetInputWidget(nullptr, theVisualizationWidget, assetType);
+        GeojsonAssetTypeWidget *thisAssetWidget = new GeojsonAssetTypeWidget(nullptr, theVisualizationWidget, assetType);
+        theAssetWidgetList.append(thisAssetWidget);
 
-        // Hide the first label
-        /*
-        thisAssetWidget->getLabel1()->hide();
-        thisAssetWidget->getCRSSelectorWidget()->hide();
-        // Hide the file input widgets in the asset file path layout
-        auto pathLayout = thisAssetWidget->getAssetFilePathLayout();
-        for (int i = 0; i < pathLayout->count(); ++i) {
-            QWidget *widget = pathLayout->itemAt(i)->widget();
-            if (widget) {
-                widget->hide();
-            }
-        }
-        */
-
-        thisAssetWidget->hideCRS_Selection();
-        thisAssetWidget->hideAssetFilePath();
-
-        thisAssetWidget->setPathToComponentInputFile(outputFile);
+        thisAssetWidget->setAssetFile(outputFile, assetIds[assetType]);
         if (!thisAssetWidget->loadAssetData(false)) {
             this->errorMessage("Failed to load asset data for asset type" + assetType);
+            // Not yet added to mainAssetWidget, so removeAllAssets would not delete it
+            thisAssetWidget->removeLayers();
+            theAssetWidgetList.removeLast();
+            delete thisAssetWidget;
             return false;
         }
 

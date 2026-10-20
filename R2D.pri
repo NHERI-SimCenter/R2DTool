@@ -156,6 +156,7 @@ SOURCES +=  $$PWD/Events/UI/BedrockDepth.cpp \
             $$PWD/UIWidgets/AssetInputWidget.cpp \
             $$PWD/UIWidgets/GISTransportNetworkInputWidget.cpp \
             $$PWD/UIWidgets/GeojsonAssetInputWidget.cpp \
+            $$PWD/UIWidgets/GeojsonAssetTypeWidget.cpp \
             $$PWD/UIWidgets/NonselectableComponentInputWidget.cpp \
             $$PWD/UIWidgets/DLWidget.cpp \
             $$PWD/UIWidgets/EarthquakeInputWidget.cpp \
@@ -342,6 +343,7 @@ HEADERS +=  $$PWD/Events/UI/BedrockDepth.h \
             $$PWD/UIWidgets/AssetInputWidget.h \
             $$PWD/UIWidgets/GISTransportNetworkInputWidget.h \
             $$PWD/UIWidgets/GeojsonAssetInputWidget.h \
+            $$PWD/UIWidgets/GeojsonAssetTypeWidget.h \	    
             $$PWD/UIWidgets/NonselectableComponentInputWidget.h \
             $$PWD/UIWidgets/DLWidget.h \
             $$PWD/UIWidgets/EarthquakeInputWidget.h \

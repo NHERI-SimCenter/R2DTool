@@ -45,8 +45,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class QGISVisualizationWidget;
 class VisualizationWidget;
-class GISAssetInputWidget;
 class MultiComponentR2D;
+class GeojsonAssetTypeWidget;
 
 class QLineEdit;
 
@@ -80,12 +80,15 @@ private slots:
 
 protected:
 
+    // Remove the layers of all the asset types from the map and delete the asset type widgets
+    void removeAllAssets(void);
+
     QLineEdit* componentFileLineEdit = nullptr;
 
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
     MultiComponentR2D* mainAssetWidget = nullptr;
 
-    QList<GISAssetInputWidget*> theAssetInputWidgetList;
+    QList<GeojsonAssetTypeWidget*> theAssetWidgetList;
     QList<QgsMapLayer*> theAssetLayerList;
 
     QString componentType;
