@@ -227,7 +227,7 @@ bool AssetInputWidget::loadAssetData(bool message)
 
     // Get the ID of the first and last component
     bool OK;
-    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
+    auto firstID = componentTableWidget->item(0,this->getIDColumn()).toInt(&OK);
 
     if(!OK)
     {
@@ -507,7 +507,7 @@ void AssetInputWidget::handleComponentSelection(void)
 
     // Get the ID of the first and last component
     bool OK;
-    auto firstID = componentTableWidget->item(0,0).toInt(&OK);
+    auto firstID = componentTableWidget->item(0,this->getIDColumn()).toInt(&OK);
 
     if(!OK)
     {
@@ -516,7 +516,7 @@ void AssetInputWidget::handleComponentSelection(void)
         return;
     }
 
-    auto lastID = componentTableWidget->item(nRows-1,0).toInt(&OK);
+    auto lastID = componentTableWidget->item(nRows-1,this->getIDColumn()).toInt(&OK);
 
     if(!OK)
     {
@@ -580,6 +580,20 @@ void AssetInputWidget::handleComponentSelection(void)
 QStringList AssetInputWidget::getTableHorizontalHeadings()
 {
     return tableHorizontalHeadings;
+}
+
+
+int AssetInputWidget::getIDColumn(void)
+{
+    auto numCols = componentTableWidget->columnCount();
+    for(int i = 0; i<numCols; ++i)
+    {
+        auto heading = componentTableWidget->horizontalHeaderItem(i);
+        if(heading == "id" || heading == "ID")
+            return i;
+    }
+
+    return 0;
 }
 
 
@@ -841,10 +855,10 @@ QString AssetInputWidget::getFilterString(void)
 void AssetInputWidget::selectAllComponents(void)
 {
     // Get the ID of the first and last component
-    auto firstID = componentTableWidget->item(0,0).toString();
+    auto firstID = componentTableWidget->item(0,this->getIDColumn()).toString();
 
     auto nRows = componentTableWidget->rowCount();
-    auto lastID = componentTableWidget->item(nRows-1,0).toString();
+    auto lastID = componentTableWidget->item(nRows-1,this->getIDColumn()).toString();
 
     QString filter = firstID + "-" + lastID;
 
@@ -1002,7 +1016,7 @@ void AssetInputWidget::clear(void)
 
 void AssetInputWidget::handleCellChanged(const int row, const int col)
 {
-    auto ID = componentTableWidget->item(row,0).toInt();
+    auto ID = componentTableWidget->item(row,this->getIDColumn()).toInt();
 
     auto attrib = componentTableWidget->horizontalHeaderItem(col);
 

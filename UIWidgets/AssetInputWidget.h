@@ -111,6 +111,9 @@ public:
 
     QStringList getTableHorizontalHeadings();
 
+    // Returns the table column holding the asset id (header "id" or "ID"), 0 if not found
+    int getIDColumn(void);
+
     // Selects all of the components for analysis
     void selectAllComponents(void);
 
