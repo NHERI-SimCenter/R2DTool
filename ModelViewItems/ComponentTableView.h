@@ -48,7 +48,8 @@ class ComponentTableView : public QTableView
     Q_OBJECT
 
 public:
-    ComponentTableView(QWidget *parent=nullptr);
+    // showStatistics: right click on a column heading shows a histogram and statistics of that column
+    ComponentTableView(QWidget *parent=nullptr, bool showStatistics=false);
 
     int columnCount(void);
     int rowCount(void);
@@ -66,6 +67,9 @@ public:
     void setComponenetTableModel(ComponentTableModel* compTableModel);
 
 private:
+
+    void handleHeaderContextMenu(const QPoint& pos);
+    void showColumnStatistics(int col);
 
     ComponentTableModel* tableModel;
 };

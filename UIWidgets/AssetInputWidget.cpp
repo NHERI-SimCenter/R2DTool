@@ -342,8 +342,8 @@ void AssetInputWidget::createComponentsBox(void)
     label3->setStyleSheet("font-weight: bold; color: black");
     label3->hide();
     
-    // Create the table that will show the Component information
-    componentTableWidget = new ComponentTableView();
+    // Create the table that will show the Component information, with column statistics
+    componentTableWidget = new ComponentTableView(nullptr, true);
     
     connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &AssetInputWidget::handleCellChanged);
     
@@ -431,8 +431,8 @@ void AssetInputWidget::createComponentsBox(void)
     label3->setStyleSheet("font-weight: bold; color: black");
     label3->hide();
     
-    // Create the table that will show the Component information
-    componentTableWidget = new ComponentTableView();
+    // Create the table that will show the Component information, with column statistics
+    componentTableWidget = new ComponentTableView(nullptr, true);
     
     connect(componentTableWidget->getTableModel(), &ComponentTableModel::handleCellChanged, this, &AssetInputWidget::handleCellChanged);
 
