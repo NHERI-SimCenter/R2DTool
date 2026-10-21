@@ -59,7 +59,14 @@ DL_TableWidget::DL_TableWidget(QWidget *parent)
 {
 
   this->setSelectionBehavior(QAbstractItemView::SelectColumns);
-  connect(this,SIGNAL(cellPressed(int,int)),this,SLOT(onSpreadsheetCellClicked(int,int)));  
+
+  // right click on a column heading for the menu, same as the asset tables (ComponentTableView)
+  this->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(this->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, [this](const QPoint& pos) {
+    int col = this->horizontalHeader()->logicalIndexAt(pos);
+    if (col >= 0)
+      onSpreadsheetCellClicked(0, col);
+  });
 }
 
 DL_TableWidget::~DL_TableWidget()
