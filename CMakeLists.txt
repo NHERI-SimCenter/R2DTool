@@ -24,7 +24,7 @@ endif()
 # ---- Qt ----
 find_package(Qt6 REQUIRED COMPONENTS
   Core Gui Widgets
-  Charts Concurrent Network Sql Xml SerialPort WebEngineWidgets
+  Charts Concurrent Network Sql Xml SerialPort WebEngineWidgets WebEngineCore
   3DCore 3DRender 3DExtras
   OpenGL OpenGLWidgets Svg
   Positioning QuickWidgets
@@ -156,7 +156,7 @@ target_include_directories(${TARGET_NAME} PRIVATE
 target_link_libraries(${TARGET_NAME} PRIVATE
   Qt6::Core Qt6::Gui Qt6::Widgets
   Qt6::Charts Qt6::Concurrent Qt6::Network Qt6::Sql Qt6::Xml
-  Qt6::SerialPort Qt6::WebEngineWidgets
+  Qt6::SerialPort Qt6::WebEngineWidgets Qt6::WebEngineCore
   Qt6::3DCore Qt6::3DRender Qt6::3DExtras
   Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Svg
   Qt6::Positioning Qt6::QuickWidgets

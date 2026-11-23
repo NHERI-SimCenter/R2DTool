@@ -235,6 +235,17 @@ void GMWidget::setupConnections()
                 this->getProgressDialog()->hideProgressBar();
             });
 
+    // PEER session expired part way through the downloads: log in again and redo the batch
+    connect(&peerClient, &PeerNgaWest2Client::sessionExpired, this, [this]()
+            {
+                PeerLoginDialog loginDialog(&peerClient, this);
+                loginDialog.setWindowModality(Qt::ApplicationModal);
+                if (loginDialog.exec() == QDialog::Accepted && !lastRecordsBatch.isEmpty())
+                    peerClient.selectRecords(lastRecordsBatch);
+                else
+                    this->getProgressDialog()->hideProgressBar();
+            });
+
     // connect use event and ground motion dir to Hazard widget to switch
     connect(m_eventGMDir, &EventGMDirWidget::useEventFileMotionDir, this, &GMWidget::sendEventFileMotionDir);
 
@@ -689,10 +700,17 @@ void GMWidget::runHazardSimulation(void)
 
 
     // kz: only contact PEER NGA when the databse is set to "NGA West"
+    // PEER's site (Cloudflare protected) needs a browser login; the dialog hands the session
+    // to peerClient (and auto-fills if Events/UI/PeerMasterLogin.h exists at build time)
     if(this->m_selectionconfig->getDatabase().compare("NGAWest2")==0) {
-        QString userName = getPEERUserName();
-        QString password = getPEERPassWord();
-        peerClient.signIn(userName, password);
+        if(!peerClient.loggedIn()) {
+            PeerLoginDialog loginDialog(&peerClient, this);
+            loginDialog.setWindowModality(Qt::ApplicationModal);
+            if(loginDialog.exec() != QDialog::Accepted) {
+                this->errorMessage("Hazard simulation not run: a PEER NGA West 2 login is needed to download the ground motions");
+                return;
+            }
+        }
 //        eventObj["Database"] = "NGAWest2";
     }
 
@@ -1087,6 +1105,7 @@ void GMWidget::downloadRecordBatch(void)
 
     if(recordsListToDownload.size() < maxBatchSize)
     {
+        lastRecordsBatch = recordsListToDownload;
         peerClient.selectRecords(recordsListToDownload);
         numDownloaded = recordsListToDownload.size();
 
@@ -1098,6 +1117,7 @@ void GMWidget::downloadRecordBatch(void)
 
         numDownloaded += recordsBatch.size();
 
+        lastRecordsBatch = recordsBatch;
         peerClient.selectRecords(recordsBatch);
 
         recordsListToDownload = recordsListToDownload.mid(maxBatchSize-1,recordsListToDownload.size()-1);

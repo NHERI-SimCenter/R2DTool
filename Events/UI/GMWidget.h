@@ -173,6 +173,7 @@ private:
     int numDownloaded;
     bool downloadComplete;
     QStringList recordsListToDownload;
+    QStringList lastRecordsBatch;   // re-requested if the PEER session expires
     QJsonObject NGA2Results;
 };
 

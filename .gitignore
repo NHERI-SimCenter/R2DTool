@@ -54,6 +54,7 @@ qrc_styles.cpp
 
 # Sensitive Information
 R2DUserPass.h
+Events/UI/PeerMasterLogin.h
 
 # OTHER
 Makefile
@@ -78,3 +79,4 @@ Frameworks
 .vscode/*
 .DS_Store*
 CMakeUserPresets.json
+PeerMasterLogin.h
